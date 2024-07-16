@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.settings.framework.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +58,7 @@ fun SettingsScope.TextFieldItem(
     isErrorProvider: (value: String) -> Boolean = { false }, // calculated in a derivedState
     sanitizeValue: (value: String) -> String = { it },
     textFieldDescription: @Composable (() -> Unit)? = description,
+    extra: @Composable ColumnScope.(editingValue: MutableState<String>) -> Unit = {}
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
     Item(
@@ -99,9 +102,10 @@ fun SettingsScope.TextFieldItem(
 
             if (showDialog) {
                 // 正在编辑的值
-                var editingValue by rememberSaveable(value) {
+                val editingValueState = rememberSaveable(value) {
                     mutableStateOf(value)
                 }
+                var editingValue by editingValueState
                 val error by remember(isErrorProvider) {
                     derivedStateOf {
                         isErrorProvider(editingValue)
@@ -120,6 +124,7 @@ fun SettingsScope.TextFieldItem(
                     title = title,
                     confirmEnabled = !error,
                     description = textFieldDescription,
+                    extra = { extra(editingValueState) },
                 ) {
                     OutlinedTextField(
                         value = editingValue,
@@ -159,6 +164,7 @@ internal fun SettingsScope.TextFieldDialog(
     title: @Composable () -> Unit,
     confirmEnabled: Boolean = true,
     description: @Composable (() -> Unit)? = null,
+    extra: @Composable (ColumnScope.() -> Unit) = {},
     textField: @Composable () -> Unit,
 ) {
     Dialog(
@@ -177,6 +183,8 @@ internal fun SettingsScope.TextFieldDialog(
                 Row {
                     textField()
                 }
+
+                extra()
 
                 ProvideTextStyleContentColor(
                     MaterialTheme.typography.labelMedium,

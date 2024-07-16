@@ -216,6 +216,9 @@ kotlin {
 
         implementation(libs.selenium.java)
         implementation(libs.webdrivermanager)
+
+        implementation("io.github.vinceglb:filekit-core:0.6.3")
+        implementation("io.github.vinceglb:filekit-compose:0.6.3")
 //        implementation(libs.htmlunit)
 //        implementation("org.openjfx:javafx-base:17.0.11:$classifier") {
 //            exclude("org.openjfx")
