@@ -8,7 +8,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +33,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -51,6 +49,7 @@ import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 /**
@@ -236,28 +235,16 @@ fun MediaProgressSlider(
 
         var mousePosX by remember { mutableStateOf(0f) }
         var previewTimeVisible by remember { mutableStateOf(false) }
-        var previewTextWidth by remember { mutableIntStateOf(0) }
-        val density = LocalDensity.current.density
-        val offsetX by derivedStateOf { ((mousePosX - previewTextWidth / 2) / density).dp }
-        var progressWidth by remember { mutableIntStateOf(0) }
-        var thumbWidth by remember { mutableIntStateOf(0) }
-        val previewTimeText by derivedStateOf {
-            val percent = mousePosX.minus(thumbWidth / 2).div(progressWidth - thumbWidth)
-            val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
-            renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000)
-        }
-        if (previewTimeVisible) {
+        var offsetX by remember { mutableIntStateOf(0) }
+        var previewTimeText by remember { mutableStateOf("") }
+        val previewTimeTextBox = @Composable {
             Box(
-                modifier = Modifier.offset(
-                    x = offsetX,
-                    y = (-24).dp,
-                )
+                modifier = Modifier
                     .background(previewTimeBackgroundColor, shape = RoundedCornerShape(6.dp)),
             ) {
                 Text(
                     text = previewTimeText,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.onPlaced { previewTextWidth = it.size.width },
                 )
             }
         }
@@ -272,45 +259,79 @@ fun MediaProgressSlider(
         }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
-        Slider(
-            value = state.displayPositionRatio,
-            valueRange = 0f..1f,
-            onValueChange = { state.previewPositionRatio(it) },
-            interactionSource = interactionSource,
-            thumb = {
-                SliderDefaults.Thumb(
-                    interactionSource = interactionSource,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                    ),
-                    enabled = true,
-                    modifier = Modifier.onPlaced { thumbWidth = it.size.width },
-                )
-            },
-            track = {
-                SliderDefaults.Track(
-                    it,
-                    colors = SliderDefaults.colors(
-                        activeTrackColor = Color.Transparent,
-                        inactiveTrackColor = Color.Transparent,
-                        disabledActiveTrackColor = Color.Transparent,
-                        disabledInactiveTrackColor = Color.Transparent,
-                    ),
-                )
-            },
-            onValueChangeFinished = {
-                state.finishPreview()
-            },
-            modifier = Modifier.fillMaxWidth().height(24.dp)
-                .hoverable(interactionSource = hoverInteraction)
-                .onPlaced {
-                    progressWidth = it.size.width
-                }
-                .onPointerEvent(PointerEventType.Move) {
-//                    if (!previewTimeVisible) return@onPointerEvent
-                    mousePosX = it.changes.first().position.x
+        val thumb = @Composable {
+
+            SliderDefaults.Thumb(
+                interactionSource = interactionSource,
+                colors = SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                ),
+                enabled = true,
+            )
+        }
+        val slider = @Composable {
+            Slider(
+                value = state.displayPositionRatio,
+                valueRange = 0f..1f,
+                onValueChange = { state.previewPositionRatio(it) },
+                interactionSource = interactionSource,
+                thumb = { thumb() },
+                track = {
+                    SliderDefaults.Track(
+                        it,
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Color.Transparent,
+                            inactiveTrackColor = Color.Transparent,
+                            disabledActiveTrackColor = Color.Transparent,
+                            disabledInactiveTrackColor = Color.Transparent,
+                        ),
+                    )
                 },
-        )
+                onValueChangeFinished = {
+                    state.finishPreview()
+                },
+                modifier = Modifier.fillMaxWidth().height(24.dp)
+                    .hoverable(interactionSource = hoverInteraction)
+                    .onPointerEvent(PointerEventType.Move) {
+                        mousePosX = it.changes.first().position.x
+                    },
+            )
+        }
+
+        SubcomposeLayout { constraints ->
+            var thumbWidth = 0
+            subcompose("thumb", thumb).map {
+                val placeable = it.measure(constraints)
+                thumbWidth = placeable.width.coerceAtLeast(thumbWidth)
+                placeable
+            }
+            var sliderWidth = 0
+            val sliderPlaceables = subcompose("slider", slider).map {
+                val placeable = it.measure(constraints)
+                sliderWidth = placeable.width.coerceAtLeast(sliderWidth)
+                placeable
+            }
+            var previewTimeTextWidth = 0
+            val previewTimeTextPlaceables = subcompose("previewTimeTextBox", previewTimeTextBox).map {
+                val placeable = it.measure(constraints)
+                previewTimeTextWidth = placeable.width.coerceAtLeast(previewTimeTextWidth)
+                placeable
+            }
+            val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
+            val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
+            previewTimeText = renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000)
+            offsetX = (mousePosX - previewTimeTextWidth / 2).roundToInt()
+            layout(constraints.maxWidth, constraints.maxHeight) {
+                sliderPlaceables.forEach {
+                    it.placeRelative(0, 0)
+                }
+                if (previewTimeVisible) {
+                    previewTimeTextPlaceables.forEach {
+                        it.placeRelative(offsetX, (-24).dp.roundToPx())
+                    }
+                }
+            }
+        }
     }
 }
 
