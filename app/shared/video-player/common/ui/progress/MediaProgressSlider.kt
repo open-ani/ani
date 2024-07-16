@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -34,6 +35,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -159,7 +161,8 @@ fun MediaProgressSlider(
     downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
     stopColor: Color = aniDarkColorTheme().primary,
-    previewTimeBackgroundColor: Color = Color.Black.copy(alpha = 0.3f),
+    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface.copy(alpha = 0.3f),
+    previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -247,11 +250,17 @@ fun MediaProgressSlider(
             }
         }
         val previewTimeTextBox = @Composable {
-            Text(
+            Box(
                 modifier = Modifier
-                    .background(previewTimeBackgroundColor, shape = RoundedCornerShape(4.dp)),
-                text = previewTimeText,
-            )
+                    .clip(shape = CircleShape)
+                    .background(previewTimeBackgroundColor),
+            ) {
+                Text(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    text = previewTimeText,
+                    style = TextStyle(color = previewTimeTextColor),
+                )
+            } 
         }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
