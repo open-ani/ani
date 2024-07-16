@@ -32,12 +32,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.disabledWeaken
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
@@ -287,7 +287,7 @@ fun MediaProgressSlider(
                 },
                 modifier = Modifier.fillMaxWidth().height(24.dp)
                     .hoverable(interactionSource = hoverInteraction)
-                    .onPointerEvent(PointerEventType.Move) {
+                    .onPointerEventMultiplatform(PointerEventType.Move) {
                         mousePosX = it.changes.first().position.x
                     },
             )
