@@ -33,7 +33,6 @@ import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
-import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.DanmakuManager
@@ -71,8 +70,6 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuCollection
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
-import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -175,7 +172,6 @@ private class EpisodeViewModelImpl(
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
-    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
 
@@ -275,12 +271,6 @@ private class EpisodeViewModelImpl(
                 }
             }
         }
-
-    val danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>> =
-        danmakuRegexFilterRepository.flow
-
-    val danmkaFilterConfig: Flow<DanmakuFilterConfig> =
-        settingsRepository.danmakuFilterConfig.flow
 
     override val mediaSelectorPresentation: MediaSelectorPresentation =
         MediaSelectorPresentation(mediaSelector, backgroundScope.coroutineContext)
@@ -410,11 +400,7 @@ private class EpisodeViewModelImpl(
         }.shareInBackground(started = SharingStarted.Lazily)
 
     private val danmakuSessionFlow: Flow<DanmakuSession> = danmakuCollectionFlow.mapLatest { session ->
-        session.at(
-            progress = playerState.currentPositionMillis.map { it.milliseconds },
-            danmakuRegexFilterList = danmakuRegexFilterList,
-            danmakuFilterConfig = danmkaFilterConfig,
-        )
+        session.at(progress = playerState.currentPositionMillis.map { it.milliseconds })
     }.shareInBackground(started = SharingStarted.Lazily)
 
     private val danmakuEventFlow: Flow<DanmakuEvent> = danmakuSessionFlow.flatMapLatest { it.events }
