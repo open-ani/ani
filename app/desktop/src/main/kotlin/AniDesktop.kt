@@ -148,7 +148,7 @@ object AniDesktop {
 
         // Get the screen size as a Dimension object
         val windowState = WindowState(
-            size = calculateWindowSize(1485.dp, 1301.dp / 1301 * 855),
+            size = calculateWindowSize(1301.dp, 855.dp),
             position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
