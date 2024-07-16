@@ -99,7 +99,7 @@ fun SettingsScope.TextFieldItem(
 
             if (showDialog) {
                 // 正在编辑的值
-                var editingValue by remember(value) {
+                var editingValue by rememberSaveable(value) {
                     mutableStateOf(value)
                 }
                 val error by remember(isErrorProvider) {
