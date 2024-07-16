@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +47,6 @@ import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
-import me.him188.ani.datasources.bangumi.processing.fixToString
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -232,11 +232,11 @@ fun MediaProgressSlider(
             }
         }
 
-        var mousePosX by remember { mutableStateOf(0f) }
-        var previewTimeVisible by remember { mutableStateOf(false) }
-        var offsetX by remember { mutableIntStateOf(0) }
-        var previewTimeText by remember { mutableStateOf("") }
-
+        var mousePosX by rememberSaveable { mutableStateOf(0f) }
+        var previewTimeVisible by rememberSaveable { mutableStateOf(false) }
+        var offsetX by rememberSaveable { mutableIntStateOf(0) }
+        var previewTimeText by rememberSaveable { mutableStateOf("") }
+        
         val hoverInteraction = remember { MutableInteractionSource() }
         LaunchedEffect(true) {
             hoverInteraction.interactions.collect {
@@ -295,10 +295,9 @@ fun MediaProgressSlider(
 
         SubcomposeLayout { constraints ->
             var thumbWidth = 0
-            subcompose("thumb", thumb).map {
+            subcompose("thumb", thumb).forEach {
                 val placeable = it.measure(constraints)
                 thumbWidth = placeable.width.coerceAtLeast(thumbWidth)
-                placeable
             }
             var sliderWidth = 0
             val sliderPlaceables = subcompose("slider", slider).map {
@@ -314,7 +313,8 @@ fun MediaProgressSlider(
             }
             val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
             val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
-            previewTimeText = renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000)
+            previewTimeText =
+                renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
             offsetX = (mousePosX - previewTimeTextWidth / 2).roundToInt()
             layout(constraints.maxWidth, constraints.maxHeight) {
                 sliderPlaceables.forEach {
@@ -322,7 +322,7 @@ fun MediaProgressSlider(
                 }
                 if (previewTimeVisible) {
                     previewTimeTextPlaceables.forEach {
-                        it.placeRelative(offsetX, (-24).dp.roundToPx())
+                        it.placeRelative(offsetX, (-20).dp.roundToPx())
                     }
                 }
             }
@@ -330,23 +330,6 @@ fun MediaProgressSlider(
     }
 }
 
-private fun renderSeconds(current: Long, total: Long?): String {
-    if (total == null) {
-        return "00:${current.fixToString(2)}"
-    }
-    return if (current < 60 && total < 60) {
-        "00:${current.fixToString(2)}"
-    } else if (current < 3600 && total < 3600) {
-        val startM = (current / 60).fixToString(2)
-        val startS = (current % 60).fixToString(2)
-        """$startM:$startS"""
-    } else {
-        val startH = (current / 3600).fixToString(2)
-        val startM = (current % 3600 / 60).fixToString(2)
-        val startS = (current % 60).fixToString(2)
-        """$startH:$startM:$startS"""
-    }
-}
 private inline fun forEachConsecutiveChunk(
     chunks: List<Chunk>,
     action: (state: ChunkState, weight: Float) -> Unit
