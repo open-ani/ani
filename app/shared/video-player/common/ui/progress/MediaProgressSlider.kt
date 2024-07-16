@@ -289,6 +289,12 @@ fun MediaProgressSlider(
                     .hoverable(interactionSource = hoverInteraction)
                     .onPointerEventMultiplatform(PointerEventType.Move) {
                         mousePosX = it.changes.first().position.x
+                    }
+                    //for android
+                    .onPointerEventMultiplatform(PointerEventType.Press) {
+                        previewTimeVisible = it.changes.first().pressed
+                    }.onPointerEventMultiplatform(PointerEventType.Release) {
+                        previewTimeVisible = it.changes.first().pressed
                     },
             )
         }
