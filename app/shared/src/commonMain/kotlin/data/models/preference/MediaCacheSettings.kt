@@ -13,6 +13,12 @@ data class MediaCacheSettings(
     val mostRecentCount: Int = 8,
 
     @Transient val placeholder: Int = 0,
+
+    /**
+     * Use system default if `null`.
+     * @since 3.4.0
+     */
+    val saveDir: String? = null, // 只有 PC 支持修改, 安卓不需要支持
 ) {
     companion object {
         val Default = MediaCacheSettings()

@@ -121,6 +121,7 @@ fun MediaPreferenceTab(
         VideoResolverGroup(vm)
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
+        CacheDirectoryGroup(vm)
         MediaSelectionGroup(vm)
     }
 }

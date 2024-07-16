@@ -43,9 +43,11 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
@@ -97,15 +99,7 @@ import java.awt.Toolkit
 import java.io.File
 
 private val logger by lazy { logger("Ani") }
-
-
-val projectDirectories: ProjectDirectories by lazy {
-    ProjectDirectories.from(
-        "me",
-        "Him188",
-        if (AniBuildConfigDesktop.isDebug) "Ani-debug" else "Ani",
-    )
-}
+private inline val toplevelLogger get() = logger
 
 object AniDesktop {
     init {
@@ -181,7 +175,12 @@ object AniDesktop {
                         DefaultTorrentManager(
                             coroutineScope.coroutineContext,
                             saveDir = {
-                                File(projectDirectories.cacheDir).resolve("torrent-data").resolve(it.id)
+                                val saveDir = runBlocking {
+                                    get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir
+                                        ?.let(::File)
+                                } ?: projectDirectories.torrentCacheDir
+                                toplevelLogger.info { "TorrentManager saveDir: $saveDir" }
+                                saveDir.resolve(it.id)
                             },
                         )
                     }
