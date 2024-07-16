@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -92,6 +93,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import java.awt.Toolkit
 import java.io.File
 
 private val logger by lazy { logger("Ani") }
@@ -113,6 +115,24 @@ object AniDesktop {
 //        System.setProperty("compose.interop.blending", "true")
     }
 
+    private fun calculateWindowSize(desiredWidth: Dp, desiredHeight: Dp): DpSize {
+        // Get screen dimensions
+        val screenSize = Toolkit.getDefaultToolkit().screenSize
+        val screenWidth = screenSize.width
+        val screenHeight = screenSize.height
+
+        // Convert screen dimensions to dp
+        val screenResolution = Toolkit.getDefaultToolkit().screenResolution.toFloat()
+        val screenWidthDp = (screenWidth / screenResolution * 72).dp
+        val screenHeightDp = (screenHeight / screenResolution * 72).dp
+
+        // Calculate the final window size
+        val windowWidth = if (desiredWidth > screenWidthDp) screenWidthDp else desiredWidth
+        val windowHeight = if (desiredHeight > screenHeightDp) screenHeightDp else desiredHeight
+
+        return DpSize(windowWidth, windowHeight)
+    }
+
     @JvmStatic
     fun main(args: Array<String>) {
         println("dataDir: file://${projectDirectories.dataDir.replace(" ", "%20")}")
@@ -126,8 +146,9 @@ object AniDesktop {
             logger.info { "Debug mode enabled" }
         }
 
+        // Get the screen size as a Dimension object
         val windowState = WindowState(
-            size = DpSize(900.dp * 1.4f, 900.dp),
+            size = calculateWindowSize(1485.dp, 1301.dp / 1301 * 855),
             position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
