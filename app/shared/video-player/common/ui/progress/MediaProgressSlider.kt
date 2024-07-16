@@ -236,13 +236,7 @@ fun MediaProgressSlider(
         var previewTimeVisible by remember { mutableStateOf(false) }
         var offsetX by remember { mutableIntStateOf(0) }
         var previewTimeText by remember { mutableStateOf("") }
-        val previewTimeTextBox = @Composable {
-                Text(
-                    modifier = Modifier
-                        .background(previewTimeBackgroundColor, shape = RoundedCornerShape(4.dp)),
-                    text = previewTimeText,
-                )
-        }
+
         val hoverInteraction = remember { MutableInteractionSource() }
         LaunchedEffect(true) {
             hoverInteraction.interactions.collect {
@@ -252,10 +246,16 @@ fun MediaProgressSlider(
                 }
             }
         }
+        val previewTimeTextBox = @Composable {
+            Text(
+                modifier = Modifier
+                    .background(previewTimeBackgroundColor, shape = RoundedCornerShape(4.dp)),
+                text = previewTimeText,
+            )
+        }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
         val thumb = @Composable {
-
             SliderDefaults.Thumb(
                 interactionSource = interactionSource,
                 colors = SliderDefaults.colors(
