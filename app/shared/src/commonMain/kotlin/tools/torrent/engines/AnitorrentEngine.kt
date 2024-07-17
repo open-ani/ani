@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.models.preference.ProxySettings
+import me.him188.ani.app.data.source.media.toClientProxyConfig
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
@@ -20,6 +22,7 @@ import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
@@ -41,6 +44,7 @@ private val anitorrentFactory = java.util.ServiceLoader.load(TorrentDownloaderFa
 class AnitorrentEngine(
     scope: CoroutineScope,
     config: Flow<AnitorrentConfig>,
+    private val proxySettings: Flow<ProxySettings>,
     private val saveDir: File,
 ) : AbstractTorrentEngine<TorrentDownloader, AnitorrentConfig>(
     scope = scope,
@@ -76,10 +80,12 @@ class AnitorrentEngine(
             logger.warn { "Anitorrent is disabled because it is not built. Read `/torrent/anitorrent/README.md` for more information." }
             throw UnsupportedOperationException("AnitorrentEngine is not supported")
         }
+        val proxy = proxySettings.first()
         val client = createDefaultHttpClient {
             install(UserAgent) {
                 agent = getAniUserAgent()
             }
+            proxy(proxy.default.toClientProxyConfig())
             expectSuccess = true
         }
         return anitorrentFactory!!.createDownloader(

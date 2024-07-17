@@ -207,7 +207,7 @@ class MediaSourceManagerImpl(
     }
 }
 
-private fun MediaSourceProxySettings.toClientProxyConfig(): ClientProxyConfig? {
+fun MediaSourceProxySettings.toClientProxyConfig(): ClientProxyConfig? {
     return if (enabled) {
         config.run {
             ClientProxyConfig(

@@ -66,6 +66,7 @@ class DefaultTorrentManager(
         AnitorrentEngine(
             scope.childScope(CoroutineName("AnitorrentEngine")),
             settingsRepository.anitorrentConfig.flow,
+            settingsRepository.proxySettings.flow,
             saveDir(TorrentEngineType.Anitorrent),
         )
     }
