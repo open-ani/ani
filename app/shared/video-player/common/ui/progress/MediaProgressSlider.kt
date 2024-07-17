@@ -36,10 +36,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.disabledWeaken
@@ -256,11 +259,19 @@ fun MediaProgressSlider(
                     .background(previewTimeBackgroundColor),
             ) {
                 Text(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = previewTimeText,
                     style = TextStyle(color = previewTimeTextColor),
                 )
-            } 
+            }
+        }
+        if (previewTimeVisible) {
+            Popup(
+                properties = PlatformPopupProperties(usePlatformInsets = false),
+                offset = IntOffset(offsetX, -80),
+            ) {
+                previewTimeTextBox()
+            }
         }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
@@ -321,10 +332,9 @@ fun MediaProgressSlider(
                 placeable
             }
             var previewTimeTextWidth = 0
-            val previewTimeTextPlaceables = subcompose("previewTimeTextBox", previewTimeTextBox).map {
+            subcompose("previewTimeTextBox", previewTimeTextBox).forEach {
                 val placeable = it.measure(constraints)
                 previewTimeTextWidth = placeable.width.coerceAtLeast(previewTimeTextWidth)
-                placeable
             }
             val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
             val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
@@ -334,11 +344,6 @@ fun MediaProgressSlider(
             layout(constraints.maxWidth, constraints.maxHeight) {
                 sliderPlaceables.forEach {
                     it.placeRelative(0, 0)
-                }
-                if (previewTimeVisible) {
-                    previewTimeTextPlaceables.forEach {
-                        it.placeRelative(offsetX, (-20).dp.roundToPx())
-                    }
                 }
             }
         }
