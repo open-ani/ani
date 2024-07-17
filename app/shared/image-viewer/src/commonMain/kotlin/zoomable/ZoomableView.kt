@@ -167,14 +167,14 @@ internal fun reachSide(pan: Float, offset: Float, bound: Pair<Float, Float>): Bo
  * @param bound 限制位移的范围
  * @return
  */
-fun limitToBound(offset: Float, bound: Pair<Float, Float>): Float {
+internal fun limitToBound(offset: Float, bound: Pair<Float, Float>): Float {
     return offset.coerceIn(bound.first, bound.second)
 }
 
 /**
  * 判断位移是否在边界内
  */
-fun inBound(offset: Float, bound: Pair<Float, Float>): Boolean {
+internal fun inBound(offset: Float, bound: Pair<Float, Float>): Boolean {
     return if (offset > 0) {
         offset < bound.second
     } else if (offset < 0) {
@@ -187,7 +187,7 @@ fun inBound(offset: Float, bound: Pair<Float, Float>): Boolean {
 /**
  * 获取移动边界
  */
-fun getBound(scale: Float, bw: Float, dw: Float): Pair<Float, Float> {
+internal fun getBound(scale: Float, bw: Float, dw: Float): Pair<Float, Float> {
     val rw = scale.times(dw)
     val bound = if (rw > bw) {
         var xb = (rw - bw).div(2)
@@ -205,7 +205,7 @@ fun getBound(scale: Float, bw: Float, dw: Float): Pair<Float, Float> {
  * @param b Float
  * @return Float
  */
-fun sameDirection(a: Float, b: Float): Float {
+internal fun sameDirection(a: Float, b: Float): Float {
     return if (a > 0) {
         if (b < 0) {
             b.absoluteValue
@@ -221,7 +221,7 @@ fun sameDirection(a: Float, b: Float): Float {
     }
 }
 
-suspend fun PointerInputScope.detectScrollEvent(
+private suspend fun PointerInputScope.detectScrollEvent(
     onScroll: (Offset, Float) -> Unit = { _, _ -> }
 ) {
     awaitPointerEventScope {
@@ -240,7 +240,7 @@ suspend fun PointerInputScope.detectScrollEvent(
 /**
  * 重写事件监听方法
  */
-suspend fun PointerInputScope.detectTransformGestures(
+private suspend fun PointerInputScope.detectTransformGestures(
     panZoomLock: Boolean = false,
     gestureStart: () -> Unit = {},
     gestureEnd: (Boolean) -> Unit = {},

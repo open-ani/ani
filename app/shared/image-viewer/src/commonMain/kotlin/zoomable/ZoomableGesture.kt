@@ -24,7 +24,7 @@ import kotlin.math.absoluteValue
  *
  * @param scope 用于进行变换的协程作用域
  */
-fun ZoomableViewState.onGestureStart(scope: CoroutineScope) {
+internal fun ZoomableViewState.onGestureStart(scope: CoroutineScope) {
     if (allowGestureInput) {
         eventChangeCount = 0
         velocityTracker = VelocityTracker()
@@ -43,7 +43,7 @@ fun ZoomableViewState.onGestureStart(scope: CoroutineScope) {
  * @param scope 用于进行变换的协程作用域
  * @param transformOnly 仅转换
  */
-fun ZoomableViewState.onGestureEnd(scope: CoroutineScope, transformOnly: Boolean) {
+internal fun ZoomableViewState.onGestureEnd(scope: CoroutineScope, transformOnly: Boolean) {
     scope.apply {
         if (!transformOnly || !allowGestureInput || isRunning()) return
         var velocity = try {
@@ -127,7 +127,7 @@ fun ZoomableViewState.onGestureEnd(scope: CoroutineScope, transformOnly: Boolean
  * @param event 事件对象
  * @return 是否消费这次事件
  */
-fun ZoomableViewState.onGesture(
+internal fun ZoomableViewState.onGesture(
     scope: CoroutineScope,
     center: Offset,
     pan: Offset,
@@ -254,7 +254,7 @@ fun ZoomableViewState.onGesture(
 /**
  * 追踪缩放过程中的中心点
  */
-fun panTransformAndScale(
+private fun panTransformAndScale(
     offset: Float,
     center: Float,
     bh: Float,

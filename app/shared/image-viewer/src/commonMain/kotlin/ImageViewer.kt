@@ -44,7 +44,7 @@ fun ImageViewer(
 /**
  * 用于解析图像数据给ZoomableView显示的方法
  */
-typealias ImageContent = @Composable (Any, ZoomableViewState) -> Unit
+internal typealias ImageContent = @Composable (Any, ZoomableViewState) -> Unit
 
 class ModelProcessor(
     vararg additionalProcessor: ModelProcessorPair,
@@ -65,7 +65,7 @@ class ModelProcessor(
     }
 }
 
-typealias ModelProcessorPair = Pair<KClass<out Any>, ImageContent>
+internal typealias ModelProcessorPair = Pair<KClass<out Any>, ImageContent>
 
 private val basicModelProcessorList: List<ModelProcessorPair> = listOf(
     Painter::class to { model, _ ->
@@ -89,8 +89,8 @@ private val basicModelProcessorList: List<ModelProcessorPair> = listOf(
             contentDescription = null,
         )
     },
-    AnyComposable::class to { model, _ ->
-        (model as AnyComposable).composable.invoke()
+    ImageViewer.AnyComposable::class to { model, _ ->
+        (model as ImageViewer.AnyComposable).composable.invoke()
     },
 )
 
@@ -102,13 +102,16 @@ private val basicModelProcessorList: List<ModelProcessorPair> = listOf(
  * @param kClass 需要匹配的类对象
  * @return
  */
-fun <T : Any> isSubclassOf(instance: T, kClass: KClass<out Any>): Boolean {
+private fun <T : Any> isSubclassOf(instance: T, kClass: KClass<out Any>): Boolean {
     return kClass.isInstance(instance)
 }
 
-/**
- * ImageViewer传人的Model参数除了特定图片以外，还支持传人一个Composable函数
- *
- * @property composable
- */
-class AnyComposable(val composable: @Composable () -> Unit)
+class ImageViewer {
+
+    /**
+     * ImageViewer传人的Model参数除了特定图片以外，还支持传人一个Composable函数
+     *
+     * @property composable
+     */
+    class AnyComposable(val composable: @Composable () -> Unit)
+}

@@ -25,10 +25,8 @@ import coil3.annotation.ExperimentalCoilApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import me.him188.ani.app.imageviewer.AnyComposable
 import me.him188.ani.app.imageviewer.zoomable.ZoomableGestureScope
 import me.him188.ani.app.imageviewer.zoomable.rememberZoomableState
-import me.him188.ani.utils.logging.logger
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 interface ImageViewerHandler {
@@ -63,8 +61,6 @@ fun rememberImageViewerHandler(): ImageViewerHandler {
     }
 }
 
-private val logger = logger("ImageViewer")
-
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ImageViewer(
@@ -91,7 +87,7 @@ fun ImageViewer(
         modifier = Modifier.fillMaxSize(),
     ) {
         me.him188.ani.app.imageviewer.ImageViewer(
-            model = AnyComposable(
+            model = me.him188.ani.app.imageviewer.ImageViewer.AnyComposable(
                 composable = {
                     AsyncImage(
                         model = model,

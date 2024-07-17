@@ -35,27 +35,27 @@ import kotlinx.coroutines.launch
  **/
 
 // 默认X轴偏移量
-const val DEFAULT_OFFSET_X = 0F
+private const val DEFAULT_OFFSET_X = 0F
 
 // 默认Y轴偏移量
-const val DEFAULT_OFFSET_Y = 0F
+private const val DEFAULT_OFFSET_Y = 0F
 
 // 默认缩放率
-const val DEFAULT_SCALE = 1F
+private const val DEFAULT_SCALE = 1F
 
 // 默认旋转角度
-const val DEFAULT_ROTATION = 0F
+private const val DEFAULT_ROTATION = 0F
 
 // 图片最小缩放率
-const val MIN_SCALE = 0.5F
+internal const val MIN_SCALE = 0.5F
 
 // 图片最大缩放率
 //const val MAX_SCALE_RATE = 8F
 //const val MAX_SCALE_RATE = 2F
-const val MAX_SCALE_RATE = 4F
+private const val MAX_SCALE_RATE = 4F
 
 // 最小手指手势间距
-const val MIN_GESTURE_FINGER_DISTANCE = 200
+internal const val MIN_GESTURE_FINGER_DISTANCE = 200
 
 /**
  * viewer状态对象，用于记录compose组件状态
