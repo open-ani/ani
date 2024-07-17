@@ -3,8 +3,8 @@ package me.him188.ani.app.videoplayer.ui.progress
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,10 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProviderAtPosition
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -243,15 +242,11 @@ fun MediaProgressSlider(
         var previewTimeVisible by rememberSaveable { mutableStateOf(false) }
         var offsetX by rememberSaveable { mutableIntStateOf(0) }
         var previewTimeText by rememberSaveable { mutableStateOf("") }
-        
+
         val hoverInteraction = remember { MutableInteractionSource() }
-        LaunchedEffect(true) {
-            hoverInteraction.interactions.collect {
-                when (it) {
-                    is HoverInteraction.Enter -> previewTimeVisible = true
-                    is HoverInteraction.Exit -> previewTimeVisible = false
-                }
-            }
+        val isHoveredAsState = hoverInteraction.collectIsHoveredAsState()
+        LaunchedEffect(isHoveredAsState.value) {
+            previewTimeVisible = isHoveredAsState.value
         }
         val previewTimeTextBox = @Composable {
             Box(
@@ -262,14 +257,19 @@ fun MediaProgressSlider(
                 Text(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     text = previewTimeText,
-                    style = TextStyle(color = previewTimeTextColor),
+                    color = previewTimeTextColor,
                 )
             }
         }
         if (previewTimeVisible) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
-                offset = IntOffset(offsetX, with(LocalDensity.current) { (-56).dp.roundToPx() }),
+                popupPositionProvider = PopupPositionProviderAtPosition(
+                    positionPx = Offset(0f, with(LocalDensity.current) { (-56).dp.roundToPx().toFloat() }),
+                    isRelativeToAnchor = true,
+                    offsetPx = Offset(offsetX.toFloat(), 0f),
+                    windowMarginPx = 0,
+                ),
             ) {
                 previewTimeTextBox()
             }
