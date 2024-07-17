@@ -36,14 +36,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import me.him188.ani.app.tools.formatDateTime
+import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
-import me.him188.ani.utils.logging.logger
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-
-val logger = logger<EpisodeCommentViewModel>()
 
 @Composable
 fun EpisodeCommentColumn(
@@ -51,6 +49,7 @@ fun EpisodeCommentColumn(
     modifier: Modifier = Modifier,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
+    val imageViewer = LocalImageViewerHandler.current
 
     val freshLoaded by viewModel.freshLoaded.collectAsStateWithLifecycle()
     val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
@@ -93,6 +92,7 @@ fun EpisodeCommentColumn(
                         .fillMaxSize()
                         .padding(horizontal = 12.dp)
                         .padding(vertical = 12.dp),
+                    onClickImage = { imageViewer.viewImage(it) },
                 )
                 if (index != comments.lastIndex) {
                     HorizontalDivider(
@@ -122,7 +122,8 @@ private const val LOREM_IPSUM =
 fun Comment(
     comment: UiComment,
     modifier: Modifier = Modifier,
-    onClickUrl: (String) -> Unit = {}
+    onClickUrl: (String) -> Unit = { },
+    onClickImage: (String) -> Unit = { }
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     
@@ -158,6 +159,7 @@ fun Comment(
                     elements = comment.content.elements,
                     modifier = Modifier.fillMaxWidth(),
                     onClickUrl = onClickUrl,
+                    onClickImage = onClickImage,
                 )
             }
 
