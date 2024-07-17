@@ -338,6 +338,7 @@ fun MediaProgressSlider(
                 previewTimeTextWidth = placeable.width.coerceAtLeast(previewTimeTextWidth)
             }
             val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
+                .coerceIn(minimumValue = 0f, maximumValue = 1f)
             val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
             previewTimeText =
                 renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
