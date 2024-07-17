@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -268,7 +269,7 @@ fun MediaProgressSlider(
         if (previewTimeVisible) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
-                offset = IntOffset(offsetX, -80),
+                offset = IntOffset(offsetX, with(LocalDensity.current) { (-56).dp.roundToPx() }),
             ) {
                 previewTimeTextBox()
             }
