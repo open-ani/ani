@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -42,9 +43,11 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import dev.dirs.ProjectDirectories
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
@@ -92,18 +95,11 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import java.awt.Toolkit
 import java.io.File
 
 private val logger by lazy { logger("Ani") }
-
-
-val projectDirectories: ProjectDirectories by lazy {
-    ProjectDirectories.from(
-        "me",
-        "Him188",
-        if (AniBuildConfigDesktop.isDebug) "Ani-debug" else "Ani",
-    )
-}
+private inline val toplevelLogger get() = logger
 
 object AniDesktop {
     init {
@@ -111,6 +107,24 @@ object AniDesktop {
         // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
         // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
 //        System.setProperty("compose.interop.blending", "true")
+    }
+
+    private fun calculateWindowSize(desiredWidth: Dp, desiredHeight: Dp): DpSize {
+        // Get screen dimensions
+        val screenSize = Toolkit.getDefaultToolkit().screenSize
+        val screenWidth = screenSize.width
+        val screenHeight = screenSize.height
+
+        // Convert screen dimensions to dp
+        val screenResolution = Toolkit.getDefaultToolkit().screenResolution.toFloat()
+        val screenWidthDp = (screenWidth / screenResolution * 72).dp
+        val screenHeightDp = (screenHeight / screenResolution * 72).dp
+
+        // Calculate the final window size
+        val windowWidth = if (desiredWidth > screenWidthDp) screenWidthDp else desiredWidth
+        val windowHeight = if (desiredHeight > screenHeightDp) screenHeightDp else desiredHeight
+
+        return DpSize(windowWidth, windowHeight)
     }
 
     @JvmStatic
@@ -126,8 +140,9 @@ object AniDesktop {
             logger.info { "Debug mode enabled" }
         }
 
+        // Get the screen size as a Dimension object
         val windowState = WindowState(
-            size = DpSize(900.dp * 1.4f, 900.dp),
+            size = calculateWindowSize(1301.dp, 855.dp),
             position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
@@ -160,7 +175,12 @@ object AniDesktop {
                         DefaultTorrentManager(
                             coroutineScope.coroutineContext,
                             saveDir = {
-                                File(projectDirectories.cacheDir).resolve("torrent-data").resolve(it.id)
+                                val saveDir = runBlocking {
+                                    get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir
+                                        ?.let(::File)
+                                } ?: projectDirectories.torrentCacheDir
+                                toplevelLogger.info { "TorrentManager saveDir: $saveDir" }
+                                saveDir.resolve(it.id)
                             },
                         )
                     }
