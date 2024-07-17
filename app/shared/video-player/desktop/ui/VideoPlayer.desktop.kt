@@ -323,12 +323,12 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                         logger.error { "Invalid subtitle track id: ${track.id}" }
                         return@collect
                     }
-                    val count = player.subpictures().trackCount()
-                    if (id > count) {
-                        logger.error { "Invalid subtitle track id: $id, count: $count" }
+                    val subTrackIds = player.subpictures().trackDescriptions().map { it.id() }
+                    logger.info { "All ids: $subTrackIds" }
+                    if (!subTrackIds.contains(id)) {
+                        logger.error { "Invalid subtitle track id: $id" }
                         return@collect
                     }
-                    logger.info { "All ids: ${player.subpictures().trackDescriptions().map { it.id() }}" }
                     player.subpictures().setTrack(id)
                     logger.info { "Set subtitle track to $id (${track.labels.firstOrNull()})" }
                 } catch (e: Throwable) {
