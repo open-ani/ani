@@ -60,6 +60,14 @@ kotlin {
         api(compose.runtime)
         implementation(compose.components.resources)
     }
+
+    sourceSets.androidMain.dependencies {
+        api(libs.kotlinx.coroutines.android)
+
+        api(libs.androidx.compose.ui.tooling.preview)
+        api(libs.androidx.compose.material3)
+    }
+    
 }
 
 // compose bug

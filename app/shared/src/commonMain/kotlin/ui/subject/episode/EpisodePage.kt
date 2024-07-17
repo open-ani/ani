@@ -51,6 +51,8 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.ImageViewer
+import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
@@ -58,6 +60,7 @@ import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
@@ -127,6 +130,10 @@ private fun EpisodeSceneContent(
         vm.isFullscreen = false
     }
 
+    // image viewer
+    val imageViewer = rememberImageViewerHandler()
+    BackHandler(enabled = imageViewer.viewing.value) { imageViewer.clear() }
+
     ScreenOnEffect()
 
     AutoPauseEffect(vm)
@@ -138,11 +145,14 @@ private fun EpisodeSceneContent(
         val isVeryWide by remember {
             derivedStateOf { layoutMode.deviceSize.width / layoutMode.deviceSize.height >= 1200f / 770 }
         }
-        when {
-            isVeryWide -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
-            layoutMode.showLandscapeUI -> EpisodeSceneContentTablet(vm, Modifier.fillMaxSize())
-            else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
+        CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
+            when {
+                isVeryWide -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
+                layoutMode.showLandscapeUI -> EpisodeSceneContentTablet(vm, Modifier.fillMaxSize())
+                else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
+            }
         }
+        ImageViewer(imageViewer) { imageViewer.clear() }
     }
 
     vm.videoSourceResolver.ComposeContent()

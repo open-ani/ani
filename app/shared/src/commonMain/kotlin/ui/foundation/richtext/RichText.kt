@@ -54,7 +54,8 @@ import kotlin.math.roundToInt
 fun RichText(
     elements: List<UIRichElement>,
     modifier: Modifier = Modifier,
-    onClickUrl: (String) -> Unit = { }
+    onClickUrl: (String) -> Unit = { },
+    onClickImage: (String) -> Unit = { }
 ) {
     if (elements.isEmpty()) return
 
@@ -62,13 +63,14 @@ fun RichText(
         modifier = modifier,
         horizontalAlignment = Alignment.Start,
     ) {
-        elements.toLayout(onClickUrl)
+        elements.toLayout(onClickUrl, onClickImage)
     }
 }
 
 @Composable
 fun List<UIRichElement>.toLayout(
-    onClickUrl: (String) -> Unit
+    onClickUrl: (String) -> Unit,
+    onClickImage: (String) -> Unit
 ) = forEach { e ->
     when (e) {
         is UIRichElement.AnnotatedText -> {
@@ -85,7 +87,7 @@ fun List<UIRichElement>.toLayout(
         is UIRichElement.Image -> RichTextDefaults.Image(
             element = e,
             modifier = Modifier,
-            onClick = { e.jumpUrl?.let(onClickUrl) },
+            onClick = { onClickImage(e.imageUrl) },
         )
 
         is UIRichElement.Quote -> RichTextDefaults.Quote(
@@ -361,7 +363,7 @@ object RichTextDefaults {
     fun Quote(
         elements: List<UIRichElement>,
         modifier: Modifier = Modifier,
-        onClickUrl: (String) -> Unit
+        onClickUrl: (String) -> Unit,
     ) {
         Surface(
             modifier = Modifier
@@ -373,7 +375,7 @@ object RichTextDefaults {
                 CompositionLocalProvider(
                     LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant,
                 ) {
-                    elements.toLayout(onClickUrl)
+                    elements.toLayout(onClickUrl, { })
                 }
             }
         }
