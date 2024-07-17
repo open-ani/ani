@@ -313,6 +313,7 @@ fun MediaProgressSlider(
                     //for android
                     .onPointerEventMultiplatform(PointerEventType.Press) {
                         previewTimeVisible = it.changes.first().pressed
+                        mousePosX = it.changes.first().position.x
                     }.onPointerEventMultiplatform(PointerEventType.Release) {
                         previewTimeVisible = it.changes.first().pressed
                     },
