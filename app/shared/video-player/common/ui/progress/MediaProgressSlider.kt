@@ -16,11 +16,11 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -246,18 +246,15 @@ fun MediaProgressSlider(
         }
 
         var mousePosX by rememberSaveable { mutableStateOf(0f) }
-        var previewTimeVisible by rememberSaveable { mutableStateOf(false) }
-        var previewTimeMillis by rememberSaveable { mutableLongStateOf(0) }
-        val previewTimeText by rememberSaveable {
+        var percent by rememberSaveable { mutableFloatStateOf(0f) }
+        val previewTimeText by remember {
             derivedStateOf {
+                val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
                 renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
             }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
-        val isHoveredAsState = hoverInteraction.collectIsHoveredAsState()
-        LaunchedEffect(isHoveredAsState.value) {
-            previewTimeVisible = isHoveredAsState.value
-        }
+        var isHoveredAsState by hoverInteraction.collectIsHoveredAsState() as MutableState 
         val previewTimeTextBox = @Composable {
             Box(
                 modifier = Modifier
@@ -272,7 +269,7 @@ fun MediaProgressSlider(
             }
         }
         val density = LocalDensity.current
-        if (previewTimeVisible) {
+        if (isHoveredAsState) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
                 popupPositionProvider = object : PopupPositionProvider {
@@ -301,17 +298,10 @@ fun MediaProgressSlider(
                         )
                         val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
 
-                        var x = tooltipArea.left + position.x
-                        var y = tooltipArea.top + position.y
-                        if (x + popupContentSize.width > windowSize.width) {
-                            x = windowSize.width - popupContentSize.width
-                        }
-                        if (y + popupContentSize.height > windowSize.height) {
-                            y = windowSize.height - popupContentSize.height
-                        }
-                        x = x.coerceAtLeast(0)
-                        y = y.coerceAtLeast(0)
-                        return IntOffset(x, y)
+                        return IntOffset(
+                            x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
+                            y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
+                        )
                     }
                 },
             ) {
@@ -353,15 +343,15 @@ fun MediaProgressSlider(
                 modifier = Modifier.fillMaxWidth().height(24.dp)
                     .hoverable(interactionSource = hoverInteraction)
                     .onPointerEventMultiplatform(PointerEventType.Move) {
-                        mousePosX = it.changes.first().position.x
+                        mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
                     }
-                    //for android
+                    // for android
                     .ifThen(Platform.currentPlatform.isMobile()) {
                         onPointerEventMultiplatform(PointerEventType.Press) {
-                            previewTimeVisible = it.changes.first().pressed
-                            mousePosX = it.changes.first().position.x
+                            isHoveredAsState = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
+                            mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
                         }.onPointerEventMultiplatform(PointerEventType.Release) {
-                            previewTimeVisible = it.changes.first().pressed
+                            isHoveredAsState = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
                         }
                     },
             )
@@ -379,14 +369,8 @@ fun MediaProgressSlider(
                 sliderWidth = placeable.width.coerceAtLeast(sliderWidth)
                 placeable
             }
-            var previewTimeTextWidth = 0
-            subcompose("previewTimeTextBox", previewTimeTextBox).forEach {
-                val placeable = it.measure(constraints)
-                previewTimeTextWidth = placeable.width.coerceAtLeast(previewTimeTextWidth)
-            }
-            val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
+            percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
                 .coerceIn(minimumValue = 0f, maximumValue = 1f)
-            previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
             layout(constraints.maxWidth, constraints.maxHeight) {
                 sliderPlaceables.forEach {
                     it.placeRelative(0, 0)
