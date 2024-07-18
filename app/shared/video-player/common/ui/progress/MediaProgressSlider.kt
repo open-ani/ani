@@ -16,7 +16,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -171,7 +170,7 @@ fun MediaProgressSlider(
     downloadingColor: Color = aniDarkColorTheme().onSurface.disabledWeaken(),
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
     stopColor: Color = aniDarkColorTheme().primary,
-    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface.copy(alpha = 0.3f),
+    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface.copy(alpha = 0.5f),
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
@@ -258,7 +257,13 @@ fun MediaProgressSlider(
             }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
-        var isHoveredAsState by hoverInteraction.collectIsHoveredAsState() as MutableState 
+        val isHovered by hoverInteraction.collectIsHoveredAsState() // works only for desktop
+        var isPressed by remember { mutableStateOf(false) }
+        val showPreviewTime by remember {
+            derivedStateOf {
+                isHovered || isPressed
+            }
+        }
         val previewTimeTextBox = @Composable {
             Box(
                 modifier = Modifier
@@ -307,7 +312,7 @@ fun MediaProgressSlider(
                 }
             },
         )
-        if (isHoveredAsState) {
+        if (showPreviewTime) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
                 popupPositionProvider = popupPositionProviderState,
@@ -359,10 +364,10 @@ fun MediaProgressSlider(
                 // for android
                 .ifThen(Platform.currentPlatform.isMobile()) {
                     onPointerEventMultiplatform(PointerEventType.Press) {
-                        isHoveredAsState = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
+                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
                         mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
                     }.onPointerEventMultiplatform(PointerEventType.Release) {
-                        isHoveredAsState = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
+                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
                     }
                 },
         )
