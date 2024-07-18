@@ -36,9 +36,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupPositionProviderAtPosition
+import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -264,15 +268,49 @@ fun MediaProgressSlider(
                 )
             }
         }
+        val density = LocalDensity.current
         if (previewTimeVisible) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
-                popupPositionProvider = PopupPositionProviderAtPosition(
-                    positionPx = Offset(0f, with(LocalDensity.current) { (-56).dp.roundToPx().toFloat() }),
-                    isRelativeToAnchor = true,
-                    offsetPx = Offset(offsetX.toFloat(), 0f),
-                    windowMarginPx = 0,
-                ),
+                popupPositionProvider = object : PopupPositionProvider {
+                    override fun calculatePosition(
+                        anchorBounds: IntRect,
+                        windowSize: IntSize,
+                        layoutDirection: LayoutDirection,
+                        popupContentSize: IntSize
+                    ): IntOffset {
+                        val anchor = IntRect(
+                            offset = IntOffset(
+                                mousePosX.roundToInt(),
+                                with(density) { (-56).dp.roundToPx() },
+                            ) + anchorBounds.topLeft,
+                            size = IntSize.Zero,
+                        )
+                        val tooltipArea = IntRect(
+                            IntOffset(
+                                anchor.left - popupContentSize.width,
+                                anchor.top - popupContentSize.height,
+                            ),
+                            IntSize(
+                                popupContentSize.width * 2,
+                                popupContentSize.height * 2,
+                            ),
+                        )
+                        val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
+
+                        var x = tooltipArea.left + position.x
+                        var y = tooltipArea.top + position.y
+                        if (x + popupContentSize.width > windowSize.width) {
+                            x = windowSize.width - popupContentSize.width
+                        }
+                        if (y + popupContentSize.height > windowSize.height) {
+                            y = windowSize.height - popupContentSize.height
+                        }
+                        x = x.coerceAtLeast(0)
+                        y = y.coerceAtLeast(0)
+                        return IntOffset(x, y)
+                    }
+                },
             ) {
                 previewTimeTextBox()
             }
