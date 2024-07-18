@@ -42,8 +42,11 @@ import androidx.compose.ui.window.PopupPositionProviderAtPosition
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.PlatformPopupProperties
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.disabledWeaken
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
@@ -312,11 +315,13 @@ fun MediaProgressSlider(
                         mousePosX = it.changes.first().position.x
                     }
                     //for android
-                    .onPointerEventMultiplatform(PointerEventType.Press) {
-                        previewTimeVisible = it.changes.first().pressed
-                        mousePosX = it.changes.first().position.x
-                    }.onPointerEventMultiplatform(PointerEventType.Release) {
-                        previewTimeVisible = it.changes.first().pressed
+                    .ifThen(Platform.currentPlatform.isMobile()) {
+                        onPointerEventMultiplatform(PointerEventType.Press) {
+                            previewTimeVisible = it.changes.first().pressed
+                            mousePosX = it.changes.first().position.x
+                        }.onPointerEventMultiplatform(PointerEventType.Release) {
+                            previewTimeVisible = it.changes.first().pressed
+                        }
                     },
             )
         }
