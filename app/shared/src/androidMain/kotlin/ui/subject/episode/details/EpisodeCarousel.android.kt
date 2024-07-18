@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.details
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,12 +22,15 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
+@Stable
 val TestEpisodes = buildList {
     repeat(12) { id ->
         add(
             EpisodeInfo(
                 id,
-                nameCn = "中文剧集名称 $id",
+                nameCn =
+                if (id.rem(2) == 0) "中文剧集名称中文剧集名称中文剧集名称中文剧集名称"
+                else "中文剧集名称",
                 name = "Episode Name $id",
                 sort = EpisodeSort((24 + id).toString()),
                 ep = EpisodeSort(id.toString()),
@@ -35,6 +39,7 @@ val TestEpisodes = buildList {
     }
 }
 
+@Stable
 val TestEpisodeCollections = TestEpisodes.map {
     EpisodeCollection(
         it,
@@ -47,6 +52,7 @@ val TestEpisodeCollections = TestEpisodes.map {
 }
 
 // Preview only
+@Stable
 val PreviewScope = CoroutineScope(
     CoroutineExceptionHandler { _, _ ->
     },

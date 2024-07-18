@@ -152,7 +152,7 @@ private fun PreviewPlayerStatisticsDanmakuState() {
 
 fun testPlayerStatisticsState(
     playingMedia: Media? = null,
-    playingFilename: String = "filename",
+    playingFilename: String = "filename-filename-filename-filename-filename-filename-filename.mkv",
     videoLoadingState: VideoLoadingState = VideoLoadingState.Initial,
     danmakuLoadingState: DanmakuLoadingState = DanmakuLoadingState.Idle,
 ) =

@@ -34,6 +34,7 @@ import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
@@ -350,12 +351,11 @@ private class EpisodeViewModelImpl(
 
     override val episodeDetailsState: EpisodeDetailsState = kotlin.run {
         EpisodeDetailsState(
-            episodePresentation = episodePresentationFlow.filterNotNull(),
-            subjectInfo = subjectInfo,
+            episodePresentation = episodePresentationFlow.filterNotNull().produceState(EpisodePresentation.Placeholder),
+            subjectInfo = subjectInfo.produceState(SubjectInfo.Empty),
             airingInfo = subjectInfo.map {
                 SubjectAiringInfo.computeFromSubjectInfo(it)
-            },
-            parentCoroutineContext = backgroundScope.coroutineContext,
+            }.produceState(SubjectAiringInfo.EmptyCompleted),
         )
     }
 

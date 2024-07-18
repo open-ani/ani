@@ -21,12 +21,12 @@ import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.UnfoldLess
 import androidx.compose.material.icons.rounded.UnfoldMore
+import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
@@ -119,11 +119,6 @@ fun DanmakuStatistics(
     val danmakuLoadingState by state.danmakuLoadingState.collectAsStateWithLifecycle()
 
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(
-            "弹幕统计",
-            style = MaterialTheme.typography.titleLarge,
-        )
-
         ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge, MaterialTheme.colorScheme.primary) {
             when (danmakuLoadingState) {
                 is DanmakuLoadingState.Failed -> Failed { }
@@ -165,7 +160,7 @@ fun DanmakuStatistics(
                                 "${loadingState.matchInfos.size} 个弹幕源, 共计 ${loadingState.matchInfos.sumOf { it.count }} 条弹幕"
                             },
                             Modifier.weight(1f),
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.titleMedium,
                         )
 
                         IconButton({ isShowDetails = !isShowDetails }) {
@@ -264,7 +259,7 @@ fun VideoStatistics(
 }
 
 @Stable
-private fun Media.renderProperties(): String {
+internal fun Media.renderProperties(): String {
     val properties = this.properties
     return listOfNotNull(
         properties.resolution,
@@ -332,10 +327,9 @@ private fun DanmakuMatchInfoView(
 //            }
 //        }
 //    }
-    OutlinedCard(
+    Card(
 //        { showDialog = true },
         modifier,
-        shape = MaterialTheme.shapes.medium,
     ) {
         Column(
             Modifier.padding(all = 16.dp),

@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
@@ -70,7 +73,7 @@ class EpisodeCarouselState(
     private val cacheStatus: (EpisodeCollection) -> EpisodeCacheStatus,
     val onSelect: (EpisodeCollection) -> Unit,
     val onChangeCollectionType: suspend (episode: EpisodeCollection, UnifiedCollectionType) -> Unit,
-    val lazyListState: LazyListState = LazyListState(),
+    internal val gridState: LazyGridState = LazyGridState(),
     backgroundScope: CoroutineScope,
 ) {
     val episodes by episodes
@@ -79,15 +82,15 @@ class EpisodeCarouselState(
     val size get() = episodes.size
 
     suspend fun animateScrollToItem(index: Int) {
-        lazyListState.animateScrollToItem(
+        gridState.animateScrollToItem(
             index,
             scrollOffset = -calculateItemSize(),
         )
     }
 
     private fun calculateItemSize(): Int {
-        val info = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull() ?: return 0
-        return info.size.times(0.2f).toInt()
+        val info = gridState.layoutInfo.visibleItemsInfo.firstOrNull() ?: return 0
+        return info.size.height.times(0.2f).toInt()
     }
 
     @Stable
@@ -130,11 +133,13 @@ fun EpisodeCarousel(
         )
     }
 
-    LazyRow(
+    LazyVerticalGrid(
+        GridCells.Adaptive(240.dp),
         modifier,
-        state = state.lazyListState,
+        state = state.gridState,
         contentPadding = contentPadding,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         items(state.size) { index ->
             val episode = state.getEpisode(index)
@@ -226,7 +231,10 @@ fun EpisodeCarouselItem(
                                     if (showOriginalName) episode.name else episode.nameCn,
                                     episode.sort,
                                 ),
-                                Modifier.clickable(onClick = { showOriginalName = !showOriginalName }).weight(1f),
+                                Modifier.basicMarquee().clickable(onClick = { showOriginalName = !showOriginalName })
+                                    .weight(1f),
+                                softWrap = false,
+                                maxLines = 1,
                             )
                         }
                     }
