@@ -269,41 +269,44 @@ fun MediaProgressSlider(
             }
         }
         val density = LocalDensity.current
+        val popupPositionProviderState by rememberUpdatedState(
+            object : PopupPositionProvider {
+                override fun calculatePosition(
+                    anchorBounds: IntRect,
+                    windowSize: IntSize,
+                    layoutDirection: LayoutDirection,
+                    popupContentSize: IntSize
+                ): IntOffset {
+                    val anchor = IntRect(
+                        offset = IntOffset(
+                            mousePosX.roundToInt(),
+                            with(density) { -(16.dp.roundToPx() + popupContentSize.height) },
+                        ) + anchorBounds.topLeft,
+                        size = IntSize.Zero,
+                    )
+                    val tooltipArea = IntRect(
+                        IntOffset(
+                            anchor.left - popupContentSize.width,
+                            anchor.top - popupContentSize.height,
+                        ),
+                        IntSize(
+                            popupContentSize.width * 2,
+                            popupContentSize.height * 2,
+                        ),
+                    )
+                    val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
+
+                    return IntOffset(
+                        x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
+                        y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
+                    )
+                }
+            },
+        )
         if (isHoveredAsState) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
-                popupPositionProvider = object : PopupPositionProvider {
-                    override fun calculatePosition(
-                        anchorBounds: IntRect,
-                        windowSize: IntSize,
-                        layoutDirection: LayoutDirection,
-                        popupContentSize: IntSize
-                    ): IntOffset {
-                        val anchor = IntRect(
-                            offset = IntOffset(
-                                mousePosX.roundToInt(),
-                                with(density) { (-56).dp.roundToPx() },
-                            ) + anchorBounds.topLeft,
-                            size = IntSize.Zero,
-                        )
-                        val tooltipArea = IntRect(
-                            IntOffset(
-                                anchor.left - popupContentSize.width,
-                                anchor.top - popupContentSize.height,
-                            ),
-                            IntSize(
-                                popupContentSize.width * 2,
-                                popupContentSize.height * 2,
-                            ),
-                        )
-                        val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
-
-                        return IntOffset(
-                            x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
-                            y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
-                        )
-                    }
-                },
+                popupPositionProvider = popupPositionProviderState,
             ) {
                 previewTimeTextBox()
             }
