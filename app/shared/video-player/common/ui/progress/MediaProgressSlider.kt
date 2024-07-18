@@ -20,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -247,7 +246,6 @@ fun MediaProgressSlider(
 
         var mousePosX by rememberSaveable { mutableStateOf(0f) }
         var previewTimeVisible by rememberSaveable { mutableStateOf(false) }
-        var offsetX by rememberSaveable { mutableIntStateOf(0) }
         var previewTimeText by rememberSaveable { mutableStateOf("") }
 
         val hoverInteraction = remember { MutableInteractionSource() }
@@ -386,7 +384,6 @@ fun MediaProgressSlider(
             val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
             previewTimeText =
                 renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
-            offsetX = (mousePosX - previewTimeTextWidth / 2).roundToInt()
             layout(constraints.maxWidth, constraints.maxHeight) {
                 sliderPlaceables.forEach {
                     it.placeRelative(0, 0)
