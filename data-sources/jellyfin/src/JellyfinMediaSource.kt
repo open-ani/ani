@@ -8,7 +8,7 @@ import me.him188.ani.datasources.api.source.MediaSourceParameters
 import me.him188.ani.datasources.api.source.MediaSourceParametersBuilder
 import me.him188.ani.datasources.api.source.get
 
-class JellyfinMediaSource(config: MediaSourceConfig) : BaseMediaSource(config) {
+class JellyfinMediaSource(config: MediaSourceConfig) : BaseJellyfinMediaSource(config) {
     companion object {
         const val ID = "jellyfin"
     }

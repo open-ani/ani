@@ -34,7 +34,7 @@ import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 
-abstract class BaseMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
+abstract class BaseJellyfinMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     abstract val baseUrl: String
     abstract val userId: String
     abstract val apiKey: String
