@@ -36,6 +36,7 @@ import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.ikaros.IkarosMediaSource
+import me.him188.ani.datasources.jellyfin.EmbyMediaSource
 import me.him188.ani.datasources.jellyfin.JellyfinMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
@@ -50,8 +51,6 @@ import org.jetbrains.compose.resources.painterResource
  *     ./gradlew build
  */
 
-
-
 @Stable
 fun renderMediaSource(
     id: String
@@ -65,6 +64,7 @@ fun renderMediaSource(
     MxdongmanMediaSource.ID -> "MX 动漫"
     NtdmMediaSource.ID -> "NT动漫"
     JellyfinMediaSource.ID -> "Jellyfin"
+    EmbyMediaSource.ID -> "Emby"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -102,6 +102,7 @@ fun getMediaSourceIconResource(
         MxdongmanMediaSource.ID -> painterResource(Res.drawable.mxdongman)
         NtdmMediaSource.ID -> painterResource(Res.drawable.ntdm)
         JellyfinMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Jellyfin)
+        EmbyMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Emby)
         else -> null
     }
 }
