@@ -264,19 +264,6 @@ fun MediaProgressSlider(
                 isHovered || isPressed
             }
         }
-        val previewTimeTextBox = @Composable {
-            Box(
-                modifier = Modifier
-                    .clip(shape = CircleShape)
-                    .background(previewTimeBackgroundColor),
-            ) {
-                Text(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    text = previewTimeText,
-                    color = previewTimeTextColor,
-                )
-            }
-        }
         val density = LocalDensity.current
         val popupPositionProviderState by rememberUpdatedState(
             object : PopupPositionProvider {
@@ -317,7 +304,17 @@ fun MediaProgressSlider(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
                 popupPositionProvider = popupPositionProviderState,
             ) {
-                previewTimeTextBox()
+                Box(
+                    modifier = Modifier
+                        .clip(shape = CircleShape)
+                        .background(previewTimeBackgroundColor),
+                ) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        text = previewTimeText,
+                        color = previewTimeTextColor,
+                    )
+                }
             }
         }
         // draw thumb
