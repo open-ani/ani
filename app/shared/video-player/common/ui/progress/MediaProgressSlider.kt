@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -246,8 +247,12 @@ fun MediaProgressSlider(
 
         var mousePosX by rememberSaveable { mutableStateOf(0f) }
         var previewTimeVisible by rememberSaveable { mutableStateOf(false) }
-        var previewTimeText by rememberSaveable { mutableStateOf("") }
-
+        var previewTimeMillis by rememberSaveable { mutableLongStateOf(0) }
+        val previewTimeText by rememberSaveable {
+            derivedStateOf {
+                renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+            }
+        }
         val hoverInteraction = remember { MutableInteractionSource() }
         val isHoveredAsState = hoverInteraction.collectIsHoveredAsState()
         LaunchedEffect(isHoveredAsState.value) {
@@ -381,9 +386,7 @@ fun MediaProgressSlider(
             }
             val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
                 .coerceIn(minimumValue = 0f, maximumValue = 1f)
-            val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
-            previewTimeText =
-                renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+            previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
             layout(constraints.maxWidth, constraints.maxHeight) {
                 sliderPlaceables.forEach {
                     it.placeRelative(0, 0)
