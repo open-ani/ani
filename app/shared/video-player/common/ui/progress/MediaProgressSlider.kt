@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -264,7 +263,6 @@ fun MediaProgressSlider(
                 isHovered || isPressed
             }
         }
-        val density = LocalDensity.current
         val popupPositionProviderState by rememberUpdatedState(
             object : PopupPositionProvider {
                 override fun calculatePosition(
@@ -276,7 +274,7 @@ fun MediaProgressSlider(
                     val anchor = IntRect(
                         offset = IntOffset(
                             mousePosX.roundToInt(),
-                            with(density) { -(16.dp.roundToPx() + popupContentSize.height) },
+                            -popupContentSize.height,
                         ) + anchorBounds.topLeft,
                         size = IntSize.Zero,
                     )
