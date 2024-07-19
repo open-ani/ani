@@ -90,8 +90,8 @@ fun PlayingEpisodeItem(
                         ProvideContentColor(MaterialTheme.colorScheme.primary) {
                             PlayingIcon()
                         }
+                        episodeSort()
                         SelectionContainer {
-                            episodeSort()
                             title()
                         }
                     }

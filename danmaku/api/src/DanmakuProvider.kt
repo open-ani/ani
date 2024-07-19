@@ -42,9 +42,9 @@ class DanmakuSearchRequest(
     val episodeEp: EpisodeSort?,
     val episodeName: String,
 
-    val filename: String,
+    val filename: String?,
     val fileHash: String?,
-    val fileSize: Long,
+    val fileSize: Long?,
     val videoDuration: Duration,
 )
 

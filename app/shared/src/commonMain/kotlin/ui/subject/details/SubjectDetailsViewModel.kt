@@ -87,7 +87,7 @@ class SubjectDetailsViewModel(
                 request,
             )
         },
-        backgroundScope.coroutineContext,
+        backgroundScope,
     )
 
     fun browseSubjectBangumi(context: ContextMP) {

@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
@@ -33,12 +33,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.type
@@ -57,17 +59,18 @@ import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeIte
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItemDefaults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
-import me.him188.ani.app.ui.subject.episode.statistics.DanmakuStatistics
-import me.him188.ani.app.ui.subject.episode.statistics.PlayerStatisticsState
+import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
+import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoGrid
+import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRow
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.statistics.renderProperties
+import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.datasources.api.unwrapCached
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Stable
 class EpisodeDetailsState(
@@ -87,6 +90,8 @@ class EpisodeDetailsState(
 
 /**
  * 番剧详情内容, 包含条目的基本信息, 选集, 评分.
+ *
+ * has inner top padding 8.dp
  */
 @Composable
 fun EpisodeDetails(
@@ -94,11 +99,12 @@ fun EpisodeDetails(
     episodeCarouselState: EpisodeCarouselState,
     editableRatingState: EditableRatingState,
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
-    playerStatisticsState: PlayerStatisticsState,
+    danmakuStatistics: DanmakuStatistics,
+    videoStatistics: VideoStatistics,
     mediaSelectorPresentation: MediaSelectorPresentation,
     mediaSourceResultsPresentation: MediaSourceResultsPresentation,
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 16.dp,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
 ) {
     var showSubjectDetails by rememberSaveable {
         mutableStateOf(false)
@@ -117,6 +123,8 @@ fun EpisodeDetails(
         }
     }
 
+    var expandDanmakuStatistics by rememberSaveable { mutableStateOf(false) }
+
     EpisodeDetailsScaffold(
         subjectTitle = { Text(state.subjectTitle) },
         airingStatus = {
@@ -131,11 +139,10 @@ fun EpisodeDetails(
         subjectCollectionActionButton = {
             EditableSubjectCollectionTypeIconButton(editableSubjectCollectionTypeState)
         },
-        exposedEpisodeItem = { contentPadding ->
-            val playingMedia by playerStatisticsState.playingMedia.collectAsStateWithLifecycle(null)
+        exposedEpisodeItem = { innerPadding ->
             val originalMedia by remember {
                 derivedStateOf {
-                    playingMedia?.unwrapCached() // 显示原始来源
+                    videoStatistics.playingMedia?.unwrapCached() // 显示原始来源
                 }
             }
             val mediaSelected by remember {
@@ -169,10 +176,9 @@ fun EpisodeDetails(
                         SelectionContainer { Text(mediaPropertiesText ?: "") }
                     },
                     filename = {
-                        val filename by playerStatisticsState.playingFilename.collectAsStateWithLifecycle(null)
-                        filename?.let {
+                        videoStatistics.playingFilename?.let {
                             SelectionContainer {
-                                Text(filename ?: "", maxLines = 3, overflow = TextOverflow.Ellipsis)
+                                Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     },
@@ -180,7 +186,7 @@ fun EpisodeDetails(
                         var showMediaSelector by rememberSaveable { mutableStateOf(false) }
                         PlayingEpisodeItemDefaults.MediaSource(
                             media = originalMedia,
-                            isLoading = playerStatisticsState.mediaSourceLoading,
+                            isLoading = videoStatistics.mediaSourceLoading,
                             onClick = { showMediaSelector = !showMediaSelector },
                         )
                         if (showMediaSelector) {
@@ -197,29 +203,41 @@ fun EpisodeDetails(
                     actions = {
                         val navigator = LocalNavigator.current
                         PlayingEpisodeItemDefaults.ActionCache({ navigator.navigateSubjectCaches(state.subjectId) })
-                        PlayingEpisodeItemDefaults.ActionShare(playingMedia)
+                        PlayingEpisodeItemDefaults.ActionShare(videoStatistics.playingMedia)
                     },
-                    modifier = Modifier.padding(contentPadding).animateContentSize(),
+                    modifier = Modifier.padding(innerPadding).animateContentSize(),
                 )
             }
         },
-        episodeCarousel = { contentPadding ->
+        episodeCarousel = { innerPadding ->
             EpisodeCarousel(
                 episodeCarouselState,
-                contentPadding = contentPadding,
+                contentPadding = innerPadding,
             )
         },
-        videoStatistics = {
-            VideoStatistics(playerStatisticsState)
+        danmakuStatisticsSummary = {
+            DanmakuMatchInfoSummaryRow(
+                danmakuStatistics.danmakuLoadingState,
+                expanded = expandDanmakuStatistics,
+                { expandDanmakuStatistics = !expandDanmakuStatistics },
+            )
         },
-        danmakuStatistics = {
-            DanmakuStatistics(playerStatisticsState)
+        danmakuStatistics = { innerPadding ->
+            val danmakuLoadingState = danmakuStatistics.danmakuLoadingState
+            if (danmakuLoadingState is DanmakuLoadingState.Success) {
+                DanmakuMatchInfoGrid(
+                    danmakuLoadingState.matchInfos,
+                    expanded = expandDanmakuStatistics,
+                    Modifier.padding(innerPadding),
+                    itemSpacing = 16.dp,
+                )
+            }
         },
         onExpandSubject = {
             showSubjectDetails = true
         },
         modifier = modifier,
-        horizontalPadding = horizontalPadding,
+        contentPadding = contentPadding,
     )
 }
 
@@ -248,43 +266,56 @@ private fun SectionTitle(
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
-    airingStatus: @Composable (FlowRowScope.() -> Unit),
+    airingStatus: @Composable FlowRowScope.() -> Unit,
     subjectCollectionActionButton: @Composable () -> Unit,
-    exposedEpisodeItem: @Composable (PaddingValues) -> Unit,
-    episodeCarousel: @Composable (PaddingValues) -> Unit,
-    videoStatistics: @Composable () -> Unit,
-    danmakuStatistics: @Composable () -> Unit,
+    exposedEpisodeItem: @Composable (contentPadding: PaddingValues) -> Unit,
+    episodeCarousel: @Composable (contentPadding: PaddingValues) -> Unit,
+    danmakuStatisticsSummary: @Composable () -> Unit,
+    danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,
     onExpandSubject: () -> Unit,
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 16.dp,
+    contentPadding: PaddingValues = PaddingValues(all = 16.dp),
 ) {
+    val contentPaddingState by rememberUpdatedState(contentPadding)
+    val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)
+    val horizontalPaddingValues by remember {
+        derivedStateOf {
+            PaddingValues(
+                start = contentPaddingState.calculateStartPadding(layoutDirection),
+                end = contentPaddingState.calculateStartPadding(layoutDirection),
+            )
+        }
+    }
+    val topPadding by remember {
+        derivedStateOf {
+            (contentPaddingState.calculateTopPadding() - 8.dp).coerceAtLeast(0.dp)
+        }
+    }
+    val bottomPadding by remember {
+        derivedStateOf {
+            contentPaddingState.calculateBottomPadding()
+        }
+    }
+
     Column(modifier) {
         // header
-        Box {
-            Column(
-                Modifier.padding(horizontal = horizontalPadding),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                Row(Modifier.clickable(onClick = onExpandSubject)) {
-                    Column(
-                        Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterVertically),
-                        ) {
-                            ProvideTextStyle(MaterialTheme.typography.titleLarge) {
-                                SelectionContainer { subjectTitle() }
-                            }
-                        }
+        Column(
+            Modifier.padding(top = topPadding, bottom = bottomPadding).padding(horizontalPaddingValues),
+        ) {
+            Row(Modifier.clickable(onClick = onExpandSubject)) {
+                Box(
+                    Modifier.padding(top = 8.dp) // icon button semantics padding
+                        .weight(1f),
+                ) {
+                    ProvideTextStyle(MaterialTheme.typography.titleLarge) {
+                        SelectionContainer { subjectTitle() }
                     }
+                }
 
-                    Column(Modifier.offset(y = (-8).dp).padding(start = 24.dp)) {
-                        Row {
-                            IconButton(onExpandSubject) {
-                                Icon(Icons.Outlined.ExpandCircleDown, null)
-                            }
+                Column(Modifier.padding(start = 24.dp)) {
+                    Row {
+                        IconButton(onExpandSubject) {
+                            Icon(Icons.Outlined.ExpandCircleDown, null)
                         }
                     }
                 }
@@ -292,7 +323,7 @@ fun EpisodeDetailsScaffold(
         }
 
         SectionTitle(
-            Modifier.padding(top = 16.dp),
+            Modifier.padding(top = 16.dp, bottom = 8.dp),
             actions = {
                 var showCarousel by rememberSaveable { mutableStateOf(false) }
                 IconButton({ showCarousel = true }) {
@@ -315,11 +346,15 @@ fun EpisodeDetailsScaffold(
         }
 
         Row {
-            exposedEpisodeItem(PaddingValues(horizontal = horizontalPadding))
+            exposedEpisodeItem(horizontalPaddingValues)
         }
 
-        Row(Modifier.padding(top = 16.dp).padding(horizontal = horizontalPadding).fillMaxWidth()) {
-            danmakuStatistics()
+        SectionTitle(Modifier.padding(top = 16.dp, bottom = 8.dp)) {
+            danmakuStatisticsSummary()
+        }
+
+        Row(Modifier.fillMaxWidth()) {
+            danmakuStatistics(horizontalPaddingValues)
         }
     }
 }

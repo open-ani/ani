@@ -112,7 +112,7 @@ fun rememberTestEditableRatingState(): EditableRatingState {
             enableEdit = mutableStateOf(true),
             isCollected = { true },
             onRate = { _ -> },
-            backgroundScope.backgroundScope.coroutineContext,
+            backgroundScope.backgroundScope,
         )
     }
 }

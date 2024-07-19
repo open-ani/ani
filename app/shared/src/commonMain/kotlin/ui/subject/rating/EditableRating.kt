@@ -12,12 +12,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.foundation.BackgroundScope
-import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import kotlin.coroutines.CoroutineContext
 
 
 @Stable
@@ -30,8 +28,8 @@ class EditableRatingState(
      */
     private val isCollected: () -> Boolean,
     private val onRate: suspend (RateRequest) -> Unit,
-    parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+    backgroundScope: CoroutineScope,
+) {
     val ratingInfo by ratingInfo
     val selfRatingInfo by selfRatingInfo
     private val enableEdit by enableEdit

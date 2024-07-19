@@ -16,34 +16,62 @@ import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
-import me.him188.ani.app.ui.subject.episode.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
+import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.testPlayerStatisticsState
+import me.him188.ani.app.ui.subject.episode.video.MutableDanmakuStatistics
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetails() = ProvideCompositionLocalsForPreview {
-    val state = remember {
-        EpisodeDetailsState(
-            episodePresentation = mutableStateOf(
-                EpisodePresentation.Placeholder.copy(
-                    title = "一个剧集",
-                    sort = "01",
-                    isPlaceholder = false,
-                ),
+fun PreviewEpisodeDetailsLongTitle() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState(
+        remember {
+            SubjectInfo.Empty.copy(
+                nameCn = "中文条目名称啊中文条目名称中文条啊目名称中文条目名称中文条目名称中文",
+            )
+        },
+    )
+    PreviewEpisodeDetailsImpl(state)
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewEpisodeDetailsShortTitle() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState(
+        remember {
+            SubjectInfo.Empty.copy(
+                nameCn = "小市民系列",
+            )
+        },
+    )
+    PreviewEpisodeDetailsImpl(state)
+}
+
+@Composable
+private fun rememberTestEpisodeDetailsState(
+    subjectInfo: SubjectInfo = SubjectInfo.Empty.copy(
+        nameCn = "中文条目名称啊中文条目名称中文条啊目名称中文条目名称中文条目名称中文",
+    ),
+) = remember {
+    EpisodeDetailsState(
+        episodePresentation = mutableStateOf(
+            EpisodePresentation.Placeholder.copy(
+                title = "一个剧集",
+                sort = "01",
+                isPlaceholder = false,
             ),
-            subjectInfo = mutableStateOf(
-                SubjectInfo.Empty.copy(
-                    nameCn = "中文条目名称啊中文条目名称中文条啊目名称中文条目名称中文条目名称中文",
-                ),
-            ),
-            airingInfo = mutableStateOf(TestSubjectAiringInfo),
-        )
-    }
+        ),
+        subjectInfo = mutableStateOf(subjectInfo),
+        airingInfo = mutableStateOf(TestSubjectAiringInfo),
+    )
+}
+
+@Composable
+private fun PreviewEpisodeDetailsImpl(state: EpisodeDetailsState) {
     Scaffold {
         EpisodeDetails(
             state,
@@ -59,10 +87,8 @@ fun PreviewEpisodeDetails() = ProvideCompositionLocalsForPreview {
             },
             editableRatingState = rememberTestEditableRatingState(),
             editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
-            playerStatisticsState = remember {
-                testPlayerStatisticsState(
-                    playingMedia = TestMediaList.first(),
-                    videoLoadingState = VideoLoadingState.Succeed(isBt = true),
+            danmakuStatistics = remember {
+                MutableDanmakuStatistics().apply {
                     danmakuLoadingState = DanmakuLoadingState.Success(
                         listOf(
                             DanmakuMatchInfo(
@@ -74,13 +100,20 @@ fun PreviewEpisodeDetails() = ProvideCompositionLocalsForPreview {
                                 DanmakuMatchMethod.ExactId(123456, 222222),
                             ),
                         ),
-                    ),
+                    )
+                }
+            },
+            videoStatistics = remember {
+                testPlayerStatisticsState(
+                    playingMedia = TestMediaList.first(),
+                    playingFilename = "filename-filename-filename-filename-filename-filename-filename.mkv",
+                    videoLoadingState = VideoLoadingState.Succeed(isBt = true),
                 )
             },
             mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
             mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
             Modifier
-                .padding(vertical = 16.dp)
+                .padding(bottom = 16.dp, top = 8.dp)
                 .padding(it),
         )
     }
