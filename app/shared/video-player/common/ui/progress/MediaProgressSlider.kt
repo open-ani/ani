@@ -311,6 +311,7 @@ fun MediaProgressSlider(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         text = previewTimeText,
                         color = previewTimeTextColor,
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
             }
