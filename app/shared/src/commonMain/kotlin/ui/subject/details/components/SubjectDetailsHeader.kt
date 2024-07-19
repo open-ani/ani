@@ -44,7 +44,7 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.theme.weaken
-import me.him188.ani.app.ui.subject.collection.OnAirLabel
+import me.him188.ani.app.ui.subject.collection.AiringLabel
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -73,7 +73,7 @@ internal fun SubjectDetailsHeader(
             },
             seasonTags = {
                 OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
-                OnAirLabel(
+                AiringLabel(
                     airingInfo,
                     Modifier.align(Alignment.CenterVertically),
                     style = LocalTextStyle.current,
@@ -99,7 +99,7 @@ internal fun SubjectDetailsHeader(
             },
             seasonTags = {
                 OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
-                OnAirLabel(
+                AiringLabel(
                     airingInfo,
                     Modifier.align(Alignment.CenterVertically),
                     style = LocalTextStyle.current,

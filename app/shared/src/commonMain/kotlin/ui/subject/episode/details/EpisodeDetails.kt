@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,9 +45,12 @@ import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.collection.AiringLabel
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeIconButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.collection.OnAirLabel
+import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
+import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.details.components.EpisodeWatchStatusButton
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItem
@@ -96,11 +100,28 @@ fun EpisodeDetails(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
+    var showSubjectDetails by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    if (state.subjectId != 0) {
+        val subjectDetailsViewModel =
+            rememberViewModel(keys = listOf(state.subjectId)) { SubjectDetailsViewModel(state.subjectId) }
+        if (showSubjectDetails) {
+            ModalBottomSheet({ showSubjectDetails = false }) {
+                SubjectDetailsScene(
+                    subjectDetailsViewModel,
+                    showTopBar = false,
+                )
+            }
+        }
+    }
+
     EpisodeDetailsScaffold(
         subjectTitle = { Text(state.subjectTitle) },
-        onAirLabel = {
+        airingStatus = {
 //            OutlinedTag { Text(renderSubjectSeason(state.airingInfo.airDate)) }
-            OnAirLabel(
+            AiringLabel(
                 state.airingInfo,
                 Modifier.align(Alignment.CenterVertically),
                 style = LocalTextStyle.current,
@@ -192,6 +213,9 @@ fun EpisodeDetails(
         danmakuStatistics = {
             DanmakuStatistics(playerStatisticsState)
         },
+        onExpandSubject = {
+            showSubjectDetails = true
+        },
         modifier = modifier,
         horizontalPadding = horizontalPadding,
     )
@@ -222,12 +246,13 @@ private fun SectionTitle(
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
-    onAirLabel: @Composable (FlowRowScope.() -> Unit),
+    airingStatus: @Composable (FlowRowScope.() -> Unit),
     subjectCollectionActionButton: @Composable () -> Unit,
     exposedEpisodeItem: @Composable (PaddingValues) -> Unit,
     episodeCarousel: @Composable (PaddingValues) -> Unit,
     videoStatistics: @Composable () -> Unit,
     danmakuStatistics: @Composable () -> Unit,
+    onExpandSubject: () -> Unit,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 16.dp,
 ) {
@@ -238,7 +263,7 @@ fun EpisodeDetailsScaffold(
                 Modifier.padding(horizontal = horizontalPadding),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Row {
+                Row(Modifier.clickable(onClick = onExpandSubject)) {
                     Column(
                         Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -251,28 +276,11 @@ fun EpisodeDetailsScaffold(
                                 SelectionContainer { subjectTitle() }
                             }
                         }
-
-//                        Row {
-//                            ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-//                                FlowRow(
-//                                    Modifier.weight(1f),
-//                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-//                                    verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-//                                ) {
-//                                    subjectSeasonTags()
-//                                }
-//                            }
-//
-//                            Box(Modifier.padding(start = 16.dp).align(Alignment.Bottom)) {
-//                                subjectRating()
-//                            }
-//                        }
                     }
 
                     Column(Modifier.offset(y = (-8).dp).padding(start = 24.dp)) {
                         Row {
-//                            subjectCollectionActionButton()
-                            IconButton({}) {
+                            IconButton(onExpandSubject) {
                                 Icon(Icons.Outlined.ExpandCircleDown, null)
                             }
                         }
@@ -300,25 +308,13 @@ fun EpisodeDetailsScaffold(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
             ) {
-                onAirLabel()
+                airingStatus()
             }
         }
 
         Row {
             exposedEpisodeItem(PaddingValues(horizontal = horizontalPadding))
         }
-
-//        SectionTitle(
-//            Modifier.padding(top = 16.dp),
-//        ) {
-//            Text("视频统计")
-//        }
-//
-//        Card(Modifier.padding(horizontal = horizontalPadding).fillMaxWidth()) {
-//            Column(Modifier.padding(16.dp)) {
-//                videoStatistics()
-//            }
-//        }
 
         Row(Modifier.padding(top = 16.dp).padding(horizontal = horizontalPadding).fillMaxWidth()) {
             danmakuStatistics()

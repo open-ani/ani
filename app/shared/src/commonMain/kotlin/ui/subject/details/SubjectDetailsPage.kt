@@ -77,6 +77,9 @@ import me.him188.ani.app.ui.subject.rating.EditableRating
 @Composable
 fun SubjectDetailsScene(
     vm: SubjectDetailsViewModel,
+    modifier: Modifier = Modifier,
+    showTopBar: Boolean = true,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
@@ -141,6 +144,7 @@ fun SubjectDetailsScene(
                 }
             }
         },
+        modifier, showTopBar, windowInsets,
     )
 }
 
@@ -167,6 +171,8 @@ fun SubjectDetailsPage(
     commentsTab: @Composable () -> Unit,
     discussionsTab: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    showTopBar: Boolean = true,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     val scope = rememberCoroutineScope()
     val indicatorState = remember(scope) { FastLinearProgressState(scope) }
@@ -182,31 +188,35 @@ fun SubjectDetailsPage(
 
     Scaffold(
         topBar = {
-            Box {
-                // 透明背景的, 总是显示
-                TopAppBar(
-                    title = {},
-                    navigationIcon = { TopAppBarGoBackButton() },
-                    actions = {
-                        IconButton(onClickOpenExternal) {
-                            Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                )
-
-                // 有背景, 仅在滚动一段距离后使用
-                AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+            if (showTopBar) {
+                Box {
+                    // 透明背景的, 总是显示
                     TopAppBar(
-                        title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        title = {},
                         navigationIcon = { TopAppBarGoBackButton() },
                         actions = {
                             IconButton(onClickOpenExternal) {
                                 Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(),
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                        windowInsets = windowInsets,
                     )
+
+                    // 有背景, 仅在滚动一段距离后使用
+                    AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                        TopAppBar(
+                            title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            navigationIcon = { TopAppBarGoBackButton() },
+                            actions = {
+                                IconButton(onClickOpenExternal) {
+                                    Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(),
+                            windowInsets = windowInsets,
+                        )
+                    }
                 }
             }
         },
@@ -215,7 +225,9 @@ fun SubjectDetailsPage(
     ) { scaffoldPadding ->
         FastLinearProgressIndicator(
             indicatorState,
-            Modifier.zIndex(2f).padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
+            Modifier.zIndex(2f)
+                .ifThen(!showTopBar) { padding(top = 4.dp) }
+                .padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
         )
 
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
@@ -237,7 +249,11 @@ fun SubjectDetailsPage(
                         )
 
                         // 标题和封面, 以及收藏数据, 可向上滑动
-                        Column(Modifier.padding(scaffoldPadding).connectedScrollTarget(connectedScrollState)) {
+                        Column(
+                            Modifier
+                                .padding(scaffoldPadding)
+                                .connectedScrollTarget(connectedScrollState),
+                        ) {
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
@@ -250,7 +266,10 @@ fun SubjectDetailsPage(
                                     }
                                 },
                                 rating = rating,
-                                Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp),
+                                Modifier.fillMaxWidth()
+                                    .ifThen(!showTopBar) { padding(top = 16.dp) }
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 16.dp),
                             )
                         }
                     }
