@@ -263,7 +263,7 @@ fun MediaProgressSlider(
                 isHovered || isPressed
             }
         }
-        val popupPositionProviderState by rememberUpdatedState(
+        val popupPositionProviderState = remember {
             object : PopupPositionProvider {
                 override fun calculatePosition(
                     anchorBounds: IntRect,
@@ -295,8 +295,8 @@ fun MediaProgressSlider(
                         y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
                     )
                 }
-            },
-        )
+            }
+        }
         if (showPreviewTime) {
             Popup(
                 properties = PlatformPopupProperties(usePlatformInsets = false),
