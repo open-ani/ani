@@ -71,7 +71,7 @@ private fun renderSecondsReserve(
  * @see renderSecondsReserve
  */
 @Stable
-private fun renderSeconds(current: Long, total: Long?): String {
+fun renderSeconds(current: Long, total: Long?): String {
     if (total == null) {
         return "00:${current.fixToString(2)} / 00:00"
     }
