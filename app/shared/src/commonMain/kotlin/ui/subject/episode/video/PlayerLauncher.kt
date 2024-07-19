@@ -44,6 +44,7 @@ class PlayerLauncher(
     private val videoSourceResolver: VideoSourceResolver,
     private val playerState: PlayerState,
     episodeInfo: Flow<EpisodeInfo?>,
+    mediaSourceLoading: Flow<Boolean>,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private companion object {
@@ -53,6 +54,7 @@ class PlayerLauncher(
     val playerStatistics: PlayerStatisticsState = PlayerStatisticsState(
         playingMedia = mediaSelector.selected,
         playingFilename = playerState.videoData.map { it?.filename },
+        mediaSourceLoading = mediaSourceLoading.produceState(true),
     )
 
     private val videoLoadingState get() = playerStatistics.videoLoadingState

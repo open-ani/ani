@@ -314,7 +314,9 @@ private class EpisodeViewModelImpl(
 
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
         mediaSelector, videoSourceResolver, playerState,
-        episodeInfo, backgroundScope.coroutineContext,
+        episodeInfo,
+        mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it },
+        backgroundScope.coroutineContext,
     )
 
     override val playerStatistics: PlayerStatisticsState get() = playerLauncher.playerStatistics

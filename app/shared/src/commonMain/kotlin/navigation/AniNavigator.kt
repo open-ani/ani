@@ -3,6 +3,7 @@ package me.him188.ani.app.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisallowComposableCalls
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -13,6 +14,7 @@ import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import org.koin.core.component.KoinComponent
+import org.koin.core.context.GlobalContext
 
 /**
  * Supports navigation to any page in the app.
@@ -85,6 +87,12 @@ private class AniNavigatorImpl : AniNavigator, KoinComponent {
  */
 val LocalNavigator = compositionLocalOf<AniNavigator> {
     error("Navigator not found")
+}
+
+// dummy
+object LocalBrowserNavigator {
+    @Stable
+    val current get() = GlobalContext.get().get<BrowserNavigator>()
 }
 
 @Composable

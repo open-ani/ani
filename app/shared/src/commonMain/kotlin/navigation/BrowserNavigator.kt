@@ -14,3 +14,14 @@ interface BrowserNavigator {
 
     fun openMagnetLink(context: Context, url: String)
 }
+
+object NoopBrowserNavigator : BrowserNavigator {
+    override fun openBrowser(context: Context, url: String) {
+    }
+
+    override fun openJoinGroup(context: Context) {
+    }
+
+    override fun openMagnetLink(context: Context, url: String) {
+    }
+}

@@ -17,6 +17,7 @@ import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubje
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.testPlayerStatisticsState
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
@@ -76,6 +77,8 @@ fun PreviewEpisodeDetails() = ProvideCompositionLocalsForPreview {
                     ),
                 )
             },
+            mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
+            mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
             Modifier
                 .padding(vertical = 16.dp)
                 .padding(it),

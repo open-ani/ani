@@ -53,11 +53,16 @@ internal val TestSubjectAiringInfo = SubjectAiringInfo.EmptyCompleted
 @Composable
 fun rememberTestEditableSubjectCollectionTypeState(): EditableSubjectCollectionTypeState {
     val backgroundScope = rememberBackgroundScope()
+    val selfCollectionType = remember {
+        mutableStateOf(UnifiedCollectionType.WISH)
+    }
     return remember {
         EditableSubjectCollectionTypeState(
-            mutableStateOf(UnifiedCollectionType.WISH),
+            selfCollectionType,
             hasAnyUnwatched = { false },
-            onSetSelfCollectionType = { },
+            onSetSelfCollectionType = {
+                selfCollectionType.value = it
+            },
             onSetAllEpisodesWatched = { },
             backgroundScope.backgroundScope.coroutineContext,
         )

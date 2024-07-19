@@ -64,10 +64,10 @@ import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
-import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
+import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.danmaku.protocol.DanmakuInfo
@@ -193,6 +193,8 @@ private fun EpisodeSceneTabletVeryWide(
                     vm.editableRatingState,
                     vm.editableSubjectCollectionTypeState,
                     vm.playerStatistics,
+                    vm.mediaSelectorPresentation,
+                    vm.mediaSourceResultsPresentation,
                     Modifier.padding(vertical = 16.dp),
                 )
 
@@ -255,6 +257,8 @@ private fun EpisodeSceneContentPhone(
                         vm.editableRatingState,
                         vm.editableSubjectCollectionTypeState,
                         vm.playerStatistics,
+                        vm.mediaSelectorPresentation,
+                        vm.mediaSourceResultsPresentation,
                         Modifier.fillMaxSize().padding(vertical = 16.dp),
                     )
 

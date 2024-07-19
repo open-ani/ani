@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.subject.episode.video.topbar
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 

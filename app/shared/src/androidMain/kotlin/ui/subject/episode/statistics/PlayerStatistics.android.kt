@@ -2,6 +2,8 @@ package me.him188.ani.app.ui.subject.episode.statistics
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -155,10 +157,12 @@ fun testPlayerStatisticsState(
     playingFilename: String = "filename-filename-filename-filename-filename-filename-filename.mkv",
     videoLoadingState: VideoLoadingState = VideoLoadingState.Initial,
     danmakuLoadingState: DanmakuLoadingState = DanmakuLoadingState.Idle,
+    mediaSourceLoading: State<Boolean> = mutableStateOf(false),
 ) =
     PlayerStatisticsState(
         playingMedia = flowOf(playingMedia),
         playingFilename = flowOf(playingFilename),
+        mediaSourceLoading = mediaSourceLoading,
     ).apply {
         this.videoLoadingState.value = videoLoadingState
         this.danmakuLoadingState.value = danmakuLoadingState

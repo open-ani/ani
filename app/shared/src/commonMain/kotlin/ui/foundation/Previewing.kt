@@ -36,7 +36,9 @@ import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.navigation.NoopBrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isInLandscapeMode
@@ -96,6 +98,7 @@ fun ProvideCompositionLocalsForPreview(
                             DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
                         }
                         single<NotifManager> { NoopNotifManager }
+                        single<BrowserNavigator> { NoopBrowserNavigator }
                         module()
                     },
                 )

@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +66,10 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 class PlayerStatisticsState(
     val playingMedia: Flow<Media?>,
     val playingFilename: Flow<String?>,
+    mediaSourceLoading: State<Boolean>,
 ) {
+    val mediaSourceLoading by mediaSourceLoading
+
     val videoLoadingState: MutableStateFlow<VideoLoadingState> = MutableStateFlow(VideoLoadingState.Initial)
 
     val danmakuLoadingState: MutableStateFlow<DanmakuLoadingState> = MutableStateFlow(DanmakuLoadingState.Idle)

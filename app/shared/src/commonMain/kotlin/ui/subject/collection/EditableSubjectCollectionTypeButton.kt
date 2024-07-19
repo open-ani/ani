@@ -29,6 +29,9 @@ class EditableSubjectCollectionTypeState(
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     val selfCollectionType by selfCollectionType
+    val isDone by derivedStateOf {
+        this.selfCollectionType == UnifiedCollectionType.DONE
+    }
 
     var showSetAllEpisodesDoneDialog by mutableStateOf(false)
 

@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.subject.episode.details
+package me.him188.ani.app.ui.subject.episode.video.topbar
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
