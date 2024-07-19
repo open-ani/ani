@@ -339,7 +339,9 @@ private fun DanmakuMatchInfoView(
             Modifier.padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(info.providerId, style = MaterialTheme.typography.titleMedium)
+            SelectionContainer {
+                Text(info.providerId, style = MaterialTheme.typography.titleMedium)
+            }
 
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                 Row(
@@ -373,8 +375,12 @@ private fun DanmakuMatchMethodView(
             is DanmakuMatchMethod.Exact -> {
                 ExactMatch()
                 if (showDetails) {
-                    Text(method.subjectTitle)
-                    Text(method.episodeTitle)
+                    SelectionContainer {
+                        Text(method.subjectTitle)
+                    }
+                    SelectionContainer {
+                        Text(method.episodeTitle)
+                    }
                 }
             }
 
@@ -389,8 +395,12 @@ private fun DanmakuMatchMethodView(
                     }
                 }
                 if (showDetails) {
-                    Text(method.subjectTitle)
-                    Text(method.episodeTitle)
+                    SelectionContainer {
+                        Text(method.subjectTitle)
+                    }
+                    SelectionContainer {
+                        Text(method.episodeTitle)
+                    }
                 }
             }
 
@@ -405,16 +415,24 @@ private fun DanmakuMatchMethodView(
                     }
                 }
                 if (showDetails) {
-                    Text(method.subjectTitle)
-                    Text(method.episodeTitle)
+                    SelectionContainer {
+                        Text(method.subjectTitle)
+                    }
+                    SelectionContainer {
+                        Text(method.episodeTitle)
+                    }
                 }
             }
 
             is DanmakuMatchMethod.ExactId -> {
                 ExactMatch()
                 if (showDetails) {
-                    Text(method.subjectId.toString())
-                    Text(method.episodeId.toString())
+                    SelectionContainer {
+                        Text(method.subjectId.toString())
+                    }
+                    SelectionContainer {
+                        Text(method.episodeId.toString())
+                    }
                 }
             }
 

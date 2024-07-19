@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.DisplaySettings
@@ -89,8 +90,10 @@ fun PlayingEpisodeItem(
                         ProvideContentColor(MaterialTheme.colorScheme.primary) {
                             PlayingIcon()
                         }
-                        episodeSort()
-                        title()
+                        SelectionContainer {
+                            episodeSort()
+                            title()
+                        }
                     }
                 }
                 Box(Modifier.padding(start = 12.dp)) {

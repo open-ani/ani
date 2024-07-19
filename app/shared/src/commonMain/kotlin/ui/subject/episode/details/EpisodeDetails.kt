@@ -166,12 +166,14 @@ fun EpisodeDetails(
                                 originalMedia?.renderProperties()
                             }
                         }
-                        Text(mediaPropertiesText ?: "")
+                        SelectionContainer { Text(mediaPropertiesText ?: "") }
                     },
                     filename = {
                         val filename by playerStatisticsState.playingFilename.collectAsStateWithLifecycle(null)
                         filename?.let {
-                            Text(filename ?: "请选择数据源", maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            SelectionContainer {
+                                Text(filename ?: "", maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            }
                         }
                     },
                     mediaSource = {
