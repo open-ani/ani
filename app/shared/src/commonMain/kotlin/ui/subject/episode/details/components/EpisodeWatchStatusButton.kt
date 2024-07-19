@@ -13,33 +13,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
-import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
 @Composable
 fun EpisodeWatchStatusButton(
-    state: EditableSubjectCollectionTypeState,
-    modifier: Modifier = Modifier,
-) {
-    EpisodeWatchStatusButton(
-        state.isDone,
-        onUnmark = {
-            state.setSelfCollectionType(UnifiedCollectionType.NOT_COLLECTED)
-        },
-        onMarkAsDone = {
-            state.setSelfCollectionType(UnifiedCollectionType.DONE)
-        },
-        modifier = modifier,
-    )
-}
-
-@Composable
-private fun EpisodeWatchStatusButton(
     isDone: Boolean,
     onUnmark: () -> Unit,
     onMarkAsDone: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Box(
         modifier,
@@ -49,6 +31,7 @@ private fun EpisodeWatchStatusButton(
             IconButton(
                 onClick = onUnmark,
                 Modifier.offset(x = 8.dp),
+                enabled = enabled,
             ) {
                 Icon(Icons.Outlined.TaskAlt, null)
             }
@@ -74,6 +57,7 @@ private fun EpisodeWatchStatusButton(
                 leadingIcon = {
                     Icon(Icons.Outlined.AddTask, null)
                 },
+                enabled = enabled,
             )
         }
     }

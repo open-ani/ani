@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.episode.displayName
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
@@ -59,6 +60,8 @@ import me.him188.ani.app.ui.subject.episode.statistics.renderProperties
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.datasources.api.unwrapCached
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
@@ -123,7 +126,18 @@ fun EpisodeDetails(
                 PlayingEpisodeItem(
                     episodeSort = { Text(episode.episodeInfo.sort.toString()) },
                     title = { Text(episode.episodeInfo.displayName) },
-                    watchStatus = { EpisodeWatchStatusButton(editableSubjectCollectionTypeState) },
+                    watchStatus = {
+                        EpisodeWatchStatusButton(
+                            episode.type.isDoneOrDropped(),
+                            onUnmark = {
+                                episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.NOT_COLLECTED)
+                            },
+                            onMarkAsDone = {
+                                episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.DONE)
+                            },
+                            enabled = !episodeCarouselState.isSettingCollectionType,
+                        )
+                    },
                     mediaSelected = mediaSelected,
                     mediaLabels = {
                         val mediaPropertiesText by remember {

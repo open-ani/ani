@@ -93,7 +93,7 @@ fun PlayingEpisodeItem(
                         title()
                     }
                 }
-                Row(Modifier.padding(start = 12.dp)) {
+                Box(Modifier.padding(start = 12.dp)) {
                     watchStatus()
                 }
             }

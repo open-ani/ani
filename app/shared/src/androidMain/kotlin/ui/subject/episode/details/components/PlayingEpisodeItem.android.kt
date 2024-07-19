@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -15,8 +16,17 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.cache.TestMediaList
-import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.episode.statistics.renderProperties
+
+@Composable
+fun TestEpisodeWatchStatusButton() {
+    var isDone by rememberSaveable { mutableStateOf(false) }
+    EpisodeWatchStatusButton(
+        isDone = isDone,
+        onUnmark = { isDone = false },
+        onMarkAsDone = { isDone = true },
+    )
+}
 
 @Composable
 @PreviewLightDark
@@ -25,7 +35,7 @@ fun PreviewPlayingEpisodeItem() = ProvideCompositionLocalsForPreview {
     PlayingEpisodeItem(
         episodeSort = { Text("01") },
         title = { Text("中文剧集名称") },
-        watchStatus = { EpisodeWatchStatusButton(rememberTestEditableSubjectCollectionTypeState()) },
+        watchStatus = { TestEpisodeWatchStatusButton() },
         mediaSelected = true,
         mediaLabels = { Text(media.renderProperties()) },
         filename = {
@@ -50,7 +60,7 @@ fun PreviewPlayingEpisodeItemNotSelected() = ProvideCompositionLocalsForPreview 
     PlayingEpisodeItem(
         episodeSort = { Text("01") },
         title = { Text("中文剧集名称") },
-        watchStatus = { EpisodeWatchStatusButton(rememberTestEditableSubjectCollectionTypeState()) },
+        watchStatus = { TestEpisodeWatchStatusButton() },
         mediaSelected = false,
         mediaLabels = { },
         filename = {
