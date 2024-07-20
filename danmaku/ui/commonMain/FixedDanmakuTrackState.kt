@@ -68,7 +68,7 @@ class FixedDanmakuTrackState(
         }
 
         val danmaku = channel.receiveCatching().getOrNull() ?: return
-        place(danmaku, frameTime)
+        place(danmaku, System.currentTimeMillis())
     }
 
     /**
