@@ -233,14 +233,19 @@ private fun EpisodeSceneContentPhone(
                 Tab(
                     selected = pagerState.currentPage == 0,
                     onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                    text = { Text("详情") },
+                    text = { Text("详情", softWrap = false) },
                 )
                 Tab(
                     selected = pagerState.currentPage == 1,
                     onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
                     text = {
                         val commentCount by commentViewModel.commentCount.collectAsState(0)
-                        Text(if (commentCount == 0) "评论" else "评论 $commentCount")
+                        val text by remember {
+                            derivedStateOf {
+                                if (commentCount == 0) "评论" else "评论 $commentCount"
+                            }
+                        }
+                        Text(text, softWrap = false)
                     },
                 )
             }
