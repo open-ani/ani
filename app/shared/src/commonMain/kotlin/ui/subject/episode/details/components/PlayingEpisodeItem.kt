@@ -101,17 +101,17 @@ fun PlayingEpisodeItem(
                 ProvideTextStyle(
                     MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        ProvideContentColor(MaterialTheme.colorScheme.primary) {
+                    ProvideContentColor(MaterialTheme.colorScheme.primary) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             playingIcon()
+                            episodeSort()
                         }
-                        episodeSort()
-                    }
-                    SelectionContainer {
-                        title()
+                        SelectionContainer {
+                            title()
+                        }
                     }
                 }
             }
