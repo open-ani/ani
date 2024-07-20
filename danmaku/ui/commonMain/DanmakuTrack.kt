@@ -28,8 +28,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextLayoutResult
@@ -58,7 +57,7 @@ class DanmakuState internal constructor(
     val offsetInsideTrack: Float = 0f, // positive
 ) {
     /**
-     * Layout width of the view in px, late-init by [onPlaced].
+     * Layout width of the view in px, late-init by [onSizeChanged].
      *
      * Can be `-1` if not yet initialized.
      */
@@ -68,10 +67,10 @@ class DanmakuState internal constructor(
     /**
      * Called when the danmaku is placed on the screen.
      */
-    internal fun onPlaced(
-        layoutCoordinates: LayoutCoordinates,
+    internal fun onSizeChanged(
+        size: IntSize,
     ) {
-        textWidth = layoutCoordinates.size.width
+        textWidth = size.width
     }
 }
 
@@ -389,8 +388,8 @@ fun FloatingDanmakuTrack(
     }
 
     BoxWithConstraints(
-        modifier.onPlaced {
-            trackState.trackSize = it.size
+        modifier.onSizeChanged {
+            trackState.trackSize = it
         },
     ) {
         Box(
@@ -452,8 +451,8 @@ private class DanmakuTrackScopeImpl(
                 .graphicsLayer {
                     translationX = danmaku.offsetInsideTrack
                 }
-                .onPlaced { layoutCoordinates ->
-                    danmaku.onPlaced(layoutCoordinates)
+                .onSizeChanged { size ->
+                    danmaku.onSizeChanged(size)
                 }
                 .wrapContentSize(),
         ) {

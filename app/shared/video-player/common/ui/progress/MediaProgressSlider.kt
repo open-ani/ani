@@ -33,7 +33,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -329,8 +329,8 @@ fun MediaProgressSlider(
                         thumbColor = MaterialTheme.colorScheme.primary,
                     ),
                     enabled = true,
-                    modifier = Modifier.onPlaced {
-                        thumbWidth = it.size.width
+                    modifier = Modifier.onSizeChanged {
+                        thumbWidth = it.width
                     },
                 )
             },
@@ -349,8 +349,8 @@ fun MediaProgressSlider(
                 state.finishPreview()
             },
             modifier = Modifier.fillMaxWidth().height(24.dp)
-                .onPlaced {
-                    sliderWidth = it.size.width
+                .onSizeChanged {
+                    sliderWidth = it.width
                 }
                 .hoverable(interactionSource = hoverInteraction)
                 .onPointerEventMultiplatform(PointerEventType.Move) {

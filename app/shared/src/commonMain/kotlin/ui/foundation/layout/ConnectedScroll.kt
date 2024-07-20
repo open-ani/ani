@@ -17,7 +17,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Velocity
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -141,7 +141,7 @@ fun Modifier.connectedScrollContainer(state: ConnectedScrollState): Modifier {
  * 将该 composable 的高度作为可滚动的高度.
  */
 fun Modifier.connectedScrollTarget(state: ConnectedScrollState): Modifier {
-    return onPlaced { state.scrollableHeight = it.size.height }
+    return onSizeChanged { state.scrollableHeight = it.height }
 }
 
 

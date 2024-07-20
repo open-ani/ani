@@ -19,14 +19,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -95,7 +90,6 @@ fun UserInfoRow(
                 Modifier,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                var iconHeight by remember { mutableStateOf(24.dp) }
 //                Icon(
 //                    Icons.Default.SimCard, null,
 //                    Modifier
@@ -106,9 +100,6 @@ fun UserInfoRow(
                 Text(
                     text = self?.username ?: "Loading...",
                     Modifier
-                        .onPlaced {
-                            iconHeight = density.run { it.size.height.toDp() }
-                        }
                         .placeholder(self?.username == null),
                     style = MaterialTheme.typography.labelLarge,
                     softWrap = false,
