@@ -8,7 +8,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -26,6 +28,12 @@ interface MonoTasker {
         start: CoroutineStart = CoroutineStart.DEFAULT,
         block: suspend CoroutineScope.() -> Unit
     )
+
+    fun <R> async(
+        context: CoroutineContext = EmptyCoroutineContext,
+        start: CoroutineStart = CoroutineStart.DEFAULT,
+        block: suspend CoroutineScope.() -> R,
+    ): Deferred<R>
 
     /**
      * 等待上一个任务完成后再执行
@@ -65,6 +73,24 @@ fun MonoTasker(
             }
         }
         _isRunning.value = true
+    }
+
+    override fun <R> async(
+        context: CoroutineContext,
+        start: CoroutineStart,
+        block: suspend CoroutineScope.() -> R
+    ): Deferred<R> {
+        job?.cancel()
+        val deferred = scope.async(context, start, block).apply {
+            invokeOnCompletion {
+                if (job === this) {
+                    _isRunning.value = false
+                }
+            }
+        }
+        job = deferred
+        _isRunning.value = true
+        return deferred
     }
 
     override fun launchNext(
