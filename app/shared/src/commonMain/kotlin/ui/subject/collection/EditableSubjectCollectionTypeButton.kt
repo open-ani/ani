@@ -1,16 +1,11 @@
 package me.him188.ani.app.ui.subject.collection
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.tools.MonoTasker
@@ -34,6 +29,7 @@ class EditableSubjectCollectionTypeState(
     }
 
     var showSetAllEpisodesDoneDialog by mutableStateOf(false)
+    var showDropdown by mutableStateOf(false)
 
     private val setSelfCollectionTypeTasker = MonoTasker(backgroundScope)
     val isSetSelfCollectionTypeWorking get() = setSelfCollectionTypeTasker.isRunning
@@ -79,9 +75,8 @@ fun EditableSubjectCollectionTypeButton(
 }
 
 @Composable
-fun EditableSubjectCollectionTypeIconButton(
+fun EditableSubjectCollectionTypeDialogsHost(
     state: EditableSubjectCollectionTypeState,
-    modifier: Modifier = Modifier,
 ) {
     // 同时设置所有剧集为看过
     if (state.showSetAllEpisodesDoneDialog) {
@@ -93,23 +88,5 @@ fun EditableSubjectCollectionTypeIconButton(
             },
         )
     }
-    val type by rememberUpdatedState(state.selfCollectionType)
-
-    val action by remember {
-        derivedStateOf {
-            SubjectCollectionActionsForCollect.find { it.type == type }
-                ?: SubjectCollectionActions.Collect
-        }
-    }
-    Box(modifier) {
-        var showDropdown by rememberSaveable { mutableStateOf(false) }
-        IconButton(
-            onClick = {
-                showDropdown = true
-            },
-            enabled = !state.isSetSelfCollectionTypeWorking,
-        ) {
-            action.icon()
-        }
-    }
 }
+

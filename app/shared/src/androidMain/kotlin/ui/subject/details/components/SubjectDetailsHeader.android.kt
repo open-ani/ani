@@ -51,10 +51,10 @@ internal const val TestCoverImage = "https://ui-avatars.com/api/?name=John+Doe"
 internal val TestSubjectAiringInfo = SubjectAiringInfo.EmptyCompleted
 
 @Composable
-fun rememberTestEditableSubjectCollectionTypeState(): EditableSubjectCollectionTypeState {
+fun rememberTestEditableSubjectCollectionTypeState(type: UnifiedCollectionType = UnifiedCollectionType.WISH): EditableSubjectCollectionTypeState {
     val backgroundScope = rememberBackgroundScope()
     val selfCollectionType = remember {
-        mutableStateOf(UnifiedCollectionType.WISH)
+        mutableStateOf(type)
     }
     return remember {
         EditableSubjectCollectionTypeState(

@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.TaskAlt
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,12 +49,12 @@ fun EpisodeWatchStatusButton(
 //                border = null,
 //            )
         } else {
-            AssistChip(
+            SuggestionChip(
                 onClick = onMarkAsDone,
                 label = {
                     Text("看过", softWrap = false)
                 },
-                leadingIcon = {
+                icon = {
                     Icon(Icons.Outlined.AddTask, null)
                 },
                 enabled = enabled,

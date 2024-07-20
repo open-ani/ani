@@ -48,10 +48,12 @@ import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.AiringLabel
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeIconButton
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeDialogsHost
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
@@ -140,6 +142,8 @@ fun EpisodeDetails(
         }
     }
 
+    EditableSubjectCollectionTypeDialogsHost(editableSubjectCollectionTypeState)
+
     EpisodeDetailsScaffold(
         subjectTitle = { Text(state.subjectTitle) },
         airingStatus = {
@@ -151,8 +155,24 @@ fun EpisodeDetails(
                 statusColor = LocalContentColor.current,
             )
         },
-        subjectCollectionActionButton = {
-            EditableSubjectCollectionTypeIconButton(editableSubjectCollectionTypeState)
+        subjectSuggestions = {
+            // 推荐一些状态修改操作
+
+            when (editableSubjectCollectionTypeState.selfCollectionType) {
+                UnifiedCollectionType.NOT_COLLECTED -> {
+                    SubjectCollectionTypeSuggestions.Collect(editableSubjectCollectionTypeState)
+                }
+
+                UnifiedCollectionType.WISH, UnifiedCollectionType.ON_HOLD -> {
+                    Text(
+                        "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
+                    )
+                    SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
+                    SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                }
+
+                else -> {}
+            }
         },
         exposedEpisodeItem = { innerPadding ->
             val originalMedia by remember {
@@ -283,7 +303,7 @@ private fun SectionTitle(
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
     airingStatus: @Composable() (FlowRowScope.() -> Unit),
-    subjectCollectionActionButton: @Composable () -> Unit,
+    subjectSuggestions: @Composable() (FlowRowScope.() -> Unit),
     exposedEpisodeItem: @Composable (contentPadding: PaddingValues) -> Unit,
     danmakuStatisticsSummary: @Composable () -> Unit,
     danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,
@@ -338,8 +358,16 @@ fun EpisodeDetailsScaffold(
             }
         }
 
+        FlowRow(
+            Modifier.padding(horizontalPaddingValues).paddingIfNotEmpty(top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
+        ) {
+            subjectSuggestions()
+        }
+
         SectionTitle(
-            Modifier.padding(top = 16.dp, bottom = 8.dp),
+            Modifier.padding(top = 12.dp, bottom = 8.dp),
             actions = {
                 IconButton(onShowEpisodes) {
                     Icon(Icons.Outlined.Dataset, null)

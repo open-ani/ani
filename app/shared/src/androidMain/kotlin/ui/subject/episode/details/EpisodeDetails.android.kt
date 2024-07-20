@@ -12,6 +12,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.cache.TestMediaList
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
@@ -23,6 +24,7 @@ import me.him188.ani.app.ui.subject.episode.statistics.testPlayerStatisticsState
 import me.him188.ani.app.ui.subject.episode.video.MutableDanmakuStatistics
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
 @Composable
@@ -49,6 +51,22 @@ fun PreviewEpisodeDetailsShortTitle() = ProvideCompositionLocalsForPreview {
         },
     )
     PreviewEpisodeDetailsImpl(state)
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewEpisodeDetailsDoing() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState(
+        remember {
+            SubjectInfo.Empty.copy(
+                nameCn = "小市民系列",
+            )
+        },
+    )
+    PreviewEpisodeDetailsImpl(
+        state,
+        editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(UnifiedCollectionType.DOING),
+    )
 }
 
 @Composable
@@ -103,6 +121,7 @@ private fun PreviewEpisodeDetailsImpl(
             )
         }
     },
+    editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
 ) {
     Scaffold {
         EpisodeDetails(
@@ -118,7 +137,7 @@ private fun PreviewEpisodeDetailsImpl(
                 )
             },
             editableRatingState = rememberTestEditableRatingState(),
-            editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
+            editableSubjectCollectionTypeState = editableSubjectCollectionTypeState,
             danmakuStatistics = danmakuStatistics,
             videoStatistics = remember {
                 testPlayerStatisticsState(
