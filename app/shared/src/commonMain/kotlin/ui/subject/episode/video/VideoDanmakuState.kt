@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.displayName
@@ -161,7 +162,7 @@ class VideoDanmakuStateImpl(
     private val onSend: suspend (info: DanmakuInfo) -> Danmaku,
     private val onSetEnabled: suspend (enabled: Boolean) -> Unit,
     private val onHideController: () -> Unit,
-    backgroundScope: CoroutineScope,
+    private val backgroundScope: CoroutineScope,
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
     override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuTrackProperties)
@@ -189,9 +190,12 @@ class VideoDanmakuStateImpl(
         sendDanmakuTasker.launch {
             val danmaku = onSend(info)
             try {
-                danmakuHostState.send(DanmakuPresentation(danmaku, isSelf = true))
+                backgroundScope.launch {
+                    // 如果用户此时暂停了视频, 这里就会一直挂起, 所以单独开一个
+                    danmakuHostState.send(DanmakuPresentation(danmaku, isSelf = true))
+                }
+                onHideController()
                 withContext(Dispatchers.Main) {
-                    onHideController()
                     then?.invoke()
                 }
             } catch (e: Throwable) {
