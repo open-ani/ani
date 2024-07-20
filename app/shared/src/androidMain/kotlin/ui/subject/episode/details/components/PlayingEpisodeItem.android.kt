@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.details.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,45 +39,49 @@ private fun PreviewEpisodeItemImpl(
     filename: String? = "filename-".repeat(3) + ".mkv",
     videoLoadingState: VideoLoadingState = VideoLoadingState.Succeed(false),
 ) {
-    PlayingEpisodeItem(
-        episodeSort = { Text("01") },
-        title = { Text(episodeTitle) },
-        watchStatus = { TestEpisodeWatchStatusButton() },
-        mediaSelected = media != null,
-        mediaLabels = {
-            media?.let {
-                Text(media.renderProperties())
-            }
-        },
-        filename = {
-            filename?.let {
-                Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            }
-        },
-        videoLoadingSummary = {
-            VideoLoadingSummary(
-                state = videoLoadingState,
-            )
-        },
-        mediaSource = {
-            var isLoading by remember { mutableStateOf(false) }
-            PlayingEpisodeItemDefaults.MediaSource(
-                media = null, isLoading = isLoading,
-                onClick = { isLoading = !isLoading },
-                modifier = Modifier.clickable {
-                    isLoading = !isLoading
-                },
-            )
-        },
-        actions = {
-            PlayingEpisodeItemDefaults.ActionCache({ })
-            PlayingEpisodeItemDefaults.ActionShare(media)
-        },
+    Card(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .animateContentSize(),
-    )
+    ) {
+        PlayingEpisodeItem(
+            episodeSort = { Text("01") },
+            title = { Text(episodeTitle) },
+            watchStatus = { TestEpisodeWatchStatusButton() },
+            mediaSelected = media != null,
+            mediaLabels = {
+                media?.let {
+                    Text(media.renderProperties())
+                }
+            },
+            filename = {
+                filename?.let {
+                    Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                }
+            },
+            videoLoadingSummary = {
+                VideoLoadingSummary(
+                    state = videoLoadingState,
+                )
+            },
+            mediaSource = {
+                var isLoading by remember { mutableStateOf(false) }
+                PlayingEpisodeItemDefaults.MediaSource(
+                    media = null, isLoading = isLoading,
+                    onClick = { isLoading = !isLoading },
+                    modifier = Modifier.clickable {
+                        isLoading = !isLoading
+                    },
+                )
+            },
+            actions = {
+                PlayingEpisodeItemDefaults.ActionCache({ })
+                PlayingEpisodeItemDefaults.ActionShare(media)
+            },
+        )
+    }
 }
+
 
 @Composable
 @PreviewLightDark

@@ -24,10 +24,14 @@ fun Modifier.paddingIfNotEmpty(
     val horizontalReservedPx = (start + end).roundToPx()
     val verticalReservedPx = (top + bottom).roundToPx()
     constraints.copy(
-        minWidth = (constraints.minWidth - horizontalReservedPx).coerceAtLeast(0),
-        maxWidth = (constraints.maxWidth - horizontalReservedPx).coerceAtLeast(0),
-        minHeight = (constraints.minHeight - verticalReservedPx).coerceAtLeast(0),
-        maxHeight = (constraints.maxHeight - verticalReservedPx).coerceAtLeast(0),
+        minWidth = if (constraints.minWidth == Int.MAX_VALUE) Int.MAX_VALUE else
+            (constraints.minWidth - horizontalReservedPx).coerceAtLeast(0),
+        maxWidth = if (constraints.maxWidth == Int.MAX_VALUE) Int.MAX_VALUE else
+            (constraints.maxWidth - horizontalReservedPx).coerceAtLeast(0),
+        minHeight = if (constraints.minHeight == Int.MAX_VALUE) Int.MAX_VALUE else
+            (constraints.minHeight - verticalReservedPx).coerceAtLeast(0),
+        maxHeight = if (constraints.maxHeight == Int.MAX_VALUE) Int.MAX_VALUE else
+            (constraints.maxHeight - verticalReservedPx).coerceAtLeast(0),
     )
     val placeable = measurable.measure(constraints)
     if (placeable.height > 0 && placeable.width > 0) {

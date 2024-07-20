@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.ExpandCircleDown
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -89,6 +90,8 @@ class EpisodeDetailsState(
     val episodeTitle by derivedStateOf { episode.title }
     val episodeSort by derivedStateOf { episode.sort }
     val subjectTitle by derivedStateOf { subject.displayName }
+
+    var showEpisodes: Boolean by mutableStateOf(false)
 }
 
 /**
@@ -128,6 +131,15 @@ fun EpisodeDetails(
 
     var expandDanmakuStatistics by rememberSaveable { mutableStateOf(false) }
 
+    if (state.showEpisodes) {
+        ModalBottomSheet({ state.showEpisodes = false }) {
+            EpisodeCarousel(
+                episodeCarouselState,
+                contentPadding = PaddingValues(all = 16.dp),
+            )
+        }
+    }
+
     EpisodeDetailsScaffold(
         subjectTitle = { Text(state.subjectTitle) },
         airingStatus = {
@@ -154,72 +166,67 @@ fun EpisodeDetails(
                 }
             }
             episodeCarouselState.playingEpisode?.let { episode ->
-                PlayingEpisodeItem(
-                    episodeSort = { Text(episode.episodeInfo.sort.toString()) },
-                    title = { Text(episode.episodeInfo.displayName) },
-                    watchStatus = {
-                        EpisodeWatchStatusButton(
-                            episode.type.isDoneOrDropped(),
-                            onUnmark = {
-                                episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.NOT_COLLECTED)
-                            },
-                            onMarkAsDone = {
-                                episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.DONE)
-                            },
-                            enabled = !episodeCarouselState.isSettingCollectionType,
-                        )
-                    },
-                    mediaSelected = mediaSelected,
-                    mediaLabels = {
-                        val mediaPropertiesText by remember {
-                            derivedStateOf {
-                                originalMedia?.renderProperties()
+                Card(Modifier.padding(innerPadding).animateContentSize()) {
+                    PlayingEpisodeItem(
+                        episodeSort = { Text(episode.episodeInfo.sort.toString()) },
+                        title = { Text(episode.episodeInfo.displayName) },
+                        watchStatus = {
+                            EpisodeWatchStatusButton(
+                                episode.type.isDoneOrDropped(),
+                                onUnmark = {
+                                    episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.NOT_COLLECTED)
+                                },
+                                onMarkAsDone = {
+                                    episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.DONE)
+                                },
+                                enabled = !episodeCarouselState.isSettingCollectionType,
+                            )
+                        },
+                        mediaSelected = mediaSelected,
+                        mediaLabels = {
+                            val mediaPropertiesText by remember {
+                                derivedStateOf {
+                                    originalMedia?.renderProperties()
+                                }
                             }
-                        }
-                        SelectionContainer { Text(mediaPropertiesText ?: "") }
-                    },
-                    filename = {
-                        videoStatistics.playingFilename?.let {
-                            SelectionContainer {
-                                Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            SelectionContainer { Text(mediaPropertiesText ?: "") }
+                        },
+                        filename = {
+                            videoStatistics.playingFilename?.let {
+                                SelectionContainer {
+                                    Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                                }
                             }
-                        }
-                    },
-                    videoLoadingSummary = {
-                        VideoLoadingSummary(videoStatistics.videoLoadingState)
-                    },
-                    mediaSource = {
-                        var showMediaSelector by rememberSaveable { mutableStateOf(false) }
-                        PlayingEpisodeItemDefaults.MediaSource(
-                            media = originalMedia,
-                            isLoading = videoStatistics.mediaSourceLoading,
-                            onClick = { showMediaSelector = !showMediaSelector },
-                        )
-                        if (showMediaSelector) {
-                            ModalBottomSheet({ showMediaSelector = false }) {
-                                EpisodePlayMediaSelector(
-                                    mediaSelectorPresentation,
-                                    mediaSourceResultsPresentation,
-                                    onDismissRequest = { showMediaSelector = false },
-                                    onSelected = { showMediaSelector = false },
-                                )
+                        },
+                        videoLoadingSummary = {
+                            VideoLoadingSummary(videoStatistics.videoLoadingState)
+                        },
+                        mediaSource = {
+                            var showMediaSelector by rememberSaveable { mutableStateOf(false) }
+                            PlayingEpisodeItemDefaults.MediaSource(
+                                media = originalMedia,
+                                isLoading = videoStatistics.mediaSourceLoading,
+                                onClick = { showMediaSelector = !showMediaSelector },
+                            )
+                            if (showMediaSelector) {
+                                ModalBottomSheet({ showMediaSelector = false }) {
+                                    EpisodePlayMediaSelector(
+                                        mediaSelectorPresentation,
+                                        mediaSourceResultsPresentation,
+                                        onDismissRequest = { showMediaSelector = false },
+                                        onSelected = { showMediaSelector = false },
+                                    )
+                                }
                             }
-                        }
-                    },
-                    actions = {
-                        val navigator = LocalNavigator.current
-                        PlayingEpisodeItemDefaults.ActionCache({ navigator.navigateSubjectCaches(state.subjectId) })
-                        PlayingEpisodeItemDefaults.ActionShare(videoStatistics.playingMedia)
-                    },
-                    modifier = Modifier.padding(innerPadding).animateContentSize(),
-                )
+                        },
+                        actions = {
+                            val navigator = LocalNavigator.current
+                            PlayingEpisodeItemDefaults.ActionCache({ navigator.navigateSubjectCaches(state.subjectId) })
+                            PlayingEpisodeItemDefaults.ActionShare(videoStatistics.playingMedia)
+                        },
+                    )
+                }
             }
-        },
-        episodeCarousel = { innerPadding ->
-            EpisodeCarousel(
-                episodeCarouselState,
-                contentPadding = innerPadding,
-            )
         },
         danmakuStatisticsSummary = {
             DanmakuMatchInfoSummaryRow(
@@ -238,6 +245,9 @@ fun EpisodeDetails(
                     itemSpacing = 16.dp,
                 )
             }
+        },
+        onShowEpisodes = {
+            state.showEpisodes = true
         },
         onExpandSubject = {
             showSubjectDetails = true
@@ -272,12 +282,12 @@ private fun SectionTitle(
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
-    airingStatus: @Composable FlowRowScope.() -> Unit,
+    airingStatus: @Composable() (FlowRowScope.() -> Unit),
     subjectCollectionActionButton: @Composable () -> Unit,
     exposedEpisodeItem: @Composable (contentPadding: PaddingValues) -> Unit,
-    episodeCarousel: @Composable (contentPadding: PaddingValues) -> Unit,
     danmakuStatisticsSummary: @Composable () -> Unit,
     danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,
+    onShowEpisodes: () -> Unit,
     onExpandSubject: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(all = 16.dp),
@@ -331,14 +341,8 @@ fun EpisodeDetailsScaffold(
         SectionTitle(
             Modifier.padding(top = 16.dp, bottom = 8.dp),
             actions = {
-                var showCarousel by rememberSaveable { mutableStateOf(false) }
-                IconButton({ showCarousel = true }) {
+                IconButton(onShowEpisodes) {
                     Icon(Icons.Outlined.Dataset, null)
-                }
-                if (showCarousel) {
-                    ModalBottomSheet({ showCarousel = false }) {
-                        episodeCarousel(PaddingValues(vertical = 16.dp))
-                    }
                 }
             },
         ) {

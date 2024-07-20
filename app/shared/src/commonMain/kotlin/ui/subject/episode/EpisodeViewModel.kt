@@ -386,6 +386,7 @@ private class EpisodeViewModelImpl(
             },
             onSelect = {
                 episodeId.value = it.episode.id
+                episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
             },
             onChangeCollectionType = { episode, it ->
                 collectionButtonEnabled.value = false
