@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,10 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -57,7 +53,6 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
@@ -65,17 +60,15 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
-import me.him188.ani.app.ui.subject.episode.details.EpisodeActionRow
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
-import me.him188.ani.app.ui.subject.episode.details.EpisodePlayerTitle
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
+import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
-import me.him188.ani.danmaku.ui.DanmakuConfig
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
@@ -147,8 +140,7 @@ private fun EpisodeSceneContent(
         }
         CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
             when {
-                isVeryWide -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
-                layoutMode.showLandscapeUI -> EpisodeSceneContentTablet(vm, Modifier.fillMaxSize())
+                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
                 else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
             }
         }
@@ -190,65 +182,21 @@ private fun EpisodeSceneTabletVeryWide(
             }
 
             Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
-                
+
                 EpisodeDetails(
-                    vm,
-                    LocalSnackbar.current,
-                    Modifier.fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    actionRow = {
-                        EpisodeActionRow(
-                            vm,
-                            snackbar = LocalSnackbar.current,
-                        )
-                    },
+                    vm.episodeDetailsState,
+                    vm.episodeCarouselState,
+                    vm.editableRatingState,
+                    vm.editableSubjectCollectionTypeState,
+                    vm.danmakuStatistics,
+                    vm.videoStatistics,
+                    vm.mediaSelectorPresentation,
+                    vm.mediaSourceResultsPresentation,
+                    Modifier.verticalScroll(rememberScrollState()),
                 )
 
                 EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
             }
-        }
-    }
-}
-
-@Composable
-private fun EpisodeSceneContentTablet(
-    vm: EpisodeViewModel,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier
-            .then(
-                if (vm.isFullscreen) Modifier.fillMaxSize()
-                else Modifier.navigationBarsPadding()
-                    .verticalScroll(rememberScrollState()),
-            ),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Column(Modifier.weight(1f)) {
-            EpisodeVideo(
-                vm,
-                expanded = true,
-                maintainAspectRatio = true,
-                initialControllerVisible = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            if (vm.isFullscreen) {
-                return@Row
-            }
-
-            EpisodeDetails(
-                vm,
-                LocalSnackbar.current,
-                Modifier.fillMaxWidth(),
-                actionRow = {
-                    EpisodeActionRow(
-                        vm,
-                        snackbar = LocalSnackbar.current,
-                        Modifier.width(400.dp),
-                    )
-                },
-            )
         }
     }
 }
@@ -272,7 +220,7 @@ private fun EpisodeSceneContentPhone(
         val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
             EpisodeCommentViewModel(episodeId)
         }
-        
+
         Column(Modifier.fillMaxSize()) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -300,7 +248,18 @@ private fun EpisodeSceneContentPhone(
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
 
                 when (index) {
-                    0 -> EpisodeDetails(vm, LocalSnackbar.current, Modifier.fillMaxSize())
+                    0 -> EpisodeDetails(
+                        vm.episodeDetailsState,
+                        vm.episodeCarouselState,
+                        vm.editableRatingState,
+                        vm.editableSubjectCollectionTypeState,
+                        vm.danmakuStatistics,
+                        vm.videoStatistics,
+                        vm.mediaSelectorPresentation,
+                        vm.mediaSourceResultsPresentation,
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    )
+
                     1 -> EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
                 }
             }
@@ -318,14 +277,9 @@ private fun EpisodeVideo(
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
-    // 视频
-    val danmakuConfig by vm.danmaku.config.collectAsStateWithLifecycle(DanmakuConfig.Default)
-
-    val videoLoadingState by vm.videoLoadingState.collectAsStateWithLifecycle(VideoLoadingState.Initial)
-
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
-    var danmakuEditorText by rememberSaveable { mutableStateOf("") }
+    val videoDanmakuState = vm.danmaku
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
@@ -350,9 +304,9 @@ private fun EpisodeVideo(
                 Modifier.placeholder(episode.isPlaceholder || subject.isPlaceholder),
             )
         },
-        danmakuHostState = vm.danmaku.danmakuHostState,
-        videoLoadingState = { videoLoadingState },
-        danmakuConfig = remember { { danmakuConfig } },
+        danmakuHostState = videoDanmakuState.danmakuHostState,
+        videoLoadingState = { vm.videoStatistics.videoLoadingState },
+        danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {
             if (vm.isFullscreen) {
                 context.setRequestFullScreen(false)
@@ -375,29 +329,20 @@ private fun EpisodeVideo(
             var didSetPaused by rememberSaveable { mutableStateOf(false) }
 
             DanmakuEditor(
-                text = danmakuEditorText,
-                onTextChange = { danmakuEditorText = it },
-                isSending = vm.danmaku.isSending,
+                text = videoDanmakuState.danmakuEditorText,
+                onTextChange = { videoDanmakuState.danmakuEditorText = it },
+                isSending = videoDanmakuState.isSending,
                 placeholderText = danmakuTextPlaceholder,
                 onSend = { text ->
-                    val exactPosition = vm.playerState.getExactCurrentPositionMillis()
-                    vm.launchInBackground {
-                        try {
-                            danmaku.send(
-                                episodeId = vm.episodeId.first(),
-                                DanmakuInfo(
-                                    exactPosition,
-                                    text = text,
-                                    color = Color.White.toArgb(),
-                                    location = DanmakuLocation.NORMAL,
-                                ),
-                            )
-                            withContext(Dispatchers.Main) { videoControllerState.setVisible(false) }
-                        } catch (e: Throwable) {
-                            withContext(Dispatchers.Main) { danmakuEditorText = text }
-                            throw e
-                        }
-                    }
+                    videoDanmakuState.danmakuEditorText = ""
+                    videoDanmakuState.send(
+                        DanmakuInfo(
+                            vm.playerState.getExactCurrentPositionMillis(),
+                            text = text,
+                            color = Color.White.toArgb(),
+                            location = DanmakuLocation.NORMAL,
+                        ),
+                    )
                 },
                 modifier = Modifier.onFocusChanged {
                     if (it.isFocused) {

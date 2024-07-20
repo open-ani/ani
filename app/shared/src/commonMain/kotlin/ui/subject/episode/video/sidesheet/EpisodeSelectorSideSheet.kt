@@ -137,7 +137,7 @@ fun EpisodeSelectorSideSheet(
                     },
                     trailingContent = {
                         if (selected) {
-                            PlayingIcon("正在播放")
+                            PlayingIcon(contentDescription = "正在播放")
                         }
                     },
                     colors =

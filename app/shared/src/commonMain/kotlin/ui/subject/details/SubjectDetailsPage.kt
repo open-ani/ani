@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +29,6 @@ import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -41,14 +39,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -68,20 +64,23 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
-import me.him188.ani.app.ui.subject.collection.SetAllEpisodeDoneDialog
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
-import me.him188.ani.app.ui.subject.details.components.CollectionAction
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
-import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.app.ui.subject.rating.EditableRating
 
 @Composable
 fun SubjectDetailsScene(
     vm: SubjectDetailsViewModel,
+    modifier: Modifier = Modifier,
+    showTopBar: Boolean = true,
+    showBlurredBackground: Boolean = true,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
@@ -94,53 +93,19 @@ fun SubjectDetailsScene(
     val context = LocalContext.current
     val connectedScrollState = rememberConnectedScrollState()
 
-    // 同时设置所有剧集为看过
-    var showSetAllEpisodesDialog by rememberSaveable { mutableStateOf(false) }
-    if (showSetAllEpisodesDialog) {
-        SetAllEpisodeDoneDialog(
-            onDismissRequest = { showSetAllEpisodesDialog = false },
-            onConfirm = {
-                vm.setAllEpisodesWatched()
-                showSetAllEpisodesDialog = false
-            },
-        )
-    }
-
-    var showRatingRequiresCollectionDialog by rememberSaveable { mutableStateOf(false) }
-    if (showRatingRequiresCollectionDialog) {
-        AlertDialog(
-            { showRatingRequiresCollectionDialog = false },
-            text = { Text("请先收藏再评分") },
-            confirmButton = { TextButton({ showRatingRequiresCollectionDialog = false }) { Text("关闭") } },
-        )
-    }
-
     SubjectDetailsPage(
         vm.subjectDetailsState,
         onClickOpenExternal = { vm.browseSubjectBangumi(context) },
-        onClickRating = {
-            if (!vm.subjectDetailsState.selfCollected) {
-                showRatingRequiresCollectionDialog = true
-            } else {
-                vm.editableRatingState.startEdit()
-            }
-        },
         collectionData = {
             SubjectDetailsDefaults.CollectionData(
                 collectionStats = vm.subjectDetailsState.info.collection,
             )
         },
         collectionActions = {
-            SubjectDetailsDefaults.CollectionAction(
-                vm.subjectDetailsState.selfCollectionType,
-                onSetCollectionType = {
-                    vm.setSelfCollectionType(it)
-                    if (it == UnifiedCollectionType.DONE && vm.episodeProgressState.hasAnyUnwatched) {
-                        showSetAllEpisodesDialog = true
-                    }
-                },
-                enabled = !vm.isSetSelfCollectionTypeWorking,
-            )
+            EditableSubjectCollectionTypeButton(vm.editableSubjectCollectionTypeState)
+        },
+        rating = {
+            EditableRating(vm.editableRatingState)
         },
         selectEpisodeButton = {
             SubjectDetailsDefaults.SelectEpisodeButton(
@@ -180,6 +145,10 @@ fun SubjectDetailsScene(
                 }
             }
         },
+        modifier,
+        showTopBar = showTopBar,
+        showBlurredBackground = showBlurredBackground,
+        windowInsets = windowInsets,
     )
 }
 
@@ -197,15 +166,18 @@ enum class SubjectDetailsTab {
 fun SubjectDetailsPage(
     state: SubjectDetailsState,
     onClickOpenExternal: () -> Unit,
-    onClickRating: () -> Unit,
     collectionData: @Composable () -> Unit,
     collectionActions: @Composable () -> Unit,
+    rating: @Composable () -> Unit,
     selectEpisodeButton: @Composable () -> Unit,
     connectedScrollState: ConnectedScrollState,
     detailsTab: @Composable () -> Unit,
     commentsTab: @Composable () -> Unit,
     discussionsTab: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    showTopBar: Boolean = true,
+    showBlurredBackground: Boolean = true,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     val scope = rememberCoroutineScope()
     val indicatorState = remember(scope) { FastLinearProgressState(scope) }
@@ -219,35 +191,37 @@ fun SubjectDetailsPage(
         isContentReady = true
     }
 
-    val density by rememberUpdatedState(LocalDensity.current)
-
     Scaffold(
         topBar = {
-            Box {
-                // 透明背景的, 总是显示
-                TopAppBar(
-                    title = {},
-                    navigationIcon = { TopAppBarGoBackButton() },
-                    actions = {
-                        IconButton(onClickOpenExternal) {
-                            Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                )
-
-                // 有背景, 仅在滚动一段距离后使用
-                AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+            if (showTopBar) {
+                Box {
+                    // 透明背景的, 总是显示
                     TopAppBar(
-                        title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                        title = {},
                         navigationIcon = { TopAppBarGoBackButton() },
                         actions = {
                             IconButton(onClickOpenExternal) {
                                 Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(),
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                        windowInsets = windowInsets,
                     )
+
+                    // 有背景, 仅在滚动一段距离后使用
+                    AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                        TopAppBar(
+                            title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            navigationIcon = { TopAppBarGoBackButton() },
+                            actions = {
+                                IconButton(onClickOpenExternal) {
+                                    Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(),
+                            windowInsets = windowInsets,
+                        )
+                    }
                 }
             }
         },
@@ -256,7 +230,9 @@ fun SubjectDetailsPage(
     ) { scaffoldPadding ->
         FastLinearProgressIndicator(
             indicatorState,
-            Modifier.zIndex(2f).padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
+            Modifier.zIndex(2f)
+                .ifThen(!showTopBar) { padding(top = 4.dp) }
+                .padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
         )
 
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
@@ -272,21 +248,23 @@ fun SubjectDetailsPage(
                 Column(Modifier.widthIn(max = 1300.dp).fillMaxHeight()) {
                     Box(Modifier.connectedScrollContainer(connectedScrollState)) {
                         // 虚化渐变背景
-                        SubjectBlurredBackground(
-                            coverImageUrl = if (isContentReady) state.coverImageUrl else null,
-                            backgroundColor = MaterialTheme.colorScheme.background,
-                            surfaceColor = MaterialTheme.colorScheme.surface,
-                            Modifier.matchParentSize(),
-                        )
+                        if (showBlurredBackground) {
+                            SubjectBlurredBackground(
+                                coverImageUrl = if (isContentReady) state.coverImageUrl else null,
+                                Modifier.matchParentSize(),
+                            )
+                        }
 
                         // 标题和封面, 以及收藏数据, 可向上滑动
-                        Column(Modifier.padding(scaffoldPadding).connectedScrollTarget(connectedScrollState)) {
+                        Column(
+                            Modifier
+                                .padding(scaffoldPadding)
+                                .connectedScrollTarget(connectedScrollState),
+                        ) {
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
-                                selfRatingScore = state.selfRatingInfo.score,
                                 airingInfo = state.airingInfo,
-                                onClickRating,
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
                                 selectEpisodeButton = {
@@ -294,7 +272,11 @@ fun SubjectDetailsPage(
                                         selectEpisodeButton()
                                     }
                                 },
-                                Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp),
+                                rating = rating,
+                                Modifier.fillMaxWidth()
+                                    .ifThen(!showTopBar) { padding(top = 16.dp) }
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 16.dp),
                             )
                         }
                     }

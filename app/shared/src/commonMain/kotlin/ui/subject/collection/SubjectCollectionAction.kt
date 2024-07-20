@@ -103,6 +103,24 @@ class SubjectCollectionAction(
     val type: UnifiedCollectionType,
 )
 
+
+@Composable
+fun EditCollectionTypeDropDown(
+    state: EditableSubjectCollectionTypeState,
+    modifier: Modifier = Modifier,
+) {
+    EditCollectionTypeDropDown(
+        currentType = state.selfCollectionType,
+        expanded = state.showDropdown,
+        onDismissRequest = { state.showDropdown = false },
+        onClick = {
+            state.showDropdown = false
+            state.setSelfCollectionType(it.type)
+        },
+        modifier = modifier,
+    )
+}
+
 /**
  * A drop down menu to edit the collection type of a subject.
  * Also includes a dialog to set all episodes as watched when the user attempts to mark the subject as [UnifiedCollectionType.DONE].
@@ -113,6 +131,7 @@ fun EditCollectionTypeDropDown(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     onClick: (action: SubjectCollectionAction) -> Unit,
+    modifier: Modifier = Modifier,
     actions: List<SubjectCollectionAction> = SubjectCollectionActionsForEdit,
     showDelete: Boolean = currentType != UnifiedCollectionType.NOT_COLLECTED,
 ) {
@@ -120,6 +139,7 @@ fun EditCollectionTypeDropDown(
         expanded,
         onDismissRequest = onDismissRequest,
         offset = DpOffset(x = 0.dp, y = 4.dp),
+        modifier = modifier,
     ) {
         for (action in actions) {
             if (!showDelete && action == SubjectCollectionActions.DeleteCollection) continue
@@ -165,7 +185,7 @@ private fun SubjectCollectionAction.colorForCurrent(
  * @param onEdit 当修改类型时调用.
  */
 @Composable
-fun CollectionActionButton(
+fun SubjectCollectionTypeButton(
     type: UnifiedCollectionType,
     onEdit: (newType: UnifiedCollectionType) -> Unit,
     modifier: Modifier = Modifier,

@@ -1,80 +1,14 @@
 package me.him188.ani.app.ui.subject.episode.statistics
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.episode.VideoLoadingState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import me.him188.ani.danmaku.ani.client.AniDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
+import me.him188.ani.datasources.api.Media
 
-@Preview
-@Composable
-private fun PreviewPlayerStatisticsAllSuccess() {
-    ProvideCompositionLocalsForPreview {
-        PlayerStatistics(
-            state = remember {
-                PlayerStatisticsState().apply {
-                    videoLoadingState.value = VideoLoadingState.Succeed(isBt = true)
-                    danmakuLoadingState.value = DanmakuLoadingState.Success(
-                        listOf(
-                            exactMatch(),
-                            noMatch(),
-                        ),
-                    )
-                }
-            },
-            Modifier.padding(16.dp),
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewPlayerStatisticsVideoFailed() {
-    ProvideCompositionLocalsForPreview {
-        PlayerStatistics(
-            state = remember {
-                PlayerStatisticsState().apply {
-                    videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
-                    danmakuLoadingState.value = DanmakuLoadingState.Success(
-                        listOf(
-                            exactMatch(),
-                            noMatch(),
-                        ),
-                    )
-                }
-            },
-            Modifier.padding(16.dp),
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun PreviewPlayerStatisticsVideoLoading() {
-    ProvideCompositionLocalsForPreview {
-        PlayerStatistics(
-            state = remember {
-                PlayerStatisticsState().apply {
-                    videoLoadingState.value = VideoLoadingState.ResolvingSource
-                    danmakuLoadingState.value = DanmakuLoadingState.Success(
-                        listOf(
-                            exactMatch(),
-                            noMatch(),
-                        ),
-                    )
-                }
-            },
-            Modifier.padding(16.dp),
-        )
-    }
-}
 
 private fun noMatch() = DanmakuMatchInfo(
     providerId = DandanplayDanmakuProvider.ID,
@@ -106,44 +40,21 @@ private fun halfFuzzy() = DanmakuMatchInfo(
     method = DanmakuMatchMethod.ExactSubjectFuzzyEpisode("Subject Title", "Episode Title"),
 )
 
-@Preview
-@Composable
-private fun PreviewPlayerStatisticsDanmakuFailed() {
-    ProvideCompositionLocalsForPreview {
-        PlayerStatistics(
-            state = remember {
-                PlayerStatisticsState().apply {
-                    videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
-                    danmakuLoadingState.value = DanmakuLoadingState.Failed(
-                        cause = IllegalStateException(),
-                    )
-                }
-            },
-            Modifier.padding(16.dp),
-        )
-    }
+
+class TestVideoStatistics : VideoStatistics() {
+    override var mediaSourceLoading: Boolean by mutableStateOf(false)
+    override var playingMedia: Media? by mutableStateOf(null)
+    override var playingFilename: String? by mutableStateOf(null)
+    override var videoLoadingState: VideoLoadingState by mutableStateOf(VideoLoadingState.Initial)
 }
 
-@Preview
-@Composable
-private fun PreviewPlayerStatisticsDanmakuState() {
-    ProvideCompositionLocalsForPreview {
-        PlayerStatistics(
-            state = remember {
-                PlayerStatisticsState().apply {
-                    videoLoadingState.value = VideoLoadingState.UnknownError(IllegalStateException())
-                    danmakuLoadingState.value = DanmakuLoadingState.Success(
-                        listOf(
-                            exactMatch(),
-                            exactId(),
-                            noMatch(),
-                            fuzzy(),
-                            halfFuzzy(),
-                        ),
-                    )
-                }
-            },
-            Modifier.padding(16.dp),
-        )
+fun testPlayerStatisticsState(
+    playingMedia: Media? = null,
+    playingFilename: String = "filename-filename-filename-filename-filename-filename-filename.mkv",
+    videoLoadingState: VideoLoadingState = VideoLoadingState.Initial,
+) =
+    TestVideoStatistics().apply {
+        this.playingMedia = playingMedia
+        this.playingFilename = playingFilename
+        this.videoLoadingState = videoLoadingState
     }
-}

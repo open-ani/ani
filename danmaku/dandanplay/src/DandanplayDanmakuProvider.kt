@@ -129,35 +129,38 @@ class DandanplayDanmakuProvider(
 
         // 都不行, 那就用最不准的方法
 
-        val resp = dandanplayClient.matchVideo(
-            filename = request.filename,
-            fileHash = request.fileHash,
-            fileSize = request.fileSize,
-            videoDuration = request.videoDuration,
-        )
-        val match = if (resp.isMatched) {
-            resp.matches.firstOrNull() ?: return DanmakuFetchResult.noMatch(ID)
-        } else {
-            matcher.match(
-                resp.matches.map {
-                    DanmakuEpisode(
-                        it.episodeId.toString(),
-                        it.animeTitle,
-                        it.episodeTitle,
-                        null,
-                    )
-                },
-            )?.let { match ->
-                resp.matches.first { it.episodeId.toString() == match.id }
-            } ?: return DanmakuFetchResult.noMatch(ID)
+        if (request.filename != null) {
+            val resp = dandanplayClient.matchVideo(
+                filename = request.filename,
+                fileHash = request.fileHash,
+                fileSize = request.fileSize,
+                videoDuration = request.videoDuration,
+            )
+            val match = if (resp.isMatched) {
+                resp.matches.firstOrNull() ?: return DanmakuFetchResult.noMatch(ID)
+            } else {
+                matcher.match(
+                    resp.matches.map {
+                        DanmakuEpisode(
+                            it.episodeId.toString(),
+                            it.animeTitle,
+                            it.episodeTitle,
+                            null,
+                        )
+                    },
+                )?.let { match ->
+                    resp.matches.first { it.episodeId.toString() == match.id }
+                } ?: return DanmakuFetchResult.noMatch(ID)
+            }
+            logger.info { "Best match by file match: ${match.animeTitle} - ${match.episodeTitle}" }
+            val episodeId = match.episodeId
+            return createSession(
+                episodeId,
+                (match.shift * 1000L).toLong(),
+                DanmakuMatchMethod.Fuzzy(match.animeTitle, match.episodeTitle),
+            )
         }
-        logger.info { "Best match by file match: ${match.animeTitle} - ${match.episodeTitle}" }
-        val episodeId = match.episodeId
-        return createSession(
-            episodeId,
-            (match.shift * 1000L).toLong(),
-            DanmakuMatchMethod.Fuzzy(match.animeTitle, match.episodeTitle),
-        )
+        return DanmakuFetchResult.noMatch(ID)
     }
 
     /**

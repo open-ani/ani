@@ -263,7 +263,7 @@ private fun SubjectCollectionItemContent(
                 }
 
                 // 连载至第 28 话 · 全 34 话
-                OnAirLabel(
+                AiringLabel(
                     item.airingInfo, Modifier.padding(start = 8.dp),
                     style = MaterialTheme.typography.labelMedium,
                 )
@@ -351,7 +351,7 @@ private fun SubjectCollectionItemContent(
  * @sample
  */
 @Composable
-fun OnAirLabel(
+fun AiringLabel(
     info: SubjectAiringInfo,
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,

@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.ui.cache.testMediaCache1
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDefaults
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
@@ -25,7 +24,7 @@ private val testEpisodes = listOf(
         episodeSort = "00",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
-        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes, testMediaCache1),
+        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 1,
@@ -39,21 +38,21 @@ private val testEpisodes = listOf(
         episodeSort = "02",
         watchStatus = UnifiedCollectionType.DONE,
         isOnAir = false,
-        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes, testMediaCache1),
+        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 3,
         episodeSort = "03",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
-        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes, testMediaCache1),
+        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 4,
         episodeSort = "04",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = false,
-        cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes, testMediaCache1),
+        cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 5,
@@ -74,14 +73,14 @@ private val testEpisodes = listOf(
         episodeSort = "07",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
-        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes, testMediaCache1),
+        cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 8,
         episodeSort = "08",
         watchStatus = UnifiedCollectionType.WISH,
         isOnAir = true,
-        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes, testMediaCache1),
+        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
 )
 
@@ -162,5 +161,5 @@ private fun item(id: Int) = EpisodeProgressItem(
     episodeSort = id.toString(),
     watchStatus = UnifiedCollectionType.WISH,
     isOnAir = true,
-    cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes, testMediaCache1),
+    cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
 )

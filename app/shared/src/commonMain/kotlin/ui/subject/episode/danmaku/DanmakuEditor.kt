@@ -20,8 +20,6 @@ fun DanmakuEditor(
     modifier: Modifier = Modifier,
 ) {
     val textUpdated by rememberUpdatedState(text)
-    val onTextChangeUpdated by rememberUpdatedState(onTextChange)
-    val onSendUpdated by rememberUpdatedState(onSend)
     MaterialTheme(aniDarkColorTheme()) {
         PlayerControllerDefaults.DanmakuTextField(
             text,
@@ -29,9 +27,7 @@ fun DanmakuEditor(
             modifier = modifier,
             onSend = {
                 if (textUpdated.isEmpty()) return@DanmakuTextField
-                val textSnapshot = textUpdated
-                onTextChangeUpdated("")
-                onSendUpdated(textSnapshot)
+                onSend(textUpdated)
             },
             isSending = isSending,
             placeholder = {

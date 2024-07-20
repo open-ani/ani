@@ -76,7 +76,7 @@ fun PreviewPlayingIcon() {
     ProvideCompositionLocalsForPreview {
         Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
             Box(modifier = Modifier.border(1.dp, color = Color.Magenta)) {
-                PlayingIcon("正在播放")
+                PlayingIcon(contentDescription = "正在播放")
             }
         }
     }

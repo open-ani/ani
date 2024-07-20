@@ -22,7 +22,6 @@ import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.cache.requester.trySelectSingle
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
-import me.him188.ani.app.data.source.media.framework.TestMediaCache1
 import me.him188.ani.app.data.source.media.framework.TestMediaList
 import me.him188.ani.app.data.source.media.framework.TestMediaSelector
 import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
@@ -60,7 +59,7 @@ class EpisodeCacheStateTest {
         ),
     )
     private val cacheStatusFlow: MutableStateFlow<EpisodeCacheStatus> = MutableStateFlow(
-        EpisodeCacheStatus.Cached(300.megaBytes, TestMediaCache1),
+        EpisodeCacheStatus.Cached(300.megaBytes),
     )
 
     private suspend fun TestScope.createEpisodeCacheState() = TestEpisodeCacheState(

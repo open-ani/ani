@@ -77,7 +77,7 @@ internal class DandanplayClient(
     suspend fun matchVideo(
         filename: String,
         fileHash: String?,
-        fileSize: Long,
+        fileSize: Long?,
         videoDuration: Duration
     ): DandanplayMatchVideoResponse {
         val response = client.post("https://api.dandanplay.net/api/v2/match") {

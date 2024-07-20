@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -16,14 +17,18 @@ import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
-import me.him188.ani.app.ui.subject.details.components.CollectionAction
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
+import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.rating.EditableRating
+import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import kotlin.random.Random
 
@@ -97,6 +102,21 @@ internal val TestSubjectCharacterList = listOf(
     testRelatedCharacterInfo("後藤美智代", "末柄里恵"),
 )
 
+@Composable
+fun rememberTestEditableRatingState(): EditableRatingState {
+    val backgroundScope = rememberBackgroundScope()
+    return remember {
+        EditableRatingState(
+            ratingInfo = mutableStateOf(TestSubjectInfo.ratingInfo),
+            selfRatingInfo = mutableStateOf(TestSelfRatingInfo),
+            enableEdit = mutableStateOf(true),
+            isCollected = { true },
+            onRate = { _ -> },
+            backgroundScope.backgroundScope,
+        )
+    }
+}
+
 @Preview
 @Preview(device = Devices.TABLET)
 @Composable
@@ -109,7 +129,6 @@ internal fun PreviewSubjectDetails() {
             SubjectDetailsState(
                 subjectInfo = MutableStateFlow(TestSubjectInfo),
                 coverImageUrl = MutableStateFlow("https://ui-avatars.com/api/?name=John+Doe"),
-                selfRatingInfo = MutableStateFlow(TestSelfRatingInfo),
                 selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
                 airingInfo = MutableStateFlow(TestSubjectAiringInfo),
                 characters = MutableStateFlow(TestSubjectCharacterList),
@@ -121,16 +140,19 @@ internal fun PreviewSubjectDetails() {
         SubjectDetailsPage(
             state = state,
             onClickOpenExternal = {},
-            onClickRating = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
                     collectionStats = vm.subjectDetailsState.info.collection,
                 )
             },
             collectionActions = {
-                SubjectDetailsDefaults.CollectionAction(
-                    vm.subjectDetailsState.selfCollectionType,
-                    onSetCollectionType = { vm.setSelfCollectionType(it) },
+                EditableSubjectCollectionTypeButton(
+                    rememberTestEditableSubjectCollectionTypeState(),
+                )
+            },
+            rating = {
+                EditableRating(
+                    state = rememberTestEditableRatingState(),
                 )
             },
             selectEpisodeButton = {

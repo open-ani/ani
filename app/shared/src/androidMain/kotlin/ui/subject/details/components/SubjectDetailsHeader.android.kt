@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.subject.details.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
@@ -9,6 +11,11 @@ import me.him188.ani.app.data.models.subject.SubjectCollectionStats
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
+import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
+import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.TestRatingInfo
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -42,6 +49,25 @@ internal val TestSubjectInfo = SubjectInfo.Empty.copy(
 internal const val TestCoverImage = "https://ui-avatars.com/api/?name=John+Doe"
 
 internal val TestSubjectAiringInfo = SubjectAiringInfo.EmptyCompleted
+
+@Composable
+fun rememberTestEditableSubjectCollectionTypeState(type: UnifiedCollectionType = UnifiedCollectionType.WISH): EditableSubjectCollectionTypeState {
+    val backgroundScope = rememberBackgroundScope()
+    val selfCollectionType = remember {
+        mutableStateOf(type)
+    }
+    return remember {
+        EditableSubjectCollectionTypeState(
+            selfCollectionType,
+            hasAnyUnwatched = { false },
+            onSetSelfCollectionType = {
+                selfCollectionType.value = it
+            },
+            onSetAllEpisodesWatched = { },
+            backgroundScope.backgroundScope.coroutineContext,
+        )
+    }
+}
 
 @Composable
 @Preview
@@ -83,25 +109,28 @@ fun PreviewSubjectDetailsHeader(
     subjectInfo: SubjectInfo = TestSubjectInfo,
 ) {
     ProvideCompositionLocalsForPreview {
+        val backgroundScope = rememberBackgroundScope()
         SubjectDetailsHeader(
             subjectInfo,
             TestCoverImage,
-            selfRatingScore = 7,
             airingInfo = airingInfo,
-            onClickRating = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
                     collectionStats = subjectInfo.collection,
                 )
             },
             collectionAction = {
-                SubjectDetailsDefaults.CollectionAction(
-                    UnifiedCollectionType.WISH,
-                    onSetCollectionType = { },
+                EditableSubjectCollectionTypeButton(
+                    rememberTestEditableSubjectCollectionTypeState(),
                 )
             },
             selectEpisodeButton = {
                 SubjectDetailsDefaults.SelectEpisodeButton({})
+            },
+            rating = {
+                EditableRating(
+                    state = rememberTestEditableRatingState(),
+                )
             },
         )
     }
