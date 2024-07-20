@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -95,6 +96,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 import java.io.File
 
@@ -116,9 +118,14 @@ object AniDesktop {
         val screenHeight = screenSize.height
 
         // Convert screen dimensions to dp
-        val screenResolution = Toolkit.getDefaultToolkit().screenResolution.toFloat()
-        val screenWidthDp = (screenWidth / screenResolution * 72).dp
-        val screenHeightDp = (screenHeight / screenResolution * 72).dp
+        // See ui-desktop-1.6.10-sources.jar!/desktopMain/androidx/compose/ui/window/LayoutConfiguration.desktop.kt:45
+        val density = Density(
+            GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .defaultScreenDevice.defaultConfiguration.defaultTransform.scaleX.toFloat(),
+            fontScale = 1f,
+        )
+        val screenWidthDp = density.run { screenWidth.toDp() }
+        val screenHeightDp = density.run { screenHeight.toDp() }
 
         // Calculate the final window size
         val windowWidth = if (desiredWidth > screenWidthDp) screenWidthDp else desiredWidth
@@ -140,9 +147,16 @@ object AniDesktop {
             logger.info { "Debug mode enabled" }
         }
 
+        val defaultSize = DpSize(1301.dp, 855.dp)
         // Get the screen size as a Dimension object
         val windowState = WindowState(
-            size = calculateWindowSize(1301.dp, 855.dp),
+            size = kotlin.runCatching {
+                calculateWindowSize(defaultSize.width, defaultSize.height)
+            }.onFailure {
+                logger.error(it) { "Failed to calculate window size" }
+            }.getOrElse {
+                defaultSize
+            },
             position = WindowPosition.Aligned(Alignment.Center),
         )
         val context = DesktopContext(
