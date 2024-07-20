@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +26,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -206,20 +206,56 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding())) {
-        EpisodeVideo(vm, vm.isFullscreen, Modifier)
+    val episodeId by vm.episodeId.collectAsStateWithLifecycle()
+    val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
+        EpisodeCommentViewModel(episodeId)
+    }
+    val commentCount by commentViewModel.commentCount.collectAsStateWithLifecycle(null)
 
-        if (vm.isFullscreen) {
+    EpisodeSceneContentPhoneScaffold(
+        videoOnly = vm.isFullscreen,
+        commentCount = { commentCount },
+        video = {
+            EpisodeVideo(vm, vm.isFullscreen, Modifier)
+        },
+        episodeDetails = {
+            EpisodeDetails(
+                vm.episodeDetailsState,
+                vm.episodeCarouselState,
+                vm.editableRatingState,
+                vm.editableSubjectCollectionTypeState,
+                vm.danmakuStatistics,
+                vm.videoStatistics,
+                vm.mediaSelectorPresentation,
+                vm.mediaSourceResultsPresentation,
+                Modifier.fillMaxSize(),
+            )
+        },
+        commentColumn = {
+            EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
+        },
+        modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
+    )
+}
+
+@Composable
+fun EpisodeSceneContentPhoneScaffold(
+    videoOnly: Boolean,
+    commentCount: () -> Int?,
+    video: @Composable () -> Unit,
+    episodeDetails: @Composable () -> Unit,
+    commentColumn: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        video()
+
+        if (videoOnly) {
             return@Column
         }
 
         val pagerState = rememberPagerState(initialPage = 0) { 2 }
         val scope = rememberCoroutineScope()
-
-        val episodeId by vm.episodeId.collectAsStateWithLifecycle()
-        val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
-            EpisodeCommentViewModel(episodeId)
-        }
 
         Column(Modifier.fillMaxSize()) {
             TabRow(
@@ -239,10 +275,12 @@ private fun EpisodeSceneContentPhone(
                     selected = pagerState.currentPage == 1,
                     onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
                     text = {
-                        val commentCount by commentViewModel.commentCount.collectAsState(0)
+                        val commentCountState by remember(commentCount) {
+                            derivedStateOf(commentCount)
+                        }
                         val text by remember {
                             derivedStateOf {
-                                if (commentCount == 0) "评论" else "评论 $commentCount"
+                                if (commentCountState == null) "评论" else "评论 $commentCountState"
                             }
                         }
                         Text(text, softWrap = false)
@@ -251,21 +289,14 @@ private fun EpisodeSceneContentPhone(
             }
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
-
                 when (index) {
-                    0 -> EpisodeDetails(
-                        vm.episodeDetailsState,
-                        vm.episodeCarouselState,
-                        vm.editableRatingState,
-                        vm.editableSubjectCollectionTypeState,
-                        vm.danmakuStatistics,
-                        vm.videoStatistics,
-                        vm.mediaSelectorPresentation,
-                        vm.mediaSourceResultsPresentation,
-                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    )
+                    0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                        episodeDetails()
+                    }
 
-                    1 -> EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
+                    1 -> Box(Modifier.fillMaxSize()) {
+                        commentColumn()
+                    }
                 }
             }
         }
