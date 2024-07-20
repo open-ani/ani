@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,47 +88,38 @@ class MediaProgressSliderState(
     val currentPositionMillis: Long by derivedStateOf(currentPositionMillis)
     val totalDurationMillis: Long by derivedStateOf(totalDurationMillis)
 
-    private var previewPositionMillis: Long by mutableStateOf(-1L)
-
-    private fun previewPosition(positionMillis: Long) {
-        previewPositionMillis = positionMillis
-        onPreview(positionMillis)
-    }
+    private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
 
     /**
      * Sets the slider to move to the given position.
      * [onPreview] will be triggered.
      */
     fun previewPositionRatio(ratio: Float) {
-        previewPosition((totalDurationMillis * ratio).roundToLong())
-    }
-
-    /**
-     * The position to display in the progress slider. If a preview is active, this will be the preview position.
-     */
-    private val displayPositionMillis: Long by derivedStateOf {
-        val previewPositionMillis = previewPositionMillis
-        if (previewPositionMillis != -1L) {
-            previewPositionMillis
-        } else {
-            this.currentPositionMillis
-        }
+        previewPositionRatio = ratio
+        onPreview((totalDurationMillis * ratio).roundToLong())
     }
 
     /**
      * The ratio of the current display position to the total duration. Range is `0..1`
      */
     val displayPositionRatio by derivedStateOf {
+        val previewPositionRatio = this.previewPositionRatio
+        if (!previewPositionRatio.isNaN()) {
+            return@derivedStateOf previewPositionRatio
+        }
+
         val total = this.totalDurationMillis
         if (total == 0L) {
             return@derivedStateOf 0f
         }
-        displayPositionMillis.toFloat() / total
+        this.currentPositionMillis.toFloat() / total
     }
 
     fun finishPreview() {
-        onPreviewFinished(previewPositionMillis)
-        previewPositionMillis = -1L
+        val ratio = this.previewPositionRatio
+        if (ratio.isNaN()) return
+        onPreviewFinished((ratio * totalDurationMillis).roundToLong())
+        previewPositionRatio = Float.NaN
     }
 }
 
@@ -147,7 +139,7 @@ fun rememberMediaProgressSliderState(
 
     val onPreviewUpdated by rememberUpdatedState(onPreview)
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
-    return remember(currentPosition, totalDuration) {
+    return remember {
         MediaProgressSliderState(
             { currentPosition },
             { totalDuration },

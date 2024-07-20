@@ -363,7 +363,7 @@ internal class ExoPlayerState @UiThread constructor(
             while (currentCoroutineContext().isActive) {
                 currentPositionMillis.value = player.currentPosition
                 bufferedPercentage.value = player.bufferedPercentage
-                delay(0.1.seconds) // 100 fps
+                delay(0.1.seconds) // 10 fps
             }
         }
         backgroundScope.launch(Dispatchers.Main) {
