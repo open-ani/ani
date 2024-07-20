@@ -122,7 +122,7 @@ class DanmakuLoaderImpl(
                 emit(result.danmakuCollection)
             } catch (e: CancellationException) {
                 state.value = DanmakuLoadingState.Idle
-                throw e             
+                throw e
             } catch (e: Throwable) {
                 state.value = DanmakuLoadingState.Failed(e)
                 throw e
@@ -151,15 +151,16 @@ interface VideoDanmakuState {
     var danmakuEditorText: String
 
     val isSending: Boolean
-    fun send(info: DanmakuInfo)
+    fun sendAsync(info: DanmakuInfo, then: (suspend () -> Unit)? = null)
 }
 
+@Stable
 class VideoDanmakuStateImpl(
     danmakuEnabled: State<Boolean>,
     danmakuConfig: State<DanmakuConfig>,
     private val onSend: suspend (info: DanmakuInfo) -> Danmaku,
     private val onSetEnabled: suspend (enabled: Boolean) -> Unit,
-    private val onHideController: suspend () -> Unit,
+    private val onHideController: () -> Unit,
     backgroundScope: CoroutineScope,
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
@@ -181,14 +182,18 @@ class VideoDanmakuStateImpl(
     private val sendDanmakuTasker = MonoTasker(backgroundScope)
     override val isSending: Boolean get() = sendDanmakuTasker.isRunning
 
-    override fun send(
-        info: DanmakuInfo
+    override fun sendAsync(
+        info: DanmakuInfo,
+        then: (suspend () -> Unit)?
     ) {
         sendDanmakuTasker.launch {
             val danmaku = onSend(info)
             try {
                 danmakuHostState.send(DanmakuPresentation(danmaku, isSelf = true))
-                onHideController()
+                withContext(Dispatchers.Main) {
+                    onHideController()
+                    then?.invoke()
+                }
             } catch (e: Throwable) {
                 withContext(Dispatchers.Main) {
                     danmakuEditorText = info.text

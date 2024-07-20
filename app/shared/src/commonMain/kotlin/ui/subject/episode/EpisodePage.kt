@@ -10,22 +10,29 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -35,7 +42,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -57,9 +67,11 @@ import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
+import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
@@ -210,7 +222,13 @@ private fun EpisodeSceneContentPhone(
     val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
         EpisodeCommentViewModel(episodeId)
     }
+    LaunchedEffect(true) {
+        commentViewModel.loadMoreComments()
+    }
     val commentCount by commentViewModel.commentCount.collectAsStateWithLifecycle(null)
+
+    var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
+    var didSetPaused by rememberSaveable { mutableStateOf(false) }
 
     EpisodeSceneContentPhoneScaffold(
         videoOnly = vm.isFullscreen,
@@ -235,7 +253,63 @@ private fun EpisodeSceneContentPhone(
             EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
+        tabRowContent = {
+            DummyDanmakuEditor(
+                onClick = {
+                    showDanmakuEditor = true
+                    if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
+                        didSetPaused = true
+                        vm.playerState.pause()
+                    } else {
+                        didSetPaused = false
+                    }
+                },
+            )
+        },
     )
+
+    if (showDanmakuEditor) {
+        val focusRequester = remember { FocusRequester() }
+        ModalBottomSheet(
+            {
+                showDanmakuEditor = false
+                didSetPaused = false
+            },
+        ) {
+            Column(Modifier.padding(all = 16.dp)) {
+                val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
+                val videoDanmakuState = vm.danmaku
+                DanmakuEditor(
+                    text = videoDanmakuState.danmakuEditorText,
+                    onTextChange = { videoDanmakuState.danmakuEditorText = it },
+                    isSending = videoDanmakuState.isSending,
+                    placeholderText = danmakuTextPlaceholder,
+                    onSend = { text ->
+                        videoDanmakuState.danmakuEditorText = ""
+                        videoDanmakuState.sendAsync(
+                            DanmakuInfo(
+                                vm.playerState.getExactCurrentPositionMillis(),
+                                text = text,
+                                color = Color.White.toArgb(),
+                                location = DanmakuLocation.NORMAL,
+                            ),
+                        ) {
+                            showDanmakuEditor = false
+                            if (didSetPaused) {
+                                didSetPaused = false
+                                vm.playerState.resume()
+                            }
+                        }
+                    },
+                    Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    colors = OutlinedTextFieldDefaults.colors(),
+                )
+            }
+        }
+        LaunchedEffect(true) {
+            focusRequester.requestFocus()
+        }
+    }
 }
 
 @Composable
@@ -246,6 +320,7 @@ fun EpisodeSceneContentPhoneScaffold(
     episodeDetails: @Composable () -> Unit,
     commentColumn: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    tabRowContent: @Composable () -> Unit = {},
 ) {
     Column(modifier) {
         video()
@@ -258,35 +333,55 @@ fun EpisodeSceneContentPhoneScaffold(
         val scope = rememberCoroutineScope()
 
         Column(Modifier.fillMaxSize()) {
-            TabRow(
-                selectedTabIndex = pagerState.currentPage,
-                indicator = @Composable { tabPositions ->
-                    TabRowDefaults.PrimaryIndicator(
-                        Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                    )
-                },
-            ) {
-                Tab(
-                    selected = pagerState.currentPage == 0,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                    text = { Text("详情", softWrap = false) },
-                )
-                Tab(
-                    selected = pagerState.currentPage == 1,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                    text = {
-                        val commentCountState by remember(commentCount) {
-                            derivedStateOf(commentCount)
-                        }
-                        val text by remember {
-                            derivedStateOf {
-                                if (commentCountState == null) "评论" else "评论 $commentCountState"
-                            }
-                        }
-                        Text(text, softWrap = false)
+            Row {
+                SecondaryScrollableTabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    Modifier.weight(1f),
+                    indicator = @Composable { tabPositions ->
+                        TabRowDefaults.PrimaryIndicator(
+                            Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                        )
                     },
-                )
+                    containerColor = MaterialTheme.colorScheme.background,
+                    edgePadding = 0.dp,
+                    divider = {},
+                ) {
+                    Tab(
+                        selected = pagerState.currentPage == 0,
+                        onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+                        text = { Text("详情", softWrap = false) },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Tab(
+                        selected = pagerState.currentPage == 1,
+                        onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                        text = {
+                            val commentCountState by remember(commentCount) {
+                                derivedStateOf(commentCount)
+                            }
+                            val text by remember {
+                                derivedStateOf {
+                                    if (commentCountState == null) "评论" else "评论 $commentCountState"
+                                }
+                            }
+                            Text(text, softWrap = false)
+                        },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                Box(
+                    modifier = Modifier.weight(0.618f) // width
+                        .height(48.dp)
+                        .padding(vertical = 4.dp, horizontal = 16.dp),
+                ) {
+                    Row(Modifier.align(Alignment.CenterEnd)) {
+                        tabRowContent()
+                    }
+                }
             }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
             HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
                 when (index) {
@@ -371,7 +466,7 @@ private fun EpisodeVideo(
                 placeholderText = danmakuTextPlaceholder,
                 onSend = { text ->
                     videoDanmakuState.danmakuEditorText = ""
-                    videoDanmakuState.send(
+                    videoDanmakuState.sendAsync(
                         DanmakuInfo(
                             vm.playerState.getExactCurrentPositionMillis(),
                             text = text,
@@ -472,6 +567,3 @@ private fun PreviewEpisodePageDesktop() {
         EpisodeScene(vm)
     }
 }
-
-@Composable
-internal expect fun PreviewEpisodePage()

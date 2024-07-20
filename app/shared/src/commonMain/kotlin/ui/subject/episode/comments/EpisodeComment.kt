@@ -53,7 +53,7 @@ fun EpisodeCommentColumn(
 
     val freshLoaded by viewModel.freshLoaded.collectAsStateWithLifecycle()
     val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
-    val comments by viewModel.list.collectAsStateWithLifecycle()
+    val comments by viewModel.list.collectAsStateWithLifecycle(emptyList())
 
     fun reloadComments() {
         pullToRefreshState.startRefresh()

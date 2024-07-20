@@ -185,6 +185,24 @@ object PlayerControllerDefaults {
         }
     }
 
+    @Composable
+    fun inVideoDanmakuTextFieldColors(): TextFieldColors {
+        return OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface.stronglyWeaken(),
+            focusedContainerColor = MaterialTheme.colorScheme.surface.stronglyWeaken(),
+            unfocusedBorderColor = Color.Transparent,
+            focusedBorderColor = Color.Transparent,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface.slightlyWeaken(),
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+
+    @Composable
+    fun inTabDanmakuTextFieldColors(): TextFieldColors {
+        return OutlinedTextFieldDefaults.colors(
+        )
+    }
+
     /**
      * To edit danmaku and send it by [trailingIcon]
      */
@@ -223,15 +241,8 @@ object PlayerControllerDefaults {
         isError: Boolean = false,
         shape: Shape = MaterialTheme.shapes.medium,
         style: TextStyle = MaterialTheme.typography.bodyMedium,
+        colors: TextFieldColors = inVideoDanmakuTextFieldColors()
     ) {
-        val colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface.stronglyWeaken(),
-            focusedContainerColor = MaterialTheme.colorScheme.surface.stronglyWeaken(),
-            unfocusedBorderColor = Color.Transparent,
-            focusedBorderColor = Color.Transparent,
-            unfocusedTextColor = MaterialTheme.colorScheme.onSurface.slightlyWeaken(),
-            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-        )
         MaterialTheme(aniLightColorTheme()) {
             BasicTextField(
                 value,

@@ -1,8 +1,10 @@
 package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -22,6 +24,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.resume
 
+@Stable
 class EpisodeCommentViewModel(
     episodeId: Int,
 ) : AbstractViewModel(), KoinComponent {
@@ -41,7 +44,7 @@ class EpisodeCommentViewModel(
             if (initialCompleted) false else exhausted
         }
         .stateInBackground(false)
-    val list: StateFlow<List<UiComment>> = dataCache.cachedDataFlow
+    val list: SharedFlow<List<UiComment>> = dataCache.cachedDataFlow
         .map { list ->
             list.map { comment ->
                 UiComment(
@@ -65,7 +68,7 @@ class EpisodeCommentViewModel(
                 it.createdAt
             }
         }
-        .stateInBackground(listOf())
+        .shareInBackground()
 
     val commentCount = list.map { it.size }
 
