@@ -41,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.icons.PlayingIcon
@@ -72,7 +73,7 @@ fun PlayingEpisodeItem(
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
     playingIcon: @Composable () -> Unit = { PlayingIcon() },
-    rowSpacing: Dp = 20.dp,
+    rowSpacing: Dp = 16.dp,
     horizontalPadding: Dp = 20.dp,
 ) {
     Column(
@@ -97,9 +98,11 @@ fun PlayingEpisodeItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterVertically),
             ) {
-                ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+                ProvideTextStyle(
+                    MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         ProvideContentColor(MaterialTheme.colorScheme.primary) {
@@ -124,7 +127,10 @@ fun PlayingEpisodeItem(
                 MaterialTheme.typography.labelLarge,
             ) {
                 FlowRow(
-                    Modifier.padding(horizontal = horizontalPadding).padding(bottom = 8.dp),
+                    Modifier
+                        .padding(top = 4.dp) // 额外多 pad 一点
+                        .padding(horizontal = horizontalPadding)
+                        .padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {

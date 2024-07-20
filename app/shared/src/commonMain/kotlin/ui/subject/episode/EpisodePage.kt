@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -190,7 +192,7 @@ private fun EpisodeSceneTabletVeryWide(
                     vm.videoStatistics,
                     vm.mediaSelectorPresentation,
                     vm.mediaSourceResultsPresentation,
-                    Modifier,
+                    Modifier.verticalScroll(rememberScrollState()),
                 )
 
                 EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
@@ -255,7 +257,7 @@ private fun EpisodeSceneContentPhone(
                         vm.videoStatistics,
                         vm.mediaSelectorPresentation,
                         vm.mediaSourceResultsPresentation,
-                        Modifier.fillMaxSize(),
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                     )
 
                     1 -> EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
