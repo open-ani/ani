@@ -253,14 +253,19 @@ internal fun EpisodeVideoImpl(
                         PlayerControllerDefaults.SelectEpisodeIcon(
                             onShowSelectEpisode,
                         )
+
+                        if (currentPlatform.isDesktop()) {
+                            PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
+                        }
+
+                        PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
+
+                        val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
+                        SpeedSwitcher(
+                            speed,
+                            { playerState.setPlaybackSpeed(it) },
+                        )
                     }
-                    if (currentPlatform.isDesktop()) PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
-                    PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
-                    val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
-                    SpeedSwitcher(
-                        speed,
-                        { playerState.setPlaybackSpeed(it) },
-                    )
                     PlayerControllerDefaults.FullscreenIcon(
                         expanded,
                         onClickFullscreen = onClickFullScreen,

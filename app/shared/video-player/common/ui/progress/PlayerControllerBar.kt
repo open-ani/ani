@@ -440,11 +440,13 @@ fun PlayerControllerBar(
                 ) {
                     progressIndicator()
                 }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    progressSlider()
+                if (expanded) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        progressSlider()
+                    }
                 }
             }
         }
@@ -460,14 +462,18 @@ fun PlayerControllerBar(
                 startActions()
             }
 
-            ProvideTextStyle(MaterialTheme.typography.labelSmall) {
-                Column(Modifier.weight(1f)) {
-                    Row {
+            Row(
+                Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (expanded) {
+                    ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                         danmakuEditor()
                     }
+                } else {
+                    progressSlider()
                 }
             }
-
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
