@@ -165,9 +165,11 @@ fun EpisodeDetails(
                 }
 
                 UnifiedCollectionType.WISH, UnifiedCollectionType.ON_HOLD -> {
-                    Text(
-                        "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
-                    )
+                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                        Text(
+                            "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
+                        )
+                    }
                     SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
                     SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
                 }

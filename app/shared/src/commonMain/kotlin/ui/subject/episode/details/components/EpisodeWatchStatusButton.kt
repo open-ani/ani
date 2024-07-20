@@ -7,7 +7,9 @@ import androidx.compose.material.icons.outlined.AddTask
 import androidx.compose.material.icons.outlined.TaskAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,19 +37,6 @@ fun EpisodeWatchStatusButton(
             ) {
                 Icon(Icons.Outlined.TaskAlt, null)
             }
-//            AssistChip(
-//                onClick = onUnmark,
-//                label = {
-//                    Text("已看")
-//                },
-//                leadingIcon = {
-//                    Icon(Icons.Outlined.TaskAlt, null)
-//                },
-//                colors = AssistChipDefaults.assistChipColors(
-//                    leadingIconContentColor = LocalContentColor.current,
-//                ),
-//                border = null,
-//            )
         } else {
             SuggestionChip(
                 onClick = onMarkAsDone,
@@ -58,6 +47,10 @@ fun EpisodeWatchStatusButton(
                     Icon(Icons.Outlined.AddTask, null)
                 },
                 enabled = enabled,
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    labelColor = MaterialTheme.colorScheme.primary,
+                    iconContentColor = MaterialTheme.colorScheme.primary,
+                ),
             )
         }
     }
