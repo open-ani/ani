@@ -139,14 +139,10 @@ class DanmakuLoaderImpl(
     }
 }
 
-/**
- */
 @Stable
 interface VideoDanmakuState {
     val danmakuHostState: DanmakuHostState
     val config: DanmakuConfig
-
-    val statistics: DanmakuStatistics
 
     val enabled: Boolean
     val isSettingEnabled: Boolean
@@ -181,9 +177,6 @@ class VideoDanmakuStateImpl(
     override var danmakuEditorText: String by mutableStateOf("")
 
     override val config by danmakuConfig
-
-    private val danmakuLoadingState = mutableStateOf<DanmakuLoadingState>(DanmakuLoadingState.Idle)
-    override val statistics: DanmakuStatistics = DelegateDanmakuStatistics(danmakuLoadingState)
 
     private val sendDanmakuTasker = MonoTasker(backgroundScope)
     override val isSending: Boolean get() = sendDanmakuTasker.isRunning

@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode.details.components
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -39,6 +40,19 @@ fun DanmakuMatchInfoGrid(
 ) {
     Column(modifier) {
         ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+            // infinite measurement
+//            LazyVerticalGrid(
+//                GridCells.Adaptive(minSize = 120.dp),
+//                horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+//                verticalArrangement = Arrangement.spacedBy(itemSpacing),
+//            ) {
+//                items(matchInfos) { info ->
+//                    DanmakuMatchInfoView(
+//                        info, expanded,
+//                        Modifier.weight(1f), // 填满宽度并且让两个卡片有相同高度
+//                    )
+//                }
+//            }
             FlowRow(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(itemSpacing),
@@ -66,22 +80,27 @@ private fun DanmakuMatchInfoView(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SelectionContainer {
-                Text(info.providerId, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    info.providerId,
+                    Modifier.basicMarquee(),
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                )
             }
 
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                FlowRow(
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Icon(Icons.Outlined.Subtitles, "弹幕数量")
-                    Text(remember(info.count) { "${info.count}" })
+                    Text(remember(info.count) { "${info.count}" }, softWrap = false)
                 }
             }
 
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                FlowRow(
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     DanmakuMatchMethodView(info.method, showDetails)
@@ -95,17 +114,18 @@ private fun DanmakuMatchInfoView(
 private fun DanmakuMatchMethodView(
     method: DanmakuMatchMethod,
     showDetails: Boolean,
+    modifier: Modifier = Modifier,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         when (method) {
             is DanmakuMatchMethod.Exact -> {
                 ExactMatch()
                 if (showDetails) {
                     SelectionContainer {
-                        Text(method.subjectTitle)
+                        Text(method.subjectTitle, Modifier.basicMarquee(), softWrap = false)
                     }
                     SelectionContainer {
-                        Text(method.episodeTitle)
+                        Text(method.episodeTitle, Modifier.basicMarquee(), softWrap = false)
                     }
                 }
             }
@@ -117,15 +137,15 @@ private fun DanmakuMatchMethodView(
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Icon(Icons.Outlined.QuestionMark, null)
-                        Text("半模糊匹配")
+                        Text("半模糊匹配", softWrap = false)
                     }
                 }
                 if (showDetails) {
                     SelectionContainer {
-                        Text(method.subjectTitle)
+                        Text(method.subjectTitle, Modifier.basicMarquee(), softWrap = false)
                     }
                     SelectionContainer {
-                        Text(method.episodeTitle)
+                        Text(method.episodeTitle, Modifier.basicMarquee(), softWrap = false)
                     }
                 }
             }
@@ -137,15 +157,15 @@ private fun DanmakuMatchMethodView(
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Icon(Icons.Outlined.QuestionMark, null)
-                        Text("模糊匹配")
+                        Text("模糊匹配", softWrap = false)
                     }
                 }
                 if (showDetails) {
                     SelectionContainer {
-                        Text(method.subjectTitle)
+                        Text(method.subjectTitle, Modifier.basicMarquee(), softWrap = false)
                     }
                     SelectionContainer {
-                        Text(method.episodeTitle)
+                        Text(method.episodeTitle, Modifier.basicMarquee(), softWrap = false)
                     }
                 }
             }
@@ -154,10 +174,10 @@ private fun DanmakuMatchMethodView(
                 ExactMatch()
                 if (showDetails) {
                     SelectionContainer {
-                        Text(method.subjectId.toString())
+                        Text(method.subjectId.toString(), Modifier.basicMarquee(), softWrap = false)
                     }
                     SelectionContainer {
-                        Text(method.episodeId.toString())
+                        Text(method.episodeId.toString(), Modifier.basicMarquee(), softWrap = false)
                     }
                 }
             }
@@ -169,7 +189,7 @@ private fun DanmakuMatchMethodView(
                 ) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.secondary) {
                         Icon(Icons.Outlined.Close, null)
-                        Text("无匹配")
+                        Text("无匹配", softWrap = false)
                     }
                 }
             }

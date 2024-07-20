@@ -68,6 +68,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresent
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
+import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
@@ -169,10 +170,9 @@ interface EpisodeViewModel : HasBackgroundScope {
     // Danmaku
 
     val danmaku: VideoDanmakuState
-}
 
-@Stable
-inline val EpisodeViewModel.danmakuStatistics: DanmakuStatistics get() = danmaku.statistics
+    val danmakuStatistics: DanmakuStatistics
+}
 
 fun EpisodeViewModel(
     initialSubjectId: Int,
@@ -498,6 +498,10 @@ private class EpisodeViewModelImpl(
             danmakuManager.fetch(it)
         },
         backgroundScope.coroutineContext,
+    )
+
+    override val danmakuStatistics: DanmakuStatistics = DelegateDanmakuStatistics(
+        danmakuLoader.state.produceState(),
     )
 
     override val danmaku = VideoDanmakuStateImpl(

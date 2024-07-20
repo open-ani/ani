@@ -1,6 +1,10 @@
 package me.him188.ani.app.ui.subject.episode.details
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +59,21 @@ fun PreviewEpisodeDetailsShortTitle() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
+fun PreviewEpisodeDetailsScroll() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState(
+        remember {
+            SubjectInfo.Empty.copy(
+                nameCn = "小市民系列",
+            )
+        },
+    )
+    Column(Modifier.height(300.dp)) {
+        PreviewEpisodeDetailsImpl(state)
+    }
+}
+
+@Composable
+@PreviewLightDark
 fun PreviewEpisodeDetailsDoing() = ProvideCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState(
         remember {
@@ -78,6 +97,20 @@ fun PreviewEpisodeDetailsDanmakuFailed() = ProvideCompositionLocalsForPreview {
         remember {
             MutableDanmakuStatistics().apply {
                 danmakuLoadingState = DanmakuLoadingState.Failed(IllegalStateException())
+            }
+        },
+    )
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewEpisodeDetailsDanmakuLoading() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState()
+    PreviewEpisodeDetailsImpl(
+        state,
+        remember {
+            MutableDanmakuStatistics().apply {
+                danmakuLoadingState = DanmakuLoadingState.Loading
             }
         },
     )
@@ -110,7 +143,7 @@ private fun PreviewEpisodeDetailsImpl(
             danmakuLoadingState = DanmakuLoadingState.Success(
                 listOf(
                     DanmakuMatchInfo(
-                        "弹幕源 A", 100,
+                        "弹幕源弹幕源弹幕源 A", 100,
                         DanmakuMatchMethod.Fuzzy("条目标题", "剧集标题"),
                     ),
                     DanmakuMatchInfo(
@@ -150,7 +183,8 @@ private fun PreviewEpisodeDetailsImpl(
             mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
             Modifier
                 .padding(bottom = 16.dp, top = 8.dp)
-                .padding(it),
+                .padding(it)
+                .verticalScroll(rememberScrollState()),
         )
     }
 }
