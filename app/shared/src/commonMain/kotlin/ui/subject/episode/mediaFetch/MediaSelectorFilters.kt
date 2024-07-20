@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 
 
@@ -169,7 +170,11 @@ private fun <T : Any> MediaSelectorFilterChip(
             modifier = modifier.heightIn(min = 40.dp),
         )
 
-        DropdownMenu(showDropdown, onDismissRequest = { showDropdown = false }) {
+        DropdownMenu(
+            showDropdown,
+            onDismissRequest = { showDropdown = false },
+            properties = PlatformPopupProperties(clippingEnabled = false),
+        ) {
             allValuesState.forEach { item ->
                 DropdownMenuItem(
                     text = { label(item) },
