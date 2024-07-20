@@ -50,6 +50,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.foundation.theme.looming
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.videoplayer.ui.state.Chunk
@@ -245,13 +246,18 @@ fun MediaProgressSlider(
         var mousePosX by rememberSaveable { mutableStateOf(0f) }
         var thumbWidth by rememberSaveable { mutableIntStateOf(0) }
         var sliderWidth by rememberSaveable { mutableIntStateOf(0) }
-        
+
         val previewTimeText by remember {
             derivedStateOf {
-                val percent = mousePosX.minus(thumbWidth / 2).div(sliderWidth - thumbWidth)
-                    .coerceIn(0f, 1f)
-                val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
-                renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+                val containerWidth = sliderWidth - thumbWidth
+                if (containerWidth == 0) { // avoid division by zero during preview or in a extremely small container
+                    ""
+                } else {
+                    val percent = mousePosX.minus(thumbWidth / 2).div(containerWidth)
+                        .coerceIn(0f, 1f)
+                    val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
+                    renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+                }
             }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
