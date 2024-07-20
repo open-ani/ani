@@ -124,7 +124,7 @@ fun PlayingEpisodeItem(
                 MaterialTheme.typography.labelLarge,
             ) {
                 FlowRow(
-                    Modifier.padding(horizontal = horizontalPadding),
+                    Modifier.padding(horizontal = horizontalPadding).padding(bottom = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
@@ -136,7 +136,7 @@ fun PlayingEpisodeItem(
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                 Row(
                     Modifier
-                        .paddingIfNotEmpty(top = rowSpacing, bottom = 8.dp) // 和下面保持一致, 自带 8dp
+                        .paddingIfNotEmpty(top = rowSpacing - 8.dp, bottom = 8.dp) // 和下面保持一致, 自带 8dp
                         .padding(horizontal = horizontalPadding),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

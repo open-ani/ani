@@ -91,6 +91,12 @@ fun PreviewPlayingEpisodeItem() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
+fun PreviewPlayingEpisodeItemNoFilename() = ProvideCompositionLocalsForPreview {
+    PreviewEpisodeItemImpl(filename = null)
+}
+
+@Composable
+@PreviewLightDark
 fun PreviewPlayingEpisodeItemLongTexts() = ProvideCompositionLocalsForPreview {
     PreviewEpisodeItemImpl(
         episodeTitle = "超长名称".repeat(20),
