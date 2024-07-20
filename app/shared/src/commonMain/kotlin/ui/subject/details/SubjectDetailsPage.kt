@@ -79,6 +79,7 @@ fun SubjectDetailsScene(
     vm: SubjectDetailsViewModel,
     modifier: Modifier = Modifier,
     showTopBar: Boolean = true,
+    showBlurredBackground: Boolean = true,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
@@ -144,7 +145,10 @@ fun SubjectDetailsScene(
                 }
             }
         },
-        modifier, showTopBar, windowInsets,
+        modifier,
+        showTopBar = showTopBar,
+        showBlurredBackground = showBlurredBackground,
+        windowInsets = windowInsets,
     )
 }
 
@@ -172,6 +176,7 @@ fun SubjectDetailsPage(
     discussionsTab: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     showTopBar: Boolean = true,
+    showBlurredBackground: Boolean = true,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     val scope = rememberCoroutineScope()
@@ -243,10 +248,12 @@ fun SubjectDetailsPage(
                 Column(Modifier.widthIn(max = 1300.dp).fillMaxHeight()) {
                     Box(Modifier.connectedScrollContainer(connectedScrollState)) {
                         // 虚化渐变背景
-                        SubjectBlurredBackground(
-                            coverImageUrl = if (isContentReady) state.coverImageUrl else null,
-                            Modifier.matchParentSize(),
-                        )
+                        if (showBlurredBackground) {
+                            SubjectBlurredBackground(
+                                coverImageUrl = if (isContentReady) state.coverImageUrl else null,
+                                Modifier.matchParentSize(),
+                            )
+                        }
 
                         // 标题和封面, 以及收藏数据, 可向上滑动
                         Column(

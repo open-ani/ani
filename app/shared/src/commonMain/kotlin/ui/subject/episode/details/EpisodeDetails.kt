@@ -126,6 +126,7 @@ fun EpisodeDetails(
                 SubjectDetailsScene(
                     subjectDetailsViewModel,
                     showTopBar = false,
+                    showBlurredBackground = false,
                 )
             }
         }
