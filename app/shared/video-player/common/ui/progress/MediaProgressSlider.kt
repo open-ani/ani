@@ -171,7 +171,7 @@ fun MediaProgressSlider(
     downloadingColor: Color = Color.Yellow,
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
     stopColor: Color = aniDarkColorTheme().primary,
-    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface.copy(alpha = 0.3f),
+    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
