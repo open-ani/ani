@@ -6,6 +6,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -119,6 +120,9 @@ class DanmakuLoaderImpl(
                 )
                 state.value = DanmakuLoadingState.Success(result.matchInfos)
                 emit(result.danmakuCollection)
+            } catch (e: CancellationException) {
+                state.value = DanmakuLoadingState.Idle
+                throw e             
             } catch (e: Throwable) {
                 state.value = DanmakuLoadingState.Failed(e)
                 throw e

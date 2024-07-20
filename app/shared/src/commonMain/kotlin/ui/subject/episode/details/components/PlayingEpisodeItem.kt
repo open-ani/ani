@@ -19,10 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Outbox
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,8 +43,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.icons.PlayingIcon
+import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
@@ -66,9 +69,12 @@ fun PlayingEpisodeItem(
     mediaSelected: Boolean,
     mediaLabels: @Composable () -> Unit,
     filename: @Composable () -> Unit,
+    videoLoadingSummary: @Composable RowScope.() -> Unit,
     mediaSource: @Composable RowScope.() -> Unit,
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
+    rowSpacing: Dp = 20.dp,
+    horizontalPadding: Dp = 20.dp,
 ) {
     Card(
         modifier,
@@ -76,19 +82,30 @@ fun PlayingEpisodeItem(
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp).padding(bottom = 16.dp),
-//                .padding(top = 4.dp)
-//                .padding(bottom = 4.dp),
+                .padding(bottom = 16.dp),
         ) {
-            Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.Top) {
+            // top padding 16.dp
+            // 每两排之间留 20.dp. 每个 Row 需要保证自己有 20.dp bottom padding
+
+            Row(
+                Modifier.padding(
+                    horizontal = horizontalPadding,
+                    vertical = rowSpacing - 12.dp, // 让 12.dp 给 watchStatus button
+                ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // 标题和"看过"按钮
+                // padding 以 text 的为准, top = bottom = 8 + 12 = 20
                 FlowRow(
-                    Modifier.padding(top = 12.dp).weight(1f),
+                    Modifier.padding(vertical = 12.dp).weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                        ProvideContentColor(MaterialTheme.colorScheme.primary) {
-                            PlayingIcon()
+                        Box(Modifier.padding(end = 4.dp)) {
+                            ProvideContentColor(MaterialTheme.colorScheme.primary) {
+                                PlayingIcon()
+                            }
                         }
                         episodeSort()
                         SelectionContainer {
@@ -96,42 +113,81 @@ fun PlayingEpisodeItem(
                         }
                     }
                 }
-                Box(Modifier.padding(start = 12.dp)) {
+                Box(Modifier.align(Alignment.Top).padding(start = 16.dp).height(48.dp)) {
                     watchStatus()
                 }
             }
-            Spacer(Modifier.height(12.dp))
+            // 上面 Row 有 bottom padding = rowSpacing
+
             if (mediaSelected) {
-                ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge, MaterialTheme.colorScheme.secondary) {
-                    Row {
+                // 1080P · 简中 · 122 MB · XX 字幕组
+                ProvideTextStyleContentColor(
+                    MaterialTheme.typography.labelLarge,
+                    MaterialTheme.colorScheme.secondary,
+                ) {
+                    Row(
+                        Modifier.padding(horizontal = horizontalPadding),
+                    ) {
                         mediaLabels()
                     }
                 }
-                Spacer(Modifier.height(24.dp))
-                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Icon(Icons.Outlined.Description, null)
-                        filename()
+
+                @Composable
+                fun InfoRow(
+                    modifier: Modifier = Modifier,
+                    content: @Composable RowScope.() -> Unit
+                ) {
+                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                        Row(
+                            modifier
+                                .padding(
+                                    start = horizontalPadding - 8.dp, // 让给 icon
+                                    end = horizontalPadding,
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            content()
+                        }
                     }
                 }
-                Spacer(Modifier.height(12.dp))
+
+                // 文件名
+                InfoRow(Modifier.paddingIfNotEmpty(top = rowSpacing - 8.dp)) {
+                    Box(
+                        Modifier.align(Alignment.Top)
+                            .minimumInteractiveComponentSize()
+                            .padding(end = 2.dp), // PlayArrow 图标对齐有问题
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Rounded.PlayArrow, null, Modifier.size(28.dp))
+                    }
+                    filename()
+                }
+
+                // ! 不支持的视频类型
+                InfoRow { // 上面的 InfoRow 的 Icon 有 8dp padding, 所以这里就不 pad 了
+                    videoLoadingSummary()
+                }
+
+                // 上面的 InfoRow 的 Icon 有 8dp padding
+                Spacer(Modifier.height(rowSpacing - 8.dp))
             }
-            Spacer(Modifier.height(8.dp))
+
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
                 Row(
-                    Modifier, // cancel out semantic paddings
+                    Modifier.padding(horizontal = horizontalPadding),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Row(
                         Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp), // 20.dp effectively
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         mediaSource()
                     }
                     Row(
                         Modifier.padding(start = 32.dp).offset(x = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp), // 20.dp effectively
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         actions()

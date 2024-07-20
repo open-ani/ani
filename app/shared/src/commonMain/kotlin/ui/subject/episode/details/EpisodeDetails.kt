@@ -54,18 +54,21 @@ import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeStat
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
+import me.him188.ani.app.ui.subject.episode.details.components.DanmakuMatchInfoGrid
 import me.him188.ani.app.ui.subject.episode.details.components.EpisodeWatchStatusButton
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItem
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItemDefaults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
-import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoGrid
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRow
+import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
-import me.him188.ani.app.ui.subject.episode.statistics.renderProperties
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
+import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -182,6 +185,9 @@ fun EpisodeDetails(
                             }
                         }
                     },
+                    videoLoadingSummary = {
+                        VideoLoadingSummary(videoStatistics.videoLoadingState)
+                    },
                     mediaSource = {
                         var showMediaSelector by rememberSaveable { mutableStateOf(false) }
                         PlayingEpisodeItemDefaults.MediaSource(
@@ -297,10 +303,10 @@ fun EpisodeDetailsScaffold(
         }
     }
 
-    Column(modifier) {
+    Column(modifier.padding(top = topPadding, bottom = bottomPadding)) {
         // header
         Column(
-            Modifier.padding(top = topPadding, bottom = bottomPadding).padding(horizontalPaddingValues),
+            Modifier.padding(horizontalPaddingValues),
         ) {
             Row(Modifier.clickable(onClick = onExpandSubject)) {
                 Box(
@@ -357,6 +363,18 @@ fun EpisodeDetailsScaffold(
             danmakuStatistics(horizontalPaddingValues)
         }
     }
+}
+
+@Stable
+internal fun Media.renderProperties(): String {
+    val properties = this.properties
+    return listOfNotNull(
+        properties.resolution,
+        properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
+            .takeIf { it.isNotBlank() },
+        properties.size.takeIf { it != 0.bytes && it != Unspecified },
+        properties.alliance,
+    ).joinToString(" · ")
 }
 
 fun renderSubtitleLanguage(id: String): String {

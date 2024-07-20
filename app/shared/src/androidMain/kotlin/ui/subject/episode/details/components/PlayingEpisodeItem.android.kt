@@ -16,7 +16,10 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.cache.TestMediaList
-import me.him188.ani.app.ui.subject.episode.statistics.renderProperties
+import me.him188.ani.app.ui.subject.episode.details.renderProperties
+import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
+import me.him188.ani.datasources.api.DefaultMedia
 
 @Composable
 fun TestEpisodeWatchStatusButton() {
@@ -29,42 +32,31 @@ fun TestEpisodeWatchStatusButton() {
 }
 
 @Composable
-@PreviewLightDark
-fun PreviewPlayingEpisodeItem() = ProvideCompositionLocalsForPreview {
-    val media = TestMediaList[0]
+private fun PreviewEpisodeItemImpl(
+    media: DefaultMedia? = TestMediaList[0],
+    episodeTitle: String = "中文剧集名称",
+    filename: String? = "filename-".repeat(3) + ".mkv",
+    videoLoadingState: VideoLoadingState = VideoLoadingState.Succeed(false),
+) {
     PlayingEpisodeItem(
         episodeSort = { Text("01") },
-        title = { Text("中文剧集名称") },
+        title = { Text(episodeTitle) },
         watchStatus = { TestEpisodeWatchStatusButton() },
-        mediaSelected = true,
-        mediaLabels = { Text(media.renderProperties()) },
+        mediaSelected = media != null,
+        mediaLabels = {
+            media?.let {
+                Text(media.renderProperties())
+            }
+        },
         filename = {
-            Text("filename-".repeat(8) + ".mkv", maxLines = 3, overflow = TextOverflow.Ellipsis)
+            filename?.let {
+                Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            }
         },
-        mediaSource = {
-            PlayingEpisodeItemDefaults.MediaSource(media = media, true, {})
-        },
-        actions = {
-            PlayingEpisodeItemDefaults.ActionCache({ })
-            PlayingEpisodeItemDefaults.ActionShare(media)
-        },
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .animateContentSize(),
-    )
-}
-
-@Composable
-@PreviewLightDark
-fun PreviewPlayingEpisodeItemNotSelected() = ProvideCompositionLocalsForPreview {
-    PlayingEpisodeItem(
-        episodeSort = { Text("01") },
-        title = { Text("中文剧集名称") },
-        watchStatus = { TestEpisodeWatchStatusButton() },
-        mediaSelected = false,
-        mediaLabels = { },
-        filename = {
-            Text("filename-".repeat(8) + ".mkv", maxLines = 3, overflow = TextOverflow.Ellipsis)
+        videoLoadingSummary = {
+            VideoLoadingSummary(
+                state = videoLoadingState,
+            )
         },
         mediaSource = {
             var isLoading by remember { mutableStateOf(false) }
@@ -78,10 +70,42 @@ fun PreviewPlayingEpisodeItemNotSelected() = ProvideCompositionLocalsForPreview 
         },
         actions = {
             PlayingEpisodeItemDefaults.ActionCache({ })
-            PlayingEpisodeItemDefaults.ActionShare(null)
+            PlayingEpisodeItemDefaults.ActionShare(media)
         },
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .animateContentSize(),
+    )
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewPlayingEpisodeItem() = ProvideCompositionLocalsForPreview {
+    PreviewEpisodeItemImpl()
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewPlayingEpisodeItemLongTexts() = ProvideCompositionLocalsForPreview {
+    PreviewEpisodeItemImpl(
+        episodeTitle = "超长名称".repeat(20),
+        filename = "filename-".repeat(20) + ".mkv",
+    )
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewPlayingEpisodeNotSelected() = ProvideCompositionLocalsForPreview {
+    PreviewEpisodeItemImpl(
+        media = null,
+        filename = null,
+    )
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewPlayingEpisodeItemFailed() = ProvideCompositionLocalsForPreview {
+    PreviewEpisodeItemImpl(
+        videoLoadingState = VideoLoadingState.UnsupportedMedia,
     )
 }
