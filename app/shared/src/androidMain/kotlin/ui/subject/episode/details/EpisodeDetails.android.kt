@@ -52,6 +52,20 @@ fun PreviewEpisodeDetailsShortTitle() = ProvideCompositionLocalsForPreview {
 }
 
 @Composable
+@PreviewLightDark
+fun PreviewEpisodeDetailsDanmakuFailed() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState()
+    PreviewEpisodeDetailsImpl(
+        state,
+        remember {
+            MutableDanmakuStatistics().apply {
+                danmakuLoadingState = DanmakuLoadingState.Failed(IllegalStateException())
+            }
+        },
+    )
+}
+
+@Composable
 private fun rememberTestEpisodeDetailsState(
     subjectInfo: SubjectInfo = SubjectInfo.Empty.copy(
         nameCn = "中文条目名称啊中文条目名称中文条啊目名称中文条目名称中文条目名称中文",
@@ -71,7 +85,25 @@ private fun rememberTestEpisodeDetailsState(
 }
 
 @Composable
-private fun PreviewEpisodeDetailsImpl(state: EpisodeDetailsState) {
+private fun PreviewEpisodeDetailsImpl(
+    state: EpisodeDetailsState,
+    danmakuStatistics: MutableDanmakuStatistics = remember {
+        MutableDanmakuStatistics().apply {
+            danmakuLoadingState = DanmakuLoadingState.Success(
+                listOf(
+                    DanmakuMatchInfo(
+                        "弹幕源 A", 100,
+                        DanmakuMatchMethod.Fuzzy("条目标题", "剧集标题"),
+                    ),
+                    DanmakuMatchInfo(
+                        "弹幕源 B", 100,
+                        DanmakuMatchMethod.ExactId(123456, 222222),
+                    ),
+                ),
+            )
+        }
+    },
+) {
     Scaffold {
         EpisodeDetails(
             state,
@@ -87,22 +119,7 @@ private fun PreviewEpisodeDetailsImpl(state: EpisodeDetailsState) {
             },
             editableRatingState = rememberTestEditableRatingState(),
             editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
-            danmakuStatistics = remember {
-                MutableDanmakuStatistics().apply {
-                    danmakuLoadingState = DanmakuLoadingState.Success(
-                        listOf(
-                            DanmakuMatchInfo(
-                                "弹幕源 A", 100,
-                                DanmakuMatchMethod.Fuzzy("条目标题", "剧集标题"),
-                            ),
-                            DanmakuMatchInfo(
-                                "弹幕源 B", 100,
-                                DanmakuMatchMethod.ExactId(123456, 222222),
-                            ),
-                        ),
-                    )
-                }
-            },
+            danmakuStatistics = danmakuStatistics,
             videoStatistics = remember {
                 testPlayerStatisticsState(
                     playingMedia = TestMediaList.first(),

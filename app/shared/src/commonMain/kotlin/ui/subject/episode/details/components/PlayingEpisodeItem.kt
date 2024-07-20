@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Outbox
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -132,41 +130,32 @@ fun PlayingEpisodeItem(
                     }
                 }
 
-                @Composable
-                fun InfoRow(
-                    modifier: Modifier = Modifier,
-                    content: @Composable RowScope.() -> Unit
-                ) {
-                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                        Row(
-                            modifier
-                                .padding(
-                                    start = horizontalPadding - 8.dp, // 让给 icon
-                                    end = horizontalPadding,
-                                ),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            content()
-                        }
-                    }
-                }
-
                 // 文件名
-                InfoRow(Modifier.paddingIfNotEmpty(top = rowSpacing - 8.dp)) {
-                    Box(
-                        Modifier.align(Alignment.Top)
-                            .minimumInteractiveComponentSize()
-                            .padding(end = 2.dp), // PlayArrow 图标对齐有问题
-                        contentAlignment = Alignment.Center,
+                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                    Row(
+                        Modifier
+                            .paddingIfNotEmpty(top = rowSpacing)
+                            .padding(horizontal = horizontalPadding),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(Icons.Rounded.PlayArrow, null, Modifier.size(28.dp))
+                        filename()
                     }
-                    filename()
+                    Spacer(Modifier.height(8.dp)) // 和下面保持一致, 自带 8dp
                 }
 
                 // ! 不支持的视频类型
-                InfoRow { // 上面的 InfoRow 的 Icon 有 8dp padding, 所以这里就不 pad 了
-                    videoLoadingSummary()
+                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                    // 上面的 InfoRow 的 Icon 有 8dp padding, 所以这里就不 pad 了
+                    Row(
+                        Modifier
+                            .padding(
+                                start = horizontalPadding - 8.dp, // 让给 icon
+                                end = horizontalPadding,
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        videoLoadingSummary()
+                    }
                 }
 
                 // 上面的 InfoRow 的 Icon 有 8dp padding

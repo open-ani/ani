@@ -73,12 +73,12 @@ sealed interface VideoLoadingState {
 
 @Composable
 fun SimpleErrorDialog(
-    text: String,
+    text: () -> String,
     onDismissRequest: () -> Unit,
 ) {
     val clipboard = LocalClipboardManager.current
     val copy = {
-        clipboard.setText(AnnotatedString(text))
+        clipboard.setText(AnnotatedString(text()))
     }
     AlertDialog(
         onDismissRequest,
@@ -92,17 +92,18 @@ fun SimpleErrorDialog(
                 Text("关闭")
             }
         },
+        title = { Text("错误详情") },
         text = {
             OutlinedTextField(
-                value = text,
+                value = text(),
                 onValueChange = {},
-                label = { Text("错误信息") },
                 trailingIcon = {
                     IconButton(copy) {
                         Icon(Icons.Outlined.ContentCopy, "复制")
                     }
                 },
                 readOnly = true,
+                maxLines = 4,
             )
         },
     )
@@ -123,7 +124,7 @@ fun VideoLoadingSummary(
                         else -> state.toString()
                     }
                 }
-                SimpleErrorDialog(text) { showErrorDialog = false }
+                SimpleErrorDialog({ text }) { showErrorDialog = false }
             }
             Row(
                 Modifier.ifThen(state is VideoLoadingState.UnknownError) {
