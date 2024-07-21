@@ -33,6 +33,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
+import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
@@ -56,6 +57,8 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
@@ -158,6 +161,11 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmaku: VideoDanmakuState
 
     val danmakuStatistics: DanmakuStatistics
+
+    /**
+     * episode comment state
+     */
+    val episodeCommentState: CommentState
 }
 
 fun EpisodeViewModel(
@@ -185,6 +193,7 @@ private class EpisodeViewModelImpl(
     private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
+    private val episodeRevisionRepository: EpisodeRevisionRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -488,6 +497,21 @@ private class EpisodeViewModelImpl(
             videoControllerState.setVisible(false)
         },
         backgroundScope,
+    )
+
+    private val episodeCommentLoader = CommentLoader.episode(
+        episodeId = episodeId,
+        coroutineContext = backgroundScope.coroutineContext,
+        episodeCommentSource = { episodeRevisionRepository.getSubjectEpisodeComments(it) },
+    )
+
+    override val episodeCommentState: CommentState = CommentState(
+        episodeId = episodeId,
+        list = episodeCommentLoader.list.produceState(emptyList()),
+        hasMore = episodeCommentLoader.hasFinished.produceState(false),
+        onReload = { episodeCommentLoader.reload() },
+        onLoadMore = { episodeCommentLoader.loadMore() },
+        backgroundScope = backgroundScope,
     )
 
     private val selfUserId = danmakuManager.selfId

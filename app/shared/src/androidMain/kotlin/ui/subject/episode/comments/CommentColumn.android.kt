@@ -2,12 +2,18 @@ package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
+import me.him188.ani.app.ui.subject.components.comment.CommentState
+import me.him188.ani.app.ui.subject.components.comment.UIRichText
+import me.him188.ani.app.ui.subject.components.comment.UiComment
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -16,9 +22,18 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 private fun PreviewCommentColumn() {
     ProvideCompositionLocalsForPreview {
-        EpisodeCommentColumn(
-            remember { EpisodeCommentViewModel(1227087) },
-        )
+        val scope = rememberBackgroundScope()
+        val state = remember {
+            CommentState(
+                episodeId = MutableStateFlow(0),
+                list = mutableStateOf(generateUiComment(4)),
+                hasMore = mutableStateOf(false),
+                onReload = { },
+                onLoadMore = { },
+                backgroundScope = scope.backgroundScope,
+            )
+        }
+        EpisodeCommentColumn(state)
     }
 }
 
@@ -26,41 +41,49 @@ private fun PreviewCommentColumn() {
 @Composable
 private fun PreviewComment() {
     ProvideCompositionLocalsForPreview {
-        Comment(
+        EpisodeComment(
             comment = remember {
-                UiComment(
-                    id = "1",
-                    content = UIRichText(
-                        listOf(
-                            UIRichElement.AnnotatedText(
-                                listOf(
-                                    UIRichElement.Annotated.Text(
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.",
-
-                                        ),
-                                ),
-                            ),
-                        ),
-                    ),
-                    createdAt = run {
-                        if (Random.nextBoolean()) {
-                            System.currentTimeMillis() - 1.minutes.inWholeMilliseconds
-                        } else {
-                            System.currentTimeMillis() - 2.days.inWholeMilliseconds
-                        }
-                    },
-                    creator = UserInfo(
-                        id = 1,
-                        username = "",
-                        nickname = "nickname him188",
-                        avatarUrl = "https://picsum.photos/200/300",
-                    ),
-                    briefReplies = listOf(),
-                    replyCount = 0,
-                )
+                generateUiComment(1).single()
             },
             modifier = Modifier.fillMaxWidth(),
         )
 
+    }
+}
+
+private fun generateUiComment(size: Int) = buildList {
+    repeat(size) {
+        add(
+            UiComment(
+                id = size.toString(),
+                content = UIRichText(
+                    listOf(
+                        UIRichElement.AnnotatedText(
+                            listOf(
+                                UIRichElement.Annotated.Text(
+                                    "$size Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.",
+
+                                    ),
+                            ),
+                        ),
+                    ),
+                ),
+                createdAt = run {
+                    if (Random.nextBoolean()) {
+                        System.currentTimeMillis() - 1.minutes.inWholeMilliseconds
+                    } else {
+                        System.currentTimeMillis() - 2.days.inWholeMilliseconds
+                    }
+                },
+                creator = UserInfo(
+                    id = 1,
+                    username = "",
+                    nickname = "nickname him188 $size",
+                    avatarUrl = "https://picsum.photos/200/300",
+                ),
+                briefReplies = listOf(),
+                replyCount = 0,
+            ),
+        )
     }
 }

@@ -69,7 +69,6 @@ import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
-import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -81,7 +80,6 @@ import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 
@@ -188,11 +186,6 @@ private fun EpisodeSceneTabletVeryWide(
                 return@Row
             }
 
-            val episodeId by vm.episodeId.collectAsStateWithLifecycle()
-            val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
-                EpisodeCommentViewModel(episodeId)
-            }
-
             Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
 
                 EpisodeDetails(
@@ -207,7 +200,7 @@ private fun EpisodeSceneTabletVeryWide(
                     Modifier.verticalScroll(rememberScrollState()),
                 )
 
-                EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
+                EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
             }
         }
     }
@@ -218,21 +211,12 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val episodeId by vm.episodeId.collectAsStateWithLifecycle()
-    val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
-        EpisodeCommentViewModel(episodeId)
-    }
-    LaunchedEffect(true) {
-        commentViewModel.loadMoreComments()
-    }
-    val commentCount by commentViewModel.commentCount.collectAsStateWithLifecycle(null)
-
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
 
     EpisodeSceneContentPhoneScaffold(
         videoOnly = vm.isFullscreen,
-        commentCount = { commentCount },
+        commentCount = { vm.episodeCommentState.count },
         video = {
             EpisodeVideo(vm, vm.isFullscreen, Modifier)
         },
@@ -250,7 +234,7 @@ private fun EpisodeSceneContentPhone(
             )
         },
         commentColumn = {
-            EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
+            EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
         tabRowContent = {
