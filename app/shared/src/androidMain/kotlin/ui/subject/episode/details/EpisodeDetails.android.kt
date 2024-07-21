@@ -21,6 +21,7 @@ import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
@@ -28,6 +29,7 @@ import me.him188.ani.app.ui.subject.episode.statistics.testPlayerStatisticsState
 import me.him188.ani.app.ui.subject.episode.video.MutableDanmakuStatistics
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
+import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
@@ -117,6 +119,16 @@ fun PreviewEpisodeDetailsDanmakuLoading() = ProvideCompositionLocalsForPreview {
 }
 
 @Composable
+@PreviewLightDark
+fun PreviewEpisodeDetailsNotSelected() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState()
+    PreviewEpisodeDetailsImpl(
+        state,
+        playingMedia = null,
+    )
+}
+
+@Composable
 private fun rememberTestEpisodeDetailsState(
     subjectInfo: SubjectInfo = SubjectInfo.Empty.copy(
         nameCn = "中文条目名称啊中文条目名称中文条啊目名称中文条目名称中文条目名称中文",
@@ -155,6 +167,8 @@ private fun PreviewEpisodeDetailsImpl(
         }
     },
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
+    mediaSelectorPresentation: MediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
+    playingMedia: Media? = TestMediaList.first(),
 ) {
     Scaffold {
         EpisodeDetails(
@@ -174,12 +188,12 @@ private fun PreviewEpisodeDetailsImpl(
             danmakuStatistics = danmakuStatistics,
             videoStatistics = remember {
                 testPlayerStatisticsState(
-                    playingMedia = TestMediaList.first(),
+                    playingMedia = playingMedia,
                     playingFilename = "filename-filename-filename-filename-filename-filename-filename.mkv",
                     videoLoadingState = VideoLoadingState.Succeed(isBt = true),
                 )
             },
-            mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
+            mediaSelectorPresentation = mediaSelectorPresentation,
             mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
             Modifier
                 .padding(bottom = 16.dp, top = 8.dp)

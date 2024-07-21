@@ -167,6 +167,8 @@ fun PlayingEpisodeItem(
 
             // 上面的 InfoRow 的 Icon 有 8dp padding
             Spacer(Modifier.height(rowSpacing - 8.dp))
+        } else {
+            Spacer(Modifier.height(8.dp)) // 额外 pad 一点,  否则 "选择数据源" 按钮到 "看过" 按钮之间有点挤
         }
 
         ProvideTextStyle(MaterialTheme.typography.labelLarge) {
@@ -175,18 +177,18 @@ fun PlayingEpisodeItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    mediaSource()
-                }
-                Row(
-                    Modifier.padding(start = 32.dp).offset(x = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    Modifier.offset(x = (-8).dp).weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     actions()
+                }
+                Row(
+                    Modifier.padding(start = 32.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    mediaSource()
                 }
             }
         }

@@ -75,8 +75,8 @@ private fun PreviewEpisodeItemImpl(
                 )
             },
             actions = {
-                PlayingEpisodeItemDefaults.ActionCache({ })
                 PlayingEpisodeItemDefaults.ActionShare(media)
+                PlayingEpisodeItemDefaults.ActionCache({ })
             },
         )
     }

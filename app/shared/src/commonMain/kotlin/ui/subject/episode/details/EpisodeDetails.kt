@@ -244,8 +244,8 @@ fun EpisodeDetails(
                         },
                         actions = {
                             val navigator = LocalNavigator.current
-                            PlayingEpisodeItemDefaults.ActionCache({ navigator.navigateSubjectCaches(state.subjectId) })
                             PlayingEpisodeItemDefaults.ActionShare(videoStatistics.playingMedia)
+                            PlayingEpisodeItemDefaults.ActionCache({ navigator.navigateSubjectCaches(state.subjectId) })
                         },
                     )
                 }
