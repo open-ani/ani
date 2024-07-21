@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,7 @@ import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 import me.him188.ani.app.ui.settings.rendering.renderMediaSourceDescription
+import me.him188.ani.datasources.api.source.isEmpty
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -118,6 +120,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
     )
     Group(
         title = { Text("数据源管理") },
+        description = { Text("在播放时，禁用的数据源不会自动查询，但可手动点击临时启用") },
         actions = {
             AnimatedVisibility(
                 visible = sorter.isSorting,
@@ -264,8 +267,13 @@ internal fun SettingsScope.MediaSourceItem(
     modifier: Modifier = Modifier,
     isEnabled: Boolean = item.isEnabled,
     title: @Composable RowScope.() -> Unit = {
+        val name = if (!isEnabled) {
+            item.info.name + "（已禁用）"
+        } else {
+            item.info.name
+        }
         Text(
-            item.info.name,
+            name,
             Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
         )
     },
@@ -310,13 +318,19 @@ internal fun NormalMediaSourceItemAction(
             )
         }
 
-        var showConfirmDelete by remember { mutableStateOf(false) }
+        var showConfirmDelete by rememberSaveable { mutableStateOf(false) }
         if (showConfirmDelete) {
             AlertDialog(
                 onDismissRequest = { showConfirmDelete = false },
                 icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                 title = { Text("删除数据源") },
-                text = { Text("同时会删除该数据源的配置，确认删除吗？") },
+                text = {
+                    if (item.info.parameters.isEmpty()) {
+                        Text("该数据源无特殊配置，删除后可以重新从模板直接添加，确认删除吗？")
+                    } else {
+                        Text("该数据源有配置，删除后将丢失配置，之后从模板添加时需要重新配置，确认删除吗？")
+                    }
+                },
                 confirmButton = {
                     TextButton({ onDelete(); showConfirmDelete = false }) {
                         Text(
@@ -365,7 +379,7 @@ internal fun NormalMediaSourceItemAction(
                 )
                 DropdownMenuItem(
                     leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                    text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                    text = { Text("删除（可重新添加）", color = MaterialTheme.colorScheme.error) },
                     onClick = {
                         showMore = false
                         showConfirmDelete = true
