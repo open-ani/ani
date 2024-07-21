@@ -16,6 +16,7 @@ import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.OneshotActionConfig
+import me.him188.ani.app.data.models.preference.ProfileSettings
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
@@ -46,6 +47,10 @@ interface SettingsRepository {
      */
     val defaultMediaPreference: Settings<MediaPreference>
 
+    /**
+     * @since 3.5
+     */
+    val profileSettings: Settings<ProfileSettings>
     val proxySettings: Settings<ProxySettings>
     val mediaCacheSettings: Settings<MediaCacheSettings>
     val danmakuSettings: Settings<DanmakuSettings>
@@ -66,6 +71,7 @@ interface SettingsRepository {
 interface Settings<T> {
     val flow: Flow<T>
     suspend fun set(value: T)
+    suspend fun update(update: (old: T?) -> T)
 }
 
 class PreferencesRepositoryImpl(
@@ -80,6 +86,12 @@ class PreferencesRepositoryImpl(
     ) : Settings<Boolean> {
         private val key = booleanPreferencesKey(name)
         override val flow: Flow<Boolean> = preferences.data.map { it[key] ?: true }
+        override suspend fun update(update: (Boolean?) -> Boolean) {
+            preferences.edit {
+                it[key] = update(it[key])
+            }
+        }
+
         override suspend fun set(value: Boolean) {
             preferences.edit { it[key] = value }
         }
@@ -105,6 +117,16 @@ class PreferencesRepositoryImpl(
                 }
             }
 
+        override suspend fun update(update: (T?) -> T) {
+            logger.debug { "Updating preference '$key' with lambda" }
+            preferences.edit { pref ->
+                pref[key] = format.encodeToString(
+                    serializer,
+                    update(pref[key]?.let { format.decodeFromString(serializer, it) }),
+                )
+            }
+        }
+
         override suspend fun set(value: T) {
             logger.debug { "Updating preference '$key' with: $value" }
             preferences.edit {
@@ -127,6 +149,11 @@ class PreferencesRepositoryImpl(
             MediaPreference.serializer(),
             default = { MediaPreference.PlatformDefault },
         )
+    override val profileSettings: Settings<ProfileSettings> = SerializablePreference(
+        "profileSettings",
+        ProfileSettings.serializer(),
+        default = { ProfileSettings.Default },
+    )
     override val proxySettings: Settings<ProxySettings> = SerializablePreference(
         "proxyPreferences",
         ProxySettings.serializer(),
