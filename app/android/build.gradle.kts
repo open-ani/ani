@@ -23,6 +23,7 @@ plugins {
     kotlin("plugin.compose")
     id("kotlinx-atomicfu")
     id("kotlin-parcelize")
+    idea
 }
 
 dependencies {
@@ -58,6 +59,12 @@ android {
         targetSdk = getIntProperty("android.compile.sdk")
         versionCode = getIntProperty("android.version.code")
         versionName = project.version.toString()
+        ndk {
+            // Specifies the ABI configurations of your native
+            // libraries Gradle should build and package with your app.
+            //noinspection ChromeOsAbiSupport
+            abiFilters += listOf("arm64-v8a") // TODO: add "armeabi-v7a"
+        }
     }
     signingConfigs {
         kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {
@@ -101,8 +108,20 @@ android {
         compose = true
         buildConfig = true
     }
+    externalNativeBuild {
+        cmake {
+            path = projects.torrent.anitorrent.dependencyProject.projectDir.resolve("CMakeLists.txt")
+        }
+    }
+
 }
 
 composeCompiler {
     enableStrongSkippingMode = true
+}
+
+idea {
+    module {
+        excludeDirs.add(file(".cxx"))
+    }
 }
