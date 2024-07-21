@@ -625,12 +625,16 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
+                        var currentVisible by remember { mutableStateOf(false) }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
+                            onDragStarted = {
+                                currentVisible = controllerState.isVisible
+                            },
                             onDragStopped = {
                                 if (!controllerState.alwaysOn) {
-                                    controllerState.isVisible = false
+                                    controllerState.isVisible = currentVisible
                                 }
                             },
                         ) {
