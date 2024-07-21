@@ -371,8 +371,7 @@ private class EpisodeViewModelImpl(
                 }?.second ?: EpisodeCacheStatus.NotCached
             },
             onSelect = {
-                episodeId.value = it.episode.id
-                episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
+                switchEpisode(it.episode.id)
             },
             onChangeCollectionType = { episode, it ->
                 collectionButtonEnabled.value = false
@@ -430,14 +429,18 @@ private class EpisodeViewModelImpl(
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
+    fun switchEpisode(episodeId: Int) {
+        episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
+        mediaSelector.unselect() // 否则不会自动选择
+        playerState.stop()
+        switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
+        this.episodeId.value = episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
+    }
+
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
         onSelect = {
-            mediaSelector.unselect() // 否则不会自动选择
-            playerState.stop()
-
-            switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
-            episodeId.value = it.episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
+            switchEpisode(it.episodeId)
         },
         currentEpisodeId = episodeId,
         parentCoroutineContext = backgroundScope.coroutineContext,
