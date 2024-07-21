@@ -9,7 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.session.ViewModelAuthSupport
-import me.him188.ani.app.session.requireOnline
+import me.him188.ani.app.session.launchAuthorize
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import org.koin.core.component.KoinComponent
@@ -24,7 +24,7 @@ fun UnauthorizedTips(
 
     val navigator = LocalNavigator.current
     Box(modifier, contentAlignment = Alignment.Center) {
-        OutlinedButton({ vm.requireOnline(navigator = navigator) }) {
+        OutlinedButton({ vm.launchAuthorize(navigator = navigator) }) {
             Text("请先登录", style = MaterialTheme.typography.titleMedium)
         }
     }

@@ -35,6 +35,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.repository.ProfileRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -90,19 +91,27 @@ interface SessionManager {
      * 2. 若用户登录过, 但是当前会话已经过期, 则此函数会尝试使用 refresh token 刷新会话.
      *    - 若刷新成功, 此函数会返回, 不会弹出任何 UI 提示.
      *    - 若刷新失败, 则进行下一步.
-     * 3. 通过 [AniNavigator] 跳转到登录页面, 并等待用户的登录结果. 若用户取消登录, 此函数会抛出 [AuthorizationCancelledException].
+     * 3. 若用户不是第一次启动, 而且他曾经选择了以游客身份登录, 则抛出异常 [AuthorizationCancelledException].
+     * 4. 取决于 [navigateToWelcome], 通过 [AniNavigator] 跳转到欢迎页或者登录页面, 并等待用户的登录结果.
+     *    - 若用户取消登录 (选择游客), 此函数会抛出 [AuthorizationCancelledException].
+     *    - 若用户成功登录, 此函数正常返回
      *
      * ## Cancellation Support
      *
      * 此函数支持 coroutine cancellation. 当 coroutine 被取消时, 此函数会中断授权请求并抛出 [CancellationException].
-     *
-     * @throws AuthorizationCancelledException if user cancels the authorization.
-     * @throws AuthorizationFailedException if authorization failed, maybe due to network error.
      */
     @Throws(AuthorizationException::class)
-    suspend fun requireOnline(navigator: AniNavigator)
+    suspend fun requireAuthorize(
+        navigator: AniNavigator,
+        navigateToWelcome: Boolean,
+        ignoreGuest: Boolean = false,
+    )
 
-    fun requireOnlineAsync(navigator: AniNavigator)
+    fun requireOnlineAsync(
+        navigator: AniNavigator,
+        navigateToWelcome: Boolean,
+        ignoreGuest: Boolean = false,
+    )
 
     suspend fun setSession(session: Session)
 
@@ -121,10 +130,14 @@ object TestSessionManagers {
         override val isSessionValid: Flow<Boolean?> = session.map { it != null }
         override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
 
-        override suspend fun requireOnline(navigator: AniNavigator) {
+        override suspend fun requireAuthorize(
+            navigator: AniNavigator,
+            navigateToWelcome: Boolean,
+            ignoreGuest: Boolean
+        ) {
         }
 
-        override fun requireOnlineAsync(navigator: AniNavigator) {
+        override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         }
 
         override suspend fun setSession(session: Session) {
@@ -138,7 +151,11 @@ object TestSessionManagers {
     }
 }
 
+/**
+ * 当用户希望以游客身份登录时抛出的异常.
+ */
 class AuthorizationCancelledException(
+    override val message: String?,
     override val cause: Throwable? = null
 ) : AuthorizationException()
 
@@ -149,11 +166,13 @@ class AuthorizationFailedException(
 sealed class AuthorizationException : Exception()
 
 
-internal class SessionManagerImpl(
-) : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope() {
+internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope() {
     private val tokenRepository: TokenRepository by inject()
     private val profileRepository: ProfileRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
     private val client: BangumiClient by inject()
+
+    private val profileSettings = settingsRepository.profileSettings
 
     private val logger = logger(SessionManager::class)
 
@@ -223,7 +242,7 @@ internal class SessionManagerImpl(
         return true
     }
 
-    override suspend fun requireOnline(navigator: AniNavigator) {
+    override suspend fun requireAuthorize(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         logger.trace { "requireOnline" }
 
         // fast path, already online
@@ -240,9 +259,12 @@ internal class SessionManagerImpl(
             }
 
             // failed to refresh, possibly refresh token is invalid
+            if (!ignoreGuest && profileSettings.flow.first().loginAsGuest) {
+                throw AuthorizationCancelledException("以游客身份登录") // 以游客身份登录
+            }
 
             // Launch external oauth (e.g. browser)
-            val req = BangumiOAuthRequest(navigator) { session, refreshToken ->
+            val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session, refreshToken ->
                 setSession(session.accessToken, session.expiresAt, refreshToken)
             }
             processingRequest.value = req
@@ -257,7 +279,10 @@ internal class SessionManagerImpl(
             check(state is ExternalOAuthRequest.State.Result)
             when (state) {
                 is ExternalOAuthRequest.State.Cancelled -> {
-                    throw AuthorizationCancelledException(state.cause)
+                    profileSettings.update {
+                        copy(loginAsGuest = true)
+                    }
+                    throw AuthorizationCancelledException(null, state.cause)
                 }
 
                 is ExternalOAuthRequest.State.Failed -> {
@@ -271,11 +296,11 @@ internal class SessionManagerImpl(
         }
     }
 
-    override fun requireOnlineAsync(navigator: AniNavigator) {
+    override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         launchInBackground {
             try {
                 processingRequest.value?.cancel()
-                requireOnline(navigator)
+                requireAuthorize(navigator, navigateToWelcome = navigateToWelcome, ignoreGuest)
                 logger.info { "requireOnline: success" }
             } catch (e: AuthorizationException) {
                 logger.error(e) { "Authorization failed" }
@@ -285,6 +310,9 @@ internal class SessionManagerImpl(
 
     override suspend fun setSession(session: Session) {
         tokenRepository.setSession(session)
+        profileSettings.update {
+            copy(loginAsGuest = false)
+        }
     }
 
     override suspend fun logout() {

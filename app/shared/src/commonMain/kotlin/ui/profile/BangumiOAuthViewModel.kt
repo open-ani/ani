@@ -20,34 +20,32 @@ package me.him188.ani.app.ui.profile
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.session.ExternalOAuthRequest
 import me.him188.ani.app.session.OAuthResult
-import me.him188.ani.app.session.Session
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.utils.logging.debug
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.time.Duration.Companion.days
 
 @Stable
-class AuthViewModel : AbstractViewModel(), KoinComponent {
+class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
 
     /**
      * 当前授权是否正在进行中
      */
-    val isProcessing = sessionManager.processingRequest
+    val processingRequest = sessionManager.processingRequest
 
     /**
      * 需要进行授权
      */
-    val needAuth: StateFlow<Boolean> = sessionManager.isSessionValid.map { it != true }.stateInBackground(true)
+    val needAuth by sessionManager.isSessionValid.map { it != true }.produceState(true)
 
     /**
      * 当前是第几次尝试
@@ -92,9 +90,5 @@ class AuthViewModel : AbstractViewModel(), KoinComponent {
 
     fun onCancel() {
         sessionManager.processingRequest.value?.cancel()
-    }
-
-    suspend fun authByToken(token: String) {
-        sessionManager.setSession(Session(token, System.currentTimeMillis() + 365.days.inWholeMilliseconds))
     }
 }
