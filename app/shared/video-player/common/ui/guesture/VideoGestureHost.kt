@@ -82,6 +82,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RES
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
+import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -391,6 +392,7 @@ enum class GestureFamily(
 fun VideoGestureHost(
     controllerState: VideoControllerState,
     seekerState: SwipeSeekerState,
+    progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
     modifier: Modifier = Modifier,
@@ -623,7 +625,16 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        swipeToSeek(seekerState, Orientation.Horizontal)
+                        swipeToSeek(seekerState, Orientation.Horizontal) {
+                            progressSliderState.run {
+                                val offsetRatio = if (totalDurationMillis == 0L) {
+                                    0f
+                                } else {
+                                    (currentPositionMillis + deltaSeconds.times(1000)).toFloat() / totalDurationMillis
+                                }
+                                previewPositionRatio(offsetRatio)
+                            }
+                        }
                     }
                     .ifThen(family.keyboardLeftRightToSeek) {
                         onKeyboardHorizontalDirection(

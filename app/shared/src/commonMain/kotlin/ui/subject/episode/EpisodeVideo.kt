@@ -103,6 +103,15 @@ internal fun EpisodeVideoImpl(
     var showSettings by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
+    val progressSliderState = rememberMediaProgressSliderState(
+        playerState,
+        onPreview = {
+            // not yet supported
+        },
+        onPreviewFinished = {
+            playerState.seekTo(it)
+        },
+    )
     VideoScaffold(
         expanded = expanded,
         modifier = modifier,
@@ -173,6 +182,7 @@ internal fun EpisodeVideoImpl(
             LockableVideoGestureHost(
                 videoControllerState,
                 swipeSeekerState,
+                progressSliderState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
                 locked = isLocked,
@@ -210,15 +220,7 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            val progressSliderState = rememberMediaProgressSliderState(
-                playerState,
-                onPreview = {
-                    // not yet supported
-                },
-                onPreviewFinished = {
-                    playerState.seekTo(it)
-                },
-            )
+
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
