@@ -25,6 +25,7 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import kotlin.time.Duration.Companion.seconds
 
@@ -93,8 +94,8 @@ fun GestureLock(
  */
 @Composable
 fun LockedScreenGestureHost(
-    controllerVisible: () -> Boolean,
-    setControllerVisible: (visible: Boolean) -> Unit,
+    controllerVisible: () -> VisibleState,
+    setControllerVisible: (visible: VisibleState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -102,14 +103,14 @@ fun LockedScreenGestureHost(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { setControllerVisible(true) },
+                onClick = { setControllerVisible(VisibleState.VISIBLE) },
             ).fillMaxSize(),
     )
 
-    if (controllerVisible()) {
+    if (controllerVisible().value) {
         LaunchedEffect(true) {
             delay(2.seconds)
-            setControllerVisible(false)
+            setControllerVisible(VisibleState.INVISIBLE)
         }
     }
     return

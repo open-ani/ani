@@ -74,6 +74,7 @@ import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_FORWARD
@@ -471,13 +472,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.isVisible = true
+                            controllerState.isVisible = VisibleState.VISIBLE
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
                                     delay(3000)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.isVisible = false
+                                    controllerState.isVisible = VisibleState.INVISIBLE
                                 }
                             }
                         }
@@ -625,7 +626,7 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        var currentVisible by remember { mutableStateOf(false) }
+                        var currentVisible by remember { mutableStateOf(VisibleState.INVISIBLE) }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
@@ -643,7 +644,7 @@ fun VideoGestureHost(
                                 val offsetRatio =
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
-                                controllerState.isVisible = true
+                                controllerState.isVisible = VisibleState.VISIBLE
                             }
                         }
                     }

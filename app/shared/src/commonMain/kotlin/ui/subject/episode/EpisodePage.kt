@@ -78,6 +78,7 @@ import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideS
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
@@ -180,7 +181,7 @@ private fun EpisodeSceneTabletVeryWide(
                 vm,
                 expanded = true,
                 maintainAspectRatio = false,
-                initialControllerVisible = true,
+                initialControllerVisible = VisibleState.VISIBLE,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
             )
 
@@ -404,7 +405,7 @@ private fun EpisodeVideo(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    initialControllerVisible: Boolean = false,
+    initialControllerVisible: VisibleState = VisibleState.INVISIBLE,
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 

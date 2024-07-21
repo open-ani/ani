@@ -76,6 +76,7 @@ import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -222,7 +223,7 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val videoControllerState = VideoControllerState(false)
+    private val videoControllerState = VideoControllerState(VisibleState.INVISIBLE)
 
     /**
      * 更换 EP 是否已经完成了.
@@ -514,7 +515,7 @@ private class EpisodeViewModelImpl(
             settingsRepository.danmakuEnabled.set(it)
         },
         onHideController = {
-            videoControllerState.setVisible(false)
+            videoControllerState.setVisible(VisibleState.INVISIBLE)
         },
         backgroundScope,
     )
