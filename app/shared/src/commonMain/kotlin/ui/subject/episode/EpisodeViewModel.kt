@@ -1,13 +1,9 @@
 package me.him188.ani.app.ui.subject.episode
 
-import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -82,7 +78,6 @@ import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.ui.DanmakuConfig
-import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
@@ -157,15 +152,6 @@ interface EpisodeViewModel : HasBackgroundScope {
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
      */
     val playerState: PlayerState
-
-    @UiThread
-    suspend fun copyDownloadLink(clipboardManager: ClipboardManager)
-
-    @UiThread
-    suspend fun browseMedia(context: Context)
-
-    @UiThread
-    suspend fun browseDownload(context: Context)
 
     // Danmaku
 
@@ -457,24 +443,6 @@ private class EpisodeViewModelImpl(
         parentCoroutineContext = backgroundScope.coroutineContext,
     )
 
-    override suspend fun copyDownloadLink(clipboardManager: ClipboardManager) {
-        requestMediaOrNull()?.let {
-            clipboardManager.setText(AnnotatedString(it.download.uri))
-        }
-    }
-
-    override suspend fun browseMedia(context: Context) {
-        requestMediaOrNull()?.let {
-            browserNavigator.openBrowser(context, it.originalUrl)
-        }
-    }
-
-    override suspend fun browseDownload(context: Context) {
-        requestMediaOrNull()?.let {
-            browserNavigator.openMagnetLink(context, it.download.uri)
-        }
-    }
-
     private val danmakuLoader = DanmakuLoaderImpl(
         requestFlow = mediaFetchSession.transformLatest {
             emit(null)
@@ -612,20 +580,5 @@ private class EpisodeViewModelImpl(
         data,
         isSelf = selfId == data.senderId,
     )
-
-    /**
-     * Requests the user to select a media if not already.
-     * Returns null if the user cancels the selection.
-     */
-    @UiThread
-    private suspend fun requestMediaOrNull(): Media? {
-        mediaSelectorPresentation.selected?.let {
-            return it // already selected
-        }
-
-        mediaSelectorVisible = true
-        snapshotFlow { mediaSelectorVisible }.first { !it } // await closed
-        return mediaSelectorPresentation.selected
-    }
 }
 
