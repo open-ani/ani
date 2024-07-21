@@ -627,12 +627,11 @@ fun VideoGestureHost(
                     .ifThen(family.swipeToSeek) {
                         swipeToSeek(seekerState, Orientation.Horizontal) {
                             progressSliderState.run {
-                                val offsetRatio = if (totalDurationMillis == 0L) {
-                                    0f
-                                } else {
-                                    (currentPositionMillis + deltaSeconds.times(1000)).toFloat() / totalDurationMillis
-                                }
+                                if (totalDurationMillis == 0L) return@run
+                                val offsetRatio =
+                                    (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
+                                controllerState.isVisible = true
                             }
                         }
                     }

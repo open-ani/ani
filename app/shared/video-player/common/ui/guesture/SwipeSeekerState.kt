@@ -120,7 +120,7 @@ class SwipeSeekerState(
             enabled: Boolean = true,
             interactionSource: MutableInteractionSource? = null,
             reverseDirection: Boolean = false,
-            onDragging: SwipeSeekerState.() -> Unit = {},
+            onDragging: () -> Unit = {},
         ): Modifier {
             return composed(
                 inspectorInfo = {
@@ -131,7 +131,7 @@ class SwipeSeekerState(
                 draggable(
                     rememberDraggableState {
                         seekerState.onSwipeOffset(it)
-                        onDragging(seekerState)
+                        onDragging()
                     },
                     orientation,
                     onDragStarted = { seekerState.onSwipeStarted() },
