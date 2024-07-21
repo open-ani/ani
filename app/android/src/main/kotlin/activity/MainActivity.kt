@@ -159,7 +159,7 @@ class MainActivity : AniComponentActivity() {
 
         lifecycleScope.launch {
             runCatching {
-                sessionManager.requireOnline(aniNavigator)
+                sessionManager.requireAuthorize(aniNavigator, navigateToWelcome = true)
             }
         }
     }

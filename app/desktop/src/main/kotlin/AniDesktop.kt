@@ -232,7 +232,7 @@ object AniDesktop {
             logger.info { "[AutoLogin] Waiting for awaitNavigator" }
             navigator.awaitNavigator()
             logger.info { "[AutoLogin] Got navigator, start requireOnline" }
-            sessionManager.requireOnline(navigator)
+            sessionManager.requireAuthorize(navigator, navigateToWelcome = true)
         }
 
         application {

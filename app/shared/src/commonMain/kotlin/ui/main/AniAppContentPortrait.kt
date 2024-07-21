@@ -10,8 +10,12 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.profile.AuthViewModel
-import me.him188.ani.app.ui.profile.auth.AuthRequestScene
+import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
+import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
+import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthPage
+import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthViewModel
+import me.him188.ani.app.ui.profile.auth.WelcomeScene
+import me.him188.ani.app.ui.profile.auth.WelcomeViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
@@ -33,13 +37,17 @@ fun AniAppContentPortrait(
     val navigator = aniNavigator.navigator
     CompositionLocalProvider(LocalNavigator provides aniNavigator) {
         NavHost(navigator, initialRoute = "/home", modifier = modifier) {
+            scene("/welcome") { // 由 SessionManager.requireAuthorize 跳转到
+                WelcomeScene(rememberViewModel { WelcomeViewModel() }, Modifier.fillMaxSize())
+            }
             scene("/home") {
                 HomeScene()
             }
-            scene("/auth") { backStackEntry ->
-                val allowBack = backStackEntry.query<Boolean?>("allowBack") ?: false
-                val authViewModel = rememberViewModel { AuthViewModel() }
-                AuthRequestScene(authViewModel, allowBack)
+            scene("/bangumi-oauth") {
+                BangumiOAuthScene(rememberViewModel { BangumiOAuthViewModel() })
+            }
+            scene("/bangumi-token-auth") {
+                BangumiTokenAuthPage(rememberViewModel { BangumiTokenAuthViewModel() }, Modifier.fillMaxSize())
             }
             scene("/subjects/{subjectId}") { backStackEntry ->
                 val subjectId = backStackEntry.path<Int>("subjectId") ?: run {

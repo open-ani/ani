@@ -15,15 +15,12 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Login
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,9 +29,9 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +51,7 @@ import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.session.isLoggedIn
-import me.him188.ani.app.session.requireOnline
+import me.him188.ani.app.session.launchAuthorize
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -89,28 +86,6 @@ fun HomeScene(modifier: Modifier = Modifier) {
         HomeSceneLandscape(modifier)
     } else {
         HomeScenePortrait(modifier)
-    }
-}
-
-@Composable
-private fun UserAvatar(
-    modifier: Modifier = Modifier,
-    vm: AccountViewModel = rememberViewModel { AccountViewModel() },
-) {
-    val user by vm.selfInfo.collectAsStateWithLifecycle()
-    val loggedIn by isLoggedIn()
-    if (loggedIn == false) {
-        val navigator = LocalNavigator.current
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
-            IconButton({ vm.requireOnline(navigator = navigator) }, modifier) {
-                Icon(Icons.AutoMirrored.Rounded.Login, "登录")
-            }
-        }
-    } else {
-        AvatarImage(
-            url = user?.avatarUrl,
-            modifier.clip(CircleShape).placeholder(user == null),
-        )
     }
 }
 
@@ -168,7 +143,20 @@ private fun HomeSceneLandscape(
                 NavigationRail(
                     Modifier.padding(top = 16.dp).weight(1f),
                     header = {
-                        UserAvatar(Modifier.size(48.dp))
+                        val vm = rememberViewModel { AccountViewModel() }
+                        val user by vm.selfInfo.collectAsStateWithLifecycle()
+                        val loggedIn by isLoggedIn()
+                        if (loggedIn == false) {
+                            val navigator = LocalNavigator.current
+                            TextButton({ vm.launchAuthorize(navigator = navigator) }) {
+                                Text("登录")
+                            }
+                        } else {
+                            AvatarImage(
+                                url = user?.avatarUrl,
+                                Modifier.size(48.dp).clip(CircleShape).placeholder(user == null),
+                            )
+                        }
                     },
                 ) {
                     Column(

@@ -8,10 +8,14 @@ import org.koin.core.component.inject
 interface ViewModelAuthSupport
 
 
-fun <T> T.requireOnline(navigator: AniNavigator)
+fun <T> T.launchAuthorize(navigator: AniNavigator)
         where T : KoinComponent,
               T : HasBackgroundScope,
               T : ViewModelAuthSupport {
     val sessionManager: SessionManager by inject()
-    sessionManager.requireOnlineAsync(navigator)  //  use SessionManager's lifecycle
+    sessionManager.requireOnlineAsync(
+        navigator,
+        navigateToWelcome = false,
+        ignoreGuest = true,
+    )  //  use SessionManager's lifecycle
 }

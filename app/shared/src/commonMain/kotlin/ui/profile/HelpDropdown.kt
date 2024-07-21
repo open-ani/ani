@@ -6,8 +6,31 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.LocalContext
 import org.koin.core.context.GlobalContext
+
+object AniHelpNavigator {
+    fun openJoinQQGroup(context: ContextMP) {
+        GlobalContext.get().get<BrowserNavigator>().openJoinGroup(context)
+    }
+
+    fun openTelegram(context: ContextMP) {
+        GlobalContext.get().get<BrowserNavigator>().openJoinTelegram(context)
+    }
+
+    fun openIssueTracker(context: ContextMP) {
+        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER)
+    }
+
+    fun openGitHubHome(context: ContextMP) {
+        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME)
+    }
+
+    fun openAniWebsite(context: ContextMP) {
+        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE)
+    }
+}
 
 @Composable
 fun HelpDropdown(
@@ -20,26 +43,26 @@ fun HelpDropdown(
         DropdownMenuItem(
             text = { Text("加入 QQ 群 927170241") },
             onClick = {
-                GlobalContext.get().get<BrowserNavigator>().openJoinGroup(context)
+                AniHelpNavigator.openJoinQQGroup(context)
             },
         )
         DropdownMenuItem(
             text = { Text("加入 Telegram 群 openani") },
             onClick = {
-                GlobalContext.get().get<BrowserNavigator>().openJoinTelegram(context)
+                AniHelpNavigator.openTelegram(context)
             },
         )
         DropdownMenuItem(
             text = { Text("GitHub 开源仓库") },
-            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) },
+            onClick = { AniHelpNavigator.openGitHubHome(context) },
         )
         DropdownMenuItem(
             text = { Text("反馈问题") },
-            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) },
+            onClick = { AniHelpNavigator.openIssueTracker(context) },
         )
         DropdownMenuItem(
             text = { Text("Ani 官网") },
-            onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) },
+            onClick = { AniHelpNavigator.openAniWebsite(context) },
         )
     }
 }
