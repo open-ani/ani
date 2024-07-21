@@ -625,7 +625,15 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        swipeToSeek(seekerState, Orientation.Horizontal) {
+                        swipeToSeek(
+                            seekerState,
+                            Orientation.Horizontal,
+                            onDragStopped = {
+                                if (!controllerState.alwaysOn) {
+                                    controllerState.isVisible = false
+                                }
+                            },
+                        ) {
                             progressSliderState.run {
                                 if (totalDurationMillis == 0L) return@run
                                 val offsetRatio =

@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 
 
@@ -120,6 +121,7 @@ class SwipeSeekerState(
             enabled: Boolean = true,
             interactionSource: MutableInteractionSource? = null,
             reverseDirection: Boolean = false,
+            onDragStopped: suspend CoroutineScope.(velocity: Float) -> Unit = {},
             onDelta: (Float) -> Unit = {},
         ): Modifier {
             return composed(
@@ -135,7 +137,10 @@ class SwipeSeekerState(
                     },
                     orientation,
                     onDragStarted = { seekerState.onSwipeStarted() },
-                    onDragStopped = { seekerState.onSwipeStopped() },
+                    onDragStopped = {
+                        seekerState.onSwipeStopped()
+                        onDragStopped(it)
+                    },
                     enabled = enabled,
                     interactionSource = interactionSource,
                     reverseDirection = reverseDirection,
