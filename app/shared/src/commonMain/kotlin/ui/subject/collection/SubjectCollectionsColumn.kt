@@ -121,7 +121,8 @@ fun SubjectCollectionsColumn(
     onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    enableAnimation: () -> Boolean = { true },
+    enableAnimation: Boolean = true,
+    allowProgressIndicator: Boolean = true,
 ) {
     if (state.isKnownEmpty) {
         onEmpty()
@@ -152,17 +153,18 @@ fun SubjectCollectionsColumn(
         contentPadding = gridContentPadding,
     ) {
         items(state.cachedData, key = { it.subjectId }) { collection ->
-            Box(Modifier.ifThen(enableAnimation()) { animateItemPlacement() }) {
+            Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
                 item(collection)
             }
         }
 
         if (state.hasMore) {
             item("dummy loader", span = { GridItemSpan(maxLineSpan) }) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    CircularProgressIndicator()
+                if (allowProgressIndicator) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
-
                 state.requestMore()
             }
         }

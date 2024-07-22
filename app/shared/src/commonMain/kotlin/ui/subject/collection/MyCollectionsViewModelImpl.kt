@@ -14,7 +14,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.session.ViewModelAuthSupport
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.getCachedData
@@ -36,10 +36,12 @@ class CollectionsByType(
 }
 
 @Stable
-interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
+interface MyCollectionsViewModel : HasBackgroundScope {
     val subjectManager: SubjectManager
 
     val myCollectionsSettings: MyCollectionsSettings
+
+    val authState: AuthState
 
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): CollectionsByType
@@ -80,6 +82,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     override val myCollectionsSettings: MyCollectionsSettings by settingsRepository.uiSettings.flow
         .map { it.myCollections }
         .produceState(MyCollectionsSettings.Default)
+    override val authState: AuthState = AuthState()
 
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType): CollectionsByType =

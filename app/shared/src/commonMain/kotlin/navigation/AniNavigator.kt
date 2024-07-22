@@ -65,6 +65,10 @@ interface AniNavigator {
         navigator.navigate("/home")
     }
 
+    fun navigateSearch(requestFocus: Boolean = false) {
+        navigator.navigate("/home?tab=search")
+    }
+
     private val Platform.supportsCallbackLogin: Boolean
         get() = when (this) {
             is Platform.Desktop -> false
