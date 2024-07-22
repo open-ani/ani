@@ -116,6 +116,7 @@ fun ProvideCompositionLocalsForPreview(
                     LocalIsPreviewing provides true,
                     LocalNavigator provides aniNavigator,
                     LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
+                    LocalImageViewerHandler provides rememberImageViewerHandler(),
                 ) {
                     AniApp {
                         content()

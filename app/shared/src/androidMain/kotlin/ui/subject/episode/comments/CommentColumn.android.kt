@@ -52,16 +52,16 @@ private fun PreviewComment() {
 }
 
 private fun generateUiComment(size: Int) = buildList {
-    repeat(size) {
+    repeat(size) { i ->
         add(
             UiComment(
-                id = size.toString(),
+                id = i.toString(),
                 content = UIRichText(
                     listOf(
                         UIRichElement.AnnotatedText(
                             listOf(
                                 UIRichElement.Annotated.Text(
-                                    "$size Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.",
+                                    "$i Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.",
 
                                     ),
                             ),
@@ -78,7 +78,7 @@ private fun generateUiComment(size: Int) = buildList {
                 creator = UserInfo(
                     id = 1,
                     username = "",
-                    nickname = "nickname him188 $size",
+                    nickname = "nickname him188 $i",
                     avatarUrl = "https://picsum.photos/200/300",
                 ),
                 briefReplies = listOf(),
