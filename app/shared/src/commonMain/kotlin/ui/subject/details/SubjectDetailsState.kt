@@ -4,7 +4,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
@@ -40,7 +39,7 @@ class SubjectDetailsState(
     private val charactersOrNull by characters.produceState(null)
     val characters by derivedStateOf { charactersOrNull ?: emptyList() }
 
-    private val personsOrNull by persons.onCompletion { if (it != null) emit(emptyList()) }.produceState(null)
+    private val personsOrNull by persons.produceState(null)
     val persons by derivedStateOf { personsOrNull ?: emptyList() }
 
     /**
