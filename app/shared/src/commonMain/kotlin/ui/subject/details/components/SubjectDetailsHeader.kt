@@ -67,9 +67,7 @@ internal fun SubjectDetailsHeader(
                 Text(info.displayName)
             },
             subtitle = {
-                if (info.name != info.displayName) {
-                    Text(info.name)
-                }
+                Text(info.name)
             },
             seasonTags = {
                 OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
@@ -93,9 +91,7 @@ internal fun SubjectDetailsHeader(
                 Text(info.displayName)
             },
             subtitle = {
-                if (info.name != info.displayName) {
-                    Text(info.name)
-                }
+                Text(info.name)
             },
             seasonTags = {
                 OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
