@@ -54,6 +54,7 @@ import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
@@ -201,6 +202,15 @@ internal fun EpisodeVideoImpl(
                     playerState,
                     videoLoadingState(),
                     optimizeForFullscreen = expanded, // TODO: 这对 PC 其实可能不太好
+                )
+            }
+        },
+        lhsBar = {
+            if (expanded) {
+                ScreenshotButton(
+                    onClick = {
+                        print("clint")
+                    },
                 )
             }
         },

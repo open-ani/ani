@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
@@ -75,6 +76,7 @@ fun VideoScaffold(
     danmakuHost: @Composable BoxScope.() -> Unit = {},
     gestureHost: @Composable BoxWithConstraintsScope.() -> Unit = {},
     floatingMessage: @Composable BoxScope.() -> Unit = {},
+    lhsBar: @Composable ColumnScope.() -> Unit = {},
     rhsBar: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
@@ -200,6 +202,19 @@ fun VideoScaffold(
                             CompositionLocalProvider(LocalContentColor provides Color.White) {
                                 floatingBottomEnd()
                             }
+                        }
+                    }
+                }
+            }
+            Column(Modifier.fillMaxSize().background(Color.Transparent)) {
+                Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
+                    Column(Modifier.padding(start = 16.dp).align(Alignment.CenterStart)) {
+                        AnimatedVisibility(
+                            visible = controllersVisibleState && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            lhsBar()
                         }
                     }
                 }
