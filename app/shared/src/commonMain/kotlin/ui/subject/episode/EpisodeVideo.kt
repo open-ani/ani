@@ -222,7 +222,13 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            if (videoControllerState.isVisible == VisibleState.PROGRESS_BAR_ONLY) {
+            var previousVisibleState by remember { mutableStateOf(VisibleState.VISIBLE) }
+
+            val showProgressSliderOnly = derivedStateOf {
+                videoControllerState.isVisible.takeIf { it != VisibleState.INVISIBLE } ?: previousVisibleState
+            }
+            previousVisibleState = showProgressSliderOnly.value
+            if (showProgressSliderOnly.value == VisibleState.PROGRESS_BAR_ONLY) {
                 Box {
                     MediaProgressSlider(
                         progressSliderState, playerState.cacheProgress,
