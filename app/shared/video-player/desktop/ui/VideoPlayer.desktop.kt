@@ -46,6 +46,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
+import java.nio.file.Path
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -135,6 +136,14 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override fun stopImpl() {
         player.controls().stop()
+    }
+
+    override fun getScreenshotPath(): Path? {
+        TODO("Not yet implemented")
+    }
+
+    override fun saveScreenshotFile(filename: String) {
+        TODO("Not yet implemented")
     }
 
     class VlcjData(

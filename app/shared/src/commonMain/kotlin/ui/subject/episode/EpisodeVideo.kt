@@ -210,6 +210,7 @@ internal fun EpisodeVideoImpl(
                 ScreenshotButton(
                     onClick = {
                         print("clint")
+                        playerState.getScreenshotPath()
                     },
                 )
             }
