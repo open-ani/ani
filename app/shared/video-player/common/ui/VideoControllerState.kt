@@ -11,14 +11,14 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 
 
 /**
- * @param initialVisible 变更不会更新
+ * @param initialVisibility 变更不会更新
  */
 @Composable
 fun rememberVideoControllerState(
-    initialVisible: ControllerVisibility = ControllerVisibility.INVISIBLE
+    initialVisibility: ControllerVisibility = ControllerVisibility.INVISIBLE
 ): VideoControllerState {
     return remember {
-        VideoControllerState(initialVisible)
+        VideoControllerState(initialVisibility)
     }
 }
 
@@ -36,7 +36,7 @@ class VideoControllerState(
      */
     var visibility: ControllerVisibility by mutableStateOf(initialVisibility)
     val setVisibility: (ControllerVisibility) -> Unit = { visibility = it }
-
+    
     fun toggleVisible(desired: ControllerVisibility? = null) {
         visibility = desired ?: if (visibility.value) ControllerVisibility.INVISIBLE else ControllerVisibility.VISIBLE
     }

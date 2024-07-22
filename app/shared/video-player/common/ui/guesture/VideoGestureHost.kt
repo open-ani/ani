@@ -626,16 +626,16 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        var previousVisible by remember { mutableStateOf(ControllerVisibility.INVISIBLE) }
+                        var previousVisibility by remember { mutableStateOf(ControllerVisibility.INVISIBLE) }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
-                                previousVisible = controllerState.visibility
+                                previousVisibility = controllerState.visibility
                             },
                             onDragStopped = {
                                 if (!controllerState.alwaysOn) {
-                                    controllerState.visibility = previousVisible
+                                    controllerState.visibility = previousVisibility
                                 }
                             },
                         ) {
@@ -644,7 +644,7 @@ fun VideoGestureHost(
                                 val offsetRatio =
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
-                                if (!previousVisible.value) {
+                                if (!previousVisibility.value) {
                                     controllerState.visibility = ControllerVisibility.PROGRESS_BAR_ONLY
                                 }
                             }
