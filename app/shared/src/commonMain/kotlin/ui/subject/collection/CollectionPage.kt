@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -67,14 +66,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.session.isLoggedIn
-import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
@@ -250,8 +247,7 @@ fun CollectionPage(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 TabContent(
-                    cache = collection.cache,
-                    onRequestMore = { vm.requestMore(type) },
+                    collection.subjectCollectionColumnState,
                     vm = vm,
                     type = type,
                     isLoggedIn = isLoggedIn,
@@ -265,7 +261,6 @@ fun CollectionPage(
                         .nestedScroll(pullToRefreshState.nestedScrollConnection)
                         .fillMaxSize(),
                     enableAnimation = { vm.myCollectionsSettings.enableListAnimation },
-                    gridState = gridState,
                 )
                 PullToRefreshContainer(
                     pullToRefreshState,
@@ -283,15 +278,13 @@ fun CollectionPage(
  */
 @Composable
 private fun TabContent(
-    cache: LazyDataCache<SubjectCollection>,
-    onRequestMore: () -> Unit,
+    state: SubjectCollectionColumnState,
     vm: MyCollectionsViewModel,
     type: UnifiedCollectionType,
     isLoggedIn: Boolean?,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     enableAnimation: () -> Boolean = { true },
-    gridState: LazyGridState = rememberLazyGridState(),
 ) {
     // 同时设置所有剧集为看过
     var currentSetAllEpisodesDialogSubjectId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -310,8 +303,7 @@ private fun TabContent(
     }
 
     SubjectCollectionsColumn(
-        cache,
-        onRequestMore = onRequestMore,
+        state = state,
         item = { subjectCollection ->
             var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -383,7 +375,6 @@ private fun TabContent(
         modifier,
         contentPadding = contentPadding,
         enableAnimation = enableAnimation,
-        gridState = gridState,
     )
 }
 
@@ -398,6 +389,3 @@ private fun UnifiedCollectionType.displayText(): String {
         UnifiedCollectionType.NOT_COLLECTED -> "未收藏"
     }
 }
-
-@Composable
-internal expect fun PreviewCollectionPage()

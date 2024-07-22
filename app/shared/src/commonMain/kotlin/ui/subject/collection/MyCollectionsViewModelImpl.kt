@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.MyCollectionsSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
@@ -28,6 +29,7 @@ import org.koin.core.component.inject
 class CollectionsByType(
     val type: UnifiedCollectionType,
     val cache: LazyDataCache<SubjectCollection>,
+    val subjectCollectionColumnState: SubjectCollectionColumnState,
 ) {
     var isAutoRefreshing by mutableStateOf(false)
     var pullToRefreshState: PullToRefreshState? by mutableStateOf(null)
@@ -60,9 +62,21 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     private val cacheManager: MediaCacheManager by inject()
     private val settingsRepository: SettingsRepository by inject()
 
-    val collectionsByType = subjectManager.collectionsByType.map {
-        CollectionsByType(it.key, it.value)
+    val collectionsByType = subjectManager.collectionsByType.map { (type, cache) ->
+        CollectionsByType(
+            type, cache,
+            SubjectCollectionColumnState(
+                cachedData = cache.cachedDataFlow.produceState(emptyList()),
+                hasMore = cache.isCompleted.map { !it }.produceState(true),
+                isKnownEmpty = cache.isCompleted.combine(cache.cachedDataFlow) { completed, data ->
+                    completed && data.isEmpty()
+                }.produceState(false),
+                onRequestMore = { cache.requestMore() },
+                backgroundScope,
+            ),
+        )
     }
+
     override val myCollectionsSettings: MyCollectionsSettings by settingsRepository.uiSettings.flow
         .map { it.myCollections }
         .produceState(MyCollectionsSettings.Default)
