@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,7 +38,8 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
@@ -68,6 +68,7 @@ import me.him188.ani.app.data.models.subject.getEpisodeToPlay
 import me.him188.ani.app.data.models.subject.isOnAir
 import me.him188.ani.app.data.models.toStringExcludingSameYear
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
@@ -77,10 +78,32 @@ import me.him188.ani.app.ui.subject.collection.progress.cacheStatusIndicationCol
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.components.OutlinedTag
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import kotlin.time.Duration.Companion.seconds
 
 private inline val spacedBy get() = 16.dp
+
+@Stable
+class SubjectCollectionColumnState(
+    cachedData: State<List<SubjectCollection>>,
+    hasMore: State<Boolean>,
+    isKnownEmpty: State<Boolean>,
+    private val onRequestMore: suspend () -> Unit,
+    backgroundScope: CoroutineScope,
+) {
+    private val requestMoreTasker = MonoTasker(backgroundScope)
+
+    val cachedData: List<SubjectCollection> by cachedData
+    val hasMore by hasMore
+    val isKnownEmpty by isKnownEmpty
+
+    internal val gridState = LazyGridState()
+
+    fun requestMore() {
+        if (requestMoreTasker.isRunning) return
+        requestMoreTasker.launch {
+            onRequestMore()
+        }
+    }
+}
 
 /**
  * Lazy column of [item]s, designed for My Collections.
@@ -93,72 +116,57 @@ private inline val spacedBy get() = 16.dp
  */
 @Composable
 fun SubjectCollectionsColumn(
-    cache: LazyDataCache<SubjectCollection>,
-    onRequestMore: () -> Unit,
+    state: SubjectCollectionColumnState,
     item: @Composable (item: SubjectCollection) -> Unit,
     onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     enableAnimation: () -> Boolean = { true },
-    gridState: LazyGridState = rememberLazyGridState(),
 ) {
-    // 当从其他页面回到这个页面时, cache.cachedDataFlow 会重新开始 collect
-    val data by cache.cachedDataFlow.collectAsStateWithLifecycle(null) // 反正下面会立即用到, recompose 总是重组整个函数
-    val dataLoaded by remember { derivedStateOf { data != null } }
-
-    // 如果不 debounce, 会导致刚刚加载完成后会显示一小会 "空空如也"
-    val isCompleted by remember(cache) { cache.isCompleted.debounce(1.seconds) }.collectAsStateWithLifecycle(false)
-    val dataNullOrEmpty by remember { derivedStateOf { data.isNullOrEmpty() } }
-
-    @Suppress("NAME_SHADOWING")
-    val enableAnimation by remember(enableAnimation) { derivedStateOf(enableAnimation) }
-
-    Composition {
-        if (dataNullOrEmpty && isCompleted) {
-            onEmpty()
-        }
+    if (state.isKnownEmpty) {
+        onEmpty()
+        return
     }
 
-
-    if (!dataLoaded) return // 还没加载完, 不要去更新 grid 状态, 否则会恢复到顶部
+    val layoutDirection = LocalLayoutDirection.current
+    val contentPaddingState by rememberUpdatedState(contentPadding)
+    val gridContentPadding by remember(layoutDirection) {
+        derivedStateOf {
+            PaddingValues(
+                // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
+                // 这个高度是可以滚到上面的, 所以它
+                top = (contentPaddingState.calculateTopPadding() + spacedBy).coerceAtLeast(0.dp),
+                bottom = (contentPaddingState.calculateBottomPadding() + spacedBy).coerceAtLeast(0.dp),
+                start = contentPaddingState.calculateStartPadding(layoutDirection),
+                end = contentPaddingState.calculateEndPadding(layoutDirection),
+            )
+        }
+    }
 
     LazyVerticalGrid(
         GridCells.Adaptive(360.dp),
         modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
-        gridState,
+        state.gridState,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
-        contentPadding = PaddingValues(
-            // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
-            // 这个高度是可以滚到上面的, 所以它
-            top = (contentPadding.calculateTopPadding() + spacedBy).coerceAtLeast(0.dp),
-            bottom = (contentPadding.calculateBottomPadding() + spacedBy).coerceAtLeast(0.dp),
-            start = contentPadding.calculateStartPadding(LocalLayoutDirection.current),
-            end = contentPadding.calculateEndPadding(LocalLayoutDirection.current),
-        ),
+        contentPadding = gridContentPadding,
     ) {
-        items(data.orEmpty(), key = { it.subjectId }) { collection ->
-            Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
+        items(state.cachedData, key = { it.subjectId }) { collection ->
+            Box(Modifier.ifThen(enableAnimation()) { animateItemPlacement() }) {
                 item(collection)
             }
         }
 
-        if (!isCompleted) {
+        if (state.hasMore) {
             item("dummy loader", span = { GridItemSpan(maxLineSpan) }) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     CircularProgressIndicator()
                 }
 
-                val onRequestMoreState by rememberUpdatedState(onRequestMore)
-                LaunchedEffect(true) { onRequestMoreState() }
+                state.requestMore()
             }
         }
     }
-}
-
-@Composable
-private fun Composition(content: @Composable () -> Unit) {
-    content()
 }
 
 /**
