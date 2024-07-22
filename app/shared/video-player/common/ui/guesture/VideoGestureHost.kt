@@ -73,8 +73,8 @@ import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_FORWARD
@@ -472,13 +472,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.isVisible = VisibleState.VISIBLE
+                            controllerState.visibility = ControllerVisibility.VISIBLE
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
                                     delay(3000)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.isVisible = VisibleState.INVISIBLE
+                                    controllerState.visibility = ControllerVisibility.INVISIBLE
                                 }
                             }
                         }
@@ -626,16 +626,16 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        var currentVisible by remember { mutableStateOf(VisibleState.INVISIBLE) }
+                        var previousVisible by remember { mutableStateOf(ControllerVisibility.INVISIBLE) }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
-                                currentVisible = controllerState.isVisible
+                                previousVisible = controllerState.visibility
                             },
                             onDragStopped = {
                                 if (!controllerState.alwaysOn) {
-                                    controllerState.isVisible = currentVisible
+                                    controllerState.visibility = previousVisible
                                 }
                             },
                         ) {
@@ -644,8 +644,8 @@ fun VideoGestureHost(
                                 val offsetRatio =
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
-                                if (!currentVisible.value) {
-                                    controllerState.isVisible = VisibleState.PROGRESS_BAR_ONLY
+                                if (!previousVisible.value) {
+                                    controllerState.visibility = ControllerVisibility.PROGRESS_BAR_ONLY
                                 }
                             }
                         }

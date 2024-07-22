@@ -15,30 +15,30 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
  */
 @Composable
 fun rememberVideoControllerState(
-    initialVisible: VisibleState = VisibleState.INVISIBLE
+    initialVisible: ControllerVisibility = ControllerVisibility.INVISIBLE
 ): VideoControllerState {
     return remember {
         VideoControllerState(initialVisible)
     }
 }
 
-enum class VisibleState(var value: Boolean) {
+enum class ControllerVisibility(val value: Boolean) {
     VISIBLE(true),
     INVISIBLE(false),
     PROGRESS_BAR_ONLY(true)
 }
 @Stable
 class VideoControllerState(
-    initialVisible: VisibleState = VisibleState.VISIBLE
+    initialVisibility: ControllerVisibility = ControllerVisibility.VISIBLE
 ) {
     /**
      * 控制器是否可见.
      */
-    var isVisible: VisibleState by mutableStateOf(initialVisible)
-    val setVisible: (VisibleState) -> Unit = { isVisible = it }
+    var visibility: ControllerVisibility by mutableStateOf(initialVisibility)
+    val setVisibility: (ControllerVisibility) -> Unit = { visibility = it }
 
-    fun toggleVisible(desired: VisibleState? = null) {
-        isVisible = desired ?: if (isVisible.value) VisibleState.INVISIBLE else VisibleState.VISIBLE
+    fun toggleVisible(desired: ControllerVisibility? = null) {
+        visibility = desired ?: if (visibility.value) ControllerVisibility.INVISIBLE else ControllerVisibility.VISIBLE
     }
 
     var danmakuEnabled by mutableStateOf(true)

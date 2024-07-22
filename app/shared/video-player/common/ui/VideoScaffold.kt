@@ -65,7 +65,7 @@ fun VideoScaffold(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    controllersVisible: () -> VisibleState = { VisibleState.VISIBLE },
+    controllersVisible: () -> ControllerVisibility = { ControllerVisibility.VISIBLE },
     gestureLocked: () -> Boolean = { false },
     topBar: @Composable RowScope.() -> Unit = {},
     /**
@@ -122,7 +122,7 @@ fun VideoScaffold(
                 Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                     // 顶部控制栏: 返回键, 标题, 设置
                     AnimatedVisibility(
-                        visible = controllersVisibleState == VisibleState.VISIBLE && !gestureLockedState,
+                        visible = controllersVisibleState == ControllerVisibility.VISIBLE && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {

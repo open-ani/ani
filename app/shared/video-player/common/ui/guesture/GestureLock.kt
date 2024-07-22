@@ -24,8 +24,8 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import kotlin.time.Duration.Companion.seconds
 
@@ -94,8 +94,8 @@ fun GestureLock(
  */
 @Composable
 fun LockedScreenGestureHost(
-    controllerVisible: () -> VisibleState,
-    setControllerVisible: (visible: VisibleState) -> Unit,
+    controllerVisibility: () -> ControllerVisibility,
+    setControllerVisibility: (visibility: ControllerVisibility) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -103,14 +103,14 @@ fun LockedScreenGestureHost(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { setControllerVisible(VisibleState.VISIBLE) },
+                onClick = { setControllerVisibility(ControllerVisibility.VISIBLE) },
             ).fillMaxSize(),
     )
 
-    if (controllerVisible().value) {
+    if (controllerVisibility().value) {
         LaunchedEffect(true) {
             delay(2.seconds)
-            setControllerVisible(VisibleState.INVISIBLE)
+            setControllerVisibility(ControllerVisibility.INVISIBLE)
         }
     }
     return
@@ -131,7 +131,7 @@ fun LockableVideoGestureHost(
     onExitFullscreen: () -> Unit = {},
 ) {
     if (locked) {
-        LockedScreenGestureHost({ controllerState.isVisible }, controllerState.setVisible, modifier)
+        LockedScreenGestureHost({ controllerState.visibility }, controllerState.setVisibility, modifier)
     } else {
         VideoGestureHost(
             controllerState,

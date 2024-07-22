@@ -50,10 +50,10 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
-import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
@@ -118,7 +118,7 @@ internal fun EpisodeVideoImpl(
         expanded = expanded,
         modifier = modifier,
         maintainAspectRatio = maintainAspectRatio,
-        controllersVisible = { videoControllerState.isVisible },
+        controllersVisible = { videoControllerState.visibility },
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
@@ -222,13 +222,13 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            var previousVisibleState by remember { mutableStateOf(VisibleState.VISIBLE) }
+            var previousVisibleState by remember { mutableStateOf(ControllerVisibility.VISIBLE) }
 
             val showProgressSliderOnly = derivedStateOf {
-                videoControllerState.isVisible.takeIf { it != VisibleState.INVISIBLE } ?: previousVisibleState
+                videoControllerState.visibility.takeIf { it != ControllerVisibility.INVISIBLE } ?: previousVisibleState
             }
             previousVisibleState = showProgressSliderOnly.value
-            if (showProgressSliderOnly.value == VisibleState.PROGRESS_BAR_ONLY) {
+            if (showProgressSliderOnly.value == ControllerVisibility.PROGRESS_BAR_ONLY) {
                 Box {
                     MediaProgressSlider(
                         progressSliderState, playerState.cacheProgress,
