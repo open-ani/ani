@@ -14,6 +14,17 @@ interface PagedSourceContext {
     fun setTotalSize(size: Int)
 }
 
+private object EmptyPagedSource : PagedSource<Nothing> {
+    override val currentPage: MutableStateFlow<Int> = MutableStateFlow(0)
+    override val finished = MutableStateFlow(true)
+    override suspend fun nextPageOrNull(): List<Nothing>? = null
+    override fun skipToPage(page: Int) = Unit
+    override fun backToPrevious() = Unit
+    override val results: Flow<Nothing> = flow { }
+    override val totalSize: MutableStateFlow<Int?> = MutableStateFlow(null)
+}
+
+fun emptyPagedSource(): PagedSource<Nothing> = EmptyPagedSource
 
 @Suppress("FunctionName")
 fun <T> SinglePagePagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>): PagedSource<T> {

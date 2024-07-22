@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -51,6 +52,11 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.days
 
+enum class LoginStatus {
+    LOGGED_IN,
+    LOGGED_OUT,
+}
+
 /**
  * Bangumi 授权状态管理器
  */
@@ -59,7 +65,7 @@ interface SessionManager {
      * 当前有效的会话. 优先使用 [username] 或 [isSessionValid].
      */
     @Stable
-    val session: SharedFlow<Session?>
+    val session: Flow<Session?>
 
     /**
      * 当前有效会话的用户名. 当不为 `null` 时保证可以使用该用户名执行 API 请求.
@@ -71,6 +77,8 @@ interface SessionManager {
      */
     @Stable
     val username: SharedFlow<String?>
+
+    val loginStatus: Flow<LoginStatus?>
 
     /**
      * 当前授权是否有效. `null` means not yet known, i.e. waiting for database query on start up.
@@ -127,6 +135,7 @@ object TestSessionManagers {
             ),
         )
         override val username: MutableStateFlow<String?> = MutableStateFlow("test")
+        override val loginStatus: Flow<LoginStatus> = MutableStateFlow(LoginStatus.LOGGED_IN)
         override val isSessionValid: Flow<Boolean?> = session.map { it != null }
         override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
 
@@ -176,8 +185,23 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
 
     private val logger = logger(SessionManager::class)
 
-    override val session: SharedFlow<Session?> =
-        tokenRepository.session.distinctUntilChanged().shareInBackground(SharingStarted.Eagerly)
+    class State(
+        val session: Session?
+    )
+
+    private val state = tokenRepository.session.distinctUntilChanged().map {
+        State(session = it)
+    }.shareInBackground(started = SharingStarted.Eagerly)
+
+    override val loginStatus = state.map {
+        if (it.session == null) {
+            LoginStatus.LOGGED_OUT
+        } else {
+            LoginStatus.LOGGED_IN
+        }
+    }.onStart<LoginStatus?> { emit(null) }
+
+    override val session: Flow<Session?> = state.map { it.session }
 
     override val username: SharedFlow<String?> =
         session
@@ -191,7 +215,7 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
             .shareInBackground(SharingStarted.Eagerly)
 
     override val isSessionValid: Flow<Boolean?> =
-        username.map { it != null }
+        loginStatus.map { it?.equals(LoginStatus.LOGGED_IN) }
 
     private val refreshTokenLoaded = CompletableDeferred<Boolean>()
     private val refreshToken = tokenRepository.refreshToken

@@ -18,20 +18,22 @@
 
 package me.him188.ani.app.ui.subject.collection
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,7 +73,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
-import me.him188.ani.app.session.isLoggedIn
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
@@ -79,7 +81,6 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.profile.UnauthorizedTips
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeProgressState
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
@@ -187,12 +188,11 @@ fun CollectionPage(
         },
 
         ) { topBarPaddings ->
-        val isLoggedIn by isLoggedIn()
-
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
             userScrollEnabled = Platform.currentPlatform.isMobile(),
+            verticalAlignment = Alignment.Top,
         ) { index ->
             val type = COLLECTION_TABS_SORTED[index]
             val collection = vm.collectionsByType(type)
@@ -243,31 +243,62 @@ fun CollectionPage(
                 }
             }
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                TabContent(
-                    collection.subjectCollectionColumnState,
-                    vm = vm,
-                    type = type,
-                    isLoggedIn = isLoggedIn,
-                    contentPadding = PaddingValues(
-                        top = topBarPaddings.calculateTopPadding() + contentPadding.calculateTopPadding(),
-                        bottom = contentPadding.calculateBottomPadding(),
-                        start = 0.dp,
-                        end = 0.dp,
-                    ),
-                    modifier = Modifier
-                        .nestedScroll(pullToRefreshState.nestedScrollConnection)
-                        .fillMaxSize(),
-                    enableAnimation = { vm.myCollectionsSettings.enableListAnimation },
-                )
-                PullToRefreshContainer(
-                    pullToRefreshState,
-                    Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(topBarPaddings.calculateTopPadding()),
-                )
+            val tabContentPadding = PaddingValues(
+                top = topBarPaddings.calculateTopPadding() + contentPadding.calculateTopPadding(),
+                bottom = contentPadding.calculateBottomPadding(),
+                start = 0.dp,
+                end = 0.dp,
+            )
+            if (vm.authState.isKnownLoggedOut) {
+                CollectionPageUnauthorizedTips(vm.authState, Modifier.padding(tabContentPadding))
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    TabContent(
+                        collection.subjectCollectionColumnState,
+                        vm = vm,
+                        type = type,
+                        contentPadding = tabContentPadding,
+                        modifier = Modifier
+                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                            .fillMaxSize(),
+                        enableAnimation = vm.myCollectionsSettings.enableListAnimation,
+                        allowProgressIndicator = vm.authState.isKnownLoggedIn,
+                    )
+                    PullToRefreshContainer(
+                        pullToRefreshState,
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(topBarPaddings.calculateTopPadding()),
+                    )
+
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollectionPageUnauthorizedTips(
+    authState: AuthState,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier.padding(top = 32.dp).padding(horizontal = 16.dp).fillMaxWidth().widthIn(max = 400.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        val navigator = LocalNavigator.current
+        Text("游客模式下请搜索后观看，或登录后使用收藏功能")
+
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            OutlinedButton({ authState.launchAuthorize(navigator) }, Modifier.weight(1f)) {
+                Text("登录")
+            }
+
+            Button({ navigator.navigateSearch() }, Modifier.weight(1f)) {
+                Text("搜索")
             }
         }
     }
@@ -281,10 +312,10 @@ private fun TabContent(
     state: SubjectCollectionColumnState,
     vm: MyCollectionsViewModel,
     type: UnifiedCollectionType,
-    isLoggedIn: Boolean?,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
-    enableAnimation: () -> Boolean = { true },
+    enableAnimation: Boolean = true,
+    allowProgressIndicator: Boolean = true,
 ) {
     // 同时设置所有剧集为看过
     var currentSetAllEpisodesDialogSubjectId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -364,17 +395,13 @@ private fun TabContent(
         },
         onEmpty = {
             Column(Modifier.padding(contentPadding).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(Modifier.height(32.dp))
-                if (isLoggedIn == false) {
-                    UnauthorizedTips(Modifier.fillMaxSize())
-                } else {
-                    Text("~ 空空如也 ~\n请点击 \"找番\" 收藏条目", style = MaterialTheme.typography.titleMedium)
-                }
+                Text("~ 空空如也 ~\n请点击 \"找番\" 收藏条目", style = MaterialTheme.typography.titleMedium)
             }
         },
         modifier,
         contentPadding = contentPadding,
         enableAnimation = enableAnimation,
+        allowProgressIndicator = allowProgressIndicator,
     )
 }
 

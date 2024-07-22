@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -54,6 +55,7 @@ import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
+import me.him188.ani.datasources.api.paging.emptyPagedSource
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiEpType
@@ -247,7 +249,7 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
-                    val username = sessionManager.username.filterNotNull().first()
+                    val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
                         subjectType = BangumiSubjectType.Anime,
