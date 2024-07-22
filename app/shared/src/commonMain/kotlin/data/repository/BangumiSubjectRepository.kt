@@ -153,10 +153,10 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
 
 fun BangumiUserSubjectCollection.toSubjectCollectionItem(
     subject: BangumiSubject,
-    episodes: List<BangumiUserEpisodeCollection>,
+    episodes: List<EpisodeCollection>,
 ): SubjectCollection = SubjectCollection(
     info = subject.toSubjectInfo(),
-    episodes = episodes.map { it.toEpisodeCollection() },
+    episodes = episodes,
     collectionType = type.toCollectionType(),
     selfRatingInfo = toSelfRatingInfo(),
 )

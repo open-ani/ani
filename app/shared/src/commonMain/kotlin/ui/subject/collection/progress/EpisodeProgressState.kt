@@ -59,7 +59,7 @@ class EpisodeProgressStateImpl(
     private val settingsRepository: SettingsRepository by inject()
 
     private val subject by flow {
-        emit(subjectManager.getSubjectInfo(subjectId))
+        emit(subjectManager.getSubjectInfo(subjectId)) // does not require login
     }.retryUntilSuccess().produceState(null)
 
     override val title: String by derivedStateOf { subject?.displayName ?: "" }
