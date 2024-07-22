@@ -5,7 +5,6 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -29,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -41,9 +39,7 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
-import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
@@ -61,7 +57,6 @@ import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.AudioSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressIndicatorText
-import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSlider
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
@@ -229,13 +224,11 @@ internal fun EpisodeVideoImpl(
             }
             previousVisibleState = showProgressSliderOnly.value
             if (showProgressSliderOnly.value == ControllerVisibility.PROGRESS_BAR_ONLY) {
-                Box {
-                    MediaProgressSlider(
-                        progressSliderState, playerState.cacheProgress,
-                        downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
-                    )
-                }
+                PlayerControllerDefaults.MediaProgressSlider(
+                    progressSliderState,
+                    playerState,
+                    modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+                )
                 return@VideoScaffold
             }
             PlayerControllerBar(
@@ -261,9 +254,9 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    MediaProgressSlider(
-                        progressSliderState, playerState.cacheProgress,
-                        downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
+                    PlayerControllerDefaults.MediaProgressSlider(
+                        progressSliderState,
+                        playerState,
                     )
                 },
                 danmakuEditor = danmakuEditor,
