@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
@@ -48,7 +49,7 @@ class SubjectDetailsViewModel(
             },
             persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
-            },
+            }.onCompletion { if (it != null) emit(emptyList()) },
             characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
                 RelatedCharacterInfo.sortList(it)
             },
