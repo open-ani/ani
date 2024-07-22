@@ -56,7 +56,7 @@ import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
 import me.him188.ani.datasources.api.paging.emptyPagedSource
-import me.him188.ani.datasources.api.paging.map
+import me.him188.ani.datasources.api.paging.mapNotNull
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiEpType
 import me.him188.ani.datasources.bangumi.models.BangumiEpisodeCollectionType
@@ -254,7 +254,7 @@ class SubjectManagerImpl(
                         username,
                         subjectType = BangumiSubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
-                    ).map {
+                    ).mapNotNull {
                         it.fetchToSubjectCollection()
                     }
                 },
@@ -355,11 +355,7 @@ class SubjectManagerImpl(
                 // 这是网络请求, 无网情况下会一直失败
                 emit(
                     runOrEmitEmptyList {
-                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
-                            .map {
-                                it.toEpisodeCollection()
-                            }
-                            .toList()
+                        fetchEpisodeCollections(subjectId)
                     },
                 )
             }
@@ -519,28 +515,43 @@ class SubjectManagerImpl(
         subjectId: Int,
     ): SubjectCollection {
         val info = getSubjectInfo(subjectId)
-        val episodes = bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
-            .toList()
+
+        // 查收藏状态, 没收藏就查剧集, 认为所有剧集都没有收藏
+        val episodes: List<EpisodeCollection> = fetchEpisodeCollections(subjectId)
+
         val collection = bangumiSubjectRepository.subjectCollectionById(subjectId).first()
 
         return SubjectCollection(
-            info, episodes.map { it.toEpisodeCollection() },
+            info, episodes,
             collectionType = collection?.type?.toCollectionType()
                 ?: UnifiedCollectionType.NOT_COLLECTED,
             selfRatingInfo = collection?.toSelfRatingInfo() ?: SelfRatingInfo.Empty,
         )
     }
 
-    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection = coroutineScope {
+    private suspend fun fetchEpisodeCollections(subjectId: Int): List<EpisodeCollection> {
+        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, BangumiEpType.MainStory)
+            .let { collections ->
+                collections?.toList()?.map { it.toEpisodeCollection() }
+                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, BangumiEpType.MainStory)
+                        .toList()
+                        .map {
+                            EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)
+                        }
+            }
+    }
+
+    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection? = coroutineScope {
         val subject = async {
             runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }
         val eps = runUntilSuccess {
-            bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
+            fetchEpisodeCollections(subjectId)
         }.toList()
 
         toSubjectCollectionItem(subject.await(), eps)
     }
+
 }
 
 

@@ -12,8 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.subject.SubjectCollectionStats
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 
 // 详情页内容 (不包含背景)
 @Composable
@@ -40,13 +38,6 @@ fun SubjectDetailsDefaults.CollectionData(
             color = LocalContentColor.current.slightlyWeaken(),
         )
     }
-}
-
-@Composable
-fun SubjectDetailsDefaults.CollectionAction(
-    state: EditableSubjectCollectionTypeState,
-) {
-    EditableSubjectCollectionTypeButton(state)
 }
 
 @Composable
