@@ -122,7 +122,7 @@ fun VideoScaffold(
                 Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                     // 顶部控制栏: 返回键, 标题, 设置
                     AnimatedVisibility(
-                        visible = controllersVisibleState.value && !gestureLockedState,
+                        visible = controllersVisibleState == VisibleState.VISIBLE && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {

@@ -5,6 +5,7 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -52,6 +53,7 @@ import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
+import me.him188.ani.app.videoplayer.ui.VisibleState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
@@ -220,7 +222,16 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-
+            if (videoControllerState.isVisible == VisibleState.PROGRESS_BAR_ONLY) {
+                Box {
+                    MediaProgressSlider(
+                        progressSliderState, playerState.cacheProgress,
+                        downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+                    )
+                }
+                return@VideoScaffold
+            }
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }

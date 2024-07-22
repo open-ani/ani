@@ -644,7 +644,9 @@ fun VideoGestureHost(
                                 val offsetRatio =
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
-                                controllerState.isVisible = VisibleState.VISIBLE
+                                if (!currentVisible.value) {
+                                    controllerState.isVisible = VisibleState.PROGRESS_BAR_ONLY
+                                }
                             }
                         }
                     }
