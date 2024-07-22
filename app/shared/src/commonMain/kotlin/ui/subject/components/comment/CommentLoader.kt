@@ -28,7 +28,7 @@ class CommentLoader<T>(
 ) : HasBackgroundScope by BackgroundScope(coroutineContext) {
     private val cachedSource = source.shareInBackground()
 
-    val list = source
+    val list = cachedSource
         .flatMapLatest { it.cachedDataFlow }
         .map { list ->
             list.map { with(CommentMapperContext) { uiMapper(it) } }

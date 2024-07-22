@@ -213,6 +213,10 @@ private fun EpisodeSceneContentPhone(
 ) {
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
+    
+    LaunchedEffect(true) {
+        vm.episodeCommentState.reload()
+    }
 
     EpisodeSceneContentPhoneScaffold(
         videoOnly = vm.isFullscreen,
