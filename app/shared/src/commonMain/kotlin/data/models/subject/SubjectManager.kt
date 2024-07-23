@@ -360,7 +360,9 @@ class SubjectManagerImpl(
                 )
             }
             // subscribe to changes
-            emitAll(cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY).map { it?.episodes.orEmpty() })
+            emitAll(
+                cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY).filterNotNull().map { it.episodes },
+            )
         }
     }
 
