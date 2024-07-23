@@ -1,16 +1,23 @@
 package me.him188.ani.app.ui.profile.auth
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material3.Button
@@ -23,6 +30,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -74,6 +86,7 @@ fun WelcomePage(
     onClickGuest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showDetails by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Scaffold(
             Modifier.widthIn(max = 600.dp),
@@ -81,84 +94,114 @@ fun WelcomePage(
 //            TopAppBar(title = { Text("欢迎") })
             },
             bottomBar = {
-                Column(Modifier.navigationBarsPadding()) {
-                    HorizontalDivider(Modifier.padding(horizontal = 4.dp))
-                    Column(
-                        Modifier.padding(all = 16.dp).fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        FilledTonalButton(onClickLogin, Modifier.fillMaxWidth()) {
-                            Text("登录 / 注册 Bangumi")
-                        }
-
-                        Button(
-                            onClick = onClickGuest,
-                            modifier = Modifier.fillMaxWidth(),
+                if (showDetails) {
+                    Column(Modifier.navigationBarsPadding()) {
+                        HorizontalDivider(Modifier.padding(horizontal = 4.dp))
+                        Column(
+                            Modifier.padding(all = 16.dp).fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Text("以游客身份免登录进入")
+                            FilledTonalButton(onClickLogin, Modifier.fillMaxWidth()) {
+                                Text("登录 / 注册")
+                            }
+
+                            Button(
+                                onClick = onClickGuest,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text("以游客身份免登录进入")
+                            }
+                            Text(
+                                "游客可使用除追番进度管理外的所有功能", Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelLarge,
+                            )
                         }
-                        Text(
-                            "游客可使用除追番进度管理外的所有功能", Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
                     }
                 }
             },
         ) { contentPadding ->
-            Column(
-                Modifier.padding(contentPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(all = 16.dp)
-                    .widthIn(max = 1000.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+            var isContentReady by rememberSaveable {
+                mutableStateOf(false)
+            }
+//            if (LocalIsPreviewing.current) {
+//                isContentReady = true
+//            }
+            LaunchedEffect(true) {
+                isContentReady = true
+            }
+            AnimatedVisibility(
+                isContentReady,
+                Modifier.wrapContentSize(),
+                // 从中间往上滑
+                enter = fadeIn(tween(500)) + slideInVertically(
+                    tween(600),
+                    initialOffsetY = { 50.coerceAtMost(it) },
+                ),
             ) {
-                Text("欢迎使用 Ani", style = MaterialTheme.typography.headlineMedium)
+                LazyColumn(
+                    Modifier.padding(contentPadding).widthIn(max = 1000.dp).fillMaxHeight(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    item {
+                        Column(Modifier.animateItemPlacement()) {
+                            Text("欢迎使用 Ani", style = MaterialTheme.typography.headlineMedium)
 
-                ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
-                    Text("""Ani 是一个一站式在线弹幕追番平台。""")
-                }
+                            ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
+                                Row(Modifier.padding(top = 8.dp).align(Alignment.Start)) {
+                                    Text(
+                                        """一站式在线弹幕追番平台""",
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
 
-                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    Text("""Ani 目前由爱好者组成的组织 open-ani 和社区贡献者维护，在 GitHub 上开源。""")
+                            Column(
+                                Modifier.padding(vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                    Text("""Ani 目前由爱好者组成的组织 open-ani 和社区贡献者维护，完全免费，在 GitHub 上开源。""")
 
-                    Text("""Ani 启动于 2024 年 3 月，距离完善还有一段距离。欢迎加群或在 GitHub 反馈问题。""")
-                }
+                                    Text("""Ani 的目标是提供尽可能简单且舒适的追番体验。""")
+                                }
+                            }
 
-                AniContactList()
+                            AniContactList()
 
-                Text(
-                    "资源来自于网络",
-                    Modifier.padding(top = 8.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                )
+                            if (!showDetails) {
+                                Button({ showDetails = true }, Modifier.padding(top = 16.dp).fillParentMaxWidth()) {
+                                    Text("继续")
+                                }
+                            }
+                        }
+                    }
 
-                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                    Text("""Ani 本身不提供资源保存和下载等服务。Ani 只会从互联网上搜索番剧资源，本质上为一个整合了进度管理、视频播放、弹幕、互联网资源搜索引擎等功能的工具。""")
+                    if (showDetails) {
+                        item {
+                            Column(Modifier.animateItemPlacement(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Text(
+                                    "资源来自于网络",
+                                    Modifier.padding(top = 8.dp),
+                                    style = MaterialTheme.typography.titleLarge,
+                                )
 
-                    Text("""Ani 也支持自建的 Jellyfin 等媒体服务。""")
-                }
+                                ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                    Text("""Ani 本身不提供资源保存和下载等服务。Ani 只会从互联网上搜索番剧资源，本质上为一个整合了进度管理、视频播放、弹幕、互联网资源搜索引擎等功能的工具。""")
 
-                Text(
-                    """追番进度管理服务由 Bangumi 提供""",
-                    Modifier.padding(top = 8.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                )
+                                    Text("""Ani 也支持自建的 Jellyfin 等媒体服务。""")
+                                }
+                                //            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                //                Text("""· 注册时建议使用常见邮箱，例如 QQ, 网易, Outlook""")
+                                //                Text("""· 如果提示激活失败，尝试删除激活码的最后一个字再手动输入""")
+                                //                Text("""· 如果有其他问题，可加群获取帮助或在 GitHub 上提交 issue""")
+                                //            }
+                            }
 
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                        Text("""Bangumi 番组计划 是一个中文 ACGN 互联网分享与交流项目，不提供资源下载。""")
-
-                        Text(
-                            """需要登录 Bangumi 账号方可使用收藏、记录观看进度等功能。""",
-                        )
+                        }
                     }
                 }
-//            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-//                Text("""· 注册时建议使用常见邮箱，例如 QQ, 网易, Outlook""")
-//                Text("""· 如果提示激活失败，尝试删除激活码的最后一个字再手动输入""")
-//                Text("""· 如果有其他问题，可加群获取帮助或在 GitHub 上提交 issue""")
-//            }
             }
         }
     }
