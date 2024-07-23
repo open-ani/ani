@@ -117,6 +117,22 @@ fun BangumiOAuthPage(
                     Modifier.animateItemPlacement(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
+                    Text(
+                        """追番进度管理服务由 Bangumi 提供""",
+                        Modifier.padding(top = 8.dp),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                            Text("""Bangumi 番组计划 是一个中文 ACGN 互联网分享与交流项目，不提供资源下载。""")
+
+                            Text(
+                                """登录 Bangumi 账号方可使用收藏、记录观看进度等功能。""",
+                            )
+                        }
+                    }
+                    
                     Text("Bangumi 注册提示", style = MaterialTheme.typography.titleLarge)
 
                     Hint { Text("""建议使用常见邮箱，例如 QQ, 网易, Outlook""") }
