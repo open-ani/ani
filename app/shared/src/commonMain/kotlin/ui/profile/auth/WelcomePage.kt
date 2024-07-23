@@ -31,6 +31,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.icons.AniIcons
@@ -54,6 +56,7 @@ import org.koin.core.component.inject
 
 class WelcomeViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
+    val authState: AuthState = AuthState()
 
     fun cancelRequest() {
         sessionManager.processingRequest.value?.cancel()
@@ -66,16 +69,17 @@ fun WelcomeScene(
     modifier: Modifier = Modifier,
 ) {
     val navigator = LocalNavigator.current
-    BackHandler {
+    val goBack = {
         vm.cancelRequest()
         navigator.goBack()
     }
+    BackHandler(onBack = goBack)
+    if (vm.authState.isKnownLoggedIn) {
+        SideEffect(goBack)
+    }
     WelcomePage(
         onClickLogin = { navigator.navigateBangumiOAuthOrTokenAuth() },
-        onClickGuest = {
-            vm.cancelRequest()
-            navigator.navigateHome()
-        },
+        onClickGuest = goBack,
         modifier = modifier,
     )
 }
