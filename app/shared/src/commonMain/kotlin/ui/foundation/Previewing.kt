@@ -39,7 +39,9 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.NoopBrowserNavigator
+import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.platform.notification.NoopNotifManager
@@ -97,6 +99,7 @@ fun ProvideCompositionLocalsForPreview(
                         single<TorrentManager> {
                             DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
                         }
+                        single<PermissionManager> { GrantedPermissionManager }
                         single<NotifManager> { NoopNotifManager }
                         single<BrowserNavigator> { NoopBrowserNavigator }
                         module()
