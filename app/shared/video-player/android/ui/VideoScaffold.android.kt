@@ -41,15 +41,30 @@ private fun PreviewVideoScaffold() {
     PreviewVideoScaffoldImpl(expanded = false)
 }
 
+@Preview("Landscape Fullscreen - Light", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_NO)
+@Preview("Landscape Fullscreen - Dark", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
+@Composable
+private fun PreviewDetachedSliderFullscreen() {
+    PreviewVideoScaffoldImpl(expanded = true, controllerVisibility = ControllerVisibility.DetachedSliderOnly)
+}
+
+@Preview("Portrait - Light", heightDp = 300, device = Devices.PHONE, uiMode = UI_MODE_NIGHT_NO)
+@Preview("Portrait - Dark", heightDp = 300, device = Devices.PHONE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
+@Composable
+private fun PreviewDetachedSlider() {
+    PreviewVideoScaffoldImpl(expanded = false, controllerVisibility = ControllerVisibility.DetachedSliderOnly)
+}
+
 @Composable
 private fun PreviewVideoScaffoldImpl(
     expanded: Boolean,
+    controllerVisibility: ControllerVisibility = ControllerVisibility.Visible
 ) = ProvideCompositionLocalsForPreview {
     val playerState = remember {
         DummyPlayerState()
     }
 
-    val controllerState = rememberVideoControllerState(initialVisibility = ControllerVisibility.Visible)
+    val controllerState = rememberVideoControllerState(initialVisibility = controllerVisibility)
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
