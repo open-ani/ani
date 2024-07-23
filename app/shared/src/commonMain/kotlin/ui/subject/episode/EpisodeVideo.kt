@@ -217,16 +217,16 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            var previousVisibleState by remember { mutableStateOf(ControllerVisibility.Visible) }
+            var previousVisibilityState by remember { mutableStateOf(ControllerVisibility.Visible) }
 
-            val showProgressSliderOnly = remember {
+            val showProgressSliderOnly by remember {
                 derivedStateOf {
                     videoControllerState.visibility.takeIf { it != ControllerVisibility.Invisible }
-                        ?: previousVisibleState
+                        ?: previousVisibilityState
                 }
             }
-            previousVisibleState = showProgressSliderOnly.value
-            if (showProgressSliderOnly.value == ControllerVisibility.DetachedSliderOnly) {
+            previousVisibilityState = showProgressSliderOnly
+            if (showProgressSliderOnly == ControllerVisibility.DetachedSliderOnly) {
                 PlayerControllerDefaults.MediaProgressSlider(
                     progressSliderState,
                     playerState,
