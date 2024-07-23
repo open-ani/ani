@@ -426,10 +426,14 @@ class SubjectManagerImpl(
             .transform { subject ->
                 if (subject == null) {
                     emit(
-                        me.him188.ani.utils.coroutines.runUntilSuccess {
+                        runUntilSuccess {
                             bangumiEpisodeRepository.getEpisodeCollection(
                                 episodeId,
-                            )?.toEpisodeCollection() ?: error("Failed to get episode collection")
+                            )?.toEpisodeCollection()
+                                ?: bangumiEpisodeRepository.getEpisodeById(episodeId)?.let {
+                                    EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)
+                                }
+                                ?: error("Failed to get episode collection")
                         },
                     )
                 } else {
