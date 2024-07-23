@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -15,21 +16,48 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
  */
 @Composable
 fun rememberVideoControllerState(
-    initialVisibility: ControllerVisibility = ControllerVisibility.INVISIBLE
+    initialVisibility: ControllerVisibility = ControllerVisibility.Invisible
 ): VideoControllerState {
     return remember {
         VideoControllerState(initialVisibility)
     }
 }
 
-enum class ControllerVisibility(val value: Boolean) {
-    VISIBLE(true),
-    INVISIBLE(false),
-    PROGRESS_BAR_ONLY(true)
+@Immutable
+data class ControllerVisibility(
+    val topBar: Boolean,
+    val bottomBar: Boolean,
+    val floatingBottomEnd: Boolean,
+    val rhsBar: Boolean,
+    val detachedSlider: Boolean
+) {
+    companion object {
+        val Visible = ControllerVisibility(
+            topBar = true,
+            bottomBar = true,
+            floatingBottomEnd = false,
+            rhsBar = true,
+            detachedSlider = false,
+        )
+        val Invisible = ControllerVisibility(
+            topBar = false,
+            bottomBar = false,
+            floatingBottomEnd = true,
+            rhsBar = false,
+            detachedSlider = false,
+        )
+        val DetachedSliderOnly = ControllerVisibility(
+            topBar = false,
+            bottomBar = true,
+            floatingBottomEnd = false,
+            rhsBar = false,
+            detachedSlider = true,
+        )
+    }
 }
 @Stable
 class VideoControllerState(
-    initialVisibility: ControllerVisibility = ControllerVisibility.VISIBLE
+    initialVisibility: ControllerVisibility = ControllerVisibility.Visible
 ) {
     /**
      * 控制器是否可见.
@@ -38,7 +66,8 @@ class VideoControllerState(
     val setVisibility: (ControllerVisibility) -> Unit = { visibility = it }
     
     fun toggleVisible(desired: ControllerVisibility? = null) {
-        visibility = desired ?: if (visibility.value) ControllerVisibility.INVISIBLE else ControllerVisibility.VISIBLE
+        visibility = desired
+            ?: if (visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible
     }
 
     var danmakuEnabled by mutableStateOf(true)

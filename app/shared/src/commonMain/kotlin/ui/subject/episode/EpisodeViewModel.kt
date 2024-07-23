@@ -223,7 +223,7 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val videoControllerState = VideoControllerState(ControllerVisibility.INVISIBLE)
+    private val videoControllerState = VideoControllerState(ControllerVisibility.Invisible)
 
     /**
      * 更换 EP 是否已经完成了.
@@ -515,7 +515,7 @@ private class EpisodeViewModelImpl(
             settingsRepository.danmakuEnabled.set(it)
         },
         onHideController = {
-            videoControllerState.setVisibility(ControllerVisibility.INVISIBLE)
+            videoControllerState.setVisibility(ControllerVisibility.Invisible)
         },
         backgroundScope,
     )

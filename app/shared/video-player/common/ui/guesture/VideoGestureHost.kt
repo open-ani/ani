@@ -472,13 +472,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.visibility = ControllerVisibility.VISIBLE
+                            controllerState.visibility = ControllerVisibility.Visible
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
                                     delay(3000)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.visibility = ControllerVisibility.INVISIBLE
+                                    controllerState.visibility = ControllerVisibility.Invisible
                                 }
                             }
                         }
@@ -626,7 +626,7 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        var previousVisibility by remember { mutableStateOf(ControllerVisibility.INVISIBLE) }
+                        var previousVisibility by remember { mutableStateOf(ControllerVisibility.Invisible) }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
@@ -644,8 +644,8 @@ fun VideoGestureHost(
                                 val offsetRatio =
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
-                                if (!previousVisibility.value) {
-                                    controllerState.visibility = ControllerVisibility.PROGRESS_BAR_ONLY
+                                if (previousVisibility == ControllerVisibility.Invisible) {
+                                    controllerState.visibility = ControllerVisibility.DetachedSliderOnly
                                 }
                             }
                         }

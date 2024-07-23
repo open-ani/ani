@@ -65,7 +65,7 @@ fun VideoScaffold(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    controllersVisible: () -> ControllerVisibility = { ControllerVisibility.VISIBLE },
+    controllersVisible: () -> ControllerVisibility = { ControllerVisibility.Visible },
     gestureLocked: () -> Boolean = { false },
     topBar: @Composable RowScope.() -> Unit = {},
     /**
@@ -122,7 +122,7 @@ fun VideoScaffold(
                 Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                     // 顶部控制栏: 返回键, 标题, 设置
                     AnimatedVisibility(
-                        visible = controllersVisibleState == ControllerVisibility.VISIBLE && !gestureLockedState,
+                        visible = controllersVisibleState.topBar && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -158,7 +158,7 @@ fun VideoScaffold(
 
                     // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                     AnimatedVisibility(
-                        visible = controllersVisibleState.value && !gestureLockedState,
+                        visible = controllersVisibleState.bottomBar && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -186,7 +186,7 @@ fun VideoScaffold(
                     }
                 }
                 AnimatedVisibility(
-                    !controllersVisibleState.value && !expanded,
+                    controllersVisibleState.floatingBottomEnd && !expanded,
                     Modifier.align(Alignment.BottomEnd),
                     enter = fadeIn(),
                     exit = fadeOut(),
@@ -209,7 +209,7 @@ fun VideoScaffold(
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
                     Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
                         AnimatedVisibility(
-                            visible = controllersVisibleState.value,
+                            visible = controllersVisibleState.rhsBar,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {

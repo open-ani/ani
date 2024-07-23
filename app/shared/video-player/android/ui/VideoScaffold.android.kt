@@ -49,7 +49,7 @@ private fun PreviewVideoScaffoldImpl(
         DummyPlayerState()
     }
 
-    val controllerState = rememberVideoControllerState(initialVisibility = ControllerVisibility.VISIBLE)
+    val controllerState = rememberVideoControllerState(initialVisibility = ControllerVisibility.Visible)
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 

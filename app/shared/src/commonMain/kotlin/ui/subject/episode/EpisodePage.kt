@@ -181,7 +181,7 @@ private fun EpisodeSceneTabletVeryWide(
                 vm,
                 expanded = true,
                 maintainAspectRatio = false,
-                initialControllerVisible = ControllerVisibility.VISIBLE,
+                initialControllerVisible = ControllerVisibility.Visible,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
             )
 
@@ -405,7 +405,7 @@ private fun EpisodeVideo(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    initialControllerVisible: ControllerVisibility = ControllerVisibility.INVISIBLE,
+    initialControllerVisible: ControllerVisibility = ControllerVisibility.Invisible,
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 

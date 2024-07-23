@@ -103,14 +103,14 @@ fun LockedScreenGestureHost(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { setControllerVisibility(ControllerVisibility.VISIBLE) },
+                onClick = { setControllerVisibility(ControllerVisibility.Visible) },
             ).fillMaxSize(),
     )
 
-    if (controllerVisibility().value) {
+    if (controllerVisibility() == ControllerVisibility.Visible) {
         LaunchedEffect(true) {
             delay(2.seconds)
-            setControllerVisibility(ControllerVisibility.INVISIBLE)
+            setControllerVisibility(ControllerVisibility.Invisible)
         }
     }
     return
