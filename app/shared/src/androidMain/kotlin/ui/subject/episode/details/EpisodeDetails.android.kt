@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.cache.TestMediaList
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
@@ -106,6 +107,16 @@ fun PreviewEpisodeDetailsDanmakuFailed() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
+fun PreviewEpisodeDetailsNotAuthorized() = ProvideCompositionLocalsForPreview {
+    val state = rememberTestEpisodeDetailsState()
+    PreviewEpisodeDetailsImpl(
+        state,
+        authState = rememberTestAuthState(false),
+    )
+}
+
+@Composable
+@PreviewLightDark
 fun PreviewEpisodeDetailsDanmakuLoading() = ProvideCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState()
     PreviewEpisodeDetailsImpl(
@@ -169,6 +180,7 @@ private fun PreviewEpisodeDetailsImpl(
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
     mediaSelectorPresentation: MediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
     playingMedia: Media? = TestMediaList.first(),
+    authState: AuthState = rememberTestAuthState(),
 ) {
     Scaffold {
         EpisodeDetails(
@@ -195,10 +207,24 @@ private fun PreviewEpisodeDetailsImpl(
             },
             mediaSelectorPresentation = mediaSelectorPresentation,
             mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
+            authState = authState,
             Modifier
                 .padding(bottom = 16.dp, top = 8.dp)
                 .padding(it)
                 .verticalScroll(rememberScrollState()),
+        )
+    }
+}
+
+@Composable
+fun rememberTestAuthState(
+    isAuthorized: Boolean = true,
+): AuthState {
+    val state = remember { mutableStateOf(isAuthorized) }
+    return remember {
+        AuthState(
+            state,
+            launchAuthorize = { state.value = !state.value },
         )
     }
 }
