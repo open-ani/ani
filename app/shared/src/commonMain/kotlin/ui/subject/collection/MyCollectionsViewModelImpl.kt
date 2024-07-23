@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.MyCollectionsSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
@@ -15,6 +16,8 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.session.AuthState
+import me.him188.ani.app.session.SessionEvent
+import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.getCachedData
@@ -22,6 +25,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -63,6 +67,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     override val subjectManager: SubjectManager by inject()
     private val cacheManager: MediaCacheManager by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val sessionManager: SessionManager by inject()
 
     val collectionsByType = subjectManager.collectionsByType.map { (type, cache) ->
         CollectionsByType(
@@ -131,6 +136,16 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                     if (cache.getCachedData().isEmpty()) {
                         cache.requestMore()
                     }
+                }
+            }
+        }
+
+        launchInBackground {
+            sessionManager.events.filterIsInstance<SessionEvent.TokenChangedEvent>().collect {
+                logger.info { "登录信息变更, 清空缓存" }
+                // 如果有变更登录, 清空缓存
+                for (collections in collectionsByType) {
+                    collections.cache.invalidate()
                 }
             }
         }
