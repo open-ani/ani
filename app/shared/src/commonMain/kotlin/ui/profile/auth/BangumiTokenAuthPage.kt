@@ -86,7 +86,7 @@ fun BangumiTokenAuthPage(
             ) {
                 Text("1. 你将前往 Bangumi 开发者测试页面")
                 Text("2. 如果提示输入邮箱 (Email), 请使用你的 Bangumi 账号登录")
-                Text("3. 创建一个令牌 (token), 名称随意, 有效期随意")
+                Text("3. 创建一个令牌 (token), 名称随意, 有效期 365 天")
                 Text("4. 复制创建好的 token, 回到本页面")
 
                 val context = LocalContext.current

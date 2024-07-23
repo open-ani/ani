@@ -22,7 +22,9 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -93,6 +95,12 @@ interface SessionManager {
     val processingRequest: StateFlow<ExternalOAuthRequest?>
 
     /**
+     * 登录/退出登录事件流. 只有当用户主动操作 (例如点击按钮) 时才会广播事件. 刚启动 app 时的自动登录不会触发事件.
+     */
+    @Stable
+    val events: SharedFlow<SessionEvent>
+
+    /**
      * 请求为线上状态.
      *
      * 1. 若用户已经登录且会话有效 ([isSessionValid] 为 `true`), 则此函数会立即返回.
@@ -126,6 +134,16 @@ interface SessionManager {
     suspend fun logout()
 }
 
+sealed interface SessionEvent {
+    /**
+     * token 有变更
+     */
+    sealed interface TokenChangedEvent : SessionEvent
+
+    data object Login : TokenChangedEvent
+    data object Logout : TokenChangedEvent
+}
+
 object TestSessionManagers {
     val Online = object : SessionManager {
         override val session: MutableStateFlow<Session?> = MutableStateFlow(
@@ -138,6 +156,10 @@ object TestSessionManagers {
         override val loginStatus: Flow<LoginStatus> = MutableStateFlow(LoginStatus.LOGGED_IN)
         override val isSessionValid: Flow<Boolean?> = session.map { it != null }
         override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
+        override val events: SharedFlow<SessionEvent> = MutableSharedFlow(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
 
         override suspend fun requireAuthorize(
             navigator: AniNavigator,
@@ -191,7 +213,7 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
 
     private val state = tokenRepository.session.distinctUntilChanged().map {
         State(session = it)
-    }.shareInBackground(started = SharingStarted.Eagerly)
+    }.shareInBackground(started = SharingStarted.Eagerly) // must be shared, not state (without initial value)
 
     override val loginStatus = state.map {
         if (it.session == null) {
@@ -227,6 +249,10 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
 
     private val singleAuthLock = Mutex()
     override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
+    override val events: MutableSharedFlow<SessionEvent> = MutableSharedFlow(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
 
     private suspend fun tryRefreshSessionByRefreshToken(): Boolean {
         logger.trace { "tryRefreshSessionByRefreshToken: start" }
@@ -256,7 +282,7 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
             return false
         }
         // success
-        setSession(
+        setNewSession(
 //            session.userId,
             newAccessToken.accessToken,
             System.currentTimeMillis() + newAccessToken.expiresIn,
@@ -289,7 +315,7 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
 
             // Launch external oauth (e.g. browser)
             val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session, refreshToken ->
-                setSession(session.accessToken, session.expiresAt, refreshToken)
+                setNewSession(session.accessToken, session.expiresAt, refreshToken)
             }
             processingRequest.value = req
             try {
@@ -337,17 +363,19 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
         profileSettings.update {
             copy(loginAsGuest = false)
         }
+        events.tryEmit(SessionEvent.Login)
     }
 
     override suspend fun logout() {
         tokenRepository.clear()
+        events.tryEmit(SessionEvent.Logout)
     }
 
-    private suspend fun setSession(accessToken: String, expiresAt: Long, refreshToken: String) {
+    private suspend fun setNewSession(accessToken: String, expiresAt: Long, refreshToken: String) {
         logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
 
         tokenRepository.setRefreshToken(refreshToken)
-        tokenRepository.setSession(Session(accessToken, expiresAt))
+        setSession(Session(accessToken, expiresAt))
         // session updates automatically
     }
 }

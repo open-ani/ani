@@ -406,6 +406,10 @@ private fun TabContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
+                SideEffect {
+                    state.requestMore()
+                }
+
                 Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
 
                 val navigator = LocalNavigator.current
