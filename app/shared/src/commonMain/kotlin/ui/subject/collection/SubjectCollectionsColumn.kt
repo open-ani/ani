@@ -150,8 +150,10 @@ fun SubjectCollectionsColumn(
         state.gridState,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
-        contentPadding = gridContentPadding,
+        contentPadding = contentPaddingState,
     ) {
+        item(span = { GridItemSpan(maxLineSpan) }) {}
+
         items(state.cachedData, key = { it.subjectId }) { collection ->
             Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
                 item(collection)
@@ -168,6 +170,8 @@ fun SubjectCollectionsColumn(
                 state.requestMore()
             }
         }
+
+        item(span = { GridItemSpan(maxLineSpan) }) {}
     }
 }
 
