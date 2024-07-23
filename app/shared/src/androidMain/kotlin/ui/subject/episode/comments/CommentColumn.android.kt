@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
@@ -25,7 +24,7 @@ private fun PreviewCommentColumn() {
         val scope = rememberBackgroundScope()
         val state = remember {
             CommentState(
-                episodeId = MutableStateFlow(0),
+                sourceVersion = mutableStateOf(Any()),
                 list = mutableStateOf(generateUiComment(4)),
                 hasMore = mutableStateOf(false),
                 onReload = { },

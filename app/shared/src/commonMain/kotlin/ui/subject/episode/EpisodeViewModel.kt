@@ -162,9 +162,6 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val danmakuStatistics: DanmakuStatistics
 
-    /**
-     * episode comment state
-     */
     val episodeCommentState: CommentState
 }
 
@@ -506,7 +503,7 @@ private class EpisodeViewModelImpl(
     )
 
     override val episodeCommentState: CommentState = CommentState(
-        episodeId = episodeId,
+        sourceVersion = episodeCommentLoader.sourceVersion.produceState(null),
         list = episodeCommentLoader.list.produceState(emptyList()),
         hasMore = episodeCommentLoader.hasFinished.produceState(false),
         onReload = { episodeCommentLoader.reload() },

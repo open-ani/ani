@@ -16,8 +16,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +23,8 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.richtext.RichText
@@ -42,18 +42,23 @@ fun EpisodeCommentColumn(
     val pullToRefreshState = rememberPullToRefreshState()
     val imageViewer = LocalImageViewerHandler.current
 
-    val episodeId by derivedStateOf { state.episodeId }
     val comments = state.list
     val hasMore = state.hasMore
 
-    LaunchedEffect(episodeId) {
-        pullToRefreshState.startRefresh()
-    }
     LaunchedEffect(true) {
-        snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
-            if (!refreshing) return@collectLatest
-            state.reload()
-            pullToRefreshState.endRefresh()
+        launch {
+            snapshotFlow { state.sourceVersion }
+                .distinctUntilChanged()
+                .collectLatest {
+                    pullToRefreshState.startRefresh()
+                }
+        }
+        launch {
+            snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
+                if (!refreshing) return@collectLatest
+                state.reload()
+                pullToRefreshState.endRefresh()
+            }
         }
     }
 

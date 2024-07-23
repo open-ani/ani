@@ -1,9 +1,12 @@
 package me.him188.ani.app.ui.subject.components.comment
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.suspendCancellableCoroutine
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -29,13 +32,23 @@ class CommentLoader<T>(
     private val cachedSource = source.shareInBackground()
 
     val list = cachedSource
-        .flatMapLatest { it.cachedDataFlow }
+        .flatMapLatest {
+            sourceVersion.value = Any()
+            it.cachedDataFlow
+        }
         .map { list ->
             list.map { with(CommentMapperContext) { uiMapper(it) } }
                 .sortedByDescending { it.createdAt }
         }
 
     val hasFinished = cachedSource.flatMapLatest { it.isCompleted }
+    val sourceVersion = MutableStateFlow(Any())
+
+    init {
+        cachedSource
+            .onEach { sourceVersion.emit(Any()) }
+            .launchIn(backgroundScope)
+    }
 
     suspend fun reload() {
         cachedSource.first().refresh(RefreshOrderPolicy.REPLACE)

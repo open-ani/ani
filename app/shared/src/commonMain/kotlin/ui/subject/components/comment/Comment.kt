@@ -26,40 +26,41 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 
-
+/**
+ * A state which is read by Comment composable
+ */
 @Stable
 class CommentState(
-    episodeId: StateFlow<Int>,
+    sourceVersion: State<Any?>,
     list: State<List<UiComment>>,
     hasMore: State<Boolean>,
-    val onReload: suspend () -> Unit,
-    val onLoadMore: suspend () -> Unit,
+    private val onReload: suspend () -> Unit,
+    private val onLoadMore: suspend () -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    val episodeId by episodeId.produceState(episodeId.value, backgroundScope)
+    val sourceVersion: Any? by sourceVersion
     val list: List<UiComment> by list
 
-    private val freshLoaded = MutableStateFlow(false)
+    private var freshLoaded by mutableStateOf(false)
     val hasMore: Boolean by derivedStateOf {
-        if (!freshLoaded.value) return@derivedStateOf false
+        if (!freshLoaded) return@derivedStateOf false
         hasMore.value
     }
 
@@ -72,9 +73,9 @@ class CommentState(
      * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
      */
     suspend fun reload() {
-        freshLoaded.value = false
+        freshLoaded = false
         onReload()
-        freshLoaded.value = true
+        freshLoaded = true
     }
 
     fun loadMore() {
