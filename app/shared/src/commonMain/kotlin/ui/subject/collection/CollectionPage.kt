@@ -32,7 +32,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.HowToReg
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -250,7 +252,10 @@ fun CollectionPage(
                 end = 0.dp,
             )
             if (vm.authState.isKnownLoggedOut) {
-                CollectionPageUnauthorizedTips(vm.authState, Modifier.padding(tabContentPadding))
+                CollectionPageUnauthorizedTips(
+                    vm.authState,
+                    Modifier.padding(top = 32.dp).padding(tabContentPadding),
+                )
             } else {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -280,12 +285,12 @@ fun CollectionPage(
 }
 
 @Composable
-private fun CollectionPageUnauthorizedTips(
+fun CollectionPageUnauthorizedTips(
     authState: AuthState,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier.padding(top = 32.dp).padding(horizontal = 16.dp).fillMaxWidth().widthIn(max = 400.dp),
+        modifier.padding(horizontal = 16.dp).fillMaxWidth().widthIn(max = 400.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -294,11 +299,13 @@ private fun CollectionPageUnauthorizedTips(
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             OutlinedButton({ authState.launchAuthorize(navigator) }, Modifier.weight(1f)) {
-                Text("登录")
+                Icon(Icons.Rounded.HowToReg, null)
+                Text("登录", Modifier.padding(start = 8.dp))
             }
 
             Button({ navigator.navigateSearch() }, Modifier.weight(1f)) {
-                Text("搜索")
+                Icon(Icons.Rounded.Search, null)
+                Text("搜索", Modifier.padding(start = 8.dp))
             }
         }
     }
