@@ -197,6 +197,7 @@ private fun EpisodeSceneTabletVeryWide(
                     vm.videoStatistics,
                     vm.mediaSelectorPresentation,
                     vm.mediaSourceResultsPresentation,
+                    vm.authState,
                     Modifier.verticalScroll(rememberScrollState()),
                 )
 
@@ -234,6 +235,7 @@ private fun EpisodeSceneContentPhone(
                 vm.videoStatistics,
                 vm.mediaSelectorPresentation,
                 vm.mediaSourceResultsPresentation,
+                vm.authState,
                 Modifier.fillMaxSize(),
             )
         },
