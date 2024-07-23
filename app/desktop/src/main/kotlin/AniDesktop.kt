@@ -62,7 +62,9 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.AniBuildConfigDesktop
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
+import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.notification.NoopNotifManager
@@ -214,6 +216,7 @@ object AniDesktop {
                         )
                     }
                     single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
+                    single<PermissionManager> { GrantedPermissionManager }
                     single<NotifManager> { NoopNotifManager }
                 },
             )
