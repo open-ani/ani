@@ -401,8 +401,18 @@ private fun TabContent(
             )
         },
         onEmpty = {
-            Column(Modifier.padding(contentPadding).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("~ 空空如也 ~\n请点击 \"找番\" 收藏条目", style = MaterialTheme.typography.titleMedium)
+            Column(
+                Modifier.padding(top = 32.dp).padding(contentPadding).padding(horizontal = 16.dp).fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
+
+                val navigator = LocalNavigator.current
+                Button({ navigator.navigateSearch() }, Modifier.fillMaxWidth()) {
+                    Icon(Icons.Rounded.Search, null)
+                    Text("搜索", Modifier.padding(start = 8.dp))
+                }
             }
         },
         modifier,
