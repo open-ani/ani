@@ -113,7 +113,7 @@ internal fun EpisodeVideoImpl(
         expanded = expanded,
         modifier = modifier,
         maintainAspectRatio = maintainAspectRatio,
-        controllersVisible = { videoControllerState.visibility },
+        controllersVisibility = { videoControllerState.visibility },
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
