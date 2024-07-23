@@ -472,13 +472,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.visibility = ControllerVisibility.Visible
+                            controllerState.setVisibility(ControllerVisibility.Visible)
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
                                     delay(3000)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.visibility = ControllerVisibility.Invisible
+                                    controllerState.setVisibility(ControllerVisibility.Invisible)
                                 }
                             }
                         }
@@ -512,7 +512,7 @@ fun VideoGestureHost(
                                         onTogglePauseResumeState()
                                     }
                                     if (family.clickToToggleController) {
-                                        controllerState.toggleVisible()
+                                        controllerState.toggleVisibility()
                                     }
                                 }
                             },
@@ -610,7 +610,7 @@ fun VideoGestureHost(
                                     onTogglePauseResumeState()
                                 }
                                 if (family.clickToToggleController) {
-                                    controllerState.toggleVisible()
+                                    controllerState.toggleVisibility()
                                 }
                             }
                         },
@@ -645,7 +645,7 @@ fun VideoGestureHost(
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
                                 if (previousVisibility == ControllerVisibility.Invisible) {
-                                    controllerState.visibility = ControllerVisibility.DetachedSliderOnly
+                                    controllerState.setRequestProgressBarVisible()
                                 }
                             }
                         }

@@ -64,8 +64,8 @@ class VideoControllerState(
      */
     var visibility: ControllerVisibility by mutableStateOf(initialVisibility)
     val setVisibility: (ControllerVisibility) -> Unit = { visibility = it }
-    
-    fun toggleVisible(desired: ControllerVisibility? = null) {
+
+    fun toggleVisibility(desired: ControllerVisibility? = null) {
         visibility = desired
             ?: if (visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible
     }
@@ -93,5 +93,8 @@ class VideoControllerState(
         } else {
             alwaysOnRequests.remove(requester)
         }
+    }
+    fun setRequestProgressBarVisible() {
+        visibility = ControllerVisibility.DetachedSliderOnly
     }
 }
