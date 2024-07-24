@@ -262,7 +262,7 @@ class SubjectManagerImpl(
                 debugName = "collectionsByType-${type.name}",
                 persistentStore = DataStoreFactory.create(
                     LazyDataCacheSave.serializer(SubjectCollection.serializer())
-                        .asDataStoreSerializer(LazyDataCacheSave.empty()),
+                        .asDataStoreSerializer({ LazyDataCacheSave.empty() }),
                     ReplaceFileCorruptionHandler { LazyDataCacheSave.empty() },
                     migrations = listOf(),
                     produceFile = {
