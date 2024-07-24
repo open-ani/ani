@@ -69,6 +69,7 @@ import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
+import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -214,6 +215,7 @@ private fun EpisodeSceneContentPhone(
 ) {
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
+    var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
     
     LaunchedEffect(true) {
         vm.episodeCommentState.reload()
@@ -244,7 +246,7 @@ private fun EpisodeSceneContentPhone(
                 state = vm.episodeCommentState,
                 modifier = Modifier.fillMaxSize(),
                 onClickReply = {
-                    // showEditCommentSheet = true
+                    showEditCommentSheet = true
                     if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
                         didSetPaused = true
                         vm.playerState.pause()
@@ -310,6 +312,14 @@ private fun EpisodeSceneContentPhone(
         }
         LaunchedEffect(true) {
             focusRequester.requestFocus()
+        }
+    }
+
+    EpisodeEditCommentSheet(vm, showEditCommentSheet) {
+        showEditCommentSheet = false
+        if (didSetPaused) {
+            didSetPaused = false
+            vm.playerState.resume()
         }
     }
 }
