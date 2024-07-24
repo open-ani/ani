@@ -1,10 +1,13 @@
 package me.him188.ani.app.ui.subject.components.comment
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -15,10 +18,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.outlined.AddReaction
+import androidx.compose.material.icons.outlined.HeartBroken
+import androidx.compose.material.icons.outlined.ModeComment
+import androidx.compose.material.icons.outlined.Report
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -34,14 +47,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.theme.weaken
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * A state which is read by Comment composable
@@ -49,14 +68,14 @@ import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 @Stable
 class CommentState(
     sourceVersion: State<Any?>,
-    list: State<List<UiComment>>,
+    list: State<List<UIComment>>,
     hasMore: State<Boolean>,
     private val onReload: suspend () -> Unit,
     private val onLoadMore: suspend () -> Unit,
     backgroundScope: CoroutineScope,
 ) {
     val sourceVersion: Any? by sourceVersion
-    val list: List<UiComment> by list
+    val list: List<UIComment> by list
 
     private var freshLoaded by mutableStateOf(false)
     val hasMore: Boolean by derivedStateOf {
@@ -90,13 +109,21 @@ class CommentState(
 class UIRichText(val elements: List<UIRichElement>)
 
 @Immutable
-class UiComment(
-    val id: String,
+class UIComment(
+    val id: Int,
     val creator: UserInfo,
     val content: UIRichText,
     val createdAt: Long, // timestamp millis
-    val briefReplies: List<UiComment>,
-    val replyCount: Int
+    val reactions: List<UICommentReaction>,
+    val briefReplies: List<UIComment>,
+    val replyCount: Int,
+)
+
+@Immutable
+class UICommentReaction(
+    val id: Int,
+    val count: Int,
+    val selected: Boolean
 )
 
 /**
@@ -128,7 +155,7 @@ fun Comment(
         modifier = modifier,
         verticalAlignment = Alignment.Top,
     ) {
-        Box(modifier = Modifier.clip(CircleShape)) {
+        Box(modifier = Modifier.padding(top = 2.dp).clip(CircleShape)) {
             avatar()
         }
         Column(modifier = Modifier.padding(start = 12.dp)) {
@@ -137,10 +164,10 @@ fun Comment(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
-                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyLarge) {
+                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
                         primaryTitle()
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     CompositionLocalProvider(
                         LocalTextStyle provides MaterialTheme.typography.labelMedium.copy(
                             color = LocalContentColor.current.slightlyWeaken(),
@@ -151,16 +178,16 @@ fun Comment(
                 }
                 rhsTitle()
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             SelectionContainer(
-                modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 content()
             }
             if (reactionRow != null) {
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 SelectionContainer(
-                    modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     reactionRow()
                 }
@@ -168,14 +195,14 @@ fun Comment(
             if (actionRow != null) {
                 Spacer(modifier = Modifier.height(6.dp))
                 SelectionContainer(
-                    modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     actionRow()
                 }
             }
             if (reply != null) {
                 Surface(
-                    modifier = Modifier.padding(top = 12.dp),
+                    modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 6.dp),
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(8.dp),
                 ) {
@@ -196,12 +223,119 @@ object CommentDefaults {
     }
 
     @Composable
-    fun ReplyList(
-        replies: List<UiComment>,
-        replyCount: Int = replies.size,
-        onClickUrl: (String) -> Unit = { },
-
+    fun Reaction(
+        reaction: UICommentReaction,
+        modifier: Modifier = Modifier,
+        onClick: () -> Unit = { }
+    ) {
+        val backgroundColor by animateColorAsState(
+            if (reaction.selected) {
+                MaterialTheme.colorScheme.tertiaryContainer.weaken()
+            } else {
+                Color.Transparent
+            },
+        )
+        Surface(
+            onClick = onClick,
+            modifier = modifier.then(Modifier.height(28.dp)),
+            enabled = true,
+            shape = CircleShape,
+            color = backgroundColor,
+            border = SuggestionChipDefaults.suggestionChipBorder(true),
         ) {
+            Row(modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) {
+                val previewing = LocalIsPreviewing.current
+
+                if (previewing) Icon(
+                    imageVector = Icons.Default.Face,
+                    modifier = Modifier.padding(end = 4.dp).size(24.dp),
+                    contentDescription = null,
+                ) else Icon(
+                    painter = painterResource(BangumiCommentSticker[reaction.id]!!),
+                    modifier = Modifier.padding(end = 4.dp).size(24.dp),
+                    contentDescription = null,
+                )
+
+                Text(
+                    text = reaction.count.toString(),
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(end = 4.dp),
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun ReactionRow(
+        list: List<UICommentReaction>,
+        modifier: Modifier = Modifier,
+        onClickItem: (Int) -> Unit = { },
+    ) {
+        FlowRow(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            list.forEach {
+                Reaction(it) { onClickItem(it.id) }
+            }
+        }
+    }
+
+    @Composable
+    fun ActionRow(
+        onClickReply: () -> Unit = { },
+        onClickReaction: () -> Unit = { },
+        onClickBlock: () -> Unit = { },
+        onClickReport: () -> Unit = { },
+        modifier: Modifier = Modifier
+    ) {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.onSurface.stronglyWeaken(),
+            ) {
+                IconButton(onClickReply, Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.ModeComment,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                IconButton(onClickReaction, Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.AddReaction,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                IconButton(onClickBlock, Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.HeartBroken,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                IconButton(onClickReport, Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.Report,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun ReplyList(
+        replies: List<UIComment>,
+        hiddenReplyCount: Int = 0,
+        onClickUrl: (String) -> Unit = { },
+        onClickExpand: () -> Unit = { }
+    ) {
         val primaryColor = MaterialTheme.colorScheme.primary
 
         Column(
@@ -226,11 +360,11 @@ object CommentDefaults {
                     onClickUrl = onClickUrl,
                 )
             }
-            if (replyCount > 3) {
+            if (hiddenReplyCount > 0) {
                 val prepended by remember {
                     derivedStateOf {
                         UIRichText(emptyList()).prependText(
-                            prependix = "查看更多 ${replyCount - 3} 条回复>",
+                            prependix = "查看更多 $hiddenReplyCount 条回复>",
                             color = primaryColor,
                         )
                     }
@@ -240,7 +374,8 @@ object CommentDefaults {
                     elements = prepended.elements,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .clickable(onClick = onClickExpand),
                     onClickUrl = { },
                 )
             }

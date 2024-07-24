@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -32,12 +33,13 @@ import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentDefaults
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.components.comment.UiComment
+import me.him188.ani.app.ui.subject.components.comment.UIComment
 
 @Composable
 fun EpisodeCommentColumn(
     state: CommentState,
     modifier: Modifier = Modifier,
+    onClickReply: (Int) -> Unit = { }
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     val imageViewer = LocalImageViewerHandler.current
@@ -80,8 +82,9 @@ fun EpisodeCommentColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 12.dp)
-                        .padding(vertical = 12.dp),
+                        .padding(top = 12.dp, bottom = if (item.replyCount != 0) 12.dp else 4.dp),
                     onClickImage = { imageViewer.viewImage(it) },
+                    onActionReply = { onClickReply(item.id) },
                 )
                 if (index != comments.lastIndex) {
                     HorizontalDivider(
@@ -109,15 +112,21 @@ private const val LOREM_IPSUM =
 
 @Composable
 fun EpisodeComment(
-    comment: UiComment,
+    comment: UIComment,
     modifier: Modifier = Modifier,
     onClickUrl: (String) -> Unit = { },
-    onClickImage: (String) -> Unit = { }
+    onClickImage: (String) -> Unit = { },
+    onActionReply: () -> Unit = { }
 ) {
     Comment(
         modifier = modifier,
         avatar = { CommentDefaults.Avatar(comment.creator.avatarUrl) },
-        primaryTitle = { Text(comment.creator.nickname ?: "nickname") },
+        primaryTitle = {
+            Text(
+                text = comment.creator.nickname ?: "nickname",
+                textAlign = TextAlign.Center,
+            )
+        },
         secondaryTitle = { Text(formatDateTime(comment.createdAt)) },
         content = {
             RichText(
@@ -127,8 +136,26 @@ fun EpisodeComment(
                 onClickImage = onClickImage,
             )
         },
+        reactionRow = if (comment.reactions.isNotEmpty()) {
+            {
+                CommentDefaults.ReactionRow(
+                    comment.reactions,
+                    onClickItem = { },
+                )
+            }
+        } else null,
+        actionRow = {
+            CommentDefaults.ActionRow(
+                onClickReply = onActionReply,
+            )
+        },
         reply = if (comment.briefReplies.isNotEmpty()) {
-            { CommentDefaults.ReplyList(comment.briefReplies, comment.replyCount) }
+            {
+                CommentDefaults.ReplyList(
+                    comment.briefReplies,
+                    comment.replyCount - comment.briefReplies.size,
+                )
+            }
         } else null,
     )
 }

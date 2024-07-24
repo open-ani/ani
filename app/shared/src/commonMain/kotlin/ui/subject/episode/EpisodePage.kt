@@ -240,7 +240,19 @@ private fun EpisodeSceneContentPhone(
             )
         },
         commentColumn = {
-            EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+            EpisodeCommentColumn(
+                state = vm.episodeCommentState,
+                modifier = Modifier.fillMaxSize(),
+                onClickReply = {
+                    // showEditCommentSheet = true
+                    if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
+                        didSetPaused = true
+                        vm.playerState.pause()
+                    } else {
+                        didSetPaused = false
+                    }
+                },
+            )
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
         tabRowContent = {
