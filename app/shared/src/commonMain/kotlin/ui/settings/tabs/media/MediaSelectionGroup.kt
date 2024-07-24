@@ -166,6 +166,21 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             useThinHeader = true,
         ) {
             val mediaSelectorSettings by vm.mediaSelectorSettings
+
+            SwitchItem(
+                checked = mediaSelectorSettings.preferWeb,
+                onCheckedChange = {
+                    vm.mediaSelectorSettings.update(
+                        mediaSelectorSettings.copy(preferWeb = it),
+                    )
+                },
+                title = { Text("优先使用在线数据源") },
+                Modifier.placeholder(vm.mediaSelectorSettings.loading),
+                description = { Text("在线数据源清晰度可能偏低, 但载入快") },
+            )
+
+            HorizontalDividerItem()
+
             SwitchItem(
                 checked = mediaSelectorSettings.showDisabled,
                 onCheckedChange = {

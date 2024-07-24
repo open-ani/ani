@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import me.him188.ani.datasources.api.source.MediaSourceKind
 
 /**
  * 数据源选择器 (播放页面点击 "数据源" 按钮弹出的) 的设置
@@ -30,6 +31,12 @@ data class MediaSelectorSettings(
      * @since 3.2.0-beta04
      */
     val autoEnableLastSelected: Boolean = true,
+    /**
+     * 优先选择在线数据源
+     * @see MediaSourceKind.WEB
+     * @since 3.5
+     */
+    val preferWeb: Boolean = true,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     // 这篇小说已经完结了

@@ -613,6 +613,31 @@ class DefaultMediaSelectorTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // 优先选择在线数据源
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `prefer web sources`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(false)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            preferWeb = true,
+        )
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),
+            media(
+                alliance = "字幕组2", episodeRange = EpisodeRange.single("2"), kind = MediaSourceKind.WEB,
+            ).also { target = it },
+            media(alliance = "字幕组6", episodeRange = EpisodeRange.single("1")),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
+        )
+        assertEquals(6, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Events
     ///////////////////////////////////////////////////////////////////////////
 

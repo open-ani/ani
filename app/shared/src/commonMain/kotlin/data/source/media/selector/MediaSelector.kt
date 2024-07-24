@@ -381,6 +381,8 @@ class DefaultMediaSelector(
         val shouldPreferSeasons = mediaSelectorContext.subjectFinished == true
                 && mediaSelectorSettings.preferSeasons
 
+        val shouldPreferWeb = mediaSelectorSettings.preferWeb
+
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
                 yield(it)
@@ -493,13 +495,22 @@ class DefaultMediaSelector(
             return null
         }
 
-        return if (shouldPreferSeasons) {
+        if (shouldPreferWeb) {
+            val web = candidates.filter { it.kind == MediaSourceKind.WEB }
+            selectImpl(web)?.let {
+                return it
+            }
+        }
+
+        if (shouldPreferSeasons) {
             val seasons = candidates.filter { it.episodeRange?.hasSeason() == true }
-            selectImpl(seasons)
-                ?: selectImpl(candidates)
-        } else {
-            selectImpl(candidates)
-        } ?: selectAny(candidates)
+            selectImpl(seasons)?.let {
+                return it
+            }
+        }
+        selectImpl(candidates)?.let { return it }
+
+        return selectAny(candidates)
     }
 
     override suspend fun trySelectCached(): Media? {
