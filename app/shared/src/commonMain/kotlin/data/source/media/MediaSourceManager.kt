@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.data.models.preference.ProxyAuthorization
+import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -210,14 +211,16 @@ class MediaSourceManagerImpl(
 fun MediaSourceProxySettings.toClientProxyConfig(): ClientProxyConfig? {
     return if (enabled) {
         config.run {
-            ClientProxyConfig(
-                url = url,
-                authorization = authorization?.toHeader(),
-            )
+            toClientProxyConfig()
         }
     } else {
         null
     }
 }
+
+fun ProxyConfig.toClientProxyConfig() = ClientProxyConfig(
+    url = url,
+    authorization = authorization?.toHeader(),
+)
 
 fun ProxyAuthorization.toHeader(): String = "Basic ${"$username:$password"}"

@@ -59,7 +59,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
     private val logger = logger(EpisodeRepositoryImpl::class)
     override suspend fun getEpisodeById(episodeId: Int): BangumiEpisodeDetail? {
         return try {
-            client.api.getEpisodeById(episodeId).body()
+            client.getApi().getEpisodeById(episodeId).body()
         } catch (e: Exception) {
             logger.warn("Exception in getEpisodeById", e)
             null
@@ -70,7 +70,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         val episodes = PageBasedPagedSource { page ->
             runCatching {
                 withContext(Dispatchers.IO) {
-                    client.api.getEpisodes(subjectId, type, offset = page * 100, limit = 100).body().run {
+                    client.getApi().getEpisodes(subjectId, type, offset = page * 100, limit = 100).body().run {
                         Paged(this.total ?: 0, !this.data.isNullOrEmpty(), this.data.orEmpty())
                     }
                 }
@@ -84,7 +84,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         type: BangumiEpType
     ): Flow<BangumiUserEpisodeCollection>? {
         val firstPage = try {
-            client.api.getUserSubjectEpisodeCollection(
+            client.getApi().getUserSubjectEpisodeCollection(
                 subjectId,
                 episodeType = type,
                 offset = 0,
@@ -103,7 +103,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
             val resp = if (page == 0) {
                 firstPage
             } else {
-                client.api.getUserSubjectEpisodeCollection(
+                client.getApi().getUserSubjectEpisodeCollection(
                     subjectId,
                     episodeType = type,
                     offset = page * 100,
@@ -117,7 +117,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 
     override suspend fun getEpisodeCollection(episodeId: Int): BangumiUserEpisodeCollection? {
         try {
-            val collection = client.api.getUserEpisodeCollection(episodeId)
+            val collection = client.getApi().getUserEpisodeCollection(episodeId)
             return collection.body()
         } catch (e: Exception) {
             logger.warn("Exception in getEpisodeCollection", e)
@@ -131,7 +131,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         type: BangumiEpisodeCollectionType
     ) {
         try {
-            client.api.patchUserSubjectEpisodeCollection(
+            client.getApi().patchUserSubjectEpisodeCollection(
                 subjectId,
                 BangumiPatchUserSubjectEpisodeCollectionRequest(
                     episodeId,

@@ -26,8 +26,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
@@ -74,6 +76,7 @@ import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.source.media.createWithKoin
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.data.source.media.toClientProxyConfig
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.SessionManagerImpl
@@ -83,8 +86,12 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
+import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
+import me.him188.ani.utils.coroutines.onReplacement
+import me.him188.ani.utils.ktor.ClientProxyConfig
+import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -100,9 +107,18 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
     single<SessionManager> { SessionManagerImpl() }
     single<BangumiClient> {
-        createBangumiClient(
-            get<SessionManager>().session.map { it?.accessToken },
-            coroutineScope.coroutineContext,
+        val settings = get<SettingsRepository>()
+        val sessionManager by inject<SessionManager>()
+        DelegateBangumiClient(
+            settings.proxySettings.flow.map { it.default }.map { proxySettings ->
+                createBangumiClient(
+                    sessionManager.session.map { it?.accessToken },
+                    proxySettings.toClientProxyConfig(),
+                    coroutineScope.coroutineContext,
+                )
+            }.onReplacement {
+                it.close()
+            }.shareIn(coroutineScope, started = SharingStarted.Lazily, replay = 1),
         )
     }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
@@ -330,6 +346,7 @@ fun getAniUserAgent(
 
 fun createBangumiClient(
     bearerToken: Flow<String?>,
+    proxyConfig: ClientProxyConfig?,
     parentCoroutineContext: CoroutineContext,
 ): BangumiClient {
     return BangumiClient.create(
@@ -338,6 +355,7 @@ fun createBangumiClient(
         bearerToken,
         parentCoroutineContext,
     ) {
+        proxy(proxyConfig)
         install(UserAgent) {
             agent = getAniUserAgent(currentAniBuildConfig.versionName)
         }

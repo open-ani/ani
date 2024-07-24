@@ -115,10 +115,10 @@ interface BangumiClient : Closeable {
 
     suspend fun testConnection(): ConnectionStatus
 
-    val api: DefaultApi
-    val nextApi: SubjectBangumiNextApi
+    suspend fun getApi(): DefaultApi
+    suspend fun getNextApi(): SubjectBangumiNextApi
 
-    val subjects: BangumiClientSubjects
+    suspend fun getSubjects(): BangumiClientSubjects
 
     companion object Factory {
         fun create(
@@ -129,6 +129,38 @@ interface BangumiClient : Closeable {
             httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}
         ): BangumiClient =
             BangumiClientImpl(clientId, clientSecret, bearerToken, parentCoroutineContext, httpClientConfiguration)
+    }
+}
+
+class DelegateBangumiClient(
+    private val client: Flow<BangumiClient>,
+) : BangumiClient {
+    override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse =
+        client.first().exchangeTokens(code, callbackUrl)
+
+    override suspend fun refreshAccessToken(
+        refreshToken: String,
+        callbackUrl: String
+    ): BangumiClient.GetAccessTokenResponse = client.first().refreshAccessToken(refreshToken, callbackUrl)
+
+    override suspend fun executeGraphQL(query: String): JsonObject = client.first().executeGraphQL(query)
+
+    override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse =
+        client.first().getTokenStatus(accessToken)
+
+    override suspend fun deleteSubjectCollection(subjectId: Int) {
+        client.first().deleteSubjectCollection(subjectId)
+    }
+
+    override suspend fun testConnection(): ConnectionStatus {
+        return client.first().testConnection()
+    }
+
+    override suspend fun getApi(): DefaultApi = client.first().getApi()
+    override suspend fun getNextApi(): SubjectBangumiNextApi = client.first().getNextApi()
+    override suspend fun getSubjects(): BangumiClientSubjects = client.first().getSubjects()
+
+    override fun close() {
     }
 }
 
@@ -263,8 +295,11 @@ internal class BangumiClientImpl(
         }
     }
 
-    override val api = DefaultApi(BANGUMI_API_HOST, httpClient)
-    override val nextApi: SubjectBangumiNextApi = SubjectBangumiNextApi(BANGUMI_NEXT_API_HOST, httpClient)
+    private val api = DefaultApi(BANGUMI_API_HOST, httpClient)
+    override suspend fun getApi() = api
+
+    private val nextApi = SubjectBangumiNextApi(BANGUMI_NEXT_API_HOST, httpClient)
+    override suspend fun getNextApi(): SubjectBangumiNextApi = nextApi
 
     @Serializable
     private data class SearchSubjectByKeywordsResponse(
@@ -272,7 +307,7 @@ internal class BangumiClientImpl(
         val data: List<BangumiSubject>? = null,
     )
 
-    override val subjects: BangumiClientSubjects = object : BangumiClientSubjects {
+    private val subjects = object : BangumiClientSubjects {
         override suspend fun searchSubjectByKeywords(
             keyword: String,
             offset: Int?,
@@ -371,6 +406,8 @@ internal class BangumiClientImpl(
             return Companion.getSubjectImageUrl(id, size)
         }
     }
+
+    override suspend fun getSubjects(): BangumiClientSubjects = subjects
 
     override fun close() {
         httpClient.close()

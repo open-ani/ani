@@ -25,7 +25,7 @@ class BangumiPagedSource(
     override suspend fun nextPageImpl(page: Int): List<Subject> {
         val paged: Paged<Subject>
         if (query.useOldSearchApi) {
-            val tmpPaged = client.subjects.searchSubjectsByKeywordsWithOldApi(
+            val tmpPaged = client.getSubjects().searchSubjectsByKeywordsWithOldApi(
                 query.keyword,
                 convertType(),
                 null,
@@ -39,7 +39,7 @@ class BangumiPagedSource(
                     .page.map { convert2Subject(it) },
             )
         } else {
-            val resp = client.api.searchSubjects(
+            val resp = client.getApi().searchSubjects(
                 limit = pageSize,
                 offset = page * pageSize,
                 BangumiSearchSubjectsRequest(
