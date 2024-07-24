@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -166,6 +167,9 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmakuStatistics: DanmakuStatistics
 
     val episodeCommentState: CommentState
+
+    @UiThread
+    fun stopPlaying()
 }
 
 fun EpisodeViewModel(
@@ -514,6 +518,10 @@ private class EpisodeViewModelImpl(
         onLoadMore = { episodeCommentLoader.loadMore() },
         backgroundScope = backgroundScope,
     )
+
+    override fun stopPlaying() {
+        playerState.stop()
+    }
 
     private val selfUserId = danmakuManager.selfId
 

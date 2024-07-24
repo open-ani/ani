@@ -127,7 +127,7 @@ private fun EpisodeSceneContent(
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val navigator = LocalNavigator.current
     BackHandler {
-        vm.playerState.pause()
+        vm.stopPlaying()
         navigator.navigator.goBack()
     }
 
