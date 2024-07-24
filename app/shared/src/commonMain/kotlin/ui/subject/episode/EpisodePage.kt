@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -51,8 +52,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -189,24 +191,78 @@ private fun EpisodeSceneTabletVeryWide(
                 return@Row
             }
 
-            Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(340.dp))) {
+            val pagerState = rememberPagerState(initialPage = 0) { 2 }
+            val scope = rememberCoroutineScope()
 
-                EpisodeDetails(
-                    vm.episodeDetailsState,
-                    vm.episodeCarouselState,
-                    vm.editableRatingState,
-                    vm.editableSubjectCollectionTypeState,
-                    vm.danmakuStatistics,
-                    vm.videoStatistics,
-                    vm.mediaSelectorPresentation,
-                    vm.mediaSourceResultsPresentation,
-                    vm.authState,
-                    Modifier.verticalScroll(rememberScrollState()),
-                )
+            Column(Modifier.width(width = (maxWidth * 0.25f).coerceIn(340.dp, 460.dp))) {
+                TabRow(pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth())
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
-                EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+                HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
+                    when (index) {
+                        0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            EpisodeDetails(
+                                vm.episodeDetailsState,
+                                vm.episodeCarouselState,
+                                vm.editableRatingState,
+                                vm.editableSubjectCollectionTypeState,
+                                vm.danmakuStatistics,
+                                vm.videoStatistics,
+                                vm.mediaSelectorPresentation,
+                                vm.mediaSourceResultsPresentation,
+                                vm.authState,
+                            )
+                        }
+
+                        1 -> EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun TabRow(
+    pagerState: PagerState,
+    scope: CoroutineScope,
+    commentCount: () -> Int?,
+    modifier: Modifier = Modifier,
+) {
+    SecondaryScrollableTabRow(
+        selectedTabIndex = pagerState.currentPage,
+        modifier,
+        indicator = @Composable { tabPositions ->
+            TabRowDefaults.PrimaryIndicator(
+                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+        edgePadding = 0.dp,
+        divider = {},
+    ) {
+        Tab(
+            selected = pagerState.currentPage == 0,
+            onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+            text = { Text("详情", softWrap = false) },
+            selectedContentColor = MaterialTheme.colorScheme.primary,
+            unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+        )
+        Tab(
+            selected = pagerState.currentPage == 1,
+            onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+            text = {
+                val text by remember(commentCount) {
+                    derivedStateOf {
+                        val count = commentCount()
+                        if (count == null) "评论" else "评论 $count"
+                    }
+                }
+                Text(text, softWrap = false)
+            },
+            selectedContentColor = MaterialTheme.colorScheme.primary,
+            unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
@@ -341,43 +397,7 @@ fun EpisodeSceneContentPhoneScaffold(
 
         Column(Modifier.fillMaxSize()) {
             Row {
-                SecondaryScrollableTabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    Modifier.weight(1f),
-                    indicator = @Composable { tabPositions ->
-                        TabRowDefaults.PrimaryIndicator(
-                            Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                        )
-                    },
-                    containerColor = MaterialTheme.colorScheme.background,
-                    edgePadding = 0.dp,
-                    divider = {},
-                ) {
-                    Tab(
-                        selected = pagerState.currentPage == 0,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                        text = { Text("详情", softWrap = false) },
-                        selectedContentColor = MaterialTheme.colorScheme.primary,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Tab(
-                        selected = pagerState.currentPage == 1,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                        text = {
-                            val commentCountState by remember(commentCount) {
-                                derivedStateOf(commentCount)
-                            }
-                            val text by remember {
-                                derivedStateOf {
-                                    if (commentCountState == null) "评论" else "评论 $commentCountState"
-                                }
-                            }
-                            Text(text, softWrap = false)
-                        },
-                        selectedContentColor = MaterialTheme.colorScheme.primary,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+                TabRow(pagerState, scope, commentCount, Modifier.fillMaxWidth())
                 Box(
                     modifier = Modifier.weight(0.618f) // width
                         .height(48.dp)
