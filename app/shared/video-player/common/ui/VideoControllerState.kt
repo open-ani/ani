@@ -62,12 +62,18 @@ class VideoControllerState(
     /**
      * 控制器是否可见.
      */
-    var visibility: ControllerVisibility by mutableStateOf(initialVisibility)
-    val setVisibility: (ControllerVisibility) -> Unit = { visibility = it }
+    private var _visibility: ControllerVisibility by mutableStateOf(initialVisibility)
+    val visibility by derivedStateOf { _visibility }
+    val setVisibility: (ControllerVisibility) -> Unit = {
+        previousVisibility = _visibility
+        _visibility = it
+    }
 
     fun toggleVisibility(desired: ControllerVisibility? = null) {
-        visibility = desired
-            ?: if (visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible
+        setVisibility(
+            desired
+                ?: if (_visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible,
+        )
     }
 
     var danmakuEnabled by mutableStateOf(true)
@@ -77,11 +83,17 @@ class VideoControllerState(
 
     private val alwaysOnRequests = SnapshotStateList<Any>()
 
+    private var previousVisibility by mutableStateOf(ControllerVisibility.Visible) 
     /**
      * 总是显示. 也就是不要在 5 秒后自动隐藏.
      */
     val alwaysOn: Boolean by derivedStateOf {
         alwaysOnRequests.isNotEmpty()
+    }
+    val progressBarVisible: Boolean by derivedStateOf {
+        //由于隐藏动画的存在，不能在隐藏动画发生时切换progressBar,所以隐藏动画发生时，使用previousVisibility保持当前显示的组件直至动画结束
+        (_visibility.takeIf { it != ControllerVisibility.Invisible }
+            ?: previousVisibility) == ControllerVisibility.DetachedSliderOnly
     }
 
     /**
@@ -95,6 +107,19 @@ class VideoControllerState(
         }
     }
     fun setRequestProgressBarVisible() {
-        visibility = ControllerVisibility.DetachedSliderOnly
+        previousVisibility = _visibility
+
+        if (previousVisibility == ControllerVisibility.Invisible) {
+            _visibility = ControllerVisibility.DetachedSliderOnly
+        }
+    }
+
+    fun cancelRequestProgressBarVisible() {
+        if (!alwaysOn) {
+            //resume previous visibility
+            val currentVisibility = _visibility
+            _visibility = previousVisibility
+            previousVisibility = currentVisibility
+        }
     }
 }

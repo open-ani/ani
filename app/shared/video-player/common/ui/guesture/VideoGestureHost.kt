@@ -626,17 +626,14 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
-                        var previousVisibility by remember { mutableStateOf(ControllerVisibility.Invisible) }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
-                                previousVisibility = controllerState.visibility
+                                controllerState.setRequestProgressBarVisible()
                             },
                             onDragStopped = {
-                                if (!controllerState.alwaysOn) {
-                                    controllerState.visibility = previousVisibility
-                                }
+                                controllerState.cancelRequestProgressBarVisible()
                             },
                         ) {
                             progressSliderState.run {
@@ -644,9 +641,6 @@ fun VideoGestureHost(
                                 val offsetRatio =
                                     (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
                                 previewPositionRatio(offsetRatio)
-                                if (previousVisibility == ControllerVisibility.Invisible) {
-                                    controllerState.setRequestProgressBarVisible()
-                                }
                             }
                         }
                     }

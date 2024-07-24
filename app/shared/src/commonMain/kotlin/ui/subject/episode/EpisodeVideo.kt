@@ -46,7 +46,6 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
@@ -217,16 +216,7 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            var previousVisibilityState by remember { mutableStateOf(ControllerVisibility.Visible) }
-
-            val showProgressSliderOnly by remember {
-                derivedStateOf {
-                    videoControllerState.visibility.takeIf { it != ControllerVisibility.Invisible }
-                        ?: previousVisibilityState
-                }
-            }
-            previousVisibilityState = showProgressSliderOnly
-            if (showProgressSliderOnly == ControllerVisibility.DetachedSliderOnly) {
+            if (videoControllerState.progressBarVisible) {
                 PlayerControllerDefaults.MediaProgressSlider(
                     progressSliderState,
                     playerState,
