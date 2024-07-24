@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.episode.displayName
@@ -60,6 +59,8 @@ import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.details.components.DanmakuMatchInfoGrid
 import me.him188.ani.app.ui.subject.episode.details.components.EpisodeWatchStatusButton
+import me.him188.ani.app.ui.subject.episode.details.components.MediaSourceInfo
+import me.him188.ani.app.ui.subject.episode.details.components.MediaSourceInfoDefaults
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItem
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItemDefaults
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
@@ -147,6 +148,18 @@ fun EpisodeDetails(
 
     EditableSubjectCollectionTypeDialogsHost(editableSubjectCollectionTypeState)
 
+    var showMediaSelector by rememberSaveable { mutableStateOf(false) }
+    if (showMediaSelector) {
+        ModalBottomSheet({ showMediaSelector = false }) {
+            EpisodePlayMediaSelector(
+                mediaSelectorPresentation,
+                mediaSourceResultsPresentation,
+                onDismissRequest = { showMediaSelector = false },
+                onSelected = { showMediaSelector = false },
+            )
+        }
+    }
+
     EpisodeDetailsScaffold(
         subjectTitle = { Text(state.subjectTitle) },
         airingStatus = {
@@ -223,33 +236,30 @@ fun EpisodeDetails(
                             }
                             SelectionContainer { Text(mediaPropertiesText ?: "") }
                         },
-                        filename = {
-                            videoStatistics.playingFilename?.let {
-                                SelectionContainer {
-                                    Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                                }
-                            }
+                        mediaSourceInfo = {
+                            MediaSourceInfo(
+                                selected = mediaSelected,
+                                onClick = { showMediaSelector = true },
+                                icon = {
+                                    originalMedia?.let { MediaSourceInfoDefaults.MediaSourceIcon(media = it) }
+                                },
+                                filename = {
+                                    MediaSourceInfoDefaults.Filename(
+                                        videoStatistics.playingFilename,
+                                        originalMedia?.mediaSourceId,
+                                    )
+                                },
+                            )
                         },
                         videoLoadingSummary = {
                             VideoLoadingSummary(videoStatistics.videoLoadingState)
                         },
                         mediaSource = {
-                            var showMediaSelector by rememberSaveable { mutableStateOf(false) }
                             PlayingEpisodeItemDefaults.MediaSource(
                                 media = originalMedia,
                                 isLoading = videoStatistics.mediaSourceLoading,
                                 onClick = { showMediaSelector = !showMediaSelector },
                             )
-                            if (showMediaSelector) {
-                                ModalBottomSheet({ showMediaSelector = false }) {
-                                    EpisodePlayMediaSelector(
-                                        mediaSelectorPresentation,
-                                        mediaSourceResultsPresentation,
-                                        onDismissRequest = { showMediaSelector = false },
-                                        onSelected = { showMediaSelector = false },
-                                    )
-                                }
-                            }
                         },
                         actions = {
                             val navigator = LocalNavigator.current

@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -54,10 +53,17 @@ private fun PreviewEpisodeItemImpl(
                     Text(media.renderProperties())
                 }
             },
-            filename = {
-                filename?.let {
-                    Text(it, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                }
+            mediaSourceInfo = {
+                MediaSourceInfo(
+                    selected = media != null,
+                    onClick = { },
+                    icon = {
+                        media?.let { MediaSourceInfoDefaults.MediaSourceIcon(media = it) }
+                    },
+                    filename = {
+                        MediaSourceInfoDefaults.Filename(filename, media?.mediaSourceId)
+                    },
+                )
             },
             videoLoadingSummary = {
                 VideoLoadingSummary(

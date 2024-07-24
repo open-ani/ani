@@ -166,7 +166,8 @@ fun EpisodeCarousel(
 
                             EpisodeCacheStatusLabel(state, collectionUpdated)
                         },
-                        filename = {},
+                        mediaSourceInfo = {
+                        },
                         videoLoadingSummary = {},
                         mediaSource = {},
                         playingIcon = {
