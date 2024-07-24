@@ -617,11 +617,53 @@ class DefaultMediaSelectorTest {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
+    fun `prefer any sources`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(false)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            preferKind = null,
+        )
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")).also { target = it },
+            media(
+                alliance = "字幕组2", episodeRange = EpisodeRange.single("2"), kind = MediaSourceKind.WEB,
+            ),
+            media(alliance = "字幕组6", episodeRange = EpisodeRange.single("1")),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
+        )
+        assertEquals(6, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    @Test
+    fun `prefer bt sources`() = runTest {
+        val target: DefaultMedia
+        mediaSelectorContext.value = createMediaSelectorContextFromEmpty(false)
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
+            preferKind = MediaSourceKind.BitTorrent,
+        )
+        addMedia(
+            media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1"), kind = MediaSourceKind.WEB),
+            media(
+                alliance = "字幕组2", episodeRange = EpisodeRange.single("2"), kind = MediaSourceKind.WEB,
+            ),
+            media(alliance = "字幕组6", episodeRange = EpisodeRange.single("1")).also { target = it },
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
+        )
+        assertEquals(6, selector.filteredCandidates.first().size)
+        assertEquals(target, selector.trySelectDefault())
+    }
+
+    @Test
     fun `prefer web sources`() = runTest {
         val target: DefaultMedia
         mediaSelectorContext.value = createMediaSelectorContextFromEmpty(false)
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(
-            preferWeb = true,
+            preferKind = MediaSourceKind.WEB,
         )
         addMedia(
             media(alliance = "字幕组1", episodeRange = EpisodeRange.single("1")),

@@ -381,7 +381,7 @@ class DefaultMediaSelector(
         val shouldPreferSeasons = mediaSelectorContext.subjectFinished == true
                 && mediaSelectorSettings.preferSeasons
 
-        val shouldPreferWeb = mediaSelectorSettings.preferWeb
+        val preferKind = mediaSelectorSettings.preferKind
 
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
@@ -495,8 +495,8 @@ class DefaultMediaSelector(
             return null
         }
 
-        if (shouldPreferWeb) {
-            val web = candidates.filter { it.kind == MediaSourceKind.WEB }
+        if (preferKind != null) {
+            val web = candidates.filter { it.kind == preferKind }
             selectImpl(web)?.let {
                 return it
             }

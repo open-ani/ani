@@ -13,7 +13,9 @@ import me.him188.ani.datasources.api.source.MediaSourceKind
  */
 @Serializable
 @Immutable
-data class MediaSelectorSettings(
+data class MediaSelectorSettings
+@Deprecated("Use Default instead", level = DeprecationLevel.ERROR)
+constructor(
     /**
      * 即使数据源禁用, 也在选择器中以灰色显示, 方便临时启用
      */
@@ -36,12 +38,16 @@ data class MediaSelectorSettings(
      * @see MediaSourceKind.WEB
      * @since 3.5
      */
-    val preferWeb: Boolean = true,
+    val preferKind: MediaSourceKind? = null, // 旧用户不 prefer
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
-    // 这篇小说已经完结了
     companion object {
+
+        // 新用户会使用的默认设置
         @Stable
-        val Default = MediaSelectorSettings()
+        @Suppress("DEPRECATION_ERROR")
+        val Default = MediaSelectorSettings(
+            preferKind = MediaSourceKind.WEB, // 新用户
+        )
     }
 }
