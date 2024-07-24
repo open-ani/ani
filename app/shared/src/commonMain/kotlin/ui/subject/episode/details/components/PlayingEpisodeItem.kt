@@ -185,7 +185,7 @@ fun PlayingEpisodeItem(
                 }
                 Row(
                     Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.End),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     mediaSource()
