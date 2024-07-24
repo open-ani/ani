@@ -56,11 +56,11 @@ import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.AudioSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressIndicatorText
+import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
-import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -93,21 +93,14 @@ internal fun EpisodeVideoImpl(
     onShowSelectEpisode: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    detachedProgressSlider: @Composable () -> Unit,
+    progressSliderState: MediaProgressSliderState,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
-    val progressSliderState = rememberMediaProgressSliderState(
-        playerState,
-        onPreview = {
-            // not yet supported
-        },
-        onPreviewFinished = {
-            playerState.seekTo(it)
-        },
-    )
     VideoScaffold(
         expanded = expanded,
         modifier = modifier,
@@ -217,11 +210,7 @@ internal fun EpisodeVideoImpl(
         },
         bottomBar = {
             if (videoControllerState.progressBarVisible) {
-                PlayerControllerDefaults.MediaProgressSlider(
-                    progressSliderState,
-                    playerState,
-                    Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
-                )
+                detachedProgressSlider()
                 return@VideoScaffold
             }
             PlayerControllerBar(

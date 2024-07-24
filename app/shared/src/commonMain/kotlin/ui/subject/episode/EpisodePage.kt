@@ -79,7 +79,9 @@ import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSel
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
+import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -419,6 +421,15 @@ private fun EpisodeVideo(
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
     val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
 
+    val progressSliderState = rememberMediaProgressSliderState(
+        vm.playerState,
+        onPreview = {
+            // not yet supported
+        },
+        onPreviewFinished = {
+            vm.playerState.seekTo(it)
+        },
+    )
 
     EpisodeVideoImpl(
         vm.playerState,
@@ -514,6 +525,14 @@ private fun EpisodeVideo(
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
         onShowSelectEpisode = { isEpisodeSelectorVisible = true },
+        detachedProgressSlider = {
+            PlayerControllerDefaults.MediaProgressSlider(
+                progressSliderState,
+                vm.playerState,
+                Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+            )
+        },
+        progressSliderState = progressSliderState,
     )
 }
 

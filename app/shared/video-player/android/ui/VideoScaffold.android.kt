@@ -4,6 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
@@ -23,6 +25,7 @@ import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
@@ -68,6 +71,15 @@ private fun PreviewVideoScaffoldImpl(
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
+    val progressSliderState = rememberMediaProgressSliderState(
+        playerState,
+        onPreview = {
+            // not yet supported
+        },
+        onPreviewFinished = {
+            playerState.seekTo(it)
+        },
+    )
     EpisodeVideoImpl(
         playerState = playerState,
         expanded = expanded,
@@ -113,6 +125,14 @@ private fun PreviewVideoScaffoldImpl(
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
         onShowSelectEpisode = { isEpisodeSelectorVisible = true },
+        detachedProgressSlider = {
+            PlayerControllerDefaults.MediaProgressSlider(
+                progressSliderState,
+                playerState,
+                Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+            )
+        },
+        progressSliderState = progressSliderState,
     )
 
 //    VideoScaffold(
