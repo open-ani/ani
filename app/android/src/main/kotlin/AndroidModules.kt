@@ -11,6 +11,8 @@ import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.AndroidPermissionManager
+import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
@@ -27,6 +29,9 @@ fun getAndroidModules(
     torrentCacheDir: File,
     coroutineScope: CoroutineScope,
 ) = module {
+    single<PermissionManager> {
+        AndroidPermissionManager()
+    }
     single<NotifManager> {
         AndroidNotifManager(
             NotificationManagerCompat.from(androidContext()),

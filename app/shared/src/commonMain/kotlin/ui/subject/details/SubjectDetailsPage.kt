@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
@@ -102,7 +104,14 @@ fun SubjectDetailsScene(
             )
         },
         collectionActions = {
-            EditableSubjectCollectionTypeButton(vm.editableSubjectCollectionTypeState)
+            if (vm.authState.isKnownLoggedOut) {
+                val navigator = LocalNavigator.current
+                OutlinedButton({ vm.authState.launchAuthorize(navigator) }) {
+                    Text("登录后可收藏")
+                }
+            } else {
+                EditableSubjectCollectionTypeButton(vm.editableSubjectCollectionTypeState)
+            }
         },
         rating = {
             EditableRating(vm.editableRatingState)
@@ -268,9 +277,7 @@ fun SubjectDetailsPage(
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
                                 selectEpisodeButton = {
-                                    if (state.selfCollected) {
-                                        selectEpisodeButton()
-                                    }
+                                    selectEpisodeButton()
                                 },
                                 rating = rating,
                                 Modifier.fillMaxWidth()

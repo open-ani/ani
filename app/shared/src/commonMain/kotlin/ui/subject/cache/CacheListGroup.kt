@@ -52,6 +52,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -64,6 +66,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import org.koin.core.context.GlobalContext
 
 
 @Immutable
@@ -167,6 +170,7 @@ fun SettingsScope.EpisodeCacheListGroup(
             var showDropdown by remember { mutableStateOf(false) }
 
             val uiScope = rememberCoroutineScope()
+            val context = LocalContext.current
             EpisodeCacheItem(
                 episodeCacheState,
                 onClick = {
@@ -182,6 +186,9 @@ fun SettingsScope.EpisodeCacheListGroup(
                             }
                         } else {
                             state.requestCache(episodeCacheState, autoSelectCached = true)
+                            uiScope.launch {
+                                GlobalContext.get().get<PermissionManager>().requestNotificationPermission(context)
+                            }
                         }
                     }
                 },

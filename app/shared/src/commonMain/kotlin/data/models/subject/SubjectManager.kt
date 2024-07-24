@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -54,7 +55,8 @@ import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
-import me.him188.ani.datasources.api.paging.map
+import me.him188.ani.datasources.api.paging.emptyPagedSource
+import me.him188.ani.datasources.api.paging.mapNotNull
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiEpType
 import me.him188.ani.datasources.bangumi.models.BangumiEpisodeCollectionType
@@ -247,12 +249,12 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
-                    val username = sessionManager.username.filterNotNull().first()
+                    val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
                         subjectType = BangumiSubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
-                    ).map {
+                    ).mapNotNull {
                         it.fetchToSubjectCollection()
                     }
                 },
@@ -353,16 +355,14 @@ class SubjectManagerImpl(
                 // 这是网络请求, 无网情况下会一直失败
                 emit(
                     runOrEmitEmptyList {
-                        bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
-                            .map {
-                                it.toEpisodeCollection()
-                            }
-                            .toList()
+                        fetchEpisodeCollections(subjectId)
                     },
                 )
             }
             // subscribe to changes
-            emitAll(cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY).map { it?.episodes.orEmpty() })
+            emitAll(
+                cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY).filterNotNull().map { it.episodes },
+            )
         }
     }
 
@@ -426,10 +426,14 @@ class SubjectManagerImpl(
             .transform { subject ->
                 if (subject == null) {
                     emit(
-                        me.him188.ani.utils.coroutines.runUntilSuccess {
+                        runUntilSuccess {
                             bangumiEpisodeRepository.getEpisodeCollection(
                                 episodeId,
-                            )?.toEpisodeCollection() ?: error("Failed to get episode collection")
+                            )?.toEpisodeCollection()
+                                ?: bangumiEpisodeRepository.getEpisodeById(episodeId)?.let {
+                                    EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)
+                                }
+                                ?: error("Failed to get episode collection")
                         },
                     )
                 } else {
@@ -517,28 +521,43 @@ class SubjectManagerImpl(
         subjectId: Int,
     ): SubjectCollection {
         val info = getSubjectInfo(subjectId)
-        val episodes = bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
-            .toList()
+
+        // 查收藏状态, 没收藏就查剧集, 认为所有剧集都没有收藏
+        val episodes: List<EpisodeCollection> = fetchEpisodeCollections(subjectId)
+
         val collection = bangumiSubjectRepository.subjectCollectionById(subjectId).first()
 
         return SubjectCollection(
-            info, episodes.map { it.toEpisodeCollection() },
+            info, episodes,
             collectionType = collection?.type?.toCollectionType()
                 ?: UnifiedCollectionType.NOT_COLLECTED,
             selfRatingInfo = collection?.toSelfRatingInfo() ?: SelfRatingInfo.Empty,
         )
     }
 
-    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection = coroutineScope {
+    private suspend fun fetchEpisodeCollections(subjectId: Int): List<EpisodeCollection> {
+        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, BangumiEpType.MainStory)
+            .let { collections ->
+                collections?.toList()?.map { it.toEpisodeCollection() }
+                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, BangumiEpType.MainStory)
+                        .toList()
+                        .map {
+                            EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)
+                        }
+            }
+    }
+
+    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection? = coroutineScope {
         val subject = async {
             runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }
         val eps = runUntilSuccess {
-            bangumiEpisodeRepository.getSubjectEpisodeCollection(subjectId, BangumiEpType.MainStory)
+            fetchEpisodeCollections(subjectId)
         }.toList()
 
         toSubjectCollectionItem(subject.await(), eps)
     }
+
 }
 
 

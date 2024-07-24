@@ -51,6 +51,7 @@ import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -101,6 +102,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val subjectPresentation: SubjectPresentation // by state
     val episodePresentation: EpisodePresentation // by state
+
+    val authState: AuthState
 
     val episodeDetailsState: EpisodeDetailsState
 
@@ -335,6 +338,7 @@ private class EpisodeViewModelImpl(
 
     override val episodePresentation: EpisodePresentation by episodePresentationFlow
         .produceState(EpisodePresentation.Placeholder)
+    override val authState: AuthState = AuthState()
 
     private val episodeCollectionsFlow = subjectManager.episodeCollectionsFlow(subjectId)
         .shareInBackground()

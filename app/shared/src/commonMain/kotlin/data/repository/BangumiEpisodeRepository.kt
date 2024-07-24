@@ -1,7 +1,10 @@
 package me.him188.ani.app.data.repository
 
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.episode.EpisodeInfo
@@ -10,6 +13,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.datasources.api.paging.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.models.BangumiEpType
 import me.him188.ani.datasources.bangumi.models.BangumiEpisode
@@ -35,9 +39,9 @@ interface BangumiEpisodeRepository : Repository {
     suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode>
 
     /**
-     * 获取用户在这个条目下的所有剧集的收藏状态.
+     * 获取用户在这个条目下的所有剧集的收藏状态. 当用户没有收藏此条目时返回 `null`
      */
-    suspend fun getSubjectEpisodeCollection(subjectId: Int, type: BangumiEpType): Flow<BangumiUserEpisodeCollection>
+    suspend fun getSubjectEpisodeCollections(subjectId: Int, type: BangumiEpType): Flow<BangumiUserEpisodeCollection>?
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态.
@@ -75,29 +79,40 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         return episodes.results
     }
 
-    override suspend fun getSubjectEpisodeCollection(
+    override suspend fun getSubjectEpisodeCollections(
         subjectId: Int,
         type: BangumiEpType
-    ): Flow<BangumiUserEpisodeCollection> {
+    ): Flow<BangumiUserEpisodeCollection>? {
+        val firstPage = try {
+            client.api.getUserSubjectEpisodeCollection(
+                subjectId,
+                episodeType = type,
+                offset = 0,
+                limit = 100,
+            ).body()
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.NotFound
+                || e.response.status == HttpStatusCode.Unauthorized
+            ) {
+                return null
+            }
+            throw e
+        }
+
         val episodes = PageBasedPagedSource { page ->
-            try {
+            val resp = if (page == 0) {
+                firstPage
+            } else {
                 client.api.getUserSubjectEpisodeCollection(
                     subjectId,
                     episodeType = type,
                     offset = page * 100,
                     limit = 100,
-                ).body().run {
-                    val data = this.data ?: return@run null
-                    Paged(this.total, data.size == 100, data)
-                }
-            } catch (
-                e: Exception
-            ) {
-                logger.warn("Exception in getSubjectEpisodeCollection", e)
-                null
+                ).body()
             }
+            Paged.processPagedResponse(resp.total, 100, resp.data)
         }
-        return episodes.results
+        return episodes.results.retry(1)
     }
 
     override suspend fun getEpisodeCollection(episodeId: Int): BangumiUserEpisodeCollection? {

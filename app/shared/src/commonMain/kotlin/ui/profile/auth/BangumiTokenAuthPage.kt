@@ -1,0 +1,150 @@
+package me.him188.ani.app.ui.profile.auth
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ContentPaste
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.session.Session
+import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import moe.tlaster.precompose.navigation.BackHandler
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.context.GlobalContext
+import kotlin.time.Duration.Companion.days
+
+@Stable
+class BangumiTokenAuthViewModel : AbstractViewModel(), KoinComponent {
+    private val sessionManager: SessionManager by inject()
+
+    fun onCancel() {
+        sessionManager.processingRequest.value?.cancel()
+    }
+
+    suspend fun authByToken(token: String) {
+        sessionManager.setSession(Session(token, System.currentTimeMillis() + 365.days.inWholeMilliseconds))
+    }
+}
+
+@Composable
+fun BangumiTokenAuthPage(
+    vm: BangumiTokenAuthViewModel,
+    modifier: Modifier = Modifier,
+) {
+    var token by rememberSaveable { mutableStateOf("") }
+    val navigator = LocalNavigator.current
+    BackHandler {
+        vm.onCancel()
+        navigator.goBack()
+    }
+    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Scaffold(
+            Modifier.widthIn(max = 600.dp),
+            topBar = {
+                TopAppBar(
+                    title = { Text("Bangumi 授权") },
+                    navigationIcon = {
+                        TopAppBarGoBackButton()
+                    },
+                )
+            },
+        ) { contentPadding ->
+            Column(
+                Modifier.padding(contentPadding).padding(16.dp).widthIn(max = 600.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("1. 你将前往 Bangumi 开发者测试页面")
+                Text("2. 如果提示输入邮箱 (Email), 请使用你的 Bangumi 账号登录")
+                Text("3. 创建一个令牌 (token), 名称随意, 有效期 365 天")
+                Text("4. 复制创建好的 token, 回到本页面")
+
+                val context = LocalContext.current
+                Button(
+                    {
+                        GlobalContext.get().get<BrowserNavigator>()
+                            .openBrowser(context, "https://next.bgm.tv/demo/access-token/create")
+                    },
+                    Modifier.align(Alignment.End),
+                ) {
+                    Text("前往创建令牌")
+                }
+
+                Text("在下方粘贴你刚刚复制的 token")
+
+                val onTokenChange = { it: String -> token = it }
+                val clipboard by rememberUpdatedState(LocalClipboardManager.current)
+                OutlinedTextField(
+                    value = token,
+                    onValueChange = onTokenChange,
+                    label = { Text("Access Token") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    trailingIcon = {
+                        IconButton(
+                            {
+                                clipboard.getText()?.text?.let {
+                                    onTokenChange(it.trim())
+                                }
+                            },
+                        ) {
+                            Icon(Icons.Rounded.ContentPaste, "粘贴")
+                        }
+                    },
+                )
+                val tokenNotEmpty by remember {
+                    derivedStateOf {
+                        token.isNotEmpty()
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        vm.onCancel()
+                        vm.launchInBackground {
+                            authByToken(token)
+                            withContext(Dispatchers.Main) {
+                                navigator.goBack()
+                            }
+                        }
+                    },
+                    Modifier.fillMaxWidth(),
+                    enabled = tokenNotEmpty,
+                ) {
+                    Text("用令牌登录")
+                }
+            }
+        }
+    }
+}
+

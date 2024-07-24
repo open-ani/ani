@@ -68,6 +68,7 @@ data class OAuthResult(
 
 internal class BangumiOAuthRequest(
     private val aniNavigator: AniNavigator,
+    private val navigateToWelcome: Boolean,
     private val setSession: suspend (
         session: Session, refreshToken: String,
     ) -> Unit,
@@ -92,7 +93,11 @@ internal class BangumiOAuthRequest(
     override suspend fun invoke() {
         state.value = ExternalOAuthRequest.State.Launching
         withContext(Dispatchers.Main) {
-            aniNavigator.navigateAuth()
+            if (navigateToWelcome) {
+                aniNavigator.navigateWelcome()
+            } else {
+                aniNavigator.navigateBangumiOAuthOrTokenAuth()
+            }
         }
         state.value = ExternalOAuthRequest.State.AwaitingCallback
         try {

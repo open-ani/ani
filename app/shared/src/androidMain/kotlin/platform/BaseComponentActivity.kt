@@ -21,18 +21,46 @@ package me.him188.ani.app.platform
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Stable
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.ConcurrentLinkedQueue
 
 abstract class BaseComponentActivity : ComponentActivity() {
     @Stable
     val snackbarHostState = SnackbarHostState()
+
+    private val requestPermissionResultHandlers: MutableCollection<(Boolean) -> Unit> = ConcurrentLinkedQueue()
+    private val registerForActivityResult =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            requestPermissionResultHandlers.forEach {
+                it.invoke(granted)
+            }
+        }
+    private val requestPermissionLock = Mutex()
+
+    suspend fun requestPermission(permission: String): Boolean {
+        val res = CompletableDeferred<Boolean>()
+        return requestPermissionLock.withLock {
+            val handler: (Boolean) -> Unit = { res.complete(it) }
+            requestPermissionResultHandlers.add(handler)
+            try {
+                registerForActivityResult.launch(permission)
+                res.await()
+            } finally {
+                requestPermissionResultHandlers.remove(handler)
+            }
+        }
+    }
 
     fun enableDrawingToSystemBars() {
         enableEdgeToEdge(
