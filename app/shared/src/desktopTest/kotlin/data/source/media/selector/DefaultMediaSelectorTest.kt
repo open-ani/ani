@@ -649,10 +649,10 @@ class DefaultMediaSelectorTest {
             media(
                 alliance = "字幕组2", episodeRange = EpisodeRange.single("2"), kind = MediaSourceKind.WEB,
             ),
-            media(alliance = "字幕组6", episodeRange = EpisodeRange.single("1")).also { target = it },
-            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("2")),
-            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("3")),
-            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("4")),
+            media(alliance = "字幕组3", episodeRange = EpisodeRange.single("1")).also { target = it },
+            media(alliance = "字幕组4", episodeRange = EpisodeRange.single("2")),
+            media(alliance = "字幕组5", episodeRange = EpisodeRange.single("3")),
+            media(alliance = "字幕组6", episodeRange = EpisodeRange.single("4")),
         )
         assertEquals(6, selector.filteredCandidates.first().size)
         assertEquals(target, selector.trySelectDefault())
