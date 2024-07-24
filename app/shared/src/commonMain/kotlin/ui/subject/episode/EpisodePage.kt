@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -73,6 +75,7 @@ import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
+import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
@@ -214,7 +217,7 @@ private fun EpisodeSceneContentPhone(
 ) {
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
-    
+
     LaunchedEffect(true) {
         vm.episodeCommentState.reload()
     }
@@ -260,45 +263,59 @@ private fun EpisodeSceneContentPhone(
 
     if (showDanmakuEditor) {
         val focusRequester = remember { FocusRequester() }
-        ModalBottomSheet(
-            {
-                showDanmakuEditor = false
+        val dismiss = {
+            showDanmakuEditor = false
+            if (didSetPaused) {
                 didSetPaused = false
-            },
-        ) {
-            Column(Modifier.padding(all = 16.dp)) {
-                val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
-                val videoDanmakuState = vm.danmaku
-                DanmakuEditor(
-                    text = videoDanmakuState.danmakuEditorText,
-                    onTextChange = { videoDanmakuState.danmakuEditorText = it },
-                    isSending = videoDanmakuState.isSending,
-                    placeholderText = danmakuTextPlaceholder,
-                    onSend = { text ->
-                        videoDanmakuState.danmakuEditorText = ""
-                        videoDanmakuState.sendAsync(
-                            DanmakuInfo(
-                                vm.playerState.getExactCurrentPositionMillis(),
-                                text = text,
-                                color = Color.White.toArgb(),
-                                location = DanmakuLocation.NORMAL,
-                            ),
-                        ) {
-                            showDanmakuEditor = false
-                            if (didSetPaused) {
-                                didSetPaused = false
-                                vm.playerState.resume()
-                            }
-                        }
-                    },
-                    Modifier.fillMaxWidth().focusRequester(focusRequester),
-                    colors = OutlinedTextFieldDefaults.colors(),
-                )
+                vm.playerState.resume()
             }
+        }
+        ModalBottomSheet(
+            onDismissRequest = dismiss,
+        ) {
+            DetachedDanmakuEditorLayout(
+                vm.danmaku,
+                onSend = { text ->
+                    vm.danmaku.danmakuEditorText = ""
+                    vm.danmaku.sendAsync(
+                        DanmakuInfo(
+                            vm.playerState.getExactCurrentPositionMillis(),
+                            text = text,
+                            color = Color.White.toArgb(),
+                            location = DanmakuLocation.NORMAL,
+                        ),
+                    ) {
+                        dismiss()
+                    }
+                },
+                focusRequester,
+                Modifier.imePadding(),
+            )
         }
         LaunchedEffect(true) {
             focusRequester.requestFocus()
         }
+    }
+}
+
+@Composable
+private fun DetachedDanmakuEditorLayout(
+    videoDanmakuState: VideoDanmakuState,
+    onSend: (text: String) -> Unit,
+    focusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.padding(all = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("发送弹幕", style = MaterialTheme.typography.titleMedium)
+        DanmakuEditor(
+            text = videoDanmakuState.danmakuEditorText,
+            onTextChange = { videoDanmakuState.danmakuEditorText = it },
+            isSending = videoDanmakuState.isSending,
+            placeholderText = remember { randomDanmakuPlaceholder() },
+            onSend = onSend,
+            Modifier.fillMaxWidth().focusRequester(focusRequester),
+            colors = OutlinedTextFieldDefaults.colors(),
+        )
     }
 }
 
