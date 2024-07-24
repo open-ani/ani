@@ -173,8 +173,10 @@ fun EpisodeDetails(
                                 "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
                             )
                         }
-                        SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
-                        SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { // 一起换行
+                            SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
+                            SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        }
                     }
 
                     else -> {}
