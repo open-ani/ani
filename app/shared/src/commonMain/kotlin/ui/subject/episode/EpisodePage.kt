@@ -189,7 +189,7 @@ private fun EpisodeSceneTabletVeryWide(
                 return@Row
             }
 
-            Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
+            Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(340.dp))) {
 
                 EpisodeDetails(
                     vm.episodeDetailsState,
