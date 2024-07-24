@@ -20,22 +20,31 @@ package me.him188.ani.app.ui.profile
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import io.ktor.http.encodeURLParameter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.source.AniAuthClient
+import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.ExternalOAuthRequest
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.utils.logging.debug
+import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.util.UUID
 
 @Stable
 class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
+    private val client by lazy { AniAuthClient().also { addCloseable(it) } }
 
     /**
      * 当前授权是否正在进行中
@@ -47,10 +56,23 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
      */
     val needAuth by sessionManager.isSessionValid.map { it != true }.produceState(true)
 
+    var requestIdFlow = MutableStateFlow(UUID.randomUUID().toString())
+
     /**
      * 当前是第几次尝试
      */
-    val retryCount = mutableIntStateOf(0)
+    val requestId by requestIdFlow.produceState()
+
+    fun makeOAuthUrl(
+        requestId: String,
+    ): String {
+        val base = currentAniBuildConfig.aniAuthServerUrl.removeSuffix("/")
+        return "${base}/v1/login/bangumi/oauth?requestId=${requestId.encodeURLParameter()}"
+    }
+
+    val oauthUrl by derivedStateOf {
+        makeOAuthUrl(requestId)
+    }
 
     /**
      * 展示登录失败的错误
@@ -61,31 +83,45 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
         }
     }.localCachedStateFlow(null)
 
+    suspend fun doCheckResult() {
+        withContext(Dispatchers.Default) {
+            while (true) {
+                val resp = client.getResultOrNull(requestIdFlow.value)
+                logger.info { "Check OAuth result: $resp" }
+                if (resp != null) {
+                    sessionManager.processingRequest.value?.onCallback(
+                        Result.success(
+                            OAuthResult(
+                                accessToken = resp.accessToken,
+                                refreshToken = resp.refreshToken,
+                                expiresIn = resp.expiresIn,
+                            ),
+                        ),
+                    )
+                }
+                delay(1000)
+            }
+        }
+    }
+
     /**
      * Set callback code. Only used by Desktop platform. For Android, see `MainActivity.onNewIntent`
      */
-    fun setCode(code: String, callbackUrl: String) {
-        sessionManager.processingRequest.value?.onCallback(
-            Result.success(
-                OAuthResult(
-                    code,
-                    callbackUrl,
-                ),
-            ),
-        )
+    private fun setCode(oAuthResult: OAuthResult) {
+
     }
 
     @UiThread
     fun dismissError() {
         logger.debug { "dismissError" }
         authError.value = null
-        retryCount.intValue++
+        refresh()
     }
 
     @UiThread
     fun refresh() {
         logger.debug { "refresh" }
-        retryCount.intValue++
+        requestIdFlow.value = UUID.randomUUID().toString()
     }
 
     fun onCancel() {

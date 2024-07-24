@@ -7,23 +7,16 @@ import me.him188.ani.app.platform.ContextMP
 
 
 @Stable
-actual class OAuthLauncherState(
-    actual val onCodeCallback: (code: String, callbackUrl: String) -> Unit,
-) {
-    actual fun launch(context: ContextMP) {
-    }
+class DesktopExternalBrowserLauncherState : ExternalBrowserLauncherState() {
+    override fun launch(url: String, context: ContextMP) {
 
-    actual val isLaunching: Boolean = false
-    actual val isLaunched: Boolean = false
-    actual val isFailed: Boolean = false
+    }
 }
 
 @Composable
-actual fun rememberOAuthLauncherState(
-    onCodeCallback: (code: String, callbackUrl: String) -> Unit
-): OAuthLauncherState {
+actual fun rememberExternalBrowserLauncherState(): ExternalBrowserLauncherState {
     return remember {
-        OAuthLauncherState(onCodeCallback)
+        DesktopExternalBrowserLauncherState()
     }
 }
 

@@ -36,8 +36,6 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.session.BangumiAuthorizationConstants
-import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
@@ -64,19 +62,6 @@ class MainActivity : AniComponentActivity() {
                 logger.info { "onNewIntent requestCode: $code" }
                 AndroidNotifManager.handleIntent(code)
             }
-        }
-
-        val data = intent.data ?: return
-
-        val hasCallbackCode = data.queryParameterNames?.contains("code") == true
-        if (hasCallbackCode) {
-            val code = data.getQueryParameter("code")!!
-            logger.info { "onNewIntent Receive code '$code', current processingRequest: ${sessionManager.processingRequest.value}" }
-            sessionManager.processingRequest.value?.onCallback(
-                Result.success(
-                    OAuthResult(code, BangumiAuthorizationConstants.CALLBACK_URL),
-                ),
-            )
         }
     }
 

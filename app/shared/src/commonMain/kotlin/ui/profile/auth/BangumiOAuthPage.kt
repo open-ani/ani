@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -32,13 +33,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
-import me.him188.ani.app.ui.profile.rememberOAuthLauncherState
 import moe.tlaster.precompose.navigation.BackHandler
+import org.koin.core.context.GlobalContext
 
 @Composable
 fun BangumiOAuthScene(
@@ -107,6 +109,10 @@ fun BangumiOAuthPage(
             mutableStateOf(false)
         }
 
+        LaunchedEffect(true) {
+            vm.doCheckResult()
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxHeight().padding(contentPadding).padding(all = 16.dp),
             // 居中
@@ -132,16 +138,14 @@ fun BangumiOAuthPage(
                             )
                         }
                     }
-                    
+
                     Text("Bangumi 注册提示", style = MaterialTheme.typography.titleLarge)
 
                     Hint { Text("""建议使用常见邮箱，例如 QQ, 网易, Outlook""") }
                     Hint { Text("""如果提示激活失败，尝试删除激活码的最后一个字再手动输入""") }
 
-                    key(vm.retryCount.value) {
-                        val launcherState = rememberOAuthLauncherState { code, callbackUrl ->
-                            vm.setCode(code, callbackUrl)
-                        }
+                    key(vm.requestId) {
+//                        val launcherState = rememberExternalBrowserLauncherState()
 
                         val context = LocalContext.current
                         Column(
@@ -149,21 +153,21 @@ fun BangumiOAuthPage(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                                if (launcherState.isFailed) {
-                                    SideEffect { showHelp = true }
-                                    Text(text = "启动浏览器失败", color = MaterialTheme.colorScheme.error)
-                                } else {
-                                    Text(text = "请在浏览器中完成授权")
-                                }
+//                                if (launcherState.isFailed) {
+//                                    SideEffect { showHelp = true }
+//                                    Text(text = "启动浏览器失败", color = MaterialTheme.colorScheme.error)
+//                                } else {
+                                Text(text = "请在浏览器中完成授权")
+//                                }
                             }
                         }
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
                                 onClick = {
-                                    launcherState.launch(context)
+                                    GlobalContext.get().get<BrowserNavigator>().openBrowser(context, vm.oauthUrl)
                                 },
                                 Modifier.fillMaxWidth(),
-                                enabled = !launcherState.isLaunching,
+//                                enabled = !launcherState.isLaunching,
                             ) {
                                 Text(text = "启动浏览器")
                             }

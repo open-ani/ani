@@ -62,8 +62,9 @@ interface ExternalOAuthRequest {
 }
 
 data class OAuthResult(
-    val code: String,
-    val callbackUrl: String,
+    val accessToken: String,
+    val refreshToken: String,
+    val expiresIn: Long,
 )
 
 internal class BangumiOAuthRequest(
@@ -76,18 +77,18 @@ internal class BangumiOAuthRequest(
     override val state: MutableStateFlow<ExternalOAuthRequest.State> =
         MutableStateFlow(ExternalOAuthRequest.State.Launching)
 
-    private val code = CompletableDeferred<OAuthResult>()
+    private val result = CompletableDeferred<OAuthResult>()
     private val client: BangumiClient by inject()
 
     /**
      * OAuth 成功回调 code 时调用.
      */
     override fun onCallback(code: Result<OAuthResult>) {
-        this.code.completeWith(code)
+        this.result.completeWith(code)
     }
 
     override fun cancel() {
-        code.cancel()
+        result.cancel()
     }
 
     override suspend fun invoke() {
@@ -101,17 +102,15 @@ internal class BangumiOAuthRequest(
         }
         state.value = ExternalOAuthRequest.State.AwaitingCallback
         try {
-            val (code, callbackUrl) = code.await()
+            val result = result.await()
             state.value = ExternalOAuthRequest.State.Processing
-
-            val accessToken = client.exchangeTokens(code, callbackUrl)
 
             setSession(
                 Session(
-                    accessToken.accessToken,
-                    System.currentTimeMillis() + accessToken.expiresIn,
+                    result.accessToken,
+                    System.currentTimeMillis() + result.expiresIn * 1000,
                 ),
-                accessToken.refreshToken,
+                result.refreshToken,
             )
         } catch (e: CancellationException) {
             state.value = ExternalOAuthRequest.State.Cancelled(e)

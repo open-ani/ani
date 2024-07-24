@@ -274,7 +274,6 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
             withContext(Dispatchers.IO) {
                 client.refreshAccessToken(
                     refreshToken,
-                    BangumiAuthorizationConstants.CALLBACK_URL,
                 )
             }
         }.getOrNull()

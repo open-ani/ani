@@ -91,11 +91,7 @@ interface BangumiClient : Closeable {
         @SerialName("refresh_token") val refreshToken: String,
     )
 
-    /**
-     * 用 OAuth 回调的 code 换 access token 和 refresh token
-     */
-    suspend fun exchangeTokens(code: String, callbackUrl: String): GetAccessTokenResponse
-    suspend fun refreshAccessToken(refreshToken: String, callbackUrl: String): GetAccessTokenResponse
+    suspend fun refreshAccessToken(refreshToken: String): GetAccessTokenResponse
 
     suspend fun executeGraphQL(query: String): JsonObject
 
@@ -178,30 +174,9 @@ internal class BangumiClientImpl(
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     private val logger = logger(this::class)
-    override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse {
-        val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                buildJsonObject {
-                    put("grant_type", "authorization_code")
-                    put("client_id", clientId)
-                    put("client_secret", clientSecret)
-                    put("code", code)
-                    put("redirect_uri", callbackUrl)
-                },
-            )
-        }
-
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to get access token: $resp")
-        }
-
-        return resp.body<BangumiClient.GetAccessTokenResponse>()
-    }
 
     override suspend fun refreshAccessToken(
-        refreshToken: String,
-        callbackUrl: String
+        refreshToken: String
     ): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
@@ -211,7 +186,6 @@ internal class BangumiClientImpl(
                     put("client_id", clientId)
                     put("client_secret", clientSecret)
                     put("refresh_token", refreshToken)
-                    put("redirect_uri", callbackUrl)
                 },
             )
         }

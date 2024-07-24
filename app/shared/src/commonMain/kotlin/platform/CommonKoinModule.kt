@@ -298,6 +298,7 @@ interface AniBuildConfig {
     val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
     val isDebug: Boolean
+    val aniAuthServerUrl: String
 
     companion object {
         @Stable
