@@ -141,7 +141,7 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
         }
 
         launchInBackground {
-            sessionManager.events.filterIsInstance<SessionEvent.TokenChangedEvent>().collect {
+            sessionManager.events.filterIsInstance<SessionEvent.UserActionEvent>().collect {
                 logger.info { "登录信息变更, 清空缓存" }
                 // 如果有变更登录, 清空缓存
                 for (collections in collectionsByType) {

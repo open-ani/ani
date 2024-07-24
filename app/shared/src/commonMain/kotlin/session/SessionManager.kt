@@ -138,10 +138,11 @@ sealed interface SessionEvent {
     /**
      * token 有变更
      */
-    sealed interface TokenChangedEvent : SessionEvent
+    sealed interface UserActionEvent : SessionEvent
 
-    data object Login : TokenChangedEvent
-    data object Logout : TokenChangedEvent
+    data object Login : UserActionEvent
+    data object TokenRefreshed : SessionEvent
+    data object Logout : UserActionEvent
 }
 
 object TestSessionManagers {
@@ -282,11 +283,12 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
             return false
         }
         // success
-        setNewSession(
+        setSessionAndRefreshToken(
 //            session.userId,
             newAccessToken.accessToken,
             System.currentTimeMillis() + newAccessToken.expiresIn,
             newAccessToken.refreshToken,
+            isNewLogin = false,
         )
         logger.trace { "tryRefreshSessionByRefreshToken: success" }
         return true
@@ -315,7 +317,7 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
 
             // Launch external oauth (e.g. browser)
             val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session, refreshToken ->
-                setNewSession(session.accessToken, session.expiresAt, refreshToken)
+                setSessionAndRefreshToken(session.accessToken, session.expiresAt, refreshToken, isNewLogin = true)
             }
             processingRequest.value = req
             try {
@@ -358,24 +360,39 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
         }
     }
 
+
+    private suspend fun setSessionAndRefreshToken(
+        accessToken: String,
+        expiresAt: Long,
+        refreshToken: String,
+        isNewLogin: Boolean
+    ) {
+        logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
+
+        tokenRepository.setRefreshToken(refreshToken)
+        setSessionImpl(Session(accessToken, expiresAt))
+        if (isNewLogin) {
+            events.tryEmit(SessionEvent.Login)
+        } else {
+            events.tryEmit(SessionEvent.TokenRefreshed)
+        }
+        // does not broadcast
+    }
+
     override suspend fun setSession(session: Session) {
+        setSessionImpl(session)
+        events.tryEmit(SessionEvent.Login)
+    }
+
+    private suspend fun setSessionImpl(session: Session) {
         tokenRepository.setSession(session)
         profileSettings.update {
             copy(loginAsGuest = false)
         }
-        events.tryEmit(SessionEvent.Login)
     }
 
     override suspend fun logout() {
         tokenRepository.clear()
         events.tryEmit(SessionEvent.Logout)
-    }
-
-    private suspend fun setNewSession(accessToken: String, expiresAt: Long, refreshToken: String) {
-        logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
-
-        tokenRepository.setRefreshToken(refreshToken)
-        setSession(Session(accessToken, expiresAt))
-        // session updates automatically
     }
 }
