@@ -181,7 +181,7 @@ private fun EpisodeSceneTabletVeryWide(
                 vm,
                 expanded = true,
                 maintainAspectRatio = false,
-                initialControllerVisible = ControllerVisibility.Visible,
+                initialControllerVisibility = ControllerVisibility.Visible,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
             )
 
@@ -405,12 +405,12 @@ private fun EpisodeVideo(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    initialControllerVisible: ControllerVisibility = ControllerVisibility.Invisible,
+    initialControllerVisibility: ControllerVisibility = ControllerVisibility.Invisible,
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
+    val videoControllerState = remember { VideoControllerState(initialControllerVisibility) }
     val videoDanmakuState = vm.danmaku
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
