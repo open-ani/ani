@@ -15,7 +15,7 @@ private class LoginViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
 
     @Stable
-    val isLoggedIn = sessionManager.isSessionValid.filterNotNull()
+    val isLoggedIn = sessionManager.isSessionVerified.filterNotNull()
         .shareInBackground(started = SharingStarted.Eagerly)
 }
 

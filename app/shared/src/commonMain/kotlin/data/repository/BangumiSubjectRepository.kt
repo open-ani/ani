@@ -18,6 +18,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.data.models.subject.toInfoboxItem
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.username
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource

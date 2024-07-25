@@ -33,6 +33,7 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.ExternalOAuthRequest
 import me.him188.ani.app.session.OAuthResult
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.isSessionVerified
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.utils.logging.debug
@@ -54,7 +55,7 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     /**
      * 需要进行授权
      */
-    val needAuth by sessionManager.isSessionValid.map { it != true }.produceState(true)
+    val needAuth by sessionManager.isSessionVerified.map { !it }.produceState(true)
 
     var requestIdFlow = MutableStateFlow(UUID.randomUUID().toString())
 
@@ -94,7 +95,7 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
                             OAuthResult(
                                 accessToken = resp.accessToken,
                                 refreshToken = resp.refreshToken,
-                                expiresIn = resp.expiresIn,
+                                expiresInSeconds = resp.expiresIn,
                             ),
                         ),
                     )

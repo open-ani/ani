@@ -79,7 +79,7 @@ import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.data.source.media.toClientProxyConfig
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
 import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.SessionManagerImpl
+import me.him188.ani.app.session.unverifiedAccessToken
 import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -105,14 +105,14 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     // Repositories
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
-    single<SessionManager> { SessionManagerImpl() }
+    single<SessionManager> { SessionManager(koin, coroutineScope.coroutineContext) }
     single<BangumiClient> {
         val settings = get<SettingsRepository>()
         val sessionManager by inject<SessionManager>()
         DelegateBangumiClient(
             settings.proxySettings.flow.map { it.default }.map { proxySettings ->
                 createBangumiClient(
-                    sessionManager.session.map { it?.accessToken },
+                    sessionManager.unverifiedAccessToken,
                     proxySettings.toClientProxyConfig(),
                     coroutineScope.coroutineContext,
                 )

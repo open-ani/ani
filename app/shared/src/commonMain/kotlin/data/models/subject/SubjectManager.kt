@@ -43,6 +43,7 @@ import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.username
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheSave
@@ -249,6 +250,7 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
+                    sessionManager.state
                     val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,

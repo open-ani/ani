@@ -9,9 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.AniNavigator
-import me.him188.ani.datasources.bangumi.BangumiClient
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * 表示一个外部 OAuth 授权请求.
@@ -64,21 +62,18 @@ interface ExternalOAuthRequest {
 data class OAuthResult(
     val accessToken: String,
     val refreshToken: String,
-    val expiresIn: Long,
+    val expiresInSeconds: Long,
 )
 
 internal class BangumiOAuthRequest(
     private val aniNavigator: AniNavigator,
     private val navigateToWelcome: Boolean,
-    private val setSession: suspend (
-        session: Session, refreshToken: String,
-    ) -> Unit,
+    private val setSession: suspend (NewSession) -> Unit,
 ) : ExternalOAuthRequest, KoinComponent {
     override val state: MutableStateFlow<ExternalOAuthRequest.State> =
         MutableStateFlow(ExternalOAuthRequest.State.Launching)
 
     private val result = CompletableDeferred<OAuthResult>()
-    private val client: BangumiClient by inject()
 
     /**
      * OAuth 成功回调 code 时调用.
@@ -106,11 +101,11 @@ internal class BangumiOAuthRequest(
             state.value = ExternalOAuthRequest.State.Processing
 
             setSession(
-                Session(
+                NewSession(
                     result.accessToken,
-                    System.currentTimeMillis() + result.expiresIn * 1000,
+                    System.currentTimeMillis() + result.expiresInSeconds * 1000,
+                    result.refreshToken,
                 ),
-                result.refreshToken,
             )
         } catch (e: CancellationException) {
             state.value = ExternalOAuthRequest.State.Cancelled(e)

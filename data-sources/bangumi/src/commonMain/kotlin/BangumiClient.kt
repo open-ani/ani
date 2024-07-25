@@ -32,6 +32,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
@@ -57,6 +58,7 @@ import me.him188.ani.datasources.bangumi.apis.DefaultApi
 import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
 import me.him188.ani.datasources.bangumi.models.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.models.BangumiUser
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
@@ -104,6 +106,8 @@ interface BangumiClient : Closeable {
     )
 
     suspend fun getTokenStatus(accessToken: String): GetTokenStatusResponse
+
+    suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser
 
     suspend fun deleteSubjectCollection(
         subjectId: Int
@@ -207,10 +211,6 @@ internal class BangumiClientImpl(
             )
         }
 
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to execute GraphQL query: $resp")
-        }
-
         return resp.body()
     }
 
@@ -219,11 +219,15 @@ internal class BangumiClientImpl(
             parameter("access_token", accessToken)
         }
 
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to get token status: $resp")
+        return resp.body<BangumiClient.GetTokenStatusResponse>()
+    }
+
+    override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser {
+        val resp = httpClient.post("$BANGUMI_HOST/v0/me") {
+            accessToken?.let { bearerAuth(it) }
         }
 
-        return resp.body<BangumiClient.GetTokenStatusResponse>()
+        return resp.body<BangumiUser>()
     }
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
@@ -257,8 +261,10 @@ internal class BangumiClientImpl(
     }.apply {
         registerLogging(logger)
         plugin(HttpSend).intercept { request ->
-            bearerToken.first()?.let {
-                request.bearerAuth(it)
+            if (!request.headers.contains(HttpHeaders.Authorization)) {
+                bearerToken.first()?.let {
+                    request.bearerAuth(it)
+                }
             }
             val originalCall = execute(request)
             if (originalCall.response.status.value !in 100..399) {

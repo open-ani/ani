@@ -74,7 +74,6 @@ import me.him188.ani.app.ui.update.FailedToInstallDialog
 import me.him188.ani.app.ui.update.UpdateLogoIcon
 import me.him188.ani.app.ui.update.UpdateLogoLabel
 import me.him188.ani.app.ui.update.handleClickLogo
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Composable
@@ -169,7 +168,7 @@ private fun HomeSceneLandscape(
                         Modifier.padding(top = 16.dp).weight(1f),
                         header = {
                             val vm = rememberViewModel { AccountViewModel() }
-                            val user by vm.selfInfo.collectAsStateWithLifecycle()
+                            val user = vm.selfInfo
                             val loggedIn by isLoggedIn()
                             if (loggedIn == false) {
                                 val navigator = LocalNavigator.current

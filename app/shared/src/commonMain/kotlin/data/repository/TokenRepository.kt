@@ -8,11 +8,18 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.session.Session
+import me.him188.ani.app.session.SessionManager
 
+/**
+ * Do not access directly. Use [SessionManager] instead.
+ */
 interface TokenRepository : Repository {
     val refreshToken: Flow<String?>
     suspend fun setRefreshToken(value: String)
 
+    /**
+     * 当前的登录会话, 为 `null` 表示未登录.
+     */
     val session: Flow<Session?>
     suspend fun setSession(session: Session)
 
@@ -45,14 +52,14 @@ internal class TokenRepositoryImpl(
         }
         Session(
             accessToken = accessToken,
-            expiresAt = expireAt,
+            expiresAtMillis = expireAt,
         )
     }
 
     override suspend fun setSession(session: Session) {
         tokenStore.edit {
             it[ACCESS_TOKEN] = session.accessToken
-            it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAt
+            it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAtMillis
         }
     }
 

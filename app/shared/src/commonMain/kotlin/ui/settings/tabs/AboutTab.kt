@@ -36,6 +36,8 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.isSessionVerified
+import me.him188.ani.app.session.unverifiedAccessToken
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.AniHelpSection
@@ -54,16 +56,17 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     val debugInfo = debugInfoFlow().shareInBackground(started = SharingStarted.Eagerly)
 
     private fun debugInfoFlow() = combine(
-        sessionManager.session,
+        sessionManager.state,
         sessionManager.processingRequest.flatMapLatest { it?.state ?: flowOf(null) },
-        sessionManager.isSessionValid,
+        sessionManager.isSessionVerified,
     ) { session, processingRequest, isSessionValid ->
         DebugInfo(
             properties = buildMap {
                 val buildConfig = currentAniBuildConfig
                 put("isDebug", buildConfig.isDebug.toString())
                 if (buildConfig.isDebug) {
-                    put("accessToken", session?.accessToken)
+                    put("accessToken", session.unverifiedAccessToken)
+                    put("session", session.toString())
                 }
                 put("processingRequest.state", processingRequest.toString())
                 put("sessionManager.isSessionValid", isSessionValid.toString())

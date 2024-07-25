@@ -22,7 +22,7 @@ fun <T> T.AuthState(): AuthState
         where T : KoinComponent, T : AbstractViewModel {
     val sessionManager: SessionManager by inject()
     return AuthState(
-        isLoggedIn = sessionManager.isSessionValid.produceState(null),
+        isLoggedIn = sessionManager.isSessionVerified.produceState(null),
         launchAuthorize = { navigator ->
             sessionManager.requireOnlineAsync(
                 navigator,

@@ -16,6 +16,7 @@ import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.session.verifiedAccessToken
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.danmaku.ani.client.AniDanmakuProvider
@@ -104,7 +105,7 @@ class DanmakuManagerImpl(
     private val sender: Flow<AniDanmakuSender> = config.mapAutoClose { config ->
         AniDanmakuSenderImpl(
             config,
-            sessionManager.session.map { it?.accessToken },
+            sessionManager.verifiedAccessToken,
             backgroundScope.coroutineContext,
         )
     }.shareInBackground(started = SharingStarted.Lazily)

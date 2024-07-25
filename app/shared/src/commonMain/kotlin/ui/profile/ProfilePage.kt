@@ -53,7 +53,6 @@ import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.session.isLoggedIn
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.context.GlobalContext
 
 @Composable
@@ -65,14 +64,13 @@ fun ProfilePage(
     val viewModel = remember { AccountViewModel() }
 
     // user profile
-    val selfInfo by viewModel.selfInfo.collectAsStateWithLifecycle()
     val loggedIn by isLoggedIn()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             SelfInfo(
-                selfInfo,
+                viewModel.selfInfo,
                 loggedIn,
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)
