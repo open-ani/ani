@@ -218,7 +218,7 @@ fun VideoScaffold(
                         ) {
                             rhsBarTop()
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         AnimatedVisibility(
                             visible = controllersVisibleState,
                             enter = fadeIn(),
@@ -226,7 +226,7 @@ fun VideoScaffold(
                         ) {
                             rhsBarCenter()
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         AnimatedVisibility(
                             visible = controllersVisibleState && !gestureLockedState,
                             enter = fadeIn(),

@@ -454,10 +454,9 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
     override fun getScreenshotPath(): Path? {
-        TODO("Not yet implemented")
+        return null;
     }
 
     override fun saveScreenshotFile(filename: String) {
-        TODO("Not yet implemented")
     }
 }

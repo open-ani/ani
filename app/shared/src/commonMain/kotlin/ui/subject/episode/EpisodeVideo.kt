@@ -209,8 +209,14 @@ internal fun EpisodeVideoImpl(
             if (expanded) {
                 ScreenshotButton(
                     onClick = {
-                        print("click")
-                        playerState.getScreenshotPath()
+                        val videoProp = playerState.videoProperties.value;
+                        val filename = "".plus(videoProp?.title)
+                            .plus("-")
+                            .plus(videoProp?.filename)
+                            .plus("-")
+                            .plus(System.currentTimeMillis())
+                            .plus(".png")
+                        playerState.saveScreenshotFile(filename)
                     },
                 )
             }
