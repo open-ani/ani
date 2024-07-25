@@ -76,8 +76,9 @@ fun VideoScaffold(
     danmakuHost: @Composable BoxScope.() -> Unit = {},
     gestureHost: @Composable BoxWithConstraintsScope.() -> Unit = {},
     floatingMessage: @Composable BoxScope.() -> Unit = {},
-    lhsBar: @Composable ColumnScope.() -> Unit = {},
-    rhsBar: @Composable ColumnScope.() -> Unit = {},
+    rhsBarTop: @Composable ColumnScope.() -> Unit = {},
+    rhsBarCenter: @Composable ColumnScope.() -> Unit = {},
+    rhsBarBottom: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
@@ -207,28 +208,31 @@ fun VideoScaffold(
                 }
             }
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
+                // Separate from controllers, to fix position when controllers are/aren't hidden
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
-                    Column(Modifier.padding(start = 16.dp).align(Alignment.CenterStart)) {
+                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
                         AnimatedVisibility(
                             visible = controllersVisibleState && !gestureLockedState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
-                            lhsBar()
+                            rhsBarTop()
                         }
-                    }
-                }
-            }
-            Column(Modifier.fillMaxSize().background(Color.Transparent)) {
-                // Separate from controllers, to fix position when controllers are/aren't hidden
-                Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
-                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
+                        Spacer(modifier = Modifier.height(16.dp))
                         AnimatedVisibility(
                             visible = controllersVisibleState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
-                            rhsBar()
+                            rhsBarCenter()
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AnimatedVisibility(
+                            visible = controllersVisibleState && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            rhsBarBottom()
                         }
                     }
                 }

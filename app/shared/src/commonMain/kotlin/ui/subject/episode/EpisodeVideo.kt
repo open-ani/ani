@@ -205,17 +205,17 @@ internal fun EpisodeVideoImpl(
                 )
             }
         },
-        lhsBar = {
+        rhsBarTop = {
             if (expanded) {
                 ScreenshotButton(
                     onClick = {
-                        print("clint")
+                        print("click")
                         playerState.getScreenshotPath()
                     },
                 )
             }
         },
-        rhsBar = {
+        rhsBarCenter = {
             if (expanded) {
                 GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }
