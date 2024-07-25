@@ -98,6 +98,7 @@ internal fun EpisodeVideoImpl(
     onShowSelectEpisode: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    screenshotOnClick: () -> Unit,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
@@ -208,16 +209,7 @@ internal fun EpisodeVideoImpl(
         rhsBarTop = {
             if (expanded) {
                 ScreenshotButton(
-                    onClick = {
-                        val videoProp = playerState.videoProperties.value;
-                        val filename = "".plus(videoProp?.title)
-                            .plus("-")
-                            .plus(videoProp?.filename)
-                            .plus("-")
-                            .plus(System.currentTimeMillis())
-                            .plus(".png")
-                        playerState.saveScreenshotFile(filename)
-                    },
+                    onClick = screenshotOnClick,
                 )
             }
         },
