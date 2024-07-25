@@ -20,6 +20,7 @@ package me.him188.ani.app.session
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -240,9 +240,11 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
     override val isSessionValid: Flow<Boolean?> =
         loginStatus.map { it?.equals(LoginStatus.LOGGED_IN) }
 
+    private val refreshTokenLoaded = CompletableDeferred<Boolean>()
     private val refreshToken = tokenRepository.refreshToken
         .transformLatest {
             emit(it)
+            refreshTokenLoaded.complete(true)
         }
         .shareInBackground(SharingStarted.Eagerly)
 
@@ -296,12 +298,12 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
         logger.trace { "requireOnline" }
 
         // fast path, already online
-        if (isSessionValid.filterNotNull().first()) return
+        if (isSessionValid.first() == true) return
 
         singleAuthLock.withLock {
             // not online, try to refresh
-            refreshToken.first()
-            if (isSessionValid.filterNotNull().first()) return // check again because this might have changed
+            refreshTokenLoaded.await()
+            if (isSessionValid.first() == true) return // check again because this might have changed
             if (refreshToken.first() != null) {
                 if (tryRefreshSessionByRefreshToken()) {
                     return
