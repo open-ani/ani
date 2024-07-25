@@ -3,9 +3,11 @@ package me.him188.ani.app.ui.subject.components.comment
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,9 +31,9 @@ import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.SentimentSatisfied
 import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -43,6 +45,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -217,7 +220,9 @@ fun EditCommentScaffold(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (title != null) {
-                title()
+                Box(Modifier.weight(1.0f)) {
+                    title()
+                }
             }
             if (expanded != null) {
                 EditCommentDefaults.ActionButton(
@@ -422,10 +427,15 @@ object EditCommentDefaults {
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
         iconSize: Dp = 22.dp,
+        indication: Indication? = rememberRipple(
+            bounded = false,
+            radius = 20.dp, /* IconButtonTokens.StateLayerSize / 2 */
+        )
     ) {
-        IconButton(
+        me.him188.ani.app.ui.foundation.IconButton(
             modifier = modifier,
             onClick = onClick,
+            indication = indication,
         ) {
             Icon(
                 imageVector = imageVector,
@@ -456,6 +466,7 @@ object EditCommentDefaults {
         val size = ActionButtonSize.dp
         var actionExpanded by rememberSaveable { mutableStateOf(false) }
         val collapsedActionAnim by animateDpAsState(if (actionExpanded) size else 0.dp)
+        val reversedActionAnim by derivedStateOf { size - collapsedActionAnim }
 
         Layout(
             modifier = modifier.then(Modifier.fillMaxWidth().animateContentSize()),
@@ -563,9 +574,13 @@ object EditCommentDefaults {
                         Modifier.size(height = size, width = collapsedActionAnim),
                     )
                 }
-                if (!actionExpanded) {
-                    ActionButton(Icons.Outlined.MoreHoriz, { actionExpanded = true }, Modifier.size(size))
-                }
+                // 最后一个按钮不要有 ripple effect，看起来比较奇怪
+                ActionButton(
+                    imageVector = Icons.Outlined.MoreHoriz,
+                    onClick = { actionExpanded = true },
+                    modifier = Modifier.size(height = size, width = reversedActionAnim),
+                    indication = null,
+                )
 
                 Row(modifier = Modifier.layoutId(ActionRowPrimaryAction)) {
                     TextButton(
