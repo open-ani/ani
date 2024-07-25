@@ -78,8 +78,7 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 - 全自动整合多个 BT 数据源与在线数据源, 兼顾资源质量与缓冲速度
 - 自动解析资源信息, 可配置的智能选择算法完全避免找资源的麻烦
-- 按番剧记忆偏好选项
-- 支持季度全集资源
+- 记忆偏好选项
 
 <img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-stats.jpg" alt="episode-stats"/> <img width="270" src=".readme/images/episode/episode-media.jpg" alt="episode-media"/> 
 
