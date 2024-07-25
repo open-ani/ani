@@ -54,7 +54,7 @@ if (ANDROID)
     set(BOOST_LIBS variant system range crc logic parameter asio variant2 multi-index multiprecision)
 
     foreach (lib ${BOOST_LIBS})
-        add_subdirectory(${boost_SOURCE_DIR}/libs/${lib})
+        include_directories(${boost_SOURCE_DIR}/libs/${lib}/include)
     endforeach ()
 
     set(Boost_INCLUDE_DIR ${boost_SOURCE_DIR}) #TODO
