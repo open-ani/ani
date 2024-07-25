@@ -63,7 +63,7 @@ class VideoControllerState(
      * 控制器是否可见.
      */
     private var _visibility: ControllerVisibility by mutableStateOf(initialVisibility)
-    val visibility by derivedStateOf { _visibility }
+    val visibility get() = _visibility
     val setVisibility: (ControllerVisibility) -> Unit = {
         previousVisibility = _visibility
         _visibility = it
@@ -92,8 +92,7 @@ class VideoControllerState(
     }
     val progressBarVisible: Boolean by derivedStateOf {
         //由于隐藏动画的存在，不能在隐藏动画发生时切换progressBar,所以隐藏动画发生时，使用previousVisibility保持当前显示的组件直至动画结束
-        (_visibility.takeIf { it != ControllerVisibility.Invisible }
-            ?: previousVisibility) == ControllerVisibility.DetachedSliderOnly
+        (_visibility.takeIf { it.bottomBar } ?: previousVisibility).detachedSlider
     }
 
     /**
