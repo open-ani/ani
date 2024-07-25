@@ -135,18 +135,17 @@ interface BangumiClient : Closeable {
 class DelegateBangumiClient(
     private val client: Flow<BangumiClient>,
 ) : BangumiClient {
-    override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse =
-        client.first().exchangeTokens(code, callbackUrl)
-
     override suspend fun refreshAccessToken(
         refreshToken: String,
-        callbackUrl: String
-    ): BangumiClient.GetAccessTokenResponse = client.first().refreshAccessToken(refreshToken, callbackUrl)
+    ): BangumiClient.GetAccessTokenResponse = client.first().refreshAccessToken(refreshToken)
 
     override suspend fun executeGraphQL(query: String): JsonObject = client.first().executeGraphQL(query)
 
     override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse =
         client.first().getTokenStatus(accessToken)
+
+    override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser =
+        client.first().getSelfInfoByToken(accessToken)
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
         client.first().deleteSubjectCollection(subjectId)
