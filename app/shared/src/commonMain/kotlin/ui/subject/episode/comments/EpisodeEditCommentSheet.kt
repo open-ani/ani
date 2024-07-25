@@ -15,7 +15,8 @@ import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 fun EpisodeEditCommentSheet(
     vm: EpisodeViewModel,
     show: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val focusManager = LocalFocusManager.current
@@ -29,6 +30,7 @@ fun EpisodeEditCommentSheet(
                 EditComment(
                     content = "",
                     title = "评论: ${vm.episodeDetailsState.subjectTitle}",
+                    modifier = modifier,
                     onContentChange = { },
                     onSend = {
                         focusManager.clearFocus()

@@ -202,7 +202,12 @@ private fun EpisodeSceneTabletVeryWide(
                     Modifier.verticalScroll(rememberScrollState()),
                 )
 
-                EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+                EpisodeCommentColumn(
+                    vm.episodeCommentState,
+                    Modifier.fillMaxSize(),
+                    onClickReply = { },
+                    onClickUrl = { },
+                )
             }
         }
     }
@@ -254,6 +259,7 @@ private fun EpisodeSceneContentPhone(
                         didSetPaused = false
                     }
                 },
+                onClickUrl = { },
             )
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
@@ -315,13 +321,17 @@ private fun EpisodeSceneContentPhone(
         }
     }
 
-    EpisodeEditCommentSheet(vm, showEditCommentSheet) {
-        showEditCommentSheet = false
-        if (didSetPaused) {
-            didSetPaused = false
-            vm.playerState.resume()
-        }
-    }
+    EpisodeEditCommentSheet(
+        vm,
+        showEditCommentSheet,
+        onDismiss = {
+            showEditCommentSheet = false
+            if (didSetPaused) {
+                didSetPaused = false
+                vm.playerState.resume()
+            }
+        },
+    )
 }
 
 @Composable

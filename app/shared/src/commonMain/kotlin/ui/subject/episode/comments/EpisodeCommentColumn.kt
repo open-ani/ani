@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.subject.components.comment.Comment
@@ -39,7 +40,8 @@ import me.him188.ani.app.ui.subject.components.comment.UIComment
 fun EpisodeCommentColumn(
     state: CommentState,
     modifier: Modifier = Modifier,
-    onClickReply: (Int) -> Unit = { }
+    onClickReply: (commentId: Int) -> Unit,
+    onClickUrl: (url: String) -> Unit,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     val imageViewer = LocalImageViewerHandler.current
@@ -82,9 +84,10 @@ fun EpisodeCommentColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 12.dp)
-                        .padding(top = 12.dp, bottom = if (item.replyCount != 0) 12.dp else 4.dp),
+                        .padding(top = 12.dp, bottom = 4.dp),
                     onClickImage = { imageViewer.viewImage(it) },
                     onActionReply = { onClickReply(item.id) },
+                    onClickUrl = onClickUrl,
                 )
                 if (index != comments.lastIndex) {
                     HorizontalDivider(
@@ -114,16 +117,16 @@ private const val LOREM_IPSUM =
 fun EpisodeComment(
     comment: UIComment,
     modifier: Modifier = Modifier,
-    onClickUrl: (String) -> Unit = { },
-    onClickImage: (String) -> Unit = { },
-    onActionReply: () -> Unit = { }
+    onClickUrl: (String) -> Unit,
+    onClickImage: (String) -> Unit,
+    onActionReply: () -> Unit
 ) {
     Comment(
-        modifier = modifier,
+        modifier = modifier.ifThen(comment.replyCount != 0) { padding(bottom = 8.dp) },
         avatar = { CommentDefaults.Avatar(comment.creator.avatarUrl) },
         primaryTitle = {
             Text(
-                text = comment.creator.nickname ?: "nickname",
+                text = comment.creator.nickname ?: comment.creator.id.toString(),
                 textAlign = TextAlign.Center,
             )
         },
@@ -147,13 +150,19 @@ fun EpisodeComment(
         actionRow = {
             CommentDefaults.ActionRow(
                 onClickReply = onActionReply,
+                onClickReaction = {},
+                onClickBlock = {},
+                onClickReport = {},
             )
         },
         reply = if (comment.briefReplies.isNotEmpty()) {
             {
                 CommentDefaults.ReplyList(
-                    comment.briefReplies,
-                    comment.replyCount - comment.briefReplies.size,
+                    replies = comment.briefReplies,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    hiddenReplyCount = comment.replyCount - comment.briefReplies.size,
+                    onClickUrl = { },
+                    onClickExpand = { },
                 )
             }
         } else null,

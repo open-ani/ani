@@ -47,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.source.BangumiCommentSticker
@@ -59,7 +58,6 @@ import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
-import me.him188.ani.app.ui.foundation.theme.weaken
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -193,7 +191,6 @@ fun Comment(
                 }
             }
             if (actionRow != null) {
-                Spacer(modifier = Modifier.height(6.dp))
                 SelectionContainer(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -202,7 +199,7 @@ fun Comment(
             }
             if (reply != null) {
                 Surface(
-                    modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 6.dp),
+                    modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 0.dp),
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(8.dp),
                 ) {
@@ -226,24 +223,30 @@ object CommentDefaults {
     fun Reaction(
         reaction: UICommentReaction,
         modifier: Modifier = Modifier,
-        onClick: () -> Unit = { }
+        onClick: () -> Unit
     ) {
         val backgroundColor by animateColorAsState(
             if (reaction.selected) {
-                MaterialTheme.colorScheme.tertiaryContainer.weaken()
+                MaterialTheme.colorScheme.secondaryContainer
             } else {
                 Color.Transparent
             },
         )
         Surface(
             onClick = onClick,
-            modifier = modifier.then(Modifier.height(28.dp)),
+            modifier = Modifier
+                .height(40.dp)
+                .padding(vertical = 6.dp)
+                .then(modifier),
             enabled = true,
             shape = CircleShape,
             color = backgroundColor,
             border = SuggestionChipDefaults.suggestionChipBorder(true),
         ) {
-            Row(modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)) {
+            Row(
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 val previewing = LocalIsPreviewing.current
 
                 if (previewing) Icon(
@@ -258,7 +261,7 @@ object CommentDefaults {
 
                 Text(
                     text = reaction.count.toString(),
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier.padding(end = 4.dp),
                 )
             }
@@ -269,12 +272,11 @@ object CommentDefaults {
     fun ReactionRow(
         list: List<UICommentReaction>,
         modifier: Modifier = Modifier,
-        onClickItem: (Int) -> Unit = { },
+        onClickItem: (reactionId: Int) -> Unit,
     ) {
         FlowRow(
             modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             list.forEach {
                 Reaction(it) { onClickItem(it.id) }
@@ -284,44 +286,41 @@ object CommentDefaults {
 
     @Composable
     fun ActionRow(
-        onClickReply: () -> Unit = { },
-        onClickReaction: () -> Unit = { },
-        onClickBlock: () -> Unit = { },
-        onClickReport: () -> Unit = { },
+        onClickReply: () -> Unit,
+        onClickReaction: () -> Unit,
+        onClickBlock: () -> Unit,
+        onClickReport: () -> Unit,
         modifier: Modifier = Modifier
     ) {
-        Row(
-            modifier = modifier,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        Row(modifier = modifier) { 
             CompositionLocalProvider(
                 LocalContentColor provides MaterialTheme.colorScheme.onSurface.stronglyWeaken(),
             ) {
-                IconButton(onClickReply, Modifier.size(36.dp)) {
+                IconButton(onClickReply, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.ModeComment,
-                        contentDescription = null,
+                        contentDescription = "回复评论",
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                IconButton(onClickReaction, Modifier.size(36.dp)) {
+                IconButton(onClickReaction, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.AddReaction,
-                        contentDescription = null,
+                        contentDescription = "添加表情",
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                IconButton(onClickBlock, Modifier.size(36.dp)) {
+                IconButton(onClickBlock, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.HeartBroken,
-                        contentDescription = null,
+                        contentDescription = "拉黑用户",
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                IconButton(onClickReport, Modifier.size(36.dp)) {
+                IconButton(onClickReport, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.Report,
-                        contentDescription = null,
+                        contentDescription = "举报内容",
                         modifier = Modifier.size(20.dp),
                     )
                 }
@@ -332,17 +331,14 @@ object CommentDefaults {
     @Composable
     fun ReplyList(
         replies: List<UIComment>,
+        modifier: Modifier = Modifier,
         hiddenReplyCount: Int = 0,
-        onClickUrl: (String) -> Unit = { },
-        onClickExpand: () -> Unit = { }
+        onClickUrl: (String) -> Unit,
+        onClickExpand: () -> Unit
     ) {
         val primaryColor = MaterialTheme.colorScheme.primary
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-        ) {
+        Column(modifier = modifier) {
             replies.forEach { reply ->
                 val prepended by remember {
                     derivedStateOf {

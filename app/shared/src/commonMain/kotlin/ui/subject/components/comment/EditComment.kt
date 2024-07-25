@@ -7,15 +7,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -42,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -75,6 +72,7 @@ import kotlinx.coroutines.flow.stateIn
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
+import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import kotlin.math.max
 
@@ -86,12 +84,12 @@ import kotlin.math.max
 @Composable
 fun EditComment(
     content: String,
+    modifier: Modifier = Modifier,
     title: String? = null,
     sending: Boolean = false,
-    modifier: Modifier = Modifier,
-    focusRequester: FocusRequester = remember { FocusRequester() },
     onContentChange: (String) -> Unit,
-    onSend: () -> Unit = { }
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    onSend: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -114,6 +112,7 @@ fun EditComment(
                 onClickMask = { editor.wrapSelectionWith("[mask][/mask]", 6) },
                 onClickImage = { editor.wrapSelectionWith("[img][/img]", 5) },
                 onClickUrl = { editor.wrapSelectionWith("[url=][/url]", 5) },
+                onClickEmoji = { },
                 onPreview = {
                     if (previewer.previewing) {
                         previewer.closePreview()
@@ -141,25 +140,30 @@ fun EditComment(
                 }
             },
         ) { previewing ->
-            if (previewing) {
-                val richText by previewer.list.collectAsState()
-                EditCommentDefaults.Preview(
-                    content = richText,
-                    modifier = Modifier.fillMaxWidth(),
+            val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
 
+            ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
+                if (previewing) {
+                    val richText by previewer.list.collectAsState()
+                    EditCommentDefaults.Preview(
+                        content = richText,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = contentPadding,
                     )
-            } else {
-                EditCommentDefaults.EditText(
-                    value = editor.textField,
-                    maxLine = if (editExpanded) null else 3,
-                    modifier = Modifier
-                        .focusRequester(focusRequester)
-                        .fillMaxWidth()
-                        .ifThen(editExpanded) { fillMaxHeight() },
-                    onValueChange = { editor.override(it) },
-                )
-                LaunchedEffect(true) {
-                    focusRequester.requestFocus()
+                } else {
+                    EditCommentDefaults.EditText(
+                        value = editor.textField,
+                        maxLine = if (editExpanded) null else 3,
+                        modifier = Modifier
+                            .focusRequester(focusRequester)
+                            .fillMaxWidth()
+                            .ifThen(editExpanded) { fillMaxHeight() },
+                        contentPadding = contentPadding,
+                        onValueChange = { editor.override(it) },
+                    )
+                    LaunchedEffect(true) {
+                        focusRequester.requestFocus()
+                    }
                 }
             }
         }
@@ -198,19 +202,25 @@ private fun rememberEditCommentTextValue(
 @Composable
 fun EditCommentScaffold(
     actionRow: @Composable ColumnScope.() -> Unit,
-    expanded: Boolean? = null,
+    onClickExpanded: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    onClickExpanded: (Boolean) -> Unit = { },
+    expanded: Boolean? = null,
     title: (@Composable () -> Unit)? = null,
+    contentColor: Color = Color.Unspecified,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (title != null) title() else Spacer(Modifier)
+            if (title != null) {
+                title()
+            }
             if (expanded != null) {
                 EditCommentDefaults.ActionButton(
                     imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
@@ -219,13 +229,12 @@ fun EditCommentScaffold(
             }
 
         }
-        Spacer(modifier = Modifier.height(8.dp))
 
-        CompositionLocalProvider(
-            value = LocalContentColor provides MaterialTheme.colorScheme.onSurface,
-            content = { content() },
-        )
-        Spacer(modifier = Modifier.height(8.dp))
+        ProvideContentColor(contentColor) {
+            Column {
+                content()
+            }
+        }
         actionRow()
 
     }
@@ -233,18 +242,18 @@ fun EditCommentScaffold(
 
 private class EditCommentPreviewerState(
     initialPreviewing: Boolean,
-    private val coroutineScope: CoroutineScope
-) : CoroutineScope by coroutineScope {
+    coroutineScope: CoroutineScope
+) {
     private val richText = MutableStateFlow("")
     private val _previewing = MutableStateFlow(initialPreviewing)
 
-    val previewing: Boolean by _previewing.produceState(false, this)
+    val previewing: Boolean by _previewing.produceState(false, coroutineScope)
     val list = richText
         .combine(_previewing) { text, preview ->
             if (!preview || text.isEmpty()) return@combine UIRichText(emptyList())
             with(CommentMapperContext) { parseBBCode(text) }
         }
-        .stateIn(this, SharingStarted.Lazily, UIRichText(emptyList()))
+        .stateIn(coroutineScope, SharingStarted.Lazily, UIRichText(emptyList()))
 
     fun submitPreview(value: String) {
         richText.value = value
@@ -258,11 +267,11 @@ private class EditCommentPreviewerState(
 
 private class EditCommentTextState(
     initialText: String,
-    private val coroutineScope: CoroutineScope
-) : CoroutineScope by coroutineScope {
+    coroutineScope: CoroutineScope
+) {
     private val textFlow = MutableStateFlow(TextFieldValue(initialText))
 
-    val textField by textFlow.produceState(TextFieldValue(""), this)
+    val textField by textFlow.produceState(TextFieldValue(""), coroutineScope)
 
     /**
      * 在当前位置插入文本，清除 selection 状态
@@ -279,14 +288,14 @@ private class EditCommentTextState(
         val selectionLeft = current.selection.start
 
         val newText = buildString {
-            append(currentText.substring(0, selectionLeft))
+            append(currentText.take(selectionLeft))
             append(value)
-            append(currentText.substring(selectionLeft.coerceAtMost(currentText.length), currentText.length))
+            append(currentText.drop(selectionLeft))
         }
 
         textFlow.value = current.copy(
             annotatedString = AnnotatedString(newText),
-            selection = TextRange(selectionLeft + cursorOffset),
+            selection = TextRange((selectionLeft + cursorOffset).coerceIn(0..newText.lastIndex)),
         )
     }
 
@@ -300,6 +309,9 @@ private class EditCommentTextState(
         value: String,
         secondSliceIndex: Int
     ) {
+        require(secondSliceIndex in 0..value.lastIndex) {
+            "secondSliceIndex is out of bound. value length = ${value.length}, secondSliceIndex = $secondSliceIndex"
+        }
         val current = textFlow.value
         if (current.selection.length == 0) {
             insertTextAt(value, secondSliceIndex)
@@ -311,8 +323,8 @@ private class EditCommentTextState(
         val selection = current.selection
 
         val newText = buildString {
-            append(currentText.substring(0, selection.start))
-            append(value.substring(0, secondSliceIndex))
+            append(currentText.take(selection.start))
+            append(value.take(secondSliceIndex))
             append(currentText.substring(selection.start, selection.end))
             append(value.substring(secondSliceIndex, value.length))
             append(currentText.substring(selection.end, currentText.length))
@@ -347,12 +359,13 @@ object EditCommentDefaults {
     @Composable
     fun EditText(
         value: TextFieldValue,
+        onValueChange: (TextFieldValue) -> Unit,
         enabled: Boolean = true,
         hint: String? = null,
         maxLine: Int? = null,
         modifier: Modifier = Modifier,
+        contentPadding: PaddingValues = PaddingValues(0.dp),
         interactionSource: InteractionSource = remember { MutableInteractionSource() },
-        onValueChange: (TextFieldValue) -> Unit
     ) {
         BasicTextField(
             value = value,
@@ -380,8 +393,8 @@ object EditCommentDefaults {
                         unfocusedBorderColor = Color.Transparent,
                         focusedBorderColor = Color.Transparent,
                     ),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    contentPadding = contentPadding,
                 )
             },
         )
@@ -390,26 +403,25 @@ object EditCommentDefaults {
     @Composable
     fun Preview(
         content: UIRichText,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        contentPadding: PaddingValues = PaddingValues(0.dp)
     ) {
         Surface(
             modifier = modifier,
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
         ) {
-            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-                RichText(
-                    elements = content.elements,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-                )
-            }
+            RichText(
+                elements = content.elements,
+                modifier = Modifier.padding(contentPadding),
+            )
         }
     }
 
     @Composable
     fun ActionButton(imageVector: ImageVector, onClick: () -> Unit) {
         IconButton(
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(48.dp),
             onClick = onClick,
         ) {
             Icon(
@@ -424,32 +436,32 @@ object EditCommentDefaults {
     fun ActionRow(
         sending: Boolean = false,
         previewing: Boolean = false,
-        
-        onClickBold: () -> Unit = { },
-        onClickItalic: () -> Unit = { },
-        onClickUnderlined: () -> Unit = { },
-        onClickStrikethrough: () -> Unit = { },
-        onClickMask: () -> Unit = { },
-        onClickImage: () -> Unit = { },
-        onClickUrl: () -> Unit = { },
-        onClickEmoji: () -> Unit = { },
-        onSend: () -> Unit = { },
-        onPreview: () -> Unit = { },
+
+        onClickBold: () -> Unit,
+        onClickItalic: () -> Unit,
+        onClickUnderlined: () -> Unit,
+        onClickStrikethrough: () -> Unit,
+        onClickMask: () -> Unit,
+        onClickImage: () -> Unit,
+        onClickUrl: () -> Unit,
+        onClickEmoji: () -> Unit,
+        onSend: () -> Unit,
+        onPreview: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
         Column(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            LazyRow(modifier = Modifier.fillMaxWidth()) {
-                item { ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji) }
-                item { ActionButton(Icons.Outlined.FormatBold, onClickBold) }
-                item { ActionButton(Icons.Outlined.FormatItalic, onClickItalic) }
-                item { ActionButton(Icons.Outlined.FormatUnderlined, onClickUnderlined) }
-                item { ActionButton(Icons.Outlined.FormatStrikethrough, onClickStrikethrough) }
-                item { ActionButton(Icons.Outlined.VisibilityOff, onClickMask) }
-                item { ActionButton(Icons.Outlined.Image, onClickImage) }
-                item { ActionButton(Icons.Outlined.Link, onClickUrl) }
+            FlowRow(modifier = Modifier.fillMaxWidth()) {
+                ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji)
+                ActionButton(Icons.Outlined.FormatBold, onClickBold)
+                ActionButton(Icons.Outlined.FormatItalic, onClickItalic)
+                ActionButton(Icons.Outlined.FormatUnderlined, onClickUnderlined)
+                ActionButton(Icons.Outlined.FormatStrikethrough, onClickStrikethrough)
+                ActionButton(Icons.Outlined.VisibilityOff, onClickMask)
+                ActionButton(Icons.Outlined.Image, onClickImage)
+                ActionButton(Icons.Outlined.Link, onClickUrl)
             }
             Row(
                 horizontalArrangement = Arrangement.End,
@@ -457,34 +469,31 @@ object EditCommentDefaults {
             ) {
                 TextButton(
                     onClick = onPreview,
-                    modifier = Modifier.padding(end = 4.dp).height(32.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(end = 4.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                 ) {
-                    Text(
-                        text = if (previewing) "编辑" else "预览",
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                    )
+                    Text(text = if (previewing) "编辑" else "预览")
                 }
                 OutlinedButton(
                     onClick = onSend,
                     enabled = !sending,
-                    modifier = Modifier.padding(start = 4.dp).height(32.dp).animateContentSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(start = 4.dp).animateContentSize(),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                 ) {
                     Crossfade(targetState = sending) {
                         if (!it) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "发送", fontSize = MaterialTheme.typography.labelMedium.fontSize)
+                                Text(text = "发送")
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.Send,
-                                    modifier = Modifier.padding(start = 4.dp).height(18.dp),
+                                    modifier = Modifier.padding(start = 4.dp).size(18.dp),
                                     contentDescription = null,
                                 )
                             }
                         } else {
                             CircularProgressIndicator(
                                 Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.surface,
+                                color = LocalContentColor.current,
                             )
                         }
                     }

@@ -62,6 +62,9 @@ private fun PreviewEpisodeComment() {
                 )
             },
             modifier = Modifier.fillMaxWidth(),
+            onActionReply = { },
+            onClickImage = { },
+            onClickUrl = { },
         )
 
     }
@@ -82,7 +85,11 @@ private fun PreviewCommentColumn() {
                 backgroundScope = scope.backgroundScope,
             )
         }
-        EpisodeCommentColumn(state)
+        EpisodeCommentColumn(
+            state = state,
+            onClickReply = { },
+            onClickUrl = { },
+        )
     }
 }
 
