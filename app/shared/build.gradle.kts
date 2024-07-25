@@ -361,7 +361,7 @@ val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.
 val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
 
 val aniAuthServerUrlDebug =
-    getPropertyOrNull("ani.auth.server.url.debug") ?: "https://beautiful-food-group-5.zeabur.app"
+    getPropertyOrNull("ani.auth.server.url.debug") ?: "https://auth.myani.org"
 val aniAuthServerUrlRelease = getPropertyOrNull("ani.auth.server.url.release") ?: "https://auth.myani.org"
 
 if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {

@@ -67,9 +67,9 @@ data class Session(
 )
 
 private fun Session.isValid() = !isExpired()
-private fun Session.isExpired() = expiresAtMillis + 1.hours.inWholeMilliseconds > System.currentTimeMillis()
+private fun Session.isExpired() = expiresAtMillis <= System.currentTimeMillis() + 1.hours.inWholeMilliseconds
 
-/**
+/**å
  * Bangumi 授权状态管理器
  */
 interface SessionManager {

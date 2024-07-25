@@ -223,7 +223,7 @@ internal class BangumiClientImpl(
     }
 
     override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser {
-        val resp = httpClient.post("$BANGUMI_HOST/v0/me") {
+        val resp = httpClient.get("$BANGUMI_API_HOST/v0/me") {
             accessToken?.let { bearerAuth(it) }
         }
 
