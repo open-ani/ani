@@ -2,12 +2,12 @@ package me.him188.ani.app.ui.subject.components.comment
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.FormatStrikethrough
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.SentimentSatisfied
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,18 +51,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
@@ -73,7 +77,7 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
-import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.foundation.theme.looming
 import kotlin.math.max
 
 /**
@@ -132,13 +136,7 @@ fun EditComment(
     ) {
         Crossfade(
             targetState = previewer.previewing,
-            modifier = Modifier.composed {
-                if (editExpanded) {
-                    fillMaxHeight().animateContentSize().weight(1.0f)
-                } else {
-                    animateContentSize()
-                }
-            },
+            modifier = Modifier.ifThen(editExpanded) { fillMaxHeight() }.animateContentSize(),
         ) { previewing ->
             val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
 
@@ -231,7 +229,7 @@ fun EditCommentScaffold(
         }
 
         ProvideContentColor(contentColor) {
-            Column {
+            Column(modifier = Modifier.ifThen(expanded == true) { weight(1.0f) }) {
                 content()
             }
         }
@@ -371,7 +369,7 @@ object EditCommentDefaults {
             value = value,
             textStyle = MaterialTheme.typography.bodyMedium.merge(
                 fontSize = 15.5.sp,
-                color = LocalContentColor.current.slightlyWeaken(),
+                color = LocalContentColor.current.looming(),
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             modifier = modifier,
@@ -419,15 +417,20 @@ object EditCommentDefaults {
     }
 
     @Composable
-    fun ActionButton(imageVector: ImageVector, onClick: () -> Unit) {
+    fun ActionButton(
+        imageVector: ImageVector,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+        iconSize: Dp = 22.dp,
+    ) {
         IconButton(
-            modifier = Modifier.size(48.dp),
+            modifier = modifier,
             onClick = onClick,
         ) {
             Icon(
                 imageVector = imageVector,
                 contentDescription = null,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(iconSize),
             )
         }
     }
@@ -449,56 +452,162 @@ object EditCommentDefaults {
         onPreview: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        Column(
-            modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            FlowRow(modifier = Modifier.fillMaxWidth()) {
-                ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji)
-                ActionButton(Icons.Outlined.FormatBold, onClickBold)
-                ActionButton(Icons.Outlined.FormatItalic, onClickItalic)
-                ActionButton(Icons.Outlined.FormatUnderlined, onClickUnderlined)
-                ActionButton(Icons.Outlined.FormatStrikethrough, onClickStrikethrough)
-                ActionButton(Icons.Outlined.VisibilityOff, onClickMask)
-                ActionButton(Icons.Outlined.Image, onClickImage)
-                ActionButton(Icons.Outlined.Link, onClickUrl)
-            }
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                TextButton(
-                    onClick = onPreview,
-                    modifier = Modifier.padding(end = 4.dp),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                ) {
-                    Text(text = if (previewing) "编辑" else "预览")
+        // maybe we can extract the layout
+        val size = ActionButtonSize.dp
+        var actionExpanded by rememberSaveable { mutableStateOf(false) }
+        val collapsedActionAnim by animateDpAsState(if (actionExpanded) size else 0.dp)
+
+        Layout(
+            modifier = modifier.then(Modifier.fillMaxWidth().animateContentSize()),
+            measurePolicy = { measurables, rawConstraints ->
+                val constraints = rawConstraints.copy(minWidth = 0)
+                val containerWidth = constraints.maxWidth
+                val primaryAction = measurables.find { it.layoutId == ActionRowPrimaryAction }
+                val textActions = measurables.filter { it.layoutId != ActionRowPrimaryAction }
+
+                var currentAccumulatedWidth = 0
+                val currentList = mutableListOf<Placeable>()
+
+                val textPlaceables = textActions.foldIndexed(mutableListOf<List<Placeable>>()) { i, acc, curr ->
+                    val placeable = curr.measure(constraints)
+
+                    // 当前一行显示不下了，需要放到下一行
+                    if (currentAccumulatedWidth + placeable.width > containerWidth) {
+                        acc.add(currentList.toList())
+                        currentList.clear()
+                        currentAccumulatedWidth = 0
+                    }
+
+                    currentList.add(placeable)
+                    currentAccumulatedWidth += placeable.width
+
+                    if (i == textActions.lastIndex && currentList.isNotEmpty()) {
+                        acc.add(currentList.toList())
+                    }
+
+                    acc
                 }
-                OutlinedButton(
-                    onClick = onSend,
-                    enabled = !sending,
-                    modifier = Modifier.padding(start = 4.dp).animateContentSize(),
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+
+                val primaryActionPlaceable = primaryAction?.measure(constraints)
+                val primaryActionWidth = primaryActionPlaceable?.width ?: 0
+                val primaryActionHeight = primaryActionPlaceable?.height ?: 0
+
+                val shouldAppendNewLine =
+                    primaryActionWidth + (textPlaceables.lastOrNull()?.sumOf { it.width } ?: 0) > containerWidth
+
+                layout(
+                    width = constraints.maxWidth,
+                    height = textPlaceables.sumOf { it.maxOf { p -> p.height } } +
+                            if (shouldAppendNewLine) primaryActionHeight else 0,
                 ) {
-                    Crossfade(targetState = sending) {
-                        if (!it) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "发送")
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.Send,
-                                    modifier = Modifier.padding(start = 4.dp).size(18.dp),
-                                    contentDescription = null,
+                    var currentX = 0
+                    var currentY = 0
+                    var lastLineMaxHeight = 0
+                    textPlaceables.forEachIndexed { i, line ->
+                        val lineMaxHeight = maxOf(
+                            line.maxOf { it.height },
+                            if (!shouldAppendNewLine) primaryActionHeight else 0,
+                        )
+
+                        line.forEach { p ->
+                            // center vertically
+                            p.placeRelative(currentX, currentY + (lineMaxHeight - p.height) / 2)
+                            currentX += p.width
+                        }
+
+                        currentX = 0
+                        currentY += lineMaxHeight
+                        if (i == textPlaceables.lastIndex) {
+                            lastLineMaxHeight = lineMaxHeight
+                        }
+                    }
+                    val adjustedYOffset = if (shouldAppendNewLine) 0 else {
+                        -(lastLineMaxHeight + primaryActionHeight) / 2
+                    }
+                    primaryActionPlaceable?.placeRelative(
+                        x = containerWidth - primaryActionWidth,
+                        y = currentY + adjustedYOffset,
+                    )
+                }
+            },
+            content = {
+                ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji, Modifier.size(size))
+                if (actionExpanded) {
+                    ActionButton(
+                        Icons.Outlined.FormatBold,
+                        onClickBold,
+                        Modifier.size(height = size, width = collapsedActionAnim),
+                    )
+                    ActionButton(
+                        Icons.Outlined.FormatItalic,
+                        onClickItalic,
+                        Modifier.size(height = size, width = collapsedActionAnim),
+                    )
+                    ActionButton(
+                        Icons.Outlined.FormatUnderlined,
+                        onClickUnderlined,
+                        Modifier.size(height = size, width = collapsedActionAnim),
+                    )
+                    ActionButton(
+                        Icons.Outlined.FormatStrikethrough,
+                        onClickStrikethrough,
+                        Modifier.size(height = size, width = collapsedActionAnim),
+                    )
+                }
+                ActionButton(Icons.Outlined.VisibilityOff, onClickMask, Modifier.size(size))
+                ActionButton(Icons.Outlined.Image, onClickImage, Modifier.size(size))
+                if (actionExpanded) {
+                    ActionButton(
+                        Icons.Outlined.Link,
+                        onClickUrl,
+                        Modifier.size(height = size, width = collapsedActionAnim),
+                    )
+                }
+                if (!actionExpanded) {
+                    ActionButton(Icons.Outlined.MoreHoriz, { actionExpanded = true }, Modifier.size(size))
+                }
+
+                Row(modifier = Modifier.layoutId(ActionRowPrimaryAction)) {
+                    TextButton(
+                        onClick = onPreview,
+                        modifier = Modifier.padding(end = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    ) {
+                        Text(text = if (previewing) "编辑" else "预览")
+                    }
+                    OutlinedButton(
+                        onClick = onSend,
+                        enabled = !sending,
+                        modifier = Modifier.padding(start = 4.dp).animateContentSize(),
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                    ) {
+                        Crossfade(targetState = sending) {
+                            if (!it) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = "发送")
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.Send,
+                                        modifier = Modifier.padding(start = 4.dp).size(18.dp),
+                                        contentDescription = null,
+                                    )
+                                }
+                            } else {
+                                CircularProgressIndicator(
+                                    Modifier.size(20.dp),
+                                    color = LocalContentColor.current,
                                 )
                             }
-                        } else {
-                            CircularProgressIndicator(
-                                Modifier.size(20.dp),
-                                color = LocalContentColor.current,
-                            )
                         }
                     }
                 }
-            }
-        }
+            },
+        )
     }
+
+
+    @Suppress("ConstPropertyName")
+    private const val ActionButtonSize: Int = 48
+
+    @Suppress("ConstPropertyName")
+    private const val ActionRowPrimaryAction: String = "primaryAction"
 }
