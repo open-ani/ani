@@ -35,6 +35,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
@@ -207,7 +208,7 @@ internal fun EpisodeVideoImpl(
             }
         },
         rhsBarTop = {
-            if (expanded) {
+            if (expanded && Platform.currentPlatform.isDesktop()) {
                 ScreenshotButton(
                     onClick = screenshotOnClick,
                 )
