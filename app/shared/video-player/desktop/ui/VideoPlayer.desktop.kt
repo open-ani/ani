@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import io.ktor.util.PlatformUtils
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -49,6 +52,7 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
+import java.util.Objects
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -144,16 +148,20 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun getScreenshotPath(): Path? {
-        val screenshotPath = Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
-        screenshotPath.createDirectories()
+        var screenshotPath: Path? = null
+        if (Platform.currentPlatform.isDesktop()) {
+            screenshotPath = Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
+            screenshotPath.createDirectories()
+        }
         return screenshotPath
     }
 
     override fun saveScreenshotFile(filename: String) {
         val screenshotPath = getScreenshotPath()
+        // return when screenshot path is null
+        if (Objects.isNull(screenshotPath)) return
         val filePath = screenshotPath?.resolve(filename)
         player.snapshots().save(filePath?.toFile())
-        
     }
 
     class VlcjData(
