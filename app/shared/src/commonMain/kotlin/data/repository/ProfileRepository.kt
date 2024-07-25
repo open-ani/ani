@@ -26,7 +26,7 @@ internal class ProfileRepositoryImpl : ProfileRepository, KoinComponent {
     override suspend fun getSelfOrNull(): UserInfo? {
         return try {
             withContext(Dispatchers.IO) {
-                client.api.getMyself().body()
+                client.getApi().getMyself().body()
             }.toUserInfo()
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Forbidden || e.response.status == HttpStatusCode.Unauthorized) {

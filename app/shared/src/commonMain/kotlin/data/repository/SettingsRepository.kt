@@ -16,6 +16,7 @@ import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.OneshotActionConfig
+import me.him188.ani.app.data.models.preference.ProfileSettings
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
@@ -46,6 +47,10 @@ interface SettingsRepository {
      */
     val defaultMediaPreference: Settings<MediaPreference>
 
+    /**
+     * @since 3.5
+     */
+    val profileSettings: Settings<ProfileSettings>
     val proxySettings: Settings<ProxySettings>
     val mediaCacheSettings: Settings<MediaCacheSettings>
     val danmakuSettings: Settings<DanmakuSettings>
@@ -66,6 +71,7 @@ interface SettingsRepository {
 interface Settings<T> {
     val flow: Flow<T>
     suspend fun set(value: T)
+    suspend fun update(update: T.() -> T)
 }
 
 class PreferencesRepositoryImpl(
@@ -77,9 +83,16 @@ class PreferencesRepositoryImpl(
 
     inner class BooleanPreference(
         val name: String,
+        private val default: Boolean,
     ) : Settings<Boolean> {
         private val key = booleanPreferencesKey(name)
-        override val flow: Flow<Boolean> = preferences.data.map { it[key] ?: true }
+        override val flow: Flow<Boolean> = preferences.data.map { it[key] ?: default }
+        override suspend fun update(update: (Boolean) -> Boolean) {
+            preferences.edit {
+                it[key] = update(it[key] ?: default)
+            }
+        }
+
         override suspend fun set(value: Boolean) {
             preferences.edit { it[key] = value }
         }
@@ -88,7 +101,7 @@ class PreferencesRepositoryImpl(
     inner class SerializablePreference<T : Any>(
         val name: String,
         private val serializer: KSerializer<T>,
-        default: () -> T,
+        private val default: () -> T,
     ) : Settings<T> {
         private val key = stringPreferencesKey(name)
         override val flow: Flow<T> = preferences.data
@@ -105,6 +118,19 @@ class PreferencesRepositoryImpl(
                 }
             }
 
+        override suspend fun update(update: (T) -> T) {
+            logger.debug { "Updating preference '$key' with lambda" }
+            preferences.edit { pref ->
+                pref[key] = format.encodeToString(
+                    serializer,
+                    update(
+                        pref[key]?.let { format.decodeFromString(serializer, it) }
+                            ?: default(),
+                    ),
+                )
+            }
+        }
+
         override suspend fun set(value: T) {
             logger.debug { "Updating preference '$key' with: $value" }
             preferences.edit {
@@ -113,7 +139,7 @@ class PreferencesRepositoryImpl(
         }
     }
 
-    override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled")
+    override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled", default = true)
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
     override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
@@ -127,6 +153,11 @@ class PreferencesRepositoryImpl(
             MediaPreference.serializer(),
             default = { MediaPreference.PlatformDefault },
         )
+    override val profileSettings: Settings<ProfileSettings> = SerializablePreference(
+        "profileSettings",
+        ProfileSettings.serializer(),
+        default = { ProfileSettings.Default },
+    )
     override val proxySettings: Settings<ProxySettings> = SerializablePreference(
         "proxyPreferences",
         ProxySettings.serializer(),

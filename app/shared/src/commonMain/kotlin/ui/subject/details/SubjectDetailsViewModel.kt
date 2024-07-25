@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
@@ -15,6 +16,7 @@ import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressState
@@ -35,6 +37,8 @@ class SubjectDetailsViewModel(
     private val subjectInfo: SharedFlow<SubjectInfo> = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val subjectCollectionFlow = subjectManager.subjectCollectionFlow(subjectId).shareInBackground()
 
+    val authState = AuthState()
+
     val subjectDetailsState = kotlin.run {
         SubjectDetailsState(
             subjectInfo = subjectInfo,
@@ -48,7 +52,7 @@ class SubjectDetailsViewModel(
             },
             persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
-            },
+            }.onCompletion { if (it != null) emit(emptyList()) },
             characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
                 RelatedCharacterInfo.sortList(it)
             },

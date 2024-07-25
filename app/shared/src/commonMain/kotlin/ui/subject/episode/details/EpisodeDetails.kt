@@ -48,6 +48,7 @@ import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.AiringLabel
@@ -111,6 +112,7 @@ fun EpisodeDetails(
     videoStatistics: VideoStatistics,
     mediaSelectorPresentation: MediaSelectorPresentation,
     mediaSourceResultsPresentation: MediaSourceResultsPresentation,
+    authState: AuthState,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
 ) {
@@ -159,22 +161,26 @@ fun EpisodeDetails(
         subjectSuggestions = {
             // 推荐一些状态修改操作
 
-            when (editableSubjectCollectionTypeState.selfCollectionType) {
-                UnifiedCollectionType.NOT_COLLECTED -> {
-                    SubjectCollectionTypeSuggestions.Collect(editableSubjectCollectionTypeState)
-                }
-
-                UnifiedCollectionType.WISH, UnifiedCollectionType.ON_HOLD -> {
-                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                        Text(
-                            "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
-                        )
+            if (authState.isKnownLoggedIn) {
+                when (editableSubjectCollectionTypeState.selfCollectionType) {
+                    UnifiedCollectionType.NOT_COLLECTED -> {
+                        SubjectCollectionTypeSuggestions.Collect(editableSubjectCollectionTypeState)
                     }
-                    SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
-                    SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
-                }
 
-                else -> {}
+                    UnifiedCollectionType.WISH, UnifiedCollectionType.ON_HOLD -> {
+                        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                            Text(
+                                "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { // 一起换行
+                            SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
+                            SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        }
+                    }
+
+                    else -> {}
+                }
             }
         },
         exposedEpisodeItem = { innerPadding ->
@@ -194,16 +200,21 @@ fun EpisodeDetails(
                         episodeSort = { Text(episode.episodeInfo.sort.toString()) },
                         title = { Text(episode.episodeInfo.displayName) },
                         watchStatus = {
-                            EpisodeWatchStatusButton(
-                                episode.type.isDoneOrDropped(),
-                                onUnmark = {
-                                    episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.NOT_COLLECTED)
-                                },
-                                onMarkAsDone = {
-                                    episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.DONE)
-                                },
-                                enabled = !episodeCarouselState.isSettingCollectionType,
-                            )
+                            if (authState.isKnownLoggedIn) {
+                                EpisodeWatchStatusButton(
+                                    episode.type.isDoneOrDropped(),
+                                    onUnmark = {
+                                        episodeCarouselState.setCollectionType(
+                                            episode,
+                                            UnifiedCollectionType.NOT_COLLECTED,
+                                        )
+                                    },
+                                    onMarkAsDone = {
+                                        episodeCarouselState.setCollectionType(episode, UnifiedCollectionType.DONE)
+                                    },
+                                    enabled = !episodeCarouselState.isSettingCollectionType,
+                                )
+                            }
                         },
                         mediaSelected = mediaSelected,
                         mediaLabels = {

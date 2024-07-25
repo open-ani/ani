@@ -22,7 +22,9 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,11 +32,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.repository.ProfileRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -50,6 +54,11 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.days
 
+enum class LoginStatus {
+    LOGGED_IN,
+    LOGGED_OUT,
+}
+
 /**
  * Bangumi 授权状态管理器
  */
@@ -58,7 +67,7 @@ interface SessionManager {
      * 当前有效的会话. 优先使用 [username] 或 [isSessionValid].
      */
     @Stable
-    val session: SharedFlow<Session?>
+    val session: Flow<Session?>
 
     /**
      * 当前有效会话的用户名. 当不为 `null` 时保证可以使用该用户名执行 API 请求.
@@ -70,6 +79,8 @@ interface SessionManager {
      */
     @Stable
     val username: SharedFlow<String?>
+
+    val loginStatus: Flow<LoginStatus?>
 
     /**
      * 当前授权是否有效. `null` means not yet known, i.e. waiting for database query on start up.
@@ -84,29 +95,54 @@ interface SessionManager {
     val processingRequest: StateFlow<ExternalOAuthRequest?>
 
     /**
+     * 登录/退出登录事件流. 只有当用户主动操作 (例如点击按钮) 时才会广播事件. 刚启动 app 时的自动登录不会触发事件.
+     */
+    @Stable
+    val events: SharedFlow<SessionEvent>
+
+    /**
      * 请求为线上状态.
      *
      * 1. 若用户已经登录且会话有效 ([isSessionValid] 为 `true`), 则此函数会立即返回.
      * 2. 若用户登录过, 但是当前会话已经过期, 则此函数会尝试使用 refresh token 刷新会话.
      *    - 若刷新成功, 此函数会返回, 不会弹出任何 UI 提示.
      *    - 若刷新失败, 则进行下一步.
-     * 3. 通过 [AniNavigator] 跳转到登录页面, 并等待用户的登录结果. 若用户取消登录, 此函数会抛出 [AuthorizationCancelledException].
+     * 3. 若用户不是第一次启动, 而且他曾经选择了以游客身份登录, 则抛出异常 [AuthorizationCancelledException].
+     * 4. 取决于 [navigateToWelcome], 通过 [AniNavigator] 跳转到欢迎页或者登录页面, 并等待用户的登录结果.
+     *    - 若用户取消登录 (选择游客), 此函数会抛出 [AuthorizationCancelledException].
+     *    - 若用户成功登录, 此函数正常返回
      *
      * ## Cancellation Support
      *
      * 此函数支持 coroutine cancellation. 当 coroutine 被取消时, 此函数会中断授权请求并抛出 [CancellationException].
-     *
-     * @throws AuthorizationCancelledException if user cancels the authorization.
-     * @throws AuthorizationFailedException if authorization failed, maybe due to network error.
      */
     @Throws(AuthorizationException::class)
-    suspend fun requireOnline(navigator: AniNavigator)
+    suspend fun requireAuthorize(
+        navigator: AniNavigator,
+        navigateToWelcome: Boolean,
+        ignoreGuest: Boolean = false,
+    )
 
-    fun requireOnlineAsync(navigator: AniNavigator)
+    fun requireOnlineAsync(
+        navigator: AniNavigator,
+        navigateToWelcome: Boolean,
+        ignoreGuest: Boolean = false,
+    )
 
     suspend fun setSession(session: Session)
 
     suspend fun logout()
+}
+
+sealed interface SessionEvent {
+    /**
+     * token 有变更
+     */
+    sealed interface UserActionEvent : SessionEvent
+
+    data object Login : UserActionEvent
+    data object TokenRefreshed : SessionEvent
+    data object Logout : UserActionEvent
 }
 
 object TestSessionManagers {
@@ -118,13 +154,22 @@ object TestSessionManagers {
             ),
         )
         override val username: MutableStateFlow<String?> = MutableStateFlow("test")
+        override val loginStatus: Flow<LoginStatus> = MutableStateFlow(LoginStatus.LOGGED_IN)
         override val isSessionValid: Flow<Boolean?> = session.map { it != null }
         override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
+        override val events: SharedFlow<SessionEvent> = MutableSharedFlow(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
 
-        override suspend fun requireOnline(navigator: AniNavigator) {
+        override suspend fun requireAuthorize(
+            navigator: AniNavigator,
+            navigateToWelcome: Boolean,
+            ignoreGuest: Boolean
+        ) {
         }
 
-        override fun requireOnlineAsync(navigator: AniNavigator) {
+        override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         }
 
         override suspend fun setSession(session: Session) {
@@ -138,7 +183,11 @@ object TestSessionManagers {
     }
 }
 
+/**
+ * 当用户希望以游客身份登录时抛出的异常.
+ */
 class AuthorizationCancelledException(
+    override val message: String?,
     override val cause: Throwable? = null
 ) : AuthorizationException()
 
@@ -149,16 +198,33 @@ class AuthorizationFailedException(
 sealed class AuthorizationException : Exception()
 
 
-internal class SessionManagerImpl(
-) : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope() {
+internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope() {
     private val tokenRepository: TokenRepository by inject()
     private val profileRepository: ProfileRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
     private val client: BangumiClient by inject()
+
+    private val profileSettings = settingsRepository.profileSettings
 
     private val logger = logger(SessionManager::class)
 
-    override val session: SharedFlow<Session?> =
-        tokenRepository.session.distinctUntilChanged().shareInBackground(SharingStarted.Eagerly)
+    class State(
+        val session: Session?
+    )
+
+    private val state = tokenRepository.session.distinctUntilChanged().map {
+        State(session = it)
+    }.shareInBackground(started = SharingStarted.Eagerly) // must be shared, not state (without initial value)
+
+    override val loginStatus = state.map {
+        if (it.session == null) {
+            LoginStatus.LOGGED_OUT
+        } else {
+            LoginStatus.LOGGED_IN
+        }
+    }.onStart<LoginStatus?> { emit(null) }
+
+    override val session: Flow<Session?> = state.map { it.session }
 
     override val username: SharedFlow<String?> =
         session
@@ -172,7 +238,7 @@ internal class SessionManagerImpl(
             .shareInBackground(SharingStarted.Eagerly)
 
     override val isSessionValid: Flow<Boolean?> =
-        username.map { it != null }
+        loginStatus.map { it?.equals(LoginStatus.LOGGED_IN) }
 
     private val refreshTokenLoaded = CompletableDeferred<Boolean>()
     private val refreshToken = tokenRepository.refreshToken
@@ -184,6 +250,10 @@ internal class SessionManagerImpl(
 
     private val singleAuthLock = Mutex()
     override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
+    override val events: MutableSharedFlow<SessionEvent> = MutableSharedFlow(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
 
     private suspend fun tryRefreshSessionByRefreshToken(): Boolean {
         logger.trace { "tryRefreshSessionByRefreshToken: start" }
@@ -213,17 +283,18 @@ internal class SessionManagerImpl(
             return false
         }
         // success
-        setSession(
+        setSessionAndRefreshToken(
 //            session.userId,
             newAccessToken.accessToken,
             System.currentTimeMillis() + newAccessToken.expiresIn,
             newAccessToken.refreshToken,
+            isNewLogin = false,
         )
         logger.trace { "tryRefreshSessionByRefreshToken: success" }
         return true
     }
 
-    override suspend fun requireOnline(navigator: AniNavigator) {
+    override suspend fun requireAuthorize(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         logger.trace { "requireOnline" }
 
         // fast path, already online
@@ -240,10 +311,13 @@ internal class SessionManagerImpl(
             }
 
             // failed to refresh, possibly refresh token is invalid
+            if (!ignoreGuest && profileSettings.flow.first().loginAsGuest) {
+                throw AuthorizationCancelledException("以游客身份登录") // 以游客身份登录
+            }
 
             // Launch external oauth (e.g. browser)
-            val req = BangumiOAuthRequest(navigator) { session, refreshToken ->
-                setSession(session.accessToken, session.expiresAt, refreshToken)
+            val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session, refreshToken ->
+                setSessionAndRefreshToken(session.accessToken, session.expiresAt, refreshToken, isNewLogin = true)
             }
             processingRequest.value = req
             try {
@@ -257,7 +331,10 @@ internal class SessionManagerImpl(
             check(state is ExternalOAuthRequest.State.Result)
             when (state) {
                 is ExternalOAuthRequest.State.Cancelled -> {
-                    throw AuthorizationCancelledException(state.cause)
+                    profileSettings.update {
+                        copy(loginAsGuest = true)
+                    }
+                    throw AuthorizationCancelledException(null, state.cause)
                 }
 
                 is ExternalOAuthRequest.State.Failed -> {
@@ -271,11 +348,11 @@ internal class SessionManagerImpl(
         }
     }
 
-    override fun requireOnlineAsync(navigator: AniNavigator) {
+    override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         launchInBackground {
             try {
                 processingRequest.value?.cancel()
-                requireOnline(navigator)
+                requireAuthorize(navigator, navigateToWelcome = navigateToWelcome, ignoreGuest)
                 logger.info { "requireOnline: success" }
             } catch (e: AuthorizationException) {
                 logger.error(e) { "Authorization failed" }
@@ -283,19 +360,39 @@ internal class SessionManagerImpl(
         }
     }
 
+
+    private suspend fun setSessionAndRefreshToken(
+        accessToken: String,
+        expiresAt: Long,
+        refreshToken: String,
+        isNewLogin: Boolean
+    ) {
+        logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
+
+        tokenRepository.setRefreshToken(refreshToken)
+        setSessionImpl(Session(accessToken, expiresAt))
+        if (isNewLogin) {
+            events.tryEmit(SessionEvent.Login)
+        } else {
+            events.tryEmit(SessionEvent.TokenRefreshed)
+        }
+        // does not broadcast
+    }
+
     override suspend fun setSession(session: Session) {
+        setSessionImpl(session)
+        events.tryEmit(SessionEvent.Login)
+    }
+
+    private suspend fun setSessionImpl(session: Session) {
         tokenRepository.setSession(session)
+        profileSettings.update {
+            copy(loginAsGuest = false)
+        }
     }
 
     override suspend fun logout() {
         tokenRepository.clear()
-    }
-
-    private suspend fun setSession(accessToken: String, expiresAt: Long, refreshToken: String) {
-        logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
-
-        tokenRepository.setRefreshToken(refreshToken)
-        tokenRepository.setSession(Session(accessToken, expiresAt))
-        // session updates automatically
+        events.tryEmit(SessionEvent.Logout)
     }
 }

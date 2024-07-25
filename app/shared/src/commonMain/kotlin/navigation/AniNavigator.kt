@@ -10,9 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.coroutines.CompletableDeferred
+import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.navigation.PopUpTo
 import org.koin.core.component.KoinComponent
 import org.koin.core.context.GlobalContext
 
@@ -30,6 +33,15 @@ interface AniNavigator {
 
     val navigator: Navigator
 
+    fun goBack() {
+        navigator.goBack()
+    }
+
+    fun popUntilNotAuth() {
+        navigator.goBack(PopUpTo("/bangumi-token-oauth", inclusive = true), inclusive = true)
+        navigator.goBack(PopUpTo("/bangumi-oauth", inclusive = true), inclusive = true)
+    }
+
     fun navigateSubjectDetails(subjectId: Int) {
         navigator.navigate("/subjects/$subjectId")
     }
@@ -45,15 +57,43 @@ interface AniNavigator {
         )
     }
 
+    fun navigateWelcome() {
+        navigator.navigate("/welcome")
+    }
+
     fun navigateHome() {
         navigator.navigate("/home")
     }
 
+    fun navigateSearch(requestFocus: Boolean = false) {
+        navigator.navigate("/home?tab=search")
+    }
+
+    private val Platform.supportsCallbackLogin: Boolean
+        get() = when (this) {
+            is Platform.Desktop -> false
+            Platform.Android -> true
+        }
+
     /**
      * 登录页面
      */
-    fun navigateAuth() {
-        navigator.navigate("/auth", NavOptions(launchSingleTop = true))
+    fun navigateBangumiOAuthOrTokenAuth() {
+        if (currentPlatform.supportsCallbackLogin) {
+            navigator.navigate("/bangumi-oauth", NavOptions(launchSingleTop = true))
+        } else {
+            navigateBangumiTokenAuth()
+        }
+    }
+
+    fun navigateBangumiTokenAuth() {
+        navigator.navigate(
+            "/bangumi-token-auth",
+            NavOptions(
+                launchSingleTop = true,
+                popUpTo = PopUpTo("/bangumi-oauth", inclusive = true),
+            ),
+        )
     }
 
     fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {

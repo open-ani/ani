@@ -135,7 +135,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override fun stopImpl() {
-        player.controls().stop()
+        player.submit {
+            player.controls().stop()
+        }
     }
 
     override fun getScreenshotPath(): Path? {
@@ -193,8 +195,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 lastMedia = new
             },
             releaseResource = {
-                data.close()
                 input.close()
+                data.close()
             },
         )
     }

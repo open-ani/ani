@@ -11,7 +11,7 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-private class LoginViewModel : AbstractViewModel(), KoinComponent, ViewModelAuthSupport {
+private class LoginViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
 
     @Stable

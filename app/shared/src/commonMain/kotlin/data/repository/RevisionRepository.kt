@@ -29,7 +29,7 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
         return PageBasedPagedSource { page ->
             try {
                 if (page == 0) {
-                    val response = client.nextApi
+                    val response = client.getNextApi()
                         .getSubjectEpisodeComments(episodeId)
                         .body()
                         .map(BangumiNextGetSubjectEpisodeComments200ResponseInner::toEpisodeComment)

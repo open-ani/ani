@@ -158,7 +158,14 @@ enum class MediaSourceKind {
      *
      * 该类型的资源总是会显示, 忽略一切过滤条件.
      */
-    LocalCache
+    LocalCache;
+
+    companion object {
+        /**
+         * 除本地缓存这种特殊类型外, 用户可以选择的数据源类型.
+         */
+        val selectableEntries = listOf(WEB, BitTorrent)
+    }
 }
 
 

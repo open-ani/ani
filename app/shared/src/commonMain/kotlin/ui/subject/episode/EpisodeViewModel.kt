@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
+import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
@@ -50,12 +52,15 @@ import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
@@ -98,6 +103,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val subjectPresentation: SubjectPresentation // by state
     val episodePresentation: EpisodePresentation // by state
+
+    val authState: AuthState
 
     val episodeDetailsState: EpisodeDetailsState
 
@@ -158,6 +165,11 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmaku: VideoDanmakuState
 
     val danmakuStatistics: DanmakuStatistics
+
+    val episodeCommentState: CommentState
+
+    @UiThread
+    fun stopPlaying()
 }
 
 fun EpisodeViewModel(
@@ -185,6 +197,7 @@ private class EpisodeViewModelImpl(
     private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
+    private val episodeRevisionRepository: EpisodeRevisionRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -329,6 +342,7 @@ private class EpisodeViewModelImpl(
 
     override val episodePresentation: EpisodePresentation by episodePresentationFlow
         .produceState(EpisodePresentation.Placeholder)
+    override val authState: AuthState = AuthState()
 
     private val episodeCollectionsFlow = subjectManager.episodeCollectionsFlow(subjectId)
         .shareInBackground()
@@ -371,8 +385,7 @@ private class EpisodeViewModelImpl(
                 }?.second ?: EpisodeCacheStatus.NotCached
             },
             onSelect = {
-                episodeId.value = it.episode.id
-                episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
+                switchEpisode(it.episode.id)
             },
             onChangeCollectionType = { episode, it ->
                 collectionButtonEnabled.value = false
@@ -430,14 +443,18 @@ private class EpisodeViewModelImpl(
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
+    fun switchEpisode(episodeId: Int) {
+        episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
+        mediaSelector.unselect() // 否则不会自动选择
+        playerState.stop()
+        switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
+        this.episodeId.value = episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
+    }
+
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
         onSelect = {
-            mediaSelector.unselect() // 否则不会自动选择
-            playerState.stop()
-
-            switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
-            episodeId.value = it.episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
+            switchEpisode(it.episodeId)
         },
         currentEpisodeId = episodeId,
         parentCoroutineContext = backgroundScope.coroutineContext,
@@ -486,6 +503,25 @@ private class EpisodeViewModelImpl(
         },
         backgroundScope,
     )
+
+    private val episodeCommentLoader = CommentLoader.episode(
+        episodeId = episodeId,
+        coroutineContext = backgroundScope.coroutineContext,
+        episodeCommentSource = { episodeRevisionRepository.getSubjectEpisodeComments(it) },
+    )
+
+    override val episodeCommentState: CommentState = CommentState(
+        sourceVersion = episodeCommentLoader.sourceVersion.produceState(null),
+        list = episodeCommentLoader.list.produceState(emptyList()),
+        hasMore = episodeCommentLoader.hasFinished.produceState(false),
+        onReload = { episodeCommentLoader.reload() },
+        onLoadMore = { episodeCommentLoader.loadMore() },
+        backgroundScope = backgroundScope,
+    )
+
+    override fun stopPlaying() {
+        playerState.stop()
+    }
 
     private val selfUserId = danmakuManager.selfId
 
