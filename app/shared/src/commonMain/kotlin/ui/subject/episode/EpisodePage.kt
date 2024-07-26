@@ -404,7 +404,7 @@ fun EpisodeSceneContentPhoneScaffold(
 
         Column(Modifier.fillMaxSize()) {
             Row {
-                TabRow(pagerState, scope, commentCount, Modifier.fillMaxWidth())
+                TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
                 Box(
                     modifier = Modifier.weight(0.618f) // width
                         .height(48.dp)
