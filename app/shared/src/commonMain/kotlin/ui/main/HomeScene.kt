@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.session.launchAuthorize
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
@@ -53,7 +54,6 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
-import me.him188.ani.app.session.launchAuthorize
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder

@@ -29,11 +29,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.source.AniAuthClient
+import me.him188.ani.app.data.source.session.ExternalOAuthRequest
+import me.him188.ani.app.data.source.session.OAuthResult
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.isSessionVerified
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.session.ExternalOAuthRequest
-import me.him188.ani.app.session.OAuthResult
-import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.isSessionVerified
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.utils.logging.debug

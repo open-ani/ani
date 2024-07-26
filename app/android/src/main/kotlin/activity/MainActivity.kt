@@ -32,11 +32,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp

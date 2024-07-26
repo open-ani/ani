@@ -1,4 +1,4 @@
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import me.him188.ani.app.data.models.UserInfo
 

@@ -41,9 +41,9 @@ import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.username
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.username
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheSave

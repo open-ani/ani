@@ -1,4 +1,4 @@
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.repository.Session
 import me.him188.ani.app.navigation.AniNavigator
 import kotlin.time.Duration.Companion.days
 
@@ -36,7 +37,7 @@ object TestSessionManager : SessionManager {
     }
 
     override suspend fun setSession(session: Session) {
-        this.savedSession.value = session
+        savedSession.value = session
     }
 
     override suspend fun logout() {

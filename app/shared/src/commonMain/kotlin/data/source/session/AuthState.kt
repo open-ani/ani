@@ -1,4 +1,4 @@
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State

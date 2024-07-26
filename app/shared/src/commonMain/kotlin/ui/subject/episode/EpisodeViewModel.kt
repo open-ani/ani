@@ -50,9 +50,9 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorAutoSelect
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
+import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope

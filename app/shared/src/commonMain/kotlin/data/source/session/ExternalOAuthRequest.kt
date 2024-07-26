@@ -1,4 +1,4 @@
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.CancellationException

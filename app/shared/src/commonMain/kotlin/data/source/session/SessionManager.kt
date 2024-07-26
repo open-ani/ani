@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.BufferOverflow
@@ -40,9 +40,11 @@ import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.models.preference.ProfileSettings
 import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.repository.ProfileRepository
+import me.him188.ani.app.data.repository.Session
 import me.him188.ani.app.data.repository.Settings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.TokenRepository
+import me.him188.ani.app.data.repository.isExpired
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -55,7 +57,7 @@ import me.him188.ani.utils.logging.trace
 import org.koin.core.Koin
 import kotlin.coroutines.CoroutineContext
 
-/**å
+/**
  * Bangumi 授权状态管理器
  */
 interface SessionManager {

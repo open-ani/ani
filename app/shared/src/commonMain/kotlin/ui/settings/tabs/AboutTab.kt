@@ -32,12 +32,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.media.MediaAutoCacheService
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.isSessionVerified
+import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.isSessionVerified
-import me.him188.ani.app.session.unverifiedAccessToken
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.AniHelpSection
@@ -66,7 +66,7 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
                 put("isDebug", buildConfig.isDebug.toString())
                 if (buildConfig.isDebug) {
                     put("accessToken", session.unverifiedAccessToken)
-                    put("session", session.toString())
+                    put("data/source/session", session.toString())
                 }
                 put("processingRequest.state", processingRequest.toString())
                 put("sessionManager.isSessionValid", isSessionValid.toString())

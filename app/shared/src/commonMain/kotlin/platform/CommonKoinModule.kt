@@ -77,9 +77,9 @@ import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.source.media.createWithKoin
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.data.source.media.toClientProxyConfig
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
-import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.unverifiedAccessToken
 import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.source.MediaSourceConfig
