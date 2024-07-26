@@ -24,6 +24,14 @@ public class GenBBBasicsTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse1452225337() {
+        BBCode.parse("[URL]https://example.com[/URL]")
+        .run {
+            assertText(elements.at(0), value="https://example.com", jumpUrl="https://example.com")
+        }
+    }
+
+    @Test
     public fun parse181699913() {
         BBCode.parse("[url=https://example.com]Hello World![/url]")
         .run {
@@ -44,6 +52,38 @@ public class GenBBBasicsTest : BBCodeParserTestHelper() {
         BBCode.parse("[url=invalidurl]Hello World![/url]")
         .run {
             assertText(elements.at(0), value="Hello World!", jumpUrl="invalidurl")
+        }
+    }
+
+    @Test
+    public fun parse1438076936() {
+        BBCode.parse("[URL=http://example.com]Hello World![/URL]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", jumpUrl="http://example.com")
+        }
+    }
+
+    @Test
+    public fun parse556838779() {
+        BBCode.parse("[URL=invalidurl]Hello World![/URL]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", jumpUrl="invalidurl")
+        }
+    }
+
+    @Test
+    public fun parse220807058() {
+        BBCode.parse("[img]http://example.com[/img]")
+        .run {
+            assertImage(elements.at(0), imageUrl="http://example.com")
+        }
+    }
+
+    @Test
+    public fun parse1935298734() {
+        BBCode.parse("[IMG]http://example.com[/IMG]")
+        .run {
+            assertImage(elements.at(0), imageUrl="http://example.com")
         }
     }
 

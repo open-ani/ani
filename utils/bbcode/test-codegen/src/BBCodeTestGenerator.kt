@@ -9,20 +9,30 @@ import java.io.File
 import kotlin.math.absoluteValue
 
 fun main() {
-    val dir = System.getProperty("user.dir").let(::File).resolve("utils/bbcode/src/commonTest/kotlin/")
+    val dir =
+        System.getProperty("user.dir").let(::File).resolve("utils/bbcode/src/commonTest/kotlin/")
     check(dir.exists()) {
         "Directory not found: $dir"
     }
 
 
-    val contextTags = listOf("b", "i", "u", "s", "url", "img", "quote", "code", "mask")
+    val contextTags =
+        listOf("b", "i", "u", "s", "url", "img", "quote", "code", "mask")
+            .flatMap {
+                listOf(it, it.uppercase())
+            }
 
     BBCodeTestGenerator("Basics").apply {
         case("[b]Hello World![/b]")
         case("[url]https://example.com[/url]")
+        case("[URL]https://example.com[/URL]")
         case("[url=https://example.com]Hello World![/url]")
         case("[url=http://example.com]Hello World![/url]")
         case("[url=invalidurl]Hello World![/url]")
+        case("[URL=http://example.com]Hello World![/URL]")
+        case("[URL=invalidurl]Hello World![/URL]")
+        case("[img]http://example.com[/img]")
+        case("[IMG]http://example.com[/IMG]")
         case("[size=1]Hello World![/size]")
         case("[color=red]Hello World![/color]")
         case("[color=#AFAFAF]Hello World![/color]")
@@ -74,7 +84,7 @@ fun main() {
 
 
 class BBCodeTestGenerator(
-    name: String
+    name: String,
 ) {
     private val className = "GenBB${name}Test"
 
@@ -145,7 +155,10 @@ class BBCodeTestGenerator(
                             element.value,
                         )
                         element.jumpUrl?.let { addCode(", jumpUrl=%S", it) }
-                        if (element.size != RichElement.Text.DEFAULT_SIZE) addCode(", size=%L", element.size)
+                        if (element.size != RichElement.Text.DEFAULT_SIZE) addCode(
+                            ", size=%L",
+                            element.size,
+                        )
                         if (element.color != null) addCode(", color=%S", element.color)
                         if (element.italic) addCode(", italic=%L", true)
                         if (element.underline) addCode(", underline=%L", true)

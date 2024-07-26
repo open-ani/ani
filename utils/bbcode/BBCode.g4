@@ -13,17 +13,17 @@ element:
 
 plain: (TEXT | NUMBER | '(' | ')' | '[' | '/' | ']' | '=' | ',')+;
 
-b: '[b]' content=section? '[/b]'; 
-i: '[i]' content=section? '[/i]';
-u: '[u]' content=section? '[/u]';
-s: '[s]' content=section? '[/s]';
-code: '[code]' content=section? '[/code]';
-mask: '[mask]' content=section? '[/mask]';
-quote: '[quote]' content=section? '[/quote]';
-size: '[size=' value=NUMBER ']' content=section? '[/size]';
-color: '[color=' value=TEXT ']' content=section? '[/color]';
+b: ('[b]' | '[B]') content=section? ('[/b]' | '[/B]');
+i: ('[i]' | '[I]') content=section? ('[/i]' | '[/I]');
+u: ('[u]' | '[U]') content=section? ('[/u]' | '[/U]');
+s: ('[s]' | '[S]') content=section? ('[/s]' | '[/S]');
+code: ('[code]' | '[CODE]') content=section? ('[/code]' | '[/CODE]');
+mask: ('[mask]' | '[MASK]') content=section? ('[/mask]' | '[/MASK]');
+quote: ('[quote]' | '[QUOTE]') content=section? ('[/quote]' | '[/QUOTE]');
+size: ('[size=' | '[SIZE=') value=NUMBER (']' | ']') content=section? ('[/size]' | '[/SIZE]');
+color: ('[color=' | '[COLOR=') value=TEXT (']' | ']') content=section? ('[/color]' | '[/COLOR]');
 
-bgm_sticker: '(bgm' id=NUMBER ')';
+bgm_sticker: ('(bgm' | '(BGM') id=NUMBER ')';
 text_stiker: 
       '(=A=)'
     | '(=w=)'
@@ -42,9 +42,9 @@ text_stiker:
     | '(:P)'
     | '(LOL)';
 
-url: '[url]' href=plain? '[/url]';
-url_named: '[url=' href=attribute_value ']' content=section? '[/url]';
-img: '[img]' content=section? '[/img]';
+url: ('[url]' | '[URL]') href=plain? ('[/url]' | '[/URL]');
+url_named: ('[url=' | '[URL=') href=attribute_value ']' content=section? ('[/url]' | '[/URL]');
+img: ('[img]'| '[IMG]') content=section? ('[/img]' | '[/IMG]');
 
 attribute_value: quoted=QUOTED | unquoted=TEXT;
 
