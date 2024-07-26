@@ -22,6 +22,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -113,6 +114,14 @@ class AniApplication : Application() {
 
         // 将下载数据放在数据目录防止被系统清除
         val torrentCaches = applicationContext.filesDir.resolve("torrent-caches").apply { mkdir() }
+
+        // since 3.5, 删除 libtorrent4j 缓存, 大概保留到 3.8 就可以删除个代码了
+        torrentCaches.resolve("libtorrent4j").let {
+            if (it.exists()) {
+                it.deleteRecursively()
+                Log.w("AniApplication", "Deleted libtorrent4j cache")
+            }
+        }
 
         startKoin {
             androidContext(this@AniApplication)

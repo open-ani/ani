@@ -29,7 +29,6 @@ interface TorrentManager {
 enum class TorrentEngineType(
     val id: String,
 ) {
-    Libtorrent4j("libtorrent4j"),
     Anitorrent("anitorrent"),
 }
 
