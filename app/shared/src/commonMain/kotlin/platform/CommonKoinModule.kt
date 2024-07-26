@@ -80,7 +80,6 @@ import me.him188.ani.app.data.source.media.toClientProxyConfig
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
-import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
@@ -163,17 +162,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
 
         fun getMediaMetadataDir(engineId: String) = getContext().files.dataDir
             .resolve("media-cache").resolve(engineId)
-
-        // migrate old files
-        getContext().files.cacheDir.resolve("media").let { oldDir ->
-            // 旧的都是 libtorrent4j
-            if (oldDir.exists()) {
-                oldDir.copyRecursively(
-                    getMediaMetadataDir(TorrentEngineType.Libtorrent4j.id), true,
-                )
-                oldDir.deleteRecursively()
-            }
-        }
 
         val engines = get<TorrentManager>().engines
         MediaCacheManagerImpl(
