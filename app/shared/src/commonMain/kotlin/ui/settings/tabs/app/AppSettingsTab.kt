@@ -428,7 +428,7 @@ private fun SettingsScope.PlayerGroup(
                 onCheckedChange = {
                     vm.videoScaffoldConfig.update(config.copy(autoFullscreenOnLandscapeMode = it))
                 },
-                title = { Text("启用重力感应旋屏") },
+                title = { Text("重力感应旋屏") },
                 Modifier.placeholder(vm.uiSettings.loading),
             )
         }
