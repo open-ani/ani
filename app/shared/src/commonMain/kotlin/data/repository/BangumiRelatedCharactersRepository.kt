@@ -63,7 +63,7 @@ class BangumiRelatedCharactersRepository(
         return flow {
             val characters = runOrEmitEmptyList {
                 withContext(Dispatchers.IO) {
-                    client.api.getRelatedCharactersBySubjectId(subjectId).body()
+                    client.getApi().getRelatedCharactersBySubjectId(subjectId).body()
                 }
             }
 
@@ -149,7 +149,7 @@ class BangumiRelatedCharactersRepository(
         return flow {
             val persons = runOrEmitEmptyList {
                 withContext(Dispatchers.IO) {
-                    client.api.getRelatedPersonsBySubjectId(subjectId).body()
+                    client.getApi().getRelatedPersonsBySubjectId(subjectId).body()
                 }
             }
             emit(

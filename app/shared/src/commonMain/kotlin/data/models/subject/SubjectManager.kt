@@ -41,8 +41,9 @@ import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.username
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheSave
@@ -249,6 +250,7 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
+                    sessionManager.state
                     val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
@@ -262,7 +264,7 @@ class SubjectManagerImpl(
                 debugName = "collectionsByType-${type.name}",
                 persistentStore = DataStoreFactory.create(
                     LazyDataCacheSave.serializer(SubjectCollection.serializer())
-                        .asDataStoreSerializer(LazyDataCacheSave.empty()),
+                        .asDataStoreSerializer({ LazyDataCacheSave.empty() }),
                     ReplaceFileCorruptionHandler { LazyDataCacheSave.empty() },
                     migrations = listOf(),
                     produceFile = {

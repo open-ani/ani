@@ -26,6 +26,7 @@ import me.him188.ani.app.acg_rip
 import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.source.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.dmhy
+import me.him188.ani.app.gugufan
 import me.him188.ani.app.mikan
 import me.him188.ani.app.mxdongman
 import me.him188.ani.app.ntdm
@@ -41,6 +42,7 @@ import me.him188.ani.datasources.jellyfin.JellyfinMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
+import me.him188.ani.datasources.ntdm.GugufanMediaSource
 import me.him188.ani.datasources.ntdm.NtdmMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import org.jetbrains.compose.resources.painterResource
@@ -65,6 +67,7 @@ fun renderMediaSource(
     NtdmMediaSource.ID -> "NT动漫"
     JellyfinMediaSource.ID -> "Jellyfin"
     EmbyMediaSource.ID -> "Emby"
+    GugufanMediaSource.ID -> "咕咕番"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -82,6 +85,7 @@ fun renderMediaSourceDescription(
     MxdongmanMediaSource.ID -> "mxdm4.com"
     IkarosMediaSource.ID -> "ikaros.run"
     NtdmMediaSource.ID -> "ntdm.tv"
+    GugufanMediaSource.ID -> "gugufan.com"
     LOCAL_FS_MEDIA_SOURCE_ID -> null
     else -> null
 }
@@ -103,6 +107,7 @@ fun getMediaSourceIconResource(
         NtdmMediaSource.ID -> painterResource(Res.drawable.ntdm)
         JellyfinMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Jellyfin)
         EmbyMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Emby)
+        GugufanMediaSource.ID -> painterResource(Res.drawable.gugufan)
         else -> null
     }
 }

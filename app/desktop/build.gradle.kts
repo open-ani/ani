@@ -101,6 +101,9 @@ compose.desktop {
                 pkgPackageBuildVersion = projectVersion
                 iconFile.set(file("icons/a_512x512.icns"))
 //                iconFile.set(project(":app:shared").projectDir.resolve("androidRes/mipmap-xxxhdpi/a.png"))
+                infoPlist {
+                    extraKeysRawXml = macOSExtraPlistKeys
+                }
             }
             windows {
                 this.upgradeUuid = UUID.randomUUID().toString()
@@ -139,6 +142,21 @@ compose.desktop {
 //        }
     }
 }
+
+val macOSExtraPlistKeys: String
+    get() = """
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleURLName</key>
+                <string>me.him188.ani</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>ani</string>
+                </array>
+            </dict>
+        </array>
+    """.trimIndent()
 
 // workaround for CMP resources bug
 tasks.withType(KotlinCompilationTask::class) {
@@ -242,6 +260,7 @@ val createDependencyManifest = tasks.register("createDependencyManifest") {
                         .filter { it.extension == "dll" && it.nameWithoutExtension.startsWith(libFile.nameWithoutExtension) }
                     return matched
                 }
+
                 fun findSystemDll(filename: String): File? {
                     val systemDir = File("C:/Windows/System32")
                     val systemDll = systemDir.resolve(filename)

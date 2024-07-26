@@ -47,8 +47,8 @@ import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.AiringLabel
@@ -173,8 +173,10 @@ fun EpisodeDetails(
                                 "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
                             )
                         }
-                        SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
-                        SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { // 一起换行
+                            SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
+                            SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        }
                     }
 
                     else -> {}

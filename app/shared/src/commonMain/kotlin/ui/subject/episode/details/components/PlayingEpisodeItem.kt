@@ -174,18 +174,18 @@ fun PlayingEpisodeItem(
         ProvideTextStyle(MaterialTheme.typography.labelLarge) {
             Row(
                 Modifier.padding(horizontal = horizontalPadding),
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Row(
-                    Modifier.offset(x = (-8).dp).weight(1f),
+                    Modifier.offset(x = (-8).dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     actions()
                 }
                 Row(
-                    Modifier.padding(start = 32.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.End),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     mediaSource()

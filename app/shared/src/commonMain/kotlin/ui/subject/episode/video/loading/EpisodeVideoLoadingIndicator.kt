@@ -46,6 +46,7 @@ fun EpisodeVideoLoadingIndicator(
             videoLoadingState,
             speedProvider = { speed },
             optimizeForFullscreen = optimizeForFullscreen,
+            playerError = state == PlaybackState.ERROR,
             modifier = modifier,
         )
     }
@@ -63,7 +64,7 @@ fun EpisodeVideoLoadingIndicator(
         showProgress = state is VideoLoadingState.Progressing,
         text = {
             if (playerError) {
-                TextWithBorder("播放失败, 请尝试重新进入页面", color = MaterialTheme.colorScheme.error)
+                TextWithBorder("播放失败, 请更换数据源", color = MaterialTheme.colorScheme.error)
                 return@VideoLoadingIndicator
             }
             when (state) {
@@ -134,4 +135,5 @@ fun renderCause(cause: VideoLoadingState.Failed): String = when (cause) {
     is VideoLoadingState.UnknownError -> "未知错误"
     is VideoLoadingState.UnsupportedMedia -> "不支持该文件类型"
     VideoLoadingState.NoMatchingFile -> "未找到可播放的文件"
+    VideoLoadingState.Cancelled -> "已取消"
 }

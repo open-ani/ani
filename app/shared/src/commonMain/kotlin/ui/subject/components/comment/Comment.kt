@@ -75,13 +75,19 @@ class CommentState(
     val sourceVersion: Any? by sourceVersion
     val list: List<UIComment> by list
 
+    /**
+     * 至少 [onReload] 了一次
+     */
+    private var loadedOnce by mutableStateOf(false)
     private var freshLoaded by mutableStateOf(false)
     val hasMore: Boolean by derivedStateOf {
         if (!freshLoaded) return@derivedStateOf false
         hasMore.value
     }
 
-    val count by derivedStateOf { this.list.size }
+    val count by derivedStateOf {
+        if (!loadedOnce) null else this.list.size
+    }
 
     private val reloadTasker = MonoTasker(backgroundScope)
     val isLoading get() = reloadTasker.isRunning
@@ -93,6 +99,7 @@ class CommentState(
         freshLoaded = false
         onReload()
         freshLoaded = true
+        loadedOnce = true
     }
 
     fun loadMore() {

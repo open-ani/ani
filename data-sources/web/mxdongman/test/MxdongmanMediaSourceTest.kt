@@ -22,7 +22,7 @@ class MxdongmanMediaSourceTest {
         list[0].run {
             assertEquals("1850", internalId)
             assertEquals("樱Trick", name)
-            assertEquals("https://www.mxdm4.com/dongman/1850.html", url)
+            assertEquals("https://www.mxdm.xyz/dongman/1850.html", url)
         }
     }
 
@@ -37,7 +37,7 @@ class MxdongmanMediaSourceTest {
         assertEquals(12, list.size)
         list[0].run {
             assertEquals("第01集", name)
-            assertEquals("https://www.mxdm4.com/dongmanplay/1850-1-1.html", url)
+            assertEquals("https://www.mxdm.xyz/dongmanplay/1850-1-1.html", url)
         }
     }
 }
