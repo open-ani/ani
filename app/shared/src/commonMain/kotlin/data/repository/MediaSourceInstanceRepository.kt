@@ -9,6 +9,7 @@ import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
+import me.him188.ani.datasources.ntdm.GugufanMediaSource
 import me.him188.ani.datasources.ntdm.NtdmMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import java.util.UUID
@@ -45,7 +46,7 @@ data class MediaSourceSaves(
             )
 
             val enabledWebSources: List<String> =
-                listOf(NyafunMediaSource.ID, MxdongmanMediaSource.ID, NtdmMediaSource.ID)
+                listOf(NyafunMediaSource.ID, MxdongmanMediaSource.ID, NtdmMediaSource.ID, GugufanMediaSource.ID)
             val enabledBtSources: List<String> =
                 listOf(MikanCNMediaSource.ID, DmhyMediaSource.ID)
             val disabledBtSources: List<String> = listOf()
