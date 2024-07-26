@@ -55,6 +55,7 @@ import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceReso
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
@@ -72,7 +73,6 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
-import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.DesktopUpdateInstaller

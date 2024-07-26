@@ -16,12 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
-import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,81 +26,57 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.ApiFailure
+import me.him188.ani.app.data.models.ApiResponse
+import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.models.fold
+import me.him188.ani.app.data.models.map
+import me.him188.ani.app.data.models.preference.ProfileSettings
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.repository.ProfileRepository
+import me.him188.ani.app.data.repository.Session
+import me.him188.ani.app.data.repository.Settings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.TokenRepository
+import me.him188.ani.app.data.repository.isExpired
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import kotlin.time.Duration.Companion.days
-
-enum class LoginStatus {
-    LOGGED_IN,
-    LOGGED_OUT,
-}
+import org.koin.core.Koin
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Bangumi 授权状态管理器
  */
 interface SessionManager {
-    /**
-     * 当前有效的会话. 优先使用 [username] 或 [isSessionValid].
-     */
-    @Stable
-    val session: Flow<Session?>
-
-    /**
-     * 当前有效会话的用户名. 当不为 `null` 时保证可以使用该用户名执行 API 请求.
-     *
-     * 若用户登录过, 但会话已经过期, 无论是否正在刷新会话, 此值都会是 `null`, 直到会话刷新成功.
-     * 若用户未登录, 此值一直为 `null`.
-     *
-     * @see isSessionValid
-     */
-    @Stable
-    val username: SharedFlow<String?>
-
-    val loginStatus: Flow<LoginStatus?>
-
-    /**
-     * 当前授权是否有效. `null` means not yet known, i.e. waiting for database query on start up.
-     */
-    @Stable
-    val isSessionValid: Flow<Boolean?>
+    val state: Flow<SessionState>
 
     /**
      * 当前正在进行中的授权请求.
      */
-    @Stable
     val processingRequest: StateFlow<ExternalOAuthRequest?>
 
     /**
      * 登录/退出登录事件流. 只有当用户主动操作 (例如点击按钮) 时才会广播事件. 刚启动 app 时的自动登录不会触发事件.
      */
-    @Stable
     val events: SharedFlow<SessionEvent>
 
     /**
      * 请求为线上状态.
      *
-     * 1. 若用户已经登录且会话有效 ([isSessionValid] 为 `true`), 则此函数会立即返回.
+     * 1. 若用户已经登录且会话有效 ([isSessionVerified] 为 `true`), 则此函数会立即返回.
      * 2. 若用户登录过, 但是当前会话已经过期, 则此函数会尝试使用 refresh token 刷新会话.
      *    - 若刷新成功, 此函数会返回, 不会弹出任何 UI 提示.
      *    - 若刷新失败, 则进行下一步.
@@ -134,54 +107,18 @@ interface SessionManager {
     suspend fun logout()
 }
 
-sealed interface SessionEvent {
-    /**
-     * token 有变更
-     */
-    sealed interface UserActionEvent : SessionEvent
+/**
+ * `false` 并不一定代表未登录, 也可能是网络错误
+ */
+val SessionManager.isSessionVerified get() = state.map { it is SessionState.Verified }
+val SessionManager.unverifiedAccessToken get() = state.map { it.unverifiedAccessToken }
+val SessionManager.userInfo get() = state.map { it.userInfo }
+val SessionManager.username get() = state.map { it.username }
 
-    data object Login : UserActionEvent
-    data object TokenRefreshed : SessionEvent
-    data object Logout : UserActionEvent
-}
-
-object TestSessionManagers {
-    val Online = object : SessionManager {
-        override val session: MutableStateFlow<Session?> = MutableStateFlow(
-            Session(
-                accessToken = "testToken",
-                expiresAt = System.currentTimeMillis() + 1.days.inWholeMilliseconds,
-            ),
-        )
-        override val username: MutableStateFlow<String?> = MutableStateFlow("test")
-        override val loginStatus: Flow<LoginStatus> = MutableStateFlow(LoginStatus.LOGGED_IN)
-        override val isSessionValid: Flow<Boolean?> = session.map { it != null }
-        override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
-        override val events: SharedFlow<SessionEvent> = MutableSharedFlow(
-            extraBufferCapacity = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
-
-        override suspend fun requireAuthorize(
-            navigator: AniNavigator,
-            navigateToWelcome: Boolean,
-            ignoreGuest: Boolean
-        ) {
-        }
-
-        override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
-        }
-
-        override suspend fun setSession(session: Session) {
-            this.session.value = session
-        }
-
-        override suspend fun logout() {
-            username.value = null
-            session.value = null
-        }
+val SessionManager.verifiedAccessToken: Flow<String?>
+    get() = state.map {
+        (it as? SessionState.Verified)?.accessToken
     }
-}
 
 /**
  * 当用户希望以游客身份登录时抛出的异常.
@@ -198,55 +135,108 @@ class AuthorizationFailedException(
 sealed class AuthorizationException : Exception()
 
 
-internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope() {
-    private val tokenRepository: TokenRepository by inject()
-    private val profileRepository: ProfileRepository by inject()
-    private val settingsRepository: SettingsRepository by inject()
-    private val client: BangumiClient by inject()
+fun SessionManager(
+    koin: Koin,
+    parentCoroutineContext: CoroutineContext,
+): SessionManager {
+    val tokenRepository: TokenRepository by koin.inject()
+    val profileRepository: ProfileRepository by koin.inject()
+    val settingsRepository: SettingsRepository by koin.inject()
+    val client: BangumiClient by koin.inject()
 
-    private val profileSettings = settingsRepository.profileSettings
+    return SessionManagerImpl(
+        tokenRepository,
+        refreshToken = tokenRepository.refreshToken,
+        profileSettings = settingsRepository.profileSettings,
+        getSelfInfo = { accessToken ->
+            profileRepository.getSelfUserInfo(accessToken)
+        },
+        refreshAccessToken = { refreshToken ->
+            runApiRequest {
+                client.refreshAccessToken(refreshToken).let {
+                    NewSession(it.accessToken, it.expiresIn * 1000L + System.currentTimeMillis(), it.refreshToken)
+                }
+            }
+        },
+        parentCoroutineContext,
+    )
+}
 
+internal class NewSession(
+    val accessToken: String,
+    val expiresAtMillis: Long,
+    val refreshToken: String,
+)
+
+internal class SessionManagerImpl(
+    private val tokenRepository: TokenRepository,
+    private val refreshToken: Flow<String?>,
+    private val profileSettings: Settings<ProfileSettings>,
+    private val getSelfInfo: suspend (accessToken: String) -> ApiResponse<UserInfo>,
+    private val refreshAccessToken: suspend (refreshToken: String) -> ApiResponse<NewSession>,
+    parentCoroutineContext: CoroutineContext,
+) : SessionManager, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private val logger = logger(SessionManager::class)
 
-    class State(
-        val session: Session?
-    )
-
-    private val state = tokenRepository.session.distinctUntilChanged().map {
-        State(session = it)
-    }.shareInBackground(started = SharingStarted.Eagerly) // must be shared, not state (without initial value)
-
-    override val loginStatus = state.map {
-        if (it.session == null) {
-            LoginStatus.LOGGED_OUT
-        } else {
-            LoginStatus.LOGGED_IN
-        }
-    }.onStart<LoginStatus?> { emit(null) }
-
-    override val session: Flow<Session?> = state.map { it.session }
-
-    override val username: SharedFlow<String?> =
-        session
-            .map {
-                if (it == null || it.expiresAt <= System.currentTimeMillis()) {
-                    null
-                } else
-                    runUntilSuccess(maxAttempts = Int.MAX_VALUE) { profileRepository.getSelfOrNull() }?.username
+    private val refreshCounter = MutableStateFlow(0)
+    override val state: Flow<SessionState> = refreshCounter.flatMapLatest { _ ->
+        tokenRepository.session.transformLatest { session ->
+            if (session == null) {
+                emit(SessionState.NoToken)
+                return@transformLatest
             }
-            .distinctUntilChanged()
-            .shareInBackground(SharingStarted.Eagerly)
+            if (session.isExpired()) {
+                emit(SessionState.Expired)
+                return@transformLatest
+            }
 
-    override val isSessionValid: Flow<Boolean?> =
-        loginStatus.map { it?.equals(LoginStatus.LOGGED_IN) }
+//            emit(SessionState.Verifying(session.accessToken))
 
-    private val refreshTokenLoaded = CompletableDeferred<Boolean>()
-    private val refreshToken = tokenRepository.refreshToken
-        .transformLatest {
-            emit(it)
-            refreshTokenLoaded.complete(true)
+            try {
+                emit(
+                    doAuth(session.accessToken).let { state ->
+                        if (state == SessionState.Expired) {
+                            tryRefreshSessionByRefreshToken().fold(
+                                onSuccess = { accessToken ->
+                                    if (accessToken == null) { // no refresh token
+                                        SessionState.Expired
+                                    } else {
+                                        doAuth(accessToken)
+                                    }
+                                },
+                                onKnownFailure = { failure ->
+                                    failure.toSessionState()
+                                },
+                            )
+                        } else {
+                            state
+                        }
+                    },
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                emit(SessionState.Exception(e))
+            }
         }
-        .shareInBackground(SharingStarted.Eagerly)
+    }.shareInBackground(SharingStarted.WhileSubscribed(5000))
+
+    private suspend fun doAuth(accessToken: String): SessionState {
+        return getSelfInfo(accessToken).fold(
+            onSuccess = { value ->
+                SessionState.Verified(accessToken, value)
+            },
+            onKnownFailure = { failure ->
+                failure.toSessionState()
+            },
+        )
+    }
+
+    private fun ApiFailure.toSessionState() = when (this) {
+        ApiFailure.NetworkError -> SessionState.NetworkError
+        ApiFailure.ServiceUnavailable -> SessionState.NetworkError
+        ApiFailure.Unauthorized -> SessionState.Expired
+    }
 
     private val singleAuthLock = Mutex()
     override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
@@ -255,69 +245,42 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    private suspend fun tryRefreshSessionByRefreshToken(): Boolean {
+    private suspend fun tryRefreshSessionByRefreshToken(): ApiResponse<String?> {
         logger.trace { "tryRefreshSessionByRefreshToken: start" }
-        val session = session.first() ?: return false.also {
-            logger.trace { "tryRefreshSessionByRefreshToken: failed because session is empty" }
-        }
-        if (session.expiresAt > System.currentTimeMillis()) {
-            logger.trace { "tryRefreshSessionByRefreshToken: success because session is already valid" }
-            // session is valid
-            return true
-        }
-
         // session is invalid, refresh it
-        val refreshToken = refreshToken.first() ?: return false.also {
+        val refreshToken = refreshToken.first() ?: return ApiResponse.success(null).also {
             logger.trace { "tryRefreshSessionByRefreshToken: failed because refresh token is null" }
         }
-        val newAccessToken = runCatching {
-            withContext(Dispatchers.IO) {
-                client.refreshAccessToken(
-                    refreshToken,
-                    BangumiAuthorizationConstants.CALLBACK_URL,
-                )
-            }
-        }.getOrNull()
-        if (newAccessToken == null) {
-            logger.trace { "tryRefreshSessionByRefreshToken: failed because new token is null, refreshToken=$refreshToken" }
-            return false
-        }
-        // success
-        setSessionAndRefreshToken(
+        val newAccessToken = refreshAccessToken(refreshToken)
+        return newAccessToken.map { session ->
+            setSessionAndRefreshToken(
 //            session.userId,
-            newAccessToken.accessToken,
-            System.currentTimeMillis() + newAccessToken.expiresIn,
-            newAccessToken.refreshToken,
-            isNewLogin = false,
-        )
-        logger.trace { "tryRefreshSessionByRefreshToken: success" }
-        return true
+                session,
+                isNewLogin = false,
+            )
+
+            session.accessToken
+        }
     }
 
     override suspend fun requireAuthorize(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         logger.trace { "requireOnline" }
 
         // fast path, already online
-        if (isSessionValid.first() == true) return
+        if (isSessionVerified.first()) return
 
         singleAuthLock.withLock {
             // not online, try to refresh
-            refreshTokenLoaded.await()
-            if (isSessionValid.first() == true) return // check again because this might have changed
-            if (refreshToken.first() != null) {
-                if (tryRefreshSessionByRefreshToken()) {
-                    return
-                }
-            }
+            if (isSessionVerified.first()) return // check again because this might have changed
 
             // failed to refresh, possibly refresh token is invalid
             if (!ignoreGuest && profileSettings.flow.first().loginAsGuest) {
-                throw AuthorizationCancelledException("以游客身份登录") // 以游客身份登录
+                throw AuthorizationCancelledException("Login as guest") // 以游客身份登录
             }
 
             // Launch external oauth (e.g. browser)
-            val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session, refreshToken ->
-                setSessionAndRefreshToken(session.accessToken, session.expiresAt, refreshToken, isNewLogin = true)
+            val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session ->
+                setSessionAndRefreshToken(session, isNewLogin = true)
             }
             processingRequest.value = req
             try {
@@ -360,23 +323,19 @@ internal class SessionManagerImpl : KoinComponent, SessionManager, HasBackground
         }
     }
 
-
     private suspend fun setSessionAndRefreshToken(
-        accessToken: String,
-        expiresAt: Long,
-        refreshToken: String,
+        newSession: NewSession,
         isNewLogin: Boolean
     ) {
-        logger.info { "Bangumi session refreshed, new expiresAt=$expiresAt" }
+        logger.info { "Bangumi session refreshed, new expiresAtMillis=${newSession.expiresAtMillis}" }
 
-        tokenRepository.setRefreshToken(refreshToken)
-        setSessionImpl(Session(accessToken, expiresAt))
+        tokenRepository.setRefreshToken(newSession.refreshToken)
+        setSessionImpl(Session(newSession.accessToken, newSession.expiresAtMillis))
         if (isNewLogin) {
             events.tryEmit(SessionEvent.Login)
         } else {
             events.tryEmit(SessionEvent.TokenRefreshed)
         }
-        // does not broadcast
     }
 
     override suspend fun setSession(session: Session) {

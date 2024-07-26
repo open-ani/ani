@@ -70,12 +70,12 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
-import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent

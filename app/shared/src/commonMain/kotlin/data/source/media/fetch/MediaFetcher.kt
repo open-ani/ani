@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.source.media.fetch
 
+import io.ktor.client.plugins.ServerResponseException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -184,7 +185,19 @@ class MediaSourceMediaFetcher(
                     }
                     .catch {
                         state.value = MediaSourceFetchState.Failed(it, restartCount)
-                        logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
+                        when (it) {
+                            is ServerResponseException -> {
+                                logger.error { "Failed to fetch media from $mediaSourceId because of ${it.response.status}" }
+                            }
+
+                            is CancellationException -> {
+                                logger.error { "Failed to fetch media from $mediaSourceId because of CancellationException" }
+                            }
+
+                            else -> {
+                                logger.error(it) { "Failed to fetch media from $mediaSourceId because of upstream error" }
+                            }
+                        }
                     }
                     .onCompletion { exception ->
                         if (exception == null) {
