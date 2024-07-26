@@ -533,6 +533,9 @@ fun VideoGestureHost(
                 Row(Modifier.focusRequester(focusRequester).matchParentSize()) {
                     Box(
                         Modifier
+                            .ifThen(family.longPressForFastSkip) {
+                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
+                            }
                             .ifThen(family.swipeLhsForBrightness) {
                                 brightnessLevelController?.let { controller ->
                                     swipeLevelControl(
@@ -655,6 +658,9 @@ fun VideoGestureHost(
                 Row(Modifier.matchParentSize()) {
                     Box(
                         Modifier
+                            .ifThen(family.longPressForFastSkip) {
+                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
+                            }
                             .ifThen(family.swipeLhsForBrightness) {
                                 brightnessLevelController?.let { controller ->
                                     swipeLevelControl(
