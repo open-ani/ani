@@ -115,9 +115,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(libtorrent)
 
-# JNI
-find_package(JNI REQUIRED)
-include_directories(${JNI_INCLUDE_DIRS})
+if (NOT ANDROID)
+    # JNI
+    find_package(JNI REQUIRED)
+    include_directories(${JNI_INCLUDE_DIRS})
+endif ()
 
 add_library(anitorrent
         SHARED
@@ -141,8 +143,7 @@ target_include_directories(anitorrent PRIVATE include)
 
 # Link libraries
 if (ANDROID)
-    add_dependencies(anitorrent openssl_project)
-    target_link_libraries(anitorrent PRIVATE torrent-rasterbar ${JNI_LIBRARIES} ${BOOST_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
+    target_link_libraries(anitorrent PRIVATE torrent-rasterbar android log OpenSSL::SSL OpenSSL::Crypto)
 else ()
     target_link_libraries(anitorrent PRIVATE torrent-rasterbar ${JNI_LIBRARIES})
 endif ()
