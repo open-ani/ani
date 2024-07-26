@@ -59,7 +59,7 @@ if (NOT DEFINED Boost_INCLUDE_DIR) # 让 boost 自己下要一辈子
     #        include_directories(${boost_SOURCE_DIR}/libs/${lib}/include)
     #    endforeach ()
 
-    set(Boost_INCLUDE_DIR libs/boost/include) #TODO
+    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/boost/include) #TODO
 endif ()
 
 # Fetch and build OpenSSL for Android using CMake
