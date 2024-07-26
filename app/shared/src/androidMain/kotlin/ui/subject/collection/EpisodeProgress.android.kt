@@ -7,11 +7,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDefaults
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressRow
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressTheme
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListDefaults
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListFlowRow
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
+import me.him188.ani.app.ui.subject.episode.list.EpisodeProgressItem
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
@@ -22,63 +22,63 @@ private val testEpisodes = listOf(
     EpisodeProgressItem(
         episodeId = 0,
         episodeSort = "00",
-        watchStatus = UnifiedCollectionType.DONE,
+        collectionType = UnifiedCollectionType.DONE,
         isOnAir = false,
         cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 1,
         episodeSort = "01",
-        watchStatus = UnifiedCollectionType.DONE,
+        collectionType = UnifiedCollectionType.DONE,
         isOnAir = false,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
         episodeId = 2,
         episodeSort = "02",
-        watchStatus = UnifiedCollectionType.DONE,
+        collectionType = UnifiedCollectionType.DONE,
         isOnAir = false,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 3,
         episodeSort = "03",
-        watchStatus = UnifiedCollectionType.WISH,
+        collectionType = UnifiedCollectionType.WISH,
         isOnAir = false,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 4,
         episodeSort = "04",
-        watchStatus = UnifiedCollectionType.WISH,
+        collectionType = UnifiedCollectionType.WISH,
         isOnAir = false,
         cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 5,
         episodeSort = "05",
-        watchStatus = UnifiedCollectionType.WISH,
+        collectionType = UnifiedCollectionType.WISH,
         isOnAir = false,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
         episodeId = 6,
         episodeSort = "06",
-        watchStatus = UnifiedCollectionType.WISH,
+        collectionType = UnifiedCollectionType.WISH,
         isOnAir = true,
         cacheStatus = EpisodeCacheStatus.NotCached,
     ),
     EpisodeProgressItem(
         episodeId = 7,
         episodeSort = "07",
-        watchStatus = UnifiedCollectionType.WISH,
+        collectionType = UnifiedCollectionType.WISH,
         isOnAir = true,
         cacheStatus = EpisodeCacheStatus.Cached(300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 8,
         episodeSort = "08",
-        watchStatus = UnifiedCollectionType.WISH,
+        collectionType = UnifiedCollectionType.WISH,
         isOnAir = true,
         cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
     ),
@@ -88,7 +88,7 @@ private val testEpisodes = listOf(
 @Composable
 private fun PreviewEpisodeProgressDialog() {
     ProvideCompositionLocalsForPreview {
-        EpisodeProgressDialog(
+        EpisodeListDialog(
             onDismissRequest = {},
             title = { Text(text = "葬送的芙莉莲") },
             onClickCache = {},
@@ -96,7 +96,7 @@ private fun PreviewEpisodeProgressDialog() {
             val episodes = remember {
                 testEpisodes
             }
-            EpisodeProgressRow(
+            EpisodeListFlowRow(
                 episodes = {
                     episodes
                 },
@@ -111,7 +111,7 @@ private fun PreviewEpisodeProgressDialog() {
 @Composable
 private fun PreviewEpisodeProgressDialogLightUp() {
     ProvideCompositionLocalsForPreview {
-        EpisodeProgressDialog(
+        EpisodeListDialog(
             onDismissRequest = {},
             title = { Text(text = "葬送的芙莉莲") },
             onClickCache = {},
@@ -119,13 +119,13 @@ private fun PreviewEpisodeProgressDialogLightUp() {
             val episodes = remember {
                 testEpisodes
             }
-            EpisodeProgressRow(
+            EpisodeListFlowRow(
                 episodes = {
                     episodes
                 },
                 onClickEpisodeState = {},
                 onLongClickEpisode = {},
-                colors = EpisodeProgressDefaults.colors(EpisodeProgressTheme.LIGHT_UP),
+                colors = EpisodeListDefaults.colors(EpisodeListProgressTheme.LIGHT_UP),
             )
         }
     }
@@ -136,7 +136,7 @@ private fun PreviewEpisodeProgressDialogLightUp() {
 @Composable
 private fun PreviewEpisodeProgressDialogVeryLong() {
     ProvideCompositionLocalsForPreview {
-        EpisodeProgressDialog(
+        EpisodeListDialog(
             onDismissRequest = {},
             title = { Text(text = "银魂") },
             onClickCache = {},
@@ -145,7 +145,7 @@ private fun PreviewEpisodeProgressDialogVeryLong() {
                 // 数字太大 preview 会很卡
                 (0..70).map { item(it) }
             }
-            EpisodeProgressRow(
+            EpisodeListFlowRow(
                 episodes = {
                     episodes
                 },
@@ -159,7 +159,7 @@ private fun PreviewEpisodeProgressDialogVeryLong() {
 private fun item(id: Int) = EpisodeProgressItem(
     episodeId = id,
     episodeSort = id.toString(),
-    watchStatus = UnifiedCollectionType.WISH,
+    collectionType = UnifiedCollectionType.WISH,
     isOnAir = true,
     cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
 )

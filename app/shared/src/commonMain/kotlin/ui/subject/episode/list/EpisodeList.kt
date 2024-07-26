@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.subject.collection.progress
+package me.him188.ani.app.ui.subject.episode.list
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +51,7 @@ import me.him188.ani.app.ui.foundation.interaction.VibrationStrength
 import me.him188.ani.app.ui.foundation.interaction.vibrateIfSupported
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.subject.collection.progress.EpisodeListState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
@@ -58,22 +59,23 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType
  * "选集播放" 对话框, 包含剧集观看进度, 还可以标记为已看
  */
 @Composable
-fun EpisodeProgressDialog(
-    state: EpisodeProgressState,
+fun EpisodeListDialog(
+    state: EpisodeListState,
+    title: @Composable () -> Unit,
     onDismissRequest: () -> Unit,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val navigator by rememberUpdatedState(LocalNavigator.current)
     val context by rememberUpdatedState(LocalContext.current)
 
-    EpisodeProgressDialog(
+    EpisodeListDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(text = state.title) },
+        title = title,
         onClickCache = { navigator.navigateSubjectCaches(state.subjectId) },
         actions = actions,
     ) {
-        EpisodeProgressRow(
-            episodes = { state.subjectProgress },
+        EpisodeListFlowRow(
+            episodes = { state.episodes },
             onClickEpisodeState = {
                 navigator.navigateEpisodeDetails(state.subjectId, it.episodeId)
             },
@@ -81,13 +83,13 @@ fun EpisodeProgressDialog(
                 context.vibrateIfSupported(VibrationStrength.TICK)
                 state.toggleEpisodeWatched(progressItem)
             },
-            colors = EpisodeProgressDefaults.colors(state.theme),
+            colors = EpisodeListDefaults.colors(state.theme),
         )
     }
 }
 
 @Composable
-fun EpisodeProgressDialog(
+fun EpisodeListDialog(
     onDismissRequest: () -> Unit,
     title: @Composable () -> Unit,
     onClickCache: () -> Unit,
@@ -151,21 +153,20 @@ fun EpisodeProgressDialog(
 class EpisodeProgressItem(
     val episodeId: Int,
     val episodeSort: String,
-    val watchStatus: UnifiedCollectionType,
+    val collectionType: UnifiedCollectionType,
     val isOnAir: Boolean?,
     val cacheStatus: EpisodeCacheStatus?,
 ) {
     var isLoading by mutableStateOf(false)
 }
 
-
 @Composable
-fun EpisodeProgressRow(
+fun EpisodeListFlowRow(
     episodes: () -> List<EpisodeProgressItem>,
     onClickEpisodeState: (episode: EpisodeProgressItem) -> Unit,
     onLongClickEpisode: (episode: EpisodeProgressItem) -> Unit,
     modifier: Modifier = Modifier,
-    colors: EpisodeProgressColors = EpisodeProgressDefaults.colors(),
+    colors: EpisodeListColors = EpisodeListDefaults.colors(),
 ) {
     FlowRow(
         modifier.fillMaxWidth(),
@@ -175,7 +176,7 @@ fun EpisodeProgressRow(
         for (it in episodes()) {
             SmallEpisodeButton(
                 episodeSort = { it.episodeSort },
-                watchStatus = it.watchStatus,
+                watchStatus = it.collectionType,
                 isOnAir = it.isOnAir,
                 onClick = { onClickEpisodeState(it) },
                 onLongClick = { onLongClickEpisode(it) },
@@ -204,7 +205,7 @@ fun EpisodeProgressRow(
 }
 
 @Immutable
-class EpisodeProgressColors(
+class EpisodeListColors(
     /**
      * 看过或抛弃的颜色
      */
@@ -219,40 +220,22 @@ class EpisodeProgressColors(
     val notPublishedColor: Color,
 )
 
-@Immutable
-enum class EpisodeProgressTheme {
-    /**
-     * 点亮模式, 看过的是亮色
-     */
-    LIGHT_UP,
-
-    /**
-     * 动作模式, 可以看的是亮色
-     */
-    ACTION;
-
-    companion object {
-        @Stable
-        val Default = ACTION
-    }
-}
-
-object EpisodeProgressDefaults {
+object EpisodeListDefaults {
     @Composable
     fun colors(
-        theme: EpisodeProgressTheme = EpisodeProgressTheme.Default,
+        theme: EpisodeListProgressTheme = EpisodeListProgressTheme.Default,
         action: Color = MaterialTheme.colorScheme.primary,
         disabled: Color = MaterialTheme.colorScheme.onSurface.stronglyWeaken(),
-    ): EpisodeProgressColors {
+    ): EpisodeListColors {
         val dark = action.weaken()
         return when (theme) {
-            EpisodeProgressTheme.ACTION -> EpisodeProgressColors(
+            EpisodeListProgressTheme.ACTION -> EpisodeListColors(
                 doneOrDroppedColor = dark,
                 canWatchColor = action,
                 notPublishedColor = disabled,
             )
 
-            EpisodeProgressTheme.LIGHT_UP -> EpisodeProgressColors(
+            EpisodeListProgressTheme.LIGHT_UP -> EpisodeListColors(
                 doneOrDroppedColor = action,
                 canWatchColor = dark,
                 notPublishedColor = disabled,
@@ -271,7 +254,7 @@ private fun SmallEpisodeButton(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
     cacheStatus: EpisodeCacheStatus? = null,
-    colors: EpisodeProgressColors = EpisodeProgressDefaults.colors(),
+    colors: EpisodeListColors = EpisodeListDefaults.colors(),
 ) {
     val isDoneOrDropped = watchStatus == UnifiedCollectionType.DONE || watchStatus == UnifiedCollectionType.DROPPED
     IndicatedBox(

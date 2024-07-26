@@ -14,6 +14,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.TestRatingInfo
@@ -64,7 +65,7 @@ fun rememberTestEditableSubjectCollectionTypeState(type: UnifiedCollectionType =
                 selfCollectionType.value = it
             },
             onSetAllEpisodesWatched = { },
-            backgroundScope.backgroundScope.coroutineContext,
+            backgroundScope.backgroundScope,
         )
     }
 }
@@ -125,7 +126,7 @@ fun PreviewSubjectDetailsHeader(
                 )
             },
             selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton({})
+                SubjectDetailsDefaults.SelectEpisodeButton(rememberTestSubjectProgressState())
             },
             rating = {
                 EditableRating(

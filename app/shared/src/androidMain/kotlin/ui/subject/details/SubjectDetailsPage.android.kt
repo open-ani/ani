@@ -20,6 +20,8 @@ import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
+import me.him188.ani.app.ui.subject.collection.TestSubjectProgressInfos
+import me.him188.ani.app.ui.subject.collection.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
@@ -156,7 +158,7 @@ internal fun PreviewSubjectDetails() {
                 )
             },
             selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton({})
+                SubjectDetailsDefaults.SelectEpisodeButton(rememberTestSubjectProgressState(info = TestSubjectProgressInfos.ContinueWatching2))
             },
             connectedScrollState = connectedScrollState,
             detailsTab = {

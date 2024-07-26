@@ -5,9 +5,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.models.episode.isKnownCompleted
-import me.him188.ani.app.data.models.episode.type
-import me.him188.ani.app.ui.subject.collection.ContinueWatchingStatus
 import me.him188.ani.app.ui.subject.details.components.renderSubjectSeason
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
@@ -17,7 +14,7 @@ import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 @Immutable
 @Serializable
 data class SubjectCollection(
-    // TODO: this is shit, do not store them all together
+    // TODO: this is very shit, do not store them all together
     val info: SubjectInfo,
     val episodes: List<EpisodeCollection>, // must be sorted by sort
     val collectionType: UnifiedCollectionType,
@@ -30,8 +27,6 @@ data class SubjectCollection(
     val subjectId: Int get() = info.id
     val date get() = renderSubjectSeason(info.airDate)
 
-    private val totalEps get() = episodes.size
-
     override fun toString(): String = "SubjectCollectionItem($displayName)"
 
     @Transient
@@ -40,84 +35,17 @@ data class SubjectCollection(
         airDate = info.airDate,
     )
 
-    @Transient
-    val lastWatchedEpIndex = kotlin.run {
-        episodes.indexOfLast {
-            it.type == UnifiedCollectionType.DONE || it.type == UnifiedCollectionType.DROPPED
-        }.takeIf { it != -1 }
+    companion object {
+        val Empty = SubjectCollection(
+            SubjectInfo.Empty,
+            emptyList(),
+            UnifiedCollectionType.NOT_COLLECTED,
+            SelfRatingInfo.Empty,
+        )
     }
-
-    // TODO: remove from this 
-    @Transient
-    val continueWatchingStatus = kotlin.run {
-        val latestEp = kotlin.run {
-            episodes.lastOrNull { it.episode.isKnownCompleted }
-        }
-
-        val latestEpIndex: Int? = this.episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
-            .takeIf { it != -1 }
-            ?: this.episodes.lastIndex.takeIf { it != -1 }
-
-        when (this.lastWatchedEpIndex) {
-            // 还没看过
-            null -> {
-                if (this.hasStarted) {
-                    ContinueWatchingStatus.Start
-                } else {
-                    ContinueWatchingStatus.NotOnAir
-                }
-            }
-
-            // 看了第 n 集并且还有第 n+1 集
-            in 0..<this.totalEps - 1 -> {
-                if (latestEpIndex != null && this.lastWatchedEpIndex < latestEpIndex) {
-                    // 更新了 n+1 集
-                    ContinueWatchingStatus.Continue(
-                        this.lastWatchedEpIndex + 1,
-                        this.episodes.getOrNull(this.lastWatchedEpIndex + 1)?.episode?.sort?.toString() ?: "",
-                    )
-                } else {
-                    // 还没更新
-                    ContinueWatchingStatus.Watched(
-                        this.lastWatchedEpIndex,
-                        this.episodes.getOrNull(this.lastWatchedEpIndex)?.episode?.sort?.toString() ?: "",
-                    )
-                }
-            }
-
-            else -> {
-                ContinueWatchingStatus.Done
-            }
-        }
-    }
-
 }
 
 /**
  * 是否已经开播了第一集
  */
 val SubjectCollection.hasStarted get() = airingInfo.isOnAir || airingInfo.isCompleted
-
-fun SubjectCollection.getEpisodeToPlay(): EpisodeCollection? {
-    if (continueWatchingStatus is ContinueWatchingStatus.Watched) {
-        return episodes[continueWatchingStatus.episodeIndex]
-    } else {
-        lastWatchedEpIndex?.let {
-            episodes.getOrNull(it + 1)
-        }?.let {
-            return it
-        }
-
-        lastWatchedEpIndex?.let {
-            episodes.getOrNull(it)
-        }?.let {
-            return it
-        }
-
-        episodes.firstOrNull()?.let {
-            return it
-        }
-    }
-
-    return null
-}

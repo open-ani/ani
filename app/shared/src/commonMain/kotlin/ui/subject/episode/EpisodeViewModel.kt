@@ -438,7 +438,7 @@ private class EpisodeViewModelImpl(
             onSetAllEpisodesWatched = {
                 subjectManager.setAllEpisodesWatched(subjectId)
             },
-            backgroundScope.coroutineContext,
+            backgroundScope,
         )
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)

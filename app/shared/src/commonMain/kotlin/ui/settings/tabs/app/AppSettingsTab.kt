@@ -45,7 +45,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressTheme
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.NewVersion
@@ -349,12 +349,12 @@ fun AppSettingsTab(
         Group(title = { Text("选集播放") }) {
             val episode by remember { derivedStateOf { uiSettings.episodeProgress } }
             SwitchItem(
-                checked = episode.theme == EpisodeProgressTheme.LIGHT_UP,
+                checked = episode.theme == EpisodeListProgressTheme.LIGHT_UP,
                 onCheckedChange = {
                     vm.uiSettings.update(
                         uiSettings.copy(
                             episodeProgress = episode.copy(
-                                theme = if (it) EpisodeProgressTheme.LIGHT_UP else EpisodeProgressTheme.ACTION,
+                                theme = if (it) EpisodeListProgressTheme.LIGHT_UP else EpisodeListProgressTheme.ACTION,
                             ),
                         ),
                     )
