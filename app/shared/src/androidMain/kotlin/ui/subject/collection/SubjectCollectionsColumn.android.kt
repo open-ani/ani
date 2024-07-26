@@ -4,6 +4,7 @@ import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -13,11 +14,15 @@ import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.subject.collection.progress.ContinueWatchingStatus
+import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressInfo
+import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
+import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.episode.details.PreviewScope
 import me.him188.ani.datasources.api.EpisodeSort
-import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
@@ -121,6 +126,41 @@ private fun testSubjectCollection(
     selfRatingInfo = TestSelfRatingInfo,
 )
 
+@Stable
+object TestSubjectProgressInfos {
+    @Stable
+    val NotOnAir = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.NotOnAir,
+        nextEpisodeToPlay = null,
+    )
+
+    @Stable
+    val ContinueWatching2 = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.Continue(1, EpisodeSort(2)),
+        nextEpisodeToPlay = null,
+    )
+
+    @Stable
+    val Done = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.Done,
+        nextEpisodeToPlay = null,
+    )
+}
+
+@Composable
+fun rememberTestSubjectProgressState(
+    info: SubjectProgressInfo = SubjectProgressInfo.Empty,
+): SubjectProgressState {
+    return remember {
+        SubjectProgressState(
+            stateOf(1),
+            info = stateOf(info),
+            episodeProgressInfos = mutableStateOf(emptyList()),
+            onPlay = { _, _ -> },
+        )
+    }
+}
+
 @PreviewLightDark
 @Composable
 private fun PreviewSubjectCollectionsColumnPhone() {
@@ -171,13 +211,20 @@ private fun PreviewSubjectCollectionsColumnEmpty() {
 private fun TestSubjectCollectionItem(it: SubjectCollection) {
     SubjectCollectionItem(
         item = it,
-        episodeCacheStatus = { _, _ ->
-            EpisodeCacheStatus.Cached(300.megaBytes)
-        },
+        editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
         onClick = { },
-        onClickEpisode = {},
-        onClickSelectEpisode = { },
-        onSetCollectionType = {},
+        onShowEpisodeList = { },
+        playButton = {
+            PlaySubjectButton(
+                state = rememberTestSubjectProgressState(
+                    when (it.subjectId % 3) {
+                        0 -> TestSubjectProgressInfos.NotOnAir
+                        1 -> TestSubjectProgressInfos.ContinueWatching2
+                        else -> TestSubjectProgressInfos.Done
+                    },
+                ),
+            )
+        },
     )
 }
 

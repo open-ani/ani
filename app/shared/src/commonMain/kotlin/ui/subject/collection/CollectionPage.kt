@@ -69,7 +69,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
@@ -79,12 +78,14 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
-import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeProgressState
+import me.him188.ani.app.ui.subject.collection.progress.ContinueWatchingStatus
+import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeListState
+import me.him188.ani.app.ui.subject.collection.progress.rememberSubjectProgressState
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -113,6 +114,7 @@ fun CollectionPage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val vm = rememberViewModel { MyCollectionsViewModel() }
+    vm.navigator = LocalNavigator.current
 
     val pagerState =
         rememberPagerState(initialPage = COLLECTION_TABS_SORTED.size / 2) { COLLECTION_TABS_SORTED.size }
@@ -324,77 +326,62 @@ private fun TabContent(
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
 ) {
-    // 同时设置所有剧集为看过
-    var currentSetAllEpisodesDialogSubjectId by rememberSaveable { mutableStateOf<Int?>(null) }
-    if (currentSetAllEpisodesDialogSubjectId != null) {
-        SetAllEpisodeDoneDialog(
-            onDismissRequest = { currentSetAllEpisodesDialogSubjectId = null },
-            onConfirm = {
-                currentSetAllEpisodesDialogSubjectId?.let {
-                    vm.launchInBackground {
-                        setAllEpisodesWatched(it)
-                    }
-                }
-                currentSetAllEpisodesDialogSubjectId = null
-            },
-        )
-    }
-
     SubjectCollectionsColumn(
         state = state,
         item = { subjectCollection ->
             var showEpisodeProgressDialog by rememberSaveable { mutableStateOf(false) }
 
             // 即使对话框不显示也加载, 避免打开对话框要等待一秒才能看到进度
-            val episodeProgressState = rememberEpisodeProgressState(subjectCollection.subjectId)
+            val episodeProgressState = vm.episodeListStateFactory
+                .rememberEpisodeListState(subjectCollection.subjectId)
 
             val navigator = LocalNavigator.current
             if (showEpisodeProgressDialog) {
-                EpisodeProgressDialog(
+                EpisodeListDialog(
                     episodeProgressState,
+                    title = {
+                        Text(subjectCollection.displayName)
+                    },
                     onDismissRequest = { showEpisodeProgressDialog = false },
                     actions = {
-                        OutlinedButton({ navigator.navigateSubjectDetails(episodeProgressState.subjectId) }) {
+                        OutlinedButton({ navigator.navigateSubjectDetails(subjectCollection.subjectId) }) {
                             Text("条目详情")
                         }
                     },
                 )
             }
 
+            val subjectProgressState = vm.subjectProgressStateFactory
+                .rememberSubjectProgressState(subjectCollection)
+
+            val editableSubjectCollectionTypeState = remember(vm) {
+                vm.createEditableSubjectCollectionTypeState(subjectCollection)
+            }
+
             SubjectCollectionItem(
                 subjectCollection,
-                episodeCacheStatus = { subjectId, episodeId ->
-                    remember(vm, subjectId, episodeId) {
-                        vm.cacheStatusForEpisode(subjectId, episodeId)
-                    }.collectAsStateWithLifecycle(null).value
-                },
+                editableSubjectCollectionTypeState = editableSubjectCollectionTypeState,
                 onClick = {
                     navigator.navigateSubjectDetails(subjectCollection.subjectId)
                 },
-                onClickEpisode = {
-                    navigator.navigateEpisodeDetails(subjectCollection.subjectId, it.episode.id)
-                },
-                onClickSelectEpisode = {
+                onShowEpisodeList = {
                     showEpisodeProgressDialog = true
                 },
-                onSetCollectionType = {
-                    vm.launchInBackground { setCollectionType(subjectCollection.subjectId, it) }
-                    if (it == UnifiedCollectionType.DONE) {
-                        currentSetAllEpisodesDialogSubjectId = subjectCollection.subjectId
-                    }
-                },
-                doneButton = if (type == UnifiedCollectionType.DONE) {
-                    null
-                } else {
-                    {
-                        FilledTonalButton(
-                            {
-                                vm.launchInBackground {
-                                    setCollectionType(subjectCollection.subjectId, UnifiedCollectionType.DONE)
-                                }
-                            },
-                        ) {
-                            Text("移至\"看过\"")
+                playButton = {
+                    if (type != UnifiedCollectionType.DONE) {
+                        if (subjectProgressState.continueWatchingStatus == ContinueWatchingStatus.Done) {
+                            FilledTonalButton(
+                                {
+                                    editableSubjectCollectionTypeState.setSelfCollectionType(UnifiedCollectionType.DONE)
+                                },
+                                enabled = !editableSubjectCollectionTypeState.isSetSelfCollectionTypeWorking,
+                            ) {
+                                Text("移至\"看过\"")
+                            }
+                        } else {
+                            PlaySubjectButton(
+                                subjectProgressState,
+                            )
                         }
                     }
                 },

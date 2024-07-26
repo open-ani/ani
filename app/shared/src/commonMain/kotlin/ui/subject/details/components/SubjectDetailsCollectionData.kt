@@ -2,16 +2,19 @@
 
 package me.him188.ani.app.ui.subject.details.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.subject.SubjectCollectionStats
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 
 // 详情页内容 (不包含背景)
 @Composable
@@ -42,13 +45,12 @@ fun SubjectDetailsDefaults.CollectionData(
 
 @Composable
 fun SubjectDetailsDefaults.SelectEpisodeButton(
-    onClick: () -> Unit,
+    state: SubjectProgressState,
     modifier: Modifier = Modifier
 ) {
-    TextButton(
-        onClick = onClick,
-        modifier = modifier,
-    ) {
-        Text("选集播放")
+    Row(modifier) {
+        Box(Modifier.weight(1f)) {
+            PlaySubjectButton(state, Modifier.fillMaxWidth())
+        }
     }
 }
