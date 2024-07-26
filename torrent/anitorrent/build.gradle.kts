@@ -32,7 +32,7 @@ sourceSets.main {
 val anitorrentRootDir = projectDir
 val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
 
-val generateSwig = tasks.register("generateSwig", Exec::class.java) {
+val generateSwigImpl = tasks.register("generateSwigImpl", Exec::class.java) {
     group = "anitorrent"
 
     val swig = System.getenv("SWIG") ?: "swig"
@@ -48,19 +48,45 @@ val generateSwig = tasks.register("generateSwig", Exec::class.java) {
     outputs.file(anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp"))
     outputs.dir(anitorrentRootDir.resolve("gen/java"))
 
+    val cppDir = anitorrentRootDir.resolve("gen/cpp")
+    val javaDir = anitorrentRootDir.resolve("gen/java/me/him188/ani/app/torrent/anitorrent/binding")
     commandLine = listOf(
         swig,
         "-java", "-c++", "-directors", "-cppext", "cpp", "-addextern",
-        "-o", anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp").absolutePath,
-        "-outdir", anitorrentRootDir.resolve("gen/java/me/him188/ani/app/torrent/anitorrent/binding").absolutePath,
+        "-o", cppDir.resolve("anitorrent_wrap.cpp").absolutePath,
+        "-outdir", javaDir.absolutePath,
         "-package", "me.him188.ani.app.torrent.anitorrent.binding",
         swigI.absolutePath,
     )
+    doFirst {
+        cppDir.mkdirs()
+        javaDir.mkdirs()
+    }
+}
+
+val patchGeneratedSwig = tasks.register("patchGeneratedSwig") {
+    group = "anitorrent"
+    dependsOn(generateSwigImpl)
+    val gen = file("gen")
+    inputs.dir(gen)
+    outputs.dir(gen)
+    doLast {
+        gen.walk().forEach {
+            if (it.extension in listOf("cpp", "h", "java")) {
+                if (!it.readText().contains("@formatter"))
+                    it.writeText("//@formatter:off\n" + it.readText() + "\n//@formatter:on")
+            }
+        }
+    }
+}
+
+val generateSwig = tasks.register("generateSwig") {
+    group = "anitorrent"
+    dependsOn(patchGeneratedSwig)
 }
 
 val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java) {
     group = "anitorrent"
-    dependsOn(generateSwig)
     // /Users/him188/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug 
     // -DCMAKE_MAKE_PROGRAM=/Users/him188/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja 
     // -G Ninja -S /Users/him188/Projects/ani/torrent/anitorrent 
@@ -154,7 +180,6 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
 val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     group = "anitorrent"
     dependsOn(configureAnitorrent)
-    dependsOn(generateSwig)
 
     val cmake = getPropertyOrNull("CMAKE") ?: "cmake"
     val isWindows = getOs() == Os.Windows
@@ -177,12 +202,6 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     )
 }
 
-
-tasks.getByName("compileJava") {
-    if (enableAnitorrent) {
-        dependsOn(generateSwig)
-    }
-}
 
 idea {
     module {

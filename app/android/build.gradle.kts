@@ -125,7 +125,3 @@ idea {
         excludeDirs.add(file(".cxx"))
     }
 }
-
-tasks.matching { it.name.startsWith("configureCMake") }.all {
-    dependsOn(":torrent:anitorrent:generateSwig")
-}
