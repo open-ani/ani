@@ -29,7 +29,6 @@ import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import me.him188.ani.app.torrent.libtorrent4j.trackers
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -411,3 +410,45 @@ class AnitorrentTorrentDownloader(
 
 typealias HandleId = Long
 
+private val trackers by lazy {
+    """
+udp://tracker1.itzmx.com:8080/announce
+udp://moonburrow.club:6969/announce
+udp://new-line.net:6969/announce
+udp://opentracker.io:6969/announce
+udp://tamas3.ynh.fr:6969/announce
+udp://tracker.bittor.pw:1337/announce
+udp://tracker.dump.cl:6969/announce
+udp://tracker1.myporn.club:9337/announce
+udp://tracker2.dler.org:80/announce
+https://tracker.tamersunion.org:443/announce
+udp://open.demonii.com:1337/announce
+udp://open.stealth.si:80/announce
+udp://tracker.torrent.eu.org:451/announce
+udp://exodus.desync.com:6969/announce
+udp://tracker.moeking.me:6969/announce
+udp://explodie.org:6969/announce
+udp://tracker1.bt.moack.co.kr:80/announce
+udp://tracker.tiny-vps.com:6969/announce
+udp://retracker01-msk-virt.corbina.net:80/announce
+udp://bt1.archive.org:6969/announce
+
+udp://tracker2.itzmx.com:6961/announce
+
+udp://tracker3.itzmx.com:6961/announce
+
+udp://tracker4.itzmx.com:2710/announce
+
+http://tracker1.itzmx.com:8080/announce
+
+http://tracker2.itzmx.com:6961/announce
+
+http://tracker3.itzmx.com:6961/announce
+
+http://tracker4.itzmx.com:2710/announce
+
+udp://tracker.opentrackr.org:1337/announce
+
+http://tracker.opentrackr.org:1337/announce
+                    """.trimIndent().lineSequence().filter { it.isNotBlank() }.joinToString()
+}

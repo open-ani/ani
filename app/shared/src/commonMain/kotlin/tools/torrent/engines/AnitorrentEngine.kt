@@ -1,6 +1,9 @@
 package me.him188.ani.app.tools.torrent.engines
 
+import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
+import io.ktor.client.request.get
+import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -16,6 +19,7 @@ import me.him188.ani.app.tools.torrent.AbstractTorrentEngine
 import me.him188.ani.app.tools.torrent.TorrentEngineConfig
 import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloaderFactory
+import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -108,3 +112,14 @@ private fun computeTorrentFingerprint(
 private fun computeTorrentUserAgent(
     versionCode: String = currentAniBuildConfig.versionCode,
 ): String = "ani_libtorrent/${versionCode}"
+
+private fun HttpClient.asHttpFileDownloader(): HttpFileDownloader = object : HttpFileDownloader {
+    override suspend fun download(url: String): ByteArray = get(url).readBytes()
+    override fun close() {
+        this@asHttpFileDownloader.close()
+    }
+
+    override fun toString(): String {
+        return "HttpClientAsHttpFileDownloader(client=$this@asHttpFileDownloader)"
+    }
+}

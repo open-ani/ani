@@ -25,7 +25,6 @@ import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
-import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.utils.logging.debug
@@ -60,7 +59,6 @@ interface SettingsRepository {
     val videoScaffoldConfig: Settings<VideoScaffoldConfig>
 
     val videoResolverSettings: Settings<VideoResolverSettings>
-    val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val anitorrentConfig: Settings<AnitorrentConfig>
 
     val oneshotActionConfig: Settings<OneshotActionConfig>
@@ -193,11 +191,6 @@ class PreferencesRepositoryImpl(
         "videoResolverSettings",
         VideoResolverSettings.serializer(),
         default = { VideoResolverSettings.Default },
-    )
-    override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
-        "libtorrent4jConfig",
-        Libtorrent4jConfig.serializer(),
-        default = { Libtorrent4jConfig.Default },
     )
     override val anitorrentConfig: Settings<AnitorrentConfig> = SerializablePreference(
         "anitorrentConfig",
