@@ -42,29 +42,24 @@ else ()
     endif ()
 endif ()
 
-# Fetch and build Boost for Android using CMake
-if (ANDROID)
-    FetchContent_Declare(
-            boost
-            GIT_REPOSITORY https://github.com/boostorg/boost.git
-            GIT_TAG boost-1.85.0
-            UPDATE_DISCONNECTED 1
-    )
-    FetchContent_MakeAvailable(boost)
+if (NOT DEFINED Boost_INCLUDE_DIR) # 让 boost 自己下要一辈子
+    # Fetch and build Boost for Android using CMake
+    #    FetchContent_Declare(
+    #            boost
+    #            GIT_REPOSITORY https://github.com/boostorg/boost.git
+    #            GIT_TAG boost-1.85.0
+    #            UPDATE_DISCONNECTED 1
+    #    )
+    #    FetchContent_MakeAvailable(boost)
+    #
+    #    # List of Boost libraries to build
+    #    set(BOOST_LIBS variant system range crc logic parameter asio variant2 multi-index multiprecision)
+    #
+    #    foreach (lib ${BOOST_LIBS})
+    #        include_directories(${boost_SOURCE_DIR}/libs/${lib}/include)
+    #    endforeach ()
 
-    # List of Boost libraries to build
-    set(BOOST_LIBS variant system range crc logic parameter asio variant2 multi-index multiprecision)
-
-    foreach (lib ${BOOST_LIBS})
-        include_directories(${boost_SOURCE_DIR}/libs/${lib}/include)
-    endforeach ()
-
-    set(Boost_INCLUDE_DIR ${boost_SOURCE_DIR}) #TODO
-
-    set(BOOST_LIBRARIES "")
-    foreach (lib ${BOOST_LIBS})
-        list(APPEND BOOST_LIBRARIES boost_${lib})
-    endforeach ()
+    set(Boost_INCLUDE_DIR libs/boost/include) #TODO
 endif ()
 
 # Fetch and build OpenSSL for Android using CMake
