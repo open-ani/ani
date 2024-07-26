@@ -11,6 +11,8 @@ include(FetchContent)
 add_compile_definitions(TORRENT_HAVE_MMAP=0)
 add_compile_definitions(TORRENT_ABI_VERSION=3) # Hide all deprecated APIs
 
+# 安卓需要自己构建所有依赖
+
 # Android-specific settings
 if (ANDROID)
     # https://developer.android.com/studio/projects/configure-cmake#call-cmake-cli
@@ -72,6 +74,7 @@ if (ANDROID)
     set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl)
     set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
     set(OPENSSL_CONFIGURE_COMMAND ${OPENSSL_SOURCE_DIR}/config)
+    include(ExternalProject)
     ExternalProject_Add(
             OpenSSL
             SOURCE_DIR ${OPENSSL_SOURCE_DIR}
