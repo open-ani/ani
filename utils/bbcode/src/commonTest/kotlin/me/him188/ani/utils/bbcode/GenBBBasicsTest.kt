@@ -48,6 +48,22 @@ public class GenBBBasicsTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse1856624834() {
+        BBCode.parse("[url=\"http://example.com\"]Hello World![/url]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", jumpUrl="http://example.com")
+        }
+    }
+
+    @Test
+    public fun parse611450064() {
+        BBCode.parse("[url=\"http://example.com\\n\"]Hello World![/url]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", jumpUrl="http://example.com\\n")
+        }
+    }
+
+    @Test
     public fun parse2136488827() {
         BBCode.parse("[url=invalidurl]Hello World![/url]")
         .run {

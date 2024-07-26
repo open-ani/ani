@@ -28,6 +28,8 @@ fun main() {
         case("[URL]https://example.com[/URL]")
         case("[url=https://example.com]Hello World![/url]")
         case("[url=http://example.com]Hello World![/url]")
+        case("""[url="http://example.com"]Hello World![/url]""")
+        case("""[url="http://example.com\n"]Hello World![/url]""")
         case("[url=invalidurl]Hello World![/url]")
         case("[URL=http://example.com]Hello World![/URL]")
         case("[URL=invalidurl]Hello World![/URL]")

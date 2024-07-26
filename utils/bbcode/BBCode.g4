@@ -53,16 +53,16 @@ attribute_value: quoted=QUOTED | unquoted=TEXT;
 NUMBER: [0-9]+ ;
 
 QUOTED
-   : '"' (ESC | SAFECODEPOINT)* '"'
+   : '"' TEXT '"'
    ;
 
 // Not quoted
 TEXT: ~[[\]()]+ ;
 
-fragment ESC
-   : '\\' (["\\/bfnrt])
-   ;
-
-fragment SAFECODEPOINT
-   : ~ ["\\\u0000-\u001F]
-   ;
+//fragment ESC
+//   : '\\' (["\\/bfnrt])
+//   ;
+//
+//fragment SAFECODEPOINT
+//   : ~ ["\\\u0000-\u001F]
+//   ;
