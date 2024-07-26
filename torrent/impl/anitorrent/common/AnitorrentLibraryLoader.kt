@@ -6,6 +6,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -81,6 +82,11 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
     }
 
     private fun loadDependencies() {
+        if (currentPlatform.isAndroid()) {
+            System.loadLibrary("anitorrent")
+            return
+        }
+
         val dir = getAnitorrentResourceDir()
         val map = Json.decodeFromString(
             JsonObject.serializer(),

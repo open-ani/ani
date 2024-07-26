@@ -160,7 +160,6 @@ kotlin {
         api(libs.androidx.core.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
-//        api(projects.torrent.impl.libtorrent4j)
 
         // Compose
         api(libs.androidx.compose.ui.tooling.preview)
@@ -280,46 +279,11 @@ kotlin {
         submodule("danmaku/ui")
 
         submodule("torrent/api")
-        submodule("torrent/impl/libtorrent4j")
-        if (enableAnitorrent) {
-            submodule("torrent/impl/anitorrent")
-        }
+        submodule("torrent/impl/anitorrent")
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
     }
-
-
-    // 以下为 libtorrent4j 的依赖
-
-    sourceSets.commonMain.dependencies {
-//        api(projects.torrent.api)
-        implementation(libs.libtorrent4j)
-        implementation(projects.utils.slf4jKt)
-        implementation(projects.utils.coroutines)
-        api(projects.utils.io)
-    }
-
-    sourceSets.commonTest.dependencies {
-        implementation(libs.kotlinx.coroutines.test)
-    }
-
-    sourceSets.androidMain.dependencies {
-        implementation(libs.libtorrent4j.android.arm64)
-    }
-
-//    sourceSets.named("desktopMain").dependencies {
-//        implementation(
-//            when (getOs()) {
-//                Os.Windows -> libs.libtorrent4j.windows
-//                Os.MacOS -> libs.libtorrent4j.macos
-//                Os.Linux -> libs.libtorrent4j.linux
-//                else -> {
-//                    logger.warn("Unrecognized architecture, libtorrent4j will not be included")
-//                }
-//            }
-//        )
-//    }
 }
 
 // RESOURCES
@@ -461,7 +425,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
 tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)
     if (enableAnitorrent) {
-        dependsOn(":torrent:anitorrent:generateSwig") // TODO: move this to impl:anitorrent module when we have separate modules
+        mustRunAfter(":torrent:anitorrent:generateSwigImpl") // TODO: move this to impl:anitorrent module when we have separate modules
     }
 }
 

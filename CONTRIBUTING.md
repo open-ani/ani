@@ -31,9 +31,7 @@
 
 ## 1. 开发工具
 
-建议使用 Android Studio 的最新版本以获得最佳体验, 尤其是 Compose 即时预览.
-
-### 使用 Android Studio (推荐)
+请使用 Android Studio.
 
 - 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
 - 需要 Android SDK 版本至少为 API 34
@@ -44,20 +42,12 @@
 - Compose Multiplatform IDE Support
 - Compose colors preview (可选安装, 用于预览颜色)
 
-### 使用 IntelliJ IDEA
+### 配置 Android NDK
 
-建议使用最新版本. 建议至少使用 `2024.1`.
+Android 包含使用 Android NDK 的 C++ 代码. 要配置 NDK:
 
-- 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
-
-安装如下 IDE 插件:
-
-- Android
-- Jetpack Compose
-- Compose Multiplatform IDE Support
-- Compose colors preview (可选安装, 用于预览颜色)
-
-> 如果不按照上述要求, 你可能会遇到奇怪的难以解决的问题.
+1. 打开 SDK Manager (Android Studio 中 Tools -> SDK Manager)
+2. 安装 NDK 和 Cmake
 
 ### Windows 特别提示
 

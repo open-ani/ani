@@ -14,7 +14,6 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -99,15 +98,6 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     val videoResolverSettings by settings(
         settingsRepository.videoResolverSettings,
         VideoResolverSettings.Default.copy(_placeholder = -1),
-    )
-
-    ///////////////////////////////////////////////////////////////////////////
-    // BT Engine
-    ///////////////////////////////////////////////////////////////////////////
-
-    val libtorrent4jConfig by settings(
-        settingsRepository.libtorrent4jConfig,
-        placeholder = Libtorrent4jConfig(placeholder = -1),
     )
 }
 
