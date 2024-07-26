@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -46,6 +47,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
@@ -209,64 +211,71 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            if (videoControllerState.progressBarVisible) {
-                detachedProgressSlider()
-                return@VideoScaffold
+            Crossfade(
+                targetState = videoControllerState.visibility,
+                animationSpec = tween(400),
+            ) {
+                when (it) {
+                    ControllerVisibility.Visible ->
+                        PlayerControllerBar(
+                            startActions = {
+                                val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
+                                    .collectAsStateWithLifecycle(false)
+                                PlayerControllerDefaults.PlaybackIcon(
+                                    isPlaying = { isPlaying },
+                                    onClick = { playerState.togglePause() },
+                                )
+
+                                if (hasNextEpisode && expanded) {
+                                    PlayerControllerDefaults.NextEpisodeIcon(
+                                        onClick = onClickNextEpisode,
+                                    )
+                                }
+                                PlayerControllerDefaults.DanmakuIcon(
+                                    videoControllerState.danmakuEnabled,
+                                    onClick = { videoControllerState.toggleDanmakuEnabled() },
+                                )
+                            },
+                            progressIndicator = {
+                                MediaProgressIndicatorText(progressSliderState)
+                            },
+                            progressSlider = {
+                                PlayerControllerDefaults.MediaProgressSlider(
+                                    progressSliderState,
+                                    playerState,
+                                )
+                            },
+                            danmakuEditor = danmakuEditor,
+                            endActions = {
+                                if (expanded) {
+                                    PlayerControllerDefaults.SelectEpisodeIcon(
+                                        onShowSelectEpisode,
+                                    )
+
+                                    if (currentPlatform.isDesktop()) {
+                                        PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
+                                    }
+
+                                    PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
+
+                                    val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
+                                    SpeedSwitcher(
+                                        speed,
+                                        { playerState.setPlaybackSpeed(it) },
+                                    )
+                                }
+                                PlayerControllerDefaults.FullscreenIcon(
+                                    expanded,
+                                    onClickFullscreen = onClickFullScreen,
+                                )
+                            },
+                            expanded = expanded,
+                        )
+
+                    ControllerVisibility.DetachedSliderOnly -> detachedProgressSlider()
+                    ControllerVisibility.Invisible -> Unit
+                }
             }
-            PlayerControllerBar(
-                startActions = {
-                    val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
-                        .collectAsStateWithLifecycle(false)
-                    PlayerControllerDefaults.PlaybackIcon(
-                        isPlaying = { isPlaying },
-                        onClick = { playerState.togglePause() },
-                    )
-
-                    if (hasNextEpisode && expanded) {
-                        PlayerControllerDefaults.NextEpisodeIcon(
-                            onClick = onClickNextEpisode,
-                        )
-                    }
-                    PlayerControllerDefaults.DanmakuIcon(
-                        videoControllerState.danmakuEnabled,
-                        onClick = { videoControllerState.toggleDanmakuEnabled() },
-                    )
-                },
-                progressIndicator = {
-                    MediaProgressIndicatorText(progressSliderState)
-                },
-                progressSlider = {
-                    PlayerControllerDefaults.MediaProgressSlider(
-                        progressSliderState,
-                        playerState,
-                    )
-                },
-                danmakuEditor = danmakuEditor,
-                endActions = {
-                    if (expanded) {
-                        PlayerControllerDefaults.SelectEpisodeIcon(
-                            onShowSelectEpisode,
-                        )
-
-                        if (currentPlatform.isDesktop()) {
-                            PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
-                        }
-
-                        PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
-
-                        val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
-                        SpeedSwitcher(
-                            speed,
-                            { playerState.setPlaybackSpeed(it) },
-                        )
-                    }
-                    PlayerControllerDefaults.FullscreenIcon(
-                        expanded,
-                        onClickFullscreen = onClickFullScreen,
-                    )
-                },
-                expanded = expanded,
-            )
         },
         floatingBottomEnd = {
             when (config.fullscreenSwitchMode) {

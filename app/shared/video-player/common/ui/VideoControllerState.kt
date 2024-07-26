@@ -90,10 +90,6 @@ class VideoControllerState(
     val alwaysOn: Boolean by derivedStateOf {
         alwaysOnRequests.isNotEmpty()
     }
-    val progressBarVisible: Boolean by derivedStateOf {
-        //由于隐藏动画的存在，不能在隐藏动画发生时切换progressBar,所以隐藏动画发生时，使用previousVisibility保持当前显示的组件直至动画结束
-        (_visibility.takeIf { it.bottomBar } ?: previousVisibility).detachedSlider
-    }
 
     /**
      * 请求控制器总是显示.
