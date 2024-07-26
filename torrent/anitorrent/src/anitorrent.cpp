@@ -4,7 +4,8 @@
 
 // used by boost stacktrace
 
-#if defined(__APPLE__) && defined(__MACH__)
+// macos or linux
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__linux__)
 #define ANI_USE_BACKTRACE
 #endif
 
