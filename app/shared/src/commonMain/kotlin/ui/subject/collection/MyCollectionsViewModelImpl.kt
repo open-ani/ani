@@ -15,9 +15,9 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.session.AuthState
-import me.him188.ani.app.session.SessionEvent
-import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.data.source.session.AuthState
+import me.him188.ani.app.data.source.session.SessionEvent
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.getCachedData

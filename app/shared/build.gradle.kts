@@ -98,6 +98,7 @@ kotlin {
 
         api(projects.torrent.anitorrent)
 
+        api(projects.client)
         api(projects.utils.slf4jKt)
         api(projects.utils.coroutines)
         api(projects.utils.io)
@@ -359,6 +360,10 @@ val bangumiClientAndroidSecret = getPropertyOrNull("bangumi.oauth.client.android
 val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.appId")
 val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
 
+val aniAuthServerUrlDebug =
+    getPropertyOrNull("ani.auth.server.url.debug") ?: "https://auth.myani.org"
+val aniAuthServerUrlRelease = getPropertyOrNull("ani.auth.server.url.release") ?: "https://auth.myani.org"
+
 if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {
     logger.warn("i:: bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
 }
@@ -384,9 +389,11 @@ android {
             *sharedAndroidProguardRules(),
         )
         buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani\"")
+        buildConfigField("String", "ANI_AUTH_SERVER_URL", "\"$aniAuthServerUrlRelease\"")
     }
     buildTypes.getByName("debug") {
         buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani.debug2\"")
+        buildConfigField("String", "ANI_AUTH_SERVER_URL", "\"$aniAuthServerUrlDebug\"")
     }
     buildFeatures {
         compose = true
@@ -437,6 +444,7 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
                 override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
                 override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
                 override val isDebug = System.getenv("ANI_DEBUG") == "true" || System.getProperty("ani.debug") == "true"
+                override val aniAuthServerUrl = if (isDebug) "$aniAuthServerUrlDebug" else "$aniAuthServerUrlRelease"
             }
             """.trimIndent()
 

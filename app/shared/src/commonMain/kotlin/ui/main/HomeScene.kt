@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.session.launchAuthorize
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
@@ -53,8 +54,6 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
-import me.him188.ani.app.session.isLoggedIn
-import me.him188.ani.app.session.launchAuthorize
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -74,7 +73,6 @@ import me.him188.ani.app.ui.update.FailedToInstallDialog
 import me.him188.ani.app.ui.update.UpdateLogoIcon
 import me.him188.ani.app.ui.update.UpdateLogoLabel
 import me.him188.ani.app.ui.update.handleClickLogo
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Composable
@@ -169,9 +167,8 @@ private fun HomeSceneLandscape(
                         Modifier.padding(top = 16.dp).weight(1f),
                         header = {
                             val vm = rememberViewModel { AccountViewModel() }
-                            val user by vm.selfInfo.collectAsStateWithLifecycle()
-                            val loggedIn by isLoggedIn()
-                            if (loggedIn == false) {
+                            val user = vm.selfInfo
+                            if (vm.authState.isKnownLoggedOut) {
                                 val navigator = LocalNavigator.current
                                 TextButton({ vm.launchAuthorize(navigator = navigator) }) {
                                     Text("登录")
