@@ -210,3 +210,7 @@ idea {
         excludeDirs.add(file("cmake-build-release"))
     }
 }
+
+tasks.named("compileJava") {
+    mustRunAfter(generateSwigImpl)
+}
