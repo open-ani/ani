@@ -46,7 +46,7 @@ value class ApiResponse<out T> private constructor(
             return ApiResponse(value)
         }
 
-        fun failure(failure: ApiFailure): ApiResponse<Nothing> {
+        fun <T> failure(failure: ApiFailure): ApiResponse<T> {
             return ApiResponse(failure)
         }
     }
@@ -73,7 +73,8 @@ inline fun <T> runApiRequest(block: () -> T): ApiResponse<T> {
 inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> {
     contract { callsInPlace(transform, InvocationKind.AT_MOST_ONCE) }
     return if (isSuccess) {
-        ApiResponse.success(transform(getOrNull()!!))
+        @Suppress("UNCHECKED_CAST")
+        ApiResponse.success(transform(getOrNull() as T))
     } else {
         @Suppress("UNCHECKED_CAST")
         this as ApiResponse<R>
