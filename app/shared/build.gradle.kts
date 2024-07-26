@@ -278,9 +278,7 @@ kotlin {
         submodule("danmaku/ui")
 
         submodule("torrent/api")
-        if (enableAnitorrent) {
-            submodule("torrent/impl/anitorrent")
-        }
+        submodule("torrent/impl/anitorrent")
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
