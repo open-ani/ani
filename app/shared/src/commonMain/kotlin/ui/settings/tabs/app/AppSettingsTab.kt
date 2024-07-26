@@ -32,6 +32,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -420,6 +421,17 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("选择数据源后自动关闭弹窗") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
+        if (Platform.currentPlatform.isMobile()) {
+            HorizontalDividerItem()
+            SwitchItem(
+                checked = config.autoFullscreenOnLandscapeMode,
+                onCheckedChange = {
+                    vm.videoScaffoldConfig.update(config.copy(autoFullscreenOnLandscapeMode = it))
+                },
+                title = { Text("横屏时自动全屏") },
+                Modifier.placeholder(vm.uiSettings.loading),
+            )
+        }
     }
 }
 
