@@ -1,4 +1,4 @@
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -14,7 +14,9 @@ class AuthState(
     val launchAuthorize: (navigator: AniNavigator) -> Unit,
 ) {
     private val isLoggedIn by isLoggedIn
+
     val isKnownLoggedIn: Boolean get() = this.isLoggedIn == true
+
     val isKnownLoggedOut: Boolean get() = this.isLoggedIn == false
 }
 
@@ -22,7 +24,7 @@ fun <T> T.AuthState(): AuthState
         where T : KoinComponent, T : AbstractViewModel {
     val sessionManager: SessionManager by inject()
     return AuthState(
-        isLoggedIn = sessionManager.isSessionValid.produceState(null),
+        isLoggedIn = sessionManager.isSessionVerified.produceState(null),
         launchAuthorize = { navigator ->
             sessionManager.requireOnlineAsync(
                 navigator,

@@ -1,0 +1,196 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ani",
+    "description": "Ani API",
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "url": "/"
+  },
+  "servers": [ {
+    "url": "https://danmaku.api.myani.org/"
+  } ],
+  "tags": [ ],
+  "paths": {
+    "/status": {
+      "get": {
+        "tags": [ ],
+        "parameters": [ ],
+        "responses": { },
+        "deprecated": false
+      }
+    },
+    "/favicon.ico": {
+      "get": {
+        "tags": [ ],
+        "parameters": [ ],
+        "responses": { },
+        "deprecated": false
+      }
+    },
+    "/v1/login/bangumi": {
+      "post": {
+        "tags": [ ],
+        "parameters": [ ],
+        "responses": { },
+        "deprecated": false
+      }
+    },
+    "/v1/login/bangumi/oauth": {
+      "get": {
+        "tags": [ "Bangumi OAuth" ],
+        "summary": "获取 Bangumi OAuth 授权链接",
+        "description": "获取 Bangumi OAuth 授权链接，用于获取 Bangumi token。",
+        "parameters": [ {
+          "name": "requestId",
+          "in": "query",
+          "description": "唯一请求 ID，建议使用随机生成的 UUID",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          },
+          "example": "123e4567-e89b-12d3-a456-426614174000"
+        } ],
+        "responses": {
+          "301": {
+            "description": "重定向到 Bangumi OAuth 授权页面",
+            "headers": { }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/login/bangumi/oauth/callback": {
+      "get": {
+        "tags": [ "Bangumi OAuth" ],
+        "summary": "Bangumi OAuth 回调",
+        "description": "用于 Bangumi OAuth 授权回调，用户不应自行调用该接口。",
+        "parameters": [ {
+          "name": "code",
+          "in": "query",
+          "description": "Bangumi OAuth 授权码",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          },
+          "example": "7b5fc66fcea59f975d8c17322ae3b5cb1faa1799"
+        }, {
+          "name": "state",
+          "in": "query",
+          "description": "获取 OAuth 链接时提供的请求 ID",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          },
+          "example": "123e4567-e89b-12d3-a456-426614174000"
+        } ],
+        "responses": {
+          "200": {
+            "description": "返回 Bangumi OAuth 授权结果网页",
+            "headers": { }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/login/bangumi/oauth/token": {
+      "get": {
+        "tags": [ "Bangumi OAuth" ],
+        "summary": "获取 Bangumi token",
+        "description": "获取 Bangumi token，用于登录。",
+        "parameters": [ {
+          "name": "requestId",
+          "in": "query",
+          "description": "获取 OAuth 链接时提供的请求 ID",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          },
+          "example": "123e4567-e89b-12d3-a456-426614174000"
+        } ],
+        "responses": {
+          "200": {
+            "description": "成功获取 Bangumi token",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BangumiUserToken"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "userId": 800001,
+                      "expiresIn": 604800,
+                      "accessToken": "2c1768b8c910735a2b4f1b06b233037418ccf490",
+                      "refreshToken": "6f91bc748d8afe18e9dfe014a3da6340efcbaee2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BangumiUserToken": {
+        "title": "BangumiUserToken",
+        "required": [ "accessToken", "expiresIn", "refreshToken", "userId" ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "title": "String",
+            "type": "string"
+          },
+          "expiresIn": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "refreshToken": {
+            "title": "String",
+            "type": "string"
+          },
+          "userId": {
+            "title": "Int",
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "examples": { },
+    "securitySchemes": {
+      "auth-jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
