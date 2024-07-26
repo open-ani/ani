@@ -1,4 +1,4 @@
-package me.him188.ani.app.session
+package me.him188.ani.app.data.source.session
 
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.CancellationException
@@ -9,9 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.AniNavigator
-import me.him188.ani.datasources.bangumi.BangumiClient
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * 表示一个外部 OAuth 授权请求.
@@ -62,32 +60,30 @@ interface ExternalOAuthRequest {
 }
 
 data class OAuthResult(
-    val code: String,
-    val callbackUrl: String,
+    val accessToken: String,
+    val refreshToken: String,
+    val expiresInSeconds: Long,
 )
 
 internal class BangumiOAuthRequest(
     private val aniNavigator: AniNavigator,
     private val navigateToWelcome: Boolean,
-    private val setSession: suspend (
-        session: Session, refreshToken: String,
-    ) -> Unit,
+    private val setSession: suspend (NewSession) -> Unit,
 ) : ExternalOAuthRequest, KoinComponent {
     override val state: MutableStateFlow<ExternalOAuthRequest.State> =
         MutableStateFlow(ExternalOAuthRequest.State.Launching)
 
-    private val code = CompletableDeferred<OAuthResult>()
-    private val client: BangumiClient by inject()
+    private val result = CompletableDeferred<OAuthResult>()
 
     /**
      * OAuth 成功回调 code 时调用.
      */
     override fun onCallback(code: Result<OAuthResult>) {
-        this.code.completeWith(code)
+        this.result.completeWith(code)
     }
 
     override fun cancel() {
-        code.cancel()
+        result.cancel()
     }
 
     override suspend fun invoke() {
@@ -101,17 +97,15 @@ internal class BangumiOAuthRequest(
         }
         state.value = ExternalOAuthRequest.State.AwaitingCallback
         try {
-            val (code, callbackUrl) = code.await()
+            val result = result.await()
             state.value = ExternalOAuthRequest.State.Processing
 
-            val accessToken = client.exchangeTokens(code, callbackUrl)
-
             setSession(
-                Session(
-                    accessToken.accessToken,
-                    System.currentTimeMillis() + accessToken.expiresIn,
+                NewSession(
+                    result.accessToken,
+                    System.currentTimeMillis() + result.expiresInSeconds * 1000,
+                    result.refreshToken,
                 ),
-                accessToken.refreshToken,
             )
         } catch (e: CancellationException) {
             state.value = ExternalOAuthRequest.State.Cancelled(e)

@@ -562,7 +562,7 @@ private class LazyDataCacheImpl<T>(
                     currentSourceInfo.value = SourceInfo(source)
                     updateDataSanitized(
                         orderPolicy,
-                        allowSavedPage = true,
+                        allowSavedPage = false,
                     ) { resp.orEmpty() } // must after currentSourceInfo update
                 } finally {
                     requestInProgress.value = false

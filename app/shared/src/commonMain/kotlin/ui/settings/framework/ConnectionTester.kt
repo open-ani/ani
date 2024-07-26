@@ -111,7 +111,7 @@ fun SettingsScope.MediaSourceTesterView(
     showTime: Boolean,
     title: @Composable RowScope.() -> Unit = { Text(remember(tester.id) { renderMediaSource(tester.id) }) },
     description: (@Composable () -> Unit)? = if (tester.id == BangumiSubjectProvider.ID) {
-        { Text("提供观看记录数据，无需代理") }
+        { Text("提供观看记录数据") }
     } else {
         renderMediaSourceDescription(tester.id)?.let {
             { Text(it) }

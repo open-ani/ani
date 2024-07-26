@@ -69,9 +69,9 @@ private fun SettingsScope.GlobalProxyGroup(
     vm: NetworkSettingsViewModel
 ) {
     Group(
-        title = { Text("全局默认代理") },
+        title = { Text("全局代理设置") },
         description = {
-            Text("如果数据源没有单独配置代理，则使用此代理设置")
+            Text("应用于所有数据源以及 Bangumi")
         },
     ) {
         SwitchItem(
