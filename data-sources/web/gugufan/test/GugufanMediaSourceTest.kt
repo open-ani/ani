@@ -20,7 +20,7 @@ class GugufanMediaSourceTest {
         list[0].run {
             assertEquals("2391", internalId)
             assertEquals("别当欧尼酱了！", name)
-            assertEquals("http://www.gugufan.com/index.php/vod/detail/id/2391.html", url)
+            assertEquals("https://www.gugufan.com/index.php/vod/detail/id/2391.html", url)
         }
     }
 
