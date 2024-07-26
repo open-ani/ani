@@ -149,7 +149,11 @@ private fun EpisodeSceneContent(
 
     VideoNotifEffect(vm)
 
-    ScreenRotationEffect(vm)
+    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode) {
+        ScreenRotationEffect {
+            vm.isFullscreen = it
+        }
+    }
 
     BoxWithConstraints(modifier) {
         val layoutMode by rememberUpdatedState(LocalLayoutMode.current)

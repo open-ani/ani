@@ -421,14 +421,14 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("选择数据源后自动关闭弹窗") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
-        if (Platform.currentPlatform.isMobile()) {
+        if (currentPlatform.isMobile()) {
             HorizontalDividerItem()
             SwitchItem(
                 checked = config.autoFullscreenOnLandscapeMode,
                 onCheckedChange = {
                     vm.videoScaffoldConfig.update(config.copy(autoFullscreenOnLandscapeMode = it))
                 },
-                title = { Text("横屏时自动全屏") },
+                title = { Text("启用重力感应旋屏") },
                 Modifier.placeholder(vm.uiSettings.loading),
             )
         }
