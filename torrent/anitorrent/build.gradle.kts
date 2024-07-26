@@ -180,6 +180,7 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
 val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     group = "anitorrent"
     dependsOn(configureAnitorrent)
+    mustRunAfter(generateSwigImpl)
 
     val cmake = getPropertyOrNull("CMAKE") ?: "cmake"
     val isWindows = getOs() == Os.Windows
