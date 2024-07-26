@@ -533,9 +533,6 @@ fun VideoGestureHost(
                 Row(Modifier.focusRequester(focusRequester).matchParentSize()) {
                     Box(
                         Modifier
-                            .ifThen(family.longPressForFastSkip) {
-                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                            }
                             .ifThen(family.swipeLhsForBrightness) {
                                 brightnessLevelController?.let { controller ->
                                     swipeLevelControl(
@@ -559,9 +556,6 @@ fun VideoGestureHost(
 
                     Box(
                         Modifier
-                            .ifThen(family.longPressForFastSkip) {
-                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                            }
                             .ifThen(family.swipeRhsForVolume) {
                                 audioController?.let { controller ->
                                     swipeLevelControl(
@@ -655,12 +649,14 @@ fun VideoGestureHost(
                     }
                     .fillMaxSize(),
             ) {
-                Row(Modifier.matchParentSize()) {
+                Row(
+                    Modifier.matchParentSize()
+                        .ifThen(family.longPressForFastSkip) {
+                            longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
+                        },
+                ) {
                     Box(
                         Modifier
-                            .ifThen(family.longPressForFastSkip) {
-                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                            }
                             .ifThen(family.swipeLhsForBrightness) {
                                 brightnessLevelController?.let { controller ->
                                     swipeLevelControl(
@@ -684,9 +680,6 @@ fun VideoGestureHost(
 
                     Box(
                         Modifier
-                            .ifThen(family.longPressForFastSkip) {
-                                longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
-                            }
                             .ifThen(family.swipeRhsForVolume) {
                                 audioController?.let { controller ->
                                     swipeLevelControl(
