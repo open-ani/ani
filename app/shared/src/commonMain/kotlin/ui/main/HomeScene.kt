@@ -53,7 +53,6 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
-import me.him188.ani.app.session.isLoggedIn
 import me.him188.ani.app.session.launchAuthorize
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
@@ -169,8 +168,7 @@ private fun HomeSceneLandscape(
                         header = {
                             val vm = rememberViewModel { AccountViewModel() }
                             val user = vm.selfInfo
-                            val loggedIn by isLoggedIn()
-                            if (loggedIn == false) {
+                            if (vm.authState.isKnownLoggedOut) {
                                 val navigator = LocalNavigator.current
                                 TextButton({ vm.launchAuthorize(navigator = navigator) }) {
                                     Text("登录")

@@ -14,7 +14,9 @@ class AuthState(
     val launchAuthorize: (navigator: AniNavigator) -> Unit,
 ) {
     private val isLoggedIn by isLoggedIn
+
     val isKnownLoggedIn: Boolean get() = this.isLoggedIn == true
+
     val isKnownLoggedOut: Boolean get() = this.isLoggedIn == false
 }
 

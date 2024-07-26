@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.session.isLoggedIn
 import org.koin.core.context.GlobalContext
 
 @Composable
@@ -64,14 +63,12 @@ fun ProfilePage(
     val viewModel = remember { AccountViewModel() }
 
     // user profile
-    val loggedIn by isLoggedIn()
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             SelfInfo(
                 viewModel.selfInfo,
-                loggedIn,
+                viewModel.authState.isKnownLoggedIn,
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .fillMaxWidth(),

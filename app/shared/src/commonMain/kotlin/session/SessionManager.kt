@@ -53,21 +53,7 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
 import org.koin.core.Koin
-import org.koin.core.component.KoinComponent
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
-
-/**
- * Bangumi 账号信息.
- */
-data class Session(
-    val accessToken: String,
-    val expiresAtMillis: Long,
-)
-
-private fun Session.isValid() = !isExpired()
-private fun Session.isExpired() = expiresAtMillis <= System.currentTimeMillis() + 1.hours.inWholeMilliseconds
 
 /**å
  * Bangumi 授权状态管理器
@@ -132,52 +118,6 @@ val SessionManager.verifiedAccessToken: Flow<String?>
         (it as? SessionState.Verified)?.accessToken
     }
 
-sealed interface SessionEvent {
-    /**
-     * token 有变更
-     */
-    sealed interface UserActionEvent : SessionEvent
-    data object Login : UserActionEvent
-    data object Logout : UserActionEvent
-
-    data object TokenRefreshed : SessionEvent
-}
-
-object TestSessionManagers {
-    val Online = object : SessionManager {
-        private val savedSession: MutableStateFlow<Session?> = MutableStateFlow(
-            Session(
-                accessToken = "testToken",
-                expiresAtMillis = System.currentTimeMillis() + 1.days.inWholeMilliseconds,
-            ),
-        )
-        override val state: Flow<SessionState> = MutableStateFlow(SessionState.Verified("testToken", UserInfo.EMPTY))
-        override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> = MutableStateFlow(null)
-        override val events: SharedFlow<SessionEvent> = MutableSharedFlow(
-            extraBufferCapacity = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
-
-        override suspend fun requireAuthorize(
-            navigator: AniNavigator,
-            navigateToWelcome: Boolean,
-            ignoreGuest: Boolean
-        ) {
-        }
-
-        override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
-        }
-
-        override suspend fun setSession(session: Session) {
-            this.savedSession.value = session
-        }
-
-        override suspend fun logout() {
-            savedSession.value = null
-        }
-    }
-}
-
 /**
  * 当用户希望以游客身份登录时抛出的异常.
  */
@@ -233,7 +173,7 @@ internal class SessionManagerImpl(
     private val getSelfInfo: suspend (accessToken: String) -> ApiResponse<UserInfo>,
     private val refreshAccessToken: suspend (refreshToken: String) -> ApiResponse<NewSession>,
     parentCoroutineContext: CoroutineContext,
-) : KoinComponent, SessionManager, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+) : SessionManager, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private val logger = logger(SessionManager::class)
 
     private val refreshCounter = MutableStateFlow(0)

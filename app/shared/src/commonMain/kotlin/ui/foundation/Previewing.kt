@@ -47,7 +47,7 @@ import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.TestSessionManagers
+import me.him188.ani.app.session.TestSessionManager
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
@@ -87,7 +87,7 @@ fun ProvideCompositionLocalsForPreview(
                         single<PlayerStateFactory> {
                             playerStateFactory
                         }
-                        single<SessionManager> { TestSessionManagers.Online }
+                        single<SessionManager> { TestSessionManager }
                         factory<VideoSourceResolver> {
                             VideoSourceResolver.from(
                                 get<TorrentManager>().engines

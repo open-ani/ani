@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import me.him188.ani.app.data.repository.ProfileRepository
+import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.session.userInfo
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -21,6 +22,8 @@ class AccountViewModel : AbstractViewModel(), KoinComponent {
 
     var logoutEnabled by mutableStateOf(true)
         private set
+
+    val authState = AuthState()
 
     @UiThread
     fun logout() {
