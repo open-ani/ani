@@ -6,6 +6,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 
 
 @Composable
-actual fun ScreenRotationEffectImpl(onChange: (Boolean) -> Unit) {
+actual fun ScreenRotationEffectImpl(onChange: (isLandscape: Boolean) -> Unit) {
     onChange(LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE)
 }
