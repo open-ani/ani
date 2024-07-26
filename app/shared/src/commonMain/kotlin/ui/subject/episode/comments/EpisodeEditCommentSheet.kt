@@ -32,6 +32,7 @@ fun EpisodeEditCommentSheet(
                     title = "评论: ${vm.episodeDetailsState.subjectTitle}",
                     modifier = modifier,
                     onContentChange = { },
+                    stickers = listOf(),
                     onSend = {
                         focusManager.clearFocus()
                         onDismiss()
