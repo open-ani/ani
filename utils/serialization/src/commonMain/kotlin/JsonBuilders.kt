@@ -3,6 +3,7 @@ package me.him188.ani.utils.serialization
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
+import kotlin.jvm.JvmName
 
 @JvmName("toJsonArrayString")
 fun List<String>.toJsonArray(): JsonArray {

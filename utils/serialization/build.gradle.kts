@@ -20,9 +20,8 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     kotlin("multiplatform")
-    `ani-lib-targets`
+    `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
-    `flatten-source-sets`
 }
 
 dependencies {
