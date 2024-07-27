@@ -46,6 +46,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
+import java.io.IOException
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
@@ -142,11 +143,17 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun saveScreenshotFile(filename: String) {
-        val screenshotPath: Path? =
+        val screenshotPath: Path =
             Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
-        screenshotPath?.createDirectories()
-        val filePath = screenshotPath?.resolve(filename)
-        player.snapshots().save(filePath?.toFile())
+        player.submit {
+            try {
+                screenshotPath.createDirectories()
+            } catch (ex: IOException) {
+                logger.warn("Create ani pictures dir fail", ex);
+            }
+            val filePath = screenshotPath.resolve(filename)
+            player.snapshots().save(filePath.toFile())
+        }
     }
 
     class VlcjData(
