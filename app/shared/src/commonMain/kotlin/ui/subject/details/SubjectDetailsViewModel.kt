@@ -81,7 +81,7 @@ class SubjectDetailsViewModel(
         )
     }
 
-    val episodeProgressState by lazy {
+    val episodeListState by lazy {
         EpisodeListStateFactory(
             settingsRepository,
             subjectManager,
@@ -101,7 +101,7 @@ class SubjectDetailsViewModel(
         selfCollectionType = subjectCollectionFlow
             .map { it.collectionType }
             .produceState(UnifiedCollectionType.NOT_COLLECTED),
-        hasAnyUnwatched = { episodeProgressState.hasAnyUnwatched },
+        hasAnyUnwatched = { episodeListState.hasAnyUnwatched },
         onSetSelfCollectionType = { subjectManager.setSubjectCollectionType(subjectId, it) },
         onSetAllEpisodesWatched = {
             subjectManager.setAllEpisodesWatched(subjectId)

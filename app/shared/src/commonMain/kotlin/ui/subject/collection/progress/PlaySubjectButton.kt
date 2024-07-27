@@ -7,7 +7,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -17,9 +16,6 @@ import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.episode.list.cacheStatusIndicationColor
 
 
-/**
- * @param done 当已经看完时的显示
- */
 @Composable
 fun PlaySubjectButton(
     state: SubjectProgressState,
@@ -54,7 +50,7 @@ fun PlaySubjectButton(
             }
 
             ContinueWatchingStatus.Done -> {
-                TextButton({ state.episodeToPlay?.let { state.play(it.id) } }, modifier) {
+                FilledTonalButton({ state.episodeToPlay?.let { state.play(it.id) } }, modifier) {
                     Text("已看完", Modifier.requiredWidth(IntrinsicSize.Max), softWrap = false)
                 }
             }

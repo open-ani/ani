@@ -275,6 +275,12 @@ fun SubjectDetailsHeaderWide(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     collectionAction()
+                }
+                Row(
+                    Modifier.align(Alignment.Start),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Box(Modifier.width(IntrinsicSize.Min)) {
                         selectEpisodeButton()
                     }

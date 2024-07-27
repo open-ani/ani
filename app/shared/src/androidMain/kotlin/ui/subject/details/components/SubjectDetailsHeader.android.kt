@@ -14,7 +14,6 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.collection.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.TestRatingInfo
@@ -126,7 +125,7 @@ fun PreviewSubjectDetailsHeader(
                 )
             },
             selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton(rememberTestSubjectProgressState())
+                SubjectDetailsDefaults.SelectEpisodeButtons(rememberTestSubjectProgressState(), {})
             },
             rating = {
                 EditableRating(

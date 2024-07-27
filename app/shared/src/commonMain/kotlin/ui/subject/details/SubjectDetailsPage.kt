@@ -70,7 +70,7 @@ import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
-import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
+import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
@@ -88,7 +88,7 @@ fun SubjectDetailsScene(
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
         EpisodeListDialog(
-            vm.episodeProgressState,
+            vm.episodeListState,
             title = {
                 Text(vm.subjectDetailsState.info.displayName)
             },
@@ -121,7 +121,10 @@ fun SubjectDetailsScene(
             EditableRating(vm.editableRatingState)
         },
         selectEpisodeButton = {
-            SubjectDetailsDefaults.SelectEpisodeButton(vm.subjectProgressState)
+            SubjectDetailsDefaults.SelectEpisodeButtons(
+                vm.subjectProgressState,
+                onShowEpisodeList = { showSelectEpisode = true },
+            )
         },
         connectedScrollState = connectedScrollState,
         detailsTab = {
