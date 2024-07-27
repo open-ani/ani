@@ -75,7 +75,8 @@ fun VideoScaffold(
     danmakuHost: @Composable BoxScope.() -> Unit = {},
     gestureHost: @Composable BoxWithConstraintsScope.() -> Unit = {},
     floatingMessage: @Composable BoxScope.() -> Unit = {},
-    rhsBar: @Composable ColumnScope.() -> Unit = {},
+    rhsButtons: @Composable ColumnScope.() -> Unit = {},
+    gestureLock: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
@@ -205,15 +206,26 @@ fun VideoScaffold(
                 }
             }
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
-                // Separate from controllers, to fix position when controllers are/aren't hidden
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
-                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
+                    Column(
+                        Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        AnimatedVisibility(
+                            visible = controllersVisibleState && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            rhsButtons()
+                        }
+
+                        // Separate from controllers, to fix position when controllers are/aren't hidden
                         AnimatedVisibility(
                             visible = controllersVisibleState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
-                            rhsBar()
+                            gestureLock()
                         }
                     }
                 }

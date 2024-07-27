@@ -150,6 +150,8 @@ interface PlayerState {
     val subtitleTracks: TrackGroup<SubtitleTrack>
 
     val audioTracks: TrackGroup<AudioTrack>
+
+    fun saveScreenshotFile(filename: String)
 }
 
 fun PlayerState.togglePause() {
@@ -438,4 +440,7 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
+
+    override fun saveScreenshotFile(filename: String) {
+    }
 }

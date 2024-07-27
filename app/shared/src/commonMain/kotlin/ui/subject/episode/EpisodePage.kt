@@ -536,6 +536,16 @@ private fun EpisodeVideo(
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
         onShowSelectEpisode = { isEpisodeSelectorVisible = true },
+        onClickScreenshot = {
+            val currentPositionMillis = vm.playerState.currentPositionMillis.value
+            val min = currentPositionMillis / 60000
+            val sec = (currentPositionMillis - (min * 60000)) / 1000
+            val ms = currentPositionMillis - (min * 60000) - (sec * 1000)
+            val currentPosition = "${min}m${sec}s${ms}ms"
+            // 条目ID-剧集序号-视频时间点.png
+            val filename = "${vm.subjectId}-${vm.episodePresentation.ep}-${currentPosition}.png"
+            vm.playerState.saveScreenshotFile(filename)
+        },
     )
 }
 
