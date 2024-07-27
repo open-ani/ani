@@ -28,15 +28,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -91,10 +88,6 @@ import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 
 
-private val LocalSnackbar = compositionLocalOf<SnackbarHostState> {
-    error("No SnackbarHostState provided")
-}
-
 /**
  * 番剧详情 (播放) 页面
  */
@@ -104,19 +97,13 @@ fun EpisodeScene(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
-        val snackbarHostState = remember { SnackbarHostState() }
         Scaffold(
-            snackbarHost = {
-                SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding())
-            },
             contentWindowInsets = WindowInsets(0.dp),
         ) {
-            CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
-                EpisodeSceneContent(
-                    viewModel,
-                    Modifier,
-                )
-            }
+            EpisodeSceneContent(
+                viewModel,
+                Modifier,
+            )
         }
     }
 }
