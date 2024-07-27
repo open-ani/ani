@@ -67,6 +67,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
+import me.him188.ani.app.ui.foundation.effects.ScreenRotationEffect
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
@@ -148,6 +149,12 @@ private fun EpisodeSceneContent(
     AutoPauseEffect(vm)
 
     VideoNotifEffect(vm)
+
+    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode) {
+        ScreenRotationEffect {
+            vm.isFullscreen = it
+        }
+    }
 
     BoxWithConstraints(modifier) {
         val layoutMode by rememberUpdatedState(LocalLayoutMode.current)
@@ -429,7 +436,7 @@ fun EpisodeSceneContentPhoneScaffold(
 
         Column(Modifier.fillMaxSize()) {
             Row {
-                TabRow(pagerState, scope, commentCount, Modifier.fillMaxWidth())
+                TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
                 Box(
                     modifier = Modifier.weight(0.618f) // width
                         .height(48.dp)

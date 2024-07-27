@@ -40,6 +40,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse1704405026() {
+        BBCode.parse("[B]Hello World![/B]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", bold=true)
+        }
+    }
+
+    @Test
+    public fun parse1136626053() {
+        BBCode.parse("[B][/B]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse822473337() {
+        BBCode.parse("[B] [/B]")
+        .run {
+            assertText(elements.at(0), value=" ", bold=true)
+        }
+    }
+
+    @Test
+    public fun parse1553193377() {
+        BBCode.parse("[B] /[][/]Hello [/B]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", bold=true)
+        }
+    }
+
+    @Test
     public fun parse1473290132() {
         BBCode.parse("[i]Hello World![/i]")
         .run {
@@ -66,6 +98,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     @Test
     public fun parse127856769() {
         BBCode.parse("[i] /[][/]Hello [/i]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", italic=true)
+        }
+    }
+
+    @Test
+    public fun parse980133932() {
+        BBCode.parse("[I]Hello World![/I]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", italic=true)
+        }
+    }
+
+    @Test
+    public fun parse1337030327() {
+        BBCode.parse("[I][/I]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse1554935271() {
+        BBCode.parse("[I] [/I]")
+        .run {
+            assertText(elements.at(0), value=" ", italic=true)
+        }
+    }
+
+    @Test
+    public fun parse1125438335() {
+        BBCode.parse("[I] /[][/]Hello [/I]")
         .run {
             assertText(elements.at(0), value=" /[][/]Hello ", italic=true)
         }
@@ -104,6 +168,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse60099908() {
+        BBCode.parse("[U]Hello World![/U]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", underline=true)
+        }
+    }
+
+    @Test
+    public fun parse1680580511() {
+        BBCode.parse("[U][/U]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse505174681() {
+        BBCode.parse("[U] [/U]")
+        .run {
+            assertText(elements.at(0), value=" ", underline=true)
+        }
+    }
+
+    @Test
+    public fun parse418289153() {
+        BBCode.parse("[U] /[][/]Hello [/U]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", underline=true)
+        }
+    }
+
+    @Test
     public fun parse92501504() {
         BBCode.parse("[s]Hello World![/s]")
         .run {
@@ -130,6 +226,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     @Test
     public fun parse17359423() {
         BBCode.parse("[s] /[][/]Hello [/s]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", strikethrough=true)
+        }
+    }
+
+    @Test
+    public fun parse1934044736() {
+        BBCode.parse("[S]Hello World![/S]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", strikethrough=true)
+        }
+    }
+
+    @Test
+    public fun parse1623322147() {
+        BBCode.parse("[S][/S]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse1269832743() {
+        BBCode.parse("[S] [/S]")
+        .run {
+            assertText(elements.at(0), value=" ", strikethrough=true)
+        }
+    }
+
+    @Test
+    public fun parse1270654527() {
+        BBCode.parse("[S] /[][/]Hello [/S]")
         .run {
             assertText(elements.at(0), value=" /[][/]Hello ", strikethrough=true)
         }
@@ -168,6 +296,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse24140296() {
+        BBCode.parse("[URL]Hello World![/URL]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", jumpUrl="Hello World!")
+        }
+    }
+
+    @Test
+    public fun parse874361643() {
+        BBCode.parse("[URL][/URL]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse1736981081() {
+        BBCode.parse("[URL] [/URL]")
+        .run {
+            assertText(elements.at(0), value=" ", jumpUrl=" ")
+        }
+    }
+
+    @Test
+    public fun parse1934639423() {
+        BBCode.parse("[URL] /[][/]Hello [/URL]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", jumpUrl=" /[][/]Hello ")
+        }
+    }
+
+    @Test
     public fun parse1176497952() {
         BBCode.parse("[img]Hello World![/img]")
         .run {
@@ -194,6 +354,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     @Test
     public fun parse1015657025() {
         BBCode.parse("[img] /[][/]Hello [/img]")
+        .run {
+            assertImage(elements.at(0), imageUrl=" /[][/]Hello ")
+        }
+    }
+
+    @Test
+    public fun parse301983904() {
+        BBCode.parse("[IMG]Hello World![/IMG]")
+        .run {
+            assertImage(elements.at(0), imageUrl="Hello World!")
+        }
+    }
+
+    @Test
+    public fun parse739585405() {
+        BBCode.parse("[IMG][/IMG]")
+        .run {
+            assertImage(elements.at(0), imageUrl="")
+        }
+    }
+
+    @Test
+    public fun parse1039863591() {
+        BBCode.parse("[IMG] [/IMG]")
+        .run {
+            assertImage(elements.at(0), imageUrl=" ")
+        }
+    }
+
+    @Test
+    public fun parse425597375() {
+        BBCode.parse("[IMG] /[][/]Hello [/IMG]")
         .run {
             assertImage(elements.at(0), imageUrl=" /[][/]Hello ")
         }
@@ -240,6 +432,46 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse993940078() {
+        BBCode.parse("[QUOTE]Hello World![/QUOTE]")
+        .run {
+            assertQuote(elements.at(0)) {
+                assertText(elements.at(0), value="Hello World!")
+            }
+        }
+    }
+
+    @Test
+    public fun parse1148415151() {
+        BBCode.parse("[QUOTE][/QUOTE]")
+        .run {
+            assertQuote(elements.at(0)) {
+                kotlin.test.assertEquals(0, elements.size)
+            }
+        }
+    }
+
+    @Test
+    public fun parse1474245561() {
+        BBCode.parse("[QUOTE] [/QUOTE]")
+        .run {
+            assertQuote(elements.at(0)) {
+                assertText(elements.at(0), value=" ")
+            }
+        }
+    }
+
+    @Test
+    public fun parse1660890527() {
+        BBCode.parse("[QUOTE] /[][/]Hello [/QUOTE]")
+        .run {
+            assertQuote(elements.at(0)) {
+                assertText(elements.at(0), value=" /[][/]Hello ")
+            }
+        }
+    }
+
+    @Test
     public fun parse1141258730() {
         BBCode.parse("[code]Hello World![/code]")
         .run {
@@ -272,6 +504,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     }
 
     @Test
+    public fun parse402209258() {
+        BBCode.parse("[CODE]Hello World![/CODE]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", code=true)
+        }
+    }
+
+    @Test
+    public fun parse2001072935() {
+        BBCode.parse("[CODE][/CODE]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse1969241297() {
+        BBCode.parse("[CODE] [/CODE]")
+        .run {
+            assertText(elements.at(0), value=" ", code=true)
+        }
+    }
+
+    @Test
+    public fun parse1794490197() {
+        BBCode.parse("[CODE] /[][/]Hello [/CODE]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", code=true)
+        }
+    }
+
+    @Test
     public fun parse995222602() {
         BBCode.parse("[mask]Hello World![/mask]")
         .run {
@@ -298,6 +562,38 @@ public class GenBBSpacesTest : BBCodeParserTestHelper() {
     @Test
     public fun parse1772059667() {
         BBCode.parse("[mask] /[][/]Hello [/mask]")
+        .run {
+            assertText(elements.at(0), value=" /[][/]Hello ", mask=true)
+        }
+    }
+
+    @Test
+    public fun parse256173130() {
+        BBCode.parse("[MASK]Hello World![/MASK]")
+        .run {
+            assertText(elements.at(0), value="Hello World!", mask=true)
+        }
+    }
+
+    @Test
+    public fun parse1780720647() {
+        BBCode.parse("[MASK][/MASK]")
+        .run {
+            kotlin.test.assertEquals(0, elements.size)
+        }
+    }
+
+    @Test
+    public fun parse831694445() {
+        BBCode.parse("[MASK] [/MASK]")
+        .run {
+            assertText(elements.at(0), value=" ", mask=true)
+        }
+    }
+
+    @Test
+    public fun parse2003342317() {
+        BBCode.parse("[MASK] /[][/]Hello [/MASK]")
         .run {
             assertText(elements.at(0), value=" /[][/]Hello ", mask=true)
         }

@@ -1,41 +1,101 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.21) # Android recommends at least 3.21
 project(anitorrent)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 17)
-
 
 include(FetchContent)
 
 # mmap 会导致它安装 signal handler, 而 JVM 依赖 signal handler 才能正常工作.
 # 如果 JVM signal handler 被覆盖, JVM 就会因为 SIGBUS/SIGSEGV crash.
 add_compile_definitions(TORRENT_HAVE_MMAP=0)
-
 add_compile_definitions(TORRENT_ABI_VERSION=3) # Hide all deprecated APIs
 
-# https://github.com/arvidn/libtorrent/blob/RC_2_0/docs/building.rst#building-with-vcpkg
-if (WIN32)
-    add_compile_definitions(TORRENT_DISABLE_ENCRYPTION=true)
-    add_compile_definitions(TORRENT_USE_OPENSSL)
+# 安卓需要自己构建所有依赖
+
+# Android-specific settings
+if (ANDROID)
+    # https://developer.android.com/studio/projects/configure-cmake#call-cmake-cli
+    set(ANDROID_STL c++_shared)
+    set(CMAKE_SYSTEM_NAME Android)
+    set(CMAKE_SYSTEM_VERSION 21) # Adjust as needed
+    set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
+
+    # Set Android NDK paths
+    set(ANDROID_NDK ${ANDROID_NDK_HOME})
+    set(CMAKE_ANDROID_NDK ${ANDROID_NDK})
+    set(CMAKE_TOOLCHAIN_FILE ${ANDROID_NDK}/build/cmake/android.toolchain.cmake)
+else ()
+    if (WIN32)
+        add_compile_definitions(TORRENT_DISABLE_ENCRYPTION=true)
+        add_compile_definitions(TORRENT_USE_OPENSSL)
+    endif ()
+
+    if (WIN32)
+        add_compile_definitions(_WIN32_WINNT=0x0A00)
+    endif ()
+
+    if (MSVC)
+        message(STATUS "MSVC detected")
+        add_compile_options(/Zc:__cplusplus)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    endif ()
 endif ()
 
-#"D:\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\bin\Hostx86\x64\cl.exe"  /nologo /TP -DBOOST_ALL_NO_LIB -DBOOST_ASIO_ENABLE_CANCELIO -DBOOST_ASIO_NO_DEPRECATED -DTORRENT_HAVE_MMAP=0 -DTORRENT_LINKING_SHARED -DTORRENT_USE_ASSERTS -DWIN32_LEAN_AND_MEAN -D_CRT_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_DEPRECATE -Danitorrent_EXPORTS -ID:\Java\jdk-18.0.1.102-openj9\include -ID:\Java\jdk-18.0.1.102-openj9\include\win32 -ID:\Projects\animation-garden\torrent\anitorrent\include -ID:\Projects\animation-garden\torrent\anitorrent\cmake-build-debug\_deps\libtorrent-src\include -external:ID:\vcpkg\installed\x64-windows\include -external:W0 /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++latest -MDd -Zi /EHsc /showIncludes /FoCMakeFiles\anitorrent.dir\gen\cpp\anitorrent_wrap.cpp.obj /FdCMakeFiles\anitorrent.dir\ /FS -c D:\Projects\animation-garden\torrent\anitorrent\gen\cpp\anitorrent_wrap.cpp
-#Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately. For example:
-#- add -D_WIN32_WINNT=0x0601 to the compiler command line; or
-#- add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
-#Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
-if (WIN32)
-    add_compile_definitions(_WIN32_WINNT=0x0A00)
+if (NOT DEFINED Boost_INCLUDE_DIR)
+    # Fetch and build Boost for Android using CMake
+    #    FetchContent_Declare(
+    #            boost
+    #            GIT_REPOSITORY https://github.com/boostorg/boost.git
+    #            GIT_TAG boost-1.85.0
+    #            UPDATE_DISCONNECTED 1
+    #    )
+    #    FetchContent_MakeAvailable(boost)
+
+    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/boost/) #TODO
 endif ()
 
-if (MSVC)
-    message(STATUS "MSVC detected")
-    add_compile_options(/Zc:__cplusplus)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-endif ()
+# Fetch and build OpenSSL for Android using CMake
+#if (ANDROID)
+#    # https://stackoverflow.com/questions/66829315/how-to-use-cmake-fetchcontent-to-link-openssl
+#    set(OPENSSL_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-src) # default path by CMake
+#    set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl)
+#    set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
+#    set(OPENSSL_CONFIGURE_COMMAND ${OPENSSL_SOURCE_DIR}/config)
+#    include(ExternalProject)
+#    ExternalProject_Add(
+#            OpenSSL
+#            SOURCE_DIR ${OPENSSL_SOURCE_DIR}
+#            GIT_REPOSITORY https://github.com/openssl/openssl.git
+#            GIT_TAG openssl-3.3.1
+#            USES_TERMINAL_DOWNLOAD TRUE
+#            CONFIGURE_COMMAND
+#            ${OPENSSL_CONFIGURE_COMMAND}
+#            --prefix=${OPENSSL_INSTALL_DIR}
+#            --openssldir=${OPENSSL_INSTALL_DIR}
+#            BUILD_COMMAND make
+#            TEST_COMMAND ""
+#            INSTALL_COMMAND make install
+#            INSTALL_DIR ${OPENSSL_INSTALL_DIR}
+#    )
+#
+#    # We cannot use find_library because ExternalProject_Add() is performed at build time.
+#    # And to please the property INTERFACE_INCLUDE_DIRECTORIES,
+#    # we make the include directory in advance.
+#    file(MAKE_DIRECTORY ${OPENSSL_INCLUDE_DIR})
+#
+#    add_library(OpenSSL::SSL STATIC IMPORTED GLOBAL)
+#    set_property(TARGET OpenSSL::SSL PROPERTY IMPORTED_LOCATION ${OPENSSL_INSTALL_DIR}/lib/libssl.${OPENSSL_LIBRARY_SUFFIX})
+#    set_property(TARGET OpenSSL::SSL PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
+#    add_dependencies(OpenSSL::SSL OpenSSL)
+#
+#    add_library(OpenSSL::Crypto STATIC IMPORTED GLOBAL)
+#    set_property(TARGET OpenSSL::Crypto PROPERTY IMPORTED_LOCATION ${OPENSSL_INSTALL_DIR}/lib/libcrypto.${OPENSSL_LIBRARY_SUFFIX})
+#    set_property(TARGET OpenSSL::Crypto PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
+#    add_dependencies(OpenSSL::Crypto OpenSSL)
+#endif ()
 
-
-# Libtorrent
+# Fetch libtorrent
 FetchContent_Declare(
         libtorrent
         GIT_REPOSITORY https://github.com/arvidn/libtorrent.git
@@ -43,10 +103,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(libtorrent)
 
-# JNI
-find_package(JNI REQUIRED)
-include_directories(${JNI_INCLUDE_DIRS})
-
+if (NOT ANDROID)
+    # JNI
+    find_package(JNI REQUIRED)
+    include_directories(${JNI_INCLUDE_DIRS})
+endif ()
 
 add_library(anitorrent
         SHARED
@@ -68,25 +129,9 @@ add_library(anitorrent
 )
 target_include_directories(anitorrent PRIVATE include)
 
-#add_executable(anitorrent_test
-#        include/anitorrent.hpp
-#        src/anitorrent.cpp
-#        src/main.cpp
-#        src/events.cpp
-#        include/events.hpp
-#        src/torrent_info_t.cpp
-#        include/torrent_info_t.hpp
-#        src/torrent_add_info_t.cpp
-#        include/torrent_add_info_t.hpp
-#        src/session_t.cpp
-#        include/session_t.hpp
-#        src/torrent_handle_t.cpp
-#        include/torrent_handle_t.hpp
-#        src/global_lock.cpp
-#        include/global_lock.h
-#)
-#target_include_directories(anitorrent_test PRIVATE include)
-
-
-target_link_libraries(anitorrent PRIVATE torrent-rasterbar ${JNI_LIBRARIES})
-#target_link_libraries(anitorrent_test PRIVATE torrent-rasterbar ${JNI_LIBRARIES})
+# Link libraries
+if (ANDROID)
+    target_link_libraries(anitorrent PRIVATE torrent-rasterbar android log)
+else ()
+    target_link_libraries(anitorrent PRIVATE torrent-rasterbar ${JNI_LIBRARIES})
+endif ()

@@ -39,7 +39,7 @@ class NtdmWebVideoMatcher : WebVideoMatcher {
 class NtdmMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() {
     companion object {
         const val ID = "ntdm"
-        const val BASE_URL = "https://www.mxdm4.com"
+        const val BASE_URL = "https://www.ntdm9.com"
     }
 
     class Factory : MediaSourceFactory {

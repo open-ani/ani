@@ -1,9 +1,7 @@
 package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import me.him188.ani.app.torrent.libtorrent4j.DefaultTorrentDownloadSession
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -86,39 +84,5 @@ class TorrentDownloaderConfig(
 ) {
     companion object {
         val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()
-    }
-}
-
-class TestTorrentDownloader : TorrentDownloader {
-    override val totalUploaded: Flow<Long> = flowOf(0)
-    override val totalDownloaded: Flow<Long> = flowOf(0)
-    override val totalUploadRate: Flow<Long> = flowOf(0)
-    override val totalDownloadRate: Flow<Long> = flowOf(0)
-    override val vendor: TorrentLibInfo = TorrentLibInfo("test", "1.0", true)
-
-    override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
-        return EncodedTorrentInfo.createRaw(byteArrayOf())
-    }
-
-    override suspend fun startDownload(
-        data: EncodedTorrentInfo,
-        parentCoroutineContext: CoroutineContext,
-        overrideSaveDir: File?
-    ): TorrentDownloadSession = DefaultTorrentDownloadSession(
-        torrentName = "test",
-        saveDirectory = File("test"),
-        onClose = {},
-        onDelete = {},
-        isDebug = false,
-        parentCoroutineContext = parentCoroutineContext,
-    )
-
-    override fun getSaveDirForTorrent(data: EncodedTorrentInfo): File {
-        return File("test")
-    }
-
-    override fun listSaves(): List<File> = emptyList()
-
-    override fun close() {
     }
 }

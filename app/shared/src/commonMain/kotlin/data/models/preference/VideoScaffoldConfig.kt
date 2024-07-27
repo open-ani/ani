@@ -44,6 +44,10 @@ data class VideoScaffoldConfig(
      * 在点击选择剧集后, 立即隐藏 media selector
      */
     val hideSelectorOnSelect: Boolean = false,
+    /**
+     * 横屏时自动全屏
+     */
+    val autoFullscreenOnLandscapeMode: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {
