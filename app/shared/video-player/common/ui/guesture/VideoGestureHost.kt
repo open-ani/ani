@@ -623,14 +623,15 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek) {
+                        val swipeToSeekRequester = remember { Any() }
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
-                                controllerState.setRequestProgressBarVisible()
+                                controllerState.setRequestProgressBar(swipeToSeekRequester)
                             },
                             onDragStopped = {
-                                controllerState.cancelRequestProgressBarVisible()
+                                controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
                             },
                         ) {
                             progressSliderState.run {

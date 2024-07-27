@@ -213,7 +213,6 @@ internal fun EpisodeVideoImpl(
         bottomBar = {
             Crossfade(
                 targetState = videoControllerState.visibility,
-                animationSpec = tween(400),
             ) {
                 when (it) {
                     ControllerVisibility.Visible ->

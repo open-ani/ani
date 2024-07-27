@@ -32,6 +32,7 @@ data class ControllerVisibility(
     val detachedSlider: Boolean
 ) {
     companion object {
+        @Stable
         val Visible = ControllerVisibility(
             topBar = true,
             bottomBar = true,
@@ -39,6 +40,8 @@ data class ControllerVisibility(
             rhsBar = true,
             detachedSlider = false,
         )
+
+        @Stable
         val Invisible = ControllerVisibility(
             topBar = false,
             bottomBar = false,
@@ -46,6 +49,8 @@ data class ControllerVisibility(
             rhsBar = false,
             detachedSlider = false,
         )
+
+        @Stable
         val DetachedSliderOnly = ControllerVisibility(
             topBar = false,
             bottomBar = true,
@@ -55,6 +60,7 @@ data class ControllerVisibility(
         )
     }
 }
+
 @Stable
 class VideoControllerState(
     initialVisibility: ControllerVisibility = ControllerVisibility.Visible
@@ -98,16 +104,25 @@ class VideoControllerState(
             alwaysOnRequests.remove(requester)
         }
     }
-    fun setRequestProgressBarVisible() {
-        if (!visibility.bottomBar) {
-            visibility = ControllerVisibility.DetachedSliderOnly
-        }
+
+    private val progressBarRequesters = SnapshotStateList<Any>()
+
+    /**
+     * 请求显示进度条
+     * 当目前没有显示进度条时, 将显示独立的进度条.
+     * 若目前已经有进度条, 则会保持该状态, 防止自动关闭.
+     *
+     * @param requester 是谁希望请求显示进度条. 在 [cancelRequestProgressBarVisible] 时需要传入相同实例. 同一时刻有任一 requester 则会让进度条一直显示.
+     */
+    fun setRequestProgressBar(requester: Any) {
+        if (requester in progressBarRequesters) return
+        progressBarRequesters.add(requester)
     }
 
-    fun cancelRequestProgressBarVisible() {
-        if (!alwaysOn && visibility.detachedSlider) {
-            //resume previous visibility
-            visibility = ControllerVisibility.Invisible
-        }
+    /**
+     * 取消显示进度条
+     */
+    fun cancelRequestProgressBarVisible(requester: Any) {
+        progressBarRequesters.remove(requester)
     }
 }
