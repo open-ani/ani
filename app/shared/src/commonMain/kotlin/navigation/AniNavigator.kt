@@ -13,6 +13,7 @@ import kotlinx.coroutines.CompletableDeferred
 import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
+import moe.tlaster.precompose.navigation.PopUpTo
 import org.koin.core.component.KoinComponent
 import org.koin.core.context.GlobalContext
 
@@ -30,6 +31,15 @@ interface AniNavigator {
 
     val navigator: Navigator
 
+    fun goBack() {
+        navigator.goBack()
+    }
+
+    fun popUntilNotAuth() {
+        navigator.goBack(PopUpTo("/bangumi-token-oauth", inclusive = true), inclusive = true)
+        navigator.goBack(PopUpTo("/bangumi-oauth", inclusive = true), inclusive = true)
+    }
+
     fun navigateSubjectDetails(subjectId: Int) {
         navigator.navigate("/subjects/$subjectId")
     }
@@ -45,15 +55,33 @@ interface AniNavigator {
         )
     }
 
+    fun navigateWelcome() {
+        navigator.navigate("/welcome")
+    }
+
     fun navigateHome() {
         navigator.navigate("/home")
+    }
+
+    fun navigateSearch(requestFocus: Boolean = false) {
+        navigator.navigate("/home?tab=search")
     }
 
     /**
      * 登录页面
      */
-    fun navigateAuth() {
-        navigator.navigate("/auth", NavOptions(launchSingleTop = true))
+    fun navigateBangumiOAuthOrTokenAuth() {
+        navigator.navigate("/bangumi-oauth", NavOptions(launchSingleTop = true))
+    }
+
+    fun navigateBangumiTokenAuth() {
+        navigator.navigate(
+            "/bangumi-token-auth",
+            NavOptions(
+                launchSingleTop = true,
+                popUpTo = PopUpTo("/bangumi-oauth", inclusive = true),
+            ),
+        )
     }
 
     fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {

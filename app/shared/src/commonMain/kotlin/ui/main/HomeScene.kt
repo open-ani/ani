@@ -15,15 +15,12 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Login
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,9 +29,9 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,15 +43,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.session.launchAuthorize
+import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
-import me.him188.ani.app.session.isLoggedIn
-import me.him188.ani.app.session.requireOnline
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -66,6 +65,7 @@ import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
+import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.collection.CollectionPage
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
@@ -73,7 +73,6 @@ import me.him188.ani.app.ui.update.FailedToInstallDialog
 import me.him188.ani.app.ui.update.UpdateLogoIcon
 import me.him188.ani.app.ui.update.UpdateLogoLabel
 import me.him188.ani.app.ui.update.handleClickLogo
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Composable
@@ -89,28 +88,6 @@ fun HomeScene(modifier: Modifier = Modifier) {
         HomeSceneLandscape(modifier)
     } else {
         HomeScenePortrait(modifier)
-    }
-}
-
-@Composable
-private fun UserAvatar(
-    modifier: Modifier = Modifier,
-    vm: AccountViewModel = rememberViewModel { AccountViewModel() },
-) {
-    val user by vm.selfInfo.collectAsStateWithLifecycle()
-    val loggedIn by isLoggedIn()
-    if (loggedIn == false) {
-        val navigator = LocalNavigator.current
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
-            IconButton({ vm.requireOnline(navigator = navigator) }, modifier) {
-                Icon(Icons.AutoMirrored.Rounded.Login, "登录")
-            }
-        }
-    } else {
-        AvatarImage(
-            url = user?.avatarUrl,
-            modifier.clip(CircleShape).placeholder(user == null),
-        )
     }
 }
 
@@ -160,89 +137,126 @@ private fun HomeSceneLandscape(
 ) {
     val pagerState = rememberPagerState(1) { 4 }
     val uiScope = rememberCoroutineScope()
+    val searchBarFocusRequester = remember { FocusRequester() }
 
-    Row(modifier) {
-        Surface {
-            Column {
-                // NavigationRail 宽度至少为 80.dp
-                NavigationRail(
-                    Modifier.padding(top = 16.dp).weight(1f),
-                    header = {
-                        UserAvatar(Modifier.size(48.dp))
-                    },
-                ) {
-                    Column(
-                        Modifier
-                            .padding(bottom = 8.dp)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        NavigationRailItem(
-                            pagerState.currentPage == 0,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(0)
-                                }
-                            },
-                            icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                            label = { Text(text = "找番") },
-                        )
-                        NavigationRailItem(
-                            pagerState.currentPage == 1,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(1)
-                                }
-                            },
-                            icon = { Icon(Icons.Rounded.Star, null) },
-                            label = { Text(text = "追番") },
-                        )
-                        NavigationRailItem(
-                            pagerState.currentPage == 2,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(2)
-                                }
-                            },
-                            icon = { Icon(Icons.Rounded.DownloadDone, null) },
-                            label = { Text(text = "缓存") },
-                        )
+    OverrideNavigation(
+        { old ->
+            object : AniNavigator by old {
+                override fun navigateSearch(requestFocus: Boolean) {
+                    uiScope.launch {
+                        pagerState.scrollToPage(0)
+                        if (requestFocus) {
+                            searchBarFocusRequester.requestFocus()
+                        }
+                    }
+                }
 
-                        UpdateCheckerItem()
-
-                        Spacer(Modifier.weight(1f))
-
-                        NavigationRailItem(
-                            pagerState.currentPage == 3,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(3)
-                                }
-                            },
-                            icon = { Icon(Icons.Rounded.Settings, null) },
-                            label = { Text(text = "设置") },
-                        )
+                override fun navigateSettings(tab: SettingsTab) {
+                    uiScope.launch {
+                        pagerState.scrollToPage(3)
                     }
                 }
             }
-        }
-        VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-        Column(Modifier.fillMaxHeight().weight(1f)) {
-            val navigator by rememberUpdatedState(LocalNavigator.current)
-
-            VerticalPager(pagerState, userScrollEnabled = false) {
-                when (it) {
-                    0 -> HomePage()
-                    1 -> CollectionPage(
-                        onClickCaches = {
-                            navigator.navigateCaches()
+        },
+    ) {
+        Row(modifier) {
+            Surface {
+                Column {
+                    // NavigationRail 宽度至少为 80.dp
+                    NavigationRail(
+                        Modifier.padding(top = 16.dp).weight(1f),
+                        header = {
+                            val vm = rememberViewModel { AccountViewModel() }
+                            val user = vm.selfInfo
+                            if (vm.authState.isKnownLoggedOut) {
+                                val navigator = LocalNavigator.current
+                                TextButton({ vm.launchAuthorize(navigator = navigator) }) {
+                                    Text("登录")
+                                }
+                            } else {
+                                AvatarImage(
+                                    url = user?.avatarUrl,
+                                    Modifier.size(48.dp).clip(CircleShape).placeholder(user == null),
+                                )
+                            }
                         },
-                        Modifier.fillMaxSize(),
-                    )
+                    ) {
+                        Column(
+                            Modifier
+                                .padding(bottom = 8.dp)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            NavigationRailItem(
+                                pagerState.currentPage == 0,
+                                onClick = {
+                                    uiScope.launch {
+                                        pagerState.scrollToPage(0)
+                                    }
+                                },
+                                icon = { Icon(Icons.Rounded.TravelExplore, null) },
+                                label = { Text(text = "找番") },
+                            )
+                            NavigationRailItem(
+                                pagerState.currentPage == 1,
+                                onClick = {
+                                    uiScope.launch {
+                                        pagerState.scrollToPage(1)
+                                    }
+                                },
+                                icon = { Icon(Icons.Rounded.Star, null) },
+                                label = { Text(text = "追番") },
+                            )
+                            NavigationRailItem(
+                                pagerState.currentPage == 2,
+                                onClick = {
+                                    uiScope.launch {
+                                        pagerState.scrollToPage(2)
+                                    }
+                                },
+                                icon = { Icon(Icons.Rounded.DownloadDone, null) },
+                                label = { Text(text = "缓存") },
+                            )
 
-                    2 -> CacheManagementPage(Modifier.fillMaxSize())
-                    3 -> SettingsPage(Modifier.fillMaxSize())
+                            UpdateCheckerItem()
+
+                            Spacer(Modifier.weight(1f))
+
+                            NavigationRailItem(
+                                pagerState.currentPage == 3,
+                                onClick = {
+                                    uiScope.launch {
+                                        pagerState.scrollToPage(3)
+                                    }
+                                },
+                                icon = { Icon(Icons.Rounded.Settings, null) },
+                                label = { Text(text = "设置") },
+                            )
+                        }
+                    }
+                }
+            }
+            VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            Column(Modifier.fillMaxHeight().weight(1f)) {
+                val navigator by rememberUpdatedState(LocalNavigator.current)
+
+                VerticalPager(pagerState, userScrollEnabled = false) {
+                    when (it) {
+                        0 -> HomePage(
+                            searchBarFocusRequester = searchBarFocusRequester,
+                        )
+
+                        1 -> CollectionPage(
+                            onClickCaches = {
+                                navigator.navigateCaches()
+                            },
+                            Modifier.fillMaxSize(),
+                        )
+
+                        2 -> CacheManagementPage(Modifier.fillMaxSize())
+                        3 -> SettingsPage(Modifier.fillMaxSize())
+                    }
                 }
             }
         }
@@ -255,6 +269,7 @@ private fun HomeScenePortrait(
 ) {
     val pagerState = rememberPagerState(1) { 3 }
     val uiScope = rememberCoroutineScope()
+    val searchBarFocusRequester = remember { FocusRequester() }
     Scaffold(
         modifier.fillMaxSize(),
         bottomBar = {
@@ -309,23 +324,40 @@ private fun HomeScenePortrait(
     ) { contentPadding -> // only contains padding of bottom bottom appbar
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
-        HorizontalPager(pagerState, userScrollEnabled = false) {
-            when (it) {
-                0 -> HomePage(contentPadding)
-                1 -> CollectionPage(
-                    onClickCaches = {
-                        navigator.navigateCaches()
-                    },
-                    contentPadding = contentPadding,
-                )
-
-                2 -> {
-                    ProfilePage(
-                        contentPadding = contentPadding,
-                        onClickSettings = {
-                            navigator.navigateSettings()
-                        },
+        OverrideNavigation(
+            { old ->
+                object : AniNavigator by old {
+                    override fun navigateSearch(requestFocus: Boolean) {
+                        uiScope.launch {
+                            pagerState.scrollToPage(0)
+                            searchBarFocusRequester.requestFocus()
+                        }
+                    }
+                }
+            },
+        ) {
+            HorizontalPager(pagerState, userScrollEnabled = false) {
+                when (it) {
+                    0 -> HomePage(
+                        contentPadding,
+                        searchBarFocusRequester = searchBarFocusRequester,
                     )
+
+                    1 -> CollectionPage(
+                        onClickCaches = {
+                            navigator.navigateCaches()
+                        },
+                        contentPadding = contentPadding,
+                    )
+
+                    2 -> {
+                        ProfilePage(
+                            contentPadding = contentPadding,
+                            onClickSettings = {
+                                navigator.navigateSettings()
+                            },
+                        )
+                    }
                 }
             }
         }

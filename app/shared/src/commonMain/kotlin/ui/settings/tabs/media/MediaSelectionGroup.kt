@@ -21,13 +21,16 @@ import androidx.compose.ui.util.fastAll
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.components.DropdownItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SorterItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
 import me.him188.ani.app.ui.subject.episode.details.renderResolution
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 
 @Composable
@@ -166,6 +169,40 @@ internal fun SettingsScope.MediaSelectionGroup(vm: MediaSettingsViewModel) {
             useThinHeader = true,
         ) {
             val mediaSelectorSettings by vm.mediaSelectorSettings
+
+            kotlin.run {
+                val values = remember {
+                    MediaSourceKind.selectableEntries + null
+                }
+                DropdownItem(
+                    selected = { mediaSelectorSettings.preferKind },
+                    values = { values },
+                    itemText = {
+                        Text(
+                            when (it) {
+                                MediaSourceKind.WEB -> "在线"
+                                MediaSourceKind.BitTorrent -> "BT"
+                                null -> "无偏好"
+                                MediaSourceKind.LocalCache -> "" // not possible
+                            },
+                        )
+                    },
+                    onSelect = {
+                        vm.mediaSelectorSettings.update(mediaSelectorSettings.copy(preferKind = it))
+                    },
+                    Modifier.placeholder(vm.mediaSelectorSettings.loading),
+                    itemIcon = {
+                        it?.let {
+                            Icon(MediaSourceIcons.kind(it), null)
+                        }
+                    },
+                    title = { Text("优先选择数据源类型") },
+                    description = { Text("在线数据源载入快但清晰度可能偏低，BT 数据源相反") },
+                )
+            }
+
+            HorizontalDividerItem()
+
             SwitchItem(
                 checked = mediaSelectorSettings.showDisabled,
                 onCheckedChange = {

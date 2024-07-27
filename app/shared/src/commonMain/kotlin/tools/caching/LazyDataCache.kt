@@ -370,6 +370,7 @@ private class LazyDataCacheImpl<T>(
      */
     private suspend inline fun updateDataSanitized(
         orderPolicy: RefreshOrderPolicy,
+        allowSavedPage: Boolean = false,
         crossinline block: (List<T>) -> List<T>
     ) {
         // 更新持久的数据, 保证缓存一致性
@@ -381,8 +382,8 @@ private class LazyDataCacheImpl<T>(
                     val newList = block(save.list).fastDistinctBy { getKey(it) }
                     return@updateData LazyDataCacheSave(
                         newList,
-                        page = source?.currentPage?.value ?: save.page,
-                        totalSize = (source?.totalSize?.value ?: save.totalSize)?.let {
+                        page = source?.currentPage?.value ?: if (allowSavedPage) null else save.page,
+                        totalSize = (source?.totalSize?.value ?: if (allowSavedPage) null else save.totalSize)?.let {
                             it + (newList.size - save.list.size)
                         },
                     )
@@ -406,8 +407,8 @@ private class LazyDataCacheImpl<T>(
                     val newList = newIndices.map { new[it] }
                     return@updateData LazyDataCacheSave(
                         newList,
-                        page = source?.currentPage?.value ?: save.page,
-                        totalSize = (source?.totalSize?.value ?: save.totalSize)?.let {
+                        page = source?.currentPage?.value ?: if (allowSavedPage) null else save.page,
+                        totalSize = (source?.totalSize?.value ?: if (allowSavedPage) null else save.totalSize)?.let {
                             it + (newList.size - save.list.size)
                         },
                     )
@@ -559,7 +560,10 @@ private class LazyDataCacheImpl<T>(
 
                     // Update source only if the request was successful, as per documentation on [refresh]
                     currentSourceInfo.value = SourceInfo(source)
-                    updateDataSanitized(orderPolicy) { resp.orEmpty() } // must after currentSourceInfo update
+                    updateDataSanitized(
+                        orderPolicy,
+                        allowSavedPage = false,
+                    ) { resp.orEmpty() } // must after currentSourceInfo update
                 } finally {
                     requestInProgress.value = false
                 }
@@ -577,7 +581,9 @@ private class LazyDataCacheImpl<T>(
         lock.withLock {
             currentSourceInfo.value = null
             withContext(Dispatchers.Default) {
-                updateDataSanitized(RefreshOrderPolicy.REPLACE) { emptyList() }
+                persistentStore.updateData {
+                    LazyDataCacheSave.empty()
+                }
             }
         }
     }

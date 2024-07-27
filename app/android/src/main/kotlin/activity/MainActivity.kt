@@ -18,7 +18,6 @@
 
 package me.him188.ani.android.activity
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
@@ -30,22 +29,18 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.session.BangumiAuthorizationConstants
-import me.him188.ani.app.session.OAuthResult
-import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
-import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
@@ -68,19 +63,6 @@ class MainActivity : AniComponentActivity() {
                 AndroidNotifManager.handleIntent(code)
             }
         }
-
-        val data = intent.data ?: return
-
-        val hasCallbackCode = data.queryParameterNames?.contains("code") == true
-        if (hasCallbackCode) {
-            val code = data.getQueryParameter("code")!!
-            logger.info { "onNewIntent Receive code '$code', current processingRequest: ${sessionManager.processingRequest.value}" }
-            sessionManager.processingRequest.value?.onCallback(
-                Result.success(
-                    OAuthResult(code, BangumiAuthorizationConstants.CALLBACK_URL),
-                ),
-            )
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,21 +83,6 @@ class MainActivity : AniComponentActivity() {
 
         // 允许画到 system bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        kotlin.runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    100,
-                )
-            }
-        }.onFailure {
-            logger.error(it) { "Failed to request notification permission" }
-        }
-
-        GlobalContext.get().get<NotifManager>().createChannels()
-
 
         setContent {
             AniApp {
@@ -159,7 +126,7 @@ class MainActivity : AniComponentActivity() {
 
         lifecycleScope.launch {
             runCatching {
-                sessionManager.requireOnline(aniNavigator)
+                sessionManager.requireAuthorize(aniNavigator, navigateToWelcome = true)
             }
         }
     }

@@ -5,9 +5,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +34,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
+import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
@@ -52,6 +50,7 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorAutoSelect
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
+import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
@@ -60,6 +59,8 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
@@ -83,7 +84,6 @@ import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.ui.DanmakuConfig
-import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
@@ -104,6 +104,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val subjectPresentation: SubjectPresentation // by state
     val episodePresentation: EpisodePresentation // by state
+
+    val authState: AuthState
 
     val episodeDetailsState: EpisodeDetailsState
 
@@ -159,20 +161,16 @@ interface EpisodeViewModel : HasBackgroundScope {
      */
     val playerState: PlayerState
 
-    @UiThread
-    suspend fun copyDownloadLink(clipboardManager: ClipboardManager)
-
-    @UiThread
-    suspend fun browseMedia(context: Context)
-
-    @UiThread
-    suspend fun browseDownload(context: Context)
-
     // Danmaku
 
     val danmaku: VideoDanmakuState
 
     val danmakuStatistics: DanmakuStatistics
+
+    val episodeCommentState: CommentState
+
+    @UiThread
+    fun stopPlaying()
 }
 
 fun EpisodeViewModel(
@@ -200,6 +198,7 @@ private class EpisodeViewModelImpl(
     private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
+    private val episodeRevisionRepository: EpisodeRevisionRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -344,6 +343,7 @@ private class EpisodeViewModelImpl(
 
     override val episodePresentation: EpisodePresentation by episodePresentationFlow
         .produceState(EpisodePresentation.Placeholder)
+    override val authState: AuthState = AuthState()
 
     private val episodeCollectionsFlow = subjectManager.episodeCollectionsFlow(subjectId)
         .shareInBackground()
@@ -386,8 +386,7 @@ private class EpisodeViewModelImpl(
                 }?.second ?: EpisodeCacheStatus.NotCached
             },
             onSelect = {
-                episodeId.value = it.episode.id
-                episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
+                switchEpisode(it.episode.id)
             },
             onChangeCollectionType = { episode, it ->
                 collectionButtonEnabled.value = false
@@ -445,36 +444,22 @@ private class EpisodeViewModelImpl(
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
 
+    fun switchEpisode(episodeId: Int) {
+        episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
+        mediaSelector.unselect() // 否则不会自动选择
+        playerState.stop()
+        switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
+        this.episodeId.value = episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
+    }
+
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
         onSelect = {
-            mediaSelector.unselect() // 否则不会自动选择
-            playerState.stop()
-
-            switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
-            episodeId.value = it.episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
+            switchEpisode(it.episodeId)
         },
         currentEpisodeId = episodeId,
         parentCoroutineContext = backgroundScope.coroutineContext,
     )
-
-    override suspend fun copyDownloadLink(clipboardManager: ClipboardManager) {
-        requestMediaOrNull()?.let {
-            clipboardManager.setText(AnnotatedString(it.download.uri))
-        }
-    }
-
-    override suspend fun browseMedia(context: Context) {
-        requestMediaOrNull()?.let {
-            browserNavigator.openBrowser(context, it.originalUrl)
-        }
-    }
-
-    override suspend fun browseDownload(context: Context) {
-        requestMediaOrNull()?.let {
-            browserNavigator.openMagnetLink(context, it.download.uri)
-        }
-    }
 
     private val danmakuLoader = DanmakuLoaderImpl(
         requestFlow = mediaFetchSession.transformLatest {
@@ -519,6 +504,25 @@ private class EpisodeViewModelImpl(
         },
         backgroundScope,
     )
+
+    private val episodeCommentLoader = CommentLoader.episode(
+        episodeId = episodeId,
+        coroutineContext = backgroundScope.coroutineContext,
+        episodeCommentSource = { episodeRevisionRepository.getSubjectEpisodeComments(it) },
+    )
+
+    override val episodeCommentState: CommentState = CommentState(
+        sourceVersion = episodeCommentLoader.sourceVersion.produceState(null),
+        list = episodeCommentLoader.list.produceState(emptyList()),
+        hasMore = episodeCommentLoader.hasFinished.produceState(false),
+        onReload = { episodeCommentLoader.reload() },
+        onLoadMore = { episodeCommentLoader.loadMore() },
+        backgroundScope = backgroundScope,
+    )
+
+    override fun stopPlaying() {
+        playerState.stop()
+    }
 
     private val selfUserId = danmakuManager.selfId
 
@@ -613,20 +617,5 @@ private class EpisodeViewModelImpl(
         data,
         isSelf = selfId == data.senderId,
     )
-
-    /**
-     * Requests the user to select a media if not already.
-     * Returns null if the user cancels the selection.
-     */
-    @UiThread
-    private suspend fun requestMediaOrNull(): Media? {
-        mediaSelectorPresentation.selected?.let {
-            return it // already selected
-        }
-
-        mediaSelectorVisible = true
-        snapshotFlow { mediaSelectorVisible }.first { !it } // await closed
-        return mediaSelectorPresentation.selected
-    }
 }
 

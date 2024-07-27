@@ -22,11 +22,11 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
 import me.him188.ani.app.i18n.ResourceBundle
 import me.him188.ani.app.i18n.loadResourceBundle
 import me.him188.ani.app.platform.AndroidLoggingConfigurator
@@ -35,7 +35,6 @@ import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.torrent.libtorrent4j.Libtorrent4jTorrentDownloader
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -116,17 +115,11 @@ class AniApplication : Application() {
         // 将下载数据放在数据目录防止被系统清除
         val torrentCaches = applicationContext.filesDir.resolve("torrent-caches").apply { mkdir() }
 
-        /**
-         * 迁移过去后 metadata 保存的 EXTRA_TORRENT_DATA 仍然是旧的,
-         * 但是 [TorrentMediaCacheEngine.deleteUnusedCaches] 可以处理这种情况.
-         *
-         * [Libtorrent4jTorrentDownloader] 可以支持新的目录.
-         * [QBittorrentTorrentDownloader] 也支持, 不过目前 PC 上数据仍然在缓存目录.
-         */
-        applicationContext.cacheDir.resolve("torrent-caches").let {
+        // since 3.5, 删除 libtorrent4j 缓存, 大概保留到 3.8 就可以删除个代码了
+        torrentCaches.resolve("libtorrent4j").let {
             if (it.exists()) {
-                it.copyRecursively(torrentCaches, true)
                 it.deleteRecursively()
+                Log.w("AniApplication", "Deleted libtorrent4j cache")
             }
         }
 

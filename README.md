@@ -48,14 +48,13 @@ Ani 的目标是提供尽可能简单且舒适的追番体验。
 
 ## 下载
 
-Ani 支持 Android 和桌面端 (macOS、Windows)。现阶段对 Android 支持最佳, PC 需要依赖 qBittorrent 才能下载
-BT 视频，但不安装 qBit 也可以使用在线数据源。
+Ani 支持 Android 和桌面端 (macOS、Windows)。
 
 下载:
 
-- 稳定版本: 每 1-2 周更新, 功能稳定  
+- 稳定版本: 每两周更新, 功能稳定  
   [下载稳定版本](https://github.com/Him188/ani/releases/latest)
-- 测试版本: 每 1-3 天更新, 体验最新功能  
+- 测试版本: 每两天更新, 体验最新功能  
   [下载测试版本](https://github.com/Him188/ani/releases)
 
 ## 功能截图
@@ -64,9 +63,7 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 ### 管理追番
 
-- 同步 [Bangumi][Bangumi] 收藏
-- 按"在看/想看/看过"分类
-- 记录观看进度
+- 同步 [Bangumi][Bangumi] 收藏, 记录观看进度
 
 <img width="300" src=".readme/images/collection/collection-dark.jpg" alt="collection-dark"/> <img width="300" src=".readme/images/subject/subject-dark.jpg" alt="subject-dark"/>
 
@@ -78,8 +75,7 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 - 全自动整合多个 BT 数据源与在线数据源, 兼顾资源质量与缓冲速度
 - 自动解析资源信息, 可配置的智能选择算法完全避免找资源的麻烦
-- 按番剧记忆偏好选项
-- 支持季度全集资源
+- 记忆偏好选项
 
 <img width="270" src=".readme/images/episode/episode-player-loading.jpg" alt="episode-player-loading"/> <img width="270" src=".readme/images/episode/episode-stats.jpg" alt="episode-stats"/> <img width="270" src=".readme/images/episode/episode-media.jpg" alt="episode-media"/> 
 
@@ -99,12 +95,6 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 <img width="600" src=".readme/images/episode/player-settings.jpeg" alt="player-settings"/>
 
 <img width="600" src=".readme/images/episode/episode-play-desktop.png" alt="episode-play-desktop"/>
-
-### 视频手势
-
-- 双击切换播放/暂停, 左右滑动快进/快退
-- 左侧上下滑动调整亮度, 右侧上下滑动调整音量
-- 倍速播放, 长按快进, 手势开关, 键盘快捷键
 
 <img width="600" src=".readme/images/episode/player-gesture.jpeg" alt="episode-gesture"/>
 
@@ -132,7 +122,7 @@ BT 视频，但不安装 qBit 也可以使用在线数据源。
 
 ### 代理设置
 
-Ani 自带不需要代理的数据源 ，无需配置代理。
+Ani 自带不需要代理的数据源，无需配置代理。
 若你想要，也可以设置代理后使用所有数据源。
 
 <img width="300" src=".readme/images/preferences/preferences-network-proxy.jpg" alt="preferences-network-proxy"/> <img width="300" src=".readme/images/preferences/preferences-network-danmaku.jpg" alt="preferences-network-danmaku"/>

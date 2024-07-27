@@ -8,6 +8,9 @@ class MediaSourceParameters(
     }
 }
 
+fun MediaSourceParameters.isEmpty() = list.isEmpty()
+fun MediaSourceParameters.isNotEmpty() = list.isNotEmpty()
+
 inline fun buildMediaSourceParameters(block: MediaSourceParametersBuilder.() -> Unit): MediaSourceParameters =
     MediaSourceParametersBuilder().apply(block).build()
 

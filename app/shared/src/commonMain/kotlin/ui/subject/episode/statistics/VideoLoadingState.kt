@@ -60,6 +60,7 @@ sealed interface VideoLoadingState {
 
     sealed class Failed : VideoLoadingState
     data object ResolutionTimedOut : Failed()
+    data object Cancelled : Failed()
 
     /**
      * 不支持的媒体, 或者说是未启用支持该媒体的 [VideoSourceResolver]
@@ -149,6 +150,8 @@ fun VideoLoadingSummary(
                     is VideoLoadingState.UnknownError -> {
                         Text("未知错误，点击查看")
                     }
+
+                    VideoLoadingState.Cancelled -> Text("已取消")
                 }
             }
         }

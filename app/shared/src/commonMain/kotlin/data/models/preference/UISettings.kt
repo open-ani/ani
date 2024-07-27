@@ -41,7 +41,7 @@ enum class ThemeKind {
 @Serializable
 @Immutable
 data class MyCollectionsSettings(
-    val enableListAnimation: Boolean = true,
+    val enableListAnimation: Boolean = false,
 ) {
     companion object {
         @Stable

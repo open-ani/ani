@@ -42,6 +42,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,7 @@ import moe.tlaster.precompose.navigation.BackHandler
 fun HomePage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
+    searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val searchViewModel = rememberViewModel { SearchViewModel() }
     val snackBarHostState = remember { SnackbarHostState() }
@@ -91,7 +94,7 @@ fun HomePage(
                     showDeleteTagTip = showDeleteTagTip,
                     searchHistory = searchHistory,
                     contentPadding = contentPadding,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().focusRequester(searchBarFocusRequester),
                     onActiveChange = { active -> searchViewModel.searchActive = active },
                     onSearchFilterEvent = { event -> searchViewModel.handleSearchFilterEvent(event) },
                     onDeleteHistory = { historyId -> searchViewModel.deleteSearchHistory(historyId) },

@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -11,11 +12,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -49,8 +52,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -63,17 +67,18 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
+import me.him188.ani.app.ui.foundation.effects.ScreenRotationEffect
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
-import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentViewModel
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
+import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
@@ -84,7 +89,6 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.random
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.protocol.DanmakuLocation
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 
@@ -127,7 +131,7 @@ private fun EpisodeSceneContent(
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val navigator = LocalNavigator.current
     BackHandler {
-        vm.playerState.pause()
+        vm.stopPlaying()
         navigator.navigator.goBack()
     }
 
@@ -147,6 +151,12 @@ private fun EpisodeSceneContent(
     AutoPauseEffect(vm)
 
     VideoNotifEffect(vm)
+
+    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode) {
+        ScreenRotationEffect {
+            vm.isFullscreen = it
+        }
+    }
 
     BoxWithConstraints(modifier) {
         val layoutMode by rememberUpdatedState(LocalLayoutMode.current)
@@ -191,28 +201,78 @@ private fun EpisodeSceneTabletVeryWide(
                 return@Row
             }
 
-            val episodeId by vm.episodeId.collectAsStateWithLifecycle()
-            val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
-                EpisodeCommentViewModel(episodeId)
-            }
+            val pagerState = rememberPagerState(initialPage = 0) { 2 }
+            val scope = rememberCoroutineScope()
 
-            Column(Modifier.width(width = (maxWidth * 0.18f).coerceAtLeast(300.dp))) {
+            Column(Modifier.width(width = (maxWidth * 0.25f).coerceIn(340.dp, 460.dp))) {
+                TabRow(pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth())
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
-                EpisodeDetails(
-                    vm.episodeDetailsState,
-                    vm.episodeCarouselState,
-                    vm.editableRatingState,
-                    vm.editableSubjectCollectionTypeState,
-                    vm.danmakuStatistics,
-                    vm.videoStatistics,
-                    vm.mediaSelectorPresentation,
-                    vm.mediaSourceResultsPresentation,
-                    Modifier.verticalScroll(rememberScrollState()),
-                )
+                HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
+                    when (index) {
+                        0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            EpisodeDetails(
+                                vm.episodeDetailsState,
+                                vm.episodeCarouselState,
+                                vm.editableRatingState,
+                                vm.editableSubjectCollectionTypeState,
+                                vm.danmakuStatistics,
+                                vm.videoStatistics,
+                                vm.mediaSelectorPresentation,
+                                vm.mediaSourceResultsPresentation,
+                                vm.authState,
+                            )
+                        }
 
-                EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
+                        1 -> EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun TabRow(
+    pagerState: PagerState,
+    scope: CoroutineScope,
+    commentCount: () -> Int?,
+    modifier: Modifier = Modifier,
+) {
+    SecondaryScrollableTabRow(
+        selectedTabIndex = pagerState.currentPage,
+        modifier,
+        indicator = @Composable { tabPositions ->
+            TabRowDefaults.PrimaryIndicator(
+                Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+        edgePadding = 0.dp,
+        divider = {},
+    ) {
+        Tab(
+            selected = pagerState.currentPage == 0,
+            onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+            text = { Text("详情", softWrap = false) },
+            selectedContentColor = MaterialTheme.colorScheme.primary,
+            unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+        )
+        Tab(
+            selected = pagerState.currentPage == 1,
+            onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+            text = {
+                val text by remember(commentCount) {
+                    derivedStateOf {
+                        val count = commentCount()
+                        if (count == null) "评论" else "评论 $count"
+                    }
+                }
+                Text(text, softWrap = false)
+            },
+            selectedContentColor = MaterialTheme.colorScheme.primary,
+            unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
@@ -221,21 +281,16 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val episodeId by vm.episodeId.collectAsStateWithLifecycle()
-    val commentViewModel = rememberViewModel(keys = listOf(episodeId)) {
-        EpisodeCommentViewModel(episodeId)
-    }
-    LaunchedEffect(true) {
-        commentViewModel.loadMoreComments()
-    }
-    val commentCount by commentViewModel.commentCount.collectAsStateWithLifecycle(null)
-
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
 
+    LaunchedEffect(true) {
+        vm.episodeCommentState.reload()
+    }
+
     EpisodeSceneContentPhoneScaffold(
         videoOnly = vm.isFullscreen,
-        commentCount = { commentCount },
+        commentCount = { vm.episodeCommentState.count },
         video = {
             EpisodeVideo(vm, vm.isFullscreen, Modifier)
         },
@@ -249,11 +304,12 @@ private fun EpisodeSceneContentPhone(
                 vm.videoStatistics,
                 vm.mediaSelectorPresentation,
                 vm.mediaSourceResultsPresentation,
+                vm.authState,
                 Modifier.fillMaxSize(),
             )
         },
         commentColumn = {
-            EpisodeCommentColumn(commentViewModel, Modifier.fillMaxSize())
+            EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
         tabRowContent = {
@@ -273,45 +329,59 @@ private fun EpisodeSceneContentPhone(
 
     if (showDanmakuEditor) {
         val focusRequester = remember { FocusRequester() }
-        ModalBottomSheet(
-            {
-                showDanmakuEditor = false
+        val dismiss = {
+            showDanmakuEditor = false
+            if (didSetPaused) {
                 didSetPaused = false
-            },
-        ) {
-            Column(Modifier.padding(all = 16.dp)) {
-                val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
-                val videoDanmakuState = vm.danmaku
-                DanmakuEditor(
-                    text = videoDanmakuState.danmakuEditorText,
-                    onTextChange = { videoDanmakuState.danmakuEditorText = it },
-                    isSending = videoDanmakuState.isSending,
-                    placeholderText = danmakuTextPlaceholder,
-                    onSend = { text ->
-                        videoDanmakuState.danmakuEditorText = ""
-                        videoDanmakuState.sendAsync(
-                            DanmakuInfo(
-                                vm.playerState.getExactCurrentPositionMillis(),
-                                text = text,
-                                color = Color.White.toArgb(),
-                                location = DanmakuLocation.NORMAL,
-                            ),
-                        ) {
-                            showDanmakuEditor = false
-                            if (didSetPaused) {
-                                didSetPaused = false
-                                vm.playerState.resume()
-                            }
-                        }
-                    },
-                    Modifier.fillMaxWidth().focusRequester(focusRequester),
-                    colors = OutlinedTextFieldDefaults.colors(),
-                )
+                vm.playerState.resume()
             }
+        }
+        ModalBottomSheet(
+            onDismissRequest = dismiss,
+        ) {
+            DetachedDanmakuEditorLayout(
+                vm.danmaku,
+                onSend = { text ->
+                    vm.danmaku.danmakuEditorText = ""
+                    vm.danmaku.sendAsync(
+                        DanmakuInfo(
+                            vm.playerState.getExactCurrentPositionMillis(),
+                            text = text,
+                            color = Color.White.toArgb(),
+                            location = DanmakuLocation.NORMAL,
+                        ),
+                    ) {
+                        dismiss()
+                    }
+                },
+                focusRequester,
+                Modifier.imePadding(),
+            )
         }
         LaunchedEffect(true) {
             focusRequester.requestFocus()
         }
+    }
+}
+
+@Composable
+private fun DetachedDanmakuEditorLayout(
+    videoDanmakuState: VideoDanmakuState,
+    onSend: (text: String) -> Unit,
+    focusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.padding(all = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("发送弹幕", style = MaterialTheme.typography.titleMedium)
+        DanmakuEditor(
+            text = videoDanmakuState.danmakuEditorText,
+            onTextChange = { videoDanmakuState.danmakuEditorText = it },
+            isSending = videoDanmakuState.isSending,
+            placeholderText = remember { randomDanmakuPlaceholder() },
+            onSend = onSend,
+            Modifier.fillMaxWidth().focusRequester(focusRequester),
+            colors = OutlinedTextFieldDefaults.colors(),
+        )
     }
 }
 
@@ -337,43 +407,7 @@ fun EpisodeSceneContentPhoneScaffold(
 
         Column(Modifier.fillMaxSize()) {
             Row {
-                SecondaryScrollableTabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    Modifier.weight(1f),
-                    indicator = @Composable { tabPositions ->
-                        TabRowDefaults.PrimaryIndicator(
-                            Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                        )
-                    },
-                    containerColor = MaterialTheme.colorScheme.background,
-                    edgePadding = 0.dp,
-                    divider = {},
-                ) {
-                    Tab(
-                        selected = pagerState.currentPage == 0,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                        text = { Text("详情", softWrap = false) },
-                        selectedContentColor = MaterialTheme.colorScheme.primary,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Tab(
-                        selected = pagerState.currentPage == 1,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                        text = {
-                            val commentCountState by remember(commentCount) {
-                                derivedStateOf(commentCount)
-                            }
-                            val text by remember {
-                                derivedStateOf {
-                                    if (commentCountState == null) "评论" else "评论 $commentCountState"
-                                }
-                            }
-                            Text(text, softWrap = false)
-                        },
-                        selectedContentColor = MaterialTheme.colorScheme.primary,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+                TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
                 Box(
                     modifier = Modifier.weight(0.618f) // width
                         .height(48.dp)

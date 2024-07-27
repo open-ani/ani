@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.MyCollectionsSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
@@ -13,7 +15,9 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.session.ViewModelAuthSupport
+import me.him188.ani.app.data.source.session.AuthState
+import me.him188.ani.app.data.source.session.SessionEvent
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.getCachedData
@@ -21,6 +25,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -28,16 +33,19 @@ import org.koin.core.component.inject
 class CollectionsByType(
     val type: UnifiedCollectionType,
     val cache: LazyDataCache<SubjectCollection>,
+    val subjectCollectionColumnState: SubjectCollectionColumnState,
 ) {
     var isAutoRefreshing by mutableStateOf(false)
     var pullToRefreshState: PullToRefreshState? by mutableStateOf(null)
 }
 
 @Stable
-interface MyCollectionsViewModel : HasBackgroundScope, ViewModelAuthSupport {
+interface MyCollectionsViewModel : HasBackgroundScope {
     val subjectManager: SubjectManager
 
     val myCollectionsSettings: MyCollectionsSettings
+
+    val authState: AuthState
 
     @Stable
     fun collectionsByType(type: UnifiedCollectionType): CollectionsByType
@@ -59,13 +67,27 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
     override val subjectManager: SubjectManager by inject()
     private val cacheManager: MediaCacheManager by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val sessionManager: SessionManager by inject()
 
-    val collectionsByType = subjectManager.collectionsByType.map {
-        CollectionsByType(it.key, it.value)
+    val collectionsByType = subjectManager.collectionsByType.map { (type, cache) ->
+        CollectionsByType(
+            type, cache,
+            SubjectCollectionColumnState(
+                cachedData = cache.cachedDataFlow.produceState(emptyList()),
+                hasMore = cache.isCompleted.map { !it }.produceState(true),
+                isKnownEmpty = cache.isCompleted.combine(cache.cachedDataFlow) { completed, data ->
+                    completed && data.isEmpty()
+                }.produceState(false),
+                onRequestMore = { cache.requestMore() },
+                backgroundScope,
+            ),
+        )
     }
+
     override val myCollectionsSettings: MyCollectionsSettings by settingsRepository.uiSettings.flow
         .map { it.myCollections }
         .produceState(MyCollectionsSettings.Default)
+    override val authState: AuthState = AuthState()
 
     @Stable
     override fun collectionsByType(type: UnifiedCollectionType): CollectionsByType =
@@ -114,6 +136,16 @@ class MyCollectionsViewModelImpl : AbstractViewModel(), KoinComponent, MyCollect
                     if (cache.getCachedData().isEmpty()) {
                         cache.requestMore()
                     }
+                }
+            }
+        }
+
+        launchInBackground {
+            sessionManager.events.filterIsInstance<SessionEvent.UserActionEvent>().collect {
+                logger.info { "登录信息变更, 清空缓存" }
+                // 如果有变更登录, 清空缓存
+                for (collections in collectionsByType) {
+                    collections.cache.invalidate()
                 }
             }
         }

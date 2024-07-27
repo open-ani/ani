@@ -154,7 +154,7 @@ jobs:
         name: Upload Android Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: ani-android
+          name: ani-android-debug
           path: app/android/build/outputs/apk/debug/android-debug.apk
 
 
@@ -171,7 +171,7 @@ jobs:
         name: Upload Android Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: ani-android
+          name: ani-android-release
           path: app/android/build/outputs/apk/release/android-release.apk
 
 

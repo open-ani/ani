@@ -12,6 +12,8 @@ private object AniBuildConfigAndroid : AniBuildConfig {
         get() = BuildConfig.BANGUMI_OAUTH_CLIENT_SECRET
     override val isDebug: Boolean
         get() = BuildConfig.DEBUG
+    override val aniAuthServerUrl: String
+        get() = BuildConfig.ANI_AUTH_SERVER_URL
 }
 
 @Stable

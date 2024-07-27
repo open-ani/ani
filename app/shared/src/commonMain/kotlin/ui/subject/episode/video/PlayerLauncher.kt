@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -110,7 +111,7 @@ class PlayerLauncher(
 
     init {
         launchInBackground {
-            videoSource.collect { source ->
+            videoSource.collectLatest { source ->
                 logger.info { "Got new video source: $source, updating playerState" }
                 try {
                     playerState.setVideoSource(source)
@@ -125,8 +126,9 @@ class PlayerLauncher(
                         OpenFailures.ENGINE_DISABLED -> VideoLoadingState.UnsupportedMedia
                     }
                 } catch (_: CancellationException) {
+                    videoLoadingStateFlow.value = VideoLoadingState.Cancelled
                     // ignore
-                    return@collect
+                    return@collectLatest
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to set video source" }
                     videoLoadingStateFlow.value = VideoLoadingState.UnknownError(e)

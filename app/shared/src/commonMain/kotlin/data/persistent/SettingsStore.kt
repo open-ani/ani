@@ -52,7 +52,7 @@ inline val Context.dataStores: PlatformDataStoreManager get() = dataStoresImpl
 abstract class PlatformDataStoreManager {
     val mikanIndexStore: DataStore<MikanIndexes>
         get() = DataStoreFactory.create(
-            serializer = MikanIndexes.serializer().asDataStoreSerializer(MikanIndexes.Empty),
+            serializer = MikanIndexes.serializer().asDataStoreSerializer({ MikanIndexes.Empty }),
             produceFile = { resolveDataStoreFile("mikanIndexes") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MikanIndexes.Empty
@@ -62,7 +62,7 @@ abstract class PlatformDataStoreManager {
     val mediaSourceSaveStore by lazy {
         DataStoreFactory.create(
             serializer = MediaSourceSaves.serializer()
-                .asDataStoreSerializer(MediaSourceSaves.Default),
+                .asDataStoreSerializer({ MediaSourceSaves.Default }),
             produceFile = { resolveDataStoreFile("mediaSourceSaves") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MediaSourceSaves.Default
@@ -74,14 +74,14 @@ abstract class PlatformDataStoreManager {
 }
 
 fun <T> KSerializer<T>.asDataStoreSerializer(
-    defaultValue: T,
+    defaultValue: () -> T,
     format: Json = Json {
         ignoreUnknownKeys = true
     },
 ): Serializer<T> {
     val serializer = this
     return object : Serializer<T> {
-        override val defaultValue: T get() = defaultValue
+        override val defaultValue: T by lazy(defaultValue)
 
         override suspend fun readFrom(input: InputStream): T {
             try {

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -16,6 +17,7 @@ import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.OneshotActionConfig
+import me.him188.ani.app.data.models.preference.ProfileSettings
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
@@ -23,7 +25,6 @@ import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
-import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.utils.logging.debug
@@ -46,6 +47,10 @@ interface SettingsRepository {
      */
     val defaultMediaPreference: Settings<MediaPreference>
 
+    /**
+     * @since 3.5
+     */
+    val profileSettings: Settings<ProfileSettings>
     val proxySettings: Settings<ProxySettings>
     val mediaCacheSettings: Settings<MediaCacheSettings>
     val danmakuSettings: Settings<DanmakuSettings>
@@ -54,7 +59,6 @@ interface SettingsRepository {
     val videoScaffoldConfig: Settings<VideoScaffoldConfig>
 
     val videoResolverSettings: Settings<VideoResolverSettings>
-    val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val anitorrentConfig: Settings<AnitorrentConfig>
 
     val oneshotActionConfig: Settings<OneshotActionConfig>
@@ -66,6 +70,7 @@ interface SettingsRepository {
 interface Settings<T> {
     val flow: Flow<T>
     suspend fun set(value: T)
+    suspend fun update(update: T.() -> T) = set(flow.first().update())
 }
 
 class PreferencesRepositoryImpl(
@@ -77,9 +82,16 @@ class PreferencesRepositoryImpl(
 
     inner class BooleanPreference(
         val name: String,
+        private val default: Boolean,
     ) : Settings<Boolean> {
         private val key = booleanPreferencesKey(name)
-        override val flow: Flow<Boolean> = preferences.data.map { it[key] ?: true }
+        override val flow: Flow<Boolean> = preferences.data.map { it[key] ?: default }
+        override suspend fun update(update: (Boolean) -> Boolean) {
+            preferences.edit {
+                it[key] = update(it[key] ?: default)
+            }
+        }
+
         override suspend fun set(value: Boolean) {
             preferences.edit { it[key] = value }
         }
@@ -88,7 +100,7 @@ class PreferencesRepositoryImpl(
     inner class SerializablePreference<T : Any>(
         val name: String,
         private val serializer: KSerializer<T>,
-        default: () -> T,
+        private val default: () -> T,
     ) : Settings<T> {
         private val key = stringPreferencesKey(name)
         override val flow: Flow<T> = preferences.data
@@ -105,6 +117,19 @@ class PreferencesRepositoryImpl(
                 }
             }
 
+        override suspend fun update(update: (T) -> T) {
+            logger.debug { "Updating preference '$key' with lambda" }
+            preferences.edit { pref ->
+                pref[key] = format.encodeToString(
+                    serializer,
+                    update(
+                        pref[key]?.let { format.decodeFromString(serializer, it) }
+                            ?: default(),
+                    ),
+                )
+            }
+        }
+
         override suspend fun set(value: T) {
             logger.debug { "Updating preference '$key' with: $value" }
             preferences.edit {
@@ -113,7 +138,7 @@ class PreferencesRepositoryImpl(
         }
     }
 
-    override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled")
+    override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled", default = true)
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
     override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
@@ -127,6 +152,11 @@ class PreferencesRepositoryImpl(
             MediaPreference.serializer(),
             default = { MediaPreference.PlatformDefault },
         )
+    override val profileSettings: Settings<ProfileSettings> = SerializablePreference(
+        "profileSettings",
+        ProfileSettings.serializer(),
+        default = { ProfileSettings.Default },
+    )
     override val proxySettings: Settings<ProxySettings> = SerializablePreference(
         "proxyPreferences",
         ProxySettings.serializer(),
@@ -161,11 +191,6 @@ class PreferencesRepositoryImpl(
         "videoResolverSettings",
         VideoResolverSettings.serializer(),
         default = { VideoResolverSettings.Default },
-    )
-    override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
-        "libtorrent4jConfig",
-        Libtorrent4jConfig.serializer(),
-        default = { Libtorrent4jConfig.Default },
     )
     override val anitorrentConfig: Settings<AnitorrentConfig> = SerializablePreference(
         "anitorrentConfig",

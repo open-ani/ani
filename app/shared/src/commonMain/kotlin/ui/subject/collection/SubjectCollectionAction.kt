@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TaskAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -176,6 +177,15 @@ private fun SubjectCollectionAction.colorForCurrent(
     LocalContentColor.current
 }
 
+object SubjectCollectionTypeButtonDefaults {
+    @Composable
+    fun collectedButtonColors() = ButtonDefaults.outlinedButtonColors(
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    )
+
+    @Composable
+    fun collectedBorder() = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.612f))
+}
 
 /**
  * 展示当前收藏类型的按钮, 点击时可以弹出菜单选择要修改的收藏类型.
@@ -191,6 +201,8 @@ fun SubjectCollectionTypeButton(
     modifier: Modifier = Modifier,
     collected: Boolean = type != UnifiedCollectionType.NOT_COLLECTED,
     enabled: Boolean = true,
+    collectedColors: ButtonColors = SubjectCollectionTypeButtonDefaults.collectedButtonColors(),
+    collectedBorder: BorderStroke = SubjectCollectionTypeButtonDefaults.collectedBorder(),
 ) {
     val action = remember(type) {
         SubjectCollectionActionsForCollect.find { it.type == type }
@@ -205,10 +217,8 @@ fun SubjectCollectionTypeButton(
         if (collected) {
             OutlinedButton(
                 onClick = onClick,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.612f)),
+                colors = collectedColors,
+                border = collectedBorder,
                 enabled = enabled,
             ) {
                 if (action != null) {
