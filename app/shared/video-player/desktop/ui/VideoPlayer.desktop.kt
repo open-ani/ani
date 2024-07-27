@@ -143,9 +143,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun saveScreenshotFile(filename: String) {
-        val screenshotPath: Path =
-            Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
         player.submit {
+            val screenshotPath: Path =
+                Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
             try {
                 screenshotPath.createDirectories()
             } catch (ex: IOException) {
