@@ -11,6 +11,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import coil3.Image
 import coil3.annotation.ExperimentalCoilApi
+import coil3.asDrawable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
