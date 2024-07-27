@@ -64,7 +64,7 @@ fun SubjectDetailsDefaults.DetailsTab(
     LazyColumn(
         modifier,
         state = state,
-        verticalArrangement = Arrangement.spacedBy(24.dp), // 这个页面内容比较密集, 如果用 16 显得有点拥挤
+        verticalArrangement = Arrangement.spacedBy(20.dp), // 这个页面内容比较密集, 如果用 16 显得有点拥挤
     ) {
         item("spacer header") { }
 
