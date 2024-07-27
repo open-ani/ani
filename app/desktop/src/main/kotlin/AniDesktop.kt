@@ -74,6 +74,8 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
+import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.platform.window.setTitleBarColor
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
@@ -259,6 +261,7 @@ object AniDesktop {
                 CompositionLocalProvider(
                     LocalContext provides context,
                     LocalWindowState provides windowState,
+                    LocalPlatformWindow provides remember(window.windowHandle) { PlatformWindow(windowHandle = window.windowHandle) },
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true

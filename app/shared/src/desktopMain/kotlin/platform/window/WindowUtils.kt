@@ -9,6 +9,9 @@ interface WindowUtils {
         return false
     }
 
+    fun setFullscreen(window: PlatformWindow, fullscreen: Boolean) {
+    }
+
     companion object : WindowUtils by (when (currentPlatformDesktop) {
         is me.him188.ani.app.platform.Platform.Linux -> NoopWindowUtils
         is me.him188.ani.app.platform.Platform.MacOS -> NoopWindowUtils

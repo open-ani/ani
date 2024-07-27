@@ -1,12 +1,14 @@
 package me.him188.ani.app.platform.window
 
 import androidx.annotation.Keep
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.W32Errors
+import com.sun.jna.platform.win32.WinDef
 import com.sun.jna.platform.win32.WinDef.DWORD
 import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinUser
@@ -49,32 +51,97 @@ class WindowsWindowUtils : WindowUtils {
     }
 
     // https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-    fun setFullscreen(hwnd: HWND?) {
-        // Remove window borders and title bar
-        var style = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE).toLong()
-        style = style and (WinUser.WS_CAPTION or WinUser.WS_THICKFRAME).toLong().inv()
-        User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_STYLE, style.toInt())
+    override fun setFullscreen(window: PlatformWindow, fullscreen: Boolean) {
+        val hwnd = HWND(Pointer.createConstant(window.windowHandle))
+        if (fullscreen) {
+            // Remove window borders and title bar
+            var style = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE).toLong()
+            if (style and WinUser.WS_CAPTION.toUInt().toLong() == 0L) {
+                // 目前没有标题, 说明已经是全屏了
+                return
+            }
+            window.nonFullscreenStyle = style
+            style = style and (WinUser.WS_CAPTION or WinUser.WS_THICKFRAME).toUInt().toLong().inv()
+            User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_STYLE, style.toInt())
 
-        // Remove extended window styles
-        var exStyle = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_EXSTYLE).toLong()
-        exStyle =
-            exStyle and (0x00000001L or 0x00000100L or 0x00000200L or 0x00020000L).inv()
-        User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_EXSTYLE, exStyle.toInt())
+            // Remove extended window styles
+            var exStyle = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_EXSTYLE).toLong()
+            window.nonFullscreenExtStyle = exStyle
+            exStyle =
+                exStyle and (0x00000001L or 0x00000100L or 0x00000200L or 0x00020000L).inv()
+            User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_EXSTYLE, exStyle.toInt())
 
-        // Get the screen dimensions
-        val screenWidth = User32.INSTANCE.GetSystemMetrics(WinUser.SM_CXSCREEN)
-        val screenHeight = User32.INSTANCE.GetSystemMetrics(WinUser.SM_CYSCREEN)
+            // 保存原始窗口大小和位置
+            val originalRect = WinDef.RECT()
+            if (User32.INSTANCE.GetWindowRect(hwnd, originalRect)) {
+                window.nonFullscreenRect = originalRect.toComposeRect()
+            }
 
-        // Set window to fullscreen
-        User32.INSTANCE.SetWindowPos(
-            hwnd,
-            HWND(Pointer.createConstant(-1)),
-            0,
-            0,
-            screenWidth,
-            screenHeight,
-            WinUser.SWP_NOZORDER or WinUser.SWP_FRAMECHANGED,
-        )
+            // Get the screen dimensions
+            val screenWidth = User32.INSTANCE.GetSystemMetrics(WinUser.SM_CXSCREEN)
+            val screenHeight = User32.INSTANCE.GetSystemMetrics(WinUser.SM_CYSCREEN)
+
+            // Set window to fullscreen
+            User32.INSTANCE.SetWindowPos(
+                hwnd,
+                HWND(Pointer.createConstant(-1)),
+                0,
+                0,
+                screenWidth,
+                screenHeight,
+                WinUser.SWP_NOZORDER or WinUser.SWP_FRAMECHANGED,
+            )
+        } else {
+            // Restore window borders and title bar
+            var style = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE).toLong()
+            if (style and WinUser.WS_CAPTION.toUInt().toLong() != 0L) {
+                // 目前有标题, 说明不是全屏
+                return
+            }
+            style = if (window.nonFullscreenStyle != 0L) {
+                window.nonFullscreenStyle
+            } else {
+                style or WinUser.WS_CAPTION.toUInt().toLong() or WinUser.WS_THICKFRAME.toUInt().toLong()
+            }
+            User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_STYLE, style.toInt())
+
+            // Restore extended window styles
+            var exStyle = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_EXSTYLE).toLong()
+            exStyle = if (window.nonFullscreenExtStyle != 0L) {
+                window.nonFullscreenExtStyle
+            } else {
+                exStyle or 0x00000001L or 0x00000100L or 0x00000200L or 0x00020000L
+            }
+            User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_EXSTYLE, exStyle.toInt())
+
+            // Restore window to its original size and position
+            window.nonFullscreenRect.takeIf { it != Rect.Zero }?.let { rect ->
+                val originalRect = rect.toWinDefRect()
+                User32.INSTANCE.SetWindowPos(
+                    hwnd,
+                    HWND(Pointer.createConstant(-1)),
+                    originalRect.left,
+                    originalRect.top,
+                    originalRect.right - originalRect.left,
+                    originalRect.bottom - originalRect.top,
+                    WinUser.SWP_NOZORDER or WinUser.SWP_FRAMECHANGED,
+                )
+            }
+        }
+    }
+}
+
+private fun WinDef.RECT.toComposeRect(): Rect {
+    return Rect(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
+}
+
+private fun Rect.toWinDefRect(): WinDef.RECT {
+    val compose = this
+    return WinDef.RECT().apply {
+        this.left = compose.left.toInt()
+        this.top = compose.top.toInt()
+        this.right = compose.right.toInt()
+        this.bottom = compose.bottom.toInt()
     }
 }
 

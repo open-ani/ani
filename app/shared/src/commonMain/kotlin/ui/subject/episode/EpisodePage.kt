@@ -59,6 +59,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
+import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -134,8 +135,9 @@ private fun EpisodeSceneContent(
 
     // 按返回退出全屏
     val context by rememberUpdatedState(LocalContext.current)
+    val window = LocalPlatformWindow.current
     BackHandler(enabled = vm.isFullscreen) {
-        context.setRequestFullScreen(false)
+        context.setRequestFullScreen(window, false)
         vm.isFullscreen = false
     }
 
@@ -451,7 +453,7 @@ private fun EpisodeVideo(
 
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
     val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
-
+    val window = LocalPlatformWindow.current
 
     EpisodeVideoImpl(
         vm.playerState,
@@ -474,15 +476,15 @@ private fun EpisodeVideo(
         danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {
             if (vm.isFullscreen) {
-                context.setRequestFullScreen(false)
+                context.setRequestFullScreen(window, false)
                 vm.isFullscreen = false
             } else {
                 vm.isFullscreen = true
-                context.setRequestFullScreen(true)
+                context.setRequestFullScreen(window, true)
             }
         },
         onExitFullscreen = {
-            context.setRequestFullScreen(false)
+            context.setRequestFullScreen(window, false)
             vm.isFullscreen = false
         },
         danmakuEditor = {

@@ -35,6 +35,8 @@ import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import me.him188.ani.app.platform.window.PlatformWindow
+import me.him188.ani.app.platform.window.WindowUtils
 import java.io.File
 import kotlin.contracts.contract
 
@@ -94,9 +96,10 @@ inline fun Context.checkIsDesktop(): DesktopContext {
 @Composable
 actual fun isInLandscapeMode(): Boolean = false
 
-actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
+actual fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Boolean) {
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
+    WindowUtils.setFullscreen(window, fullscreen)
     windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
 }
 
