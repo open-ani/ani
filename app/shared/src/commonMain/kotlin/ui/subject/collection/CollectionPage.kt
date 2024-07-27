@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -112,6 +114,7 @@ fun CollectionPage(
     onClickCaches: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val vm = rememberViewModel { MyCollectionsViewModel() }
     vm.navigator = LocalNavigator.current
@@ -190,8 +193,8 @@ fun CollectionPage(
                 }
             }
         },
-
-        ) { topBarPaddings ->
+        contentWindowInsets = contentWindowInsets,
+    ) { topBarPaddings ->
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),

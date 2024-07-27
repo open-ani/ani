@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -69,6 +71,7 @@ fun SettingsPage(
     initialTab: SettingsTab = SettingsTab.Default,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     allowBack: Boolean = !isShowLandscapeUI(),
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val toaster = LocalToaster.current
     val vm = rememberViewModel {
@@ -89,6 +92,7 @@ fun SettingsPage(
                 },
             )
         },
+        contentWindowInsets = contentWindowInsets,
     ) { topBarPaddings ->
         val pageCount by remember {
             derivedStateOf {
