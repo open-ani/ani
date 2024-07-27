@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.W32Errors
 import com.sun.jna.platform.win32.WinDef
@@ -127,6 +128,14 @@ class WindowsWindowUtils : WindowUtils {
                     WinUser.SWP_NOZORDER or WinUser.SWP_FRAMECHANGED,
                 )
             }
+        }
+    }
+
+    override fun setPreventScreenSaver(prevent: Boolean) {
+        if (prevent) {
+            Kernel32.INSTANCE.SetThreadExecutionState(Kernel32.ES_CONTINUOUS or Kernel32.ES_SYSTEM_REQUIRED or Kernel32.ES_DISPLAY_REQUIRED)
+        } else {
+            Kernel32.INSTANCE.SetThreadExecutionState(Kernel32.ES_CONTINUOUS)
         }
     }
 }
