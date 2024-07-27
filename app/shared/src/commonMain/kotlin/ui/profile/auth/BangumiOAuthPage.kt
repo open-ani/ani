@@ -45,6 +45,7 @@ import org.koin.core.context.GlobalContext
 @Composable
 fun BangumiOAuthScene(
     vm: BangumiOAuthViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val nav = LocalNavigator.current
     if (!vm.needAuth) {
@@ -61,7 +62,7 @@ fun BangumiOAuthScene(
         onClickTokenAuth = {
             nav.navigateBangumiTokenAuth()
         },
-        Modifier,
+        modifier,
     )
 }
 

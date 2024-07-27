@@ -114,7 +114,7 @@ fun EpisodeScene(
             CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
                 EpisodeSceneContent(
                     viewModel,
-                    modifier,
+                    Modifier,
                 )
             }
         }
