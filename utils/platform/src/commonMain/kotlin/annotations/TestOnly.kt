@@ -1,4 +1,4 @@
-package me.him188.ani.utils.coroutines
+package me.him188.ani.utils.platform.annotations
 
 @RequiresOptIn(
     "This can only be used in test sourceSets",

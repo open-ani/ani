@@ -3,7 +3,7 @@ package me.him188.ani.app.tools.update
 import androidx.compose.runtime.Stable
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.Platform
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
 
 /**
  * 安装包安装器
@@ -16,9 +16,9 @@ interface UpdateInstaller {
     /**
      * 如果 [install] 可能返回 [InstallationResult.Failed], 则需实现
      */
-    fun openForManualInstallation(file: File, context: ContextMP) {}
+    fun openForManualInstallation(file: SystemPath, context: ContextMP) {}
 
-    fun install(file: File, context: ContextMP): InstallationResult
+    fun install(file: SystemPath, context: ContextMP): InstallationResult
 }
 
 sealed class InstallationResult {

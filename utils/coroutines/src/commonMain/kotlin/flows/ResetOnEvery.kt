@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.him188.ani.utils.platform.currentTimeMillis
+import kotlin.concurrent.Volatile
 
 /**
  * 创建一个 flow, 当 [durationMillis] 时间内没有新的元素时, 会调用 [reset] 方法.
@@ -26,7 +28,7 @@ fun <T> Flow<T>.resetStale(
             launch {
                 while (isActive) {
                     delay(durationMillis)
-                    val now = System.currentTimeMillis()
+                    val now = currentTimeMillis()
                     if (now - time.value >= durationMillis) {
                         time.value = Long.MAX_VALUE
                         reset(collector)
@@ -34,7 +36,7 @@ fun <T> Flow<T>.resetStale(
                 }
             }
             upstream.collect {
-                time.value = System.currentTimeMillis()
+                time.value = currentTimeMillis()
                 send(it)
             }
         }

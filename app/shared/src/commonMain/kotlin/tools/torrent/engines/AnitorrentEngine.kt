@@ -23,12 +23,12 @@ import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
-import java.io.File
 
 @Serializable
 class AnitorrentConfig(
@@ -49,7 +49,7 @@ class AnitorrentEngine(
     scope: CoroutineScope,
     config: Flow<AnitorrentConfig>,
     private val proxySettings: Flow<ProxySettings>,
-    private val saveDir: File,
+    private val saveDir: SystemPath,
 ) : AbstractTorrentEngine<TorrentDownloader, AnitorrentConfig>(
     scope = scope,
     type = TorrentEngineType.Anitorrent,

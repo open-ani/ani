@@ -8,13 +8,20 @@ import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.utils.io.DigestAlgorithm
 import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.absolutePath
+import me.him188.ani.utils.io.bufferedSource
+import me.him188.ani.utils.io.exists
+import me.him188.ani.utils.io.length
+import me.him188.ani.utils.io.name
+import me.him188.ani.utils.io.readAndDigest
 import me.him188.ani.utils.io.toSeekableInput
-import java.io.File
 import java.io.IOException
 
 class FileVideoData(
-    val file: File,
+    val file: SystemPath,
 ) : VideoData {
     override val filename: String
         get() = file.name
@@ -22,11 +29,12 @@ class FileVideoData(
 
     private var hashCache: String? = null
 
+    @OptIn(ExperimentalStdlibApi::class)
     @Throws(IOException::class)
     override fun computeHash(): String {
         var hash = hashCache
         if (hash == null) {
-            hash = md5Hash(file)
+            hash = file.bufferedSource().use { it.readAndDigest(DigestAlgorithm.MD5).toHexString() }
             hashCache = hash
         }
         return hash
@@ -42,7 +50,7 @@ class FileVideoData(
 }
 
 class FileVideoSource(
-    private val file: File,
+    private val file: SystemPath,
     override val extraFiles: MediaExtraFiles,
 ) : VideoSource<FileVideoData> {
     init {
@@ -55,19 +63,4 @@ class FileVideoSource(
     override suspend fun open(): FileVideoData = FileVideoData(file)
 
     override fun toString(): String = "FileVideoSource(uri=$uri)"
-}
-
-@OptIn(ExperimentalStdlibApi::class)
-private fun md5Hash(file: File): String {
-    return file.inputStream().use {
-        val digest = java.security.MessageDigest.getInstance("MD5")
-        val buffer = ByteArray(81920)
-        var read = it.read(buffer)
-        while (read > 0) {
-            digest.update(buffer, 0, read)
-            read = it.read(buffer)
-        }
-
-        digest.digest().toHexString()
-    }
 }

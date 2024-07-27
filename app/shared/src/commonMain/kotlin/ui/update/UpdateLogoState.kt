@@ -6,8 +6,8 @@ import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.tools.update.InstallationResult
 import me.him188.ani.app.tools.update.UpdateInstaller
+import me.him188.ani.utils.io.SystemPath
 import org.koin.core.context.GlobalContext
-import java.io.File
 
 /**
  * UI 的"有新版本"标识的状态
@@ -62,7 +62,7 @@ sealed interface UpdateLogoState {
     @Immutable
     data class Downloaded(
         override val version: NewVersion,
-        val file: File,
+        val file: SystemPath,
     ) : HasNewVersion
 
     companion object

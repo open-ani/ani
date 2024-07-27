@@ -1,6 +1,5 @@
 package me.him188.ani.utils.io
 
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.io.TempDir
@@ -36,39 +35,39 @@ class BufferedFileInputTest {
     }
 
     @Test
-    fun `read sequentially once`() = runTest {
+    fun `read sequentially once`() {
         assertEquals(sampleText, input.readAllBytes().decodeToString())
     }
 
     @Test
-    fun `read sequentially multiple`() = runTest {
+    fun `read sequentially multiple`() {
         assertEquals(sampleText.take(4), input.readBytes(maxLength = 4).decodeToString())
         assertEquals(sampleText.drop(4).take(4), input.readBytes(maxLength = 4).decodeToString())
         assertEquals(sampleText.drop(8), input.readAllBytes().decodeToString())
     }
 
     @Test
-    fun `seek then read fully`() = runTest {
+    fun `seek then read fully`() {
         input.seek(4)
         assertEquals(sampleText.drop(4), input.readAllBytes().decodeToString())
     }
 
     @Test
-    fun `read, seek forward, read fully`() = runTest {
+    fun `read, seek forward, read fully`() {
         assertEquals(sampleText.take(4), input.readBytes(maxLength = 4).decodeToString())
         input.seek(8)
         assertEquals(sampleText.drop(8), input.readAllBytes().decodeToString())
     }
 
     @Test
-    fun `read, seek back, read fully`() = runTest {
+    fun `read, seek back, read fully`() {
         assertEquals(sampleText.take(4), input.readBytes(maxLength = 4).decodeToString())
         input.seek(0)
         assertEquals(sampleText, input.readAllBytes().decodeToString())
     }
 
     @Test
-    fun `double seek same`() = runTest {
+    fun `double seek same`() {
         assertEquals(sampleText.take(4), input.readBytes(maxLength = 4).decodeToString())
         input.seek(0)
         input.seek(0)
@@ -76,7 +75,7 @@ class BufferedFileInputTest {
     }
 
     @Test
-    fun `seek forward then back`() = runTest {
+    fun `seek forward then back`() {
         assertEquals(sampleText.take(4), input.readBytes(maxLength = 4).decodeToString())
         input.seek(8)
         input.seek(4)
@@ -84,19 +83,19 @@ class BufferedFileInputTest {
     }
 
     @Test
-    fun `seek over length, read return -1`() = runTest {
+    fun `seek over length, read return -1`() {
         input.seek(999999)
         assertEquals(-1, input.read(ByteArray(1), 0, 1))
     }
 
     @Test
-    fun `seek over length, bytesRemaining is zero`() = runTest {
+    fun `seek over length, bytesRemaining is zero`() {
         input.seek(999999)
         assertEquals(0, input.bytesRemaining)
     }
 
     @Test
-    fun `seek over length, readBytes return empty`() = runTest {
+    fun `seek over length, readBytes return empty`() {
         input.seek(999999)
         assertEquals(0, input.readAllBytes().size)
     }
@@ -107,7 +106,7 @@ class BufferedFileInputTest {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    fun `reuse buffer from previous start`() = runTest {
+    fun `reuse buffer from previous start`() {
         // buffer size is 20
 
         input.seek(30)
@@ -124,7 +123,7 @@ class BufferedFileInputTest {
     }
 
     @Test
-    fun `reuse buffer from previous end - second half`() = runTest {
+    fun `reuse buffer from previous end - second half`() {
         // buffer size is 20
 
         input.seek(30)
@@ -141,7 +140,7 @@ class BufferedFileInputTest {
     }
 
     @Test
-    fun `reuse buffer from previous end - first half`() = runTest {
+    fun `reuse buffer from previous end - first half`() {
         // buffer size is 20
 
         input.seek(30)
@@ -173,21 +172,21 @@ class BufferedFileInputTest {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    fun `seek negative fails`() = runTest {
+    fun `seek negative fails`() {
         assertFailsWith<IllegalArgumentException> {
             input.seek(-1)
         }
     }
 
     @Test
-    fun `read negative length fails`() = runTest {
+    fun `read negative length fails`() {
         assertFailsWith<IllegalArgumentException> {
             input.read(ByteArray(1), 1, -1)
         }
     }
 
     @Test
-    fun `read negative offset fails`() = runTest {
+    fun `read negative offset fails`() {
         assertFailsWith<IllegalArgumentException> {
             input.read(ByteArray(1), -1, 1)
         }

@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.selects.select
-import java.util.concurrent.CancellationException
+import kotlin.jvm.JvmField
 
 
 /**
@@ -131,8 +131,8 @@ internal val DONE = Symbol("DONE")
 class Symbol(@JvmField val symbol: String) {
     override fun toString(): String = "<$symbol>"
 
-    @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
-    inline fun <T> unbox(value: Any?): T = if (value === this) null as T else value as T
+    @Suppress("UNCHECKED_CAST")
+    fun <T> unbox(value: Any?): T = if (value === this) null as T else value as T
 }
 
 internal fun CoroutineScope.fixedPeriodTicker(

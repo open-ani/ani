@@ -54,7 +54,6 @@ import me.him188.ani.app.ui.update.UpdateChecker
 import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
-import java.util.Locale
 
 
 sealed class CheckVersionResult {
@@ -449,7 +448,7 @@ private fun ReleaseClassIcon(releaseClass: ReleaseClass) {
 private fun guessReleaseClass(version: String): ReleaseClass {
     val metadata = version
         .substringAfter("-", "")
-        .lowercase(Locale.ENGLISH)
+        .lowercase()
     return when {
         metadata.isEmpty() -> ReleaseClass.STABLE
         "alpha" in metadata || "dev" in metadata -> ReleaseClass.ALPHA

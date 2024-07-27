@@ -68,6 +68,7 @@ import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
 import me.him188.ani.utils.coroutines.runUntilSuccess
+import me.him188.ani.utils.io.toFile
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -265,7 +266,7 @@ class SubjectManagerImpl(
                     ReplaceFileCorruptionHandler { LazyDataCacheSave.empty() },
                     migrations = listOf(),
                     produceFile = {
-                        context.dataStores.resolveDataStoreFile("collectionsByType-${type.name}")
+                        context.dataStores.resolveDataStoreFile("collectionsByType-${type.name}").toFile()
                     },
                 ),
             )

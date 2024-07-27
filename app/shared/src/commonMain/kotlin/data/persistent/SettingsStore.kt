@@ -31,7 +31,8 @@ import kotlinx.serialization.json.encodeToStream
 import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexes
 import me.him188.ani.app.platform.Context
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.toFile
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -53,7 +54,7 @@ abstract class PlatformDataStoreManager {
     val mikanIndexStore: DataStore<MikanIndexes>
         get() = DataStoreFactory.create(
             serializer = MikanIndexes.serializer().asDataStoreSerializer({ MikanIndexes.Empty }),
-            produceFile = { resolveDataStoreFile("mikanIndexes") },
+            produceFile = { resolveDataStoreFile("mikanIndexes").toFile() },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MikanIndexes.Empty
             },
@@ -63,14 +64,14 @@ abstract class PlatformDataStoreManager {
         DataStoreFactory.create(
             serializer = MediaSourceSaves.serializer()
                 .asDataStoreSerializer({ MediaSourceSaves.Default }),
-            produceFile = { resolveDataStoreFile("mediaSourceSaves") },
+            produceFile = { resolveDataStoreFile("mediaSourceSaves").toFile() },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MediaSourceSaves.Default
             },
         )
     }
 
-    abstract fun resolveDataStoreFile(name: String): File
+    abstract fun resolveDataStoreFile(name: String): SystemPath
 }
 
 fun <T> KSerializer<T>.asDataStoreSerializer(

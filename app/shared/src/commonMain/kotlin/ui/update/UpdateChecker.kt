@@ -8,6 +8,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.appendPathSegments
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.CancellationException
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import me.him188.ani.app.platform.Platform
@@ -21,7 +22,6 @@ import me.him188.ani.utils.coroutines.withExceptionCollector
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import java.time.Instant
 
 
 class CheckVersionFailedException(
@@ -62,7 +62,7 @@ class UpdateChecker {
                     val version = tag.substringAfter("v")
                     val publishedAt = kotlin.runCatching {
                         TimeFormatter().format(
-                            Instant.parse(release.publishedAt).toEpochMilli(),
+                            Instant.parse(release.publishedAt),
                         )
                     }.getOrElse { release.publishedAt }
                     val downloadUrl = release.assets

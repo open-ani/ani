@@ -89,17 +89,17 @@ import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.coroutines.onReplacement
+import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
-import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
-@Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
     single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
@@ -171,7 +171,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = "test-in-memory",
-                            metadataDir = getMediaMetadataDir("test-in-memory").toPath(),
+                            metadataDir = getMediaMetadataDir("test-in-memory"),
                             engine = DummyMediaCacheEngine("test-in-memory"),
                             coroutineScope.childScopeContext(),
                         ),
@@ -181,7 +181,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = id,
-                            metadataDir = getMediaMetadataDir(engine.type.id).toPath(),
+                            metadataDir = getMediaMetadataDir(engine.type.id),
                             engine = TorrentMediaCacheEngine(
                                 mediaSourceId = id,
                                 torrentEngine = engine,
@@ -240,7 +240,7 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
                 }
                 mediaSourceInstanceRepository.add(
                     mediaSourceSave = MediaSourceSave(
-                        instanceId = UUID.randomUUID().toString(),
+                        instanceId = Uuid.randomString(),
                         mediaSourceId = id,
                         isEnabled = true,
                         config = MediaSourceConfig.Default,

@@ -37,6 +37,9 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.platform.window.WindowUtils
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import java.io.File
 import kotlin.contracts.contract
 
@@ -105,8 +108,8 @@ actual fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Bool
 
 internal actual val Context.filesImpl: ContextFiles
     get() = object : ContextFiles {
-        override val cacheDir: File = (this@filesImpl as DesktopContext).cacheDir
-        override val dataDir: File = (this@filesImpl as DesktopContext).dataDir
+        override val cacheDir: SystemPath = (this@filesImpl as DesktopContext).cacheDir.toKtPath().inSystem
+        override val dataDir: SystemPath = (this@filesImpl as DesktopContext).dataDir.toKtPath().inSystem
     }
 
 @Composable

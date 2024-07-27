@@ -3,6 +3,8 @@ package me.him188.ani.app.tools.update
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.FileOpener
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.toFile
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.intellij.lang.annotations.Language
@@ -11,7 +13,7 @@ import java.io.File
 import kotlin.system.exitProcess
 
 interface DesktopUpdateInstaller : UpdateInstaller {
-    override fun openForManualInstallation(file: File, context: ContextMP) {
+    override fun openForManualInstallation(file: SystemPath, context: ContextMP) {
         FileOpener.openInFileBrowser(file)
     }
 
@@ -28,8 +30,8 @@ interface DesktopUpdateInstaller : UpdateInstaller {
 }
 
 object MacOSUpdateInstaller : DesktopUpdateInstaller {
-    override fun install(file: File, context: ContextMP): InstallationResult {
-        Desktop.getDesktop().open(file)
+    override fun install(file: SystemPath, context: ContextMP): InstallationResult {
+        Desktop.getDesktop().open(file.toFile())
         exitProcess(0)
     }
 }
@@ -37,7 +39,7 @@ object MacOSUpdateInstaller : DesktopUpdateInstaller {
 object WindowsUpdateInstaller : DesktopUpdateInstaller {
     private val logger = logger<WindowsUpdateInstaller>()
 
-    override fun install(file: File, context: ContextMP): InstallationResult {
+    override fun install(file: SystemPath, context: ContextMP): InstallationResult {
         logger.info { "Installing update for Windows" }
         val appDir = File(System.getProperty("user.dir") ?: throw IllegalStateException("Cannot get app directory"))
         logger.info { "Current app dir: ${appDir.absolutePath}" }
@@ -47,7 +49,7 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
         }
 
         val installerScriptFile = appDir.resolve("install.cmd")
-        installerScriptFile.writeText(getInstallerScript(file))
+        installerScriptFile.writeText(getInstallerScript(file.toFile()))
         logger.info { "Installer script written to ${installerScriptFile.absolutePath}" }
 
         val processBuilder = ProcessBuilder("cmd", "/c", "start", "cmd", "/c", installerScriptFile.name)

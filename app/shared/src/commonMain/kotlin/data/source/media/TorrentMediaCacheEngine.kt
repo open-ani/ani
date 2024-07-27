@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.cache.AbstractMediaStats
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
@@ -36,13 +37,13 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.io.exists
+import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import java.nio.file.Paths
 import kotlin.coroutines.CoroutineContext
-import kotlin.io.path.exists
 
 private const val EXTRA_TORRENT_DATA = "torrentData"
 private const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
@@ -113,7 +114,7 @@ class TorrentMediaCacheEngine(
 
         override fun isValid(): Boolean {
             return metadata.extra[EXTRA_TORRENT_CACHE_DIR]?.let {
-                Paths.get(it).exists()
+                Path(it).inSystem.exists()
             } ?: false
         }
 

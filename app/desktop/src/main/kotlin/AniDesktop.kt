@@ -46,6 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.files.Path
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
@@ -95,6 +96,9 @@ import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
 import me.him188.ani.desktop.generated.resources.a_round
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -199,10 +203,10 @@ object AniDesktop {
                             saveDir = {
                                 val saveDir = runBlocking {
                                     get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir
-                                        ?.let(::File)
-                                } ?: projectDirectories.torrentCacheDir
+                                        ?.let(::Path)
+                                } ?: projectDirectories.torrentCacheDir.toKtPath()
                                 toplevelLogger.info { "TorrentManager saveDir: $saveDir" }
-                                saveDir.resolve(it.id)
+                                saveDir.inSystem.resolve(it.id)
                             },
                         )
                     }

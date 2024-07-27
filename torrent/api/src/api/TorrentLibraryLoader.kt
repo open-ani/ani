@@ -1,6 +1,6 @@
 package me.him188.ani.app.torrent.api
 
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
 import kotlin.coroutines.CoroutineContext
 
 interface TorrentLibraryLoader {
@@ -13,7 +13,7 @@ interface TorrentDownloaderFactory { // SPI
     val libraryLoader: TorrentLibraryLoader
 
     fun createDownloader(
-        rootDataDirectory: File,
+        rootDataDirectory: SystemPath,
         httpFileDownloader: HttpFileDownloader,
         torrentDownloaderConfig: TorrentDownloaderConfig,
         parentCoroutineContext: CoroutineContext,

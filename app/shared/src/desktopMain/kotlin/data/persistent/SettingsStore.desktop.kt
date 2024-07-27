@@ -22,7 +22,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 
 actual val Context.preferencesStore: DataStore<Preferences>
     get() {
@@ -44,5 +46,5 @@ actual val Context.dataStoresImpl: PlatformDataStoreManager
 internal class PlatformDataStoreManagerDesktop(
     private val context: DesktopContext,
 ) : PlatformDataStoreManager() {
-    override fun resolveDataStoreFile(name: String): File = context.dataStoreDir.resolve(name)
+    override fun resolveDataStoreFile(name: String): SystemPath = context.dataStoreDir.resolve(name).toKtPath().inSystem
 }

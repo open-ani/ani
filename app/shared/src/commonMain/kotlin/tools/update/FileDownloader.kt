@@ -19,13 +19,22 @@ import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.withExceptionCollector
+import me.him188.ani.utils.io.DigestAlgorithm
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.absolutePath
+import me.him188.ani.utils.io.bufferedSink
+import me.him188.ani.utils.io.bufferedSource
+import me.him188.ani.utils.io.delete
+import me.him188.ani.utils.io.exists
+import me.him188.ani.utils.io.length
+import me.him188.ani.utils.io.readAndDigest
+import me.him188.ani.utils.io.readText
+import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.io.writeText
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.userAgent
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import java.io.File
-import java.io.InputStream
-import java.security.MessageDigest
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -51,7 +60,7 @@ interface FileDownloader {
     suspend fun download(
         alternativeUrls: List<String>,
         filenameProvider: (url: String) -> String,
-        saveDir: File,
+        saveDir: SystemPath,
     ): Boolean
 }
 
@@ -79,7 +88,7 @@ sealed class FileDownloaderState {
         /**
          * 下载完成的文件
          */
-        val file: File,
+        val file: SystemPath,
         // 校验和文件总是 `${file.name}.sha256`
     ) : Completed()
 
@@ -96,10 +105,11 @@ class DefaultFileDownloader : FileDownloader {
     private val _progress = MutableStateFlow(0f)
     override val progress get() = _progress
 
+    @OptIn(ExperimentalStdlibApi::class)
     override suspend fun download(
         alternativeUrls: List<String>,
         filenameProvider: (url: String) -> String,
-        saveDir: File,
+        saveDir: SystemPath,
     ): Boolean {
         require(alternativeUrls.isNotEmpty()) { "alternatives must not be empty" }
         state.update {
@@ -126,8 +136,8 @@ class DefaultFileDownloader : FileDownloader {
                         if (targetFile.exists() && checksumFile.exists()) {
                             logger.info { "File $filename already exists, size=${targetFile.length().bytes}, checking checksum" }
                             val checksum = checksumFile.readText()
-                            val actualChecksum = targetFile.inputStream().use {
-                                it.sha256()
+                            val actualChecksum = targetFile.bufferedSource().use {
+                                it.readAndDigest(DigestAlgorithm.SHA256).toHexString()
                             }
                             if (checksum == actualChecksum) {
                                 logger.info { "File $filename already exists and checksum matches, skipping download" }
@@ -141,9 +151,6 @@ class DefaultFileDownloader : FileDownloader {
                                 }
                             }
                         }
-                        withContext(Dispatchers.IO) {
-                            targetFile.createNewFile() // fail-fast, check permission
-                        }
                         tryDownload(
                             client,
                             url,
@@ -151,8 +158,8 @@ class DefaultFileDownloader : FileDownloader {
                         )
                         // 下载完成, 更新 checksum
                         checksumFile.writeText(
-                            targetFile.inputStream().use {
-                                it.sha256()
+                            targetFile.bufferedSource().use {
+                                it.readAndDigest(DigestAlgorithm.SHA256).toHexString()
                             },
                         )
                         state.value = FileDownloaderState.Succeed(url, targetFile)
@@ -176,7 +183,7 @@ class DefaultFileDownloader : FileDownloader {
     private suspend fun tryDownload(
         client: HttpClient,
         url: String,
-        file: File,
+        file: SystemPath,
     ) {
         cancellableCoroutineScope {
             logger.info { "Attempting $url" }
@@ -195,7 +202,7 @@ class DefaultFileDownloader : FileDownloader {
                             }
                         }
                     }
-                    file.outputStream().use { output ->
+                    file.bufferedSink().use { output ->
                         while (!input.isClosedForRead) {
                             val read = input.readAvailable(buffer, 0, buffer.size)
                             if (read == -1) {
@@ -218,13 +225,3 @@ class DefaultFileDownloader : FileDownloader {
         }
     }
 }
-
-@OptIn(ExperimentalStdlibApi::class)
-private fun InputStream.sha256(): String = MessageDigest.getInstance("SHA-256").apply {
-    val buffer = ByteArray(8192)
-    var read: Int
-    while (read(buffer).also { read = it } != -1) {
-        update(buffer, 0, read)
-    }
-}.digest().toHexString()
-

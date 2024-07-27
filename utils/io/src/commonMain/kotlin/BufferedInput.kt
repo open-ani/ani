@@ -1,92 +1,16 @@
 package me.him188.ani.utils.io
 
-import org.jetbrains.annotations.TestOnly
-import java.io.File
-import java.io.IOException
-import java.io.RandomAccessFile
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import me.him188.ani.utils.platform.annotations.TestOnly
+import kotlin.concurrent.Volatile
 import kotlin.math.min
 
-
-/**
- * Adapts this [RandomAccessFile] to a [SeekableInput].
- *
- * File reads are buffered.
- *
- * **The file length must not change** while it is created as a [SeekableInput], otherwise the behavior is undefined - it is not checked.
- *
- * By closing the returned [SeekableInput], you also close this [RandomAccessFile].
- * Conversely, by closing this [RandomAccessFile], you also close the returned [SeekableInput],
- * though it is not recommended to close the [RandomAccessFile] directly.
- *
- * The file is not open until first read.
- */
-@Throws(IOException::class)
-public fun File.toSeekableInput(
-    bufferSize: Int = BufferedInput.DEFAULT_BUFFER_PER_DIRECTION,
-    onFillBuffer: (() -> Unit)? = null,
-): SeekableInput = BufferedFileInput(
-    RandomAccessFile(this, "r"),
-    bufferSize,
-    onFillBuffer,
-)
-
-@JvmInline
-public value class OffsetRange private constructor(
-    private val packed: Long,
-) {
-    public constructor(start: Int, end: Int) : this(start.toLong() or (end.toLong() shl 32))
-
-    public val start: Int get() = packed.toInt()
-    public val end: Int get() = (packed ushr 32).toInt()
-}
-
-internal open class BufferedFileInput(
-    private val file: RandomAccessFile,
-    private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
-    private val onFillBuffer: (() -> Unit)? = null,
-) : BufferedInput(bufferSize) {
-    override val size: Long get() = file.length()
-
-    override fun fillBuffer() {
-        onFillBuffer?.invoke()
-
-        val fileLength = this.size
-        val pos = this.position
-
-        val readStart = (pos - bufferSize).coerceAtLeast(0)
-        val readEnd = (pos + bufferSize).coerceAtMost(fileLength)
-
-        fillBufferRange(readStart, readEnd)
-    }
-
-    override fun readFileToBuffer(fileOffset: Long, bufferOffset: Int, length: Int): Int {
-        val file = this.file
-        file.seek(fileOffset)
-        file.readFully(buf, bufferOffset, length)
-        return length
-
-//        var read = bufferOffset
-//        while (read <= bufferOffset + length) {
-//            read += file.read(buf, read, length - read)
-//        }
-//        return read
-    }
-
-    override fun toString(): String {
-        return "BufferedFileInput(file=$file, position=$position, bytesRemaining=$bytesRemaining)"
-    }
-
-    override fun close() {
-        super.close()
-        file.close()
-    }
-}
-
-public abstract class BufferedInput(
+abstract class BufferedInput(
     bufferSize: Int,
 ) : SeekableInput {
-    public companion object {
-        public const val DEFAULT_BUFFER_PER_DIRECTION: Int = 8192 * 16
+    companion object {
+        const val DEFAULT_BUFFER_PER_DIRECTION: Int = 8192 * 16
 
         protected fun Long.coerceToInt(): Int {
             if (this > Int.MAX_VALUE) return Int.MAX_VALUE
@@ -112,8 +36,8 @@ public abstract class BufferedInput(
     /**
      * view offsets
      */
-    @get:TestOnly
-    public val bufferedOffsetRange: LongRange get() = bufferedOffsetStart..<bufferedOffsetEndExcl
+    @TestOnly
+    val bufferedOffsetRange: LongRange get() = bufferedOffsetStart..<bufferedOffsetEndExcl
 
     /**
      * 双向缓冲区, 读取一次后, seek 回去也能很快
@@ -287,9 +211,11 @@ public abstract class BufferedInput(
         if (closed) throw IllegalStateException("This SeekableInput is closed")
     }
 
+    private val lock = SynchronizedObject()
+
     override fun close() {
         if (closed) return
-        synchronized(this) {
+        synchronized(lock) {
             if (closed) return
             closed = true
         }

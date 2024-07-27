@@ -1,30 +1,33 @@
 package me.him188.ani.utils.io
 
-import org.jetbrains.annotations.Range
-import java.io.EOFException
-import java.io.IOException
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import kotlinx.io.EOFException
+import kotlinx.io.IOException
+import me.him188.ani.utils.platform.annotations.Range
+import kotlin.concurrent.Volatile
 
 /**
  * A **asynchronous** source of bytes from which you can seek to a position and read sequentially.
  *
  * Note: this class is not thread-safe.
  */
-public interface SeekableInput : AutoCloseable {
+interface SeekableInput : AutoCloseable {
     /**
      * The current position in bytes from the start of the input source.
      *
      * Does not throw even if the input source is closed.
      */
-    public val position: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
+    val position: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
 
     /**
      * The number of bytes remaining from the current position to the end of the input source.
      *
      * Does not throw even if the input source is closed.
      */
-    public val bytesRemaining: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
+    val bytesRemaining: @Range(from = 0L, to = Long.MAX_VALUE) Long // get must be fast
 
-    public val size: @Range(from = 0L, to = Long.MAX_VALUE) Long
+    val size: @Range(from = 0L, to = Long.MAX_VALUE) Long
 
     /**
      * Seeks to the given offset in bytes from the start of the input source.
@@ -39,11 +42,11 @@ public interface SeekableInput : AutoCloseable {
      * @throws IllegalStateException if the input source is closed.
      */
     @Throws(IOException::class)
-    public fun seek(
+    fun seek(
         position: @Range(from = 0L, to = Long.MAX_VALUE) Long,
     )
 
-    public fun prepareBuffer() {}
+    fun prepareBuffer() {}
 
     /**
      * Reads up to [length] bytes from the input source into [buffer] starting at [offset].
@@ -77,7 +80,7 @@ public interface SeekableInput : AutoCloseable {
      * @throws IOException if an I/O error occurs while reading from the input source.
      */
     @Throws(IOException::class)
-    public fun read(
+    fun read(
         buffer: ByteArray,
         offset: Int = 0,
         length: Int = buffer.size - offset
@@ -88,11 +91,15 @@ public interface SeekableInput : AutoCloseable {
      *
      * Does nothing if this [SeekableInput] is already closed.
      */
-    @Throws(IOException::class)
-    public override fun close()
+    override fun close()
 }
 
-public fun emptySeekableInput(): SeekableInput = EmptySeekableInput
+fun emptySeekableInput(): SeekableInput = EmptySeekableInput
+
+expect fun SystemPath.toSeekableInput(
+    bufferSize: Int = BufferedInput.DEFAULT_BUFFER_PER_DIRECTION,
+    onFillBuffer: (() -> Unit)? = null,
+): SeekableInput
 
 /**
  * Reads max [maxLength] bytes from this [SeekableInput], and advances the current position by the number of bytes read.
@@ -101,7 +108,7 @@ public fun emptySeekableInput(): SeekableInput = EmptySeekableInput
  *
  * See [SeekableInput.read] for more details about the behaviour of asynchronous reading.
  */
-public fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
+fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
     val buffer = ByteArray(maxLength)
     val actualLength = read(buffer, 0, maxLength)
     if (actualLength == -1) return ByteArray(0)
@@ -115,7 +122,7 @@ public fun SeekableInput.readBytes(maxLength: Int = 4096): ByteArray {
 /**
  * 读取所剩的所有字节. 如果文件已经关闭, 会抛出异常 [IllegalStateException]
  */
-public fun SeekableInput.readAllBytes(): ByteArray {
+fun SeekableInput.readAllBytes(): ByteArray {
     val buffer = ByteArray(bytesRemaining.toInt())
     var offset = 0
     while (true) {
@@ -134,7 +141,7 @@ public fun SeekableInput.readAllBytes(): ByteArray {
  * @throws IllegalStateException if the input source is closed.
  */
 @Throws(EOFException::class)
-public fun SeekableInput.readExactBytes(
+fun SeekableInput.readExactBytes(
     n: Int
 ): ByteArray {
     val buffer = ByteArray(n)
@@ -164,7 +171,7 @@ public fun SeekableInput.readExactBytes(
 //    }
 //}
 
-private object EmptySeekableInput : SeekableInput {
+private object EmptySeekableInput : SynchronizedObject(), SeekableInput {
     override val position: Long get() = 0
     override val bytesRemaining: Long get() = 0
     override val size: Long get() = 0

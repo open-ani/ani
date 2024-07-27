@@ -67,6 +67,9 @@ composeCompiler {
     enableStrongSkippingMode = true
 }
 
+atomicfu {
+    transformJvm = false // 这东西很不靠谱, 等 atomicfu 正式版了可能可以考虑下
+}
 
 kotlin {
     sourceSets.commonMain.dependencies {

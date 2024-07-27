@@ -4,9 +4,9 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.CancellationException
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.cancellation.CancellationException
 
 sealed interface ApiFailure {
     data object Unauthorized : ApiFailure

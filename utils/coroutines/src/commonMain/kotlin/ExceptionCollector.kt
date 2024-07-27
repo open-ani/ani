@@ -1,9 +1,11 @@
 package me.him188.ani.utils.coroutines
 
-import org.jetbrains.annotations.TestOnly
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import me.him188.ani.utils.platform.annotations.TestOnly
+import kotlin.concurrent.Volatile
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-
 
 open class ExceptionCollector {
 
@@ -25,19 +27,21 @@ open class ExceptionCollector {
     private var last: Throwable? = null
     private val hashCodes = mutableSetOf<Long>()
     private val suppressedList = mutableListOf<Throwable>()
+    private val lock = SynchronizedObject()
 
     /**
      * @return `true` if [e] is new.
      */
-    @Synchronized
     fun collect(e: Throwable?): Boolean {
-        if (e == null) return false
-        if (!hashCodes.add(hash(e))) return false // filter out duplications
-        // we can also check suppressed exceptions of [e] but actual influence would be slight.
-        beforeCollect(e)
-        this.last?.let { addSuppressed(e, it) }
-        this.last = e
-        return true
+        synchronized(lock) {
+            if (e == null) return false
+            if (!hashCodes.add(hashException(e))) return false // filter out duplications
+            // we can also check suppressed exceptions of [e] but actual influence would be slight.
+            beforeCollect(e)
+            this.last?.let { addSuppressed(e, it) }
+            this.last = e
+            return true
+        }
     }
 
     protected open fun addSuppressed(receiver: Throwable, e: Throwable) {
@@ -59,14 +63,15 @@ open class ExceptionCollector {
     /**
      * Adds [suppressedList] to suppressed exceptions of [last]
      */
-    @Synchronized
     private fun bake() {
-        last?.let { last ->
-            for (suppressed in suppressedList.asReversed()) {
-                last.addSuppressed(suppressed)
+        synchronized(lock) {
+            last?.let { last ->
+                for (suppressed in suppressedList.asReversed()) {
+                    last.addSuppressed(suppressed)
+                }
             }
+            suppressedList.clear()
         }
-        suppressedList.clear()
     }
 
     fun getLast(): Throwable? {
@@ -99,11 +104,12 @@ open class ExceptionCollector {
         return Sequence { last.itr() }
     }
 
-    @Synchronized
     fun dispose() { // help gc
-        this.last = null
-        this.hashCodes.clear()
-        this.suppressedList.clear()
+        synchronized(lock) {
+            this.last = null
+            this.hashCodes.clear()
+            this.suppressedList.clear()
+        }
     }
 
     companion object {
@@ -143,12 +149,4 @@ inline fun <R> ExceptionCollector.withExceptionCollector(action: ExceptionCollec
     }
 }
 
-private fun hash(e: Throwable): Long {
-    return e.stackTrace.fold(0L) { acc, stackTraceElement ->
-        acc * 31 + hash(stackTraceElement).toUInt().toLong()
-    }
-}
-
-private fun hash(element: StackTraceElement): Int {
-    return element.lineNumber.hashCode() xor element.className.hashCode() xor element.methodName.hashCode()
-}
+internal expect fun hashException(e: Throwable): Long

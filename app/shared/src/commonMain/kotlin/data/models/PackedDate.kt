@@ -4,10 +4,13 @@ package me.him188.ani.app.data.models
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.PackedDate.Companion.Invalid
-import java.util.Calendar
-import java.util.TimeZone
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.time.Duration
@@ -68,14 +71,15 @@ value class PackedDate @PublishedApi internal constructor(
             )
         }
 
-        fun now(): PackedDate {
-            val currentTimeMillis = System.currentTimeMillis()
-            val timeZone = TimeZone.getTimeZone("UTC+8") // bangumi 是固定 UTC+8
-            val calendar = Calendar.getInstance(timeZone).apply { timeInMillis = currentTimeMillis }
+        private val UTC8 = TimeZone.of("UTC+8")
 
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH) + 1 // Calendar.MONTH is zero-based
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
+        fun now(): PackedDate {
+            val timeZone = UTC8 // bangumi 是固定 UTC+8
+            val calendar = Clock.System.now().toLocalDateTime(timeZone)
+
+            val year = calendar.year
+            val month = calendar.monthNumber
+            val day = calendar.dayOfMonth
             return PackedDate(year, month, day)
         }
     }
@@ -125,15 +129,14 @@ inline val PackedDate.seasonMonth: Int
  */
 operator fun PackedDate.minus(other: PackedDate): Duration {
     if (this.isInvalid || other.isInvalid) return Duration.INFINITE
-    val thisCalendar = Calendar.getInstance().apply {
-        clear()
-        set(year, month - 1, day)
-    }
-    val otherCalendar = Calendar.getInstance().apply {
-        clear()
-        set(other.year, other.month - 1, other.day)
-    }
-    return (thisCalendar.timeInMillis - otherCalendar.timeInMillis).milliseconds
+
+    val thisDate = LocalDate(this.year, this.month, this.day)
+    val otherDate = LocalDate(other.year, other.month, other.day)
+
+    val thisInstant = thisDate.atStartOfDayIn(TimeZone.UTC)
+    val otherInstant = otherDate.atStartOfDayIn(TimeZone.UTC)
+
+    return (thisInstant.toEpochMilliseconds() - otherInstant.toEpochMilliseconds()).milliseconds
 }
 
 @Stable
@@ -144,7 +147,7 @@ inline fun PackedDate(
 ): PackedDate = if (year in 0..9999 && month in 1..12 && day in 1..31) {
     PackedDate(DatePacker.pack(year, month, day))
 } else {
-    PackedDate.Invalid // invalid
+    Invalid // invalid
 }
 
 @Suppress("NOTHING_TO_INLINE")

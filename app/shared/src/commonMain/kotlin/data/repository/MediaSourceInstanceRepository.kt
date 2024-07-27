@@ -12,7 +12,7 @@ import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
 import me.him188.ani.datasources.ntdm.GugufanMediaSource
 import me.him188.ani.datasources.ntdm.NtdmMediaSource
 import me.him188.ani.datasources.nyafun.NyafunMediaSource
-import java.util.UUID
+import me.him188.ani.utils.platform.Uuid
 
 interface MediaSourceInstanceRepository : Repository {
     val flow: Flow<List<MediaSourceSave>>
@@ -39,7 +39,7 @@ data class MediaSourceSaves(
         val Empty = MediaSourceSaves(emptyList())
         val Default: MediaSourceSaves by lazy {
             fun createSave(it: String, isEnabled: Boolean) = MediaSourceSave(
-                instanceId = UUID.randomUUID().toString(),
+                instanceId = Uuid.randomString(),
                 mediaSourceId = it,
                 isEnabled = isEnabled,
                 config = MediaSourceConfig.Default,

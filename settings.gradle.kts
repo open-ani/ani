@@ -37,6 +37,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
 }
 
 // Utilities shared by client and server (targeting JVM)
+includeProject(":utils:platform") // 适配各个平台的基础 API
 includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and server (targets JVM)
 includeProject(":utils:serialization", "utils/serialization")
 includeProject(":utils:coroutines", "utils/coroutines")

@@ -4,8 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
-import java.io.Closeable
-import java.util.UUID
+import me.him188.ani.utils.platform.Uuid
 
 /**
  * [MediaSource], 以及它的配置, 统称为 [MediaSourceInstance].
@@ -17,7 +16,7 @@ class MediaSourceInstance(
     val isEnabled: Boolean,
     val config: MediaSourceConfig,
     val source: MediaSource,
-) : Closeable {
+) : AutoCloseable {
     override fun close() {
         source.close()
     }
@@ -34,7 +33,7 @@ data class MediaSourceSave(
 
 fun createTestMediaSourceInstance(
     source: MediaSource,
-    instanceId: String = UUID.randomUUID().toString(),
+    instanceId: String = Uuid.randomString(),
     mediaSourceId: String = source.mediaSourceId,
     isEnabled: Boolean = true,
     config: MediaSourceConfig = MediaSourceConfig.Default,

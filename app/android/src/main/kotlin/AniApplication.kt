@@ -35,6 +35,8 @@ import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -126,7 +128,7 @@ class AniApplication : Application() {
         startKoin {
             androidContext(this@AniApplication)
             modules(getCommonKoinModule({ this@AniApplication }, scope))
-            modules(getAndroidModules(torrentCaches, scope))
+            modules(getAndroidModules(torrentCaches.toKtPath().inSystem, scope))
         }.startCommonKoinModule(scope)
 
         getKoin().get<TorrentManager>() // start sharing, connect to DHT now

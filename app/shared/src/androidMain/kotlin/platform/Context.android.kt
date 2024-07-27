@@ -37,6 +37,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import me.him188.ani.app.platform.window.PlatformWindowMP
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import java.io.File
 
 
@@ -115,8 +118,10 @@ actual fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Bo
 
 internal actual val Context.filesImpl: ContextFiles
     get() = object : ContextFiles {
-        override val cacheDir: File get() = this@filesImpl.cacheDir ?: File("") // can be null when previewing
-        override val dataDir: File get() = this@filesImpl.filesDir ?: File("") // can be null when previewing
+        override val cacheDir: SystemPath
+            get() = (this@filesImpl.cacheDir ?: File("")).toKtPath().inSystem // can be null when previewing
+        override val dataDir: SystemPath
+            get() = (this@filesImpl.filesDir ?: File("")).toKtPath().inSystem // can be null when previewing
     }
 
 // TODO: isSystemInFullscreen is written by ChatGPT, not tested

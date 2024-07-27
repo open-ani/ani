@@ -52,7 +52,7 @@ val testOptInAnnotations = arrayOf(
     "kotlin.io.path.ExperimentalPathApi",
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
     "kotlinx.serialization.ExperimentalSerializationApi",
-    "me.him188.ani.utils.coroutines.TestOnly",
+    "me.him188.ani.utils.platform.annotations.TestOnly",
 )
 
 val optInAnnotations = arrayOf(

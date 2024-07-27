@@ -36,22 +36,23 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.matches
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.createDirectories
+import me.him188.ani.utils.io.delete
+import me.him188.ani.utils.io.exists
+import me.him188.ani.utils.io.extension
+import me.him188.ani.utils.io.moveTo
+import me.him188.ani.utils.io.name
+import me.him188.ani.utils.io.readText
+import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.io.useDirectoryEntries
+import me.him188.ani.utils.io.writeText
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
-import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.moveTo
-import kotlin.io.path.name
-import kotlin.io.path.readText
-import kotlin.io.path.useDirectoryEntries
-import kotlin.io.path.writeText
 
 private const val METADATA_FILE_EXTENSION = "metadata"
 
@@ -60,7 +61,7 @@ private const val METADATA_FILE_EXTENSION = "metadata"
  */
 class DirectoryMediaCacheStorage(
     override val mediaSourceId: String,
-    private val metadataDir: Path,
+    private val metadataDir: SystemPath,
     private val engine: MediaCacheEngine,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaCacheStorage {
@@ -125,7 +126,7 @@ class DirectoryMediaCacheStorage(
     }
 
     private suspend fun restoreFile(
-        file: Path,
+        file: SystemPath,
         reportRecovered: suspend (MediaCache) -> Unit,
     ) {
         if (file.extension != METADATA_FILE_EXTENSION) return
@@ -134,7 +135,7 @@ class DirectoryMediaCacheStorage(
             json.decodeFromString(MediaCacheSave.serializer(), file.readText())
         } catch (e: Exception) {
             logger.error(e) { "Failed to deserialize metadata file ${file.name}" }
-            file.deleteIfExists()
+            file.delete()
             return
         }
 
@@ -228,9 +229,7 @@ class DirectoryMediaCacheStorage(
             val cache = listFlow.value.firstOrNull(predicate) ?: return false
             listFlow.value -= cache
             withContext(Dispatchers.IO) {
-                if (!metadataDir.resolve(getSaveFilename(cache)).deleteIfExists()) {
-                    logger.error { "Attempting to delete media cache '${cache.cacheId}' but its corresponding metadata file does not exist" }
-                }
+                metadataDir.resolve(getSaveFilename(cache)).delete()
             }
             cache.deleteFiles()
             return true

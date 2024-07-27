@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.source.media
 
 import androidx.compose.runtime.Stable
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 abstract class MediaCacheManager(
     val storagesIncludingDisabled: List<MediaCacheStorage>,
@@ -190,7 +190,7 @@ abstract class MediaCacheManager(
                 priority = NotifPriority.MIN
             }
 
-            val visibleCount = AtomicInteger()
+            val visibleCount = atomic(0)
             for (storage in list) {
                 launch {
                     if (System.currentTimeMillis() - startTime < 5000) {
@@ -260,7 +260,7 @@ abstract class MediaCacheManager(
                 //                    }.sampleWithInitial(1000)
                 combine(stats.downloadRate.sampleWithInitial(3000)) { downloadRate ->
                     //                        if (anyCaching) {
-                    if (visibleCount.get() == 0) {
+                    if (visibleCount.value == 0) {
                         summaryNotif.cancel()
                     } else {
                         summaryNotif.run {

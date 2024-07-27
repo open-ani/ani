@@ -8,7 +8,7 @@ import androidx.compose.runtime.setValue
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
-import me.him188.ani.utils.coroutines.TestOnly
+import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

@@ -1,10 +1,10 @@
 package me.him188.ani.app.data.source.media.resolver
 
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.CancellationException
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * 根据 [EpisodeMetadata] 中的集数信息和 [Media.location] 中的下载方式,

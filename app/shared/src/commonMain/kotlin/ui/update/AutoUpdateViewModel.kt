@@ -19,6 +19,10 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.update.DefaultFileDownloader
 import me.him188.ani.app.tools.update.FileDownloaderState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.utils.io.createDirectories
+import me.him188.ani.utils.io.exists
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.list
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
 import org.koin.core.component.KoinComponent
@@ -155,17 +159,17 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                 val allowedFilenames = ver.downloadUrlAlternatives.map {
                     it.substringAfterLast("/", "")
                 }
-                for (file in dir.listFiles().orEmpty()) {
-                    if (file.name.equals(".DS_Store")) continue
+                for (file in dir.list()) {
+                    if (file.name == ".DS_Store") continue
 
                     if (allowedFilenames.none { file.name.contains(it) }) {
                         logger.info { "Deleting old installer: $file" }
-                        updateManager.deleteInstaller(file)
+                        updateManager.deleteInstaller(file.inSystem)
                     }
                 }
             }
 
-            withContext(Dispatchers.IO) { dir.mkdirs() }
+            withContext(Dispatchers.IO) { dir.createDirectories() }
             fileDownloader.download(
                 alternativeUrls = ver.downloadUrlAlternatives,
                 filenameProvider = { it.substringAfterLast("/", "") },

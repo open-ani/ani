@@ -23,7 +23,9 @@ import androidx.datastore.dataStoreFile
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import me.him188.ani.app.platform.Context
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 
 actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
 actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")
@@ -33,7 +35,7 @@ actual val Context.dataStoresImpl: PlatformDataStoreManager
 internal class PlatformDataStoreManagerAndroid(
     private val context: Context,
 ) : PlatformDataStoreManager() {
-    override fun resolveDataStoreFile(name: String): File {
-        return context.applicationContext.dataStoreFile(name)
+    override fun resolveDataStoreFile(name: String): SystemPath {
+        return context.applicationContext.dataStoreFile(name).toKtPath().inSystem
     }
 }

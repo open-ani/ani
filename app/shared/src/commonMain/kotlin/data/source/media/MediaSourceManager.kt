@@ -36,10 +36,10 @@ import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.ServiceLoader
-import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 interface MediaSourceManager { // available by inject
@@ -166,7 +166,7 @@ class MediaSourceManagerImpl(
 
     override suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig) {
         val save = MediaSourceSave(
-            instanceId = UUID.randomUUID().toString(),
+            instanceId = Uuid.randomString(),
             mediaSourceId = mediaSourceId,
             isEnabled = true,
             config = config,

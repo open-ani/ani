@@ -26,7 +26,7 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.platform.window.PlatformWindowMP
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
 
 expect val LocalContext: ProvidableCompositionLocal<Context>
 
@@ -38,12 +38,12 @@ val Context.files: ContextFiles get() = filesImpl
 internal expect val Context.filesImpl: ContextFiles
 
 interface ContextFiles {
-    val cacheDir: File
+    val cacheDir: SystemPath
 
     /**
      * filesDir on Android.
      */
-    val dataDir: File
+    val dataDir: SystemPath
 }
 
 /**

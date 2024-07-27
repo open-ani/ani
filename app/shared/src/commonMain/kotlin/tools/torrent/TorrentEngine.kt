@@ -1,6 +1,7 @@
 package me.him188.ani.app.tools.torrent
 
 import androidx.annotation.CallSuper
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,6 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import kotlin.coroutines.cancellation.CancellationException
 
 
 /**

@@ -6,7 +6,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.yield
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -67,4 +66,16 @@ internal fun backoffDelay(failureCount: Int): Duration {
         3 -> 4.seconds
         else -> 8.seconds
     }
+}
+
+// 解决 ios ambiguity 和 common 里不能直接构造
+@Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
+inline fun CancellationException(
+    message: String? = null,
+    cause: Throwable? = null
+): kotlinx.coroutines.CancellationException {
+    return kotlinx.coroutines.CancellationException(
+        message = message,
+        cause,
+    ) // 加名字后就只能 resolve 到 Kotlin, 否则会在 JVM ambiguity
 }
