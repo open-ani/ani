@@ -17,6 +17,6 @@
  */
 
 plugins {
-    kotlin("jvm")
-    `flatten-source-sets`
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
 }
