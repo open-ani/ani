@@ -62,17 +62,15 @@ class VideoControllerState(
     /**
      * 控制器是否可见.
      */
-    private var _visibility: ControllerVisibility by mutableStateOf(initialVisibility)
-    val visibility get() = _visibility
+    var visibility: ControllerVisibility by mutableStateOf(initialVisibility)
     val setVisibility: (ControllerVisibility) -> Unit = {
-        previousVisibility = _visibility
-        _visibility = it
+        visibility = it
     }
 
     fun toggleVisibility(desired: ControllerVisibility? = null) {
         setVisibility(
             desired
-                ?: if (_visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible,
+                ?: if (visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible,
         )
     }
 
@@ -83,7 +81,6 @@ class VideoControllerState(
 
     private val alwaysOnRequests = SnapshotStateList<Any>()
 
-    private var previousVisibility by mutableStateOf(ControllerVisibility.Visible) 
     /**
      * 总是显示. 也就是不要在 5 秒后自动隐藏.
      */
@@ -102,19 +99,16 @@ class VideoControllerState(
         }
     }
     fun setRequestProgressBarVisible() {
-        previousVisibility = _visibility
 
-        if (previousVisibility == ControllerVisibility.Invisible) {
-            _visibility = ControllerVisibility.DetachedSliderOnly
+        if (!visibility.bottomBar) {
+            visibility = ControllerVisibility.DetachedSliderOnly
         }
     }
 
     fun cancelRequestProgressBarVisible() {
-        if (!alwaysOn) {
+        if (!alwaysOn && visibility.detachedSlider) {
             //resume previous visibility
-            val currentVisibility = _visibility
-            _visibility = previousVisibility
-            previousVisibility = currentVisibility
+            visibility = ControllerVisibility.Invisible
         }
     }
 }
