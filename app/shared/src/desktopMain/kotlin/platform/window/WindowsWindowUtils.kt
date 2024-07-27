@@ -1,0 +1,90 @@
+package me.him188.ani.app.platform.window
+
+import androidx.annotation.Keep
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import com.sun.jna.Native
+import com.sun.jna.Pointer
+import com.sun.jna.platform.win32.User32
+import com.sun.jna.platform.win32.W32Errors
+import com.sun.jna.platform.win32.WinDef.DWORD
+import com.sun.jna.platform.win32.WinDef.HWND
+import com.sun.jna.platform.win32.WinUser
+import com.sun.jna.ptr.IntByReference
+import com.sun.jna.win32.StdCallLibrary
+import com.sun.jna.win32.W32APIOptions
+
+class WindowsWindowUtils : WindowUtils {
+    private val dwmAPi: Dwmapi = Native.load("dwmapi", Dwmapi::class.java, W32APIOptions.DEFAULT_OPTIONS)
+
+    override fun setTitleBarColor(hwnd: Long, color: Color): Boolean {
+        return setTitleBarColor(HWND(Pointer.createConstant(hwnd)), argbToRgb(color.toArgb()))
+    }
+
+    private fun argbToRgb(argb: Int): Int {
+        val r = (argb shr 16) and 0xFF
+        val g = (argb shr 8) and 0xFF
+        val b = argb and 0xFF
+        return (r shl 16) or (g shl 8) or b
+    }
+
+    private fun setTitleBarColor(hwnd: HWND, color: Int): Boolean {
+        return kotlin.runCatching {
+            val colorRef = IntByReference(color)
+            W32Errors.SUCCEEDED(
+                dwmAPi.DwmSetWindowAttribute(hwnd, Dwmapi.DWMWA_CAPTION_COLOR, colorRef.pointer, DWORD.SIZE),
+            )
+        }.getOrElse { false }
+    }
+
+    fun hideTitleBar(hwnd: HWND?) {
+        var style = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE).toLong()
+        style = style and WinUser.WS_CAPTION.toLong().inv() and WinUser.WS_BORDER.toLong()
+            .inv() and WinUser.WS_THICKFRAME.toLong().inv()
+        User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_STYLE, style.toInt())
+        User32.INSTANCE.SetWindowPos(
+            hwnd, null, 0, 0, 0, 0,
+            WinUser.SWP_NOMOVE or WinUser.SWP_NOSIZE or WinUser.SWP_NOZORDER or WinUser.SWP_FRAMECHANGED,
+        )
+    }
+
+    // https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+    fun setFullscreen(hwnd: HWND?) {
+        // Remove window borders and title bar
+        var style = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE).toLong()
+        style = style and (WinUser.WS_CAPTION or WinUser.WS_THICKFRAME).toLong().inv()
+        User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_STYLE, style.toInt())
+
+        // Remove extended window styles
+        var exStyle = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_EXSTYLE).toLong()
+        exStyle =
+            exStyle and (0x00000001L or 0x00000100L or 0x00000200L or 0x00020000L).inv()
+        User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_EXSTYLE, exStyle.toInt())
+
+        // Get the screen dimensions
+        val screenWidth = User32.INSTANCE.GetSystemMetrics(WinUser.SM_CXSCREEN)
+        val screenHeight = User32.INSTANCE.GetSystemMetrics(WinUser.SM_CYSCREEN)
+
+        // Set window to fullscreen
+        User32.INSTANCE.SetWindowPos(
+            hwnd,
+            HWND(Pointer.createConstant(-1)),
+            0,
+            0,
+            screenWidth,
+            screenHeight,
+            WinUser.SWP_NOZORDER or WinUser.SWP_FRAMECHANGED,
+        )
+    }
+}
+
+@Keep
+@Suppress("FunctionName", "SpellCheckingInspection")
+internal interface Dwmapi : StdCallLibrary {
+    fun DwmSetWindowAttribute(hwnd: HWND, dwAttribute: Int, pvAttribute: Pointer, cbAttribute: Int): Int
+
+    companion object {
+        const val DWMWA_USE_IMMERSIVE_DARK_MODE: Int = 20
+        const val DWMWA_CAPTION_COLOR: Int = 35
+    }
+}

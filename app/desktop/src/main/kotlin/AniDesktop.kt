@@ -19,12 +19,12 @@
 package me.him188.ani.app.desktop
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
@@ -73,12 +74,12 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
+import me.him188.ani.app.platform.window.setTitleBarColor
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.PlatformImplementations
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -103,6 +104,7 @@ import org.koin.dsl.module
 import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 import java.io.File
+
 
 private val logger by lazy { logger("Ani") }
 private inline val toplevelLogger get() = logger
@@ -288,12 +290,14 @@ object AniDesktop {
 
 
 @Composable
-private fun MainWindowContent(
+private fun FrameWindowScope.MainWindowContent(
     hostIsMacOs: Boolean,
     windowImmersed: Boolean,
     aniNavigator: AniNavigator,
 ) {
     AniApp {
+        window.setTitleBarColor(NavigationRailDefaults.ContainerColor)
+
         val window by rememberUpdatedState(LocalWindowState.current)
         val isFullscreen by remember {
             derivedStateOf {
@@ -331,17 +335,5 @@ private fun MainWindowContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-@Preview
-fun PreviewMainWindowMacOS() {
-    ProvideCompositionLocalsForPreview {
-        MainWindowContent(
-            hostIsMacOs = false,
-            windowImmersed = false,
-            aniNavigator = remember { AniNavigator() },
-        )
     }
 }
