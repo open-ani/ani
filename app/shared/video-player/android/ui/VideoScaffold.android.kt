@@ -98,7 +98,7 @@ private fun PreviewVideoScaffoldImpl(
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
         onShowSelectEpisode = { isEpisodeSelectorVisible = true },
-        screenshotOnClick = {},
+        onClickScreenshot = {},
     )
 
 //    VideoScaffold(

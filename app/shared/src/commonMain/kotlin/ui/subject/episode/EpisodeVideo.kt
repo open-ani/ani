@@ -35,7 +35,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
@@ -97,9 +96,9 @@ internal fun EpisodeVideoImpl(
     sideSheets: @Composable () -> Unit,
     onShowMediaSelector: () -> Unit,
     onShowSelectEpisode: () -> Unit,
+    onClickScreenshot: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    screenshotOnClick: () -> Unit,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
@@ -208,9 +207,9 @@ internal fun EpisodeVideoImpl(
             }
         },
         rhsBarTop = {
-            if (expanded && Platform.currentPlatform.isDesktop()) {
+            if (expanded && currentPlatform.isDesktop()) {
                 ScreenshotButton(
-                    onClick = screenshotOnClick,
+                    onClick = onClickScreenshot,
                 )
             }
         },

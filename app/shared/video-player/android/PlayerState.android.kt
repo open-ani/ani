@@ -47,7 +47,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
-import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
@@ -355,6 +354,9 @@ internal class ExoPlayerState @UiThread constructor(
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
+    override fun saveScreenshotFile(filename: String) {
+        TODO("Not yet implemented")
+    }
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition
@@ -403,13 +405,5 @@ internal class ExoPlayerState @UiThread constructor(
 
     override fun setPlaybackSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
-    }
-
-    override fun getScreenshotPath(): Path? {
-        TODO("Not yet implemented")
-    }
-
-    override fun saveScreenshotFile(filename: String) {
-        TODO("Not yet implemented")
     }
 }

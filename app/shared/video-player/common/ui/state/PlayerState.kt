@@ -3,8 +3,6 @@ package me.him188.ani.app.videoplayer.ui.state
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import io.ktor.util.Platform
-import io.ktor.util.PlatformUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -36,8 +34,6 @@ import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import java.io.File
-import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -155,16 +151,7 @@ interface PlayerState {
 
     val audioTracks: TrackGroup<AudioTrack>
 
-    /**
-     * 获取截图位置.
-     *
-     * PC => 用户图片目录下的ani目录
-     *
-     * 手机 => 保存到图库
-     */
-    fun getScreenshotPath(): Path?
-
-    fun saveScreenshotFile(filename: String);
+    fun saveScreenshotFile(filename: String)
 }
 
 fun PlayerState.togglePause() {
@@ -453,9 +440,6 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
-    override fun getScreenshotPath(): Path? {
-        return null;
-    }
 
     override fun saveScreenshotFile(filename: String) {
     }
