@@ -99,7 +99,6 @@ class VideoControllerState(
         }
     }
     fun setRequestProgressBarVisible() {
-
         if (!visibility.bottomBar) {
             visibility = ControllerVisibility.DetachedSliderOnly
         }
