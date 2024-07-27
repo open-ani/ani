@@ -49,14 +49,14 @@ import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 @Stable
 class CommentState(
     sourceVersion: State<Any?>,
-    list: State<List<UiComment>>,
+    list: State<List<UIComment>>,
     hasMore: State<Boolean>,
     private val onReload: suspend () -> Unit,
     private val onLoadMore: suspend () -> Unit,
     backgroundScope: CoroutineScope,
 ) {
     val sourceVersion: Any? by sourceVersion
-    val list: List<UiComment> by list
+    val list: List<UIComment> by list
 
     /**
      * 至少 [onReload] 了一次
@@ -97,13 +97,21 @@ class CommentState(
 class UIRichText(val elements: List<UIRichElement>)
 
 @Immutable
-class UiComment(
-    val id: String,
+class UIComment(
+    val id: Int,
     val creator: UserInfo,
     val content: UIRichText,
     val createdAt: Long, // timestamp millis
-    val briefReplies: List<UiComment>,
-    val replyCount: Int
+    val reactions: List<UICommentReaction>,
+    val briefReplies: List<UIComment>,
+    val replyCount: Int,
+)
+
+@Immutable
+class UICommentReaction(
+    val id: Int,
+    val count: Int,
+    val selected: Boolean
 )
 
 /**
@@ -204,7 +212,7 @@ object CommentDefaults {
 
     @Composable
     fun ReplyList(
-        replies: List<UiComment>,
+        replies: List<UIComment>,
         replyCount: Int = replies.size,
         onClickUrl: (String) -> Unit = { },
 

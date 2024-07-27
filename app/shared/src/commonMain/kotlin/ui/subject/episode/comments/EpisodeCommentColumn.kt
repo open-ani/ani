@@ -32,7 +32,7 @@ import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentDefaults
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.components.comment.UiComment
+import me.him188.ani.app.ui.subject.components.comment.UIComment
 
 @Composable
 fun EpisodeCommentColumn(
@@ -109,7 +109,7 @@ private const val LOREM_IPSUM =
 
 @Composable
 fun EpisodeComment(
-    comment: UiComment,
+    comment: UIComment,
     modifier: Modifier = Modifier,
     onClickUrl: (String) -> Unit = { },
     onClickImage: (String) -> Unit = { }

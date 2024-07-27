@@ -1,4 +1,4 @@
 [submodule "torrent/anitorrent/libs/boost"]
 	path = torrent/anitorrent/libs/boost
-	url = git@github.com:open-ani/boost.git
+	url = https://github.com/open-ani/boost.git
 	branch = main
