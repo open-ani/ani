@@ -89,7 +89,6 @@ includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.
 //includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
 //includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 //includeProject(":danmaku:ani:client", "danmaku/ani/client") // danmaku server
-includeProject(":danmaku:ani:server", "danmaku/ani/server") // danmaku server
 includeProject(":danmaku:ani:protocol", "danmaku/ani/protocol") // danmaku server-client protocol
 
 includeProject(
