@@ -6,7 +6,6 @@ import me.him188.ani.datasources.api.EpisodeSort.Normal
 import me.him188.ani.datasources.api.EpisodeSort.Special
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.utils.serialization.BigNum
-import java.math.BigDecimal
 
 /**
  * 剧集序号, 例如 "01", "24.5", "OVA".
@@ -126,11 +125,6 @@ fun EpisodeSort(raw: String): EpisodeSort {
 fun EpisodeSort(int: Int): EpisodeSort {
     if (int < 0) return Special(int.toString())
     return Normal(int.toFloat())
-}
-
-fun EpisodeSort(int: BigDecimal): EpisodeSort {
-    if (int < BigDecimal.ZERO) return Special(int.toString())
-    return EpisodeSort(int.toString())
 }
 
 fun EpisodeSort(int: BigNum): EpisodeSort {

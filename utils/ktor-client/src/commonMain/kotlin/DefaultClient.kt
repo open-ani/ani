@@ -18,14 +18,13 @@ import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import me.him188.ani.utils.ktor.HttpLogger.logHttp
+import me.him188.ani.utils.logging.Logger
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import org.slf4j.Logger
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlin.time.measureTimedValue
 
 fun createDefaultHttpClient(
     clientConfig: HttpClientConfig<*>.() -> Unit = {},
@@ -54,9 +53,9 @@ fun HttpClient.registerLogging(
     logger: Logger = logger("ktor"),
 ) {
     plugin(HttpSend).intercept { request ->
-        val t1 = System.nanoTime()
-        val result = kotlin.runCatching { execute(request) }
-        val duration = ((System.nanoTime() - t1) / 1e6).toDuration(DurationUnit.MILLISECONDS)
+        val (result, duration) = measureTimedValue {
+            kotlin.runCatching { execute(request) }
+        }
 
         logger.logHttp(
             method = request.method,

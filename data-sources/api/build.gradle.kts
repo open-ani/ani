@@ -17,7 +17,8 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
     kotlin("plugin.compose")
 
@@ -26,25 +27,38 @@ plugins {
     // See https://developer.android.com/develop/ui/compose/performance/stability/fix#configuration-file
     // But for simplicity, we just include compose here.
     id("org.jetbrains.compose")
-    `flatten-source-sets`
     idea
 }
 
-dependencies {
-    implementation(libs.kotlinx.serialization.core)
-    api(libs.kotlinx.coroutines.core)
-    api(projects.utils.ktorClient)
-    api(projects.utils.serialization)
-    api(libs.ktor.client.logging)
-    api(libs.ktor.client.auth)
-    api(libs.jsoup)
-    implementation(projects.utils.logging)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(projects.utils.testing)
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            implementation(libs.kotlinx.serialization.core)
+            api(libs.kotlinx.coroutines.core)
+            api(projects.utils.ktorClient)
+            api(projects.utils.serialization)
+            implementation(projects.utils.platform)
+            api(libs.ktor.client.auth)
+            implementation(libs.ktor.client.logging)
+            implementation(projects.utils.logging)
 
-    implementation(compose.runtime) // required by the compose compiler
+            implementation(compose.runtime) // required by the compose compiler
+        }
+    }
+
+    sourceSets.commonTest {
+        dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(projects.utils.testing)
+        }
+    }
+
+    sourceSets.jvmMain {
+        dependencies {
+            api(libs.jsoup)
+        }
+    }
 }
-
 idea {
     module.generatedSourceDirs.add(file("test/title/generated"))
 }

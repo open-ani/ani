@@ -1,7 +1,6 @@
 package me.him188.ani.datasources.api.topic
 
 import kotlinx.serialization.Serializable
-import java.nio.file.Paths
 
 
 @Serializable
@@ -77,7 +76,7 @@ sealed class ResourceLocation {
          * `file://`
          */
         override val uri: String by lazy {
-            Paths.get(filePath).toUri().toString()
+            "file://${filePath}"
         }
     }
 }

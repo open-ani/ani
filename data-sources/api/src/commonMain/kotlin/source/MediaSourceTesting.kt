@@ -2,12 +2,12 @@ package me.him188.ani.datasources.api.source
 
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.paging.emptySizedSource
-import java.util.UUID
+import me.him188.ani.utils.platform.Uuid
 import kotlin.random.Random
 
 
 open class TestHttpMediaSource(
-    override val mediaSourceId: String = UUID.randomUUID().toString(),
+    override val mediaSourceId: String = Uuid.randomString(),
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
     private val randomConnectivity: Boolean = false,
     private val fetch: suspend (MediaFetchRequest) -> SizedSource<MediaMatch> = { emptySizedSource() }

@@ -17,15 +17,32 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
-    `flatten-source-sets`
+    `ani-mpp-lib-targets`
 }
 
-dependencies {
-    api(libs.kotlinx.serialization.core)
-    api(libs.ktor.client.core)
-    api(libs.ktor.client.content.negotiation)
-    api(libs.ktor.serialization.kotlinx.json)
-    api(projects.utils.logging)
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            api(libs.kotlinx.serialization.core)
+            api(libs.ktor.client.core)
+            api(libs.ktor.client.content.negotiation)
+            api(libs.ktor.serialization.kotlinx.json)
+            api(projects.utils.logging)
+            implementation(projects.utils.platform)
+        }
+    }
+
+    sourceSets.jvmMain {
+        dependencies {
+            implementation(libs.ktor.client.okhttp)
+        }
+    }
+
+    sourceSets.appleMain {
+        dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+    }
 }

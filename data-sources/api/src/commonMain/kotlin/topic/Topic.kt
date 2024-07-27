@@ -21,10 +21,6 @@ package me.him188.ani.datasources.api.topic
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.MediaSource
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 /**
  * An item search from a [MediaSource]
@@ -60,17 +56,6 @@ class Topic(
 ) {
     override fun toString(): String {
         return "Topic(id='$topicId', publishedTimeMillis=$publishedTimeMillis, category=$category, rawTitle='$rawTitle', commentsCount=$commentsCount, downloadLink='$downloadLink', size=$size, alliance='$alliance', author=$author, details=$details, originalLink='$originalLink')"
-    }
-}
-
-private val DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm")
-
-fun Topic.publishedTimeString(): String? {
-    return publishedTimeMillis?.let {
-        LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(it),
-            ZoneId.systemDefault(),
-        ).format(DATE_FORMAT)
     }
 }
 

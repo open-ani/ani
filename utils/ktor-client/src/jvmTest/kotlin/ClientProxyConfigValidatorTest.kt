@@ -2,8 +2,8 @@ package me.him188.ani.utils.ktor
 
 import io.ktor.util.network.address
 import io.ktor.util.network.port
-import org.junit.jupiter.api.Test
 import java.net.Proxy
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 

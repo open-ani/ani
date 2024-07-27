@@ -30,8 +30,6 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import java.io.Closeable
-import java.io.File
 
 /**
  * 一个查询单个剧集的可下载的资源 [Media] 的服务, 称为数据源 [MediaSource].
@@ -79,7 +77,7 @@ import java.io.File
  *
  * @see MediaSourceFactory
  */
-interface MediaSource : Closeable {
+interface MediaSource : AutoCloseable {
     /**
      * 全局唯一的 ID. 可用于保存用户偏好, 识别缓存资源的来源等.
      */
@@ -186,7 +184,7 @@ sealed class MediaSourceLocation {
     data object Lan : MediaSourceLocation()
 
     /**
-     * 资源位于本地文件系统. 必须是能通过 [File] 直接访问的.
+     * 资源位于本地文件系统. 必须是能通过 `File` 直接访问的.
      */
     data object Local : MediaSourceLocation()
 

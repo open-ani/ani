@@ -24,6 +24,7 @@ import me.him188.ani.datasources.api.topic.EpisodeRange.Combined
 import me.him188.ani.datasources.api.topic.EpisodeRange.Range
 import me.him188.ani.datasources.api.topic.EpisodeRange.Season
 import me.him188.ani.datasources.api.topic.EpisodeRange.Single
+import kotlin.jvm.JvmName
 
 /**
  * 剧集范围:
@@ -69,8 +70,8 @@ sealed class EpisodeRange {
             if (other is Range && other.start == other.end) {
                 return value == other.start
             }
-            if (javaClass != other?.javaClass) return false
-            other as Single
+            if (other !is Single) return false
+            other
             return value == other.value
         }
     }
@@ -104,8 +105,8 @@ sealed class EpisodeRange {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other is Single && other.value == start && other.value == end) return true
-            if (javaClass != other?.javaClass) return false
-            other as Range
+            if (other !is Range) return false
+            other
             return start == other.start && end == other.end
         }
 

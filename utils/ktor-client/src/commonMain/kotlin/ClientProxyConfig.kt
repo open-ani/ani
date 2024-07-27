@@ -13,6 +13,7 @@ import io.ktor.http.URLParserException
 import io.ktor.http.URLProtocol
 import io.ktor.http.Url
 import io.ktor.http.takeFrom
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi

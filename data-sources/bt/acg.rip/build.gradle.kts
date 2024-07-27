@@ -38,6 +38,21 @@ dependencies {
     implementation(projects.utils.logging)
 }
 
+
+//kotlin {
+//    sourceSets.commonMain {
+//        dependencies {
+//            api(projects.dataSources.api)
+//            implementation(projects.utils.ktorClient)
+//            api(libs.kotlinx.coroutines.core)
+//            implementation(libs.kotlinx.serialization.json)
+//            implementation(libs.jsoup)
+//            implementation(projects.utils.logging)
+//        }
+//    }
+//}
+
+
 tasks.withType<Jar> {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE // why is there a duplicate?
 }
