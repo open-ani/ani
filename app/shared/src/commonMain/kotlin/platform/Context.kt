@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.window.PlatformWindowMP
 import java.io.File
 
 expect val LocalContext: ProvidableCompositionLocal<Context>
@@ -73,7 +74,7 @@ fun BoxWithConstraintsScope.showTabletUI(): Boolean {
  * Note that when [fullscreen] is `false`, the system bars will be visible,
  * but the app may be still in landscape mode if the user's system is in landscape mode.
  */
-expect fun Context.setRequestFullScreen(fullscreen: Boolean)
+expect fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean)
 
 @Composable
 inline fun isSystemInFullscreen(): Boolean = isSystemInFullscreenImpl()

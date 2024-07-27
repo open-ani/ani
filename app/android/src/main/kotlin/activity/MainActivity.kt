@@ -29,6 +29,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -37,6 +38,8 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
+import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
@@ -84,6 +87,11 @@ class MainActivity : AniComponentActivity() {
         // 允许画到 system bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        val toaster = object : Toaster {
+            override fun toast(text: String) {
+                Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
+            }
+        }
         setContent {
             AniApp {
 //                val viewModel = rememberViewModel { AniAppViewModel() }
@@ -113,10 +121,9 @@ class MainActivity : AniComponentActivity() {
 //                    }
 //                }
                 CompositionLocalProvider(
-                    LocalToaster provides object : Toaster {
-                        override fun toast(text: String) {
-                            Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
-                        }
+                    LocalToaster provides toaster,
+                    LocalPlatformWindow provides remember {
+                        PlatformWindow()
                     },
                 ) {
                     AniAppContent(aniNavigator)

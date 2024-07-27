@@ -54,6 +54,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
+import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -79,8 +80,9 @@ import me.him188.ani.app.ui.update.handleClickLogo
 fun HomeScene(modifier: Modifier = Modifier) {
     if (currentPlatform.isAndroid()) {
         val context = LocalContext.current
+        val window = LocalPlatformWindow.current
         SideEffect {
-            context.setRequestFullScreen(false)
+            context.setRequestFullScreen(window, false)
         }
     }
 

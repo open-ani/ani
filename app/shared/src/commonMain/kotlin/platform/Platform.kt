@@ -60,6 +60,13 @@ sealed class Platform {
 val currentPlatform: Platform
     get() = Platform.currentPlatform
 
+@Stable
+val currentPlatformDesktop: Platform.Desktop
+    get() {
+        check(Platform.currentPlatform is Platform.Desktop)
+        return Platform.currentPlatform
+    }
+
 @Immutable
 enum class Arch(
     val displayName: String, // Don't change, used by the server
