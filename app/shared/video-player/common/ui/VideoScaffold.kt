@@ -206,17 +206,20 @@ fun VideoScaffold(
                 }
             }
             Column(Modifier.fillMaxSize().background(Color.Transparent)) {
-                // Separate from controllers, to fix position when controllers are/aren't hidden
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
-                    Column(Modifier.padding(end = 16.dp).align(Alignment.CenterEnd)) {
+                    Column(
+                        Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
                         AnimatedVisibility(
                             visible = controllersVisibleState && !gestureLockedState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
                             rhsButtons()
-                            Spacer(modifier = Modifier.height(8.dp))
                         }
+
+                        // Separate from controllers, to fix position when controllers are/aren't hidden
                         AnimatedVisibility(
                             visible = controllersVisibleState,
                             enter = fadeIn(),
