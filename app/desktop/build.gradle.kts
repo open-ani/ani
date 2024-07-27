@@ -29,7 +29,7 @@ plugins {
     kotlin("plugin.compose")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
     idea
 }
 

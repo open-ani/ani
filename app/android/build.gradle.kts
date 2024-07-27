@@ -21,7 +21,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     kotlin("plugin.compose")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
     id("kotlin-parcelize")
     idea
 }

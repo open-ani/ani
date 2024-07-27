@@ -33,7 +33,7 @@ plugins {
     `flatten-source-sets`
 
     kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
     id("com.google.devtools.ksp")
     id("androidx.room")
     idea
@@ -73,6 +73,8 @@ kotlin {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
         implementation(libs.atomicfu) // room runtime
+        api(libs.kotlinx.datetime)
+        api(libs.kotlinx.io.core)
 
         // Compose
         api(compose.foundation)
@@ -189,22 +191,6 @@ kotlin {
 
         // https://repo1.maven.org/maven2/org/openjfx/javafx-graphics/17.0.11/
         val os = getOs()
-        val classifier = when (os) {
-            Os.MacOS -> {
-                // check aarch
-                if (System.getProperty("os.arch").contains("aarch")) {
-                    "mac-aarch64"
-                } else {
-                    "mac"
-                }
-            }
-
-            Os.Windows -> "win"
-            Os.Linux -> "linux"
-            else -> {
-                null
-            }
-        }
 
         runtimeOnly(libs.kotlinx.coroutines.debug)
 

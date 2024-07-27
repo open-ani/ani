@@ -13,7 +13,7 @@ plugins {
     `flatten-source-sets`
 
     kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
 }
 
 extra.set("ani.jvm.target", 17)

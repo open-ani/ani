@@ -31,6 +31,7 @@ plugins {
     kotlin("jvm") apply false
     kotlin("plugin.serialization") version libs.versions.kotlin apply false
     kotlin("plugin.compose") version libs.versions.kotlin apply false
+    id("org.jetbrains.kotlinx.atomicfu") apply false
     id("org.jetbrains.compose") apply false
     id("com.android.library") apply false
     id("com.android.application") apply false

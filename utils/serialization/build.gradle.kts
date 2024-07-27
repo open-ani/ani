@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -28,5 +30,6 @@ dependencies {
 }
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 }

@@ -25,13 +25,6 @@ pluginManagement {
         google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // Compose Multiplatform pre-release versions
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "kotlinx-atomicfu") { // atomicfu is not on Gradle Plugin Portal
-                useModule("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${requested.version}")
-            }
-        }
-    }
 }
 
 plugins {
