@@ -206,14 +206,14 @@ internal fun EpisodeVideoImpl(
                 )
             }
         },
-        rhsBarTop = {
+        rhsButtons = {
             if (expanded && currentPlatform.isDesktop()) {
                 ScreenshotButton(
                     onClick = onClickScreenshot,
                 )
             }
         },
-        rhsBarCenter = {
+        gestureLock = {
             if (expanded) {
                 GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }
