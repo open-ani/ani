@@ -22,11 +22,13 @@ import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButt
 import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
-import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
+import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
+import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -156,7 +158,10 @@ internal fun PreviewSubjectDetails() {
                 )
             },
             selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton({})
+                SubjectDetailsDefaults.SelectEpisodeButtons(
+                    rememberTestSubjectProgressState(info = TestSubjectProgressInfos.ContinueWatching2),
+                    onShowEpisodeList = {},
+                )
             },
             connectedScrollState = connectedScrollState,
             detailsTab = {

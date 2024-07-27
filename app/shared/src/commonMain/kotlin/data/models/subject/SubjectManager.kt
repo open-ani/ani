@@ -26,9 +26,8 @@ import kotlinx.coroutines.flow.transform
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeCollections
 import me.him188.ani.app.data.models.episode.EpisodeInfo
+import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.models.episode.isKnownOnAir
-import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.persistent.asDataStoreSerializer
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
@@ -41,8 +40,9 @@ import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.username
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.session.SessionManager
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheSave
@@ -54,7 +54,7 @@ import me.him188.ani.app.tools.caching.getCachedData
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressItem
+import me.him188.ani.app.ui.subject.episode.list.EpisodeProgressItem
 import me.him188.ani.datasources.api.paging.emptyPagedSource
 import me.him188.ani.datasources.api.paging.mapNotNull
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
@@ -124,9 +124,9 @@ abstract class SubjectManager {
     abstract fun subjectCollectionTypeFlow(subjectId: Int): Flow<UnifiedCollectionType>
 
     /**
-     * 获取缓存的对该条目的收藏信息, 若没有则从网络获取. `null` 表示用户未收藏该条目.
+     * 获取缓存的对该条目的收藏信息, 若没有则从网络获取. 总是会 emit 至少一个元素.
      */
-    abstract fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollection?>
+    abstract fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollection>
 
     /**
      * 从缓存中获取条目, 若没有则从网络获取.
@@ -149,15 +149,13 @@ abstract class SubjectManager {
     abstract fun subjectProgressFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
-    ): Flow<List<EpisodeProgressItem>>
+    ): Flow<List<EpisodeProgressInfo>>
 
     /**
      * 获取用户该条目的收藏情况, 以及该条目的信息.
      *
      * 将会优先查询缓存, 若本地没有缓存, 则会执行一次网络请求.
      * 返回的 flow 不会完结, 将会跟随缓存更新.
-     *
-     * 如果用户未收藏该条目, 则返回空列表.
      */
     abstract fun episodeCollectionsFlow(subjectId: Int): Flow<List<EpisodeCollection>>
 
@@ -249,6 +247,7 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
+                    sessionManager.state
                     val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
@@ -284,22 +283,32 @@ class SubjectManagerImpl(
         }
     }
 
-    override fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollection?> {
+    override fun subjectCollectionFlow(subjectId: Int): Flow<SubjectCollection> {
         return flow {
-            coroutineScope {
-                val cached = findCachedSubjectCollection(subjectId)
-                // TODO: this is shit 
-                if (cached == null) {
-                    emit(
-                        bangumiSubjectRepository.subjectCollectionById(subjectId).first()
-                            ?.fetchToSubjectCollection(),
-                    )
-                }
-                emitAll(
-                    cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)
-                        .filterNotNull(),
+            val cached = findCachedSubjectCollection(subjectId)
+            // TODO: this is shit 
+            if (cached == null) {
+                // 缓存没有, 去服务器查有没有收藏
+                kotlin.runCatching {
+                    bangumiSubjectRepository.subjectCollectionById(subjectId).first()
+                        ?.fetchToSubjectCollection()
+                }.getOrNull()?.let { emit(it) }
+
+                // 服务器也没有, 尝试根据 [SubjectInfo] 创建一个
+
+                emit(
+                    SubjectCollection(
+                        getSubjectInfo(subjectId),
+                        episodeCollectionsFlow(subjectId).first(),
+                        UnifiedCollectionType.NOT_COLLECTED,
+                        SelfRatingInfo.Empty,
+                    ),
                 )
             }
+            emitAll(
+                cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)
+                    .filterNotNull(),
+            )
         }
     }
 
@@ -322,7 +331,7 @@ class SubjectManagerImpl(
     override fun subjectProgressFlow(
         subjectId: Int,
         contentPolicy: ContentPolicy
-    ): Flow<List<EpisodeProgressItem>> = subjectCollectionFlow(subjectId, contentPolicy)
+    ): Flow<List<EpisodeProgressInfo>> = subjectCollectionFlow(subjectId, contentPolicy)
         .map { it?.episodes ?: emptyList() }
         .distinctUntilChanged()
         .flatMapLatest { episodes ->
@@ -334,11 +343,9 @@ class SubjectManagerImpl(
                     ).onStart {
                         emit(EpisodeCacheStatus.NotCached)
                     }.map { cacheStatus ->
-                        EpisodeProgressItem(
-                            episodeId = episode.episode.id,
-                            episodeSort = episode.episode.sort.toString(),
-                            watchStatus = episode.type,
-                            isOnAir = episode.episode.isKnownOnAir,
+                        EpisodeProgressInfo(
+                            episode.episode,
+                            episode.collectionType,
                             cacheStatus = cacheStatus,
                         )
                     }
@@ -536,6 +543,7 @@ class SubjectManagerImpl(
     }
 
     private suspend fun fetchEpisodeCollections(subjectId: Int): List<EpisodeCollection> {
+        // 查收藏状态, 没收藏就查剧集, 认为所有剧集都没有收藏
         return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, BangumiEpType.MainStory)
             .let { collections ->
                 collections?.toList()?.map { it.toEpisodeCollection() }
@@ -547,7 +555,7 @@ class SubjectManagerImpl(
             }
     }
 
-    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection? = coroutineScope {
+    private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection = coroutineScope {
         val subject = async {
             runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
         }

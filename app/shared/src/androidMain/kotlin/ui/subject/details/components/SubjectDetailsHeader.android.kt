@@ -64,7 +64,7 @@ fun rememberTestEditableSubjectCollectionTypeState(type: UnifiedCollectionType =
                 selfCollectionType.value = it
             },
             onSetAllEpisodesWatched = { },
-            backgroundScope.backgroundScope.coroutineContext,
+            backgroundScope.backgroundScope,
         )
     }
 }
@@ -125,7 +125,7 @@ fun PreviewSubjectDetailsHeader(
                 )
             },
             selectEpisodeButton = {
-                SubjectDetailsDefaults.SelectEpisodeButton({})
+                SubjectDetailsDefaults.SelectEpisodeButtons(rememberTestSubjectProgressState(), {})
             },
             rating = {
                 EditableRating(

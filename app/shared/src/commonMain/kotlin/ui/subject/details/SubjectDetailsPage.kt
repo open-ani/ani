@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -67,13 +68,13 @@ import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressDialog
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
-import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButton
+import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
 import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.subject.rating.EditableRating
 
 @Composable
@@ -86,8 +87,11 @@ fun SubjectDetailsScene(
 ) {
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
-        EpisodeProgressDialog(
-            vm.episodeProgressState,
+        EpisodeListDialog(
+            vm.episodeListState,
+            title = {
+                Text(vm.subjectDetailsState.info.displayName)
+            },
             onDismissRequest = { showSelectEpisode = false },
         )
     }
@@ -117,8 +121,9 @@ fun SubjectDetailsScene(
             EditableRating(vm.editableRatingState)
         },
         selectEpisodeButton = {
-            SubjectDetailsDefaults.SelectEpisodeButton(
-                onClick = { showSelectEpisode = true },
+            SubjectDetailsDefaults.SelectEpisodeButtons(
+                vm.subjectProgressState,
+                onShowEpisodeList = { showSelectEpisode = true },
             )
         },
         connectedScrollState = connectedScrollState,
@@ -178,7 +183,7 @@ fun SubjectDetailsPage(
     collectionData: @Composable () -> Unit,
     collectionActions: @Composable () -> Unit,
     rating: @Composable () -> Unit,
-    selectEpisodeButton: @Composable () -> Unit,
+    selectEpisodeButton: @Composable BoxScope.() -> Unit,
     connectedScrollState: ConnectedScrollState,
     detailsTab: @Composable () -> Unit,
     commentsTab: @Composable () -> Unit,
@@ -276,14 +281,11 @@ fun SubjectDetailsPage(
                                 airingInfo = state.airingInfo,
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
-                                selectEpisodeButton = {
-                                    selectEpisodeButton()
-                                },
+                                selectEpisodeButton = selectEpisodeButton,
                                 rating = rating,
                                 Modifier.fillMaxWidth()
                                     .ifThen(!showTopBar) { padding(top = 16.dp) }
-                                    .padding(horizontal = 16.dp)
-                                    .padding(bottom = 16.dp),
+                                    .padding(horizontal = 16.dp),
                             )
                         }
                     }

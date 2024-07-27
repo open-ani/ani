@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.repository
 
-import io.ktor.client.plugins.ResponseException
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.data.models.episode.toEpisodeComment
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
@@ -36,7 +35,7 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
 
                     Paged.processPagedResponse(response.size, response.size, response)
                 } else null
-            } catch (e: ResponseException) {
+            } catch (e: Exception) {
                 logger.warn("Exception in getSubjectEpisodeComments", e)
                 null
             }

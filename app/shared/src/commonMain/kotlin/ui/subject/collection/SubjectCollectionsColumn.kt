@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,11 +21,9 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -42,11 +39,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,25 +53,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import me.him188.ani.app.data.models.episode.EpisodeCollection
-import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringKind
 import me.him188.ani.app.data.models.subject.SubjectCollection
-import me.him188.ani.app.data.models.subject.getEpisodeToPlay
 import me.him188.ani.app.data.models.subject.isOnAir
 import me.him188.ani.app.data.models.toStringExcludingSameYear
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
-import me.him188.ani.app.ui.foundation.indication.IndicatedBox
-import me.him188.ani.app.ui.subject.collection.progress.cacheStatusIndicationColor
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.components.OutlinedTag
-import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 private inline val spacedBy get() = 16.dp
 
@@ -183,15 +169,13 @@ fun SubjectCollectionsColumn(
 @Composable
 fun SubjectCollectionItem(
     item: SubjectCollection,
-    episodeCacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
+    editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
     onClick: () -> Unit,
-    onClickEpisode: (episode: EpisodeCollection) -> Unit,
-    onClickSelectEpisode: () -> Unit,
-    onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
+    onShowEpisodeList: () -> Unit,
+    playButton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     height: Dp = 148.dp,
     shape: RoundedCornerShape = RoundedCornerShape(8.dp),
-    doneButton: @Composable (() -> Unit)? = null,
 ) {
     Card(
         onClick,
@@ -209,13 +193,11 @@ fun SubjectCollectionItem(
 
             Box(Modifier.weight(1f)) {
                 SubjectCollectionItemContent(
-                    item,
-                    episodeCacheStatus,
-                    onClickEpisode,
-                    onClickSelectEpisode,
-                    onSetCollectionType,
+                    item = item,
+                    editableSubjectCollectionTypeState = editableSubjectCollectionTypeState,
+                    onShowEpisodeList = onShowEpisodeList,
+                    playButton = playButton,
                     Modifier.padding(start = 12.dp).fillMaxSize(),
-                    doneButton = doneButton,
                 )
             }
         }
@@ -228,12 +210,10 @@ fun SubjectCollectionItem(
 @Composable
 private fun SubjectCollectionItemContent(
     item: SubjectCollection,
-    cacheStatus: @Composable (subjectId: Int, episodeId: Int) -> EpisodeCacheStatus?,
-    onClickEpisode: (episode: EpisodeCollection) -> Unit,
-    onClickSelectEpisode: () -> Unit,
-    onSetCollectionType: (new: UnifiedCollectionType) -> Unit,
+    editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
+    onShowEpisodeList: () -> Unit,
+    playButton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    doneButton: @Composable (() -> Unit)? = null,
 ) {
     Column(modifier) {
         // 标题和右上角菜单
@@ -251,18 +231,14 @@ private fun SubjectCollectionItemContent(
             )
 
             Box {
-                var showDropdown by rememberSaveable { mutableStateOf(false) }
-                IconButton({ showDropdown = true }, Modifier.fillMaxHeight().padding()) {
+                IconButton(
+                    { editableSubjectCollectionTypeState.showDropdown = true },
+                    Modifier.fillMaxHeight().padding(),
+                ) {
                     Icon(Icons.Outlined.MoreVert, null, Modifier.size(24.dp))
                 }
 
-                EditCollectionTypeDropDown(
-                    currentType = item.collectionType,
-                    showDropdown, { showDropdown = false },
-                    onClick = { action ->
-                        onSetCollectionType(action.type)
-                    },
-                )
+                EditCollectionTypeDropDown(editableSubjectCollectionTypeState)
             }
         }
 
@@ -294,60 +270,11 @@ private fun SubjectCollectionItemContent(
                 .align(Alignment.End),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClickSelectEpisode) {
+            TextButton(onShowEpisodeList) {
                 Text("选集")
             }
 
-            val onClickEpisodeState by rememberUpdatedState(onClickEpisode)
-            val onPlay: () -> Unit = { item.getEpisodeToPlay()?.let(onClickEpisodeState) }
-            IndicatedBox(
-                indicator = {
-                    item.getEpisodeToPlay()?.episode?.id?.let { episodeId ->
-                        HorizontalIndicator(
-                            6.dp,
-                            CircleShape,
-                            cacheStatusIndicationColor(
-                                cacheStatus(
-                                    item.subjectId,
-                                    episodeId,
-                                ),
-                                item.continueWatchingStatus is ContinueWatchingStatus.Watched,
-                            ),
-                            Modifier.offset(y = (-2).dp),
-                        )
-                    }
-                },
-            ) {
-                when (val status = item.continueWatchingStatus) {
-                    is ContinueWatchingStatus.Continue -> {
-                        Button(onClick = onPlay) {
-                            Text(remember(status.episodeSort) { "继续观看 ${status.episodeSort}" })
-                        }
-                    }
-
-                    ContinueWatchingStatus.Done -> {
-                        doneButton?.invoke()
-                    }
-
-                    ContinueWatchingStatus.NotOnAir -> {
-                        androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
-                            Text("还未开播")
-                        }
-                    }
-
-                    ContinueWatchingStatus.Start -> {
-                        Button(onClick = onPlay) {
-                            Text("开始观看")
-                        }
-                    }
-
-                    is ContinueWatchingStatus.Watched -> {
-                        androidx.compose.material3.FilledTonalButton(onClick = onPlay) {
-                            Text("看到 ${status.episodeSort}")
-                        }
-                    }
-                }
-            }
+            Box(Modifier.width(IntrinsicSize.Min)) { playButton() }
         }
     }
 }

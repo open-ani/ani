@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.EventNote
 import androidx.compose.material.icons.rounded.AccessTime
@@ -16,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -272,6 +274,7 @@ private fun renderCollectionTypeAsCurrent(type: UnifiedCollectionType): String {
 
 @Composable
 fun SetAllEpisodeDoneDialog(
+    isWorking: Boolean,
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier
@@ -280,7 +283,13 @@ fun SetAllEpisodeDoneDialog(
         onDismissRequest = onDismissRequest,
         icon = { Icon(Icons.Rounded.TaskAlt, null) },
         text = { Text("要同时设置所有剧集为看过吗？") },
-        confirmButton = { TextButton(onConfirm) { Text("设置") } },
+        confirmButton = {
+            TextButton(onConfirm) { Text("设置") }
+
+            if (isWorking) {
+                CircularProgressIndicator(Modifier.padding(start = 8.dp).size(24.dp))
+            }
+        },
         dismissButton = { TextButton(onDismissRequest) { Text("忽略") } },
         modifier = modifier,
     )
