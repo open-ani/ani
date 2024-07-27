@@ -58,7 +58,7 @@ kotlin {
         api(compose.material3)
         api(compose.runtime)
 
-        api(projects.utils.slf4jKt)
+        api(projects.utils.logging)
         api(projects.utils.coroutines)
 
         // Ktor
@@ -86,7 +86,7 @@ kotlin {
         api(compose.desktop.currentOs) {
             exclude(compose.material) // We use material3
         }
-        api(projects.utils.slf4jKt)
+        api(projects.utils.logging)
         api(libs.kotlinx.coroutines.swing)
         runtimeOnly(libs.kotlinx.coroutines.debug)
 

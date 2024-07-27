@@ -23,7 +23,7 @@ plugins {
 
 dependencies {
     api(libs.kotlinx.coroutines.core)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
     implementation(projects.utils.coroutines)
     api(projects.utils.io)
 

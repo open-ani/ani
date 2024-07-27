@@ -12,7 +12,7 @@ dependencies {
     api(libs.jsoup)
 
     api(projects.utils.ktorClient)
-    api(projects.utils.slf4jKt)
+    api(projects.utils.logging)
 
     api(libs.ktor.client.content.negotiation)
     api(libs.ktor.client.logging)

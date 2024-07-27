@@ -105,7 +105,7 @@ kotlin {
         api(projects.torrent.anitorrent)
 
         api(projects.client)
-        api(projects.utils.slf4jKt)
+        api(projects.utils.logging)
         api(projects.utils.coroutines)
         api(projects.utils.io)
         api(projects.danmaku.ani.protocol)
@@ -184,7 +184,7 @@ kotlin {
         }
         api(compose.material3)
         api("org.jetbrains.compose.ui:ui-graphics-desktop:${libs.versions.compose.multiplatform.get()}")
-        api(projects.utils.slf4jKt)
+        api(projects.utils.logging)
         api(libs.kotlinx.coroutines.swing)
         implementation(libs.vlcj)
         implementation(libs.jna) // required and don't change version, otherwise vlcj might crash the VM 

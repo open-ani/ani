@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.utils.slf4jKt)
+    api(projects.utils.logging)
 
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.serialization.json)

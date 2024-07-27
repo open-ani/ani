@@ -38,7 +38,7 @@ dependencies {
     api(projects.utils.ktorClient)
 //    api(libs.kotlinx.io.core)
     api(projects.utils.io)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
 
     implementation(compose.runtime) // required by the compose compiler
 }

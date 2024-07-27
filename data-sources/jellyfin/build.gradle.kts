@@ -8,7 +8,7 @@ plugins {
 dependencies {
     api(projects.dataSources.api)
     implementation(projects.utils.serialization)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
 
     api(libs.kotlinx.coroutines.core)
     implementation(libs.ktor.client.logging)

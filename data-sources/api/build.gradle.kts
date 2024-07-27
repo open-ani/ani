@@ -38,7 +38,7 @@ dependencies {
     api(libs.ktor.client.logging)
     api(libs.ktor.client.auth)
     api(libs.jsoup)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(projects.utils.testing)
 

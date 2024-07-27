@@ -16,11 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 plugins {
-    kotlin("jvm")
-    `flatten-source-sets`
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
 }
 
 dependencies {
-    api(libs.slf4j.api)
+    jvmMainApi(libs.slf4j.api)
+}
+
+kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
+
+    sourceSets.nativeMain {
+        dependencies {
+            implementation(libs.oshai.kotlin.logging)
+        }
+    }
 }
