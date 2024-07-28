@@ -19,7 +19,7 @@ okio = "3.9.0"
 korlibs = "6.0.0"
 playwright = "1.44.0"
 reorderable = "0.9.6"
-ktor = "2.3.12"
+ktor = "3.0.0-beta-2" # Ksoup 用 3.0 所以我们不得不用 3.0
 koin = "4.0.0-RC1" # https://github.com/InsertKoinIO/koin/releases
 slf4j = "2.0.12"
 jsoup = "1.15.4"
@@ -135,6 +135,7 @@ coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
 #coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 coil-network-ktor2 = { module = "io.coil-kt.coil3:coil-network-ktor2", version.ref = "coil" }
+coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 # Jsoup - HTML parsing (for dmhy)
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }

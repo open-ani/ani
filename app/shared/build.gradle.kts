@@ -98,7 +98,7 @@ kotlin {
         api(libs.coil.core)
         api(libs.coil.svg)
         api(libs.coil.compose.core)
-        api(libs.coil.network.ktor2)
+        api(libs.coil.network.ktor3)
         api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
         api(libs.precompose) // Navigator

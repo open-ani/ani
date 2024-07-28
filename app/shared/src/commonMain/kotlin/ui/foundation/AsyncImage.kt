@@ -15,7 +15,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.DefaultModelEqualityDelegate
 import coil3.compose.EqualityDelegate
 import coil3.memory.MemoryCache
-import coil3.network.ktor2.KtorNetworkFetcherFactory
+import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder

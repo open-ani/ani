@@ -2,6 +2,7 @@ package me.him188.ani.utils.ktor
 
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.cancel
+import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
 import kotlinx.io.RawSource
