@@ -229,38 +229,44 @@ kotlin {
         //  https://youtrack.jetbrains.com/issue/KT-65362
         // Danmaku
 
-        fun submodule(dir: String) {
-            commonMain {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/"))
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonMain/"))
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/common/"))
-                resources.srcDirs(rootProject.projectDir.resolve("$dir/resources/"))
-            }
-            commonTest {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/test/"))
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
-            }
-            androidMain {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidMain/"))
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/android/"))
-            }
-            getByName("desktopMain") {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopMain/"))
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktop/"))
-            }
-            commonTest {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
-            }
-            getByName("androidUnitTest") {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidUnitTest/"))
-            }
-            getByName("desktopTest") {
-                kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopTest/"))
+        fun submodule(dir: String, flatten: Boolean = !rootProject.projectDir.resolve("$dir/src/commonMain").exists()) {
+            if (flatten) {
+                // flatten
+                commonMain {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/"))
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonMain/"))
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/common/"))
+                    resources.srcDirs(rootProject.projectDir.resolve("$dir/resources/"))
+                }
+                commonTest {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/test/"))
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
+                }
+                androidMain {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidMain/"))
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/android/"))
+                }
+                getByName("desktopMain") {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopMain/"))
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktop/"))
+                }
+                commonTest {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
+                }
+                getByName("androidUnitTest") {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidUnitTest/"))
+                }
+                getByName("desktopTest") {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopTest/"))
+                }
+            } else {
+                sourceSets.all {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
+                }
             }
         }
 
-        submodule("danmaku/api")
-        submodule("danmaku/ani/client")
+        submodule("danmaku/api", flatten = false)
         submodule("danmaku/dandanplay")
         submodule("danmaku/ui")
 

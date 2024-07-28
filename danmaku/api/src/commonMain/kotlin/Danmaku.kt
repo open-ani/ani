@@ -1,8 +1,5 @@
 package me.him188.ani.danmaku.api
 
-import androidx.compose.runtime.Immutable
-
-@Immutable
 class DanmakuPresentation(
     val danmaku: Danmaku,
     val isSelf: Boolean,
@@ -10,7 +7,6 @@ class DanmakuPresentation(
     val id get() = danmaku.id
 }
 
-@Immutable
 data class Danmaku(
     val id: String,
     val providerId: String,

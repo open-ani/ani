@@ -9,9 +9,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -52,7 +53,7 @@ fun emptyDanmakuCollection(): DanmakuCollection {
 
 class TimeBasedDanmakuSession private constructor(
     /**
-     * List of danmaku. Must be sorted by [DanmakuInfo.playTime], and must not change after construction.
+     * List of danmaku. Must be sorted by playTime, and must not change after construction.
      */
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,

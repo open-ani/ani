@@ -7,6 +7,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
+import kotlin.jvm.JvmStatic
 import kotlin.time.Duration
 
 /**
