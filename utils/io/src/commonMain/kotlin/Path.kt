@@ -184,11 +184,13 @@ fun SystemPath.bufferedSink(append: Boolean = false) = sink(append).buffered()
 fun SystemPath.metadataOrNull() = SystemFileSystem.metadataOrNull(path)
 
 /**
+ * Will throw if the file does not exist.
+ * 
  * @see FileSystem.resolve
  */
 fun SystemPath.resolveToAbsolute() = SystemFileSystem.resolve(path)
 
-val SystemPath.absolutePath: String get() = resolveToAbsolute().toString()
+expect val SystemPath.absolutePath: String
 
 ///////////////////////////////////////////////////////////////////////////
 // Extensions

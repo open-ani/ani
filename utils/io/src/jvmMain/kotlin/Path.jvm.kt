@@ -35,3 +35,7 @@ actual fun SystemPath.isRegularFile(): Boolean {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     return path.file.isFile
 }
+
+actual val SystemPath.absolutePath: String
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    get() = path.file.absolutePath
