@@ -57,6 +57,7 @@ android-application-gradle-plugin = { module = "com.android.application:com.andr
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu" }
 compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
+kotlin-compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 #compose-multiplatfrom-compiler-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.compiler", version.ref = "compose-multiplatform-compiler" }
 
 # Kotlinx
