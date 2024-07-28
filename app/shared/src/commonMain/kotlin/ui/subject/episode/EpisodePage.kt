@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -82,8 +84,6 @@ import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSel
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
-import me.him188.ani.danmaku.protocol.DanmakuInfo
-import me.him188.ani.danmaku.protocol.DanmakuLocation
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 

@@ -62,9 +62,9 @@ import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
-import me.him188.ani.app.data.source.DanmakuManager
-import me.him188.ani.app.data.source.DanmakuManagerImpl
 import me.him188.ani.app.data.source.UpdateManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
 import me.him188.ani.app.data.source.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.source.media.DummyMediaCacheEngine
 import me.him188.ani.app.data.source.media.MediaAutoCacheService

@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source
+package me.him188.ani.app.data.source.danmaku
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
@@ -14,15 +14,12 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.verifiedAccessToken
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.danmaku.ani.client.AniDanmakuProvider
-import me.him188.ani.danmaku.ani.client.AniDanmakuSender
-import me.him188.ani.danmaku.ani.client.AniDanmakuSenderImpl
-import me.him188.ani.danmaku.ani.client.SendDanmakuException
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuCollection
 import me.him188.ani.danmaku.api.DanmakuFetchResult
@@ -34,7 +31,6 @@ import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.merge
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
-import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.utils.coroutines.mapAutoClose
 import me.him188.ani.utils.coroutines.mapAutoCloseCollection
 import me.him188.ani.utils.logging.error

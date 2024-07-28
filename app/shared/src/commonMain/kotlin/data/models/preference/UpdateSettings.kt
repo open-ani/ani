@@ -4,9 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.update.supportsInAppUpdate
-import me.him188.ani.danmaku.protocol.ReleaseClass
 
 @Immutable
 @Serializable

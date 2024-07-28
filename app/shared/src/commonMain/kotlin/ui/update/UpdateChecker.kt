@@ -11,13 +11,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseUpdatesDetailedResponse
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.profile.update.Release
-import me.him188.ani.danmaku.protocol.ReleaseClass
-import me.him188.ani.danmaku.protocol.ReleaseUpdatesDetailedResponse
 import me.him188.ani.utils.coroutines.withExceptionCollector
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info

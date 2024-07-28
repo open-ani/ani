@@ -1,4 +1,4 @@
-package me.him188.ani.danmaku.ani.client
+package me.him188.ani.app.data.source.danmaku
 
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -16,6 +16,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.ani.app.data.source.danmaku.protocol.AniUser
+import me.him188.ani.app.data.source.danmaku.protocol.BangumiLoginRequest
+import me.him188.ani.app.data.source.danmaku.protocol.BangumiLoginResponse
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -24,11 +29,6 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.applyDanmakuProviderConfig
-import me.him188.ani.danmaku.protocol.AniUser
-import me.him188.ani.danmaku.protocol.BangumiLoginRequest
-import me.him188.ani.danmaku.protocol.BangumiLoginResponse
-import me.him188.ani.danmaku.protocol.DanmakuInfo
-import me.him188.ani.danmaku.protocol.DanmakuPostRequest
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.registerLogging

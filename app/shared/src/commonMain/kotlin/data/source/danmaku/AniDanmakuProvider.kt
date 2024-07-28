@@ -1,7 +1,8 @@
-package me.him188.ani.danmaku.ani.client
+package me.him188.ani.app.data.source.danmaku
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.danmaku.api.AbstractDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuFetchResult
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
@@ -11,12 +12,11 @@ import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuProviderFactory
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
-import me.him188.ani.danmaku.protocol.DanmakuGetResponse
 import me.him188.ani.utils.logging.info
 import kotlin.coroutines.CoroutineContext
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation as ProtocolDanmakuLocation
 import me.him188.ani.danmaku.api.Danmaku as ApiDanmaku
 import me.him188.ani.danmaku.api.DanmakuLocation as ApiDanmakuLocation
-import me.him188.ani.danmaku.protocol.DanmakuLocation as ProtocolDanmakuLocation
 
 object AniBangumiSeverBaseUrls {
     const val GLOBAL = "https://danmaku-global.myani.org"

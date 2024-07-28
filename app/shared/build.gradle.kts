@@ -108,7 +108,6 @@ kotlin {
         api(projects.utils.logging)
         api(projects.utils.coroutines)
         api(projects.utils.io)
-        api(projects.danmaku.ani.protocol)
         api(projects.utils.ktorClient)
         api(projects.app.shared.imageViewer)
 

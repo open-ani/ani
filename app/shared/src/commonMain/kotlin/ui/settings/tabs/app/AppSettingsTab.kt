@@ -26,6 +26,7 @@ import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
@@ -51,7 +52,6 @@ import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.NewVersion
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.app.ui.update.UpdateChecker
-import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
 import org.koin.core.context.GlobalContext
 

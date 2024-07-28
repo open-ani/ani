@@ -1,4 +1,4 @@
-package me.him188.ani.danmaku.protocol
+package me.him188.ani.app.data.source.danmaku.protocol
 
 import kotlinx.serialization.Serializable
 
