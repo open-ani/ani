@@ -47,7 +47,6 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
@@ -212,10 +211,11 @@ internal fun EpisodeVideoImpl(
         },
         bottomBar = {
             Crossfade(
-                targetState = videoControllerState.visibility,
+                targetState = videoControllerState.visibility.detachedSlider,
             ) {
                 when (it) {
-                    ControllerVisibility.Visible ->
+                    true -> detachedProgressSlider()
+                    false ->
                         PlayerControllerBar(
                             startActions = {
                                 val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -270,9 +270,6 @@ internal fun EpisodeVideoImpl(
                             },
                             expanded = expanded,
                         )
-
-                    ControllerVisibility.DetachedSliderOnly -> detachedProgressSlider()
-                    ControllerVisibility.Invisible -> Unit
                 }
             }
         },
