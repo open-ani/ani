@@ -104,7 +104,7 @@ fun SystemPath.exists(): Boolean = SystemFileSystem.exists(path)
 /**
  * @see FileSystem.delete
  */
-fun SystemPath.delete(mustExist: Boolean = true) = SystemFileSystem.delete(path, mustExist)
+fun SystemPath.delete(mustExist: Boolean = false) = SystemFileSystem.delete(path, mustExist)
 
 @Deprecated("For migration. Use delete() instead", ReplaceWith("this.delete()"), level = DeprecationLevel.ERROR)
 fun SystemPath.deleteIfExists() = delete()
