@@ -107,7 +107,11 @@ class MediaSourceManagerImpl(
             logger.error(throwable) { "DownloadProviderManager scope error" }
         },
     )
-    private val factories: List<MediaSourceFactory> = ServiceLoader.loadServices(MediaSourceFactory::class).toList()
+    private val factories: List<MediaSourceFactory> = buildSet {
+        addAll(ServiceLoader.loadServices(MediaSourceFactory::class))
+        add(MikanMediaSource.Factory()) // Kotlin bug, MPP 加载不了 resources
+        add(MikanCNMediaSource.Factory())
+    }.toList()
 
     private val additionalSources by lazy {
         additionalSources().map { source ->
