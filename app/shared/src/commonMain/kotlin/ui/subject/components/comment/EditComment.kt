@@ -173,7 +173,7 @@ fun EditComment(
                     modifier = Modifier.fillMaxWidth().height(requiredStickerPanelHeight),
                     onClickItem = { stickerId ->
                         val inserted = "(bgm$stickerId)"
-                        editor.insertTextAt(inserted, inserted.length + 1)
+                        editor.insertTextAt(inserted, inserted.length)
                     },
                 )
             }
@@ -348,7 +348,7 @@ private class EditCommentTextState(
 
         textFlow.value = current.copy(
             annotatedString = AnnotatedString(newText),
-            selection = TextRange((selectionLeft + cursorOffset).coerceIn(0..newText.lastIndex)),
+            selection = TextRange((selectionLeft + cursorOffset).coerceIn(0..newText.lastIndex + 1)),
         )
     }
 
