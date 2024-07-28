@@ -1,6 +1,5 @@
 package me.him188.ani.datasources.api.source
 
-import androidx.compose.runtime.Stable
 import io.ktor.client.HttpClientConfig
 import kotlinx.serialization.Serializable
 import me.him188.ani.utils.ktor.ClientProxyConfig
@@ -47,7 +46,6 @@ data class MediaSourceConfig(
     val arguments: Map<String, String?> = mapOf(),
 ) {
     companion object {
-        @Stable
         val Default = MediaSourceConfig()
     }
 }

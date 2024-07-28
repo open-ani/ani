@@ -20,8 +20,6 @@
 
 package me.him188.ani.datasources.api.topic
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.reduce
 import kotlinx.serialization.Serializable
@@ -41,7 +39,6 @@ import kotlin.math.round
  */
 @JvmInline
 @Serializable
-@Immutable
 value class FileSize(
     val inBytes: Long,
 ) {
@@ -95,17 +92,14 @@ value class FileSize(
         inline val Double.megaBytes: FileSize get() = (this * 1024).kiloBytes
         inline val Double.gigaBytes: FileSize get() = (this * 1024).megaBytes
 
-        @Stable
         val Zero = 0.bytes
 
         /**
          * 特殊值
          */
-        @Stable
         val Unspecified = FileSize(-1L)
     }
 
-    @Stable
     @Suppress("DefaultLocale")
     override fun toString(): String {
         val gigaBytes = this.inGigaBytesDouble

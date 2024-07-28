@@ -1,7 +1,5 @@
 package me.him188.ani.datasources.api
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -15,7 +13,6 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
  *
  * 在播放时查询数据源时, [MediaCacheMetadata] 也被用于与 [MediaFetchRequest] 匹配缓存. 查询过程详见 `MediaCacheEngine`.
  */
-@Immutable
 @Serializable
 data class MediaCacheMetadata
 /**
@@ -80,7 +77,6 @@ constructor(
     /**
      * Appends [other] to the existing [extra].
      */
-    @Stable
     fun withExtra(other: Map<String, String>): MediaCacheMetadata {
         return MediaCacheMetadata(
             subjectId = subjectId,

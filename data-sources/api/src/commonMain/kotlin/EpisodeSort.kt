@@ -1,6 +1,5 @@
 package me.him188.ani.datasources.api
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort.Normal
 import me.him188.ani.datasources.api.EpisodeSort.Special
@@ -21,7 +20,6 @@ import me.him188.ani.utils.serialization.BigNum
  * @see EpisodeRange
  */
 @Serializable // do not change package name!
-@Stable
 sealed class EpisodeSort : Comparable<EpisodeSort> {
     /**
      * 若是普通剧集, 则返回序号, 例如 ``, 否则返回 null.

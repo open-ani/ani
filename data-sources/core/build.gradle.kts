@@ -18,23 +18,8 @@
 
 plugins {
     kotlin("multiplatform")
-    `android-library`
-    kotlin("plugin.compose")
-    id("org.jetbrains.compose")
-    // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
     kotlin("plugin.serialization")
-
     `ani-mpp-lib-targets`
-
-    // for @Stable and @Immutable
-    // Note: we actually can avoid this, by using a `compose_compiler_config.conf`
-    // See https://developer.android.com/develop/ui/compose/performance/stability/fix#configuration-file
-    // But for simplicity, we just include compose here.
-    `ani-compose-hmpp`
-}
-
-android {
-    namespace = "me.him188.ani.data.sources.core"
 }
 
 kotlin {
@@ -42,19 +27,8 @@ kotlin {
         dependencies {
             api(libs.kotlinx.coroutines.core)
             api(projects.dataSources.api)
-
-            implementation(libs.kotlinx.serialization.json)
             api(projects.utils.ktorClient)
             api(projects.utils.io)
-            implementation(projects.utils.logging)
-
-            implementation(compose.runtime) // required by the compose compiler
-        }
-    }
-
-    sourceSets.commonTest {
-        dependencies {
-            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

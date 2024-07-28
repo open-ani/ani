@@ -18,25 +18,9 @@
 
 plugins {
     kotlin("multiplatform")
-    `android-library`
-    kotlin("plugin.compose")
-    id("org.jetbrains.compose")
-    // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
     kotlin("plugin.serialization")
-
     `ani-mpp-lib-targets`
-
-    // for @Stable and @Immutable
-    // Note: we actually can avoid this, by using a `compose_compiler_config.conf`
-    // See https://developer.android.com/develop/ui/compose/performance/stability/fix#configuration-file
-    // But for simplicity, we just include compose here.
-    `ani-compose-hmpp`
-
     idea
-}
-
-android {
-    namespace = "me.him188.ani.data.sources.api"
 }
 
 kotlin {
@@ -50,8 +34,6 @@ kotlin {
             api(libs.ktor.client.auth)
             implementation(libs.ktor.client.logging)
             implementation(projects.utils.logging)
-
-            implementation(compose.runtime) // required by the compose compiler
         }
     }
 
@@ -68,6 +50,7 @@ kotlin {
         }
     }
 }
+
 idea {
     module.generatedSourceDirs.add(file("test/title/generated"))
 }

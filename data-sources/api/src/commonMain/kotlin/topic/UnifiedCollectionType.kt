@@ -1,6 +1,5 @@
 package me.him188.ani.datasources.api.topic
 
-import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType.NOT_COLLECTED
 
@@ -27,7 +26,6 @@ enum class UnifiedCollectionType {
     NOT_COLLECTED,
 }
 
-@Stable
 fun UnifiedCollectionType.isDoneOrDropped(): Boolean {
     return this == UnifiedCollectionType.DONE || this == UnifiedCollectionType.DROPPED
 }

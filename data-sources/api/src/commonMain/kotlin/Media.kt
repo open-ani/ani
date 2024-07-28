@@ -1,6 +1,5 @@
 package me.him188.ani.datasources.api
 
-import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -35,7 +34,6 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
  * 本地视频缓存返回 [CachedMedia].
  */
 @Serializable
-@Immutable
 sealed interface Media {
     /**
      * 该资源的全局唯一 id, 通常需要包含 [mediaSourceId], 例如 "dmhy.1", 以防多数据源查询到同一个资源会容易 crash UI.
@@ -128,7 +126,6 @@ tailrec fun Media.unwrapCached(): DefaultMedia = when (this) {
  *
  * 一手指的是这个资源没有被缓存到本地. 被缓存的资源为 [CachedMedia].
  */
-@Immutable
 @Serializable
 data class DefaultMedia
 @Suppress("DataClassPrivateConstructor")
@@ -179,7 +176,6 @@ private constructor(
  *
  * [CachedMedia] 一定是用户使用缓存功能, 将一个 [DefaultMedia] 存储到本地而产生的.
  */
-@Immutable
 class CachedMedia(
     /**
      * 此缓存的来源 [Media], 通常是一个 [DefaultMedia]. 不能是 [CachedMedia].
@@ -198,7 +194,6 @@ class CachedMedia(
  * 用于播放或缓存时过滤选择资源的属性.
  * @see Media.properties
  */
-@Immutable
 @Serializable
 class MediaProperties private constructor(
     /**
