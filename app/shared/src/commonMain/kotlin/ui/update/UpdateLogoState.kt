@@ -7,7 +7,7 @@ import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.tools.update.InstallationResult
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.utils.io.SystemPath
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 /**
  * UI 的"有新版本"标识的状态
@@ -77,7 +77,7 @@ fun AutoUpdateViewModel.handleClickLogo(
         UpdateLogoState.ClickToCheck -> {} // should not happen
         is UpdateLogoState.DownloadFailed -> this.restartDownload(context)
         is UpdateLogoState.Downloaded -> {
-            val result = GlobalContext.get().get<UpdateInstaller>().install(logo.file, context)
+            val result = KoinPlatform.getKoin().get<UpdateInstaller>().install(logo.file, context)
             if (result is InstallationResult.Failed) {
                 onInstallationError(result.reason)
             }

@@ -23,10 +23,10 @@ sealed class Platform {
         override val arch: Arch get() = Arch.AARCH64
     }
 
-//    data object Ios : Platform() {
-//        override val name: String get() = "iOS"
-//        override val arch: Arch get() = Arch.AARCH64
-//    }
+    data object Ios : Platform() {
+        override val name: String get() = "iOS"
+        override val arch: Arch get() = Arch.AARCH64
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -44,10 +44,6 @@ sealed class Platform {
     data class MacOS(
         override val arch: Arch
     ) : Desktop("macOS")
-
-    data class Linux(
-        override val arch: Arch
-    ) : Desktop("Linux")
 
     @Stable
     companion object {

@@ -44,6 +44,7 @@ includeProject(":utils:coroutines", "utils/coroutines")
 includeProject(":utils:ktor-client", "utils/ktor-client")
 includeProject(":utils:io", "utils/io")
 includeProject(":utils:testing", "utils/testing")
+includeProject(":utils:xml")
 includeProject(":utils:bbcode", "utils/bbcode")
 includeProject(":utils:bbcode:test-codegen")
 
@@ -85,7 +86,7 @@ includeProject(":data-sources:jellyfin", "data-sources/jellyfin")
 includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
 // danmaku
-//includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
+//includeProject(":danmaku:api")
 //includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
 //includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 //includeProject(":danmaku:ani:client", "danmaku/ani/client") // danmaku server
@@ -99,3 +100,22 @@ includeProject(
 includeProject(":ci-helper", "ci-helper") // 
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+
+/// Composite Builds
+
+
+// https://github.com/aclassen/ComposeReorderable
+includeBuild("app/shared/reorderable") {
+    dependencySubstitution {
+        substitute(module("org.burnoutcrew.composereorderable:reorderable")).using(project(":reorderable"))
+    }
+}
+
+// TODO Remove this composite build on Ksoup when it is published to Maven Central
+// https://github.com/fleeksoft/ksoup
+includeBuild("utils/xml/ksoup") {
+    dependencySubstitution {
+        substitute(module("com.fleeksoft.ksoup:ksoup")).using(project(":ksoup"))
+    }
+}

@@ -66,7 +66,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 
 @Immutable
@@ -187,7 +187,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                         } else {
                             state.requestCache(episodeCacheState, autoSelectCached = true)
                             uiScope.launch {
-                                GlobalContext.get().get<PermissionManager>().requestNotificationPermission(context)
+                                KoinPlatform.getKoin().get<PermissionManager>().requestNotificationPermission(context)
                             }
                         }
                     }

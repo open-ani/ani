@@ -1,7 +1,7 @@
 package me.him188.ani.app.data.source.media.resolver
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.torrent.TorrentEngine
@@ -22,6 +22,7 @@ import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
+import kotlin.coroutines.cancellation.CancellationException
 
 class TorrentVideoSourceResolver(
     private val engine: TorrentEngine,
@@ -31,7 +32,7 @@ class TorrentVideoSourceResolver(
         return media.download is ResourceLocation.HttpTorrentFile || media.download is ResourceLocation.MagnetLink
     }
 
-    @Throws(VideoSourceResolutionException::class)
+    @Throws(VideoSourceResolutionException::class, CancellationException::class)
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
         val downloader = try {
             engine.getDownloader()
@@ -174,7 +175,7 @@ class TorrentVideoSource(
         "torrent://${encodedTorrentInfo.data.toHexString().take(32) + "..."}"
     }
 
-    @Throws(VideoSourceOpenException::class)
+    @Throws(VideoSourceOpenException::class, CancellationException::class)
     override suspend fun open(): TorrentVideoData {
         logger.info {
             "TorrentVideoSource '${episodeMetadata.title}' opening a VideoData"

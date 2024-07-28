@@ -27,9 +27,11 @@ import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.utils.platform.annotations.TestOnly
 import moe.tlaster.precompose.lifecycle.Lifecycle
 
 
+@OptIn(TestOnly::class)
 @Preview
 @Composable
 private fun PreviewAppSettingsTab() {

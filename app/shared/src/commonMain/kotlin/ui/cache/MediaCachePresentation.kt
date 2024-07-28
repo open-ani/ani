@@ -37,6 +37,7 @@ import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import me.him188.ani.utils.coroutines.sampleWithInitialUnless
+import me.him188.ani.utils.platform.format1f
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
@@ -196,7 +197,7 @@ fun CacheProgressLabel(
         if (progress != 1f) {
             Text(
                 remember(progress) {
-                    "${String.format("%.1f", (progress ?: 0f) * 100)}%"
+                    "${String.format1f((progress ?: 0f) * 100)}%"
                 },
                 Modifier.padding(end = 8.dp).widthIn(min = 48.dp), // max width is 100.0%
                 textAlign = TextAlign.Center,

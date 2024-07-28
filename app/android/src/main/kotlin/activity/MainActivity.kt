@@ -47,7 +47,7 @@ import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatformTools
 
 
 class MainActivity : AniComponentActivity() {
@@ -59,7 +59,7 @@ class MainActivity : AniComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        GlobalContext.getOrNull()?.get<NotifManager>()?.let {
+        KoinPlatformTools.defaultContext().getOrNull()?.get<NotifManager>()?.let {
             val code = intent.getIntExtra(EXTRA_REQUEST_CODE, -1)
             if (code != -1) {
                 logger.info { "onNewIntent requestCode: $code" }

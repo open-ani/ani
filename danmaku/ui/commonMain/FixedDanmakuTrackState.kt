@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import me.him188.ani.utils.platform.currentTimeMillis
 
 /**
  * 顶部/底部的固定位置的弹幕
@@ -68,7 +69,7 @@ class FixedDanmakuTrackState(
         }
 
         val danmaku = channel.receiveCatching().getOrNull() ?: return
-        place(danmaku, System.currentTimeMillis())
+        place(danmaku, currentTimeMillis())
     }
 
     /**

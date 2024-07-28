@@ -27,7 +27,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyShortcut
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.FrameWindowScope
-import me.him188.ani.app.i18n.LocalI18n
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 import java.awt.Desktop
@@ -74,7 +73,7 @@ sealed interface PlatformImplementations {
                     Menu("Help", 'H') {
                         Item(
 //                            if (hostIsMacOs) LocalI18n.current.getString("menu.preferences")// on macOS there is unified design "Preference", on other platforms use "Settings" instead.
-                            LocalI18n.current.getString("menu.settings"),
+                            "设置",
                             icon = painterResource("src/commonMain/composeResources/drawable/cog.svg"),
                             mnemonic = 'S',
                             shortcut = keyShortcuts.menuPreferences,

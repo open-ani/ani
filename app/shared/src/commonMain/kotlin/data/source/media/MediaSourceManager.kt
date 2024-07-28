@@ -25,6 +25,7 @@ import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.fetch.create
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.platform.ServiceLoader
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
@@ -39,7 +40,6 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.ServiceLoader
 import kotlin.coroutines.CoroutineContext
 
 interface MediaSourceManager { // available by inject
@@ -107,7 +107,7 @@ class MediaSourceManagerImpl(
             logger.error(throwable) { "DownloadProviderManager scope error" }
         },
     )
-    private val factories: List<MediaSourceFactory> = ServiceLoader.load(MediaSourceFactory::class.java).toList()
+    private val factories: List<MediaSourceFactory> = ServiceLoader.loadServices(MediaSourceFactory::class).toList()
 
     private val additionalSources by lazy {
         additionalSources().map { source ->

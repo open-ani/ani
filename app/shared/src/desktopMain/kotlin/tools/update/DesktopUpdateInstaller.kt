@@ -3,6 +3,7 @@ package me.him188.ani.app.tools.update
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.FileOpener
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.toFile
 import me.him188.ani.utils.logging.info
@@ -19,11 +20,9 @@ interface DesktopUpdateInstaller : UpdateInstaller {
 
     companion object {
         fun currentOS(): DesktopUpdateInstaller {
-            return when (Platform.currentPlatform) {
-                is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported")
+            return when (currentPlatformDesktop) {
                 is Platform.MacOS -> MacOSUpdateInstaller
                 is Platform.Windows -> WindowsUpdateInstaller
-                Platform.Android -> throw IllegalStateException("Android is not a desktop OS")
             }
         }
     }

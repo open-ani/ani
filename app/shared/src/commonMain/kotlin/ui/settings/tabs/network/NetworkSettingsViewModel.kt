@@ -33,7 +33,6 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.ikaros.IkarosMediaSource
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.seconds
@@ -127,7 +126,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                     mediaSourceId = factory.mediaSourceId,
                     name = renderMediaSource(factory.mediaSourceId),
                     description = renderMediaSourceDescription(factory.mediaSourceId),
-                    iconUrl = if (factory.mediaSourceId == IkarosMediaSource.ID)
+                    iconUrl = if (factory.mediaSourceId == "ikaros")
                         "https://docs.ikaros.run/logo.png" else null, // TODO: properly configure icon
                     website = null,
                     parameters = factory.parameters,

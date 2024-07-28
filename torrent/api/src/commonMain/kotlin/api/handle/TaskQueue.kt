@@ -3,13 +3,13 @@ package me.him188.ani.app.torrent.api.handle
 import kotlinx.coroutines.suspendCancellableCoroutine
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
-import java.util.concurrent.ConcurrentLinkedQueue
+import me.him188.ani.utils.platform.collections.ConcurrentQueue
 
 internal class TaskQueue<Receiver>(
     private val enableTimeoutWatchdog: Boolean,
     private val onSubmit: () -> Unit = {},
 ) {
-    private val tasks = ConcurrentLinkedQueue<Task<Receiver>>()
+    private val tasks = ConcurrentQueue<Task<Receiver>>()
 
     private class Task<Receiver>(
         private val creationStacktrace: Exception? = null,
@@ -66,7 +66,7 @@ internal class TaskQueue<Receiver>(
     @TorrentThread
     fun invokeAll(handle: Receiver) {
         while (tasks.isNotEmpty()) {
-            val job = tasks.poll() ?: break
+            val job = tasks.removeFirstOrNull() ?: break
             if (enableTimeoutWatchdog) {
                 job(handle)
 

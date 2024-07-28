@@ -61,10 +61,6 @@ kotlin {
     jvmToolchain(17)
 }
 
-composeCompiler {
-    enableStrongSkippingMode = true
-}
-
 compose.desktop {
     application {
         jvmArgs(

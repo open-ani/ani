@@ -24,6 +24,7 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,9 +37,6 @@ import me.him188.ani.app.data.models.subject.SubjectManagerImpl
 import me.him188.ani.app.data.persistent.createDatabaseBuilder
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.persistent.database.AniDatabase
-import me.him188.ani.app.data.persistent.preferencesStore
-import me.him188.ani.app.data.persistent.preferredAllianceStore
-import me.him188.ani.app.data.persistent.tokenStore
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -102,8 +100,8 @@ import kotlin.coroutines.CoroutineContext
 
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
-    single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
-    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
+    single<TokenRepository> { TokenRepositoryImpl(getContext().dataStores.tokenStore) }
+    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().dataStores.preferredAllianceStore) }
     single<SessionManager> { SessionManager(koin, coroutineScope.coroutineContext) }
     single<BangumiClient> {
         val settings = get<SettingsRepository>()
@@ -145,7 +143,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             saveDir = getContext().files.cacheDir.resolve("updates/download"),
         )
     }
-    single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
+    single<SettingsRepository> { PreferencesRepositoryImpl(getContext().dataStores.preferencesStore) }
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
     single<AniDatabase> {

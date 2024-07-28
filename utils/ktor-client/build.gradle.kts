@@ -31,18 +31,19 @@ kotlin {
             api(libs.ktor.serialization.kotlinx.json)
             api(projects.utils.logging)
             implementation(projects.utils.platform)
+            api(projects.utils.io)
         }
     }
 
     sourceSets.jvmMain {
         dependencies {
-            implementation(libs.ktor.client.okhttp)
+            api(libs.ktor.client.okhttp)
         }
     }
 
     sourceSets.appleMain {
         dependencies {
-            implementation(libs.ktor.client.darwin)
+            api(libs.ktor.client.darwin)
         }
     }
 }

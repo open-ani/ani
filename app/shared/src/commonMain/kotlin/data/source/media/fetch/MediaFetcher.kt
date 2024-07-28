@@ -1,6 +1,8 @@
 package me.him188.ani.app.data.source.media.fetch
 
 import io.ktor.client.plugins.ServerResponseException
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -140,7 +142,7 @@ class MediaSourceMediaFetcher(
         val disabled: Boolean,
         pagedSources: Flow<SizedSource<MediaMatch>>,
         flowContext: CoroutineContext,
-    ) : MediaSourceFetchResult {
+    ) : MediaSourceFetchResult, SynchronizedObject() {
         /**
          * 为了确保线程安全, 对 [state] 的写入必须谨慎.
          *
@@ -245,21 +247,23 @@ class MediaSourceMediaFetcher(
             }
         }
 
-        @Synchronized // 不允许同时调用 restart
         override fun restart() {
-            when (val value = state.value) {
-                is MediaSourceFetchState.Completed,
-                MediaSourceFetchState.Disabled -> {
-                    restartCount.value += 1
-                    // 必须使用 CAS
-                    // 如果 [results] 现在有人 collect, [state] 可能会被变更. 
-                    // 我们只需要在它没有被其他人修改的时候, 把它修改为 [Idle].
-                    state.compareAndSet(value, MediaSourceFetchState.Idle)
-                    // Ok if we lost race - the [results] must be running
-                }
+            // 不允许同时调用 restart
+            synchronized(this) {
+                when (val value = state.value) {
+                    is MediaSourceFetchState.Completed,
+                    MediaSourceFetchState.Disabled -> {
+                        restartCount.value += 1
+                        // 必须使用 CAS
+                        // 如果 [results] 现在有人 collect, [state] 可能会被变更. 
+                        // 我们只需要在它没有被其他人修改的时候, 把它修改为 [Idle].
+                        state.compareAndSet(value, MediaSourceFetchState.Idle)
+                        // Ok if we lost race - the [results] must be running
+                    }
 
-                MediaSourceFetchState.Idle -> {}
-                MediaSourceFetchState.Working -> {}
+                    MediaSourceFetchState.Idle -> {}
+                    MediaSourceFetchState.Working -> {}
+                }
             }
         }
 

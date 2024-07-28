@@ -16,7 +16,6 @@ interface WindowUtils {
     }
 
     companion object : WindowUtils by (when (currentPlatformDesktop) {
-        is me.him188.ani.app.platform.Platform.Linux -> NoopWindowUtils
         is me.him188.ani.app.platform.Platform.MacOS -> NoopWindowUtils
         is me.him188.ani.app.platform.Platform.Windows -> WindowsWindowUtils()
     })

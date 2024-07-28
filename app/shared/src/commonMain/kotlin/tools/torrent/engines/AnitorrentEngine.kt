@@ -28,7 +28,6 @@ import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.warn
 
 @Serializable
 class AnitorrentConfig(
@@ -55,20 +54,14 @@ class AnitorrentEngine(
     type = TorrentEngineType.Anitorrent,
     config = config,
 ) {
-    init {
-        if (anitorrentFactory == null) {
-            logger.warn { "anitorrentFactory not found" }
-        }
-    }
-
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>
-        get() = flowOf(anitorrentFactory != null && tryLoadLibraries())
+        get() = flowOf(tryLoadLibraries())
     override val isEnabled: Flow<Boolean> get() = config.map { it.enabled }
 
     private fun tryLoadLibraries(): Boolean {
         try {
-            anitorrentFactory!!.libraryLoader.loadLibraries()
+            anitorrentFactory.libraryLoader.loadLibraries()
             logger.info { "Loaded libraries for AnitorrentEngine" }
             return true
         } catch (e: Throwable) {
@@ -92,7 +85,7 @@ class AnitorrentEngine(
             proxy(proxy.default.toClientProxyConfig())
             expectSuccess = true
         }
-        return anitorrentFactory!!.createDownloader(
+        return anitorrentFactory.createDownloader(
             rootDataDirectory = saveDir,
             client.asHttpFileDownloader(),
             TorrentDownloaderConfig(

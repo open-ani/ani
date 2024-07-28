@@ -12,6 +12,7 @@ import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.platform.annotations.SerializationOnly
 
 /**
  * 表示从数据源 [MediaSource] 获取到的一个资源的信息, 即一个字幕组发布的资源.
@@ -128,8 +129,8 @@ tailrec fun Media.unwrapCached(): DefaultMedia = when (this) {
  */
 @Serializable
 data class DefaultMedia
-@Suppress("DataClassPrivateConstructor")
-private constructor(
+@SerializationOnly
+constructor(
     override val mediaId: String,
     override val mediaSourceId: String, // e.g. "dmhy"
     override val originalUrl: String,
@@ -143,6 +144,7 @@ private constructor(
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
     @Transient private val _primaryConstructorMarker: Unit = Unit,
 ) : Media {
+    @OptIn(SerializationOnly::class)
     constructor(
         mediaId: String,
         mediaSourceId: String, // e.g. "dmhy"

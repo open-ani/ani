@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent.api.files
 
 import me.him188.ani.app.torrent.api.TorrentDownloader
+import kotlin.jvm.JvmInline
 
 interface TorrentInfo {
     /**

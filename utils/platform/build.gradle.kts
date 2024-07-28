@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform")
     `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
+    id("org.jetbrains.kotlinx.atomicfu")
 }
 
 kotlin {
@@ -11,6 +12,7 @@ kotlin {
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 
     sourceSets.commonMain.dependencies {
+        implementation(libs.atomicfu)
     }
 
     sourceSets.jvmMain.dependencies {

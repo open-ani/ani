@@ -6,16 +6,16 @@ import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.utils.platform.currentTimeMillis
 import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.LinkedList
 
 class SettingsViewModel(
     private val triggerOnEnableDebugMode: () -> Unit = {}
 ) : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
-    private val debugTriggerRecord = LinkedList<Long>()
+    private val debugTriggerRecord = ArrayDeque<Long>()
 
     private val tasker = MonoTasker(viewModelScope)
 
@@ -42,7 +42,7 @@ class SettingsViewModel(
             debugTriggerRecord.clear()
             tasker.cancel()
         }
-        debugTriggerRecord.push(System.currentTimeMillis())
+        debugTriggerRecord.addFirst(currentTimeMillis())
 
         if (
             debugTriggerRecord.size == 5 &&

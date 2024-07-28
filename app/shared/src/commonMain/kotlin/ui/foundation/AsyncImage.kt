@@ -15,7 +15,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.compose.DefaultModelEqualityDelegate
 import coil3.compose.EqualityDelegate
 import coil3.memory.MemoryCache
-import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.network.ktor2.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
@@ -23,7 +23,8 @@ import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import okhttp3.OkHttpClient
+import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.ktor.userAgent
 
 val LocalImageLoader = androidx.compose.runtime.staticCompositionLocalOf<ImageLoader> {
     error("No ImageLoader provided")
@@ -173,18 +174,13 @@ fun getDefaultImageLoader(
         components {
             add(SvgDecoder.Factory())
 
-            val client = OkHttpClient.Builder().apply {
-                addInterceptor { chain ->
-                    chain.proceed(
-                        chain.request().newBuilder().addHeader(
-                            "User-Agent",
-                            getAniUserAgent(),
-                        ).build(),
-                    )
-                }
-            }.build()
-
-            add(OkHttpNetworkFetcherFactory(client))
+            add(
+                KtorNetworkFetcherFactory {
+                    createDefaultHttpClient {
+                        userAgent(getAniUserAgent())
+                    }
+                },
+            )
         }
 
         config()

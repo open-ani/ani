@@ -90,6 +90,7 @@ import me.him188.ani.app.ui.subject.collection.progress.rememberSubjectProgressS
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.currentTimeMillis
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import kotlin.time.Duration.Companion.minutes
@@ -242,7 +243,7 @@ fun CollectionPage(
                 if (it == Lifecycle.State.Active) {
                     autoUpdateScope.launch {
                         val lastUpdated = collection.cache.lastUpdated.first()
-                        if (System.currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
+                        if (currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
                             collection.isAutoRefreshing = true
                             pullToRefreshState.startRefresh()
                         }

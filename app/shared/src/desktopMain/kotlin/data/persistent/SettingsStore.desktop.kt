@@ -26,25 +26,18 @@ import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.toKtPath
 
-actual val Context.preferencesStore: DataStore<Preferences>
-    get() {
-        this as DesktopContext
-        return settingStore
-    }
-
-
-actual val Context.tokenStore: DataStore<Preferences>
-    get() {
-        this as DesktopContext
-        return tokenStore
-    }
-
-
 actual val Context.dataStoresImpl: PlatformDataStoreManager
     get() = PlatformDataStoreManagerDesktop(this as DesktopContext)
 
 internal class PlatformDataStoreManagerDesktop(
     private val context: DesktopContext,
 ) : PlatformDataStoreManager() {
+    override val tokenStore: DataStore<Preferences>
+        get() = context.tokenStore
+    override val preferencesStore: DataStore<Preferences>
+        get() = context.settingStore
+    override val preferredAllianceStore: DataStore<Preferences>
+        get() = context.preferredAllianceStore
+
     override fun resolveDataStoreFile(name: String): SystemPath = context.dataStoreDir.resolve(name).toKtPath().inSystem
 }

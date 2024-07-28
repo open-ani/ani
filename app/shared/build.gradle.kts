@@ -20,8 +20,9 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import com.google.devtools.ksp.gradle.KspTaskJvm
+import com.google.devtools.ksp.gradle.KspTaskNative
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 
 plugins {
@@ -32,6 +33,8 @@ plugins {
     // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
     `flatten-source-sets`
 
+    `ani-mpp-lib-targets`
+
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
     id("com.google.devtools.ksp")
@@ -41,30 +44,9 @@ plugins {
 
 extra.set("ani.jvm.target", 17)
 
-kotlin {
-    androidTarget()
-    jvm("desktop")
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
-
-    sourceSets {
-        // Workaround for MPP compose bug, don't change
-        removeIf { it.name == "androidAndroidTestRelease" }
-        removeIf { it.name == "androidTestFixtures" }
-        removeIf { it.name == "androidTestFixturesDebug" }
-        removeIf { it.name == "androidTestFixturesRelease" }
-    }
-}
-
 compose.resources {
     packageOfResClass = "me.him188.ani.app"
     generateResClass = always
-}
-
-composeCompiler {
-    enableStrongSkippingMode = true
 }
 
 atomicfu {
@@ -75,9 +57,12 @@ kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
+        api(libs.kotlinx.serialization.json.io)
         implementation(libs.atomicfu) // room runtime
         api(libs.kotlinx.datetime)
         api(libs.kotlinx.io.core)
+        api(libs.kotlinx.collections.immutable)
+        api(projects.utils.ktorClient)
 
         // Compose
         api(compose.foundation)
@@ -87,32 +72,21 @@ kotlin {
         api(compose.materialIconsExtended)
         api(compose.runtime)
         implementation(compose.components.resources)
+        implementation(libs.reorderable)
 
         // Data sources
         api(projects.dataSources.api)
         api(projects.dataSources.core)
-        api(projects.dataSources.dmhy)
-        api(projects.dataSources.acgRip)
-        api(projects.dataSources.mikan)
         api(projects.dataSources.bangumi)
-        api(projects.dataSources.nyafun)
-        api(projects.dataSources.mxdongman)
-        api(projects.dataSources.ntdm)
-        api(projects.dataSources.gugufan)
-        api(projects.dataSources.jellyfin)
-        api(projects.dataSources.ikaros)
-
-        api(projects.torrent.anitorrent)
+        api(projects.dataSources.mikan)
 
         api(projects.client)
         api(projects.utils.logging)
         api(projects.utils.coroutines)
         api(projects.utils.io)
-        api(projects.utils.ktorClient)
         api(projects.app.shared.imageViewer)
 
         // Ktor
-        api(libs.ktor.client.okhttp)
         api(libs.ktor.client.websockets)
         api(libs.ktor.client.logging)
         api(libs.ktor.client.content.negotiation)
@@ -121,10 +95,10 @@ kotlin {
         // Others
         api(libs.koin.core) // dependency injection
         api(libs.directories) // Data directories on all OSes
-        api(libs.coil.core) // Image loading
-        api(libs.coil.svg) // Image loading
-        api(libs.coil.compose.core) // Image loading
-        api(libs.coil.network.okhttp) // Image loading
+        api(libs.coil.core)
+        api(libs.coil.svg)
+        api(libs.coil.compose.core)
+        api(libs.coil.network.ktor2)
         api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
         api(libs.precompose) // Navigator
@@ -138,9 +112,6 @@ kotlin {
         // Torrent
         implementation(libs.bencode)
 
-//        api(libs.okhttp)
-//        api(libs.okhttp.logging)
-        implementation(libs.reorderable)
         implementation(libs.constraintlayout.compose)
 
         implementation(libs.jna)
@@ -148,6 +119,22 @@ kotlin {
         implementation(libs.slf4j.api)
 
         implementation(projects.utils.bbcode)
+    }
+
+    // shared by android and desktop
+    sourceSets.getByName("jvmMain").dependencies {
+        // TODO: to be commonized
+        api(projects.torrent.anitorrent)
+        api(projects.dataSources.dmhy)
+        api(projects.dataSources.acgRip)
+        api(projects.dataSources.nyafun)
+        api(projects.dataSources.mxdongman)
+        api(projects.dataSources.ntdm)
+        api(projects.dataSources.gugufan)
+        api(projects.dataSources.jellyfin)
+        api(projects.dataSources.ikaros)
+
+        api(libs.ktor.client.okhttp)
     }
 
     sourceSets.commonTest.dependencies {
@@ -177,6 +164,10 @@ kotlin {
         api(libs.logback.android)
     }
 
+    sourceSets.nativeMain.dependencies {
+        implementation(libs.stately.common) // fixes koin bug
+    }
+
     sourceSets.named("desktopMain").dependencies {
         api(compose.desktop.currentOs) {
             exclude(compose.material) // We use material3
@@ -204,8 +195,8 @@ kotlin {
         implementation(libs.selenium.java)
         implementation(libs.webdrivermanager)
 
-        implementation("io.github.vinceglb:filekit-core:0.6.3")
-        implementation("io.github.vinceglb:filekit-compose:0.6.3")
+        implementation(libs.filekit.core)
+        implementation(libs.filekit.compose)
 //        implementation(libs.htmlunit)
 //        implementation("org.openjfx:javafx-base:17.0.11:$classifier") {
 //            exclude("org.openjfx")
@@ -259,6 +250,9 @@ kotlin {
                 getByName("desktopTest") {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopTest/"))
                 }
+                getByName("iosMain") {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/ios/"))
+                }
             } else {
                 sourceSets.all {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
@@ -280,28 +274,12 @@ kotlin {
 
 // RESOURCES
 
-
-//kotlin.sourceSets.commonMain {
-//    kotlin.srcDirs(generatedResourcesDir)
-//}
 idea {
     val generatedResourcesDir = file("build/generated/compose/resourceGenerator/kotlin")
     module {
         generatedSourceDirs.add(generatedResourcesDir.resolve("commonMainResourceAccessors"))
         generatedSourceDirs.add(generatedResourcesDir.resolve("commonResClass"))
     }
-}
-// compose bug
-tasks.named("generateComposeResClass") {
-    dependsOn("generateResourceAccessorsForAndroidUnitTest")
-}
-tasks.withType(KotlinCompilationTask::class) {
-    dependsOn("generateComposeResClass")
-    dependsOn("generateResourceAccessorsForAndroidRelease")
-    dependsOn("generateResourceAccessorsForAndroidUnitTest")
-    dependsOn("generateResourceAccessorsForAndroidUnitTestRelease")
-    dependsOn("generateResourceAccessorsForAndroidUnitTestDebug")
-    dependsOn("generateResourceAccessorsForAndroidDebug")
 }
 
 room {
@@ -361,20 +339,27 @@ android {
 dependencies {
     add("kspDesktop", libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
+//    add("kspIosArm64", libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
 
 val buildConfigDesktopDir = layout.buildDirectory.file("generated/source/buildConfigDesktop")
+val buildConfigIosDir = layout.buildDirectory.file("generated/source/buildConfigIos")
 
 idea {
     module {
         generatedSourceDirs.add(buildConfigDesktopDir.get().asFile)
+        generatedSourceDirs.add(buildConfigIosDir.get().asFile)
     }
 }
 
 kotlin.sourceSets.getByName("desktopMain") {
     kotlin.srcDirs(buildConfigDesktopDir)
+}
+
+kotlin.sourceSets.iosMain {
+    kotlin.srcDirs(buildConfigIosDir)
 }
 
 //tasks.register("generateBuildConfigForDesktop") {
@@ -414,6 +399,38 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 }
 
+val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
+    val file = buildConfigIosDir.get().asFile.resolve("AniBuildConfig.kt").apply {
+        parentFile.mkdirs()
+        createNewFile()
+    }
+
+    inputs.property("project.version", project.version)
+    inputs.property("bangumiClientAppIdDesktop", bangumiClientDesktopAppId).optional(true)
+    inputs.property("bangumiClientSecret", bangumiClientDesktopSecret).optional(true)
+
+    outputs.file(file)
+
+    val text = """
+            package me.him188.ani.app.platform
+            object AniBuildConfigIos : AniBuildConfig {
+                override val versionName = "${project.version}"
+                override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
+                override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
+                override val isDebug = false
+                override val aniAuthServerUrl = if (isDebug) "$aniAuthServerUrlDebug" else "$aniAuthServerUrlRelease"
+            }
+            """.trimIndent()
+
+    outputs.upToDateWhen {
+        file.exists() && file.readText().trim() == text.trim()
+    }
+
+    doLast {
+        file.writeText(text)
+    }
+}
+
 tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)
     if (enableAnitorrent) {
@@ -421,8 +438,16 @@ tasks.named("compileKotlinDesktop") {
     }
 }
 
+tasks.withType(KotlinCompileTool::class) {
+    dependsOn(generateAniBuildConfigIos)
+}
+
 // :app:shared:kspKotlinDesktop
 tasks.withType(KspTaskJvm::class.java) {
     dependsOn(generateAniBuildConfigDesktop)
+}
+
+tasks.withType(KspTaskNative::class.java) {
+    dependsOn(generateAniBuildConfigIos)
 }
 

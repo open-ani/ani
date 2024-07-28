@@ -70,3 +70,75 @@
 
 # anitorrent
 -keep class me.him188.ani.app.torrent.anitorrent.binding.** { *; }
+
+
+# Keep the specified classes and all their members
+-keep class io.ktor.client.network.sockets.TimeoutExceptionsCommonKt { *; }
+-keep class io.ktor.client.plugins.HttpRedirect$Config { *; }
+-keep class io.ktor.client.plugins.HttpRedirect$Plugin { *; }
+-keep class io.ktor.client.plugins.HttpRedirect { *; }
+-keep class io.ktor.client.plugins.HttpRequestRetry$Configuration { *; }
+-keep class io.ktor.client.plugins.HttpRequestRetry$DelayContext { *; }
+-keep class io.ktor.client.plugins.HttpRequestRetry$Plugin { *; }
+-keep class io.ktor.client.plugins.HttpRequestRetry { *; }
+-keep class io.ktor.client.plugins.HttpTimeout$HttpTimeoutCapabilityConfiguration { *; }
+-keep class io.ktor.client.plugins.HttpTimeout$Plugin { *; }
+-keep class io.ktor.client.plugins.HttpTimeout { *; }
+-keep class io.ktor.client.plugins.UserAgent$Config { *; }
+-keep class io.ktor.client.plugins.UserAgent$Plugin { *; }
+-keep class io.ktor.client.plugins.UserAgent { *; }
+-keep class io.ktor.util.InternalAPI { *; }
+-keep class io.ktor.util.KtorDsl { *; }
+-keep class io.ktor.utils.io.ByteReadChannelJVMKt { *; }
+-keep class io.ktor.utils.io.CoroutinesKt { *; }
+-keep class io.ktor.utils.io.ReadSessionKt { *; }
+-keep class io.ktor.utils.io.core.Buffer$Companion { *; }
+-keep class io.ktor.utils.io.core.Buffer { *; }
+-keep class io.ktor.utils.io.core.ByteBuffersKt { *; }
+-keep class io.ktor.utils.io.core.BytePacketBuilder { *; }
+-keep class io.ktor.utils.io.core.ByteReadPacket$Companion { *; }
+-keep class io.ktor.utils.io.core.ByteReadPacket { *; }
+-keep class io.ktor.utils.io.core.CloseableJVMKt { *; }
+-keep class io.ktor.utils.io.core.Input { *; }
+-keep class io.ktor.utils.io.core.InputArraysKt { *; }
+-keep class io.ktor.utils.io.core.InputPrimitivesKt { *; }
+-keep class io.ktor.utils.io.core.Output { *; }
+-keep class io.ktor.utils.io.core.OutputPrimitivesKt { *; }
+-keep class io.ktor.utils.io.core.PreviewKt { *; }
+-keep class io.ktor.utils.io.jvm.nio.WritingKt { *; }
+-keep class io.ktor.utils.io.streams.InputKt { *; }
+
+-dontwarn io.ktor.client.network.sockets.TimeoutExceptionsCommonKt
+-dontwarn io.ktor.client.plugins.HttpRedirect$Config
+-dontwarn io.ktor.client.plugins.HttpRedirect$Plugin
+-dontwarn io.ktor.client.plugins.HttpRedirect
+-dontwarn io.ktor.client.plugins.HttpRequestRetry$Configuration
+-dontwarn io.ktor.client.plugins.HttpRequestRetry$DelayContext
+-dontwarn io.ktor.client.plugins.HttpRequestRetry$Plugin
+-dontwarn io.ktor.client.plugins.HttpRequestRetry
+-dontwarn io.ktor.client.plugins.HttpTimeout$HttpTimeoutCapabilityConfiguration
+-dontwarn io.ktor.client.plugins.HttpTimeout$Plugin
+-dontwarn io.ktor.client.plugins.HttpTimeout
+-dontwarn io.ktor.client.plugins.UserAgent$Config
+-dontwarn io.ktor.client.plugins.UserAgent$Plugin
+-dontwarn io.ktor.client.plugins.UserAgent
+-dontwarn io.ktor.util.InternalAPI
+-dontwarn io.ktor.util.KtorDsl
+-dontwarn io.ktor.utils.io.ByteReadChannelJVMKt
+-dontwarn io.ktor.utils.io.CoroutinesKt
+-dontwarn io.ktor.utils.io.ReadSessionKt
+-dontwarn io.ktor.utils.io.core.Buffer$Companion
+-dontwarn io.ktor.utils.io.core.Buffer
+-dontwarn io.ktor.utils.io.core.ByteBuffersKt
+-dontwarn io.ktor.utils.io.core.BytePacketBuilder
+-dontwarn io.ktor.utils.io.core.ByteReadPacket$Companion
+-dontwarn io.ktor.utils.io.core.ByteReadPacket
+-dontwarn io.ktor.utils.io.core.CloseableJVMKt
+-dontwarn io.ktor.utils.io.core.Input
+-dontwarn io.ktor.utils.io.core.InputArraysKt
+-dontwarn io.ktor.utils.io.core.InputPrimitivesKt
+-dontwarn io.ktor.utils.io.core.Output
+-dontwarn io.ktor.utils.io.core.OutputPrimitivesKt
+-dontwarn io.ktor.utils.io.core.PreviewKt
+-dontwarn io.ktor.utils.io.jvm.nio.WritingKt
+-dontwarn io.ktor.utils.io.streams.InputKt

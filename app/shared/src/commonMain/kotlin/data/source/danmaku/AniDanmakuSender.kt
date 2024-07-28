@@ -36,12 +36,13 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
 
 interface AniDanmakuSender : AutoCloseable {
     val selfId: Flow<String?>
 
-    @Throws(SendDanmakuException::class)
+    @Throws(SendDanmakuException::class, CancellationException::class)
     suspend fun send(
         episodeId: Int,
         info: DanmakuInfo

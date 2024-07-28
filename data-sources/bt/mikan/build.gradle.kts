@@ -17,25 +17,25 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
     `flatten-source-sets`
 }
 
-dependencies {
-    api(projects.dataSources.api)
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            api(projects.dataSources.api)
+            implementation(projects.utils.ktorClient)
+            implementation(projects.utils.logging)
+            implementation(projects.utils.xml)
 
-    api(libs.kotlinx.coroutines.core)
-    api(libs.ktor.client.core)
-
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.jsoup)
-    implementation(libs.slf4j.api)
-    implementation(projects.utils.logging)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+        }
+    }
 }
 
 tasks.withType<Jar> {

@@ -1,7 +1,10 @@
 package me.him188.ani.app.data.source.media
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +40,10 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.io.absolutePath
+import me.him188.ani.utils.io.actualSize
+import me.him188.ani.utils.io.delete
+import me.him188.ani.utils.io.deleteRecursively
 import me.him188.ani.utils.io.exists
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.logging.error
@@ -85,7 +92,7 @@ class TorrentMediaCacheEngine(
          */
         override val metadata: MediaCacheMetadata, // 注意, 我们不能写 check 检查这些属性, 因为可能会有旧版本的数据
         val lazyFileHandle: LazyFileHandle
-    ) : MediaCache {
+    ) : MediaCache, SynchronizedObject() {
         override suspend fun getCachedMedia(): CachedMedia {
             logger.info { "getCachedMedia: start" }
             val file = lazyFileHandle.handle.first()
@@ -340,8 +347,7 @@ class TorrentMediaCacheEngine(
             val saves = downloader.listSaves()
             for (save in saves) {
                 if (save.absolutePath !in allowedAbsolute) {
-                    val totalLength = save.walk().sumOf { it.length() }
-                    logger.warn { "本地种子缓存文件未找到匹配的 MediaCache, 已释放 ${totalLength.bytes}: ${save.absolutePath}" }
+                    logger.warn { "本地种子缓存文件未找到匹配的 MediaCache, 已释放 ${save.actualSize()}: ${save.absolutePath}" }
                     save.deleteRecursively()
                 }
             }

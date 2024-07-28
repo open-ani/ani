@@ -2,7 +2,6 @@ package me.him188.ani.app.data.models.subject
 
 import androidx.compose.runtime.Stable
 import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -28,7 +27,6 @@ import me.him188.ani.app.data.models.episode.EpisodeCollections
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.persistent.asDataStoreSerializer
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -43,6 +41,8 @@ import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.username
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.ReplaceFileCorruptionHandler
+import me.him188.ani.app.platform.create
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheSave
@@ -68,7 +68,6 @@ import me.him188.ani.datasources.bangumi.processing.toEpisodeCollectionType
 import me.him188.ani.datasources.bangumi.processing.toSubjectCollectionType
 import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
 import me.him188.ani.utils.coroutines.runUntilSuccess
-import me.him188.ani.utils.io.toFile
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -261,12 +260,12 @@ class SubjectManagerImpl(
                 getKey = { it.subjectId },
                 debugName = "collectionsByType-${type.name}",
                 persistentStore = DataStoreFactory.create(
-                    LazyDataCacheSave.serializer(SubjectCollection.serializer())
-                        .asDataStoreSerializer({ LazyDataCacheSave.empty() }),
+                    LazyDataCacheSave.serializer(SubjectCollection.serializer()),
+                    { LazyDataCacheSave.empty() },
                     ReplaceFileCorruptionHandler { LazyDataCacheSave.empty() },
                     migrations = listOf(),
                     produceFile = {
-                        context.dataStores.resolveDataStoreFile("collectionsByType-${type.name}").toFile()
+                        context.dataStores.resolveDataStoreFile("collectionsByType-${type.name}")
                     },
                 ),
             )

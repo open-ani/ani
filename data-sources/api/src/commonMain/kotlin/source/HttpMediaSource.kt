@@ -16,7 +16,7 @@ import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 
-private fun Closeable.asAutoCloseable() = AutoCloseable { close() }
+fun Closeable.asAutoCloseable() = AutoCloseable { close() }
 
 /**
  * 支持执行 HTTP 请求的 [MediaSource]. 封装一些便捷的操作

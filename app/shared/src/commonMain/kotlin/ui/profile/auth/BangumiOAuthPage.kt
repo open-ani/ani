@@ -40,7 +40,7 @@ import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
 import moe.tlaster.precompose.navigation.BackHandler
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun BangumiOAuthScene(
@@ -165,7 +165,7 @@ fun BangumiOAuthPage(
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
                                 onClick = {
-                                    GlobalContext.get().get<BrowserNavigator>().openBrowser(context, vm.oauthUrl)
+                                    KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, vm.oauthUrl)
                                 },
                                 Modifier.fillMaxWidth(),
 //                                enabled = !launcherState.isLaunching,

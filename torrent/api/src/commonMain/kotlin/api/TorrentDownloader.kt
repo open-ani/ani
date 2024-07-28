@@ -2,7 +2,7 @@ package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -48,17 +48,17 @@ interface TorrentDownloader : AutoCloseable {
     suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
-        overrideSaveDir: File? = null,
+        overrideSaveDir: SystemPath? = null,
     ): TorrentDownloadSession
 
     fun getSaveDirForTorrent(
         data: EncodedTorrentInfo,
-    ): File
+    ): SystemPath
 
     /**
      * 获取所有的种子保存目录列表
      */
-    fun listSaves(): List<File>
+    fun listSaves(): List<SystemPath>
 
     override fun close()
 }

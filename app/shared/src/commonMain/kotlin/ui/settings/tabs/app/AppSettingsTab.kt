@@ -53,7 +53,7 @@ import me.him188.ani.app.ui.update.NewVersion
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.app.ui.update.UpdateChecker
 import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 
 sealed class CheckVersionResult {
@@ -134,7 +134,7 @@ fun AppSettingsTab(
             val context by rememberUpdatedState(LocalContext.current)
             RowButtonItem(
                 onClick = {
-                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+                    KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(
                         context,
                         "https://github.com/open-ani/ani/releases/tag/v${currentAniBuildConfig.versionName}",
                     )

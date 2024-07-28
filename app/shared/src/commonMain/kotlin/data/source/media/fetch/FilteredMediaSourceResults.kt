@@ -53,7 +53,7 @@ class FilteredMediaSourceResults(
                         } else {
                             sizes[candidates.indexOf(result)]
                         }
-                    }.thenComparing<String> { it.mediaSourceId }, // 大小相同的按 ID 排序, 保证稳定
+                    }.then(compareBy { it.mediaSourceId }), // 大小相同的按 ID 排序, 保证稳定
                 )
             }
         }

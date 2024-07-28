@@ -15,7 +15,7 @@ internal actual fun ColumnScope.PlatformDebugInfoItems() {
         {
             Desktop.getDesktop().open((context as DesktopContext).logsDir)
 //        below also works on macOS, not sure about Windows
-//        GlobalContext.get().get<BrowserNavigator>()
+//        KoinPlatform.getKoin().get<BrowserNavigator>()
 //            .openBrowser(context, "file://" + (context as DesktopContext).logsDir.absolutePath.replace(" ", "%20"))
         },
     ) {

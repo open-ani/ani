@@ -29,7 +29,6 @@ import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.path
 import moe.tlaster.precompose.navigation.query
-import moe.tlaster.precompose.viewmodel.viewModel
 
 @Composable
 fun AniAppContentPortrait(
@@ -59,7 +58,7 @@ fun AniAppContentPortrait(
                     navigator.goBack()
                     return@scene
                 }
-                val vm = viewModel<SubjectDetailsViewModel> { SubjectDetailsViewModel(subjectId) }
+                val vm = rememberViewModel<SubjectDetailsViewModel> { SubjectDetailsViewModel(subjectId) }
                 SideEffect { vm.navigator = aniNavigator }
                 SubjectDetailsScene(vm, Modifier.desktopTitleBarPadding())
             }

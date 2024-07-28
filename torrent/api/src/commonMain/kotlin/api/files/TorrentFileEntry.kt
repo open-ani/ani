@@ -1,21 +1,30 @@
 package me.him188.ani.app.torrent.api.files
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
-import me.him188.ani.app.torrent.io.TorrentFileIO
+import me.him188.ani.utils.io.DigestAlgorithm
 import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.absolutePath
+import me.him188.ani.utils.io.bufferedSource
+import me.him188.ani.utils.io.isRegularFile
+import me.him188.ani.utils.io.readAndDigest
+import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import java.io.File
-import java.io.IOException
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
@@ -75,9 +84,10 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * 绝对路径. 挂起直到文件路径可用 (即有任意一个 piece 下载完成时)
      */
-    suspend fun resolveFile(): File
+    suspend fun resolveFile(): SystemPath
 
-    fun resolveFileOrNull(): File?
+    @Throws(IOException::class)
+    fun resolveFileOrNull(): SystemPath?
 
     /**
      * Opens the downloaded file as a [SeekableInput].
@@ -160,7 +170,7 @@ object TorrentFilePieceMatcher {
 abstract class AbstractTorrentFileEntry(
     val index: Int,
     final override val length: Long,
-    private val saveDirectory: File,
+    private val saveDirectory: SystemPath,
     val relativePath: String,
     val torrentId: String, // TODO: make this Int 
     val isDebug: Boolean,
@@ -169,7 +179,7 @@ abstract class AbstractTorrentFileEntry(
     protected val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
     protected val logger = logger(this::class)
 
-    abstract inner class AbstractTorrentFileHandle : TorrentFileHandle {
+    abstract inner class AbstractTorrentFileHandle : TorrentFileHandle, SynchronizedObject() {
         @Volatile
         private var closed = false
         private var closeException: Throwable? = null
@@ -245,13 +255,15 @@ abstract class AbstractTorrentFileEntry(
 
     protected abstract fun updatePriority()
 
-    override suspend fun resolveFile(): File = resolveDownloadingFile()
+    override suspend fun resolveFile(): SystemPath = resolveDownloadingFile()
 
     private val hashMd5 by lazy {
         scope.async {
             stats.awaitFinished()
             withContext(Dispatchers.IO) {
-                TorrentFileIO.hashFileMd5(resolveDownloadingFile())
+                resolveDownloadingFile().bufferedSource().use {
+                    it.readAndDigest(DigestAlgorithm.MD5).toHexString()
+                }
             }
         }
     }
@@ -262,7 +274,7 @@ abstract class AbstractTorrentFileEntry(
         hashMd5.getCompleted()
     } else null
 
-    protected suspend fun resolveDownloadingFile(): File {
+    protected suspend fun resolveDownloadingFile(): SystemPath {
         while (true) {
             val file = withContext(Dispatchers.IO) { resolveFileOrNull() }
             if (file != null) {
@@ -277,8 +289,8 @@ abstract class AbstractTorrentFileEntry(
     }
 
     @Throws(IOException::class)
-    override fun resolveFileOrNull(): File? =
-        saveDirectory.resolve(relativePath).takeIf { it.isFile }
+    override fun resolveFileOrNull(): SystemPath? =
+        saveDirectory.resolve(relativePath).takeIf { it.isRegularFile() }
 
     override fun toString(): String {
         return "TorrentFileEntryImpl(index=$index, length=$length, relativePath='$relativePath')"

@@ -27,8 +27,6 @@ import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.toKtPath
 
-actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
-actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")
 actual val Context.dataStoresImpl: PlatformDataStoreManager
     get() = PlatformDataStoreManagerAndroid(this)
 
@@ -38,4 +36,16 @@ internal class PlatformDataStoreManagerAndroid(
     override fun resolveDataStoreFile(name: String): SystemPath {
         return context.applicationContext.dataStoreFile(name).toKtPath().inSystem
     }
+
+    private val Context.tokenStoreImpl by preferencesDataStore("tokens")
+    override val tokenStore: DataStore<Preferences>
+        get() = context.tokenStoreImpl
+
+    private val Context.preferencesStoreImpl by preferencesDataStore("tokens")
+    override val preferencesStore: DataStore<Preferences>
+        get() = context.preferencesStoreImpl
+
+    private val Context.preferredAlliancesStoreImpl by preferencesDataStore("preferredAlliances")
+    override val preferredAllianceStore: DataStore<Preferences>
+        get() = context.preferredAlliancesStoreImpl
 }

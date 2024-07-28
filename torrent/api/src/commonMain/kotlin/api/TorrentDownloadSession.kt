@@ -3,12 +3,10 @@ package me.him188.ani.app.torrent.api
 import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.torrent.api.files.DownloadStats
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
 
 /**
  * 表示一整个 BT 资源的下载任务.
- *
- * @See DefaultTorrentDownloadSession
  */
 interface TorrentDownloadSession : AutoCloseable {
 
@@ -16,7 +14,7 @@ interface TorrentDownloadSession : AutoCloseable {
 
     val overallStats: DownloadStats
 
-    val saveDirectory: File
+    val saveDirectory: SystemPath
 
     /**
      * 获取该种子资源中的所有文件.

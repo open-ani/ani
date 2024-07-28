@@ -25,8 +25,8 @@ import kotlinx.coroutines.flow.reduce
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Zero
+import me.him188.ani.utils.platform.format1f
 import kotlin.jvm.JvmInline
-import kotlin.math.round
 
 /**
  * ```
@@ -107,27 +107,23 @@ value class FileSize(
             if (gigaBytes == this.inGigaBytes.toDouble()) {
                 return "${gigaBytes.toLong()} GB"
             }
-            return "${format1f(gigaBytes)} GB"
+            return "${String.format1f(gigaBytes)} GB"
         }
         val megaBytes = this.inMegaBytesDouble
         if (megaBytes >= 1) {
             if (megaBytes == this.inMegaBytes.toDouble()) {
                 return "${megaBytes.toLong()} MB"
             }
-            return "${format1f(megaBytes)} MB"
+            return "${String.format1f(megaBytes)} MB"
         }
         val kiloBytes = this.inKiloBytesDouble
         if (kiloBytes >= 1) {
             if (kiloBytes == this.inKiloBytes.toDouble()) {
                 return "${kiloBytes.toLong()} KB"
             }
-            return "${format1f(kiloBytes)} KB"
+            return "${String.format1f(kiloBytes)} KB"
         }
         return "${this.inBytes} B"
-    }
-
-    private fun format1f(value: Double): String { // equivalent to `String.format("%.1f", value)`
-        return (round(value * 10) / 10.0).toString()
     }
 }
 

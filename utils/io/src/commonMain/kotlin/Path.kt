@@ -110,6 +110,28 @@ fun SystemPath.delete(mustExist: Boolean = false) = SystemFileSystem.delete(path
 fun SystemPath.deleteIfExists() = delete()
 
 /**
+ * 目录或文件实际大小 (recursive)
+ */
+fun SystemPath.actualSize(): Long {
+    return if (isRegularFile()) {
+        length()
+    } else {
+        useDirectoryEntries { seq ->
+            seq.sumOf { it.actualSize() }
+        }
+    }
+}
+
+fun SystemPath.deleteRecursively(mustExist: Boolean = false) {
+    if (isDirectory()) {
+        useDirectoryEntries { seq ->
+            seq.forEach { it.deleteRecursively(mustExist) }
+        }
+    }
+    delete(mustExist)
+}
+
+/**
  * @see FileSystem.list
  */
 fun SystemPath.list(): Collection<Path> = SystemFileSystem.list(path)

@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.source.danmaku
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,6 +39,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -53,7 +53,7 @@ interface DanmakuManager {
         request: DanmakuSearchRequest,
     ): CombinedDanmakuFetchResult
 
-    @Throws(SendDanmakuException::class)
+    @Throws(SendDanmakuException::class, CancellationException::class)
     suspend fun post(episodeId: Int, danmaku: DanmakuInfo): Danmaku
 }
 

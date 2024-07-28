@@ -1,5 +1,7 @@
 package me.him188.ani.app.torrent.api.pieces
 
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import me.him188.ani.app.torrent.api.files.PieceState
 
 /**
@@ -52,7 +54,7 @@ class TorrentDownloadController(
     private val headerSize: Long = 128 * 1024,
     private val footerSize: Long = headerSize,
     private val possibleFooterSize: Long = headerSize,
-) {
+) : SynchronizedObject() {
     private val totalSize: Long = pieces.sumOf { it.size }
 
     private val footerPieces = pieces.dropWhile { it.lastIndex < totalSize - footerSize }
@@ -73,18 +75,15 @@ class TorrentDownloadController(
         (currentWindowStart until (currentWindowStart + windowSize).coerceAtMost(lastIndex)).toMutableList()
 
 
-    @Synchronized
-    fun isDownloading(pieceIndex: Int): Boolean {
+    fun isDownloading(pieceIndex: Int): Boolean = synchronized(this) {
         return downloadingPieces.contains(pieceIndex)
     }
 
-    @Synchronized
-    fun onTorrentResumed() {
+    fun onTorrentResumed() = synchronized(this) {
         onSeek(0)
     }
 
-    @Synchronized
-    fun onSeek(pieceIndex: Int) {
+    fun onSeek(pieceIndex: Int) = synchronized(this) {
         if (pieceIndex in possibleFooterRange) {
             // seek 到 footer 附近, 不重置 piece priority
             if (pieceIndex !in downloadingPieces) {
@@ -110,8 +109,7 @@ class TorrentDownloadController(
         return startIndex
     }
 
-    @Synchronized
-    fun onPieceDownloaded(pieceIndex: Int) {
+    fun onPieceDownloaded(pieceIndex: Int) = synchronized(this) {
         if (!downloadingPieces.remove(pieceIndex)) {
             return
         }

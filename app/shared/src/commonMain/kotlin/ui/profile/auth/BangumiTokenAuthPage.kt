@@ -38,10 +38,11 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.utils.platform.currentTimeMillis
 import moe.tlaster.precompose.navigation.BackHandler
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 import kotlin.time.Duration.Companion.days
 
 @Stable
@@ -53,7 +54,7 @@ class BangumiTokenAuthViewModel : AbstractViewModel(), KoinComponent {
     }
 
     suspend fun authByToken(token: String) {
-        sessionManager.setSession(Session(token, System.currentTimeMillis() + 365.days.inWholeMilliseconds))
+        sessionManager.setSession(Session(token, currentTimeMillis() + 365.days.inWholeMilliseconds))
     }
 }
 
@@ -92,7 +93,7 @@ fun BangumiTokenAuthPage(
                 val context = LocalContext.current
                 Button(
                     {
-                        GlobalContext.get().get<BrowserNavigator>()
+                        KoinPlatform.getKoin().get<BrowserNavigator>()
                             .openBrowser(context, "https://next.bgm.tv/demo/access-token/create")
                     },
                     Modifier.align(Alignment.End),

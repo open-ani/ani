@@ -125,10 +125,6 @@ android {
 
 }
 
-composeCompiler {
-    enableStrongSkippingMode = true
-}
-
 idea {
     module {
         excludeDirs.add(file(".cxx"))

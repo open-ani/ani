@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun FailedToInstallDialog(
@@ -24,7 +24,7 @@ fun FailedToInstallDialog(
                 Button(
                     onClick = {
                         (logoState() as? UpdateLogoState.Downloaded)?.file?.let {
-                            GlobalContext.get().get<UpdateInstaller>().openForManualInstallation(it, context)
+                            KoinPlatform.getKoin().get<UpdateInstaller>().openForManualInstallation(it, context)
                         }
                     },
                 ) { Text("查看安装包") }

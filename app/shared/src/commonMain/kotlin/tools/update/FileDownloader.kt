@@ -5,8 +5,12 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.contentLength
+import io.ktor.utils.io.core.use
+import io.ktor.utils.io.readAvailable
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -191,20 +195,20 @@ class DefaultFileDownloader : FileDownloader {
                 client.prepareRequest(url).execute { resp ->
                     val length = resp.contentLength()
                     logger.info { "Downloading $url to ${file.absolutePath}, length=${(length ?: 0).bytes}" }
-                    val downloaded = java.util.concurrent.atomic.AtomicLong(0L)
+                    val downloaded = atomic(0L)
                     val input = resp.bodyAsChannel()
                     val buffer = ByteArray(8192)
                     if (length != null) {
                         launch {
                             while (isActive) {
                                 delay(1.seconds)
-                                _progress.value = downloaded.get().toFloat() / length
+                                _progress.value = downloaded.value.toFloat() / length
                             }
                         }
                     }
                     file.bufferedSink().use { output ->
                         while (!input.isClosedForRead) {
-                            val read = input.readAvailable(buffer, 0, buffer.size)
+                            val read = input.readAvailable(buffer)
                             if (read == -1) {
                                 return@execute
                             }

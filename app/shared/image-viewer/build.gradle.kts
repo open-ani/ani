@@ -7,7 +7,6 @@ plugins {
     id("org.jetbrains.compose")
     // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
     `ani-mpp-lib-targets`
-    `ani-compose-hmpp`
 
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
