@@ -22,8 +22,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     idea
-    `flatten-source-sets`
-    `ani-lib-targets`
+    `ani-mpp-lib-targets`
     id("org.openapi.generator") version "7.6.0"
 }
 

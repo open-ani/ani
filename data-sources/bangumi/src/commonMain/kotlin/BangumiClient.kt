@@ -34,18 +34,17 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.appendPathSegments
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -66,9 +65,6 @@ import me.him188.ani.datasources.bangumi.next.apis.SubjectBangumiNextApi
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.serialization.toJsonArray
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.util.Objects
 import kotlin.coroutines.CoroutineContext
 
 interface BangumiClient : Closeable {
@@ -346,16 +342,14 @@ internal class BangumiClientImpl(
             start: Int?,
             maxResults: Int?
         ): Paged<BangumiLegacySubject> {
-            val keywordCoded = withContext(Dispatchers.IO) {
-                URLEncoder.encode(keyword, StandardCharsets.UTF_8.name())
-            }
-            val resp = httpClient.get("$BANGUMI_API_HOST/search/subject".plus("/").plus(keywordCoded)) {
+            val resp = httpClient.get("$BANGUMI_API_HOST/search/subject".plus("/")) {
+                url {
+                    appendPathSegments(keyword)
+                }
                 parameter("type", type.value)
                 parameter("responseGroup", responseGroup?.toString())
-                if (Objects.nonNull(start)) {
-                    parameter("start", start)
-                }
-                if (Objects.nonNull(maxResults)) parameter("max_results", maxResults)
+                parameter("start", start)
+                parameter("max_results", maxResults)
             }
 
             if (!resp.status.isSuccess()) {
