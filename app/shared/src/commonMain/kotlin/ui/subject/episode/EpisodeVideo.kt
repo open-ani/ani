@@ -246,6 +246,11 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
+                    PlayerControllerDefaults.AudioIcon(
+                        0.5f,
+                        onClick = {},
+                        onchange = {},
+                    )
                 },
                 progressIndicator = {
                     MediaProgressIndicatorText(progressSliderState)

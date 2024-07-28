@@ -1,7 +1,9 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +14,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.VolumeDown
+import androidx.compose.material.icons.automirrored.rounded.VolumeMute
+import androidx.compose.material.icons.automirrored.rounded.VolumeOff
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
@@ -34,12 +41,14 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,6 +119,48 @@ object PlayerControllerDefaults {
                 Icon(Icons.Rounded.Subtitles, contentDescription = "禁用弹幕")
             } else {
                 Icon(Icons.Rounded.SubtitlesOff, contentDescription = "启用弹幕")
+            }
+        }
+    }
+
+    @Composable
+    fun AudioIcon(
+        volume: Float,
+        interactionSource: MutableInteractionSource = MutableInteractionSource(),
+        onClick: () -> Unit,
+        onchange: (Float) -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        val isHovered by interactionSource.collectIsHoveredAsState()
+
+        val expanded by remember {
+            derivedStateOf {
+                isHovered
+            }
+        }
+        Row {
+            IconButton(
+                onClick = onClick,
+                modifier.hoverable(interactionSource),
+            ) {
+                if (volume == 0f) {
+                    Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
+                } else if (volume < 0.33f) {
+                    Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
+                } else if (volume < 0.66) {
+                    Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
+                } else {
+                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
+                }
+            }
+            if (expanded) {
+                Slider(
+                    value = volume,
+                    onValueChange = onchange,
+                    interactionSource = interactionSource,
+                    modifier = Modifier.width(72.dp),
+//                    thumb = { }
+                )
             }
         }
     }
