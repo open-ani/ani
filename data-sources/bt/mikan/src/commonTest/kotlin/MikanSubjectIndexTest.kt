@@ -1,18 +1,21 @@
 package me.him188.ani.datasources.mikan
 
-import com.fleeksoft.ksoup.Ksoup
 import me.him188.ani.datasources.api.topic.TopicCriteria
-import org.junit.jupiter.api.Test
+import me.him188.ani.test.IgnoreOnNative
+import me.him188.ani.test.readTestResourceAsString
+import me.him188.ani.utils.xml.Xml
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@IgnoreOnNative
 class MikanSubjectIndexTest {
 
     @Test
     fun `can parse subject index`() {
         val ids = AbstractMikanMediaSource.parseMikanSubjectIdsFromSearch(
-            Ksoup.parse(
-                this::class.java.getResource("/mikan-search-无职转生.txt")!!.readText(),
+            Xml.parse(
+                readTestResourceAsString("/mikan-search-无职转生.txt"),
             ),
         )
         assertEquals(listOf(3060, 2353, 2549, 3344).map { it.toString() }, ids)
@@ -21,8 +24,8 @@ class MikanSubjectIndexTest {
     @Test
     fun `can parse bangumi subject id`() {
         val id = AbstractMikanMediaSource.parseBangumiSubjectIdFromMikanSubjectDetails(
-            Ksoup.parse(
-                this::class.java.getResource("/mikan-bangumi-无职转生.txt")!!.readText(),
+            Xml.parse(
+                readTestResourceAsString("/mikan-bangumi-无职转生.txt"),
             ),
         )
         assertEquals("373247", id)
@@ -31,8 +34,8 @@ class MikanSubjectIndexTest {
     @Test
     fun `can parse subject rss`() {
         val list = AbstractMikanMediaSource.parseRssTopicList(
-            Ksoup.parse(
-                this::class.java.getResource("/mikan-subject-rss-无职转生.txt")!!.readText(),
+            Xml.parse(
+                readTestResourceAsString("/mikan-subject-rss-无职转生.txt"),
             ),
             TopicCriteria.ANY,
             allowEpMatch = false, // doesn't matter

@@ -6,15 +6,14 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        api(libs.ksoup)
         api(projects.utils.io)
     }
 
     sourceSets.jvmMain.dependencies {
-//        api(libs.jsoup)
+        api(libs.jsoup)
     }
 
     sourceSets.nativeMain.dependencies {
-//        api(libs.ksoup)
+        api(libs.ksoup)
     }
 }

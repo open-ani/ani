@@ -38,14 +38,11 @@ internal class PlatformDataStoreManagerAndroid(
     }
 
     private val Context.tokenStoreImpl by preferencesDataStore("tokens")
-    override val tokenStore: DataStore<Preferences>
-        get() = context.tokenStoreImpl
+    override val tokenStore: DataStore<Preferences> get() = context.tokenStoreImpl
 
-    private val Context.preferencesStoreImpl by preferencesDataStore("tokens")
-    override val preferencesStore: DataStore<Preferences>
-        get() = context.preferencesStoreImpl
+    private val Context.preferencesStoreImpl by preferencesDataStore("preferences")
+    override val preferencesStore: DataStore<Preferences> get() = context.preferencesStoreImpl
 
     private val Context.preferredAlliancesStoreImpl by preferencesDataStore("preferredAlliances")
-    override val preferredAllianceStore: DataStore<Preferences>
-        get() = context.preferredAlliancesStoreImpl
+    override val preferredAllianceStore: DataStore<Preferences> get() = context.preferredAlliancesStoreImpl
 }

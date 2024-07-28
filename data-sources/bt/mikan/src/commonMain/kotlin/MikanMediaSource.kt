@@ -18,8 +18,6 @@
 
 package me.him188.ani.datasources.mikan
 
-import com.fleeksoft.ksoup.Ksoup
-import com.fleeksoft.ksoup.nodes.Document
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -62,7 +60,8 @@ import me.him188.ani.datasources.api.topic.toTopicCriteria
 import me.him188.ani.utils.ktor.toSource
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.warn
-import me.him188.ani.utils.xml.parse
+import me.him188.ani.utils.xml.Document
+import me.him188.ani.utils.xml.Xml
 
 class MikanCNMediaSource(
     config: MediaSourceConfig,
@@ -145,7 +144,7 @@ abstract class AbstractMikanMediaSource(
             parameter("searchstr", query.subjectNameCN?.take(10))
         }
         return resp.bodyAsChannel().toSource().use {
-            parseRssTopicList(Ksoup.parse(it, "UTF-8", baseUrl), query.toTopicCriteria(), allowEpMatch = false)
+            parseRssTopicList(Xml.parse(it, baseUrl), query.toTopicCriteria(), allowEpMatch = false)
         }.map {
             MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.FUZZY)
         }
@@ -176,7 +175,7 @@ abstract class AbstractMikanMediaSource(
 
         // https://mikanani.me/RSS/Bangumi?bangumiId=3060
         return client.get("$baseUrl/RSS/Bangumi?bangumiId=$subjectId").bodyAsChannel().toSource().use {
-            parseRssTopicList(Ksoup.parse(it, "UTF-8", baseUrl), request.toTopicCriteria(), allowEpMatch = true)
+            parseRssTopicList(Xml.parse(it, baseUrl), request.toTopicCriteria(), allowEpMatch = true)
         }.map {
             MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.EXACT)
         }
@@ -196,7 +195,7 @@ abstract class AbstractMikanMediaSource(
         }
 
         val mikanIds = resp.bodyAsChannel().toSource().use {
-            Ksoup.parse(it, "UTF-8", baseUrl)
+            Xml.parse(it, baseUrl)
         }.let {
             parseMikanSubjectIdsFromSearch(it)
         }
@@ -208,7 +207,7 @@ abstract class AbstractMikanMediaSource(
             .flatMapMerge(4) { mikanId ->
                 flow {
                     val document = client.get("$baseUrl/Home/Bangumi/$mikanId").bodyAsChannel().toSource().use {
-                        Ksoup.parse(it, "UTF-8", baseUrl)
+                        Xml.parse(it, baseUrl)
                     }
                     emit(mikanId to parseBangumiSubjectIdFromMikanSubjectDetails(document))
                 }.catch { }
