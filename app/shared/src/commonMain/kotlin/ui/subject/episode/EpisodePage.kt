@@ -380,17 +380,18 @@ private fun EpisodeSceneContentPhone(
         }
     }
 
-    EpisodeEditCommentSheet(
-        vm,
-        showEditCommentSheet,
-        onDismiss = {
-            showEditCommentSheet = false
-            if (didSetPaused) {
-                didSetPaused = false
-                vm.playerState.resume()
-            }
-        },
-    )
+    if (showEditCommentSheet) {
+        EpisodeEditCommentSheet(
+            vm,
+            onDismiss = {
+                showEditCommentSheet = false
+                if (didSetPaused) {
+                    didSetPaused = false
+                    vm.playerState.resume()
+                }
+            },
+        )
+    }
 }
 
 @Composable

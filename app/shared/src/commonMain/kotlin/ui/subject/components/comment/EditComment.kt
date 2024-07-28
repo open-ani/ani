@@ -3,9 +3,7 @@ package me.him188.ani.app.ui.subject.components.comment
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Indication
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,14 +13,10 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -72,8 +66,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -82,6 +74,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -96,12 +89,10 @@ import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.theme.looming
-import me.him188.ani.utils.logging.logger
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.max
 
-private val logger = logger("EditComment")
 /**
  * 评论编辑.
  *
@@ -116,11 +107,13 @@ fun EditComment(
     modifier: Modifier = Modifier,
     title: String? = null,
     sending: Boolean = false,
+    controlSoftwareKeyboard: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
+    stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
+    onStickerPanelStateChanged: (Boolean) -> Unit = { },
 ) {
-    val density = LocalDensity.current
-    val focusManager = LocalFocusManager.current
-    val keyboard = LocalSoftwareKeyboardController.current
+    val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
+    
     val previewer = rememberEditCommentPreviewer()
     val editor = rememberEditCommentTextValue(content)
     val textFieldInteractionSource = remember { MutableInteractionSource() }
@@ -128,27 +121,21 @@ fun EditComment(
     var editExpanded by rememberSaveable { mutableStateOf(false) }
     var stickerPanelExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val imeInsets = WindowInsets.ime
+    val requiredStickerPanelHeight =
+        remember(stickerPanelHeight) { max(EditCommentDefaults.MinStickerHeight.dp, stickerPanelHeight) }
+
     val imeVisible = isImeVisible()
-    val navigationBarInsets = WindowInsets.navigationBars
-
-    val minStickerPanelHeight = with(density) { EditCommentDefaults.MinStickerHeight.dp.toPx() }
-    var imePresentHeight by remember { mutableStateOf(0) }
-    val requiredStickerPanelHeight by derivedStateOf { max(imePresentHeight.toFloat(), minStickerPanelHeight) }
-    // 在 IME 关闭时打开了动画，此时没办法依赖 IME 动画状态来计算表情面板高度，所以定义一个额外的动画状态
-    val stickerPanelExpandedStatefulAnim by animateFloatAsState(if (stickerPanelExpanded) 1f else 0f)
-    // 表情面板高度，这个这个高度始终保持在从 IME 切换到表情面板时 EditComment 整体布局高度尽可能保持不变
-    val stickerPanelHeight by derivedStateOf {
-        val r = if (imeVisible) {
-            if (stickerPanelExpanded) requiredStickerPanelHeight else 0f
-        } else {
-            requiredStickerPanelHeight * stickerPanelExpandedStatefulAnim
+    var previousImeVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(imeVisible) {
+        if (!previousImeVisible && imeVisible) {
+            stickerPanelExpanded = false
+            onStickerPanelStateChanged(false)
         }
-
-        with(density) { r.toDp() }
+        previousImeVisible = imeVisible
     }
 
     EditCommentScaffold(
+        modifier = modifier,
         title = {
             if (title != null) EditCommentDefaults.Title(title)
         },
@@ -164,16 +151,9 @@ fun EditComment(
                 onClickImage = { editor.wrapSelectionWith("[img][/img]", 5) },
                 onClickUrl = { editor.wrapSelectionWith("[url=][/url]", 5) },
                 onClickEmoji = {
-                    if (!stickerPanelExpanded) {
-                        imePresentHeight = max(
-                            imePresentHeight,
-                            imeInsets.getBottom(density) - navigationBarInsets.getBottom(density),
-                        )
-                        stickerPanelExpanded = true
-                        keyboard?.hide()
-                    } else {
-                        stickerPanelExpanded = false
-                    }
+                    stickerPanelExpanded = !stickerPanelExpanded
+                    if (stickerPanelExpanded) keyboard?.hide()
+                    onStickerPanelStateChanged(stickerPanelExpanded)
                 },
                 onPreview = {
                     if (previewer.previewing) {
@@ -184,33 +164,24 @@ fun EditComment(
                 },
                 onSend = {
                     keyboard?.hide()
-                    focusManager.clearFocus()
                     onSend()
                 },
             )
-            Crossfade(
-                targetState = stickerPanelExpanded,
-                modifier = Modifier.fillMaxWidth().height(stickerPanelHeight),
-            ) {
-                if (!it) Spacer(Modifier.fillMaxSize()) else EditCommentDefaults.StickerSelector(
+            if (stickerPanelExpanded) {
+                EditCommentDefaults.StickerSelector(
                     list = stickers,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxWidth().height(requiredStickerPanelHeight),
                     onClickItem = { stickerId ->
                         val inserted = "(bgm$stickerId)"
                         editor.insertTextAt(inserted, inserted.length + 1)
                     },
                 )
             }
-            
         },
-        modifier = modifier,
         expanded = editExpanded,
         onClickExpanded = { editExpanded = it },
     ) {
-        Crossfade(
-            targetState = previewer.previewing,
-            modifier = Modifier.ifThen(editExpanded) { fillMaxHeight() }.animateContentSize(),
-        ) { previewing ->
+        Crossfade(targetState = previewer.previewing) { previewing ->
             val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
 
             ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
@@ -229,16 +200,12 @@ fun EditComment(
                             .focusRequester(focusRequester)
                             .fillMaxWidth()
                             .ifThen(editExpanded) { fillMaxHeight() }
-                            .clickable(
-                                interactionSource = textFieldInteractionSource,
-                                indication = null,
-                                onClick = { stickerPanelExpanded = false },
-                            ),
+                            .animateContentSize(),
                         contentPadding = contentPadding,
                         onValueChange = { editor.override(it) },
                         interactionSource = textFieldInteractionSource,
                     )
-                    LaunchedEffect(true) {
+                    LaunchedEffect(Unit) {
                         focusRequester.requestFocus()
                     }
                 }
@@ -314,7 +281,9 @@ fun EditCommentScaffold(
                 content()
             }
         }
-        actionRow()
+        Column {
+            actionRow()
+        }
 
     }
 }
