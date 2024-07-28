@@ -95,7 +95,7 @@ fun GestureLock(
 @Composable
 fun LockedScreenGestureHost(
     controllerVisibility: () -> ControllerVisibility,
-    setControllerVisibility: (visibility: ControllerVisibility) -> Unit,
+    setFullVisible: (visible: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -103,14 +103,14 @@ fun LockedScreenGestureHost(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { setControllerVisibility(ControllerVisibility.Visible) },
+                onClick = { setFullVisible(true) },
             ).fillMaxSize(),
     )
 
     if (controllerVisibility() == ControllerVisibility.Visible) {
         LaunchedEffect(true) {
             delay(2.seconds)
-            setControllerVisibility(ControllerVisibility.Invisible)
+            setFullVisible(false)
         }
     }
     return
@@ -131,7 +131,7 @@ fun LockableVideoGestureHost(
     onExitFullscreen: () -> Unit = {},
 ) {
     if (locked) {
-        LockedScreenGestureHost({ controllerState.visibility }, controllerState.setVisibility, modifier)
+        LockedScreenGestureHost({ controllerState.visibility }, controllerState.setFullVisible, modifier)
     } else {
         VideoGestureHost(
             controllerState,

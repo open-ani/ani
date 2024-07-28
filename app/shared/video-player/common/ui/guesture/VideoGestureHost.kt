@@ -73,7 +73,6 @@ import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
@@ -472,13 +471,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.setVisibility(ControllerVisibility.Visible)
+                            controllerState.toggleFullVisible(true)
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
                                     delay(3000)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.setVisibility(ControllerVisibility.Invisible)
+                                    controllerState.toggleFullVisible(false)
                                 }
                             }
                         }
@@ -512,7 +511,7 @@ fun VideoGestureHost(
                                         onTogglePauseResumeState()
                                     }
                                     if (family.clickToToggleController) {
-                                        controllerState.toggleVisibility()
+                                        controllerState.toggleFullVisible()
                                     }
                                 }
                             },
@@ -607,7 +606,7 @@ fun VideoGestureHost(
                                     onTogglePauseResumeState()
                                 }
                                 if (family.clickToToggleController) {
-                                    controllerState.toggleVisibility()
+                                    controllerState.toggleFullVisible()
                                 }
                             }
                         },

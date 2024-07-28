@@ -65,19 +65,35 @@ data class ControllerVisibility(
 class VideoControllerState(
     initialVisibility: ControllerVisibility = ControllerVisibility.Visible
 ) {
+    private var fullVisible by mutableStateOf(initialVisibility == ControllerVisibility.Visible)
+    private val hasProgressBarRequester by derivedStateOf { progressBarRequesters.isNotEmpty() }
+
     /**
-     * 控制器是否可见.
+     * 当前 UI 应当显示的状态
      */
-    var visibility: ControllerVisibility by mutableStateOf(initialVisibility)
-    val setVisibility: (ControllerVisibility) -> Unit = {
-        visibility = it
+    val visibility: ControllerVisibility by derivedStateOf {
+        // 根据 hasProgressBarRequester, alwaysOn 和 fullVisible 计算正确的 `ControllerVisibility`
+        if (alwaysOn) return@derivedStateOf (ControllerVisibility.Visible)
+        if (fullVisible) return@derivedStateOf (ControllerVisibility.Visible)
+        if (hasProgressBarRequester) return@derivedStateOf (ControllerVisibility.DetachedSliderOnly)
+        ControllerVisibility.Invisible
     }
 
-    fun toggleVisibility(desired: ControllerVisibility? = null) {
-        setVisibility(
-            desired
-                ?: if (visibility == ControllerVisibility.Visible) ControllerVisibility.Invisible else ControllerVisibility.Visible,
-        )
+    /**
+     * 切换显示或隐藏整个控制器.
+     *
+     * 此操作拥有比 [setRequestProgressBar] 更低的优先级.
+     * 如果此时有人请求显示进度条, `toggleEntireVisible(false)` 将会延迟到那个人取消请求后才隐藏进度条.
+     * 如果此时没有人请求显示进度条, 此函数将立即生效.
+     *
+     * @param visible 为 `true` 时显示整个控制器
+     */
+    fun toggleFullVisible(visible: Boolean? = null) {
+        fullVisible = visible ?: !fullVisible
+    }
+
+    val setFullVisible: (visible: Boolean) -> Unit = {
+        fullVisible = it
     }
 
     var danmakuEnabled by mutableStateOf(true)

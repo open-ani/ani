@@ -500,7 +500,7 @@ private class EpisodeViewModelImpl(
             settingsRepository.danmakuEnabled.set(it)
         },
         onHideController = {
-            videoControllerState.setVisibility(ControllerVisibility.Invisible)
+            videoControllerState.toggleFullVisible(false)
         },
         backgroundScope,
     )

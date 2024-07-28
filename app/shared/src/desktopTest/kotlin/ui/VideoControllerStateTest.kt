@@ -12,22 +12,23 @@ class VideoControllerStateTest {
     @Test
     fun `test toggle visibility`() = runTest {
         val state = VideoControllerState(ControllerVisibility.Visible)
-        state.toggleVisibility()
+        state.toggleFullVisible()
         assertEquals(ControllerVisibility.Invisible, state.visibility)
-        state.toggleVisibility()
+        state.toggleFullVisible()
         assertEquals(ControllerVisibility.Visible, state.visibility)
-        state.toggleVisibility(ControllerVisibility.Visible)
+        state.toggleFullVisible(true)
         assertEquals(ControllerVisibility.Visible, state.visibility)
-        state.toggleVisibility(ControllerVisibility.Invisible)
+        state.toggleFullVisible(false)
         assertEquals(ControllerVisibility.Invisible, state.visibility)
     }
 
     @Test
     fun `show detached slider when init invisible`() = runTest {
         val state = VideoControllerState(ControllerVisibility.Invisible)
-        state.setRequestProgressBarVisible()
+        val requester = Any()
+        state.setRequestProgressBar(requester)
         assertEquals(ControllerVisibility.DetachedSliderOnly, state.visibility)
-        state.cancelRequestProgressBarVisible()
+        state.cancelRequestProgressBarVisible(requester)
         assertEquals(ControllerVisibility.Invisible, state.visibility)
 
     }
@@ -35,9 +36,72 @@ class VideoControllerStateTest {
     @Test
     fun `do not show detached slider when init visible `() = runTest {
         val state = VideoControllerState(ControllerVisibility.Visible)
-        state.setRequestProgressBarVisible()
+        val requester = Any()
+        state.setRequestProgressBar(requester)
         assertEquals(ControllerVisibility.Visible, state.visibility)
-        state.cancelRequestProgressBarVisible()
+        state.cancelRequestProgressBarVisible(requester)
         assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when nothing`() {
+        val state = createState(false, false, false)
+        assertEquals(ControllerVisibility.Invisible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when alwaysOn`() {
+        val state = createState(true, false, false)
+        assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when progressBarVisible`() {
+        val state = createState(false, true, false)
+        assertEquals(ControllerVisibility.DetachedSliderOnly, state.visibility)
+    }
+
+    @Test
+    fun `visibility when fullVisible`() {
+        val state = createState(false, false, true)
+        assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when alwaysOn progressBarVisible`() {
+        val state = createState(true, true, false)
+        assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when alwaysOn fullVisible`() {
+        val state = createState(true, false, true)
+        assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when progressBarVisible fullVisible`() {
+        val state = createState(false, true, true)
+        assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    @Test
+    fun `visibility when alwaysOn progressBarVisible fullVisible`() {
+        val state = createState(true, true, true)
+        assertEquals(ControllerVisibility.Visible, state.visibility)
+    }
+
+    private fun createState(
+        alwaysOn: Boolean,
+        progressBarVisible: Boolean,
+        fullVisible: Boolean
+    ): VideoControllerState {
+        val state = VideoControllerState(ControllerVisibility.Visible)
+        val requester = Any()
+        state.setRequestAlwaysOn(requester, alwaysOn)
+        if (progressBarVisible)
+            state.setRequestProgressBar(requester)
+        state.toggleFullVisible(fullVisible)
+        return state
     }
 }
