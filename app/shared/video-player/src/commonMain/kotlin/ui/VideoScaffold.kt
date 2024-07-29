@@ -212,7 +212,7 @@ fun VideoScaffold(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         AnimatedVisibility(
-                            visible = controllersVisibleState && !gestureLockedState,
+                            visible = controllersVisibleState.rhsBar && !gestureLockedState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
