@@ -51,6 +51,7 @@ import java.nio.file.Path
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createDirectories
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -247,6 +248,14 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1.0f)
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(1.0f)
+
+    override fun setVolume(volume: Float) {
+        backgroundScope.launch {
+            this@VlcjVideoPlayerState.volume.value = volume
+            player.audio().setVolume(volume.times(100).roundToInt())
+        }
+    }
 
     init {
         // NOTE: must not call native player in a event

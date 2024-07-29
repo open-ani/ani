@@ -159,7 +159,6 @@ object PlayerControllerDefaults {
                     onValueChange = onchange,
                     interactionSource = interactionSource,
                     modifier = Modifier.width(72.dp),
-//                    thumb = { }
                 )
             }
         }

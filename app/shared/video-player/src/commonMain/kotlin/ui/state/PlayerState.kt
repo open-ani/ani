@@ -154,6 +154,9 @@ interface PlayerState {
 
     val audioTracks: TrackGroup<AudioTrack>
 
+    val volume: StateFlow<Float>
+    fun setVolume(volume: Float)
+
     fun saveScreenshotFile(filename: String)
 }
 
@@ -443,6 +446,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(1.0f)
+
+    override fun setVolume(volume: Float) {
+        this.volume.value = volume
+    }
 
     override fun saveScreenshotFile(filename: String) {
     }

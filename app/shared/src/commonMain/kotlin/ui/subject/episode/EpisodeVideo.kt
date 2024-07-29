@@ -228,6 +228,7 @@ internal fun EpisodeVideoImpl(
                     playerState.seekTo(it)
                 },
             )
+            
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -247,9 +248,13 @@ internal fun EpisodeVideoImpl(
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
                     PlayerControllerDefaults.AudioIcon(
-                        0.5f,
-                        onClick = {},
-                        onchange = {},
+                        playerState.volume.value,
+                        onClick = {
+                            playerState.setVolume(0f)
+                        },
+                        onchange = {
+                            playerState.setVolume(it)
+                        },
                     )
                 },
                 progressIndicator = {
