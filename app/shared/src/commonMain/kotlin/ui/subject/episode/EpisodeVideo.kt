@@ -253,6 +253,7 @@ internal fun EpisodeVideoImpl(
                             playerState.setVolume(0f)
                         },
                         onchange = {
+                            playerState.volume.value = it
                             playerState.setVolume(it)
                         },
                     )

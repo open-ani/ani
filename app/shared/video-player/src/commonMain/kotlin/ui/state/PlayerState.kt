@@ -1,8 +1,10 @@
 package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
@@ -154,7 +156,8 @@ interface PlayerState {
 
     val audioTracks: TrackGroup<AudioTrack>
 
-    val volume: StateFlow<Float>
+
+    var volume: MutableState<Float>
     fun setVolume(volume: Float)
 
     fun saveScreenshotFile(filename: String)
@@ -446,7 +449,7 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
-    override val volume: MutableStateFlow<Float> = MutableStateFlow(1.0f)
+    override var volume: MutableState<Float> = mutableStateOf(0f)
 
     override fun setVolume(volume: Float) {
         this.volume.value = volume

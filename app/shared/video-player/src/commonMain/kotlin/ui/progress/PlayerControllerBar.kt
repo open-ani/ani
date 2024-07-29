@@ -153,7 +153,7 @@ object PlayerControllerDefaults {
                     Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
                 }
             }
-            if (expanded) {
+            if (expanded || true) {
                 Slider(
                     value = volume,
                     onValueChange = onchange,
