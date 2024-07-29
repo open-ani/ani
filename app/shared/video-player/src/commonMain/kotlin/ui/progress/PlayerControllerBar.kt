@@ -169,7 +169,7 @@ object PlayerControllerDefaults {
                 }
             }
             AnimatedVisibility(
-                visible = expanded || true,
+                visible = expanded,
                 enter = fadeIn() + expandHorizontally(),
                 exit = fadeOut() + shrinkHorizontally(),
             ) {

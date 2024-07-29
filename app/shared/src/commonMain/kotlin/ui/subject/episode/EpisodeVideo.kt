@@ -248,16 +248,18 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
-                    PlayerControllerDefaults.AudioIcon(
-                        playerState.volume.value,
-                        onClick = {
-                            playerState.setVolume(0f)
-                        },
-                        onchange = {
-                            playerState.volume.value = it
-                            playerState.setVolume(it)
-                        },
-                    )
+                    if (currentPlatform.isDesktop()) {
+                        PlayerControllerDefaults.AudioIcon(
+                            playerState.volume.value,
+                            onClick = {
+                                playerState.setVolume(0f)
+                            },
+                            onchange = {
+                                playerState.volume.value = it
+                                playerState.setVolume(it)
+                            },
+                        )
+                    }
                 },
                 progressIndicator = {
                     MediaProgressIndicatorText(progressSliderState)
