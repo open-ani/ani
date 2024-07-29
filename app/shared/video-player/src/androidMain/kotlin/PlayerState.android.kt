@@ -363,6 +363,14 @@ internal class ExoPlayerState @UiThread constructor(
         TODO("Not yet implemented")
     }
 
+    override fun volumeUp() {
+        TODO("Not yet implemented")
+    }
+
+    override fun volumeDown() {
+        TODO("Not yet implemented")
+    }
+
     override fun saveScreenshotFile(filename: String) {
         TODO("Not yet implemented")
     }

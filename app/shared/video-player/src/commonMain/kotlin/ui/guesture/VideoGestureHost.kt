@@ -82,6 +82,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RES
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -363,6 +364,7 @@ enum class GestureFamily(
     val keyboardLeftRightToSeek: Boolean = true,
     val mouseHoverForController: Boolean = true, // not supported on mobile
     val escToExitFullscreen: Boolean = true,
+    val scrollForVolume: Boolean,
 ) {
     TOUCH(
         clickToPauseResume = false,
@@ -374,6 +376,7 @@ enum class GestureFamily(
         swipeLhsForBrightness = true,
         longPressForFastSkip = true,
         mouseHoverForController = false,
+        scrollForVolume = false,
     ),
     MOUSE(
         clickToPauseResume = true,
@@ -384,6 +387,7 @@ enum class GestureFamily(
         swipeRhsForVolume = false,
         swipeLhsForBrightness = false,
         longPressForFastSkip = false,
+        scrollForVolume = true,
     )
 }
 
@@ -393,6 +397,7 @@ fun VideoGestureHost(
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
+    playerState: PlayerState,
     modifier: Modifier = Modifier,
     family: GestureFamily = Platform.currentPlatform.mouseFamily,
     onTogglePauseResume: () -> Unit = {},
@@ -486,6 +491,13 @@ fun VideoGestureHost(
                                 manager.clearFocus()
                             }
                             onExitFullscreen()
+                        }
+                    }.ifThen(family.scrollForVolume) {
+                        onPointerEventMultiplatform(PointerEventType.Scroll) { event ->
+                            event.changes.firstOrNull()?.scrollDelta?.y?.run {
+                                if (this > 0) playerState.volumeUp()
+                                else if (this < 0) playerState.volumeDown()
+                            }
                         }
                     }
                     .fillMaxSize(),

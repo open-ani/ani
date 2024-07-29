@@ -25,6 +25,7 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -121,6 +122,7 @@ fun LockableVideoGestureHost(
     seekerState: SwipeSeekerState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
+    playerState: PlayerState,
     locked: Boolean,
     modifier: Modifier = Modifier,
     onTogglePauseResume: () -> Unit = {},
@@ -135,6 +137,7 @@ fun LockableVideoGestureHost(
             seekerState,
             indicatorState,
             fastSkipState,
+            playerState,
             onTogglePauseResume = onTogglePauseResume,
             onToggleFullscreen = onToggleFullscreen,
             onExitFullscreen = onExitFullscreen,

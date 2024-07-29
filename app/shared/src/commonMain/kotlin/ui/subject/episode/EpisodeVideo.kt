@@ -177,6 +177,7 @@ internal fun EpisodeVideoImpl(
                 swipeSeekerState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
+                playerState,
                 locked = isLocked,
                 Modifier.padding(top = 100.dp),
                 onTogglePauseResume = {

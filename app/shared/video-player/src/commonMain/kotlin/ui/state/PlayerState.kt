@@ -159,7 +159,9 @@ interface PlayerState {
 
     var volume: MutableState<Float>
     fun setVolume(volume: Float)
-
+    fun volumeUp()
+    fun volumeDown()
+    
     fun saveScreenshotFile(filename: String)
 }
 
@@ -453,6 +455,14 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override fun setVolume(volume: Float) {
         this.volume.value = volume
+    }
+
+    override fun volumeUp() {
+        setVolume(volume.value + 0.05f)
+    }
+
+    override fun volumeDown() {
+        setVolume(volume.value - 0.05f)
     }
 
     override fun saveScreenshotFile(filename: String) {

@@ -258,6 +258,16 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
     }
 
+    override fun volumeUp() {
+        volume.value = (volume.value + 0.05f).coerceIn(0f, 1f)
+        setVolume(volume.value)
+    }
+
+    override fun volumeDown() {
+        volume.value = (volume.value - 0.05f).coerceIn(0f, 1f)
+        setVolume(volume.value)
+    }
+
     init {
         // NOTE: must not call native player in a event
         player.events().addMediaEventListener(
