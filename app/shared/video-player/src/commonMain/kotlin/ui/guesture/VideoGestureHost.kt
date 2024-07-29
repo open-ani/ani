@@ -495,6 +495,7 @@ fun VideoGestureHost(
                     }.ifThen(family.scrollForVolume) {
                         onPointerEventMultiplatform(PointerEventType.Scroll) { event ->  
                             event.changes.firstOrNull()?.scrollDelta?.y?.run {
+                                playerState.isMute.value = false
                                 if (this < 0) playerState.volumeUp()
                                 else if (this > 0) playerState.volumeDown()
 

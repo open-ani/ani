@@ -158,6 +158,7 @@ interface PlayerState {
 
 
     var volume: MutableState<Float>
+    var isMute: MutableState<Boolean>
     fun setVolume(volume: Float)
     fun volumeUp()
     fun volumeDown()
@@ -451,7 +452,9 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
+
     override var volume: MutableState<Float> = mutableStateOf(0f)
+    override var isMute: MutableState<Boolean> = mutableStateOf(false)
 
     override fun setVolume(volume: Float) {
         this.volume.value = volume

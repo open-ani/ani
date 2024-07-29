@@ -136,6 +136,7 @@ object PlayerControllerDefaults {
     @Composable
     fun AudioIcon(
         volume: Float,
+        isMute: Boolean,
         interactionSource: MutableInteractionSource = MutableInteractionSource(),
         onClick: () -> Unit,
         onchange: (Float) -> Unit,
@@ -158,18 +159,18 @@ object PlayerControllerDefaults {
             IconButton(
                 onClick = onClick,
             ) {
-                if (volume == 0f) {
+                if (isMute) {
                     Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
                 } else if (volume < 0.33f) {
                     Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
-                } else if (volume < 0.66) {
+                } else if (volume < 0.66f) {
                     Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
                 } else {
                     Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
                 }
             }
             AnimatedVisibility(
-                visible = expanded,
+                visible = expanded && !isMute,
                 enter = fadeIn() + expandHorizontally(),
                 exit = fadeOut() + shrinkHorizontally(),
             ) {

@@ -358,6 +358,9 @@ internal class ExoPlayerState @UiThread constructor(
     override var volume: MutableState<Float>
         get() = TODO("Not yet implemented")
         set(value) {}
+    override var isMute: MutableState<Boolean>
+        get() = TODO("Not yet implemented")
+        set(value) {}
 
     override fun setVolume(volume: Float) {
         TODO("Not yet implemented")

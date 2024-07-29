@@ -248,15 +248,22 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
+                    LaunchedEffect(playerState.volume.value, playerState.isMute.value) {
+                        if (playerState.isMute.value) {
+                            playerState.setVolume(volume = 0f)
+                        } else {
+                            playerState.setVolume(volume = playerState.volume.value)
+                        }
+                    }
                     if (currentPlatform.isDesktop()) {
                         PlayerControllerDefaults.AudioIcon(
                             playerState.volume.value,
+                            isMute = playerState.isMute.value,
                             onClick = {
-                                playerState.setVolume(0f)
+                                playerState.isMute.value = !playerState.isMute.value
                             },
                             onchange = {
                                 playerState.volume.value = it
-                                playerState.setVolume(it)
                             },
                         )
                     }
