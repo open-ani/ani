@@ -1,5 +1,11 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -15,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -42,6 +49,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
@@ -57,6 +65,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -67,6 +76,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import me.him188.ani.app.platform.PlatformPopupProperties
@@ -138,10 +148,15 @@ object PlayerControllerDefaults {
                 isHovered
             }
         }
-        Row {
+        Row(
+            modifier.hoverable(interactionSource)
+                .clip(CircleShape)
+                .ifThen(expanded) {
+                    background(Color.Black.copy(alpha = .1f))
+                },
+        ) {
             IconButton(
                 onClick = onClick,
-                modifier.hoverable(interactionSource),
             ) {
                 if (volume == 0f) {
                     Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
@@ -153,12 +168,27 @@ object PlayerControllerDefaults {
                     Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
                 }
             }
-            if (expanded || true) {
+            AnimatedVisibility(
+                visible = expanded || true,
+                enter = fadeIn() + expandHorizontally(),
+                exit = fadeOut() + shrinkHorizontally(),
+            ) {
                 Slider(
                     value = volume,
                     onValueChange = onchange,
                     interactionSource = interactionSource,
                     modifier = Modifier.width(72.dp),
+                    thumb = {
+                        SliderDefaults.Thumb(
+                            interactionSource = interactionSource,
+                            colors = SliderDefaults.colors(
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                            ),
+                            enabled = true,
+                            thumbSize = DpSize(4.dp, 4.dp),
+                            modifier = Modifier.padding(8.dp),
+                        )
+                    },
                 )
             }
         }
