@@ -15,7 +15,7 @@ import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.navigation.PopUpTo
 import org.koin.core.component.KoinComponent
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 /**
  * Supports navigation to any page in the app.
@@ -120,7 +120,7 @@ val LocalNavigator = compositionLocalOf<AniNavigator> {
 // dummy
 object LocalBrowserNavigator {
     @Stable
-    val current get() = GlobalContext.get().get<BrowserNavigator>()
+    val current get() = KoinPlatform.getKoin().get<BrowserNavigator>()
 }
 
 @Composable

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -57,9 +58,10 @@ import moe.tlaster.precompose.navigation.BackHandler
 
 @Composable
 fun HomePage(
-    contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val searchViewModel = rememberViewModel { SearchViewModel() }
     val snackBarHostState = remember { SnackbarHostState() }
@@ -128,9 +130,8 @@ fun HomePage(
                 }
             }
         },
-        contentWindowInsets = WindowInsets(0.dp),
-
-        ) { topBarPadding ->
+        contentWindowInsets = contentWindowInsets,
+    ) { topBarPadding ->
         Column(Modifier.fillMaxSize()) {
             searchResult?.let {
                 SubjectPreviewColumn(

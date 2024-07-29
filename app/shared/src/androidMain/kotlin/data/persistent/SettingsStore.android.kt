@@ -23,17 +23,26 @@ import androidx.datastore.dataStoreFile
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import me.him188.ani.app.platform.Context
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 
-actual val Context.preferencesStore: DataStore<Preferences> by preferencesDataStore("preferences")
-actual val Context.tokenStore: DataStore<Preferences> by preferencesDataStore("tokens")
 actual val Context.dataStoresImpl: PlatformDataStoreManager
     get() = PlatformDataStoreManagerAndroid(this)
 
 internal class PlatformDataStoreManagerAndroid(
     private val context: Context,
 ) : PlatformDataStoreManager() {
-    override fun resolveDataStoreFile(name: String): File {
-        return context.applicationContext.dataStoreFile(name)
+    override fun resolveDataStoreFile(name: String): SystemPath {
+        return context.applicationContext.dataStoreFile(name).toKtPath().inSystem
     }
+
+    private val Context.tokenStoreImpl by preferencesDataStore("tokens")
+    override val tokenStore: DataStore<Preferences> get() = context.tokenStoreImpl
+
+    private val Context.preferencesStoreImpl by preferencesDataStore("preferences")
+    override val preferencesStore: DataStore<Preferences> get() = context.preferencesStoreImpl
+
+    private val Context.preferredAlliancesStoreImpl by preferencesDataStore("preferredAlliances")
+    override val preferredAllianceStore: DataStore<Preferences> get() = context.preferredAlliancesStoreImpl
 }

@@ -25,7 +25,7 @@ internal val TestSelfRatingInfo = SelfRatingInfo(
 private fun PreviewCollectionPage() {
     ProvideCompositionLocalsForPreview {
         rememberViewModel {
-            MyCollectionsViewModelImpl().apply {
+            MyCollectionsViewModel().apply {
                 val testData = TestSubjectCollections
                 runBlocking {
                     collectionsByType.forEach { c ->

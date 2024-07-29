@@ -5,6 +5,7 @@ import io.ktor.utils.io.core.Input
 import io.ktor.utils.io.core.buildPacket
 import io.ktor.utils.io.core.readAvailable
 import io.ktor.utils.io.core.readBytes
+import io.ktor.utils.io.core.remaining
 import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.core.writeText
 import kotlin.experimental.and

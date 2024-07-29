@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,8 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.currentTimeMillis
+import kotlin.concurrent.Volatile
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
@@ -299,7 +302,7 @@ class LazyDataCacheSave<T> private constructor(
     private val _version: Int = CURRENT_VERSION,
     // Note: we need default values to make it compatible. otherwise it will crash asDataStoreSerializer.readFrom
 ) {
-    constructor(list: List<T>, page: Int?, totalSize: Int?, time: Long = System.currentTimeMillis()) :
+    constructor(list: List<T>, page: Int?, totalSize: Int?, time: Long = currentTimeMillis()) :
             this(list, page, totalSize, time, _version = CURRENT_VERSION)
 
     override fun toString(): String {

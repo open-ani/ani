@@ -8,9 +8,9 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.utils.coroutines.childScope
+import me.him188.ani.utils.io.SystemPath
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -43,7 +43,7 @@ class TorrentDownloaderManagerError(
 
 class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
-    private val saveDir: (type: TorrentEngineType) -> File,
+    private val saveDir: (type: TorrentEngineType) -> SystemPath,
 ) : TorrentManager, KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
 
@@ -68,6 +68,7 @@ class DefaultTorrentManager(
         when (Platform.currentPlatform) {
             is Platform.Desktop -> listOf(anitorrent)
             Platform.Android -> listOf(anitorrent)
+            Platform.Ios -> listOf() // TODO IOS anitorrent
         }
     }
 }

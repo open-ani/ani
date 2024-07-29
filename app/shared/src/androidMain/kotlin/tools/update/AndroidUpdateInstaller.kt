@@ -10,6 +10,8 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import me.him188.ani.BuildConfig
 import me.him188.ani.app.platform.ContextMP
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.toFile
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
@@ -21,7 +23,7 @@ class AndroidUpdateInstaller : UpdateInstaller {
         private val logger = logger<AndroidUpdateInstaller>()
     }
 
-    override fun install(file: File, context: ContextMP): InstallationResult {
+    override fun install(file: SystemPath, context: ContextMP): InstallationResult {
         logger.info { "Requesting install APK" }
         if (!context.packageManager.canRequestPackageInstalls()) {
             // Request permission from the user
@@ -34,7 +36,7 @@ class AndroidUpdateInstaller : UpdateInstaller {
             }
         } else {
             kotlin.runCatching {
-                installApk(context, file)
+                installApk(context, file.toFile())
             }.onFailure {
                 logger.warn(it) { "Failed to install update APK using installApkLegacy" }
             }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -22,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -149,6 +151,7 @@ fun CacheManagementPage(
     modifier: Modifier = Modifier,
     vm: CacheManagementPageViewModel = rememberViewModel { CacheManagementPageViewModelImpl() },
     showBack: Boolean = !isShowLandscapeUI(),
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     Scaffold(
         modifier,
@@ -162,6 +165,7 @@ fun CacheManagementPage(
                 },
             )
         },
+        contentWindowInsets = contentWindowInsets,
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             val state = rememberLazyGridState()

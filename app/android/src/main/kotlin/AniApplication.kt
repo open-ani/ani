@@ -23,18 +23,15 @@ import android.app.Application
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.compose.runtime.Stable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import me.him188.ani.app.i18n.ResourceBundle
-import me.him188.ani.app.i18n.loadResourceBundle
+import io.ktor.client.engine.okhttp.OkHttp
 import me.him188.ani.app.platform.AndroidLoggingConfigurator
 import me.him188.ani.app.platform.AndroidLoggingConfigurator.getLogsDir
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -87,22 +84,7 @@ class AniApplication : Application() {
         )
     }
 
-    inner class Instance(context: Context) {
-        // Use LocalI18n in compose
-        @Stable
-        lateinit var resourceBundle: ResourceBundle
-
-        // do not observe dependency change
-        @Stable
-        val app by lazy {
-            runBlocking(Dispatchers.Default) {
-                withContext(Dispatchers.IO) {
-                    val currentBundle = loadResourceBundle(context)
-                    resourceBundle = currentBundle
-                }
-            }
-        }
-    }
+    inner class Instance(context: Context)
 
     override fun onCreate() {
         super.onCreate()
@@ -123,10 +105,12 @@ class AniApplication : Application() {
             }
         }
 
+        OkHttp // survive R8
+
         startKoin {
             androidContext(this@AniApplication)
             modules(getCommonKoinModule({ this@AniApplication }, scope))
-            modules(getAndroidModules(torrentCaches, scope))
+            modules(getAndroidModules(torrentCaches.toKtPath().inSystem, scope))
         }.startCommonKoinModule(scope)
 
         getKoin().get<TorrentManager>() // start sharing, connect to DHT now

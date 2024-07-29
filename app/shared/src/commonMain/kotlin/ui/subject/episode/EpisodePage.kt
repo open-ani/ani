@@ -28,15 +28,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,9 +53,12 @@ import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
+import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -93,10 +93,6 @@ import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 
 
-private val LocalSnackbar = compositionLocalOf<SnackbarHostState> {
-    error("No SnackbarHostState provided")
-}
-
 /**
  * 番剧详情 (播放) 页面
  */
@@ -106,19 +102,13 @@ fun EpisodeScene(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
-        val snackbarHostState = remember { SnackbarHostState() }
         Scaffold(
-            snackbarHost = {
-                SnackbarHost(snackbarHostState, Modifier.navigationBarsPadding())
-            },
             contentWindowInsets = WindowInsets(0.dp),
         ) {
-            CompositionLocalProvider(LocalSnackbar provides snackbarHostState) {
-                EpisodeSceneContent(
-                    viewModel,
-                    modifier,
-                )
-            }
+            EpisodeSceneContent(
+                viewModel,
+                Modifier,
+            )
         }
     }
 }
@@ -137,8 +127,9 @@ private fun EpisodeSceneContent(
 
     // 按返回退出全屏
     val context by rememberUpdatedState(LocalContext.current)
+    val window = LocalPlatformWindow.current
     BackHandler(enabled = vm.isFullscreen) {
-        context.setRequestFullScreen(false)
+        context.setRequestFullScreen(window, false)
         vm.isFullscreen = false
     }
 
@@ -454,6 +445,7 @@ private fun EpisodeVideo(
 
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
     val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
+    val window = LocalPlatformWindow.current
 
     val progressSliderState = rememberMediaProgressSliderState(
         vm.playerState,
@@ -486,15 +478,15 @@ private fun EpisodeVideo(
         danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {
             if (vm.isFullscreen) {
-                context.setRequestFullScreen(false)
+                context.setRequestFullScreen(window, false)
                 vm.isFullscreen = false
             } else {
                 vm.isFullscreen = true
-                context.setRequestFullScreen(true)
+                context.setRequestFullScreen(window, true)
             }
         },
         onExitFullscreen = {
-            context.setRequestFullScreen(false)
+            context.setRequestFullScreen(window, false)
             vm.isFullscreen = false
         },
         danmakuEditor = {
@@ -559,6 +551,16 @@ private fun EpisodeVideo(
         },
         onShowMediaSelector = { isMediaSelectorVisible = true },
         onShowSelectEpisode = { isEpisodeSelectorVisible = true },
+        onClickScreenshot = {
+            val currentPositionMillis = vm.playerState.currentPositionMillis.value
+            val min = currentPositionMillis / 60000
+            val sec = (currentPositionMillis - (min * 60000)) / 1000
+            val ms = currentPositionMillis - (min * 60000) - (sec * 1000)
+            val currentPosition = "${min}m${sec}s${ms}ms"
+            // 条目ID-剧集序号-视频时间点.png
+            val filename = "${vm.subjectId}-${vm.episodePresentation.ep}-${currentPosition}.png"
+            vm.playerState.saveScreenshotFile(filename)
+        },
         detachedProgressSlider = {
             PlayerControllerDefaults.MediaProgressSlider(
                 progressSliderState,

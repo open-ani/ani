@@ -2,6 +2,7 @@ package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.flow.debounce
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import kotlin.jvm.JvmInline
 
 inline val MediaSelector.eventHandling get() = MediaSelectorEventHandlers(this)
 

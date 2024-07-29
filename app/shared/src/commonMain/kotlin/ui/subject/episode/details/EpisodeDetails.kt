@@ -123,6 +123,7 @@ fun EpisodeDetails(
     if (state.subjectId != 0) {
         val subjectDetailsViewModel =
             rememberViewModel(keys = listOf(state.subjectId)) { SubjectDetailsViewModel(state.subjectId) }
+        subjectDetailsViewModel.navigator = LocalNavigator.current
         if (showSubjectDetails) {
             ModalBottomSheet({ showSubjectDetails = false }) {
                 SubjectDetailsScene(

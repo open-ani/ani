@@ -46,7 +46,7 @@ import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     val browserNavigator: BrowserNavigator by inject()
@@ -220,7 +220,7 @@ fun AboutTab(
                     FilledTonalButton(
                         {
                             GlobalScope.launch {
-                                GlobalContext.get().get<MediaAutoCacheService>().checkCache()
+                                KoinPlatform.getKoin().get<MediaAutoCacheService>().checkCache()
                             }
                         },
                     ) {
@@ -231,7 +231,7 @@ fun AboutTab(
                 FilledTonalButton(
                     {
                         GlobalScope.launch {
-                            GlobalContext.get().get<SessionManager>().logout()
+                            KoinPlatform.getKoin().get<SessionManager>().logout()
                         }
                     },
                 ) {

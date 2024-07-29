@@ -35,7 +35,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.Koin
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -46,7 +46,7 @@ interface MediaAutoCacheService {
 }
 
 fun DefaultMediaAutoCacheService.Companion.createWithKoin(
-    koin: Koin = GlobalContext.get()
+    koin: Koin = KoinPlatform.getKoin()
 ): DefaultMediaAutoCacheService = DefaultMediaAutoCacheService(
     mediaFetcherLazy = koin.get<MediaSourceManager>().mediaFetcher,
     mediaSelectorFactory = MediaSelectorFactory.withKoin(koin),

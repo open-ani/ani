@@ -8,21 +8,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.foundation.BackgroundScope
-import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import kotlin.coroutines.CoroutineContext
 
 @Stable
 class EditableSubjectCollectionTypeState(
     selfCollectionType: State<UnifiedCollectionType>,
-    private val hasAnyUnwatched: () -> Boolean,
+    private val hasAnyUnwatched: suspend () -> Boolean,
     private val onSetSelfCollectionType: suspend (UnifiedCollectionType) -> Unit,
     private val onSetAllEpisodesWatched: suspend () -> Unit,
-    parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+    private val backgroundScope: CoroutineScope,
+) {
     val selfCollectionType by selfCollectionType
     val isCollected by derivedStateOf {
         this.selfCollectionType != UnifiedCollectionType.NOT_COLLECTED
@@ -37,14 +37,17 @@ class EditableSubjectCollectionTypeState(
     fun setSelfCollectionType(new: UnifiedCollectionType) {
         setSelfCollectionTypeTasker.launch {
             onSetSelfCollectionType(new)
-        }
-        if (new == UnifiedCollectionType.DONE && hasAnyUnwatched()) {
-            showSetAllEpisodesDoneDialog = true
+            if (new == UnifiedCollectionType.DONE && hasAnyUnwatched()) {
+                withContext(Dispatchers.Main) { showSetAllEpisodesDoneDialog = true }
+            }
         }
     }
 
+    private val setAllEpisodesWatchedTasker = MonoTasker(backgroundScope)
+    val isSetAllEpisodesWatchedWorking get() = setAllEpisodesWatchedTasker.isRunning
+
     fun setAllEpisodesWatched() {
-        launchInBackground { onSetAllEpisodesWatched() }
+        backgroundScope.launch { onSetAllEpisodesWatched() }
     }
 }
 
@@ -54,15 +57,7 @@ fun EditableSubjectCollectionTypeButton(
     modifier: Modifier = Modifier,
 ) {
     // 同时设置所有剧集为看过
-    if (state.showSetAllEpisodesDoneDialog) {
-        SetAllEpisodeDoneDialog(
-            onDismissRequest = { state.showSetAllEpisodesDoneDialog = false },
-            onConfirm = {
-                state.setAllEpisodesWatched()
-                state.showSetAllEpisodesDoneDialog = false
-            },
-        )
-    }
+    EditableSubjectCollectionTypeDialogsHost(state)
 
     SubjectCollectionTypeButton(
         state.selfCollectionType,
@@ -82,6 +77,7 @@ fun EditableSubjectCollectionTypeDialogsHost(
     if (state.showSetAllEpisodesDoneDialog) {
         SetAllEpisodeDoneDialog(
             onDismissRequest = { state.showSetAllEpisodesDoneDialog = false },
+            isWorking = state.isSetAllEpisodesWatchedWorking,
             onConfirm = {
                 state.setAllEpisodesWatched()
                 state.showSetAllEpisodesDoneDialog = false

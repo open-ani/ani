@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,18 +36,5 @@ fun SubjectDetailsDefaults.CollectionData(
             maxLines = 1,
             color = LocalContentColor.current.slightlyWeaken(),
         )
-    }
-}
-
-@Composable
-fun SubjectDetailsDefaults.SelectEpisodeButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    TextButton(
-        onClick = onClick,
-        modifier = modifier,
-    ) {
-        Text("选集播放")
     }
 }

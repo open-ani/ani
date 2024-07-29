@@ -12,6 +12,7 @@ import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.datasources.api.Media
@@ -156,8 +157,7 @@ class SeleniumWebViewVideoExtractor(
             logger.info { "Starting Selenium with Edge to resolve video source from $pageUrl" }
 
 
-            val driver: RemoteWebDriver = when (Platform.currentPlatform) {
-                is Platform.Linux -> throw UnsupportedOperationException("Linux is not supported")
+            val driver: RemoteWebDriver = when (currentPlatformDesktop) {
                 is Platform.MacOS, is Platform.Windows -> {
                     val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
                     val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
@@ -182,8 +182,6 @@ class SeleniumWebViewVideoExtractor(
 
                     driver
                 }
-
-                Platform.Android -> error("Unexpected Android platform in desktop builds")
             }
 
             logger.info { "Using WebDriver: $driver" }

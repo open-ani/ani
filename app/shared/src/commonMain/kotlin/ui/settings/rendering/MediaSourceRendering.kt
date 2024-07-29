@@ -33,18 +33,7 @@ import me.him188.ani.app.ntdm
 import me.him188.ani.app.nyafun
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
-import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import me.him188.ani.datasources.dmhy.DmhyMediaSource
-import me.him188.ani.datasources.ikaros.IkarosMediaSource
-import me.him188.ani.datasources.jellyfin.EmbyMediaSource
-import me.him188.ani.datasources.jellyfin.JellyfinMediaSource
-import me.him188.ani.datasources.mikan.MikanCNMediaSource
-import me.him188.ani.datasources.mikan.MikanMediaSource
-import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
-import me.him188.ani.datasources.ntdm.GugufanMediaSource
-import me.him188.ani.datasources.ntdm.NtdmMediaSource
-import me.him188.ani.datasources.nyafun.NyafunMediaSource
 import org.jetbrains.compose.resources.painterResource
 
 
@@ -57,17 +46,17 @@ import org.jetbrains.compose.resources.painterResource
 fun renderMediaSource(
     id: String
 ): String = when (id) {
-    DmhyMediaSource.ID -> "動漫花園"
-    AcgRipMediaSource.ID -> "ACG.RIP"
-    MikanMediaSource.ID -> "Mikan"
-    MikanCNMediaSource.ID -> "Mikan (中国大陆)"
+    "dmhy" -> "動漫花園"
+    "acg.rip" -> "ACG.RIP"
+    "mikan" -> "Mikan"
+    "mikan-mikanime-tv" -> "Mikan (中国大陆)"
     BangumiSubjectProvider.ID -> "Bangumi"
-    NyafunMediaSource.ID -> "Nyafun"
-    MxdongmanMediaSource.ID -> "MX 动漫"
-    NtdmMediaSource.ID -> "NT动漫"
-    JellyfinMediaSource.ID -> "Jellyfin"
-    EmbyMediaSource.ID -> "Emby"
-    GugufanMediaSource.ID -> "咕咕番"
+    "nyafun" -> "Nyafun"
+    "mxdongman" -> "MX 动漫"
+    "ntdm" -> "NT动漫"
+    "jellyfin" -> "Jellyfin"
+    "emby" -> "Emby"
+    "gugufan" -> "咕咕番"
     LOCAL_FS_MEDIA_SOURCE_ID -> "本地"
     else -> id
 }
@@ -76,16 +65,16 @@ fun renderMediaSource(
 fun renderMediaSourceDescription(
     id: String
 ): String? = when (id) {
-    DmhyMediaSource.ID -> "dmhy.org"
-    AcgRipMediaSource.ID -> "acg.rip"
-    MikanMediaSource.ID -> "mikanani.me"
-    MikanCNMediaSource.ID -> "mikanime.tv"
+    "dmhy" -> "dmhy.org"
+    "acg.rip" -> "acg.rip"
+    "mikan" -> "mikanani.me"
+    "mikan-mikanime-tv" -> "mikanime.tv"
     BangumiSubjectProvider.ID -> "bgm.tv"
-    NyafunMediaSource.ID -> "nyafun.net"
-    MxdongmanMediaSource.ID -> "mxdm4.com"
-    IkarosMediaSource.ID -> "ikaros.run"
-    NtdmMediaSource.ID -> "ntdm.tv"
-    GugufanMediaSource.ID -> "gugufan.com"
+    "nyafun" -> "nyafun.net"
+    "mxdongman" -> "mxdm4.com"
+    "ikaros" -> "ikaros.run"
+    "ntdm" -> "ntdm.tv"
+    "gugufan" -> "gugufan.com"
     LOCAL_FS_MEDIA_SOURCE_ID -> null
     else -> null
 }
@@ -98,16 +87,16 @@ fun getMediaSourceIconResource(
         return null
     }
     return when (id) {
-        DmhyMediaSource.ID -> painterResource(Res.drawable.dmhy)
-        AcgRipMediaSource.ID -> painterResource(Res.drawable.acg_rip)
-        MikanMediaSource.ID, MikanCNMediaSource.ID -> painterResource(Res.drawable.mikan)
+        "dmhy" -> painterResource(Res.drawable.dmhy)
+        "acg.rip" -> painterResource(Res.drawable.acg_rip)
+        "mikan", "mikan-mikanime-tv" -> painterResource(Res.drawable.mikan)
         BangumiSubjectProvider.ID -> painterResource(Res.drawable.bangumi)
-        NyafunMediaSource.ID -> painterResource(Res.drawable.nyafun)
-        MxdongmanMediaSource.ID -> painterResource(Res.drawable.mxdongman)
-        NtdmMediaSource.ID -> painterResource(Res.drawable.ntdm)
-        JellyfinMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Jellyfin)
-        EmbyMediaSource.ID -> rememberVectorPainter(Icons.Rounded.Emby)
-        GugufanMediaSource.ID -> painterResource(Res.drawable.gugufan)
+        "nyafun" -> painterResource(Res.drawable.nyafun)
+        "mxdongman" -> painterResource(Res.drawable.mxdongman)
+        "ntdm" -> painterResource(Res.drawable.ntdm)
+        "jellyfin" -> rememberVectorPainter(Icons.Rounded.Jellyfin)
+        "emby" -> rememberVectorPainter(Icons.Rounded.Emby)
+        "gugufan" -> painterResource(Res.drawable.gugufan)
         else -> null
     }
 }

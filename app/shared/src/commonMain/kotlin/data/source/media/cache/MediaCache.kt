@@ -1,5 +1,6 @@
 package me.him188.ani.app.data.source.media.cache
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -9,7 +10,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
-import java.util.concurrent.atomic.AtomicInteger
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.math.absoluteValue
 
 /**
@@ -139,7 +140,10 @@ open class TestMediaCache(
     override val uploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
     override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
 
-    val resumeCalled = AtomicInteger(0)
+    private val resumeCalled = atomic(0)
+
+    @TestOnly
+    fun getResumeCalled() = resumeCalled.value
 
     override suspend fun pause() {
         println("pause")

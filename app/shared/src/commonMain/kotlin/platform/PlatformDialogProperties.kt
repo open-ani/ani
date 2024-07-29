@@ -10,7 +10,7 @@ expect fun PlatformDialogPropertiesImpl(
     usePlatformDefaultWidth: Boolean = false,
     // Android-only:
     excludeFromSystemGesture: Boolean = true,
-    // Desktop-only:
+    // Skiko-only:
     usePlatformInsets: Boolean = true,
 ): DialogProperties
 
@@ -22,7 +22,7 @@ fun PlatformDialogProperties(
     // Android-only:
     excludeFromSystemGesture: Boolean = true,
     clippingEnabled: Boolean = true,
-    // Desktop-only:
+    // Skiko-only:
     usePlatformInsets: Boolean = true,
 ): DialogProperties = PlatformDialogPropertiesImpl(
     dismissOnBackPress = dismissOnBackPress,

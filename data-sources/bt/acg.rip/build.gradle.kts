@@ -19,7 +19,7 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
     `flatten-source-sets`
 }
 
@@ -35,8 +35,23 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.jsoup)
     implementation(libs.slf4j.api)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
 }
+
+
+//kotlin {
+//    sourceSets.commonMain {
+//        dependencies {
+//            api(projects.dataSources.api)
+//            implementation(projects.utils.ktorClient)
+//            api(libs.kotlinx.coroutines.core)
+//            implementation(libs.kotlinx.serialization.json)
+//            implementation(libs.jsoup)
+//            implementation(projects.utils.logging)
+//        }
+//    }
+//}
+
 
 tasks.withType<Jar> {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE // why is there a duplicate?

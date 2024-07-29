@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
@@ -55,11 +56,11 @@ import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.inSystem
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import java.io.File
 
 val LocalIsPreviewing = staticCompositionLocalOf {
     false
@@ -97,7 +98,7 @@ fun ProvideCompositionLocalsForPreview(
                             )
                         }
                         single<TorrentManager> {
-                            DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
+                            DefaultTorrentManager(globalScope.coroutineContext) { Path("preview-cache").inSystem }
                         }
                         single<PermissionManager> { GrantedPermissionManager }
                         single<NotifManager> { NoopNotifManager }

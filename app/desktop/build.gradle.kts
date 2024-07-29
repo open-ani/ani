@@ -29,7 +29,7 @@ plugins {
     kotlin("plugin.compose")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
     idea
 }
 
@@ -61,15 +61,10 @@ kotlin {
     jvmToolchain(17)
 }
 
-composeCompiler {
-    enableStrongSkippingMode = true
-}
-
 compose.desktop {
     application {
         jvmArgs(
             "-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE",
-            "-Dcompose.interop.blending=true",
         )
         mainClass = "me.him188.ani.app.desktop.AniDesktop"
 //        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")

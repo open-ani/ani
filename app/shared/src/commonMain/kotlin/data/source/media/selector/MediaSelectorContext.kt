@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
+import kotlin.jvm.JvmName
 
 data class MediaSelectorContext(
     /**

@@ -1,6 +1,6 @@
 package me.him188.ani.utils.bbcode
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 abstract class BBCodeParserTestHelper {

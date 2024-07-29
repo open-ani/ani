@@ -24,6 +24,7 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,9 +37,6 @@ import me.him188.ani.app.data.models.subject.SubjectManagerImpl
 import me.him188.ani.app.data.persistent.createDatabaseBuilder
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.persistent.database.AniDatabase
-import me.him188.ani.app.data.persistent.preferencesStore
-import me.him188.ani.app.data.persistent.preferredAllianceStore
-import me.him188.ani.app.data.persistent.tokenStore
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -62,9 +60,9 @@ import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
-import me.him188.ani.app.data.source.DanmakuManager
-import me.him188.ani.app.data.source.DanmakuManagerImpl
 import me.him188.ani.app.data.source.UpdateManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
 import me.him188.ani.app.data.source.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.source.media.DummyMediaCacheEngine
 import me.him188.ani.app.data.source.media.MediaAutoCacheService
@@ -89,21 +87,21 @@ import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.coroutines.onReplacement
+import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
-import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
-@Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
-    single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
-    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
+    single<TokenRepository> { TokenRepositoryImpl(getContext().dataStores.tokenStore) }
+    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().dataStores.preferredAllianceStore) }
     single<SessionManager> { SessionManager(koin, coroutineScope.coroutineContext) }
     single<BangumiClient> {
         val settings = get<SettingsRepository>()
@@ -145,7 +143,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             saveDir = getContext().files.cacheDir.resolve("updates/download"),
         )
     }
-    single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
+    single<SettingsRepository> { PreferencesRepositoryImpl(getContext().dataStores.preferencesStore) }
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
     single<AniDatabase> {
@@ -171,7 +169,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = "test-in-memory",
-                            metadataDir = getMediaMetadataDir("test-in-memory").toPath(),
+                            metadataDir = getMediaMetadataDir("test-in-memory"),
                             engine = DummyMediaCacheEngine("test-in-memory"),
                             coroutineScope.childScopeContext(),
                         ),
@@ -181,7 +179,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = id,
-                            metadataDir = getMediaMetadataDir(engine.type.id).toPath(),
+                            metadataDir = getMediaMetadataDir(engine.type.id),
                             engine = TorrentMediaCacheEngine(
                                 mediaSourceId = id,
                                 torrentEngine = engine,
@@ -240,7 +238,7 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
                 }
                 mediaSourceInstanceRepository.add(
                     mediaSourceSave = MediaSourceSave(
-                        instanceId = UUID.randomUUID().toString(),
+                        instanceId = Uuid.randomString(),
                         mediaSourceId = id,
                         isEnabled = true,
                         config = MediaSourceConfig.Default,

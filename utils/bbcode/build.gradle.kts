@@ -1,5 +1,4 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /*
  * Ani
@@ -21,10 +20,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("multiplatform")
-    idea
-    `flatten-source-sets`
-    `ani-lib-targets`
+    `ani-mpp-lib-targets`
     id("com.strumenta.antlr-kotlin")
+    idea
 }
 
 val generatedRoot = layout.buildDirectory.dir("gen").get().asFile
@@ -62,6 +60,6 @@ val cleanBBCodeGrammarSource = tasks.register<Delete>("cleanBBCodeGrammarSource"
     delete(generatedRoot)
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool> {
     dependsOn(generateBBCodeGrammarSource)
 }

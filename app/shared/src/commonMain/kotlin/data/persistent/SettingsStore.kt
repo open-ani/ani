@@ -18,27 +18,17 @@
 
 package me.him188.ani.app.data.persistent
 
-import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.core.Serializer
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexes
 import me.him188.ani.app.platform.Context
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
+import me.him188.ani.app.platform.ReplaceFileCorruptionHandler
+import me.him188.ani.app.platform.asDataStoreSerializer
+import me.him188.ani.app.platform.create
+import me.him188.ani.utils.io.SystemPath
 
-
-expect val Context.preferencesStore: DataStore<Preferences>
-
-expect val Context.tokenStore: DataStore<Preferences>
 
 /**
  * Must not be stored
@@ -70,29 +60,10 @@ abstract class PlatformDataStoreManager {
         )
     }
 
-    abstract fun resolveDataStoreFile(name: String): File
+    abstract val tokenStore: DataStore<Preferences>
+    abstract val preferencesStore: DataStore<Preferences>
+    abstract val preferredAllianceStore: DataStore<Preferences>
+
+    abstract fun resolveDataStoreFile(name: String): SystemPath
 }
 
-fun <T> KSerializer<T>.asDataStoreSerializer(
-    defaultValue: () -> T,
-    format: Json = Json {
-        ignoreUnknownKeys = true
-    },
-): Serializer<T> {
-    val serializer = this
-    return object : Serializer<T> {
-        override val defaultValue: T by lazy(defaultValue)
-
-        override suspend fun readFrom(input: InputStream): T {
-            try {
-                return format.decodeFromStream(serializer, input)
-            } catch (e: Exception) {
-                throw CorruptionException("Failed to decode data", e)
-            }
-        }
-
-        override suspend fun writeTo(t: T, output: OutputStream) {
-            format.encodeToStream(serializer, t, output)
-        }
-    }
-}

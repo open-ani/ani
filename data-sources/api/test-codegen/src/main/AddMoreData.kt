@@ -26,7 +26,6 @@ import me.him188.ani.datasources.dmhy.impl.protocol.Network
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.File
-import java.nio.charset.Charset
 
 
 /**
@@ -77,7 +76,7 @@ class TopicFetcher(
                     ContentType.Text.Html,
                     object : ContentConverter {
                         override suspend fun deserialize(
-                            charset: Charset,
+                            charset: io.ktor.utils.io.charsets.Charset,
                             typeInfo: TypeInfo,
                             content: ByteReadChannel
                         ): Any? {
@@ -88,9 +87,9 @@ class TopicFetcher(
                             return Jsoup.parse(string, charset.name())
                         }
 
-                        override suspend fun serializeNullable(
+                        override suspend fun serialize(
                             contentType: ContentType,
-                            charset: Charset,
+                            charset: io.ktor.utils.io.charsets.Charset,
                             typeInfo: TypeInfo,
                             value: Any?
                         ): OutgoingContent? {

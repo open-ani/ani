@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.cache
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
@@ -14,7 +15,6 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.Media
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 
 @Stable
 interface EpisodeCacheListState {

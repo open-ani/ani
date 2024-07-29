@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import kotlin.jvm.JvmStatic
 
 /**
  * 详细信息.

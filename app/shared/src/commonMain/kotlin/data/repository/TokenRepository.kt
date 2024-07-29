@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.time.Duration.Companion.hours
 
 /**
@@ -35,7 +36,7 @@ data class Session(
 )
 
 fun Session.isValid() = !isExpired()
-fun Session.isExpired() = expiresAtMillis <= System.currentTimeMillis() + 1.hours.inWholeMilliseconds
+fun Session.isExpired() = expiresAtMillis <= currentTimeMillis() + 1.hours.inWholeMilliseconds
 
 internal class TokenRepositoryImpl(
     store: DataStore<Preferences>,

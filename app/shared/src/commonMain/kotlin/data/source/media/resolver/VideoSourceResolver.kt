@@ -41,7 +41,7 @@ interface VideoSourceResolver {
      * @throws CancellationException 当协程被取消时抛出
      * @throws Exception 所有抛出的其他异常都属于 bug
      */
-    @Throws(VideoSourceResolutionException::class)
+    @Throws(VideoSourceResolutionException::class, CancellationException::class)
     suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*>
 
     companion object {

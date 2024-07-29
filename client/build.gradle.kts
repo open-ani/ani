@@ -22,7 +22,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     idea
-    `ani-lib-targets`
+    `ani-mpp-lib-targets`
     id("org.openapi.generator") version "7.6.0"
 }
 

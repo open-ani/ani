@@ -33,6 +33,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
@@ -259,7 +260,7 @@ private suspend fun PointerInputScope.detectTransformGestures(
         var lockedToPanZoom = false
 
         awaitFirstDown(requireUnconsumed = false)
-        val t0 = System.currentTimeMillis()
+        val t0 = currentTimeMillis()
         var releasedEvent: PointerEvent? = null
         var moveCount = 0
         // 这里开始事件
@@ -312,7 +313,7 @@ private suspend fun PointerInputScope.detectTransformGestures(
             }
         } while (!canceled && event.changes.fastAny { it.pressed })
 
-        var t1 = System.currentTimeMillis()
+        var t1 = currentTimeMillis()
         val dt = t1 - t0
         val dlt = t1 - lastReleaseTime
 

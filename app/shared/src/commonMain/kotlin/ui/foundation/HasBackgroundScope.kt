@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.foundation
 
 import androidx.annotation.UiThread
-import androidx.annotation.WorkerThread
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.FloatState
@@ -411,7 +410,7 @@ fun <T> CoroutineScope.deferFlow(value: suspend () -> T): MutableStateFlow<T?> {
  */
 fun <V : HasBackgroundScope> V.launchInBackground(
     start: CoroutineStart = CoroutineStart.DEFAULT,
-    @WorkerThread block: suspend V.() -> Unit,
+    block: suspend V.() -> Unit,
 ): Job {
     return backgroundScope.launch(start = start) {
         block()
@@ -427,7 +426,7 @@ fun <V : HasBackgroundScope> V.launchInBackground(
 fun <V : HasBackgroundScope> V.launchInBackground(
     context: CoroutineContext = EmptyCoroutineContext,
     start: CoroutineStart = CoroutineStart.DEFAULT,
-    @WorkerThread block: suspend V.() -> Unit,
+    block: suspend V.() -> Unit,
 ): Job {
     return backgroundScope.launch(context, start) {
         block()

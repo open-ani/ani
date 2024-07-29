@@ -8,13 +8,14 @@ import kotlinx.coroutines.flow.SharedFlow
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.repository.Session
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.time.Duration.Companion.days
 
 object TestSessionManager : SessionManager {
     private val savedSession: MutableStateFlow<Session?> = MutableStateFlow(
         Session(
             accessToken = "testToken",
-            expiresAtMillis = System.currentTimeMillis() + 1.days.inWholeMilliseconds,
+            expiresAtMillis = currentTimeMillis() + 1.days.inWholeMilliseconds,
         ),
     )
     override val state: Flow<SessionState> =
