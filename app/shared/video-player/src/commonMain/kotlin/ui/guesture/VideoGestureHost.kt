@@ -493,10 +493,14 @@ fun VideoGestureHost(
                             onExitFullscreen()
                         }
                     }.ifThen(family.scrollForVolume) {
-                        onPointerEventMultiplatform(PointerEventType.Scroll) { event ->
+                        onPointerEventMultiplatform(PointerEventType.Scroll) { event ->  
                             event.changes.firstOrNull()?.scrollDelta?.y?.run {
-                                if (this > 0) playerState.volumeUp()
-                                else if (this < 0) playerState.volumeDown()
+                                if (this < 0) playerState.volumeUp()
+                                else if (this > 0) playerState.volumeDown()
+
+                                indicatorTasker.launch {
+                                    indicatorState.showVolumeRange(playerState.volume.value)
+                                }
                             }
                         }
                     }
