@@ -47,13 +47,15 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
             return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
         }
 
-        val installerScriptFile = appDir.resolve("install.cmd")
-        installerScriptFile.writeText(getInstallerScript(file.toFile()))
-        logger.info { "Installer script written to ${installerScriptFile.absolutePath}" }
-
-        val processBuilder = ProcessBuilder("cmd", "/c", "start", "cmd", "/c", installerScriptFile.name)
+        val updateExecutable = appDir.resolve("ani_update.exe")
+        if (!updateExecutable.exists()) {
+            logger.info { "Update executable 'ani_update.exe' does not exist. Fallback to manual update" }
+            return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
+        }
+        
+        val processBuilder = ProcessBuilder(updateExecutable.absolutePath, file.toFile().absolutePath)
         processBuilder.directory(appDir).start()
-        logger.info { "Installer started" }
+        logger.info { "Update process started" }
         exitProcess(0)
     }
 
