@@ -215,6 +215,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 || str.contains("特别篇")
                 || str.contains("番外篇")
                 || str.contains("OAD", ignoreCase = true)
+                || str.contains("特典")
             ) {
                 builder.episodeRange = EpisodeRange.single(this)
                 return true
