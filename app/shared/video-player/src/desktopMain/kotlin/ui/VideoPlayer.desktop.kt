@@ -252,27 +252,24 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val volume: MutableStateFlow<Float> = MutableStateFlow(0.5f)
     override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override fun toggleMute(mute: Boolean?) {
+        if (player.audio().isMute == mute) {
+            return
+        }
         isMute.value = mute ?: !isMute.value
-        setVolume(volume.value)
+        player.audio().mute()
     }
 
     override fun setVolume(volume: Float) {
-        if (isMute.value) {
-            player.audio().setVolume(0)
-            return
-        }
+        this.volume.value = volume.coerceIn(0f, 1f)
         player.audio().setVolume(volume.times(200).roundToInt())
-        this.volume.value = volume
     }
 
     override fun volumeUp() {
-        volume.value = (volume.value + 0.05f).coerceIn(0f, 1f)
-        setVolume(volume.value)
+        setVolume(volume.value + 0.05f)
     }
 
     override fun volumeDown() {
-        volume.value = (volume.value - 0.05f).coerceIn(0f, 1f)
-        setVolume(volume.value)
+        setVolume(volume.value - 0.05f)
     }
 
     init {
@@ -311,6 +308,10 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                }
 //            }
 
+                override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                    volume.value = player.audio().volume().toFloat() / 200
+                    isMute.value = player.audio().isMute
+                }
                 override fun playing(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.PLAYING
                     player.submit { player.media().parsing().parse() }
