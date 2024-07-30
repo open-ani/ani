@@ -276,6 +276,21 @@ private fun EpisodeSceneContentPhone(
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
+
+    val pauseOnPlaying: () -> Unit = {
+        if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
+            didSetPaused = true
+            vm.playerState.pause()
+        } else {
+            didSetPaused = false
+        }
+    }
+    val tryUnpause: () -> Unit = {
+        if (didSetPaused) {
+            didSetPaused = false
+            vm.playerState.resume()
+        }
+    }
     
     LaunchedEffect(true) {
         vm.episodeCommentState.reload()
@@ -307,12 +322,9 @@ private fun EpisodeSceneContentPhone(
                 modifier = Modifier.fillMaxSize(),
                 onClickReply = {
                     showEditCommentSheet = true
-                    if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
-                        didSetPaused = true
-                        vm.playerState.pause()
-                    } else {
-                        didSetPaused = false
-                    }
+                    vm.editCommentState.handleNewEdit(it)
+                    pauseOnPlaying()
+                    
                 },
                 onClickUrl = { },
             )
@@ -322,12 +334,7 @@ private fun EpisodeSceneContentPhone(
             DummyDanmakuEditor(
                 onClick = {
                     showDanmakuEditor = true
-                    if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
-                        didSetPaused = true
-                        vm.playerState.pause()
-                    } else {
-                        didSetPaused = false
-                    }
+                    pauseOnPlaying()
                 },
             )
         },
@@ -337,10 +344,7 @@ private fun EpisodeSceneContentPhone(
         val focusRequester = remember { FocusRequester() }
         val dismiss = {
             showDanmakuEditor = false
-            if (didSetPaused) {
-                didSetPaused = false
-                vm.playerState.resume()
-            }
+            tryUnpause()
         }
         ModalBottomSheet(
             onDismissRequest = dismiss,
@@ -371,13 +375,10 @@ private fun EpisodeSceneContentPhone(
 
     if (showEditCommentSheet) {
         EpisodeEditCommentSheet(
-            vm,
+            vm.editCommentState,
             onDismiss = {
                 showEditCommentSheet = false
-                if (didSetPaused) {
-                    didSetPaused = false
-                    vm.playerState.resume()
-                }
+                tryUnpause()
             },
         )
     }

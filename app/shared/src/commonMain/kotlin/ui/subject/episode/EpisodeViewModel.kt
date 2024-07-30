@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -61,6 +62,8 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.components.comment.CommentLoader
 import me.him188.ani.app.ui.subject.components.comment.CommentState
+import me.him188.ani.app.ui.subject.components.comment.EditCommentState
+import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
 import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
@@ -167,6 +170,8 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmakuStatistics: DanmakuStatistics
 
     val episodeCommentState: CommentState
+
+    val editCommentState: EditCommentState
 
     @UiThread
     fun stopPlaying()
@@ -516,6 +521,20 @@ private class EpisodeViewModelImpl(
         hasMore = episodeCommentLoader.hasFinished.produceState(false),
         onReload = { episodeCommentLoader.reload() },
         onLoadMore = { episodeCommentLoader.loadMore() },
+        backgroundScope = backgroundScope,
+    )
+
+    override val editCommentState: EditCommentState = EditCommentState(
+        showExpandEditCommentButton = true,
+        initialExpandEditComment = false,
+        panelTitle = "评论：${episodeDetailsState.subjectTitle}",
+        stickerProvider = {
+            generateSequence(1) { it + 1 }
+                .take(64)
+                .map { EditCommentSticker(it, null) }
+                .toList()
+        },
+        onSend = { delay(3000) },
         backgroundScope = backgroundScope,
     )
 

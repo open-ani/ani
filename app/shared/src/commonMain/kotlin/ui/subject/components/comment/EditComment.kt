@@ -48,6 +48,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -77,10 +79,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.ui.foundation.IconButton
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ifThen
@@ -89,9 +95,105 @@ import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.theme.looming
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.max
+
+@Stable
+class EditCommentState(
+    val showExpandEditCommentButton: Boolean,
+    initialExpandEditComment: Boolean,
+    val panelTitle: String? = null,
+    private val stickerProvider: suspend () -> List<EditCommentSticker>,
+    private val onSend: suspend (String) -> Unit,
+    private val backgroundScope: CoroutineScope,
+) {
+    private var currentSendTarget = 0
+
+    private var onSendCompleted: (() -> Unit)? = null
+    private val editor = EditCommentTextState("", backgroundScope)
+    private val previewer = EditCommentPreviewerState(false, backgroundScope)
+    private val _editExpanded: MutableState<Boolean> = mutableStateOf(initialExpandEditComment)
+
+    /**
+     * 评论是否正在提交发送，在 [send] 时设置为 true，当 [onSend] 返回或发生错误时设置为 false
+     */
+    private val _sending: MutableState<Boolean> = mutableStateOf(false)
+
+    val content get() = editor.textField
+    val previewing get() = previewer.previewing
+    val previewContent get() = previewer.list
+    val editExpanded: Boolean by _editExpanded
+    val sending: Boolean by _sending
+    val stickers = flow { emit(stickerProvider()) }
+        .stateIn(backgroundScope, SharingStarted.Lazily, listOf())
+
+    /**
+     * 连续开关为同一个评论的编辑框将保存编辑内容和编辑框状态
+     */
+    fun handleNewEdit(id: Int) {
+        if (id != currentSendTarget) {
+            editor.override(TextFieldValue(""))
+        }
+        currentSendTarget = id
+    }
+
+    fun setEditExpanded(value: Boolean) {
+        _editExpanded.value = value
+    }
+
+    fun setContent(value: TextFieldValue) {
+        editor.override(value)
+    }
+
+    /**
+     * @see EditCommentTextState.wrapSelectionWith
+     */
+    fun wrapSelectionWith(value: String, secondSliceIndex: Int) {
+        editor.wrapSelectionWith(value, secondSliceIndex)
+    }
+
+    /**
+     * @see EditCommentTextState.insertTextAt
+     */
+    fun insertTextAt(value: String, cursorOffset: Int = value.length) {
+        editor.insertTextAt(value, cursorOffset)
+    }
+
+    /**
+     * @see EditCommentPreviewerState.closePreview
+     * @see EditCommentPreviewerState.submitPreview
+     */
+    fun togglePreview() {
+        if (previewing) {
+            previewer.closePreview()
+        } else {
+            previewer.submitPreview(editor.textField.text)
+        }
+    }
+
+    fun send() {
+        val value = editor.textField.text
+
+        _editExpanded.value = false
+        _sending.value = true
+
+        backgroundScope.launch {
+            onSend(value)
+            withContext(Dispatchers.Main) {
+                _sending.value = false
+            }
+        }.invokeOnCompletion {
+            editor.override(TextFieldValue(""))
+            if (_sending.value) _sending.value = false
+            onSendCompleted?.let { it() }
+        }
+    }
+
+    fun invokeOnSendComplete(block: () -> Unit) {
+        onSendCompleted = block
+    }
+}
 
 /**
  * 评论编辑.
@@ -100,13 +202,8 @@ import kotlin.math.max
  */
 @Composable
 fun EditComment(
-    content: String,
-    onContentChange: (String) -> Unit,
-    stickers: List<EditCommentSticker>,
-    onSend: () -> Unit,
+    state: EditCommentState,
     modifier: Modifier = Modifier,
-    title: String? = null,
-    sending: Boolean = false,
     controlSoftwareKeyboard: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
@@ -114,11 +211,7 @@ fun EditComment(
 ) {
     val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
     
-    val previewer = rememberEditCommentPreviewer()
-    val editor = rememberEditCommentTextValue(content)
     val textFieldInteractionSource = remember { MutableInteractionSource() }
-
-    var editExpanded by rememberSaveable { mutableStateOf(false) }
     var stickerPanelExpanded by rememberSaveable { mutableStateOf(false) }
 
     val requiredStickerPanelHeight =
@@ -137,59 +230,59 @@ fun EditComment(
     EditCommentScaffold(
         modifier = modifier,
         title = {
-            if (title != null) EditCommentDefaults.Title(title)
+            if (state.panelTitle != null) EditCommentDefaults.Title(state.panelTitle)
         },
         actionRow = {
             EditCommentDefaults.ActionRow(
-                previewing = previewer.previewing,
-                sending = sending,
-                onClickBold = { editor.wrapSelectionWith("[b][/b]", 3) },
-                onClickItalic = { editor.wrapSelectionWith("[i][/i]", 3) },
-                onClickUnderlined = { editor.wrapSelectionWith("[u][/u]", 3) },
-                onClickStrikethrough = { editor.wrapSelectionWith("[s][/s]", 3) },
-                onClickMask = { editor.wrapSelectionWith("[mask][/mask]", 6) },
-                onClickImage = { editor.wrapSelectionWith("[img][/img]", 5) },
-                onClickUrl = { editor.wrapSelectionWith("[url=][/url]", 5) },
+                previewing = state.previewing,
+                sending = state.sending,
+                onClickBold = { state.wrapSelectionWith("[b][/b]", 3) },
+                onClickItalic = { state.wrapSelectionWith("[i][/i]", 3) },
+                onClickUnderlined = { state.wrapSelectionWith("[u][/u]", 3) },
+                onClickStrikethrough = { state.wrapSelectionWith("[s][/s]", 3) },
+                onClickMask = { state.wrapSelectionWith("[mask][/mask]", 6) },
+                onClickImage = { state.wrapSelectionWith("[img][/img]", 5) },
+                onClickUrl = { state.wrapSelectionWith("[url=][/url]", 5) },
                 onClickEmoji = {
                     stickerPanelExpanded = !stickerPanelExpanded
                     if (stickerPanelExpanded) keyboard?.hide()
                     onStickerPanelStateChanged(stickerPanelExpanded)
                 },
                 onPreview = {
-                    if (previewer.previewing) {
-                        previewer.closePreview()
-                    } else {
-                        previewer.submitPreview(editor.textField.text)
-                    }
+                    keyboard?.hide()
+                    if (stickerPanelExpanded) stickerPanelExpanded = false
+                    state.togglePreview()
                 },
                 onSend = {
                     keyboard?.hide()
-                    onSend()
+                    state.send()
                 },
             )
             if (stickerPanelExpanded) {
+                val stickers by state.stickers.collectAsStateWithLifecycle()
+                
                 EditCommentDefaults.StickerSelector(
                     list = stickers,
                     modifier = Modifier.fillMaxWidth().height(requiredStickerPanelHeight),
                     onClickItem = { stickerId ->
                         val inserted = "(bgm$stickerId)"
-                        editor.insertTextAt(inserted, inserted.length)
+                        state.insertTextAt(inserted, inserted.length)
                     },
                 )
             }
         },
-        expanded = editExpanded,
-        onClickExpanded = { editExpanded = it },
+        expanded = if (!state.showExpandEditCommentButton) null else state.editExpanded,
+        onClickExpanded = { state.setEditExpanded(it) },
     ) {
         Crossfade(
-            targetState = previewer.previewing,
-            modifier = Modifier.ifThen(editExpanded) { weight(1.0f) },
+            targetState = state.previewing,
+            modifier = Modifier.ifThen(state.editExpanded) { weight(1.0f) },
         ) { previewing ->
             val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
 
             ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
                 if (previewing) {
-                    val richText by previewer.list.collectAsState()
+                    val richText by state.previewContent.collectAsState()
                     EditCommentDefaults.Preview(
                         content = richText,
                         modifier = Modifier.fillMaxWidth(),
@@ -197,15 +290,15 @@ fun EditComment(
                     )
                 } else {
                     EditCommentDefaults.EditText(
-                        value = editor.textField,
-                        maxLine = if (editExpanded) null else 3,
+                        value = state.content,
+                        maxLine = if (state.editExpanded) null else 3,
                         modifier = Modifier
                             .focusRequester(focusRequester)
                             .fillMaxWidth()
-                            .ifThen(editExpanded) { fillMaxHeight() }
+                            .ifThen(state.editExpanded) { fillMaxHeight() }
                             .animateContentSize(),
                         contentPadding = contentPadding,
-                        onValueChange = { editor.override(it) },
+                        onValueChange = { state.setContent(it) },
                         interactionSource = textFieldInteractionSource,
                     )
                     LaunchedEffect(Unit) {
@@ -224,16 +317,6 @@ private fun rememberEditCommentPreviewer(
     val scope = rememberCoroutineScope()
     return remember(scope) {
         EditCommentPreviewerState(initialPreviewing, scope)
-    }
-}
-
-@Composable
-private fun rememberEditCommentTextValue(
-    initialValue: String = ""
-): EditCommentTextState {
-    val scope = rememberCoroutineScope()
-    return remember(scope) {
-        EditCommentTextState(initialValue, scope)
     }
 }
 
@@ -273,6 +356,7 @@ fun EditCommentScaffold(
             if (expanded != null) {
                 EditCommentDefaults.ActionButton(
                     imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                    enabled = true,
                     onClick = { onClickExpanded(!expanded) },
                 )
             }
@@ -294,7 +378,7 @@ data class EditCommentSticker(
     val drawableRes: DrawableResource?,
 )
 
-private class EditCommentPreviewerState(
+class EditCommentPreviewerState(
     initialPreviewing: Boolean,
     coroutineScope: CoroutineScope
 ) {
@@ -319,7 +403,7 @@ private class EditCommentPreviewerState(
     }
 }
 
-private class EditCommentTextState(
+class EditCommentTextState(
     initialText: String,
     coroutineScope: CoroutineScope
 ) {
@@ -372,7 +456,6 @@ private class EditCommentTextState(
             return
         }
 
-        val secondSliceIndex = secondSliceIndex.coerceIn(0, max(0, value.length - 1))
         val currentText = current.text
         val selection = current.selection
 
@@ -486,6 +569,7 @@ object EditCommentDefaults {
         imageVector: ImageVector,
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
+        enabled: Boolean = true,
         iconSize: Dp = 22.dp,
         indication: Indication? = rememberRipple(
             bounded = false,
@@ -494,6 +578,7 @@ object EditCommentDefaults {
     ) {
         me.him188.ani.app.ui.foundation.IconButton(
             modifier = modifier,
+            enabled = enabled,
             onClick = onClick,
             indication = indication,
         ) {
@@ -509,7 +594,6 @@ object EditCommentDefaults {
     fun ActionRow(
         sending: Boolean = false,
         previewing: Boolean = false,
-
         onClickBold: () -> Unit,
         onClickItalic: () -> Unit,
         onClickUnderlined: () -> Unit,
@@ -602,41 +686,47 @@ object EditCommentDefaults {
                 }
             },
             content = {
-                ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji, Modifier.size(size))
+                ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji, Modifier.size(size), !sending)
                 if (actionExpanded) {
                     ActionButton(
                         Icons.Outlined.FormatBold,
                         onClickBold,
                         Modifier.size(height = size, width = collapsedActionAnim),
+                        !sending,
                     )
                     ActionButton(
                         Icons.Outlined.FormatItalic,
                         onClickItalic,
                         Modifier.size(height = size, width = collapsedActionAnim),
+                        !sending,
                     )
                     ActionButton(
                         Icons.Outlined.FormatUnderlined,
                         onClickUnderlined,
                         Modifier.size(height = size, width = collapsedActionAnim),
+                        !sending,
                     )
                     ActionButton(
                         Icons.Outlined.FormatStrikethrough,
                         onClickStrikethrough,
                         Modifier.size(height = size, width = collapsedActionAnim),
+                        !sending,
                     )
                 }
-                ActionButton(Icons.Outlined.VisibilityOff, onClickMask, Modifier.size(size))
-                ActionButton(Icons.Outlined.Image, onClickImage, Modifier.size(size))
+                ActionButton(Icons.Outlined.VisibilityOff, onClickMask, Modifier.size(size), !sending)
+                ActionButton(Icons.Outlined.Image, onClickImage, Modifier.size(size), !sending)
                 if (actionExpanded) {
                     ActionButton(
                         Icons.Outlined.Link,
                         onClickUrl,
                         Modifier.size(height = size, width = collapsedActionAnim),
+                        !sending,
                     )
                 }
                 // 最后一个按钮不要有 ripple effect，看起来比较奇怪
                 ActionButton(
                     imageVector = Icons.Outlined.MoreHoriz,
+                    enabled = !sending,
                     onClick = { actionExpanded = true },
                     modifier = Modifier.size(height = size, width = reversedActionAnim),
                     indication = null,

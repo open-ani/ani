@@ -48,13 +48,12 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.subject.components.comment.EditComment
-import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
-import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
+import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import kotlin.math.max
 
 @Composable
 fun EpisodeEditCommentSheet(
-    vm: EpisodeViewModel,
+    state: EditCommentState,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -85,6 +84,7 @@ fun EpisodeEditCommentSheet(
     }
     LaunchedEffect(Unit) {
         visible = true
+        state.invokeOnSendComplete(animateToDismiss)
     }
 
     val statusBarPadding = WindowInsets.statusBars.getTop(density)
@@ -144,19 +144,12 @@ fun EpisodeEditCommentSheet(
                     content = {
                         Box {
                             EditComment(
-                                content = "",
-                                title = "评论: ${vm.episodeDetailsState.subjectTitle}",
+                                state = state,
                                 modifier = modifier.padding(top = contentPadding).padding(contentPadding),
-                                onContentChange = { },
-                                stickers = generateSequence(1) { it + 1 }
-                                    .take(64)
-                                    .map { EditCommentSticker(it, null) }
-                                    .toList(),
                                 stickerPanelHeight = with(density) { imePresentHeight.toDp() },
                                 onStickerPanelStateChanged = { stickerPanelOpened = it },
                                 controlSoftwareKeyboard = true,
                                 focusRequester = focusRequester,
-                                onSend = { animateToDismiss() },
                             )
                         }
                     },
