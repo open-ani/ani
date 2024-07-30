@@ -35,6 +35,11 @@ import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import me.him188.ani.app.platform.window.PlatformWindow
+import me.him188.ani.app.platform.window.WindowUtils
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import java.io.File
 import kotlin.contracts.contract
 
@@ -94,16 +99,17 @@ inline fun Context.checkIsDesktop(): DesktopContext {
 @Composable
 actual fun isInLandscapeMode(): Boolean = false
 
-actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
+actual fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Boolean) {
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
+    WindowUtils.setFullscreen(window, fullscreen)
     windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
 }
 
 internal actual val Context.filesImpl: ContextFiles
     get() = object : ContextFiles {
-        override val cacheDir: File = (this@filesImpl as DesktopContext).cacheDir
-        override val dataDir: File = (this@filesImpl as DesktopContext).dataDir
+        override val cacheDir: SystemPath = (this@filesImpl as DesktopContext).cacheDir.toKtPath().inSystem
+        override val dataDir: SystemPath = (this@filesImpl as DesktopContext).dataDir.toKtPath().inSystem
     }
 
 @Composable

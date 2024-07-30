@@ -10,7 +10,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.reflect.typeInfo
-import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -20,7 +19,7 @@ import me.him188.ani.client.models.AniBangumiUserToken
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 
-class AniAuthClient : Closeable {
+class AniAuthClient : AutoCloseable {
     private val logger = logger<AniAuthClient>()
     private val httpClient = HttpClient {
         install(UserAgent) {

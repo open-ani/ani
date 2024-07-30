@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.foundation.effects
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import me.him188.ani.app.platform.window.WindowUtils
 
 
 /**
@@ -10,5 +12,10 @@ import androidx.compose.runtime.Composable
  */
 @Composable
 actual fun ScreenOnEffectImpl() {
-    // no-op
+    DisposableEffect(true) {
+        WindowUtils.setPreventScreenSaver(true)
+        onDispose {
+            WindowUtils.setPreventScreenSaver(false)
+        }
+    }
 }

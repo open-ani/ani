@@ -30,7 +30,7 @@ fun Float.fixToString(length: Int, prefix: Char = '0'): String {
 }
 
 fun String.fixToString(length: Int, prefix: Char): String {
-    val str = this.toString()
+    val str = this
     return if (str.length >= length) {
         str
     } else {

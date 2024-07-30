@@ -1,8 +1,8 @@
 package me.him188.ani.app.data.models
 
 import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.CancellationException
 import org.junit.jupiter.api.assertThrows
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

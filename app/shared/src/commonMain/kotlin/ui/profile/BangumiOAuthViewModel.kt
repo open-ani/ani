@@ -38,9 +38,9 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.UUID
 
 @Stable
 class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
@@ -57,7 +57,7 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
      */
     val needAuth by sessionManager.isSessionVerified.map { !it }.produceState(true)
 
-    var requestIdFlow = MutableStateFlow(UUID.randomUUID().toString())
+    var requestIdFlow = MutableStateFlow(Uuid.randomString())
 
     /**
      * 当前是第几次尝试
@@ -122,7 +122,7 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     @UiThread
     fun refresh() {
         logger.debug { "refresh" }
-        requestIdFlow.value = UUID.randomUUID().toString()
+        requestIdFlow.value = Uuid.randomString()
     }
 
     fun onCancel() {

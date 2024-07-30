@@ -9,7 +9,7 @@ actual fun Platform.Companion.currentPlatformImpl(): Platform {
     return when {
         "mac" in os || "os x" in os || "darwin" in os -> Platform.MacOS(arch)
         "windows" in os -> Platform.Windows(arch)
-        "linux" in os || "redhat" in os || "debian" in os || "ubuntu" in os -> Platform.Linux(arch)
+//        "linux" in os || "redhat" in os || "debian" in os || "ubuntu" in os -> Platform.Linux(arch)
         else -> error("Unsupported platform: $os")
     }
 }

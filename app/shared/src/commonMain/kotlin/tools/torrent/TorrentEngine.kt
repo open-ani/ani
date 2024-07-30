@@ -51,7 +51,10 @@ interface TorrentEngine {
      * @throws TorrentDownloaderInitializationException 当创建失败时抛出
      * @throws CancellationException
      */
-    @Throws(TorrentDownloaderInitializationException::class)
+    @Throws(
+        TorrentDownloaderInitializationException::class,
+        CancellationException::class,
+    )
     suspend fun getDownloader(): TorrentDownloader?
 }
 

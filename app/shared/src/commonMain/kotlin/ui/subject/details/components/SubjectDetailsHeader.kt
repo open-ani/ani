@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -43,6 +44,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
+import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.collection.AiringLabel
 
@@ -56,7 +58,7 @@ internal fun SubjectDetailsHeader(
     airingInfo: SubjectAiringInfo,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
-    selectEpisodeButton: @Composable () -> Unit,
+    selectEpisodeButton: @Composable BoxScope.() -> Unit,
     rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -121,7 +123,7 @@ fun SubjectDetailsHeaderCompact(
     seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
-    selectEpisodeButton: @Composable () -> Unit,
+    selectEpisodeButton: @Composable BoxScope.() -> Unit,
     rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -182,18 +184,20 @@ fun SubjectDetailsHeaderCompact(
         }
 
         Row(
-            Modifier.padding(vertical = 16.dp).align(Alignment.Start),
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            collectionData()
-        }
-        Row(
-            Modifier.align(Alignment.End),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            Modifier.padding(top = 16.dp).align(Alignment.Start),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            selectEpisodeButton()
+            Row(
+                Modifier.weight(1f),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                collectionData()
+            }
             collectionAction()
+        }
+
+        Box(Modifier.paddingIfNotEmpty(top = 8.dp), contentAlignment = Alignment.CenterEnd) {
+            selectEpisodeButton()
         }
     }
 }
@@ -206,7 +210,7 @@ fun SubjectDetailsHeaderWide(
     seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
-    selectEpisodeButton: @Composable () -> Unit,
+    selectEpisodeButton: @Composable BoxScope.() -> Unit,
     rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -262,16 +266,24 @@ fun SubjectDetailsHeaderWide(
                         rating()
                     }
                 }
-                Row(Modifier.padding(vertical = 4.dp).align(Alignment.Start)) {
+                Row(Modifier.align(Alignment.Start)) {
                     collectionData()
                 }
                 Row(
                     Modifier.align(Alignment.Start),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     collectionAction()
-                    selectEpisodeButton()
+                }
+                Row(
+                    Modifier.align(Alignment.Start),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.width(IntrinsicSize.Min)) {
+                        selectEpisodeButton()
+                    }
                 }
             }
         }

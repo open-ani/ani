@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -18,9 +20,8 @@
 
 plugins {
     kotlin("multiplatform")
-    `ani-lib-targets`
+    `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
-    `flatten-source-sets`
 }
 
 dependencies {
@@ -28,5 +29,6 @@ dependencies {
 }
 
 kotlin {
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions.freeCompilerArgs.add("-Xexpect-actual-classes")
 }

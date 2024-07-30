@@ -10,13 +10,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import me.him188.ani.app.ui.foundation.AsyncImage
-import java.io.File
 
 @Composable
 fun AvatarImage(
     url: String?,
     modifier: Modifier = Modifier,
-    filePath: String? = null,
     colorFilter: ColorFilter? = null,
     contentScale: ContentScale = ContentScale.Crop,
     alignment: Alignment = Alignment.Center,
@@ -25,7 +23,7 @@ fun AvatarImage(
         Icon(Icons.Rounded.Person, null, modifier)
     } else {
         AsyncImage(
-            model = if (filePath != null) File(filePath) else url,
+            model = url,
             contentDescription = "Avatar",
             modifier = modifier,
             error = rememberVectorPainter(Icons.Rounded.Person),

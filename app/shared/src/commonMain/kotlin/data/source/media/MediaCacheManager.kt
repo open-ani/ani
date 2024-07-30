@@ -1,6 +1,9 @@
 package me.him188.ani.app.data.source.media
 
 import androidx.compose.runtime.Stable
+import io.ktor.util.collections.ConcurrentMap
+import kotlinx.atomicfu.atomic
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,11 +34,9 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.sum
 import me.him188.ani.utils.coroutines.sampleWithInitial
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
 
 abstract class MediaCacheManager(
     val storagesIncludingDisabled: List<MediaCacheStorage>,
@@ -175,7 +176,7 @@ abstract class MediaCacheManager(
     }
 
     private fun startNotificationJob() {
-        val startTime = System.currentTimeMillis()
+        val startTime = currentTimeMillis()
         enabledStorages.mapLatestSupervised { list ->
             val channel = notificationManager.downloadChannel
 
@@ -190,24 +191,24 @@ abstract class MediaCacheManager(
                 priority = NotifPriority.MIN
             }
 
-            val visibleCount = AtomicInteger()
+            val visibleCount = atomic(0)
             for (storage in list) {
                 launch {
-                    if (System.currentTimeMillis() - startTime < 5000) {
+                    if (currentTimeMillis() - startTime < 5000) {
                         delay(5000)
                     }
 
                     storage.listFlow.debounce(1000).collectLatest { caches ->
                         @Suppress("NAME_SHADOWING")
-                        val caches = caches.toCollection(ConcurrentLinkedQueue())
+                        var caches = caches.toPersistentList()
                         val cacheIds = caches.mapTo(mutableSetOf()) { it.cacheId }
-                        val visibleNotifications = ConcurrentHashMap<String, Notif>()
+                        val visibleNotifications = ConcurrentMap<String, Notif>()
                         try {
                             while (currentCoroutineContext().isActive) {
                                 for (cache in caches) {
                                     val progress = cache.progress.first()
                                     if (progress >= 1f) {
-                                        caches.remove(cache)
+                                        caches = caches.remove(cache)
                                         visibleNotifications.remove(cache.cacheId)?.let {
                                             visibleCount.decrementAndGet()
                                             it.release()
@@ -251,7 +252,7 @@ abstract class MediaCacheManager(
             }
 
             launch {
-                if (System.currentTimeMillis() - startTime < 5000) {
+                if (currentTimeMillis() - startTime < 5000) {
                     delay(5000)
                 }
 
@@ -260,7 +261,7 @@ abstract class MediaCacheManager(
                 //                    }.sampleWithInitial(1000)
                 combine(stats.downloadRate.sampleWithInitial(3000)) { downloadRate ->
                     //                        if (anyCaching) {
-                    if (visibleCount.get() == 0) {
+                    if (visibleCount.value == 0) {
                         summaryNotif.cancel()
                     } else {
                         summaryNotif.run {

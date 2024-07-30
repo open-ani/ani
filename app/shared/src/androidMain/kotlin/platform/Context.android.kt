@@ -36,6 +36,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import me.him188.ani.app.platform.window.PlatformWindowMP
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import java.io.File
 
 
@@ -49,7 +53,7 @@ actual fun isInLandscapeMode(): Boolean =
     LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
 @Suppress("USELESS_CAST") // compiler bug
-actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
+actual fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean) {
     Log.i("setRequestFullScreen", "Requesting fullscreen: $fullscreen, context=$this")
     if (this is Activity) {
         if (fullscreen) {
@@ -58,11 +62,13 @@ actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
 
             // hide bars
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                window.insetsController?.hide(WindowInsets.Type.statusBars().or(WindowInsets.Type.navigationBars()))
-                window.insetsController?.systemBarsBehavior =
+                this.window.insetsController?.hide(
+                    WindowInsets.Type.statusBars().or(WindowInsets.Type.navigationBars()),
+                )
+                this.window.insetsController?.systemBarsBehavior =
                     WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             } else {
-                val decorView = window.decorView
+                val decorView = this.window.decorView
                 @Suppress("DEPRECATION")
                 decorView.systemUiVisibility =
                     (View.SYSTEM_UI_FLAG_IMMERSIVE // Set the content to appear under the system bars so that the
@@ -75,19 +81,21 @@ actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
             }
 
             // keep screen on
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            this.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             // cancel landscape
             requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
             // show bars
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                window.insetsController?.show(WindowInsets.Type.statusBars().or(WindowInsets.Type.navigationBars()))
+                this.window.insetsController?.show(
+                    WindowInsets.Type.statusBars().or(WindowInsets.Type.navigationBars()),
+                )
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    window.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
+                    this.window.insetsController?.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
                 }
             } else {
-                val decorView = window.decorView
+                val decorView = this.window.decorView
                 @Suppress("DEPRECATION")
                 decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE
                 @Suppress("DEPRECATION")
@@ -95,7 +103,7 @@ actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
             }
 
             // don't keep screen on
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            this.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     } else {
         val orientation = if (fullscreen) {
@@ -110,8 +118,10 @@ actual fun Context.setRequestFullScreen(fullscreen: Boolean) {
 
 internal actual val Context.filesImpl: ContextFiles
     get() = object : ContextFiles {
-        override val cacheDir: File get() = this@filesImpl.cacheDir ?: File("") // can be null when previewing
-        override val dataDir: File get() = this@filesImpl.filesDir ?: File("") // can be null when previewing
+        override val cacheDir: SystemPath
+            get() = (this@filesImpl.cacheDir ?: File("")).toKtPath().inSystem // can be null when previewing
+        override val dataDir: SystemPath
+            get() = (this@filesImpl.filesDir ?: File("")).toKtPath().inSystem // can be null when previewing
     }
 
 // TODO: isSystemInFullscreen is written by ChatGPT, not tested

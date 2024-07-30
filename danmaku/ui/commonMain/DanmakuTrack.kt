@@ -46,7 +46,10 @@ import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSessionAlgorithm
-import java.util.UUID
+import me.him188.ani.utils.platform.Uuid
+import me.him188.ani.utils.platform.currentTimeMillis
+import me.him188.ani.utils.platform.format2f
+import kotlin.jvm.JvmField
 
 @Stable
 class DanmakuState internal constructor(
@@ -78,7 +81,7 @@ class DanmakuState internal constructor(
 internal val DummyDanmakuState: DanmakuState = DanmakuState(
     DanmakuPresentation(
         Danmaku(
-            UUID.randomUUID().toString(),
+            Uuid.randomString(),
             "dummy",
             0L, "1",
             DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0,
@@ -363,7 +366,7 @@ fun FloatingDanmakuTrack(
 
     LaunchedEffect(true) {
         while (isActive) {
-                trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
+            trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
             delay(1000 / 30)
         }
@@ -424,7 +427,7 @@ fun FixedDanmakuTrack(
 
     LaunchedEffect(true) {
         while (isActive) {
-            trackState.receiveNewDanmaku(System.currentTimeMillis())
+            trackState.receiveNewDanmaku(currentTimeMillis())
             // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
             delay(1000 / 10)
         }
@@ -488,7 +491,7 @@ fun DanmakuText(
         val text = if (config.isDebug) {
             remember(state) {
                 state.presentation.danmaku.text +
-                        " (${String.format("%.2f", state.presentation.danmaku.playTimeMillis.toFloat().div(1000))})"
+                        " (${String.format2f(state.presentation.danmaku.playTimeMillis.toFloat().div(1000))})"
             }
         } else {
             state.presentation.danmaku.text

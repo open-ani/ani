@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -27,6 +29,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,6 +57,10 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
+import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.desktopTitleBar
+import me.him188.ani.app.platform.window.desktopTitleBarPadding
+import me.him188.ani.app.platform.window.plus
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -79,8 +86,9 @@ import me.him188.ani.app.ui.update.handleClickLogo
 fun HomeScene(modifier: Modifier = Modifier) {
     if (currentPlatform.isAndroid()) {
         val context = LocalContext.current
+        val window = LocalPlatformWindow.current
         SideEffect {
-            context.setRequestFullScreen(false)
+            context.setRequestFullScreen(window, false)
         }
     }
 
@@ -164,7 +172,7 @@ private fun HomeSceneLandscape(
                 Column {
                     // NavigationRail 宽度至少为 80.dp
                     NavigationRail(
-                        Modifier.padding(top = 16.dp).weight(1f),
+                        Modifier.desktopTitleBarPadding().padding(top = 16.dp).weight(1f),
                         header = {
                             val vm = rememberViewModel { AccountViewModel() }
                             val user = vm.selfInfo
@@ -236,26 +244,44 @@ private fun HomeSceneLandscape(
                     }
                 }
             }
-            VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant) // 画到 title bar 里面
 
             Column(Modifier.fillMaxHeight().weight(1f)) {
                 val navigator by rememberUpdatedState(LocalNavigator.current)
+                val insets =
+                    ScaffoldDefaults.contentWindowInsets
+                        .plus(WindowInsets.desktopTitleBar())
+
+                Surface(Modifier.height(16.dp).fillMaxWidth()) {}
 
                 VerticalPager(pagerState, userScrollEnabled = false) {
                     when (it) {
-                        0 -> HomePage(
-                            searchBarFocusRequester = searchBarFocusRequester,
-                        )
+                        0 -> {
+                            HomePage(
+                                Modifier.fillMaxSize(),
+                                searchBarFocusRequester = searchBarFocusRequester,
+                                contentWindowInsets = insets,
+                            )
+                        }
 
                         1 -> CollectionPage(
                             onClickCaches = {
                                 navigator.navigateCaches()
                             },
                             Modifier.fillMaxSize(),
+                            contentWindowInsets = insets,
                         )
 
-                        2 -> CacheManagementPage(Modifier.fillMaxSize())
-                        3 -> SettingsPage(Modifier.fillMaxSize())
+                        2 -> CacheManagementPage(
+                            Modifier.fillMaxSize(),
+                            contentWindowInsets = insets,
+                        )
+
+                        3 -> SettingsPage(
+                            Modifier.fillMaxSize(),
+                            contentWindowInsets = insets,
+                        )
                     }
                 }
             }
@@ -320,7 +346,7 @@ private fun HomeScenePortrait(
                 }
             }
         },
-        contentWindowInsets = WindowInsets(0.dp),
+        contentWindowInsets = WindowInsets.desktopTitleBar(), // no systemBars
     ) { contentPadding -> // only contains padding of bottom bottom appbar
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
@@ -339,7 +365,7 @@ private fun HomeScenePortrait(
             HorizontalPager(pagerState, userScrollEnabled = false) {
                 when (it) {
                     0 -> HomePage(
-                        contentPadding,
+                        contentPadding = contentPadding,
                         searchBarFocusRequester = searchBarFocusRequester,
                     )
 

@@ -3,10 +3,11 @@ package me.him188.ani.app.data.models
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
-import io.ktor.utils.io.errors.IOException
+import kotlinx.coroutines.CancellationException
+import kotlinx.io.IOException
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.cancellation.CancellationException
+import kotlin.jvm.JvmInline
 
 sealed interface ApiFailure {
     data object Unauthorized : ApiFailure

@@ -1,10 +1,11 @@
 package me.him188.ani.app.data.source.media.resolver
 
+import kotlinx.io.files.Path
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.torrent.FileVideoSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import java.io.File
+import me.him188.ani.utils.io.inSystem
 
 class LocalFileVideoSourceResolver : VideoSourceResolver {
     override suspend fun supports(media: Media): Boolean {
@@ -15,7 +16,7 @@ class LocalFileVideoSourceResolver : VideoSourceResolver {
         when (val download = media.download) {
             is ResourceLocation.LocalFile -> {
                 return FileVideoSource(
-                    File(download.filePath),
+                    Path(download.filePath).inSystem,
                     media.extraFiles,
                 )
             }

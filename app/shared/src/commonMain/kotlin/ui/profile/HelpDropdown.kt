@@ -8,27 +8,27 @@ import androidx.compose.ui.Modifier
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.LocalContext
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 object AniHelpNavigator {
     fun openJoinQQGroup(context: ContextMP) {
-        GlobalContext.get().get<BrowserNavigator>().openJoinGroup(context)
+        KoinPlatform.getKoin().get<BrowserNavigator>().openJoinGroup(context)
     }
 
     fun openTelegram(context: ContextMP) {
-        GlobalContext.get().get<BrowserNavigator>().openJoinTelegram(context)
+        KoinPlatform.getKoin().get<BrowserNavigator>().openJoinTelegram(context)
     }
 
     fun openIssueTracker(context: ContextMP) {
-        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER)
+        KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER)
     }
 
     fun openGitHubHome(context: ContextMP) {
-        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME)
+        KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME)
     }
 
     fun openAniWebsite(context: ContextMP) {
-        GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE)
+        KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE)
     }
 }
 

@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.source.session
 
-import androidx.annotation.WorkerThread
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -9,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
 
 /**
@@ -30,7 +30,6 @@ interface ExternalOAuthRequest {
     /**
      * Does not throw
      */
-    @WorkerThread
     suspend fun invoke()
 
     sealed class State {
@@ -103,7 +102,7 @@ internal class BangumiOAuthRequest(
             setSession(
                 NewSession(
                     result.accessToken,
-                    System.currentTimeMillis() + result.expiresInSeconds * 1000,
+                    currentTimeMillis() + result.expiresInSeconds * 1000,
                     result.refreshToken,
                 ),
             )

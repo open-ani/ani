@@ -12,6 +12,8 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.toKtPath
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.Test
@@ -48,7 +50,8 @@ class DirectoryMediaCacheStorageTest {
 
     @Test
     fun `create and fine with resume`() = runTest {
-        val storage = DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toPath(), engine, this.coroutineContext)
+        val storage =
+            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
 
         val cache = storage.cache(
             media,
@@ -61,20 +64,21 @@ class DirectoryMediaCacheStorageTest {
             ),
             resume = true,
         ) as TestMediaCache
-        assertEquals(1, cache.resumeCalled.get())
+        assertEquals(1, cache.getResumeCalled())
 
         assertSame(
             cache,
             storage.listFlow.first().single(),
         )
-        assertEquals(1, cache.resumeCalled.get())
+        assertEquals(1, cache.getResumeCalled())
 
         storage.close()
     }
 
     @Test
     fun `create and find without resume`() = runTest {
-        val storage = DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toPath(), engine, this.coroutineContext)
+        val storage =
+            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
 
         val cache = storage.cache(
             media,
@@ -87,20 +91,21 @@ class DirectoryMediaCacheStorageTest {
             ),
             resume = false,
         ) as TestMediaCache
-        assertEquals(0, cache.resumeCalled.get())
+        assertEquals(0, cache.getResumeCalled())
 
         assertSame(
             cache,
             storage.listFlow.first().single(),
         )
-        assertEquals(0, cache.resumeCalled.get())
+        assertEquals(0, cache.getResumeCalled())
 
         storage.close()
     }
 
     @Test
     fun `can delete while not using`() = runTest {
-        val storage = DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toPath(), engine, this.coroutineContext)
+        val storage =
+            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
 
         val cache = storage.cache(
             media,
@@ -114,20 +119,21 @@ class DirectoryMediaCacheStorageTest {
             resume = false,
         ) as TestMediaCache
 
-        assertEquals(0, cache.resumeCalled.get())
+        assertEquals(0, cache.getResumeCalled())
 
         assertEquals(cache, storage.listFlow.first().single())
         assertEquals(true, storage.delete(cache))
         assertEquals(null, storage.listFlow.first().firstOrNull())
 
-        assertEquals(0, cache.resumeCalled.get())
+        assertEquals(0, cache.getResumeCalled())
 
         storage.close()
     }
 
     @Test
     fun `cached media id`() = runTest {
-        val storage = DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toPath(), engine, this.coroutineContext)
+        val storage =
+            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
 
         val cache = storage.cache(
             media,

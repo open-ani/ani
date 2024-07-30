@@ -1,37 +1,44 @@
 [versions]
 bencode = "1.4.1"
 jna = "5.13.0"
-kotlin = "2.0.0"
+kotlin = "2.0.20-Beta2"
 # kotlinx
 coroutines = "1.8.1"
-serialization = "1.6.3"
-datetime = "0.6.0"
-atomicfu = "0.23.2"
+ksoup = "0.1.2"
+serialization = "1.7.1" # https://github.com/Kotlin/kotlinx.serialization/releases
+datetime = "0.6.0" # https://github.com/Kotlin/kotlinx-datetime/releases
+atomicfu = "0.25.0" # https://github.com/Kotlin/kotlinx-atomicfu/releases
+kotlinx-io = "0.5.1" # https://github.com/Kotlin/kotlinx-io/releases
+kotlinx-collections-immutable = "0.3.7" # https://github.com/Kotlin/kotlinx.collections.immutable
 #
+filekit = "0.6.3"
 kotlinpoet = "1.16.0"
 log4j-core = "2.20.0"
 okhttp = "4.12.0"
+okio = "3.9.0"
+korlibs = "6.0.0"
 playwright = "1.44.0"
 reorderable = "0.9.6"
-ktor = "2.3.10"
-koin = "3.5.3"
+ktor = "3.0.0-beta-2" # Ksoup 用 3.0 所以我们不得不用 3.0
+koin = "4.0.0-RC1" # https://github.com/InsertKoinIO/koin/releases
 slf4j = "2.0.12"
 jsoup = "1.15.4"
 android-gradle-plugin = "8.2.2"
 accompanist = "0.34.0"
 datastore = "1.1.1"
 libtorrent4j = "2.1.0-31"
-coil = "3.0.0-alpha06"
+coil = "3.0.0-alpha09"
 mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
 logback = "1.4.14"
 aws = "2.25.49"
-ksp = "2.0.0-1.0.21"
+ksp = "2.0.20-Beta2-1.0.23"
 room = "2.7.0-alpha03"
 snakeyaml = "2.2"
 sqlite = "2.5.0-alpha03"
 constraintlayout-compose = "0.4.0"
 antlr-kotlin = "1.0.0-RC4"
+oshai-kotlin-logging = "7.0.0" # Only for native. On JVM we use slf4j directly.
 
 
 compose-material3 = "1.2.1"
@@ -43,6 +50,7 @@ jetpack-compose = "1.6.7"
 compose-multiplatform = "1.6.10"
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
 #compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
+stately-common = "2.0.7"
 vlcj = "4.8.2"
 
 [libraries]
@@ -50,14 +58,20 @@ vlcj = "4.8.2"
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "android-gradle-plugin" }
 android-library-gradle-plugin = { module = "com.android.library:com.android.library.gradle.plugin", version.ref = "android-gradle-plugin" }
 android-application-gradle-plugin = { module = "com.android.application:com.android.application.gradle.plugin", version.ref = "android-gradle-plugin" }
+filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu" }
 compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
+kotlin-compose-compiler-gradle-plugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 #compose-multiplatfrom-compiler-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.compiler", version.ref = "compose-multiplatform-compiler" }
 
 # Kotlinx
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+oshai-kotlin-logging = { module = "io.github.oshai:kotlin-logging", version.ref = "oshai-kotlin-logging" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
-kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
+kotlinx-io-bytestring = { module = "org.jetbrains.kotlinx:kotlinx-io-bytestring", version.ref = "kotlinx-io" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
@@ -65,13 +79,22 @@ kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-serialization-json-io = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-io", version.ref = "serialization" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
-kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.3.2" }
 #kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization" }
+
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+
+jetbrains-annotations = { module = "org.jetbrains:annotations", version = "23.0.0" }
+
+# Korlibs
+korlibs-crypto = { module = "com.soywiz:korlibs-crypto", version.ref = "korlibs" }
 
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
@@ -79,23 +102,10 @@ ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.re
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
-ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
-ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktor" }
-ktor-server-auto-head-response = { module = "io.ktor:ktor-server-auto-head-response", version.ref = "ktor" }
-ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
-ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
-ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
-ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
-ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
-ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
-ktor-server-status = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
-ktor-server-swagger = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor" }
-
 # Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
-koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 
 # Yamlkt
 directories = { module = "dev.dirs:directories", version = "26" }
@@ -111,6 +121,7 @@ logback-android = { module = "com.github.tony19:logback-android", version = "3.0
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 # OkHttp
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
 
@@ -123,6 +134,8 @@ coil-compose-core = { module = "io.coil-kt.coil3:coil-compose-core", version.ref
 coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
 #coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+coil-network-ktor2 = { module = "io.coil-kt.coil3:coil-network-ktor2", version.ref = "coil" }
+coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 # Jsoup - HTML parsing (for dmhy)
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
@@ -202,6 +215,7 @@ kompendium-core = { module = "io.bkbn:kompendium-core", version.ref = "kompendiu
 # VLC
 # NOTE: YOU WILL NEVER WANT TO CHANGE VLCJ AND JNA VERSIONS.
 # ONLY VLC 3.0.18 IS SUPPORTED.
+stately-common = { module = "co.touchlab:stately-common", version.ref = "stately-common" }
 vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }

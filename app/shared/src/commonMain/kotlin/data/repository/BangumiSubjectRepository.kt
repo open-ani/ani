@@ -3,6 +3,7 @@ package me.him188.ani.app.data.repository
 import io.ktor.client.plugins.ResponseException
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -229,11 +230,4 @@ fun BangumiUserEpisodeCollection.toEpisodeCollection(): EpisodeCollection {
         episodeInfo = episode.toEpisodeInfo(),
         collectionType = type.toCollectionType(),
     )
-}
-
-
-private class LruCache<K, V>(private val maxSize: Int) : LinkedHashMap<K, V>(maxSize + 1, 1f, true) {
-    override fun removeEldestEntry(eldest: Map.Entry<K, V>): Boolean {
-        return size > maxSize
-    }
 }

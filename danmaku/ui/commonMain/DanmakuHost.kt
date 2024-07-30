@@ -41,6 +41,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import kotlin.concurrent.Volatile
 import kotlin.math.roundToInt
 
 @Stable
@@ -392,7 +393,3 @@ internal class DanmakuHostStateImpl(
         textMeasurer = rememberTextMeasurer(cacheSize = 0)
     }
 }
-
-
-@Composable
-internal expect fun PreviewDanmakuHost()

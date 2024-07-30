@@ -5,14 +5,16 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import me.him188.ani.utils.platform.annotations.SerializationOnly
 
 /**
  * @see MediaSelectorSettings
  */
-@Suppress("DataClassPrivateConstructor")
 @Immutable
 @Serializable
-data class MediaPreference private constructor(
+data class MediaPreference
+@SerializationOnly
+constructor(
     /**
      * 精确匹配字幕组
      */
@@ -56,6 +58,7 @@ data class MediaPreference private constructor(
     @Deprecated("Only for migration") // since 3.1.0-beta03
     val fallbackMediaSourceIds: List<String>? = null,
 ) {
+    @OptIn(SerializationOnly::class)
     companion object {
         /**
          * With default values
@@ -76,6 +79,7 @@ data class MediaPreference private constructor(
     fun merge(other: MediaPreference): MediaPreference {
         if (other == Empty) return this
         if (this == Empty) return other
+        @OptIn(SerializationOnly::class)
         return MediaPreference(
             alliance = other.alliance ?: alliance,
             alliancePatterns = other.alliancePatterns ?: alliancePatterns,

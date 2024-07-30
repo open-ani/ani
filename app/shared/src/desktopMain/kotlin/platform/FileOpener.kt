@@ -18,10 +18,15 @@
 
 package me.him188.ani.app.platform
 
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.toFile
 import java.awt.Desktop
 import java.io.File
 
 object FileOpener {
+    fun openInFileBrowser(file: SystemPath) {
+        return openInFileBrowser(file.toFile())
+    }
 
     /**
      * 在 Windows 资源管理器或 macOS Finder 中打开文件所在目录, 并高亮该文件

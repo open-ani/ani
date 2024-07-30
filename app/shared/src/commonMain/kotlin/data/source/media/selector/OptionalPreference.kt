@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import me.him188.ani.utils.coroutines.Symbol
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.jvm.JvmInline
 
 /**
  * 一个可选的偏好, 有三个状态:

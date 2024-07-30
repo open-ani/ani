@@ -2,6 +2,7 @@ package me.him188.ani.app.desktop
 
 import me.him188.ani.app.platform.Arch
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.platform.currentPlatformDesktop
 import uk.co.caprica.vlcj.factory.discovery.provider.DiscoveryDirectoryProvider
 import uk.co.caprica.vlcj.factory.discovery.provider.DiscoveryProviderPriority
 import java.io.File
@@ -11,11 +12,9 @@ class TestDiscoveryDirectoryProvider : DiscoveryDirectoryProvider {
     override fun priority(): Int = DiscoveryProviderPriority.USER_DIR
 
     override fun directories(): Array<String> {
-        val os = when (Platform.currentPlatform) {
-            is Platform.Linux -> return emptyArray()
+        val os = when (currentPlatformDesktop) {
             is Platform.MacOS -> "macos"
             is Platform.Windows -> "windows"
-            Platform.Android -> error("Invalid platform: ${Platform.currentPlatform}")
         }
 
         val arch = when (Platform.currentPlatform.arch) {

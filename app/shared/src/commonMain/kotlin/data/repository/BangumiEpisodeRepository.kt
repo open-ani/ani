@@ -3,6 +3,7 @@ package me.him188.ani.app.data.repository
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.withContext

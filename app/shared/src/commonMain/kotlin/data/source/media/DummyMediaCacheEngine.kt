@@ -16,6 +16,7 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 
 /**

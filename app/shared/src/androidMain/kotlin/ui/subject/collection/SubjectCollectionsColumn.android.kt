@@ -13,11 +13,13 @@ import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
+import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.episode.details.PreviewScope
 import me.him188.ani.datasources.api.EpisodeSort
-import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
@@ -171,13 +173,21 @@ private fun PreviewSubjectCollectionsColumnEmpty() {
 private fun TestSubjectCollectionItem(it: SubjectCollection) {
     SubjectCollectionItem(
         item = it,
-        episodeCacheStatus = { _, _ ->
-            EpisodeCacheStatus.Cached(300.megaBytes)
-        },
+        editableSubjectCollectionTypeState = rememberTestEditableSubjectCollectionTypeState(),
         onClick = { },
-        onClickEpisode = {},
-        onClickSelectEpisode = { },
-        onSetCollectionType = {},
+        onShowEpisodeList = { },
+        playButton = {
+            PlaySubjectButton(
+                state = rememberTestSubjectProgressState(
+                    when (it.subjectId % 4) {
+                        0 -> TestSubjectProgressInfos.NotOnAir
+                        1 -> TestSubjectProgressInfos.ContinueWatching2
+                        2 -> TestSubjectProgressInfos.Watched2
+                        else -> TestSubjectProgressInfos.Done
+                    },
+                ),
+            )
+        },
     )
 }
 

@@ -10,7 +10,7 @@ import me.him188.ani.app.data.source.media.MediaSourceManager
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory.Companion.withRepositories
 import me.him188.ani.datasources.api.Media
 import org.koin.core.Koin
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -26,7 +26,7 @@ interface MediaSelectorFactory {
     ): MediaSelector // 如果要'挂载'自动保存配置, 可以为这个的返回值操作.
 
     companion object {
-        fun withKoin(koin: Koin = GlobalContext.get()): MediaSelectorFactory = withRepositories(
+        fun withKoin(koin: Koin = KoinPlatform.getKoin()): MediaSelectorFactory = withRepositories(
             episodePreferencesRepository = koin.get(),
             settingsRepository = koin.get(),
             subjectManager = koin.get(),

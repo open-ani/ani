@@ -41,7 +41,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 @Preview(showBackground = true, device = Devices.TABLET)
 @Preview(showBackground = true)
-internal actual fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
+internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     var emitted by remember {
         mutableIntStateOf(0)
     }

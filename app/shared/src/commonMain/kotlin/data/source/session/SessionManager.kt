@@ -54,6 +54,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.Koin
 import kotlin.coroutines.CoroutineContext
 
@@ -89,7 +90,7 @@ interface SessionManager {
      *
      * 此函数支持 coroutine cancellation. 当 coroutine 被取消时, 此函数会中断授权请求并抛出 [CancellationException].
      */
-    @Throws(AuthorizationException::class)
+    @Throws(AuthorizationException::class, kotlin.coroutines.cancellation.CancellationException::class)
     suspend fun requireAuthorize(
         navigator: AniNavigator,
         navigateToWelcome: Boolean,
@@ -154,7 +155,7 @@ fun SessionManager(
         refreshAccessToken = { refreshToken ->
             runApiRequest {
                 client.refreshAccessToken(refreshToken).let {
-                    NewSession(it.accessToken, it.expiresIn * 1000L + System.currentTimeMillis(), it.refreshToken)
+                    NewSession(it.accessToken, it.expiresIn * 1000L + currentTimeMillis(), it.refreshToken)
                 }
             }
         },

@@ -1,14 +1,14 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
     `flatten-source-sets`
 }
 
 dependencies {
     api(projects.dataSources.api)
     implementation(projects.utils.serialization)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
 
     api(libs.kotlinx.coroutines.core)
     implementation(libs.ktor.client.logging)

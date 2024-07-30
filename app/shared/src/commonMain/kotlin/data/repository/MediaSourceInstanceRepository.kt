@@ -6,13 +6,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.datasources.api.source.MediaSourceConfig
-import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
-import me.him188.ani.datasources.mxdongman.MxdongmanMediaSource
-import me.him188.ani.datasources.ntdm.GugufanMediaSource
-import me.him188.ani.datasources.ntdm.NtdmMediaSource
-import me.him188.ani.datasources.nyafun.NyafunMediaSource
-import java.util.UUID
+import me.him188.ani.utils.platform.Uuid
 
 interface MediaSourceInstanceRepository : Repository {
     val flow: Flow<List<MediaSourceSave>>
@@ -39,16 +34,16 @@ data class MediaSourceSaves(
         val Empty = MediaSourceSaves(emptyList())
         val Default: MediaSourceSaves by lazy {
             fun createSave(it: String, isEnabled: Boolean) = MediaSourceSave(
-                instanceId = UUID.randomUUID().toString(),
+                instanceId = Uuid.randomString(),
                 mediaSourceId = it,
                 isEnabled = isEnabled,
                 config = MediaSourceConfig.Default,
             )
 
             val enabledWebSources: List<String> =
-                listOf(NyafunMediaSource.ID, MxdongmanMediaSource.ID, NtdmMediaSource.ID, GugufanMediaSource.ID)
+                listOf("nyafun", "mxdongman", "ntdm", "gugufan")
             val enabledBtSources: List<String> =
-                listOf(MikanCNMediaSource.ID, DmhyMediaSource.ID)
+                listOf(MikanCNMediaSource.ID, "dmhy")
             val disabledBtSources: List<String> = listOf()
 
             MediaSourceSaves(

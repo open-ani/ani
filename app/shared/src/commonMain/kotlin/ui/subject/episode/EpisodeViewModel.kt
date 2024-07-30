@@ -36,7 +36,7 @@ import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.DanmakuManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.MediaSourceManager
@@ -438,7 +438,7 @@ private class EpisodeViewModelImpl(
             onSetAllEpisodesWatched = {
                 subjectManager.setAllEpisodesWatched(subjectId)
             },
-            backgroundScope.coroutineContext,
+            backgroundScope,
         )
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
