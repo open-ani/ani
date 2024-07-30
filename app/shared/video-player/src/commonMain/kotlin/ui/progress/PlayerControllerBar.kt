@@ -1,10 +1,5 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -70,13 +65,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
@@ -86,6 +83,7 @@ import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
+import kotlin.math.roundToInt
 
 
 @Stable
@@ -172,28 +170,45 @@ object PlayerControllerDefaults {
                     }
                 }
             }
-            AnimatedVisibility(
-                visible = isHovered && !isMute,
-                enter = fadeIn() + expandHorizontally(),
-                exit = fadeOut() + shrinkHorizontally(),
-            ) {
-                Slider(
-                    value = volume,
-                    onValueChange = onchange,
-                    interactionSource = interactionSource,
-                    modifier = Modifier.width(72.dp),
-                    thumb = {
-                        SliderDefaults.Thumb(
-                            interactionSource = interactionSource,
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                            ),
-                            enabled = true,
-                            thumbSize = DpSize(4.dp, 4.dp),
-                            modifier = Modifier.padding(8.dp),
-                        )
-                    },
-                )
+            if (isHovered && !isMute) {
+                val density = LocalDensity.current
+                Popup(
+                    alignment = Alignment.Center,
+                    offset = IntOffset(0, with(density) { -48.dp.toPx().roundToInt() }),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .hoverable(hoverInteraction)
+                            .clip(shape = CircleShape)
+                            .background(Color.Black),
+                    ) {
+                        Row(
+                            Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+
+                            ) {
+                            Slider(
+                                value = volume,
+                                onValueChange = onchange,
+                                interactionSource = interactionSource,
+                                modifier = Modifier.width(96.dp),
+                                thumb = {
+                                    SliderDefaults.Thumb(
+                                        interactionSource = interactionSource,
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary,
+                                        ),
+                                        enabled = true,
+                                    )
+                                },
+                            )
+                            Text(
+                                text = volume.times(100).roundToInt().toString(),
+                                modifier = modifier.padding(horizontal = 4.dp),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
