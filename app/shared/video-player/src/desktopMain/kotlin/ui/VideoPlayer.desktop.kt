@@ -3,9 +3,7 @@ package me.him188.ani.app.videoplayer.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
@@ -251,11 +249,20 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
 
-    override var volume: MutableState<Float> = mutableStateOf(0.5f)
-    override var isMute: MutableState<Boolean> = mutableStateOf(false)
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(0.5f)
+    override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override fun toggleMute(mute: Boolean?) {
+        isMute.value = mute ?: !isMute.value
+        setVolume(volume.value)
+    }
 
     override fun setVolume(volume: Float) {
+        if (isMute.value) {
+            player.audio().setVolume(0)
+            return
+        }
         player.audio().setVolume(volume.times(200).roundToInt())
+        this.volume.value = volume
     }
 
     override fun volumeUp() {

@@ -1,10 +1,8 @@
 package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
@@ -157,10 +155,18 @@ interface PlayerState {
     val audioTracks: TrackGroup<AudioTrack>
 
 
-    var volume: MutableState<Float>
-    var isMute: MutableState<Boolean>
+    val volume: StateFlow<Float>
+    val isMute: StateFlow<Boolean>
+
+    fun toggleMute(mute: Boolean? = null)
+
+    @UiThread
     fun setVolume(volume: Float)
+
+    @UiThread
     fun volumeUp()
+
+    @UiThread
     fun volumeDown()
     
     fun saveScreenshotFile(filename: String)
@@ -453,8 +459,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
 
-    override var volume: MutableState<Float> = mutableStateOf(0f)
-    override var isMute: MutableState<Boolean> = mutableStateOf(false)
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(0f)
+    override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override fun toggleMute(mute: Boolean?) {
+        isMute.value = mute ?: !isMute.value
+    }
 
     override fun setVolume(volume: Float) {
         this.volume.value = volume

@@ -5,7 +5,6 @@ import android.util.Pair
 import androidx.annotation.MainThread
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
-import androidx.compose.runtime.MutableState
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -28,6 +27,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -355,12 +355,14 @@ internal class ExoPlayerState @UiThread constructor(
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
-    override var volume: MutableState<Float>
+    override val volume: StateFlow<Float>
         get() = TODO("Not yet implemented")
-        set(value) {}
-    override var isMute: MutableState<Boolean>
+    override val isMute: StateFlow<Boolean>
         get() = TODO("Not yet implemented")
-        set(value) {}
+
+    override fun toggleMute(mute: Boolean?) {
+        TODO("Not yet implemented")
+    }
 
     override fun setVolume(volume: Float) {
         TODO("Not yet implemented")
