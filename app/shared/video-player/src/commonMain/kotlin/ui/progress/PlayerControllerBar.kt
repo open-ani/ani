@@ -50,6 +50,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +83,7 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import kotlin.math.roundToInt
 
@@ -136,12 +138,16 @@ object PlayerControllerDefaults {
         isMute: Boolean,
         onClick: () -> Unit,
         onchange: (Float) -> Unit,
+        controllerState: VideoControllerState,
         modifier: Modifier = Modifier,
         interactionSource: MutableInteractionSource = MutableInteractionSource(),
     ) {
         val hoverInteraction = remember { MutableInteractionSource() }
         val isHovered by hoverInteraction.collectIsHoveredAsState()
-
+        val audioIconRequester = remember { Any() }
+        LaunchedEffect(isHovered) {
+            controllerState.setRequestAlwaysOn(audioIconRequester, isHovered)
+        }
         Row(
             modifier.hoverable(hoverInteraction)
                 .clip(CircleShape)
