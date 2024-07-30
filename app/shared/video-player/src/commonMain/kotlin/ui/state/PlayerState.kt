@@ -154,21 +154,6 @@ interface PlayerState {
 
     val audioTracks: TrackGroup<AudioTrack>
 
-
-    val volume: StateFlow<Float>
-    val isMute: StateFlow<Boolean>
-
-    fun toggleMute(mute: Boolean? = null)
-
-    @UiThread
-    fun setVolume(volume: Float)
-
-    @UiThread
-    fun volumeUp()
-
-    @UiThread
-    fun volumeDown()
-    
     fun saveScreenshotFile(filename: String)
 }
 
@@ -384,10 +369,27 @@ fun interface PlayerStateFactory {
     fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState
 }
 
+interface SupportsAudio {
+
+    val volume: StateFlow<Float>
+    val isMute: StateFlow<Boolean>
+
+    fun toggleMute(mute: Boolean? = null)
+
+    @UiThread
+    fun setVolume(volume: Float)
+
+    @UiThread
+    fun volumeUp()
+
+    @UiThread
+    fun volumeDown()
+}
+
 /**
  * For previewing
  */
-class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
+class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext), SupportsAudio {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override fun stopImpl() {
 

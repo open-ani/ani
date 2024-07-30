@@ -83,6 +83,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEE
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -493,16 +494,20 @@ fun VideoGestureHost(
                             onExitFullscreen()
                         }
                     }.ifThen(family.scrollForVolume) {
-                        onPointerEventMultiplatform(PointerEventType.Scroll) { event ->  
-                            event.changes.firstOrNull()?.scrollDelta?.y?.run {
-                                playerState.toggleMute(false)
-                                if (this < 0) playerState.volumeUp()
-                                else if (this > 0) playerState.volumeDown()
+                        if (playerState is SupportsAudio) {
+                            onPointerEventMultiplatform(PointerEventType.Scroll) { event ->
+                                event.changes.firstOrNull()?.scrollDelta?.y?.run {
+                                    playerState.toggleMute(false)
+                                    if (this < 0) playerState.volumeUp()
+                                    else if (this > 0) playerState.volumeDown()
 
-                                indicatorTasker.launch {
-                                    indicatorState.showVolumeRange(playerState.volume.value)
+                                    indicatorTasker.launch {
+                                        indicatorState.showVolumeRange(playerState.volume.value)
+                                    }
                                 }
                             }
+                        } else {
+                            this
                         }
                     }
                     .fillMaxSize(),

@@ -27,7 +27,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -355,26 +354,6 @@ internal class ExoPlayerState @UiThread constructor(
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
-    override val volume: StateFlow<Float>
-        get() = TODO("Not yet implemented")
-    override val isMute: StateFlow<Boolean>
-        get() = TODO("Not yet implemented")
-
-    override fun toggleMute(mute: Boolean?) {
-        TODO("Not yet implemented")
-    }
-
-    override fun setVolume(volume: Float) {
-        TODO("Not yet implemented")
-    }
-
-    override fun volumeUp() {
-        TODO("Not yet implemented")
-    }
-
-    override fun volumeDown() {
-        TODO("Not yet implemented")
-    }
 
     override fun saveScreenshotFile(filename: String) {
         TODO("Not yet implemented")

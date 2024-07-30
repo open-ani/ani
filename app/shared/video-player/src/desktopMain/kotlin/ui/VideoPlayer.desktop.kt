@@ -33,6 +33,7 @@ import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -57,7 +58,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @Stable
 class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
-    AbstractPlayerState<VlcjData>(parentCoroutineContext) {
+    AbstractPlayerState<VlcjData>(parentCoroutineContext), SupportsAudio {
     private companion object {
         private val logger = logger<VlcjVideoPlayerState>()
 

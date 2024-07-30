@@ -67,6 +67,7 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedS
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
@@ -248,9 +249,9 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
-                    val volumeState by playerState.volume.collectAsStateWithLifecycle()
-                    val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
-                    if (currentPlatform.isDesktop() && expanded) {
+                    if (currentPlatform.isDesktop() && expanded && playerState is SupportsAudio) {
+                        val volumeState by playerState.volume.collectAsStateWithLifecycle()
+                        val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
                         PlayerControllerDefaults.AudioIcon(
                             volumeState,
                             isMute = volumeMute,
