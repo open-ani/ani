@@ -181,7 +181,10 @@ fun EditComment(
         expanded = editExpanded,
         onClickExpanded = { editExpanded = it },
     ) {
-        Crossfade(targetState = previewer.previewing) { previewing ->
+        Crossfade(
+            targetState = previewer.previewing,
+            modifier = Modifier.ifThen(editExpanded) { weight(1.0f) },
+        ) { previewing ->
             val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
 
             ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
@@ -277,9 +280,7 @@ fun EditCommentScaffold(
         }
 
         ProvideContentColor(contentColor) {
-            Column(modifier = Modifier.ifThen(expanded == true) { weight(1.0f) }) {
-                content()
-            }
+            content()
         }
         Column {
             actionRow()
