@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.components.comment
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -55,7 +56,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,7 +68,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -137,6 +136,8 @@ class EditCommentState(
             editor.override(TextFieldValue(""))
         }
         currentSendTarget = id
+        previewer.closePreview()
+        _editExpanded.value = false
     }
 
     fun setEditExpanded(value: Boolean) {
@@ -210,7 +211,6 @@ fun EditComment(
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
     onStickerPanelStateChanged: (Boolean) -> Unit = { },
 ) {
-    val density = LocalDensity.current
     val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
     
     val textFieldInteractionSource = remember { MutableInteractionSource() }
@@ -277,6 +277,7 @@ fun EditComment(
         onClickExpanded = { state.setEditExpanded(it) },
     ) {
         val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
+
         Crossfade(
             targetState = state.previewing,
             modifier = Modifier.weight(1.0f, fill = false),
@@ -286,7 +287,10 @@ fun EditComment(
                     val richText by state.previewContent.collectAsState()
                     EditCommentDefaults.Preview(
                         content = richText,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .ifThen(state.editExpanded) { fillMaxHeight() }
+                            .animateContentSize(),
                         contentPadding = contentPadding,
                     )
                 } else {
@@ -308,16 +312,6 @@ fun EditComment(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun rememberEditCommentPreviewer(
-    initialPreviewing: Boolean = false
-): EditCommentPreviewerState {
-    val scope = rememberCoroutineScope()
-    return remember(scope) {
-        EditCommentPreviewerState(initialPreviewing, scope)
     }
 }
 
@@ -796,9 +790,17 @@ object EditCommentDefaults {
                     list.forEach { sticker ->
                         IconButton(onClick = { onClickItem(sticker.id) }) {
                             if (previewing || sticker.drawableRes == null) {
-                                Icon(Icons.Outlined.SentimentSatisfied, contentDescription = null)
+                                Icon(
+                                    Icons.Outlined.SentimentSatisfied,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                )
                             } else {
-                                Icon(painterResource(sticker.drawableRes), contentDescription = null)
+                                Image(
+                                    painterResource(sticker.drawableRes),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                )
                             }
                         }
                     }

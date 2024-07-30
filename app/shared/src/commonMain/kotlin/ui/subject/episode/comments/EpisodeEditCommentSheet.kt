@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -72,6 +74,9 @@ fun EpisodeEditCommentSheet(
     )
     var sheetHeight by remember { mutableStateOf(0) }
     val sheetOffset by derivedStateOf { sheetHeight * (1 - scrimAlpha) }
+
+    // CornerExtraLargeTop = RoundedCornerShape(28.0.dp)
+    val shapeDp by animateDpAsState(if (state.editExpanded) 0.dp else 28.dp)
 
     val animateToDismiss: () -> Unit = {
         focusManager.clearFocus(force = true)
@@ -134,7 +139,7 @@ fun EpisodeEditCommentSheet(
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .graphicsLayer { translationY = sheetOffset },
-                shape = BottomSheetDefaults.ExpandedShape,
+                shape = RoundedCornerShape(topStart = shapeDp, topEnd = shapeDp),
                 color = BottomSheetDefaults.ContainerColor,
                 contentColor = contentColorFor(BottomSheetDefaults.ContainerColor),
                 tonalElevation = BottomSheetDefaults.Elevation,

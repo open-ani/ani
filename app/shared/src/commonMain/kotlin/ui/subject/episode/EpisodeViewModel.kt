@@ -37,6 +37,7 @@ import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
@@ -528,12 +529,7 @@ private class EpisodeViewModelImpl(
         showExpandEditCommentButton = true,
         initialExpandEditComment = false,
         panelTitle = "评论：${episodeDetailsState.subjectTitle}",
-        stickerProvider = {
-            generateSequence(1) { it + 1 }
-                .take(64)
-                .map { EditCommentSticker(it, null) }
-                .toList()
-        },
+        stickerProvider = { BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) } },
         onSend = { delay(3000) },
         backgroundScope = backgroundScope,
     )
