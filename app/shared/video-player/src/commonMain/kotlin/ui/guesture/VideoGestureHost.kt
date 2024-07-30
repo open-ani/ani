@@ -494,20 +494,19 @@ fun VideoGestureHost(
                             onExitFullscreen()
                         }
                     }.ifThen(family.scrollForVolume) {
-                        if (playerState is SupportsAudio) {
-                            onPointerEventMultiplatform(PointerEventType.Scroll) { event ->
-                                event.changes.firstOrNull()?.scrollDelta?.y?.run {
-                                    playerState.toggleMute(false)
-                                    if (this < 0) playerState.volumeUp()
-                                    else if (this > 0) playerState.volumeDown()
+                        if (playerState !is SupportsAudio) {
+                            return@ifThen this
+                        }
+                        onPointerEventMultiplatform(PointerEventType.Scroll) { event ->
+                            event.changes.firstOrNull()?.scrollDelta?.y?.run {
+                                playerState.toggleMute(false)
+                                if (this < 0) playerState.volumeUp()
+                                else if (this > 0) playerState.volumeDown()
 
-                                    indicatorTasker.launch {
-                                        indicatorState.showVolumeRange(playerState.volume.value)
-                                    }
+                                indicatorTasker.launch {
+                                    indicatorState.showVolumeRange(playerState.volume.value)
                                 }
                             }
-                        } else {
-                            this
                         }
                     }
                     .fillMaxSize(),
