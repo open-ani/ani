@@ -142,15 +142,16 @@ object PlayerControllerDefaults {
         onchange: (Float) -> Unit,
         modifier: Modifier = Modifier
     ) {
-        val isHovered by interactionSource.collectIsHoveredAsState()
-
+        val hoverInteraction = remember { MutableInteractionSource() }
+        val isHovered by hoverInteraction.collectIsHoveredAsState()
         val expanded by remember {
             derivedStateOf {
                 isHovered
             }
         }
+
         Row(
-            modifier.hoverable(interactionSource)
+            modifier.hoverable(hoverInteraction)
                 .clip(CircleShape)
                 .ifThen(expanded) {
                     background(Color.Black.copy(alpha = .1f))
