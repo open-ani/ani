@@ -56,7 +56,6 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -137,41 +136,44 @@ object PlayerControllerDefaults {
     fun AudioIcon(
         volume: Float,
         isMute: Boolean,
-        interactionSource: MutableInteractionSource = MutableInteractionSource(),
         onClick: () -> Unit,
         onchange: (Float) -> Unit,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        interactionSource: MutableInteractionSource = MutableInteractionSource(),
     ) {
         val hoverInteraction = remember { MutableInteractionSource() }
         val isHovered by hoverInteraction.collectIsHoveredAsState()
-        val expanded by remember {
-            derivedStateOf {
-                isHovered
-            }
-        }
 
         Row(
             modifier.hoverable(hoverInteraction)
                 .clip(CircleShape)
-                .ifThen(expanded) {
+                .ifThen(isHovered) {
                     background(Color.Black.copy(alpha = .1f))
                 },
         ) {
             IconButton(
                 onClick = onClick,
             ) {
-                if (isMute) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
-                } else if (volume < 0.33f) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
-                } else if (volume < 0.66f) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
-                } else {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
+                when {
+                    isMute -> {
+                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
+                    }
+
+                    volume < 0.33f -> {
+                        Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
+                    }
+
+                    volume < 0.66f -> {
+                        Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
+                    }
+
+                    else -> {
+                        Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
+                    }
                 }
             }
             AnimatedVisibility(
-                visible = expanded && !isMute,
+                visible = isHovered && !isMute,
                 enter = fadeIn() + expandHorizontally(),
                 exit = fadeOut() + shrinkHorizontally(),
             ) {

@@ -250,7 +250,7 @@ internal fun EpisodeVideoImpl(
                     )
                     val volumeState by playerState.volume.collectAsStateWithLifecycle()
                     val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
-                    if (currentPlatform.isDesktop()) {
+                    if (currentPlatform.isDesktop() && expanded) {
                         PlayerControllerDefaults.AudioIcon(
                             volumeState,
                             isMute = volumeMute,
