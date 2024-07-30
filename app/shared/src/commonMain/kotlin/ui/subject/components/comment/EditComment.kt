@@ -68,6 +68,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -209,6 +210,7 @@ fun EditComment(
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
     onStickerPanelStateChanged: (Boolean) -> Unit = { },
 ) {
+    val density = LocalDensity.current
     val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
     
     val textFieldInteractionSource = remember { MutableInteractionSource() }
@@ -274,12 +276,11 @@ fun EditComment(
         expanded = if (!state.showExpandEditCommentButton) null else state.editExpanded,
         onClickExpanded = { state.setEditExpanded(it) },
     ) {
+        val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
         Crossfade(
             targetState = state.previewing,
-            modifier = Modifier.ifThen(state.editExpanded) { weight(1.0f) },
+            modifier = Modifier.weight(1.0f, fill = false),
         ) { previewing ->
-            val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
-
             ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
                 if (previewing) {
                     val richText by state.previewContent.collectAsState()
@@ -557,10 +558,14 @@ object EditCommentDefaults {
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
         ) {
-            RichText(
-                elements = content.elements,
-                modifier = Modifier.padding(contentPadding),
-            )
+            LazyColumn {
+                item {
+                    RichText(
+                        elements = content.elements,
+                        modifier = Modifier.padding(contentPadding),
+                    )
+                }
+            }
         }
     }
 
@@ -686,47 +691,52 @@ object EditCommentDefaults {
                 }
             },
             content = {
-                ActionButton(Icons.Outlined.SentimentSatisfied, onClickEmoji, Modifier.size(size), !sending)
+                ActionButton(
+                    Icons.Outlined.SentimentSatisfied,
+                    onClickEmoji,
+                    Modifier.size(size),
+                    !sending && !previewing,
+                )
                 if (actionExpanded) {
                     ActionButton(
                         Icons.Outlined.FormatBold,
                         onClickBold,
                         Modifier.size(height = size, width = collapsedActionAnim),
-                        !sending,
+                        !sending && !previewing,
                     )
                     ActionButton(
                         Icons.Outlined.FormatItalic,
                         onClickItalic,
                         Modifier.size(height = size, width = collapsedActionAnim),
-                        !sending,
+                        !sending && !previewing,
                     )
                     ActionButton(
                         Icons.Outlined.FormatUnderlined,
                         onClickUnderlined,
                         Modifier.size(height = size, width = collapsedActionAnim),
-                        !sending,
+                        !sending && !previewing,
                     )
                     ActionButton(
                         Icons.Outlined.FormatStrikethrough,
                         onClickStrikethrough,
                         Modifier.size(height = size, width = collapsedActionAnim),
-                        !sending,
+                        !sending && !previewing,
                     )
                 }
-                ActionButton(Icons.Outlined.VisibilityOff, onClickMask, Modifier.size(size), !sending)
-                ActionButton(Icons.Outlined.Image, onClickImage, Modifier.size(size), !sending)
+                ActionButton(Icons.Outlined.VisibilityOff, onClickMask, Modifier.size(size), !sending && !previewing)
+                ActionButton(Icons.Outlined.Image, onClickImage, Modifier.size(size), !sending && !previewing)
                 if (actionExpanded) {
                     ActionButton(
                         Icons.Outlined.Link,
                         onClickUrl,
                         Modifier.size(height = size, width = collapsedActionAnim),
-                        !sending,
+                        !sending && !previewing,
                     )
                 }
                 // 最后一个按钮不要有 ripple effect，看起来比较奇怪
                 ActionButton(
                     imageVector = Icons.Outlined.MoreHoriz,
-                    enabled = !sending,
+                    enabled = true,
                     onClick = { actionExpanded = true },
                     modifier = Modifier.size(height = size, width = reversedActionAnim),
                     indication = null,
