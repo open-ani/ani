@@ -1,5 +1,10 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -43,6 +48,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
@@ -149,7 +155,7 @@ object PlayerControllerDefaults {
             modifier = modifier.hoverable(hoverInteraction)
                 .clip(CircleShape)
                 .ifThen(isHovered) {
-                    background(Color.Black.copy(alpha = .1f))
+                    background(aniColorScheme().surface.copy(alpha = .1f))
                 },
             contentAlignment = Alignment.BottomCenter,
         ) {
@@ -179,30 +185,48 @@ object PlayerControllerDefaults {
 
             iconButton()
 
-            if (isHovered && !isMute) {
-                Popup(
-                    alignment = Alignment.BottomCenter,
+            Popup(
+                alignment = Alignment.BottomCenter,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .hoverable(hoverInteraction)
+                        .clip(shape = CircleShape)
+                        .background(aniColorScheme().surface),
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .hoverable(hoverInteraction)
-                            .clip(shape = CircleShape)
-                            .background(aniColorScheme().surface),
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+                        AnimatedVisibility(
+                            visible = isHovered && !isMute,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically(),
                         ) {
-                            Text(
-                                text = volume.times(100).roundToInt().toString(),
-                                modifier = modifier.padding(8.dp),
-                            )
-                            VerticalSlider(
-                                value = volume,
-                                onValueChange = onchange,
-                                interactionSource = interactionSource,
-                                modifier = Modifier.width(96.dp),
-                                thumb = {},
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = volume.times(100).roundToInt().toString(),
+                                    modifier = modifier.padding(8.dp),
+                                )
+                                VerticalSlider(
+                                    value = volume,
+                                    onValueChange = onchange,
+                                    interactionSource = interactionSource,
+                                    modifier = Modifier.width(96.dp),
+                                    thumb = {},
+                                    colors = SliderDefaults.colors(
+                                        inactiveTrackColor = aniDarkColorTheme().onSurface,
+                                    ),
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = isHovered && !isMute,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
                             iconButton()
                         }
                     }
