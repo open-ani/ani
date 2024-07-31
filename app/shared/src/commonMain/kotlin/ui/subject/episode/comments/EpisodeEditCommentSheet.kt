@@ -100,8 +100,6 @@ fun EpisodeEditCommentSheet(
         imePresentHeight = max(imePresentHeight, imePadding - navigationBarPadding)
     }
 
-    var stickerPanelOpened by remember { mutableStateOf(false) }
-
     // Popup on android always clip its composeView to visible 
     Popup(
         popupPositionProvider = object : PopupPositionProvider {
@@ -145,14 +143,13 @@ fun EpisodeEditCommentSheet(
                 tonalElevation = BottomSheetDefaults.Elevation,
             ) {
                 Layout(
-                    modifier = Modifier.ifThen(!stickerPanelOpened) { imePadding() },
+                    modifier = Modifier.ifThen(!state.stickerPanelOpened) { imePadding() },
                     content = {
                         Box {
                             EditComment(
                                 state = state,
                                 modifier = modifier.padding(top = contentPadding).padding(contentPadding),
                                 stickerPanelHeight = with(density) { imePresentHeight.toDp() },
-                                onStickerPanelStateChanged = { stickerPanelOpened = it },
                                 controlSoftwareKeyboard = true,
                                 focusRequester = focusRequester,
                             )

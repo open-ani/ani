@@ -98,7 +98,6 @@ import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.theme.looming
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -120,6 +119,9 @@ class EditCommentState(
     private val editor = EditCommentTextState("", backgroundScope)
     private val previewer = EditCommentPreviewerState(false, backgroundScope)
     private val _editExpanded: MutableState<Boolean> = mutableStateOf(initialExpandEditComment)
+    private var _stickerPanelOpened: MutableState<Boolean> = mutableStateOf(false)
+    private val _stickerFlow = flow { emit(stickerProvider()) }
+        .stateIn(backgroundScope, SharingStarted.Lazily, listOf())
 
     /**
      * 评论是否正在提交发送，在 [send] 时设置为 true，当 [onSend] 返回或发生错误时设置为 false
@@ -136,10 +138,10 @@ class EditCommentState(
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
     val editExpanded: Boolean by _editExpanded
+    val stickerPanelOpened: Boolean by _stickerPanelOpened
     val sending: Boolean by _sending
-    val stickers = flow { emit(stickerProvider()) }
-        .stateIn(backgroundScope, SharingStarted.Lazily, listOf())
-
+    val stickers by _stickerFlow.produceState(emptyList(), backgroundScope)
+    
     /**
      * 连续开关为同一个评论的编辑框将保存编辑内容和编辑框状态
      */
@@ -154,6 +156,10 @@ class EditCommentState(
 
     fun setEditExpanded(value: Boolean) {
         _editExpanded.value = value
+    }
+
+    fun toggleStickerPanelState(desired: Boolean? = null) {
+        _stickerPanelOpened.value = desired ?: !_stickerPanelOpened.value
     }
 
     fun setContent(value: TextFieldValue) {
@@ -222,12 +228,9 @@ fun EditComment(
     controlSoftwareKeyboard: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
-    onStickerPanelStateChanged: (Boolean) -> Unit = { },
 ) {
     val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
-    
     val textFieldInteractionSource = remember { MutableInteractionSource() }
-    var stickerPanelExpanded by rememberSaveable { mutableStateOf(false) }
 
     val requiredStickerPanelHeight =
         remember(stickerPanelHeight) { max(EditCommentDefaults.MinStickerHeight.dp, stickerPanelHeight) }
@@ -236,8 +239,7 @@ fun EditComment(
     var previousImeVisible by remember { mutableStateOf(false) }
     LaunchedEffect(imeVisible) {
         if (!previousImeVisible && imeVisible) {
-            stickerPanelExpanded = false
-            onStickerPanelStateChanged(false)
+            state.toggleStickerPanelState(false)
         }
         previousImeVisible = imeVisible
     }
@@ -260,13 +262,12 @@ fun EditComment(
                 onClickImage = { state.wrapSelectionWith("[img][/img]", 5) },
                 onClickUrl = { state.wrapSelectionWith("[url=][/url]", 5) },
                 onClickEmoji = {
-                    stickerPanelExpanded = !stickerPanelExpanded
-                    if (stickerPanelExpanded) keyboard?.hide()
-                    onStickerPanelStateChanged(stickerPanelExpanded)
+                    state.toggleStickerPanelState()
+                    if (state.stickerPanelOpened) keyboard?.hide()
                 },
                 onPreview = {
                     keyboard?.hide()
-                    if (stickerPanelExpanded) stickerPanelExpanded = false
+                    state.toggleStickerPanelState(false)
                     state.togglePreview()
                 },
                 onSend = {
@@ -274,11 +275,9 @@ fun EditComment(
                     state.send()
                 },
             )
-            if (stickerPanelExpanded) {
-                val stickers by state.stickers.collectAsStateWithLifecycle()
-                
+            if (state.stickerPanelOpened) {
                 EditCommentDefaults.StickerSelector(
-                    list = stickers,
+                    list = state.stickers,
                     modifier = Modifier.fillMaxWidth().height(requiredStickerPanelHeight),
                     onClickItem = { stickerId ->
                         val inserted = "(bgm$stickerId)"
