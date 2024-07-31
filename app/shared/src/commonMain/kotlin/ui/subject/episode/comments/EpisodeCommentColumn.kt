@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -91,7 +92,7 @@ fun EpisodeCommentColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(pullToRefreshState.nestedScrollConnection),
-                contentPadding = contentPadding,
+                contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
             ) {
                 item { }
                 itemsIndexed(comments, key = { _, item -> item.id }) { index, item ->
