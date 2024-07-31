@@ -5,7 +5,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +25,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.renderEpisodeEp
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
@@ -528,9 +528,11 @@ private class EpisodeViewModelImpl(
     override val editCommentState: EditCommentState = EditCommentState(
         showExpandEditCommentButton = true,
         initialExpandEditComment = false,
-        panelTitle = "评论：${episodeDetailsState.subjectTitle}",
+        title = subjectInfo.combine(episodeInfo) { sub, epi ->
+            "${sub.displayName} ${epi?.renderEpisodeEp()}"
+        }.stateIn(backgroundScope, SharingStarted.Lazily, null),
         stickerProvider = { BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) } },
-        onSend = { delay(3000) },
+        onSend = { id, content -> },
         backgroundScope = backgroundScope,
     )
 

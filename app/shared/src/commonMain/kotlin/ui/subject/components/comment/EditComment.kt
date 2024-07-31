@@ -83,8 +83,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -100,16 +102,19 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
+/**
+ * [panelTitle] 将承担所有的 state 刷新工作，也就是此 state 的唯一标识
+ */
 @Stable
 class EditCommentState(
     val showExpandEditCommentButton: Boolean,
     initialExpandEditComment: Boolean,
-    val panelTitle: String? = null,
+    title: StateFlow<String?>,
     private val stickerProvider: suspend () -> List<EditCommentSticker>,
-    private val onSend: suspend (String) -> Unit,
+    private val onSend: suspend (commentId: Int, content: String) -> Unit,
     private val backgroundScope: CoroutineScope,
 ) {
-    private var currentSendTarget = 0
+    private var _currentSendTarget = mutableStateOf(0)
 
     private var onSendCompleted: (() -> Unit)? = null
     private val editor = EditCommentTextState("", backgroundScope)
@@ -121,6 +126,12 @@ class EditCommentState(
      */
     private val _sending: MutableState<Boolean> = mutableStateOf(false)
 
+    val panelTitle by title.onEach {
+        // title 刷新，此次评论的发送对象也需要重置，直到下次 [handleNewEdit]
+        // 可能在编辑评论的时候播放完了这一集自动跳转到下一集时发生
+        _currentSendTarget.value = 0
+    }.produceState(null, backgroundScope)
+    val currentSendTarget: Int by _currentSendTarget
     val content get() = editor.textField
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
@@ -133,10 +144,10 @@ class EditCommentState(
      * 连续开关为同一个评论的编辑框将保存编辑内容和编辑框状态
      */
     fun handleNewEdit(id: Int) {
-        if (id != currentSendTarget) {
+        if (id != _currentSendTarget.value) {
             editor.override(TextFieldValue(""))
         }
-        currentSendTarget = id
+        _currentSendTarget.value = id
         previewer.closePreview()
         _editExpanded.value = false
     }
@@ -176,13 +187,14 @@ class EditCommentState(
     }
 
     fun send() {
-        val value = editor.textField.text
+        val id = _currentSendTarget.value
+        val content = editor.textField.text
 
         _editExpanded.value = false
         _sending.value = true
 
         backgroundScope.launch {
-            onSend(value)
+            onSend(id, content)
             withContext(Dispatchers.Main) {
                 _sending.value = false
             }
@@ -233,10 +245,11 @@ fun EditComment(
     EditCommentScaffold(
         modifier = modifier,
         title = {
-            if (state.panelTitle != null) EditCommentDefaults.Title(state.panelTitle)
+            state.panelTitle?.let { EditCommentDefaults.Title(it) }
         },
         actionRow = {
             EditCommentDefaults.ActionRow(
+                sendTarget = state.currentSendTarget,
                 previewing = state.previewing,
                 sending = state.sending,
                 onClickBold = { state.wrapSelectionWith("[b][/b]", 3) },
@@ -592,8 +605,9 @@ object EditCommentDefaults {
 
     @Composable
     fun ActionRow(
-        sending: Boolean = false,
+        sendTarget: Int,
         previewing: Boolean = false,
+        sending: Boolean = false,
         onClickBold: () -> Unit,
         onClickItalic: () -> Unit,
         onClickUnderlined: () -> Unit,
@@ -747,7 +761,7 @@ object EditCommentDefaults {
                     }
                     OutlinedButton(
                         onClick = onSend,
-                        enabled = !sending,
+                        enabled = !sending && sendTarget != 0,
                         modifier = Modifier.padding(start = 8.dp).animateContentSize(),
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                     ) {
