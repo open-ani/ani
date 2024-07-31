@@ -621,7 +621,7 @@ fun VideoGestureHost(
                             }
                         },
                     )
-                    .ifThen(family.swipeToSeek) {
+                    .ifThen(family.swipeToSeek && seekerState.enabled) {
                         val swipeToSeekRequester = remember { Any() }
                         swipeToSeek(
                             seekerState,

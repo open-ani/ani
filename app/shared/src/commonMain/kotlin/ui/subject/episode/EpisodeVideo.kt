@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -168,6 +169,14 @@ internal fun EpisodeVideoImpl(
         gestureHost = {
             val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
+            }
+            val videoPropertiesState by playerState.videoProperties.collectAsState()
+            LaunchedEffect(videoPropertiesState) {
+                swipeSeekerState.enabled = if (videoPropertiesState == null) {
+                    false
+                } else {
+                    videoPropertiesState!!.durationMillis != 0L
+                }
             }
             val indicatorTasker = rememberUiMonoTasker()
             val indicatorState = rememberGestureIndicatorState()
