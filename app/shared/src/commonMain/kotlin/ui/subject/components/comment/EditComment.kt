@@ -5,6 +5,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +43,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -48,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
@@ -60,9 +64,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
@@ -98,6 +104,8 @@ import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.theme.looming
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -110,10 +118,12 @@ class EditCommentState(
     initialExpandEditComment: Boolean,
     title: StateFlow<String?>,
     private val stickerProvider: suspend () -> List<EditCommentSticker>,
-    private val onSend: suspend (commentId: Int, content: String) -> Unit,
+    private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
     private val backgroundScope: CoroutineScope,
 ) {
-    private var _currentSendTarget = mutableStateOf(0)
+    private val logger = logger(this::class)
+
+    private var _currentSendTarget: MutableState<CommentSendTarget?> = mutableStateOf(null)
 
     private var onSendCompleted: (() -> Unit)? = null
     private val editor = EditCommentTextState("", backgroundScope)
@@ -131,9 +141,9 @@ class EditCommentState(
     val panelTitle by title.onEach {
         // title 刷新，此次评论的发送对象也需要重置，直到下次 [handleNewEdit]
         // 可能在编辑评论的时候播放完了这一集自动跳转到下一集时发生
-        _currentSendTarget.value = 0
+        _currentSendTarget.value = null
     }.produceState(null, backgroundScope)
-    val currentSendTarget: Int by _currentSendTarget
+    val currentSendTarget: CommentSendTarget? by _currentSendTarget
     val content get() = editor.textField
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
@@ -145,11 +155,11 @@ class EditCommentState(
     /**
      * 连续开关为同一个评论的编辑框将保存编辑内容和编辑框状态
      */
-    fun handleNewEdit(id: Int) {
-        if (id != _currentSendTarget.value) {
+    fun handleNewEdit(newTarget: CommentSendTarget) {
+        if (newTarget != _currentSendTarget.value) {
             editor.override(TextFieldValue(""))
         }
-        _currentSendTarget.value = id
+        _currentSendTarget.value = newTarget
         previewer.closePreview()
         _editExpanded.value = false
     }
@@ -193,14 +203,18 @@ class EditCommentState(
     }
 
     fun send() {
-        val id = _currentSendTarget.value
+        val target = _currentSendTarget.value
         val content = editor.textField.text
 
         _editExpanded.value = false
         _sending.value = true
 
         backgroundScope.launch {
-            onSend(id, content)
+            if (target != null) {
+                onSend(target, content)
+            } else {
+                logger.warn("current send target is null.")
+            }
             withContext(Dispatchers.Main) {
                 _sending.value = false
             }
@@ -381,10 +395,86 @@ fun EditCommentScaffold(
     }
 }
 
+
+/**
+ * 显示在评论列表底部的面板，用于打开 [EditComment]
+ */
+@Composable
+fun EditCommentBottomStubPanel(
+    text: String,
+    onClickEditText: () -> Unit,
+    onClickEmoji: () -> Unit,
+    modifier: Modifier = Modifier,
+    hint: String? = "",
+) {
+    val textFieldValue by derivedStateOf { TextFieldValue(text) }
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = NavigationBarDefaults.Elevation,
+        modifier = modifier,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(modifier = Modifier.weight(1.0f)) {
+                EditCommentDefaults.EditText(
+                    value = textFieldValue,
+                    hint = hint,
+                    maxLine = 1,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(8.dp),
+                    onValueChange = { },
+                )
+                Spacer(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable(onClick = onClickEditText),
+                )
+            }
+            EditCommentDefaults.ActionButton(
+                imageVector = Icons.Outlined.SentimentSatisfied,
+                onClick = onClickEmoji,
+                modifier = Modifier.size(EditCommentDefaults.ActionButtonSize.dp),
+                enabled = true,
+            )
+        }
+    }
+}
+
+@Immutable
 data class EditCommentSticker(
     val id: Int,
     val drawableRes: DrawableResource?,
 )
+
+/**
+ * 评论发送的对象，在 [EditCommentState.onSend] 需要提供。
+ */
+@Immutable
+sealed interface CommentSendTarget {
+    /**
+     * 剧集评论
+     */
+    data class Episode(val subjectId: Int, val episodeId: Int) : CommentSendTarget
+
+    /**
+     * 番剧吐槽箱
+     */
+    data class Subject(val subjectId: Int) : CommentSendTarget
+
+    /**
+     * 番剧长评
+     */
+    data class SubjectLong(val subjectId: Int) : CommentSendTarget
+
+    /**
+     *  回复某个人的评论
+     */
+    data class Reply(val commentId: Int) : CommentSendTarget
+} 
 
 class EditCommentPreviewerState(
     initialPreviewing: Boolean,
@@ -491,7 +581,7 @@ class EditCommentTextState(
 
 object EditCommentDefaults {
     @Suppress("ConstPropertyName")
-    private const val ActionButtonSize: Int = 48
+    const val ActionButtonSize: Int = 48
 
     @Suppress("ConstPropertyName")
     private const val ActionRowPrimaryAction: String = "primaryAction"
@@ -518,8 +608,10 @@ object EditCommentDefaults {
         hint: String? = null,
         maxLine: Int? = null,
         modifier: Modifier = Modifier,
+        shape: Shape = MaterialTheme.shapes.medium,
         contentPadding: PaddingValues = PaddingValues(0.dp),
         interactionSource: InteractionSource = remember { MutableInteractionSource() },
+        placeholder: @Composable (() -> Unit)? = { Text(hint ?: "") }
     ) {
         BasicTextField(
             value = value,
@@ -547,7 +639,8 @@ object EditCommentDefaults {
                         unfocusedBorderColor = Color.Transparent,
                         focusedBorderColor = Color.Transparent,
                     ),
-                    shape = MaterialTheme.shapes.medium,
+                    placeholder = placeholder,
+                    shape = shape,
                     contentPadding = contentPadding,
                 )
             },
@@ -604,7 +697,7 @@ object EditCommentDefaults {
 
     @Composable
     fun ActionRow(
-        sendTarget: Int,
+        sendTarget: CommentSendTarget?,
         previewing: Boolean = false,
         sending: Boolean = false,
         onClickBold: () -> Unit,
@@ -760,7 +853,7 @@ object EditCommentDefaults {
                     }
                     OutlinedButton(
                         onClick = onSend,
-                        enabled = !sending && sendTarget != 0,
+                        enabled = !sending && sendTarget != null,
                         modifier = Modifier.padding(start = 8.dp).animateContentSize(),
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                     ) {

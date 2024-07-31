@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -34,24 +35,28 @@ import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentDefaults
 import me.him188.ani.app.ui.subject.components.comment.CommentState
+import me.him188.ani.app.ui.subject.components.comment.EditCommentBottomStubPanel
 import me.him188.ani.app.ui.subject.components.comment.UIComment
 
 @Composable
 fun EpisodeCommentColumn(
-    state: CommentState,
+    commentState: CommentState,
+    editCommentStubText: String,
     modifier: Modifier = Modifier,
     onClickReply: (commentId: Int) -> Unit,
+    onClickEditCommentStub: () -> Unit,
+    onClickEditCommentStubEmoji: () -> Unit,
     onClickUrl: (url: String) -> Unit,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     val imageViewer = LocalImageViewerHandler.current
 
-    val comments = state.list
-    val hasMore = state.hasMore
+    val comments = commentState.list
+    val hasMore = commentState.hasMore
 
     LaunchedEffect(true) {
         launch {
-            snapshotFlow { state.sourceVersion }
+            snapshotFlow { commentState.sourceVersion }
                 .distinctUntilChanged()
                 .collectLatest {
                     pullToRefreshState.startRefresh()
@@ -60,7 +65,7 @@ fun EpisodeCommentColumn(
         launch {
             snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
                 if (!refreshing) return@collectLatest
-                state.reload()
+                commentState.reload()
                 pullToRefreshState.endRefresh()
             }
         }
@@ -72,37 +77,49 @@ fun EpisodeCommentColumn(
             state = pullToRefreshState,
             modifier = Modifier.align(Alignment.TopCenter),
         )
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(pullToRefreshState.nestedScrollConnection),
-        ) {
-            item { }
-            itemsIndexed(comments, key = { _, item -> item.id }) { index, item ->
-                EpisodeComment(
-                    comment = item,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 12.dp, bottom = 4.dp),
-                    onClickImage = { imageViewer.viewImage(it) },
-                    onActionReply = { onClickReply(item.id) },
-                    onClickUrl = onClickUrl,
+        Scaffold(
+            bottomBar = {
+                EditCommentBottomStubPanel(
+                    text = editCommentStubText,
+                    hint = "发送评论",
+                    onClickEmoji = onClickEditCommentStubEmoji,
+                    onClickEditText = onClickEditCommentStub,
                 )
-                if (index != comments.lastIndex) {
-                    HorizontalDivider(
-                        modifier = modifier.fillMaxWidth(),
-                        color = DividerDefaults.color.stronglyWeaken(),
+            },
+        ) { contentPadding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(pullToRefreshState.nestedScrollConnection),
+                contentPadding = contentPadding,
+            ) {
+                item { }
+                itemsIndexed(comments, key = { _, item -> item.id }) { index, item ->
+                    EpisodeComment(
+                        comment = item,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp)
+                            .padding(top = 12.dp, bottom = 4.dp),
+                        onClickImage = { imageViewer.viewImage(it) },
+                        onActionReply = { onClickReply(item.id) },
+                        onClickUrl = onClickUrl,
                     )
-                }
-            }
-            if (hasMore) {
-                item("dummy loader") {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator()
+                    if (index != comments.lastIndex) {
+                        HorizontalDivider(
+                            modifier = modifier.fillMaxWidth(),
+                            color = DividerDefaults.color.stronglyWeaken(),
+                        )
                     }
+                }
+                if (hasMore) {
+                    item("dummy loader") {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            CircularProgressIndicator()
+                        }
 
-                    LaunchedEffect(true) { state.loadMore() }
+                        LaunchedEffect(true) { commentState.loadMore() }
+                    }
                 }
             }
         }

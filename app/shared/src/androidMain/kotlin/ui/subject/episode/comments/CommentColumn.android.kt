@@ -75,20 +75,22 @@ private fun PreviewEpisodeComment() {
 private fun PreviewCommentColumn() {
     ProvideCompositionLocalsForPreview {
         val scope = rememberBackgroundScope()
-        val state = remember {
-            CommentState(
-                sourceVersion = mutableStateOf(Any()),
-                list = mutableStateOf(generateUiComment(4)),
-                hasMore = mutableStateOf(false),
-                onReload = { },
-                onLoadMore = { },
-                backgroundScope = scope.backgroundScope,
-            )
-        }
         EpisodeCommentColumn(
-            state = state,
+            commentState = remember {
+                CommentState(
+                    sourceVersion = mutableStateOf(Any()),
+                    list = mutableStateOf(generateUiComment(4)),
+                    hasMore = mutableStateOf(false),
+                    onReload = { },
+                    onLoadMore = { },
+                    backgroundScope = scope.backgroundScope,
+                )
+            },
+            editCommentStubText = "this is my new pending comment",
             onClickReply = { },
             onClickUrl = { },
+            onClickEditCommentStub = { },
+            onClickEditCommentStubEmoji = { },
         )
     }
 }

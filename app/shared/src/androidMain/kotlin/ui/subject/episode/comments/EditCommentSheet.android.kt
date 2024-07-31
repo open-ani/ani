@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.components.comment.EditComment
+import me.him188.ani.app.ui.subject.components.comment.EditCommentBottomStubPanel
 import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults
 import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
@@ -44,6 +45,18 @@ fun PreviewEditCommentStickerPanel() {
                 .map { EditCommentSticker(it, null) }
                 .toList(),
             onClickItem = { },
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewEditCommentBottomStubPanel() {
+    ProvideCompositionLocalsForPreview {
+        EditCommentBottomStubPanel(
+            text = "发送评论",
+            onClickEditText = { },
+            onClickEmoji = { },
         )
     }
 }

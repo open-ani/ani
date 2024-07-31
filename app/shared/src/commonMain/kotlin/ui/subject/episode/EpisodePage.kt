@@ -75,6 +75,7 @@ import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.subject.components.comment.CommentSendTarget
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
@@ -219,10 +220,11 @@ private fun EpisodeSceneTabletVeryWide(
                         }
 
                         1 -> EpisodeCommentColumn(
-                            vm.episodeCommentState,
-                            Modifier.fillMaxSize(),
+                            commentState = vm.episodeCommentState,
+                            editCommentStubText = vm.editCommentState.content.text,
+                            modifier = Modifier.fillMaxSize(),
                             onClickReply = {
-                                vm.editCommentState.handleNewEdit(it)
+                                vm.editCommentState.handleNewEdit(CommentSendTarget.Reply(it))
                                 showEditCommentSheet = true
                             },
                             onClickUrl = {
@@ -235,6 +237,19 @@ private fun EpisodeSceneTabletVeryWide(
                                 } catch (ex: Exception) {
                                     toaster.toast("无法打开此链接：\n$it")
                                 }
+                            },
+                            onClickEditCommentStub = {
+                                vm.editCommentState.handleNewEdit(
+                                    CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                                )
+                                showEditCommentSheet = true
+                            },
+                            onClickEditCommentStubEmoji = {
+                                vm.editCommentState.handleNewEdit(
+                                    CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                                )
+                                vm.editCommentState.toggleStickerPanelState(true)
+                                showEditCommentSheet = true
                             },
                         )
                     }
@@ -349,13 +364,14 @@ private fun EpisodeSceneContentPhone(
         },
         commentColumn = {
             EpisodeCommentColumn(
-                state = vm.episodeCommentState,
+                commentState = vm.episodeCommentState,
+                editCommentStubText = vm.editCommentState.content.text,
                 modifier = Modifier.fillMaxSize(),
                 onClickReply = {
                     showEditCommentSheet = true
-                    vm.editCommentState.handleNewEdit(it)
+                    vm.editCommentState.handleNewEdit(CommentSendTarget.Reply(it))
                     pauseOnPlaying()
-                    
+
                 },
                 onClickUrl = {
                     try {
@@ -367,6 +383,19 @@ private fun EpisodeSceneContentPhone(
                     } catch (ex: Exception) {
                         toaster.toast("无法打开此链接：\n$it")
                     }
+                },
+                onClickEditCommentStub = {
+                    vm.editCommentState.handleNewEdit(
+                        CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                    )
+                    showEditCommentSheet = true
+                },
+                onClickEditCommentStubEmoji = {
+                    vm.editCommentState.handleNewEdit(
+                        CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                    )
+                    vm.editCommentState.toggleStickerPanelState(true)
+                    showEditCommentSheet = true
                 },
             )
         },
