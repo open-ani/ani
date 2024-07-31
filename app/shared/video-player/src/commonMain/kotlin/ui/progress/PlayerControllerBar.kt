@@ -406,11 +406,13 @@ object PlayerControllerDefaults {
         playerState: PlayerState,
         modifier: Modifier = Modifier,
         downloadColor: Color = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
+        enabled: Boolean = true,
     ) {
 
         MediaProgressSlider(
             progressSliderState, playerState.cacheProgress,
             downloadingColor = downloadColor,
+            enabled = enabled,
             modifier = modifier,
         )
     }
