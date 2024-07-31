@@ -249,7 +249,7 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
-                    if (currentPlatform.isDesktop() && expanded && playerState is SupportsAudio) {
+                    if (expanded && playerState is SupportsAudio) {
                         val volumeState by playerState.volume.collectAsStateWithLifecycle()
                         val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
                         PlayerControllerDefaults.AudioIcon(

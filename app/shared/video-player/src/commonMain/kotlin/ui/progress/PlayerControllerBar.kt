@@ -43,8 +43,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
@@ -66,19 +64,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.theme.aniColorScheme
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
@@ -140,7 +137,7 @@ object PlayerControllerDefaults {
         onchange: (Float) -> Unit,
         controllerState: VideoControllerState,
         modifier: Modifier = Modifier,
-        interactionSource: MutableInteractionSource = MutableInteractionSource(),
+        interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     ) {
         val hoverInteraction = remember { MutableInteractionSource() }
         val isHovered by hoverInteraction.collectIsHoveredAsState()
@@ -148,70 +145,66 @@ object PlayerControllerDefaults {
         LaunchedEffect(isHovered) {
             controllerState.setRequestAlwaysOn(audioIconRequester, isHovered)
         }
-        Row(
-            modifier.hoverable(hoverInteraction)
+        Box(
+            modifier = modifier.hoverable(hoverInteraction)
                 .clip(CircleShape)
                 .ifThen(isHovered) {
                     background(Color.Black.copy(alpha = .1f))
                 },
+            contentAlignment = Alignment.BottomCenter,
         ) {
-            IconButton(
-                onClick = onClick,
-            ) {
-                when {
-                    isMute -> {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
-                    }
+            val iconButton = @Composable {
+                IconButton(
+                    onClick = onClick,
+                ) {
+                    when {
+                        isMute -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
+                        }
 
-                    volume < 0.33f -> {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
-                    }
+                        volume < 0.33f -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
+                        }
 
-                    volume < 0.66f -> {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
-                    }
+                        volume < 0.66f -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
+                        }
 
-                    else -> {
-                        Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
+                        else -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
+                        }
                     }
                 }
             }
+
+            iconButton()
+            
             if (isHovered && !isMute) {
-                val density = LocalDensity.current
                 Popup(
-                    alignment = Alignment.Center,
-                    offset = IntOffset(0, with(density) { -48.dp.toPx().roundToInt() }),
+                    alignment = Alignment.BottomCenter,
                 ) {
                     Box(
                         modifier = Modifier
                             .hoverable(hoverInteraction)
                             .clip(shape = CircleShape)
-                            .background(Color.Black),
+                            .background(aniColorScheme().surface),
                     ) {
-                        Row(
-                            Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-
-                            ) {
-                            Slider(
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = volume.times(100).roundToInt().toString(),
+                                modifier = modifier.padding(vertical = 4.dp),
+                                color = aniDarkColorTheme().onSurface,
+                            )
+                            VerticalSlider(
                                 value = volume,
                                 onValueChange = onchange,
                                 interactionSource = interactionSource,
                                 modifier = Modifier.width(96.dp),
-                                thumb = {
-                                    SliderDefaults.Thumb(
-                                        interactionSource = interactionSource,
-                                        colors = SliderDefaults.colors(
-                                            thumbColor = MaterialTheme.colorScheme.primary,
-                                        ),
-                                        enabled = true,
-                                    )
-                                },
+                                thumb = {},
                             )
-                            Text(
-                                text = volume.times(100).roundToInt().toString(),
-                                modifier = modifier.padding(horizontal = 4.dp),
-                            )
+                            iconButton()
                         }
                     }
                 }
