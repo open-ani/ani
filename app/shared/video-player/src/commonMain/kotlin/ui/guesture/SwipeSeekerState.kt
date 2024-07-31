@@ -11,7 +11,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -116,7 +115,6 @@ class SwipeSeekerState(
         }
     }
 
-    var enabled: Boolean by mutableStateOf(true)
 
     companion object {
         fun Modifier.swipeToSeek(

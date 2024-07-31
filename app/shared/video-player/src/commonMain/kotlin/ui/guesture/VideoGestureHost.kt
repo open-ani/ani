@@ -395,6 +395,7 @@ fun VideoGestureHost(
     progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
+    enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
     family: GestureFamily = Platform.currentPlatform.mouseFamily,
     onTogglePauseResume: () -> Unit = {},
@@ -621,7 +622,7 @@ fun VideoGestureHost(
                             }
                         },
                     )
-                    .ifThen(family.swipeToSeek && seekerState.enabled) {
+                    .ifThen(family.swipeToSeek && enableSwipeToSeek) {
                         val swipeToSeekRequester = remember { Any() }
                         swipeToSeek(
                             seekerState,

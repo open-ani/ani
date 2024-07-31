@@ -171,13 +171,18 @@ internal fun EpisodeVideoImpl(
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
             }
             val videoPropertiesState by playerState.videoProperties.collectAsState()
-            LaunchedEffect(videoPropertiesState) {
-                swipeSeekerState.enabled = if (videoPropertiesState == null) {
-                    false
-                } else {
-                    videoPropertiesState!!.durationMillis != 0L
+            val enableSwipeToSeek by remember {
+                derivedStateOf {
+                    with(videoPropertiesState) {
+                        if (this == null) {
+                            false
+                        } else {
+                            this.durationMillis != 0L
+                        }
+                    }
                 }
             }
+
             val indicatorTasker = rememberUiMonoTasker()
             val indicatorState = rememberGestureIndicatorState()
             LockableVideoGestureHost(
@@ -187,6 +192,7 @@ internal fun EpisodeVideoImpl(
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
                 locked = isLocked,
+                enableSwipeToSeek = enableSwipeToSeek,
                 Modifier.padding(top = 100.dp),
                 onTogglePauseResume = {
                     if (playerState.state.value.isPlaying) {
