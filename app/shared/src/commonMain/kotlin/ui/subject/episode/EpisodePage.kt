@@ -167,6 +167,8 @@ private fun EpisodeSceneTabletVeryWide(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
+    var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
+    
     BoxWithConstraints {
         val maxWidth = maxWidth
         Row(
@@ -214,13 +216,22 @@ private fun EpisodeSceneTabletVeryWide(
                         1 -> EpisodeCommentColumn(
                             vm.episodeCommentState,
                             Modifier.fillMaxSize(),
-                            onClickReply = { },
+                            onClickReply = {
+                                vm.editCommentState.handleNewEdit(it)
+                                showEditCommentSheet = true
+                            },
                             onClickUrl = { },
                         )
                     }
                 }
             }
         }
+    }
+    if (showEditCommentSheet) {
+        EpisodeEditCommentSheet(
+            state = vm.editCommentState,
+            onDismiss = { showEditCommentSheet = false },
+        )
     }
 }
 

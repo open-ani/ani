@@ -74,6 +74,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -747,16 +748,19 @@ object EditCommentDefaults {
                     OutlinedButton(
                         onClick = onSend,
                         enabled = !sending,
-                        modifier = Modifier.padding(start = 4.dp).animateContentSize(),
+                        modifier = Modifier.padding(start = 8.dp).animateContentSize(),
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
                     ) {
                         Crossfade(targetState = sending) {
                             if (!it) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(text = "发送")
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(text = "发送", textAlign = TextAlign.Center)
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Rounded.Send,
-                                        modifier = Modifier.padding(start = 4.dp).size(18.dp),
+                                        modifier = Modifier.padding(start = 4.dp).size(24.dp),
                                         contentDescription = null,
                                     )
                                 }
