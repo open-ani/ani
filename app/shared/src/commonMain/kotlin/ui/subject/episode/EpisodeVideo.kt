@@ -173,13 +173,7 @@ internal fun EpisodeVideoImpl(
             val videoPropertiesState by playerState.videoProperties.collectAsState()
             val enableSwipeToSeek by remember {
                 derivedStateOf {
-                    with(videoPropertiesState) {
-                        if (this == null) {
-                            false
-                        } else {
-                            this.durationMillis != 0L
-                        }
-                    }
+                    videoPropertiesState?.let { it.durationMillis != 0L } ?: false
                 }
             }
 
