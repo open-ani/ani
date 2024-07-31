@@ -3,7 +3,7 @@ package me.him188.ani.app.tools
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
-import kotlinx.datatime.toLocalDataTime
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.format.char
 import kotlin.test.Test
@@ -81,7 +81,7 @@ class TimeFormatterTest {
     @Test
     fun testUsingFormatter() {
         val timestamp = Instant.parse("2019-12-30T10:00:00Z")
-            .toLocalDataTime(TimeZone.UTC)
+            .toLocalDateTime(TimeZone.UTC)
             .toInstant(TimeZone.currentSystemDefault())
         assertEquals("2019-12-30 10:00:00", timeFormatter.format(timestamp))
     }
