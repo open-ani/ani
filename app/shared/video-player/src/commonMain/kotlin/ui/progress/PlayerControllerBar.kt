@@ -178,7 +178,7 @@ object PlayerControllerDefaults {
             }
 
             iconButton()
-            
+
             if (isHovered && !isMute) {
                 Popup(
                     alignment = Alignment.BottomCenter,
@@ -194,8 +194,7 @@ object PlayerControllerDefaults {
                         ) {
                             Text(
                                 text = volume.times(100).roundToInt().toString(),
-                                modifier = modifier.padding(vertical = 4.dp),
-                                color = aniDarkColorTheme().onSurface,
+                                modifier = modifier.padding(8.dp),
                             )
                             VerticalSlider(
                                 value = volume,
