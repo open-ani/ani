@@ -16,14 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.outlined.AddReaction
 import androidx.compose.material.icons.outlined.HeartBroken
 import androidx.compose.material.icons.outlined.ModeComment
 import androidx.compose.material.icons.outlined.Report
+import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -208,7 +207,7 @@ fun Comment(
                 Surface(
                     modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 0.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.small,
                 ) {
                     reply()
                 }
@@ -255,13 +254,14 @@ object CommentDefaults {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 val previewing = LocalIsPreviewing.current
+                val reactionDrawableRes = BangumiCommentSticker[reaction.id]
 
-                if (previewing) Icon(
-                    imageVector = Icons.Default.Face,
+                if (previewing || reactionDrawableRes == null) Icon(
+                    imageVector = Icons.Rounded.Face,
                     modifier = Modifier.padding(end = 4.dp).size(24.dp),
                     contentDescription = null,
                 ) else Icon(
-                    painter = painterResource(BangumiCommentSticker[reaction.id]!!),
+                    painter = painterResource(reactionDrawableRes),
                     modifier = Modifier.padding(end = 4.dp).size(24.dp),
                     contentDescription = null,
                 )
@@ -347,13 +347,11 @@ object CommentDefaults {
 
         Column(modifier = modifier) {
             replies.forEach { reply ->
-                val prepended by remember {
-                    derivedStateOf {
-                        reply.content.prependText(
-                            prependix = "${reply.creator.nickname ?: reply.creator.id.toString()}：",
-                            color = primaryColor,
-                        )
-                    }
+                val prepended = remember(reply.content, primaryColor) {
+                    reply.content.prependText(
+                        prependix = "${reply.creator.nickname ?: reply.creator.id.toString()}：",
+                        color = primaryColor,
+                    )
                 }
                 RichText(
                     elements = prepended.elements,
@@ -364,13 +362,11 @@ object CommentDefaults {
                 )
             }
             if (hiddenReplyCount > 0) {
-                val prepended by remember {
-                    derivedStateOf {
-                        UIRichText(emptyList()).prependText(
-                            prependix = "查看更多 $hiddenReplyCount 条回复>",
-                            color = primaryColor,
-                        )
-                    }
+                val prepended = remember(hiddenReplyCount) {
+                    UIRichText(emptyList()).prependText(
+                        prependix = "查看更多 $hiddenReplyCount 条回复>",
+                        color = primaryColor,
+                    )
                 }
 
                 RichText(

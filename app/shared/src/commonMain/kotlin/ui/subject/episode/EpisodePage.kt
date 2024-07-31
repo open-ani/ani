@@ -55,6 +55,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
+import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -73,6 +74,7 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
@@ -168,6 +170,9 @@ private fun EpisodeSceneTabletVeryWide(
     modifier: Modifier = Modifier,
 ) {
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
+    val browserNavigator = LocalBrowserNavigator.current
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
     
     BoxWithConstraints {
         val maxWidth = maxWidth
@@ -220,7 +225,17 @@ private fun EpisodeSceneTabletVeryWide(
                                 vm.editCommentState.handleNewEdit(it)
                                 showEditCommentSheet = true
                             },
-                            onClickUrl = { },
+                            onClickUrl = {
+                                try {
+                                    if (it.startsWith("https://") || it.startsWith("http://")) {
+                                        browserNavigator.openBrowser(context, it)
+                                    } else {
+                                        toaster.toast("此链接可能会打开其他应用，ani 将不会打开此链接：\n$it")
+                                    }
+                                } catch (ex: Exception) {
+                                    toaster.toast("无法打开此链接：\n$it")
+                                }
+                            },
                         )
                     }
                 }
@@ -284,9 +299,14 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
+    val browserNavigator = LocalBrowserNavigator.current
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
+    
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
+
 
     val pauseOnPlaying: () -> Unit = {
         if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
@@ -337,7 +357,17 @@ private fun EpisodeSceneContentPhone(
                     pauseOnPlaying()
                     
                 },
-                onClickUrl = { },
+                onClickUrl = {
+                    try {
+                        if (it.startsWith("https://") || it.startsWith("http://")) {
+                            browserNavigator.openBrowser(context, it)
+                        } else {
+                            toaster.toast("此链接可能会打开其他应用，ani 将不会打开此链接：\n$it")
+                        }
+                    } catch (ex: Exception) {
+                        toaster.toast("无法打开此链接：\n$it")
+                    }
+                },
             )
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),

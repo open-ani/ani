@@ -23,12 +23,11 @@ fun PreviewEditCommentSheet() {
                     initialExpandEditComment = false,
                     title = MutableStateFlow("评论：我心里危险的东西 第二季"),
                     stickerProvider = {
-                        generateSequence(1) { it + 1 }
-                            .take(64)
+                        (0..64)
                             .map { EditCommentSticker(it, null) }
                             .toList()
                     },
-                    onSend = { id, content -> },
+                    onSend = { _, _ -> },
                     backgroundScope = scope.backgroundScope,
                 )
             },
@@ -41,8 +40,7 @@ fun PreviewEditCommentSheet() {
 fun PreviewEditCommentStickerPanel() {
     ProvideCompositionLocalsForPreview {
         EditCommentDefaults.StickerSelector(
-            list = generateSequence(0) { it + 1 }
-                .take(40)
+            list = (0..64)
                 .map { EditCommentSticker(it, null) }
                 .toList(),
             onClickItem = { },

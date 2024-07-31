@@ -532,7 +532,7 @@ private class EpisodeViewModelImpl(
             "${sub.displayName} ${epi?.renderEpisodeEp()}"
         }.stateIn(backgroundScope, SharingStarted.Lazily, null),
         stickerProvider = { BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) } },
-        onSend = { id, content -> },
+        onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )
 
