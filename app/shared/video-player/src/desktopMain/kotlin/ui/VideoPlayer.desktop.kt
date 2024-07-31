@@ -310,8 +310,10 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //            }
 
                 override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
-                    volume.value = player.audio().volume().toFloat() / 200
-                    isMute.value = player.audio().isMute
+                    player.submit {
+                        setVolume(volume.value)
+                        toggleMute(isMute.value)
+                    }
                 }
                 override fun playing(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.PLAYING
