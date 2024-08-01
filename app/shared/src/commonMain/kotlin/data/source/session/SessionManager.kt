@@ -19,6 +19,7 @@
 package me.him188.ani.app.data.source.session
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.UserInfo
@@ -145,7 +147,7 @@ fun SessionManager(
     val settingsRepository: SettingsRepository by koin.inject()
     val client: BangumiClient by koin.inject()
 
-    return SessionManagerImpl(
+    return BangumiSessionManager(
         tokenRepository,
         refreshToken = tokenRepository.refreshToken,
         profileSettings = settingsRepository.profileSettings,
@@ -160,6 +162,7 @@ fun SessionManager(
             }
         },
         parentCoroutineContext,
+        SharingStarted.WhileSubscribed(5000),
     )
 }
 
@@ -169,13 +172,14 @@ internal class NewSession(
     val refreshToken: String,
 )
 
-internal class SessionManagerImpl(
+internal class BangumiSessionManager(
     private val tokenRepository: TokenRepository,
     private val refreshToken: Flow<String?>,
     private val profileSettings: Settings<ProfileSettings>,
     private val getSelfInfo: suspend (accessToken: String) -> ApiResponse<UserInfo>,
     private val refreshAccessToken: suspend (refreshToken: String) -> ApiResponse<NewSession>,
     parentCoroutineContext: CoroutineContext,
+    sharingStarted: SharingStarted,
 ) : SessionManager, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private val logger = logger(SessionManager::class)
 
@@ -190,8 +194,6 @@ internal class SessionManagerImpl(
                 emit(SessionState.Expired)
                 return@transformLatest
             }
-
-//            emit(SessionState.Verifying(session.accessToken))
 
             try {
                 emit(
@@ -220,7 +222,7 @@ internal class SessionManagerImpl(
                 emit(SessionState.Exception(e))
             }
         }
-    }.shareInBackground(SharingStarted.WhileSubscribed(5000))
+    }.shareInBackground(sharingStarted)
 
     private suspend fun doAuth(accessToken: String): SessionState {
         return getSelfInfo(accessToken).fold(
@@ -280,9 +282,20 @@ internal class SessionManagerImpl(
             }
 
             // Launch external oauth (e.g. browser)
-            val req = BangumiOAuthRequest(navigator, navigateToWelcome) { session ->
-                setSessionAndRefreshToken(session, isNewLogin = true)
-            }
+            val req = BangumiOAuthRequest(
+                onLaunch = {
+                    withContext(Dispatchers.Main) {
+                        if (navigateToWelcome) {
+                            navigator.navigateWelcome()
+                        } else {
+                            navigator.navigateBangumiOAuthOrTokenAuth()
+                        }
+                    }
+                },
+                onSuccess = { session ->
+                    setSessionAndRefreshToken(session, isNewLogin = true)
+                },
+            )
             processingRequest.value = req
             try {
                 req.invoke()
@@ -315,7 +328,6 @@ internal class SessionManagerImpl(
     override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
         launchInBackground {
             try {
-                processingRequest.value?.cancel()
                 requireAuthorize(navigator, navigateToWelcome = navigateToWelcome, ignoreGuest)
                 logger.info { "requireOnline: success" }
             } catch (e: AuthorizationException) {

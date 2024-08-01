@@ -7,17 +7,13 @@ sealed interface SessionState {
         val accessToken: String
     }
 
+    /**
+     * 登录完全成功. 这意味着已经连接到服务器测试过 token 是有效的.
+     */
     data class Verified(
         override val accessToken: String,
         val userInfo: UserInfo,
     ) : SessionState, HasAccessToken
-
-    /**
-     * 正在验证会话有效性 (同时也能验证是否有网络)
-     */
-//    data class Verifying(
-//        override val accessToken: String,
-//    ) : SessionState, HasAccessToken
 
     /**
      * 有 token, 但是验证失败

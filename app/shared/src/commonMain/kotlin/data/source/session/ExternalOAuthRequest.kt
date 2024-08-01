@@ -2,14 +2,11 @@ package me.him188.ani.app.data.source.session
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.completeWith
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.withContext
-import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.utils.platform.currentTimeMillis
-import org.koin.core.component.KoinComponent
+import kotlin.time.Duration
 
 /**
  * 表示一个外部 OAuth 授权请求.
@@ -61,14 +58,13 @@ interface ExternalOAuthRequest {
 data class OAuthResult(
     val accessToken: String,
     val refreshToken: String,
-    val expiresInSeconds: Long,
+    val expiresIn: Duration,
 )
 
 internal class BangumiOAuthRequest(
-    private val aniNavigator: AniNavigator,
-    private val navigateToWelcome: Boolean,
-    private val setSession: suspend (NewSession) -> Unit,
-) : ExternalOAuthRequest, KoinComponent {
+    private val onLaunch: suspend () -> Unit,
+    private val onSuccess: suspend (NewSession) -> Unit,
+) : ExternalOAuthRequest {
     override val state: MutableStateFlow<ExternalOAuthRequest.State> =
         MutableStateFlow(ExternalOAuthRequest.State.Launching)
 
@@ -87,22 +83,16 @@ internal class BangumiOAuthRequest(
 
     override suspend fun invoke() {
         state.value = ExternalOAuthRequest.State.Launching
-        withContext(Dispatchers.Main) {
-            if (navigateToWelcome) {
-                aniNavigator.navigateWelcome()
-            } else {
-                aniNavigator.navigateBangumiOAuthOrTokenAuth()
-            }
-        }
+        onLaunch()
         state.value = ExternalOAuthRequest.State.AwaitingCallback
         try {
             val result = result.await()
             state.value = ExternalOAuthRequest.State.Processing
 
-            setSession(
+            onSuccess(
                 NewSession(
                     result.accessToken,
-                    currentTimeMillis() + result.expiresInSeconds * 1000,
+                    currentTimeMillis() + result.expiresIn.inWholeMilliseconds,
                     result.refreshToken,
                 ),
             )

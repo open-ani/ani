@@ -41,6 +41,7 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.time.Duration.Companion.seconds
 
 @Stable
 class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
@@ -48,16 +49,11 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     private val client by lazy { AniAuthClient().also { addCloseable(it) } }
 
     /**
-     * 当前授权是否正在进行中
-     */
-    val processingRequest = sessionManager.processingRequest
-
-    /**
      * 需要进行授权
      */
     val needAuth by sessionManager.isSessionVerified.map { !it }.produceState(true)
 
-    var requestIdFlow = MutableStateFlow(Uuid.randomString())
+    private var requestIdFlow = MutableStateFlow(Uuid.randomString())
 
     /**
      * 当前是第几次尝试
@@ -95,7 +91,7 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
                             OAuthResult(
                                 accessToken = resp.accessToken,
                                 refreshToken = resp.refreshToken,
-                                expiresInSeconds = resp.expiresIn,
+                                expiresIn = resp.expiresIn.seconds,
                             ),
                         ),
                     )
