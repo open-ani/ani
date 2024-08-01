@@ -119,7 +119,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
     ) {
         FlowRow (
             Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             danmakuRegexFilterList.forEachIndexed { index, item ->
                 RegexFilterItem(
