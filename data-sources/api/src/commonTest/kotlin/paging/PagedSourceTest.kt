@@ -3,16 +3,19 @@ package me.him188.ani.datasources.api.paging
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
+import me.him188.ani.test.TestContainer
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 abstract class PagedSourceTest {
+    @TestContainer
     class SinglePagedSourceTest : PagedSourceTest() {
         override fun createSource(): PagedSource<Int> = SinglePagePagedSource {
             flowOf(1, 2, 3)
         }
     }
 
+    @TestContainer
     class PageBasedPagedSourceTest : PagedSourceTest() {
         override fun createSource(): PagedSource<Int> = PageBasedPagedSource {
             if (it == 0) {

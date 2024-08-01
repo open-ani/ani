@@ -1,14 +1,15 @@
 package me.him188.ani.datasources.api
 
 import me.him188.ani.datasources.api.topic.EpisodeRange
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class EpRangeTest {
     @Test
     fun testEmpty() {
         val empty = EpisodeRange.empty()
-        assert(empty.knownSorts.toList().isEmpty())
+        assertTrue(empty.knownSorts.toList().isEmpty())
     }
 
     @Test
