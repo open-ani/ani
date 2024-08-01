@@ -73,9 +73,9 @@ class VideoControllerState(
      */
     val visibility: ControllerVisibility by derivedStateOf {
         // 根据 hasProgressBarRequester, alwaysOn 和 fullVisible 计算正确的 `ControllerVisibility`
-        if (alwaysOn) return@derivedStateOf (ControllerVisibility.Visible)
-        if (fullVisible) return@derivedStateOf (ControllerVisibility.Visible)
-        if (hasProgressBarRequester) return@derivedStateOf (ControllerVisibility.DetachedSliderOnly)
+        if (alwaysOn) return@derivedStateOf ControllerVisibility.Visible
+        if (fullVisible) return@derivedStateOf ControllerVisibility.Visible
+        if (hasProgressBarRequester) return@derivedStateOf ControllerVisibility.DetachedSliderOnly
         ControllerVisibility.Invisible
     }
 

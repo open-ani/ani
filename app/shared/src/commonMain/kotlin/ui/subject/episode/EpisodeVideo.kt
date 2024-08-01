@@ -95,10 +95,10 @@ internal fun EpisodeVideoImpl(
     onShowMediaSelector: () -> Unit,
     onShowSelectEpisode: () -> Unit,
     onClickScreenshot: () -> Unit,
-    modifier: Modifier = Modifier,
-    maintainAspectRatio: Boolean = !expanded,
     detachedProgressSlider: @Composable () -> Unit,
     progressSliderState: MediaProgressSliderState,
+    modifier: Modifier = Modifier,
+    maintainAspectRatio: Boolean = !expanded,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
