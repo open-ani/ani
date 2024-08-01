@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.data.models.preference.ProxyAuthorization
+import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -24,6 +25,7 @@ import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.fetch.create
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.platform.ServiceLoader
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
@@ -35,10 +37,9 @@ import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.ServiceLoader
-import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
 interface MediaSourceManager { // available by inject
@@ -106,7 +107,11 @@ class MediaSourceManagerImpl(
             logger.error(throwable) { "DownloadProviderManager scope error" }
         },
     )
-    private val factories: List<MediaSourceFactory> = ServiceLoader.load(MediaSourceFactory::class.java).toList()
+    private val factories: List<MediaSourceFactory> = buildSet {
+        addAll(ServiceLoader.loadServices(MediaSourceFactory::class))
+        add(MikanMediaSource.Factory()) // Kotlin bug, MPP 加载不了 resources
+        add(MikanCNMediaSource.Factory())
+    }.toList()
 
     private val additionalSources by lazy {
         additionalSources().map { source ->
@@ -165,7 +170,7 @@ class MediaSourceManagerImpl(
 
     override suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig) {
         val save = MediaSourceSave(
-            instanceId = UUID.randomUUID().toString(),
+            instanceId = Uuid.randomString(),
             mediaSourceId = mediaSourceId,
             isEnabled = true,
             config = config,
@@ -210,14 +215,16 @@ class MediaSourceManagerImpl(
 fun MediaSourceProxySettings.toClientProxyConfig(): ClientProxyConfig? {
     return if (enabled) {
         config.run {
-            ClientProxyConfig(
-                url = url,
-                authorization = authorization?.toHeader(),
-            )
+            toClientProxyConfig()
         }
     } else {
         null
     }
 }
+
+fun ProxyConfig.toClientProxyConfig() = ClientProxyConfig(
+    url = url,
+    authorization = authorization?.toHeader(),
+)
 
 fun ProxyAuthorization.toHeader(): String = "Basic ${"$username:$password"}"

@@ -31,10 +31,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.TestSessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -46,8 +49,6 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.TestSessionManagers
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
@@ -55,11 +56,11 @@ import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.inSystem
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
-import java.io.File
 
 val LocalIsPreviewing = staticCompositionLocalOf {
     false
@@ -87,7 +88,7 @@ fun ProvideCompositionLocalsForPreview(
                         single<PlayerStateFactory> {
                             playerStateFactory
                         }
-                        single<SessionManager> { TestSessionManagers.Online }
+                        single<SessionManager> { TestSessionManager }
                         factory<VideoSourceResolver> {
                             VideoSourceResolver.from(
                                 get<TorrentManager>().engines
@@ -97,7 +98,7 @@ fun ProvideCompositionLocalsForPreview(
                             )
                         }
                         single<TorrentManager> {
-                            DefaultTorrentManager(globalScope.coroutineContext) { File("preview-cache") }
+                            DefaultTorrentManager(globalScope.coroutineContext) { Path("preview-cache").inSystem }
                         }
                         single<PermissionManager> { GrantedPermissionManager }
                         single<NotifManager> { NoopNotifManager }

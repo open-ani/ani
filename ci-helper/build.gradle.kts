@@ -39,7 +39,7 @@ import org.gradle.internal.impldep.com.amazonaws.services.s3.model.PutObjectRequ
 
 plugins {
     kotlin("jvm")
-    id("kotlinx-atomicfu")
+    id("org.jetbrains.kotlinx.atomicfu")
 }
 
 val hostOS: OS by lazy {

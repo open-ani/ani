@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -63,7 +64,7 @@ class BangumiRelatedCharactersRepository(
         return flow {
             val characters = runOrEmitEmptyList {
                 withContext(Dispatchers.IO) {
-                    client.api.getRelatedCharactersBySubjectId(subjectId).body()
+                    client.getApi().getRelatedCharactersBySubjectId(subjectId).body()
                 }
             }
 
@@ -149,7 +150,7 @@ class BangumiRelatedCharactersRepository(
         return flow {
             val persons = runOrEmitEmptyList {
                 withContext(Dispatchers.IO) {
-                    client.api.getRelatedPersonsBySubjectId(subjectId).body()
+                    client.getApi().getRelatedPersonsBySubjectId(subjectId).body()
                 }
             }
             emit(

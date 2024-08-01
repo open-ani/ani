@@ -21,12 +21,12 @@ import me.him188.ani.app.tools.update.AndroidUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.SystemPath
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
-import java.io.File
 
 fun getAndroidModules(
-    torrentCacheDir: File,
+    torrentCacheDir: SystemPath,
     coroutineScope: CoroutineScope,
 ) = module {
     single<PermissionManager> {

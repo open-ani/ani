@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import me.him188.ani.app.data.models.preference.ProxySettings
+import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -21,7 +22,6 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
-import me.him188.ani.danmaku.ani.client.AniBangumiSeverBaseUrls
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
 
 @Composable
@@ -69,9 +69,9 @@ private fun SettingsScope.GlobalProxyGroup(
     vm: NetworkSettingsViewModel
 ) {
     Group(
-        title = { Text("全局默认代理") },
+        title = { Text("全局代理设置") },
         description = {
-            Text("如果数据源没有单独配置代理，则使用此代理设置")
+            Text("应用于所有数据源以及 Bangumi")
         },
     ) {
         SwitchItem(

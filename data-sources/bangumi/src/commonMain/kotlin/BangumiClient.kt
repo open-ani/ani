@@ -32,19 +32,19 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.appendPathSegments
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -57,6 +57,7 @@ import me.him188.ani.datasources.bangumi.apis.DefaultApi
 import me.him188.ani.datasources.bangumi.client.BangumiClientSubjects
 import me.him188.ani.datasources.bangumi.models.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.models.BangumiUser
 import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
@@ -64,9 +65,6 @@ import me.him188.ani.datasources.bangumi.next.apis.SubjectBangumiNextApi
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.serialization.toJsonArray
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.util.Objects
 import kotlin.coroutines.CoroutineContext
 
 interface BangumiClient : Closeable {
@@ -91,11 +89,7 @@ interface BangumiClient : Closeable {
         @SerialName("refresh_token") val refreshToken: String,
     )
 
-    /**
-     * 用 OAuth 回调的 code 换 access token 和 refresh token
-     */
-    suspend fun exchangeTokens(code: String, callbackUrl: String): GetAccessTokenResponse
-    suspend fun refreshAccessToken(refreshToken: String, callbackUrl: String): GetAccessTokenResponse
+    suspend fun refreshAccessToken(refreshToken: String): GetAccessTokenResponse
 
     suspend fun executeGraphQL(query: String): JsonObject
 
@@ -109,16 +103,18 @@ interface BangumiClient : Closeable {
 
     suspend fun getTokenStatus(accessToken: String): GetTokenStatusResponse
 
+    suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser
+
     suspend fun deleteSubjectCollection(
         subjectId: Int
     )
 
     suspend fun testConnection(): ConnectionStatus
 
-    val api: DefaultApi
-    val nextApi: SubjectBangumiNextApi
+    suspend fun getApi(): DefaultApi
+    suspend fun getNextApi(): SubjectBangumiNextApi
 
-    val subjects: BangumiClientSubjects
+    suspend fun getSubjects(): BangumiClientSubjects
 
     companion object Factory {
         fun create(
@@ -129,6 +125,37 @@ interface BangumiClient : Closeable {
             httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}
         ): BangumiClient =
             BangumiClientImpl(clientId, clientSecret, bearerToken, parentCoroutineContext, httpClientConfiguration)
+    }
+}
+
+class DelegateBangumiClient(
+    private val client: Flow<BangumiClient>,
+) : BangumiClient {
+    override suspend fun refreshAccessToken(
+        refreshToken: String,
+    ): BangumiClient.GetAccessTokenResponse = client.first().refreshAccessToken(refreshToken)
+
+    override suspend fun executeGraphQL(query: String): JsonObject = client.first().executeGraphQL(query)
+
+    override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse =
+        client.first().getTokenStatus(accessToken)
+
+    override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser =
+        client.first().getSelfInfoByToken(accessToken)
+
+    override suspend fun deleteSubjectCollection(subjectId: Int) {
+        client.first().deleteSubjectCollection(subjectId)
+    }
+
+    override suspend fun testConnection(): ConnectionStatus {
+        return client.first().testConnection()
+    }
+
+    override suspend fun getApi(): DefaultApi = client.first().getApi()
+    override suspend fun getNextApi(): SubjectBangumiNextApi = client.first().getNextApi()
+    override suspend fun getSubjects(): BangumiClientSubjects = client.first().getSubjects()
+
+    override fun close() {
     }
 }
 
@@ -146,30 +173,9 @@ internal class BangumiClientImpl(
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     private val logger = logger(this::class)
-    override suspend fun exchangeTokens(code: String, callbackUrl: String): BangumiClient.GetAccessTokenResponse {
-        val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                buildJsonObject {
-                    put("grant_type", "authorization_code")
-                    put("client_id", clientId)
-                    put("client_secret", clientSecret)
-                    put("code", code)
-                    put("redirect_uri", callbackUrl)
-                },
-            )
-        }
-
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to get access token: $resp")
-        }
-
-        return resp.body<BangumiClient.GetAccessTokenResponse>()
-    }
 
     override suspend fun refreshAccessToken(
-        refreshToken: String,
-        callbackUrl: String
+        refreshToken: String
     ): BangumiClient.GetAccessTokenResponse {
         val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
             contentType(ContentType.Application.Json)
@@ -179,7 +185,6 @@ internal class BangumiClientImpl(
                     put("client_id", clientId)
                     put("client_secret", clientSecret)
                     put("refresh_token", refreshToken)
-                    put("redirect_uri", callbackUrl)
                 },
             )
         }
@@ -201,10 +206,6 @@ internal class BangumiClientImpl(
             )
         }
 
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to execute GraphQL query: $resp")
-        }
-
         return resp.body()
     }
 
@@ -213,11 +214,15 @@ internal class BangumiClientImpl(
             parameter("access_token", accessToken)
         }
 
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to get token status: $resp")
+        return resp.body<BangumiClient.GetTokenStatusResponse>()
+    }
+
+    override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser {
+        val resp = httpClient.get("$BANGUMI_API_HOST/v0/me") {
+            accessToken?.let { bearerAuth(it) }
         }
 
-        return resp.body<BangumiClient.GetTokenStatusResponse>()
+        return resp.body<BangumiUser>()
     }
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
@@ -251,8 +256,10 @@ internal class BangumiClientImpl(
     }.apply {
         registerLogging(logger)
         plugin(HttpSend).intercept { request ->
-            bearerToken.first()?.let {
-                request.bearerAuth(it)
+            if (!request.headers.contains(HttpHeaders.Authorization)) {
+                bearerToken.first()?.let {
+                    request.bearerAuth(it)
+                }
             }
             val originalCall = execute(request)
             if (originalCall.response.status.value !in 100..399) {
@@ -263,8 +270,11 @@ internal class BangumiClientImpl(
         }
     }
 
-    override val api = DefaultApi(BANGUMI_API_HOST, httpClient)
-    override val nextApi: SubjectBangumiNextApi = SubjectBangumiNextApi(BANGUMI_NEXT_API_HOST, httpClient)
+    private val api = DefaultApi(BANGUMI_API_HOST, httpClient)
+    override suspend fun getApi() = api
+
+    private val nextApi = SubjectBangumiNextApi(BANGUMI_NEXT_API_HOST, httpClient)
+    override suspend fun getNextApi(): SubjectBangumiNextApi = nextApi
 
     @Serializable
     private data class SearchSubjectByKeywordsResponse(
@@ -272,7 +282,7 @@ internal class BangumiClientImpl(
         val data: List<BangumiSubject>? = null,
     )
 
-    override val subjects: BangumiClientSubjects = object : BangumiClientSubjects {
+    private val subjects = object : BangumiClientSubjects {
         override suspend fun searchSubjectByKeywords(
             keyword: String,
             offset: Int?,
@@ -332,16 +342,14 @@ internal class BangumiClientImpl(
             start: Int?,
             maxResults: Int?
         ): Paged<BangumiLegacySubject> {
-            val keywordCoded = withContext(Dispatchers.IO) {
-                URLEncoder.encode(keyword, StandardCharsets.UTF_8.name())
-            }
-            val resp = httpClient.get("$BANGUMI_API_HOST/search/subject".plus("/").plus(keywordCoded)) {
+            val resp = httpClient.get("$BANGUMI_API_HOST/search/subject".plus("/")) {
+                url {
+                    appendPathSegments(keyword)
+                }
                 parameter("type", type.value)
                 parameter("responseGroup", responseGroup?.toString())
-                if (Objects.nonNull(start)) {
-                    parameter("start", start)
-                }
-                if (Objects.nonNull(maxResults)) parameter("max_results", maxResults)
+                parameter("start", start)
+                parameter("max_results", maxResults)
             }
 
             if (!resp.status.isSuccess()) {
@@ -371,6 +379,8 @@ internal class BangumiClientImpl(
             return Companion.getSubjectImageUrl(id, size)
         }
     }
+
+    override suspend fun getSubjects(): BangumiClientSubjects = subjects
 
     override fun close() {
         httpClient.close()

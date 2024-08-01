@@ -3,9 +3,14 @@
 #include <iostream>
 
 // used by boost stacktrace
-#define _GNU_SOURCE // NOLINT(*-reserved-identifier)
 
-#ifndef _WIN32
+// macos or linux, but not android
+#if (defined(__APPLE__) && defined(__MACH__)) || (defined(__linux__) && !defined(__ANDROID__))
+#define ANI_USE_BACKTRACE
+#endif
+
+#ifdef ANI_USE_BACKTRACE
+#define _GNU_SOURCE // NOLINT(*-reserved-identifier)
 #include <execinfo.h> // This is not available on windows
 #include "boost/stacktrace/stacktrace.hpp"
 #endif
@@ -19,8 +24,7 @@ namespace anilt {
 std::string lt_version() { return libtorrent::version(); }
 
 static void signal_handler([[maybe_unused]] int sig) {
-#ifndef _WIN32
-
+#ifdef ANI_USE_BACKTRACE
     void *buffer[100];
 
     const int nptrs = backtrace(buffer, 100);
@@ -44,7 +48,7 @@ static void signal_handler([[maybe_unused]] int sig) {
 #endif
 }
 void install_signal_handlers() {
-#ifndef _WIN32
+#ifdef ANI_USE_BACKTRACE
     signal(SIGSEGV, signal_handler);
     signal(SIGBUS, signal_handler);
 #endif

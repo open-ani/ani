@@ -25,7 +25,8 @@ import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.CombinedDanmakuFetchResult
+import me.him188.ani.app.data.source.danmaku.CombinedDanmakuFetchResult
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -37,7 +38,6 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuCollection
-import me.him188.ani.danmaku.protocol.DanmakuInfo
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState

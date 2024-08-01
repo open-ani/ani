@@ -52,9 +52,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.session.isLoggedIn
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun ProfilePage(
@@ -65,15 +63,12 @@ fun ProfilePage(
     val viewModel = remember { AccountViewModel() }
 
     // user profile
-    val selfInfo by viewModel.selfInfo.collectAsStateWithLifecycle()
-    val loggedIn by isLoggedIn()
-
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             SelfInfo(
-                selfInfo,
-                loggedIn,
+                viewModel.selfInfo,
+                viewModel.authState.isKnownLoggedIn,
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .fillMaxWidth(),
@@ -126,15 +121,17 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
                 DropdownMenu(showOpenDropdown, { showOpenDropdown = false }) {
                     DropdownMenuItem(
                         text = { Text("GitHub 开源仓库") },
-                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) },
+                        onClick = {
+                            KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER)
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text("反馈问题") },
-                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) },
+                        onClick = { KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) },
                     )
                     DropdownMenuItem(
                         text = { Text("Ani 官网") },
-                        onClick = { GlobalContext.get().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) },
+                        onClick = { KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) },
                     )
                 }
 

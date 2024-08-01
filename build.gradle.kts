@@ -30,13 +30,15 @@ plugins {
     kotlin("android") apply false
     kotlin("jvm") apply false
     kotlin("plugin.serialization") version libs.versions.kotlin apply false
-    kotlin("plugin.compose") version libs.versions.kotlin apply false
+    kotlin("plugin.compose") apply false
+    id("org.jetbrains.kotlinx.atomicfu") apply false
     id("org.jetbrains.compose") apply false
     id("com.android.library") apply false
     id("com.android.application") apply false
     id("com.google.devtools.ksp") version libs.versions.ksp apply false
     id("androidx.room") version libs.versions.room apply false
     id("com.strumenta.antlr-kotlin") version libs.versions.antlr.kotlin apply false
+    idea
 }
 
 allprojects {
@@ -68,5 +70,11 @@ subprojects {
 //                this.kotlinCompilerPlugin.set(libs.versions.compose.multiplatform.compiler.get())
 //            }
 //        }
+    }
+}
+
+idea {
+    module {
+        excludeDirs.add(file(".kotlin"))
     }
 }

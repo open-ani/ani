@@ -47,8 +47,8 @@ import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.session.AuthState
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.AiringLabel
@@ -69,7 +69,6 @@ import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRo
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
-import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -106,7 +105,6 @@ class EpisodeDetailsState(
 fun EpisodeDetails(
     state: EpisodeDetailsState,
     episodeCarouselState: EpisodeCarouselState,
-    editableRatingState: EditableRatingState,
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
     danmakuStatistics: DanmakuStatistics,
     videoStatistics: VideoStatistics,
@@ -123,6 +121,7 @@ fun EpisodeDetails(
     if (state.subjectId != 0) {
         val subjectDetailsViewModel =
             rememberViewModel(keys = listOf(state.subjectId)) { SubjectDetailsViewModel(state.subjectId) }
+        subjectDetailsViewModel.navigator = LocalNavigator.current
         if (showSubjectDetails) {
             ModalBottomSheet({ showSubjectDetails = false }) {
                 SubjectDetailsScene(
@@ -173,8 +172,10 @@ fun EpisodeDetails(
                                 "已想看，可更改为：", Modifier.align(Alignment.CenterVertically),
                             )
                         }
-                        SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
-                        SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) { // 一起换行
+                            SubjectCollectionTypeSuggestions.MarkAsDoing(editableSubjectCollectionTypeState)
+                            SubjectCollectionTypeSuggestions.MarkAsDropped(editableSubjectCollectionTypeState)
+                        }
                     }
 
                     else -> {}
@@ -314,8 +315,8 @@ private fun SectionTitle(
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
-    airingStatus: @Composable() (FlowRowScope.() -> Unit),
-    subjectSuggestions: @Composable() (FlowRowScope.() -> Unit),
+    airingStatus: @Composable (FlowRowScope.() -> Unit),
+    subjectSuggestions: @Composable (FlowRowScope.() -> Unit),
     exposedEpisodeItem: @Composable (contentPadding: PaddingValues) -> Unit,
     danmakuStatisticsSummary: @Composable () -> Unit,
     danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,

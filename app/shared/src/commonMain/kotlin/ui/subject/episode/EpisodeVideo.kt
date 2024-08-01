@@ -54,6 +54,7 @@ import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
+import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
@@ -95,6 +96,7 @@ internal fun EpisodeVideoImpl(
     sideSheets: @Composable () -> Unit,
     onShowMediaSelector: () -> Unit,
     onShowSelectEpisode: () -> Unit,
+    onClickScreenshot: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -204,7 +206,14 @@ internal fun EpisodeVideoImpl(
                 )
             }
         },
-        rhsBar = {
+        rhsButtons = {
+            if (expanded && currentPlatform.isDesktop()) {
+                ScreenshotButton(
+                    onClick = onClickScreenshot,
+                )
+            }
+        },
+        gestureLock = {
             if (expanded) {
                 GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }

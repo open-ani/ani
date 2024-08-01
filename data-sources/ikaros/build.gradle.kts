@@ -18,7 +18,7 @@ idea {
 dependencies {
     api(projects.dataSources.api)
     implementation(projects.utils.serialization)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
 
     api(libs.kotlinx.coroutines.core)
     api(libs.ktor.client.core)
@@ -32,7 +32,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
     implementation(libs.slf4j.api)
-    implementation(projects.utils.slf4jKt)
+    implementation(projects.utils.logging)
 
     implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
     implementation("com.squareup.moshi:moshi-adapters:1.14.0")

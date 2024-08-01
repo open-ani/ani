@@ -4,6 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isMobile
 
 @Immutable
 enum class FullscreenSwitchMode {
@@ -35,7 +37,7 @@ data class VideoScaffoldConfig(
      * 在编辑弹幕时暂停视频.
      * @since 3.2.0-beta01
      */
-    val pauseVideoOnEditDanmaku: Boolean = true,
+    val pauseVideoOnEditDanmaku: Boolean = currentPlatform.isMobile(),
     /**
      * 在观看到 90% 进度后, 自动标记看过
      */
@@ -44,6 +46,10 @@ data class VideoScaffoldConfig(
      * 在点击选择剧集后, 立即隐藏 media selector
      */
     val hideSelectorOnSelect: Boolean = false,
+    /**
+     * 横屏时自动全屏
+     */
+    val autoFullscreenOnLandscapeMode: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

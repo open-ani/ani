@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
 
 package me.him188.ani.app.platform
 
@@ -25,7 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.dp
-import java.io.File
+import me.him188.ani.app.platform.window.PlatformWindowMP
+import me.him188.ani.utils.io.SystemPath
 
 expect val LocalContext: ProvidableCompositionLocal<Context>
 
@@ -37,12 +38,12 @@ val Context.files: ContextFiles get() = filesImpl
 internal expect val Context.filesImpl: ContextFiles
 
 interface ContextFiles {
-    val cacheDir: File
+    val cacheDir: SystemPath
 
     /**
      * filesDir on Android.
      */
-    val dataDir: File
+    val dataDir: SystemPath
 }
 
 /**
@@ -73,7 +74,7 @@ fun BoxWithConstraintsScope.showTabletUI(): Boolean {
  * Note that when [fullscreen] is `false`, the system bars will be visible,
  * but the app may be still in landscape mode if the user's system is in landscape mode.
  */
-expect fun Context.setRequestFullScreen(fullscreen: Boolean)
+expect fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean)
 
 @Composable
 inline fun isSystemInFullscreen(): Boolean = isSystemInFullscreenImpl()

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
@@ -24,7 +25,6 @@ import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
-import me.him188.ani.app.tools.torrent.engines.Libtorrent4jConfig
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuFilterConfig
@@ -61,7 +61,6 @@ interface SettingsRepository {
     val videoScaffoldConfig: Settings<VideoScaffoldConfig>
 
     val videoResolverSettings: Settings<VideoResolverSettings>
-    val libtorrent4jConfig: Settings<Libtorrent4jConfig>
     val anitorrentConfig: Settings<AnitorrentConfig>
 
     val oneshotActionConfig: Settings<OneshotActionConfig>
@@ -73,7 +72,7 @@ interface SettingsRepository {
 interface Settings<T> {
     val flow: Flow<T>
     suspend fun set(value: T)
-    suspend fun update(update: T.() -> T)
+    suspend fun update(update: T.() -> T) = set(flow.first().update())
 }
 
 class PreferencesRepositoryImpl(
@@ -200,11 +199,6 @@ class PreferencesRepositoryImpl(
         "videoResolverSettings",
         VideoResolverSettings.serializer(),
         default = { VideoResolverSettings.Default },
-    )
-    override val libtorrent4jConfig: Settings<Libtorrent4jConfig> = SerializablePreference(
-        "libtorrent4jConfig",
-        Libtorrent4jConfig.serializer(),
-        default = { Libtorrent4jConfig.Default },
     )
     override val anitorrentConfig: Settings<AnitorrentConfig> = SerializablePreference(
         "anitorrentConfig",

@@ -17,11 +17,15 @@
  */
 
 plugins {
-    kotlin("jvm")
-    `flatten-source-sets`
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
+    id("org.jetbrains.kotlinx.atomicfu")
 }
 
-dependencies {
-    api(libs.kotlinx.coroutines.core)
-    testImplementation(libs.kotlinx.coroutines.test)
+kotlin {
+    sourceSets.commonMain.dependencies {
+        api(libs.kotlinx.coroutines.core)
+        implementation(projects.utils.platform)
+        implementation(libs.atomicfu)
+    }
 }

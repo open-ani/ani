@@ -18,7 +18,6 @@ import me.him188.ani.danmaku.dandanplay.data.DandanplayGetBangumiResponse
 import me.him188.ani.danmaku.dandanplay.data.DandanplayMatchVideoResponse
 import me.him188.ani.danmaku.dandanplay.data.DandanplaySearchEpisodeResponse
 import me.him188.ani.danmaku.dandanplay.data.DandanplaySeasonSearchResponse
-import java.util.Locale
 import kotlin.time.Duration
 
 internal class DandanplayClient(
@@ -119,13 +118,13 @@ internal class DandanplayClient(
         TRADITIONAL
     }
 
-    private fun getSystemChineseVariant(): ChineseVariant? {
-        val locale = Locale.getDefault()
-        if (locale.language != "zh") return null
-        return when (locale.country) {
-            "CN" -> ChineseVariant.SIMPLIFIED
-            "TW", "HK", "MO" -> ChineseVariant.TRADITIONAL
-            else -> null
-        }
-    }
+//    private fun getSystemChineseVariant(): ChineseVariant? {
+//        val locale = Locale.getDefault()
+//        if (locale.language != "zh") return null
+//        return when (locale.country) {
+//            "CN" -> ChineseVariant.SIMPLIFIED
+//            "TW", "HK", "MO" -> ChineseVariant.TRADITIONAL
+//            else -> null
+//        }
+//    }
 }

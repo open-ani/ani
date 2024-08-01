@@ -3,7 +3,7 @@ package me.him188.ani.app.ui.subject.episode.statistics
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import me.him188.ani.danmaku.ani.client.AniDanmakuProvider
+import me.him188.ani.app.data.source.danmaku.AniDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider

@@ -19,28 +19,26 @@
 package me.him188.ani.app.desktop
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
@@ -48,6 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.files.Path
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
@@ -55,6 +54,7 @@ import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceReso
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
@@ -65,20 +65,25 @@ import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.createAppRootCoroutineScope
+import me.him188.ani.app.platform.currentAniBuildConfig
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.app.platform.getCommonKoinModule
+import me.him188.ani.app.platform.isSystemInFullscreen
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
-import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.PlatformWindow
+import me.him188.ani.app.platform.window.setTitleBarColor
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.interaction.PlatformImplementations
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.AppTheme
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -91,6 +96,9 @@ import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
 import me.him188.ani.desktop.generated.resources.a_round
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -101,6 +109,7 @@ import org.koin.dsl.module
 import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 import java.io.File
+
 
 private val logger by lazy { logger("Ani") }
 private inline val toplevelLogger get() = logger
@@ -148,6 +157,7 @@ object AniDesktop {
         if (AniBuildConfigDesktop.isDebug) {
             logger.info { "Debug mode enabled" }
         }
+        logger.info { "Ani platform: ${currentPlatform.name}, version: ${currentAniBuildConfig.versionName}" }
 
         val defaultSize = DpSize(1301.dp, 855.dp)
         // Get the screen size as a Dimension object
@@ -193,10 +203,10 @@ object AniDesktop {
                             saveDir = {
                                 val saveDir = runBlocking {
                                     get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir
-                                        ?.let(::File)
-                                } ?: projectDirectories.torrentCacheDir
+                                        ?.let(::Path)
+                                } ?: projectDirectories.torrentCacheDir.toKtPath()
                                 toplevelLogger.info { "TorrentManager saveDir: $saveDir" }
-                                saveDir.resolve(it.id)
+                                saveDir.inSystem.resolve(it.id)
                             },
                         )
                     }
@@ -254,26 +264,28 @@ object AniDesktop {
                 CompositionLocalProvider(
                     LocalContext provides context,
                     LocalWindowState provides windowState,
+                    LocalPlatformWindow provides remember(window.windowHandle) { PlatformWindow(windowHandle = window.windowHandle) },
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true
-                    if (windowImmersed) {
-                        SideEffect {
-                            window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-                        }
-                    } else {
-                        SideEffect {
-                            window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
-                            window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
+
+                    SideEffect {
+                        // https://www.formdev.com/flatlaf/macos/
+                        if (currentPlatformDesktop is Platform.MacOS) {
+                            window.rootPane.putClientProperty("apple.awt.application.appearance", "system")
+                            window.rootPane.putClientProperty("apple.awt.fullscreenable", true)
+                            if (windowImmersed) {
+                                window.rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
+                                window.rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                                window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                            } else {
+                                window.rootPane.putClientProperty("apple.awt.fullWindowContent", false)
+                                window.rootPane.putClientProperty("apple.awt.transparentTitleBar", false)
+                            }
                         }
                     }
 
-                    MainWindowContent(
-                        hostIsMacOs = PlatformImplementations.hostIsMacOs,
-                        windowImmersed = windowImmersed,
-                        navigator,
-                    )
+                    MainWindowContent(navigator)
                 }
             }
 
@@ -285,24 +297,17 @@ object AniDesktop {
 
 
 @Composable
-private fun MainWindowContent(
-    hostIsMacOs: Boolean,
-    windowImmersed: Boolean,
+private fun FrameWindowScope.MainWindowContent(
     aniNavigator: AniNavigator,
 ) {
     AniApp {
-        val window by rememberUpdatedState(LocalWindowState.current)
-        val isFullscreen by remember {
-            derivedStateOf {
-                window.placement != WindowPlacement.Fullscreen
-            }
-        }
+        window.setTitleBarColor(NavigationRailDefaults.ContainerColor)
+
         Box(
             Modifier.background(color = AppTheme.colorScheme.background)
-                .ifThen(!isFullscreen) {
-                    statusBarsPadding()
+                .ifThen(!isSystemInFullscreen()) {
+                    statusBarsPadding() // Windows 有, macOS 没有
                 }
-                .padding(top = if (hostIsMacOs && windowImmersed && isFullscreen) 28.dp else 0.dp) // safe area for macOS if windowImmersed
                 .fillMaxSize(),
         ) {
             Box(Modifier.fillMaxSize()) {
@@ -328,17 +333,5 @@ private fun MainWindowContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-@Preview
-fun PreviewMainWindowMacOS() {
-    ProvideCompositionLocalsForPreview {
-        MainWindowContent(
-            hostIsMacOs = false,
-            windowImmersed = false,
-            aniNavigator = remember { AniNavigator() },
-        )
     }
 }

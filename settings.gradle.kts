@@ -25,13 +25,6 @@ pluginManagement {
         google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // Compose Multiplatform pre-release versions
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "kotlinx-atomicfu") { // atomicfu is not on Gradle Plugin Portal
-                useModule("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${requested.version}")
-            }
-        }
-    }
 }
 
 plugins {
@@ -44,12 +37,14 @@ fun includeProject(projectPath: String, dir: String? = null) {
 }
 
 // Utilities shared by client and server (targeting JVM)
-includeProject(":utils:slf4j-kt", "utils/slf4j-kt") // shared by client and server (targets JVM)
+includeProject(":utils:platform") // 适配各个平台的基础 API
+includeProject(":utils:logging") // shared by client and server (targets JVM)
 includeProject(":utils:serialization", "utils/serialization")
 includeProject(":utils:coroutines", "utils/coroutines")
 includeProject(":utils:ktor-client", "utils/ktor-client")
 includeProject(":utils:io", "utils/io")
 includeProject(":utils:testing", "utils/testing")
+includeProject(":utils:xml")
 includeProject(":utils:bbcode", "utils/bbcode")
 includeProject(":utils:bbcode:test-codegen")
 
@@ -65,6 +60,7 @@ includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
 includeProject(":app:shared:image-viewer")
+includeProject(":client")
 
 // server
 //includeProject(":server:core", "server/core") // server core
@@ -85,16 +81,15 @@ includeProject(":data-sources:web-base", "data-sources/web/web-base") // web 基
 includeProject(":data-sources:nyafun", "data-sources/web/nyafun") // https://nyafun.net/
 includeProject(":data-sources:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
 includeProject(":data-sources:ntdm", "data-sources/web/ntdm") // https://ntdm.tv/
+includeProject(":data-sources:gugufan", "data-sources/web/gugufan")
 includeProject(":data-sources:jellyfin", "data-sources/jellyfin")
 includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
 // danmaku
-//includeProject(":danmaku:api", "danmaku/api") // danmaku source interfaces
+//includeProject(":danmaku:api")
 //includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
 //includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 //includeProject(":danmaku:ani:client", "danmaku/ani/client") // danmaku server
-includeProject(":danmaku:ani:server", "danmaku/ani/server") // danmaku server
-includeProject(":danmaku:ani:protocol", "danmaku/ani/protocol") // danmaku server-client protocol
 
 includeProject(
     ":data-sources:dmhy:dataset-tools",
@@ -105,3 +100,22 @@ includeProject(
 includeProject(":ci-helper", "ci-helper") // 
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+
+/// Composite Builds
+
+
+// https://github.com/aclassen/ComposeReorderable
+includeBuild("app/shared/reorderable") {
+    dependencySubstitution {
+        substitute(module("org.burnoutcrew.composereorderable:reorderable")).using(project(":reorderable"))
+    }
+}
+
+// TODO Remove this composite build on Ksoup when it is published to Maven Central
+// https://github.com/fleeksoft/ksoup
+includeBuild("utils/xml/ksoup") {
+    dependencySubstitution {
+        substitute(module("com.fleeksoft.ksoup:ksoup")).using(project(":ksoup"))
+    }
+}

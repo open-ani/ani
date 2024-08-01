@@ -201,7 +201,14 @@ private class AstToRichElementVisitor(
     }
 
     override fun visitUrl_named(ctx: BBCodeParser.Url_namedContext) {
-        builder.withContext({ copy(jumpUrl = ctx.href?.text) }) {
+        builder.withContext(
+            {
+                copy(
+                    jumpUrl = ctx.attribute_value().QUOTED()?.text?.removeSurrounding("\"")
+                        ?: ctx.attribute_value().TEXT()?.text,
+                )
+            },
+        ) {
             visitChildren(ctx)
         }
     }

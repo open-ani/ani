@@ -1,12 +1,9 @@
 package me.him188.ani.app.ui.subject.components.comment
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.suspendCancellableCoroutine
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -27,28 +24,19 @@ import kotlin.coroutines.resume
 class CommentLoader<T>(
     source: Flow<LazyDataCache<T>>,
     coroutineContext: CoroutineContext,
-    uiMapper: suspend CommentMapperContext.(T) -> UiComment,
+    uiMapper: suspend CommentMapperContext.(T) -> UIComment,
 ) : HasBackgroundScope by BackgroundScope(coroutineContext) {
     private val cachedSource = source.shareInBackground()
 
     val list = cachedSource
-        .flatMapLatest {
-            sourceVersion.value = Any()
-            it.cachedDataFlow
-        }
+        .flatMapLatest { it.cachedDataFlow }
         .map { list ->
             list.map { with(CommentMapperContext) { uiMapper(it) } }
                 .sortedByDescending { it.createdAt }
         }
 
     val hasFinished = cachedSource.flatMapLatest { it.isCompleted }
-    val sourceVersion = MutableStateFlow(Any())
-
-    init {
-        cachedSource
-            .onEach { sourceVersion.emit(Any()) }
-            .launchIn(backgroundScope)
-    }
+    val sourceVersion = cachedSource.map { Any() }
 
     suspend fun reload() {
         cachedSource.first().refresh(RefreshOrderPolicy.REPLACE)
@@ -76,17 +64,19 @@ class CommentLoader<T>(
             },
             coroutineContext = coroutineContext,
             uiMapper = { comment ->
-                UiComment(
-                    id = comment.toString(),
+                UIComment(
+                    id = comment.id,
                     creator = comment.creator,
                     content = parseBBCode(comment.content),
                     createdAt = comment.createdAt * 1000L,
+                    reactions = emptyList(),
                     briefReplies = comment.replies.take(3).map { reply ->
-                        UiComment(
-                            id = reply.toString(),
+                        UIComment(
+                            id = reply.id,
                             creator = reply.creator,
                             content = parseBBCodeAsReply(reply.content),
                             createdAt = reply.createdAt * 1000L,
+                            reactions = emptyList(),
                             briefReplies = emptyList(),
                             replyCount = 0,
                         )

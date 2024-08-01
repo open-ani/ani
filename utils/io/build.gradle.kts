@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+
 /*
  * Ani
  * Copyright (C) 2022-2024 Him188
@@ -17,16 +19,24 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
+    id("org.jetbrains.kotlinx.atomicfu")
     kotlin("plugin.serialization")
-    `flatten-source-sets`
 }
 
 kotlin {
-    explicitApi()
-}
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions.freeCompilerArgs.add("-Xdont-warn-on-error-suppression")
 
-dependencies {
-    api(libs.kotlinx.coroutines.core)
-    testImplementation(libs.kotlinx.coroutines.test)
+    sourceSets.commonMain.dependencies {
+        api(projects.utils.platform)
+        api(libs.kotlinx.io.core)
+        implementation(libs.atomicfu)
+//        implementation(libs.okio) // 仅用于读文件
+    }
+
+    sourceSets.nativeMain.dependencies {
+        api(libs.korlibs.crypto) // JVM 用 JDK 就够了
+    }
 }

@@ -18,11 +18,8 @@
 
 package me.him188.ani.app.data.persistent
 
-import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.core.Serializer
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -33,14 +30,11 @@ import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexes
 import me.him188.ani.app.platform.Context
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
+import me.him188.ani.app.platform.ReplaceFileCorruptionHandler
+import me.him188.ani.app.platform.asDataStoreSerializer
+import me.him188.ani.app.platform.create
+import me.him188.ani.utils.io.SystemPath
 
-
-expect val Context.preferencesStore: DataStore<Preferences>
-
-expect val Context.tokenStore: DataStore<Preferences>
 
 /**
  * Must not be stored
@@ -54,7 +48,7 @@ inline val Context.dataStores: PlatformDataStoreManager get() = dataStoresImpl
 abstract class PlatformDataStoreManager {
     val mikanIndexStore: DataStore<MikanIndexes>
         get() = DataStoreFactory.create(
-            serializer = MikanIndexes.serializer().asDataStoreSerializer(MikanIndexes.Empty),
+            serializer = MikanIndexes.serializer().asDataStoreSerializer({ MikanIndexes.Empty }),
             produceFile = { resolveDataStoreFile("mikanIndexes") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MikanIndexes.Empty
@@ -64,7 +58,7 @@ abstract class PlatformDataStoreManager {
     val mediaSourceSaveStore by lazy {
         DataStoreFactory.create(
             serializer = MediaSourceSaves.serializer()
-                .asDataStoreSerializer(MediaSourceSaves.Default),
+                .asDataStoreSerializer({ MediaSourceSaves.Default }),
             produceFile = { resolveDataStoreFile("mediaSourceSaves") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MediaSourceSaves.Default
@@ -84,29 +78,10 @@ abstract class PlatformDataStoreManager {
         )
     }
 
-    abstract fun resolveDataStoreFile(name: String): File
+    abstract val tokenStore: DataStore<Preferences>
+    abstract val preferencesStore: DataStore<Preferences>
+    abstract val preferredAllianceStore: DataStore<Preferences>
+
+    abstract fun resolveDataStoreFile(name: String): SystemPath
 }
 
-fun <T> KSerializer<T>.asDataStoreSerializer(
-    defaultValue: T,
-    format: Json = Json {
-        ignoreUnknownKeys = true
-    },
-): Serializer<T> {
-    val serializer = this
-    return object : Serializer<T> {
-        override val defaultValue: T get() = defaultValue
-
-        override suspend fun readFrom(input: InputStream): T {
-            try {
-                return format.decodeFromStream(serializer, input)
-            } catch (e: Exception) {
-                throw CorruptionException("Failed to decode data", e)
-            }
-        }
-
-        override suspend fun writeTo(t: T, output: OutputStream) {
-            format.encodeToStream(serializer, t, output)
-        }
-    }
-}

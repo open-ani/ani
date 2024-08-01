@@ -13,6 +13,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import coil3.Image
 import coil3.annotation.ExperimentalCoilApi
+import coil3.asDrawable
 import me.him188.ani.R
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger

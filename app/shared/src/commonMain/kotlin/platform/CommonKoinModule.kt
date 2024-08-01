@@ -24,19 +24,19 @@ import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
 import me.him188.ani.app.data.persistent.createDatabaseBuilder
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.persistent.database.AniDatabase
-import me.him188.ani.app.data.persistent.preferencesStore
-import me.him188.ani.app.data.persistent.preferredAllianceStore
-import me.him188.ani.app.data.persistent.tokenStore
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -62,9 +62,9 @@ import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
-import me.him188.ani.app.data.source.DanmakuManager
-import me.him188.ani.app.data.source.DanmakuManagerImpl
 import me.him188.ani.app.data.source.UpdateManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManager
+import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
 import me.him188.ani.app.data.source.media.DefaultMediaAutoCacheService
 import me.him188.ani.app.data.source.media.DummyMediaCacheEngine
 import me.him188.ani.app.data.source.media.MediaAutoCacheService
@@ -76,35 +76,48 @@ import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.source.media.createWithKoin
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.data.source.media.toClientProxyConfig
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
-import me.him188.ani.app.session.SessionManager
-import me.him188.ani.app.session.SessionManagerImpl
-import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
+import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
+import me.him188.ani.utils.coroutines.onReplacement
+import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.ktor.ClientProxyConfig
+import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
-import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
-@Suppress("UnusedReceiverParameter") // bug
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
-    single<TokenRepository> { TokenRepositoryImpl(getContext().tokenStore) }
-    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().preferredAllianceStore) }
-    single<SessionManager> { SessionManagerImpl() }
+    single<TokenRepository> { TokenRepositoryImpl(getContext().dataStores.tokenStore) }
+    single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().dataStores.preferredAllianceStore) }
+    single<SessionManager> { SessionManager(koin, coroutineScope.coroutineContext) }
     single<BangumiClient> {
-        createBangumiClient(
-            get<SessionManager>().session.map { it?.accessToken },
-            coroutineScope.coroutineContext,
+        val settings = get<SettingsRepository>()
+        val sessionManager by inject<SessionManager>()
+        DelegateBangumiClient(
+            settings.proxySettings.flow.map { it.default }.map { proxySettings ->
+                createBangumiClient(
+                    sessionManager.unverifiedAccessToken,
+                    proxySettings.toClientProxyConfig(),
+                    coroutineScope.coroutineContext,
+                )
+            }.onReplacement {
+                it.close()
+            }.shareIn(coroutineScope, started = SharingStarted.Lazily, replay = 1),
         )
     }
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
@@ -132,7 +145,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             saveDir = getContext().files.cacheDir.resolve("updates/download"),
         )
     }
-    single<SettingsRepository> { PreferencesRepositoryImpl(getContext().preferencesStore) }
+    single<SettingsRepository> { PreferencesRepositoryImpl(getContext().dataStores.preferencesStore) }
     single<DanmakuRegexFilterRepository> { DanmakuRegexFilterRepositoryImpl(getContext().dataStores.danmakuFilterStore) }
     single<MikanIndexCacheRepository> { MikanIndexCacheRepositoryImpl(getContext().dataStores.mikanIndexStore) }
 
@@ -151,17 +164,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         fun getMediaMetadataDir(engineId: String) = getContext().files.dataDir
             .resolve("media-cache").resolve(engineId)
 
-        // migrate old files
-        getContext().files.cacheDir.resolve("media").let { oldDir ->
-            // 旧的都是 libtorrent4j
-            if (oldDir.exists()) {
-                oldDir.copyRecursively(
-                    getMediaMetadataDir(TorrentEngineType.Libtorrent4j.id), true,
-                )
-                oldDir.deleteRecursively()
-            }
-        }
-
         val engines = get<TorrentManager>().engines
         MediaCacheManagerImpl(
             storagesIncludingDisabled = buildList(capacity = engines.size) {
@@ -170,7 +172,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = "test-in-memory",
-                            metadataDir = getMediaMetadataDir("test-in-memory").toPath(),
+                            metadataDir = getMediaMetadataDir("test-in-memory"),
                             engine = DummyMediaCacheEngine("test-in-memory"),
                             coroutineScope.childScopeContext(),
                         ),
@@ -180,7 +182,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                     add(
                         DirectoryMediaCacheStorage(
                             mediaSourceId = id,
-                            metadataDir = getMediaMetadataDir(engine.type.id).toPath(),
+                            metadataDir = getMediaMetadataDir(engine.type.id),
                             engine = TorrentMediaCacheEngine(
                                 mediaSourceId = id,
                                 torrentEngine = engine,
@@ -239,7 +241,7 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
                 }
                 mediaSourceInstanceRepository.add(
                     mediaSourceSave = MediaSourceSave(
-                        instanceId = UUID.randomUUID().toString(),
+                        instanceId = Uuid.randomString(),
                         mediaSourceId = id,
                         isEnabled = true,
                         config = MediaSourceConfig.Default,
@@ -285,6 +287,7 @@ interface AniBuildConfig {
     val bangumiOauthClientAppId: String
     val bangumiOauthClientSecret: String
     val isDebug: Boolean
+    val aniAuthServerUrl: String
 
     companion object {
         @Stable
@@ -333,6 +336,7 @@ fun getAniUserAgent(
 
 fun createBangumiClient(
     bearerToken: Flow<String?>,
+    proxyConfig: ClientProxyConfig?,
     parentCoroutineContext: CoroutineContext,
 ): BangumiClient {
     return BangumiClient.create(
@@ -341,6 +345,7 @@ fun createBangumiClient(
         bearerToken,
         parentCoroutineContext,
     ) {
+        proxy(proxyConfig)
         install(UserAgent) {
             agent = getAniUserAgent(currentAniBuildConfig.versionName)
         }

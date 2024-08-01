@@ -17,6 +17,20 @@
  */
 
 plugins {
-    kotlin("jvm")
-    `flatten-source-sets`
+    kotlin("multiplatform")
+    `ani-mpp-lib-targets`
+}
+
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            api(kotlin("test-annotations-common"))
+        }
+    }
+
+    sourceSets.jvmMain {
+        dependencies {
+            api(kotlin("test-junit5"))
+        }
+    }
 }

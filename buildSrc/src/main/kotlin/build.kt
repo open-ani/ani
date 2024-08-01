@@ -52,7 +52,7 @@ val testOptInAnnotations = arrayOf(
     "kotlin.io.path.ExperimentalPathApi",
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
     "kotlinx.serialization.ExperimentalSerializationApi",
-    "me.him188.ani.utils.coroutines.TestOnly",
+    "me.him188.ani.utils.platform.annotations.TestOnly",
 )
 
 val optInAnnotations = arrayOf(
@@ -66,6 +66,7 @@ val optInAnnotations = arrayOf(
     "androidx.compose.material3.ExperimentalMaterial3Api",
     "androidx.compose.ui.ExperimentalComposeUiApi",
     "org.jetbrains.compose.resources.ExperimentalResourceApi",
+    "kotlin.ExperimentalStdlibApi",
 )
 
 val testLanguageFeatures: List<String> = listOf(

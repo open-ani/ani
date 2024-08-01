@@ -10,14 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.coroutines.CompletableDeferred
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.ui.settings.SettingsTab
 import moe.tlaster.precompose.navigation.NavOptions
 import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.navigation.PopUpTo
 import org.koin.core.component.KoinComponent
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 /**
  * Supports navigation to any page in the app.
@@ -69,21 +67,11 @@ interface AniNavigator {
         navigator.navigate("/home?tab=search")
     }
 
-    private val Platform.supportsCallbackLogin: Boolean
-        get() = when (this) {
-            is Platform.Desktop -> false
-            Platform.Android -> true
-        }
-
     /**
      * 登录页面
      */
     fun navigateBangumiOAuthOrTokenAuth() {
-        if (currentPlatform.supportsCallbackLogin) {
-            navigator.navigate("/bangumi-oauth", NavOptions(launchSingleTop = true))
-        } else {
-            navigateBangumiTokenAuth()
-        }
+        navigator.navigate("/bangumi-oauth", NavOptions(launchSingleTop = true))
     }
 
     fun navigateBangumiTokenAuth() {
@@ -132,7 +120,7 @@ val LocalNavigator = compositionLocalOf<AniNavigator> {
 // dummy
 object LocalBrowserNavigator {
     @Stable
-    val current get() = GlobalContext.get().get<BrowserNavigator>()
+    val current get() = KoinPlatform.getKoin().get<BrowserNavigator>()
 }
 
 @Composable

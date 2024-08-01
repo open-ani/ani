@@ -29,16 +29,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.session.BangumiAuthorizationConstants
-import me.him188.ani.app.session.OAuthResult
-import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
@@ -46,7 +47,7 @@ import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatformTools
 
 
 class MainActivity : AniComponentActivity() {
@@ -58,25 +59,12 @@ class MainActivity : AniComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        GlobalContext.getOrNull()?.get<NotifManager>()?.let {
+        KoinPlatformTools.defaultContext().getOrNull()?.get<NotifManager>()?.let {
             val code = intent.getIntExtra(EXTRA_REQUEST_CODE, -1)
             if (code != -1) {
                 logger.info { "onNewIntent requestCode: $code" }
                 AndroidNotifManager.handleIntent(code)
             }
-        }
-
-        val data = intent.data ?: return
-
-        val hasCallbackCode = data.queryParameterNames?.contains("code") == true
-        if (hasCallbackCode) {
-            val code = data.getQueryParameter("code")!!
-            logger.info { "onNewIntent Receive code '$code', current processingRequest: ${sessionManager.processingRequest.value}" }
-            sessionManager.processingRequest.value?.onCallback(
-                Result.success(
-                    OAuthResult(code, BangumiAuthorizationConstants.CALLBACK_URL),
-                ),
-            )
         }
     }
 
@@ -99,6 +87,11 @@ class MainActivity : AniComponentActivity() {
         // 允许画到 system bars
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        val toaster = object : Toaster {
+            override fun toast(text: String) {
+                Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
+            }
+        }
         setContent {
             AniApp {
 //                val viewModel = rememberViewModel { AniAppViewModel() }
@@ -128,10 +121,9 @@ class MainActivity : AniComponentActivity() {
 //                    }
 //                }
                 CompositionLocalProvider(
-                    LocalToaster provides object : Toaster {
-                        override fun toast(text: String) {
-                            Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
-                        }
+                    LocalToaster provides toaster,
+                    LocalPlatformWindow provides remember {
+                        PlatformWindow()
                     },
                 ) {
                     AniAppContent(aniNavigator)

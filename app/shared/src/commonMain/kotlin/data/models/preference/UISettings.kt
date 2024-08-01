@@ -4,7 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressTheme
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 
 @Serializable
 @Immutable
@@ -41,7 +41,7 @@ enum class ThemeKind {
 @Serializable
 @Immutable
 data class MyCollectionsSettings(
-    val enableListAnimation: Boolean = true,
+    val enableListAnimation: Boolean = false,
 ) {
     companion object {
         @Stable
@@ -63,7 +63,7 @@ data class SearchSettings(
 @Serializable
 @Immutable
 data class EpisodeProgressSettings(
-    val theme: EpisodeProgressTheme = EpisodeProgressTheme.Default,
+    val theme: EpisodeListProgressTheme = EpisodeListProgressTheme.Default,
 ) {
     companion object {
         @Stable

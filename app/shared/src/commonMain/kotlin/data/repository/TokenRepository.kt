@@ -7,17 +7,36 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.session.Session
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.utils.platform.currentTimeMillis
+import kotlin.time.Duration.Companion.hours
 
+/**
+ * Do not access directly. Use [SessionManager] instead.
+ */
 interface TokenRepository : Repository {
     val refreshToken: Flow<String?>
     suspend fun setRefreshToken(value: String)
 
+    /**
+     * 当前的登录会话, 为 `null` 表示未登录.
+     */
     val session: Flow<Session?>
     suspend fun setSession(session: Session)
 
     suspend fun clear()
 }
+
+/**
+ * Bangumi 账号信息.
+ */
+data class Session(
+    val accessToken: String,
+    val expiresAtMillis: Long,
+)
+
+fun Session.isValid() = !isExpired()
+fun Session.isExpired() = expiresAtMillis <= currentTimeMillis() + 1.hours.inWholeMilliseconds
 
 internal class TokenRepositoryImpl(
     store: DataStore<Preferences>,
@@ -45,14 +64,14 @@ internal class TokenRepositoryImpl(
         }
         Session(
             accessToken = accessToken,
-            expiresAt = expireAt,
+            expiresAtMillis = expireAt,
         )
     }
 
     override suspend fun setSession(session: Session) {
         tokenStore.edit {
             it[ACCESS_TOKEN] = session.accessToken
-            it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAt
+            it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAtMillis
         }
     }
 

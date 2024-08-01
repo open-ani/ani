@@ -16,7 +16,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
 
     override suspend fun getUserByUsername(username: String): UserInfo? {
         return kotlin.runCatching {
-            client.api.getUserByName(username).body().toUserInfo()
+            client.getApi().getUserByName(username).body().toUserInfo()
         }.onFailure {
             logger.warn("Exception in getUserByUsername", it)
         }.getOrNull()

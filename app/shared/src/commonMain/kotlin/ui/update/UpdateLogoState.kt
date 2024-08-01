@@ -6,8 +6,8 @@ import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.tools.update.InstallationResult
 import me.him188.ani.app.tools.update.UpdateInstaller
-import org.koin.core.context.GlobalContext
-import java.io.File
+import me.him188.ani.utils.io.SystemPath
+import org.koin.mp.KoinPlatform
 
 /**
  * UI 的"有新版本"标识的状态
@@ -62,7 +62,7 @@ sealed interface UpdateLogoState {
     @Immutable
     data class Downloaded(
         override val version: NewVersion,
-        val file: File,
+        val file: SystemPath,
     ) : HasNewVersion
 
     companion object
@@ -77,7 +77,7 @@ fun AutoUpdateViewModel.handleClickLogo(
         UpdateLogoState.ClickToCheck -> {} // should not happen
         is UpdateLogoState.DownloadFailed -> this.restartDownload(context)
         is UpdateLogoState.Downloaded -> {
-            val result = GlobalContext.get().get<UpdateInstaller>().install(logo.file, context)
+            val result = KoinPlatform.getKoin().get<UpdateInstaller>().install(logo.file, context)
             if (result is InstallationResult.Failed) {
                 onInstallationError(result.reason)
             }

@@ -8,6 +8,8 @@ import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.source.media.fetch.awaitCompletion
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import kotlin.concurrent.Volatile
+import kotlin.jvm.JvmInline
 
 /**
  * 访问 [MediaSelector] 的自动选择功能

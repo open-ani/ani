@@ -7,11 +7,10 @@ import kotlinx.coroutines.SupervisorJob
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
-import me.him188.ani.app.tools.torrent.engines.Libtorrent4jEngine
 import me.him188.ani.utils.coroutines.childScope
+import me.him188.ani.utils.io.SystemPath
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -22,7 +21,6 @@ import kotlin.coroutines.CoroutineContext
  * - qBittorrent (本机局域网).
  */
 interface TorrentManager {
-    val libtorrent4j: Libtorrent4jEngine
     val anitorrent: AnitorrentEngine
 
     val engines: List<TorrentEngine>
@@ -31,7 +29,6 @@ interface TorrentManager {
 enum class TorrentEngineType(
     val id: String,
 ) {
-    Libtorrent4j("libtorrent4j"),
     Anitorrent("anitorrent"),
 }
 
@@ -46,21 +43,11 @@ class TorrentDownloaderManagerError(
 
 class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
-    private val saveDir: (type: TorrentEngineType) -> File,
+    private val saveDir: (type: TorrentEngineType) -> SystemPath,
 ) : TorrentManager, KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
 
-    private val libtorrent4jConfig get() = settingsRepository.libtorrent4jConfig.flow
-
     private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
-
-    override val libtorrent4j: Libtorrent4jEngine by lazy {
-        Libtorrent4jEngine(
-            scope.childScope(CoroutineName("Libtorrent4jEngine")),
-            libtorrent4jConfig,
-            saveDir(TorrentEngineType.Libtorrent4j),
-        )
-    }
 
     override val anitorrent: AnitorrentEngine by lazy {
         AnitorrentEngine(
@@ -80,7 +67,8 @@ class DefaultTorrentManager(
 
         when (Platform.currentPlatform) {
             is Platform.Desktop -> listOf(anitorrent)
-            Platform.Android -> listOf(libtorrent4j)
+            Platform.Android -> listOf(anitorrent)
+            Platform.Ios -> listOf() // TODO IOS anitorrent
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -19,11 +20,16 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.update.DefaultFileDownloader
 import me.him188.ani.app.tools.update.FileDownloaderState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.utils.io.createDirectories
+import me.him188.ani.utils.io.exists
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.list
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 /**
  * 主页使用的自动更新检查
@@ -90,7 +96,7 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
         if (autoCheckTasker.isRunning) {
             return
         } else {
-            if (System.currentTimeMillis() - lastCheckTime < 1000 * 60 * 60 * 1) {
+            if (currentTimeMillis() - lastCheckTime < 1000 * 60 * 60 * 1) {
                 return // 1 小时内检查过
             }
 
@@ -117,7 +123,7 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                 updateChecker.checkLatestVersion(updateSettings.releaseClass)
             } finally {
                 withContext(Dispatchers.Main) {
-                    lastCheckTime = System.currentTimeMillis()
+                    lastCheckTime = currentTimeMillis()
                 }
             }
             withContext(Dispatchers.Main) { latestVersion = ver }
@@ -139,7 +145,7 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                     return@launch
                 }
                 ver.downloadUrlAlternatives.firstOrNull()?.let {
-                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+                    KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(
                         context,
                         it,
                     )
@@ -155,17 +161,17 @@ class AutoUpdateViewModel : AbstractViewModel(), KoinComponent {
                 val allowedFilenames = ver.downloadUrlAlternatives.map {
                     it.substringAfterLast("/", "")
                 }
-                for (file in dir.listFiles().orEmpty()) {
-                    if (file.name.equals(".DS_Store")) continue
+                for (file in dir.list()) {
+                    if (file.name == ".DS_Store") continue
 
                     if (allowedFilenames.none { file.name.contains(it) }) {
                         logger.info { "Deleting old installer: $file" }
-                        updateManager.deleteInstaller(file)
+                        updateManager.deleteInstaller(file.inSystem)
                     }
                 }
             }
 
-            withContext(Dispatchers.IO) { dir.mkdirs() }
+            withContext(Dispatchers.IO) { dir.createDirectories() }
             fileDownloader.download(
                 alternativeUrls = ver.downloadUrlAlternatives,
                 filenameProvider = { it.substringAfterLast("/", "") },

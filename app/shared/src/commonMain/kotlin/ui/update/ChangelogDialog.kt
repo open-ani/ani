@@ -28,7 +28,7 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun ChangelogDialog(
@@ -50,7 +50,7 @@ fun ChangelogDialog(
                 TextButton(onClick = onDismissRequest) {
                     Text("取消")
                 }
-                OutlinedButton({ GlobalContext.get().get<BrowserNavigator>().openBrowser(context, RELEASES) }) {
+                OutlinedButton({ KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, RELEASES) }) {
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
                 Button(
@@ -119,7 +119,7 @@ fun ChangelogDialog(
 //            buttons = {
 //                val context by rememberUpdatedState(LocalContext.current)
 //                TextButton({
-//                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+//                    KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(
 //                        context,
 //                        "$RELEASES/tag/v3.1.0-beta03"
 //                    )

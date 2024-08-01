@@ -3,6 +3,7 @@ package me.him188.ani.app.data.repository
 import io.ktor.client.plugins.ResponseException
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -17,7 +18,8 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.data.models.subject.toInfoboxItem
-import me.him188.ani.app.session.SessionManager
+import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.data.source.session.username
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -79,12 +81,12 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
 
     override suspend fun getSubject(id: Int): BangumiSubject? {
         return runCatching {
-            client.api.getSubjectById(id).body()
+            client.getApi().getSubjectById(id).body()
         }.getOrNull()
     }
 
     override suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload) {
-        client.api.postUserCollection(subjectId, payload)
+        client.getApi().postUserCollection(subjectId, payload)
     }
 
     override suspend fun deleteSubjectCollection(subjectId: Int) {
@@ -100,7 +102,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
             try {
                 val pageSize = 10
                 withContext(Dispatchers.IO) {
-                    client.api.getUserCollectionsByUsername(
+                    client.getApi().getUserCollectionsByUsername(
                         username,
                         offset = page * pageSize, limit = pageSize,
                         subjectType = subjectType,
@@ -121,7 +123,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         return flow {
             emit(
                 try {
-                    client.api.getUserCollection(sessionManager.username.first() ?: "-", subjectId).body()
+                    client.getApi().getUserCollection(sessionManager.username.first() ?: "-", subjectId).body()
                 } catch (e: ResponseException) {
                     if (e.response.status == HttpStatusCode.NotFound) {
                         null
@@ -138,7 +140,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
             emit(
                 try {
                     val username = sessionManager.username.first() ?: "-"
-                    client.api.getUserCollection(username, subjectId).body().type.toCollectionType()
+                    client.getApi().getUserCollection(username, subjectId).body().type.toCollectionType()
                 } catch (e: ResponseException) {
                     if (e.response.status == HttpStatusCode.NotFound) {
                         UnifiedCollectionType.NOT_COLLECTED
@@ -228,11 +230,4 @@ fun BangumiUserEpisodeCollection.toEpisodeCollection(): EpisodeCollection {
         episodeInfo = episode.toEpisodeInfo(),
         collectionType = type.toCollectionType(),
     )
-}
-
-
-private class LruCache<K, V>(private val maxSize: Int) : LinkedHashMap<K, V>(maxSize + 1, 1f, true) {
-    override fun removeEldestEntry(eldest: Map.Entry<K, V>): Boolean {
-        return size > maxSize
-    }
 }

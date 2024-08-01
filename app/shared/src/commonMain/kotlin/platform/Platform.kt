@@ -23,10 +23,10 @@ sealed class Platform {
         override val arch: Arch get() = Arch.AARCH64
     }
 
-//    data object Ios : Platform() {
-//        override val name: String get() = "iOS"
-//        override val arch: Arch get() = Arch.AARCH64
-//    }
+    data object Ios : Platform() {
+        override val name: String get() = "iOS"
+        override val arch: Arch get() = Arch.AARCH64
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -45,10 +45,6 @@ sealed class Platform {
         override val arch: Arch
     ) : Desktop("macOS")
 
-    data class Linux(
-        override val arch: Arch
-    ) : Desktop("Linux")
-
     @Stable
     companion object {
         @Stable
@@ -59,6 +55,13 @@ sealed class Platform {
 @Stable
 val currentPlatform: Platform
     get() = Platform.currentPlatform
+
+@Stable
+val currentPlatformDesktop: Platform.Desktop
+    get() {
+        check(Platform.currentPlatform is Platform.Desktop)
+        return Platform.currentPlatform
+    }
 
 @Immutable
 enum class Arch(

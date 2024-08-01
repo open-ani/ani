@@ -17,32 +17,38 @@
  */
 
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
-    kotlin("plugin.compose")
-
-    // for @Stable and @Immutable
-    // Note: we actually can avoid this, by using a `compose_compiler_config.conf`
-    // See https://developer.android.com/develop/ui/compose/performance/stability/fix#configuration-file
-    // But for simplicity, we just include compose here.
-    id("org.jetbrains.compose")
-    `flatten-source-sets`
+    `ani-mpp-lib-targets`
     idea
 }
 
-dependencies {
-    implementation(libs.kotlinx.serialization.core)
-    api(libs.kotlinx.coroutines.core)
-    api(projects.utils.ktorClient)
-    api(projects.utils.serialization)
-    api(libs.ktor.client.logging)
-    api(libs.ktor.client.auth)
-    api(libs.jsoup)
-    implementation(projects.utils.slf4jKt)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(projects.utils.testing)
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            implementation(libs.kotlinx.serialization.core)
+            api(libs.kotlinx.coroutines.core)
+            api(projects.utils.ktorClient)
+            api(projects.utils.serialization)
+            implementation(projects.utils.platform)
+            api(libs.ktor.client.auth)
+            implementation(libs.ktor.client.logging)
+            implementation(projects.utils.logging)
+        }
+    }
 
-    implementation(compose.runtime) // required by the compose compiler
+    sourceSets.commonTest {
+        dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(projects.utils.testing)
+        }
+    }
+
+    sourceSets.jvmMain {
+        dependencies {
+            api(libs.jsoup)
+        }
+    }
 }
 
 idea {

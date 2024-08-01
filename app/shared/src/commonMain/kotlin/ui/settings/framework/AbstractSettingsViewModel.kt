@@ -11,10 +11,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.datasources.api.source.asAutoCloseable
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
-import org.jetbrains.annotations.TestOnly
+import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.component.KoinComponent
+import kotlin.jvm.JvmField
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -30,7 +32,7 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
                 connectTimeoutMillis = 30_000
             }
         }.also {
-            addCloseable(it)
+            addCloseable(it.asAutoCloseable())
         }
     }
 
@@ -88,6 +90,8 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
         @TestOnly
         var _valueOverride: T? = null
         private val valueDelegate = pref.flow.produceState(placeholder)
+
+        @OptIn(TestOnly::class)
         override val value: P
             get() = _valueOverride ?: valueDelegate.value
     }

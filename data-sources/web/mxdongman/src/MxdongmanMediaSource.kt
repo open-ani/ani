@@ -48,7 +48,7 @@ class MxdongmanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource(
         override fun create(config: MediaSourceConfig): MediaSource = MxdongmanMediaSource(config)
     }
 
-    override val baseUrl: String get() = "https://www.mxdm4.com"
+    override val baseUrl: String get() = "https://www.mxdm.xyz"
 
     // https://www.mxdm4.com/search/-------------.html?wd=%E6%A8%B1trick
     override fun parseBangumiSearch(document: Document): List<Bangumi> {

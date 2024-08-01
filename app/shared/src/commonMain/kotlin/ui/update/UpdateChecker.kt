@@ -3,25 +3,23 @@ package me.him188.ani.app.ui.update
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.appendPathSegments
-import io.ktor.utils.io.jvm.javaio.toInputStream
+import io.ktor.utils.io.core.use
 import kotlinx.coroutines.CancellationException
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseUpdatesDetailedResponse
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.profile.update.Release
-import me.him188.ani.danmaku.protocol.ReleaseClass
-import me.him188.ani.danmaku.protocol.ReleaseUpdatesDetailedResponse
 import me.him188.ani.utils.coroutines.withExceptionCollector
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import java.time.Instant
 
 
 class CheckVersionFailedException(
@@ -33,7 +31,7 @@ class UpdateChecker {
     /**
      * 检查是否有更新的版本. 返回最新版本的信息, 或者 `null` 表示没有新版本.
      */
-    @Throws(CheckVersionFailedException::class)
+    @Throws(CheckVersionFailedException::class, kotlin.coroutines.cancellation.CancellationException::class)
     suspend fun checkLatestVersion(
         releaseClass: ReleaseClass,
         currentVersion: String = currentAniBuildConfig.versionName,
@@ -62,7 +60,7 @@ class UpdateChecker {
                     val version = tag.substringAfter("v")
                     val publishedAt = kotlin.runCatching {
                         TimeFormatter().format(
-                            Instant.parse(release.publishedAt).toEpochMilli(),
+                            Instant.parse(release.publishedAt),
                         )
                     }.getOrElse { release.publishedAt }
                     val downloadUrl = release.assets
@@ -122,8 +120,8 @@ class UpdateChecker {
             parameter("clientPlatform", platform.name.lowercase())
             parameter("clientArch", platform.arch.displayName)
             parameter("releaseClass", releaseClass.name)
-        }.bodyAsChannel().toInputStream().use {
-            json.decodeFromStream(ReleaseUpdatesDetailedResponse.serializer(), it)
+        }.bodyAsText().let {
+            json.decodeFromString(ReleaseUpdatesDetailedResponse.serializer(), it)
         }.updates
 
         if (updates.isEmpty()) {
@@ -143,10 +141,10 @@ class UpdateChecker {
     }
 
     private fun getDistributionSuffix(): String = when (val platform = Platform.currentPlatform) {
-        is Platform.Linux -> "debian-${platform.arch.displayName}.deb"
         is Platform.MacOS -> "macos-${platform.arch.displayName}.dmg"
         is Platform.Windows -> "windows-${platform.arch.displayName}.zip"
         Platform.Android -> "apk"
+        Platform.Ios -> "ipa"
     }
 
     private companion object {

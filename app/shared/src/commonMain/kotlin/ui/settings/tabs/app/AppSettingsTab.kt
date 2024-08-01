@@ -26,12 +26,14 @@ import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -44,16 +46,14 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.subject.collection.progress.EpisodeProgressTheme
+import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.NewVersion
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.app.ui.update.UpdateChecker
-import me.him188.ani.danmaku.protocol.ReleaseClass
 import org.koin.core.component.inject
-import org.koin.core.context.GlobalContext
-import java.util.Locale
+import org.koin.mp.KoinPlatform
 
 
 sealed class CheckVersionResult {
@@ -134,7 +134,7 @@ fun AppSettingsTab(
             val context by rememberUpdatedState(LocalContext.current)
             RowButtonItem(
                 onClick = {
-                    GlobalContext.get().get<BrowserNavigator>().openBrowser(
+                    KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(
                         context,
                         "https://github.com/open-ani/ani/releases/tag/v${currentAniBuildConfig.versionName}",
                     )
@@ -348,12 +348,12 @@ fun AppSettingsTab(
         Group(title = { Text("选集播放") }) {
             val episode by remember { derivedStateOf { uiSettings.episodeProgress } }
             SwitchItem(
-                checked = episode.theme == EpisodeProgressTheme.LIGHT_UP,
+                checked = episode.theme == EpisodeListProgressTheme.LIGHT_UP,
                 onCheckedChange = {
                     vm.uiSettings.update(
                         uiSettings.copy(
                             episodeProgress = episode.copy(
-                                theme = if (it) EpisodeProgressTheme.LIGHT_UP else EpisodeProgressTheme.ACTION,
+                                theme = if (it) EpisodeListProgressTheme.LIGHT_UP else EpisodeListProgressTheme.ACTION,
                             ),
                         ),
                     )
@@ -420,6 +420,17 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("选择数据源后自动关闭弹窗") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
+        if (currentPlatform.isMobile()) {
+            HorizontalDividerItem()
+            SwitchItem(
+                checked = config.autoFullscreenOnLandscapeMode,
+                onCheckedChange = {
+                    vm.videoScaffoldConfig.update(config.copy(autoFullscreenOnLandscapeMode = it))
+                },
+                title = { Text("重力感应旋屏") },
+                Modifier.placeholder(vm.uiSettings.loading),
+            )
+        }
     }
 }
 
@@ -437,7 +448,7 @@ private fun ReleaseClassIcon(releaseClass: ReleaseClass) {
 private fun guessReleaseClass(version: String): ReleaseClass {
     val metadata = version
         .substringAfter("-", "")
-        .lowercase(Locale.ENGLISH)
+        .lowercase()
     return when {
         metadata.isEmpty() -> ReleaseClass.STABLE
         "alpha" in metadata || "dev" in metadata -> ReleaseClass.ALPHA

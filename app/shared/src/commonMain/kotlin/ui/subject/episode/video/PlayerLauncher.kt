@@ -1,9 +1,11 @@
 package me.him188.ani.app.ui.subject.episode.video
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -31,7 +33,6 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * 将 [MediaSelector] 和 [videoSourceResolver] 结合, 为 [playerState] 提供视频源.
@@ -110,7 +111,7 @@ class PlayerLauncher(
 
     init {
         launchInBackground {
-            videoSource.collect { source ->
+            videoSource.collectLatest { source ->
                 logger.info { "Got new video source: $source, updating playerState" }
                 try {
                     playerState.setVideoSource(source)
@@ -125,8 +126,9 @@ class PlayerLauncher(
                         OpenFailures.ENGINE_DISABLED -> VideoLoadingState.UnsupportedMedia
                     }
                 } catch (_: CancellationException) {
+                    videoLoadingStateFlow.value = VideoLoadingState.Cancelled
                     // ignore
-                    return@collect
+                    return@collectLatest
                 } catch (e: Throwable) {
                     logger.error(e) { "Failed to set video source" }
                     videoLoadingStateFlow.value = VideoLoadingState.UnknownError(e)

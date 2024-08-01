@@ -11,8 +11,8 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.subject.components.comment.CommentState
+import me.him188.ani.app.ui.subject.components.comment.UIComment
 import me.him188.ani.app.ui.subject.components.comment.UIRichText
-import me.him188.ani.app.ui.subject.components.comment.UiComment
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -53,8 +53,8 @@ private fun PreviewComment() {
 private fun generateUiComment(size: Int) = buildList {
     repeat(size) { i ->
         add(
-            UiComment(
-                id = i.toString(),
+            UIComment(
+                id = i,
                 content = UIRichText(
                     listOf(
                         UIRichElement.AnnotatedText(
@@ -81,6 +81,7 @@ private fun generateUiComment(size: Int) = buildList {
                     avatarUrl = "https://picsum.photos/200/300",
                 ),
                 briefReplies = listOf(),
+                reactions = emptyList(),
                 replyCount = 0,
             ),
         )

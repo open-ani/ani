@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-@file:JvmName("Vibration_common")
-
 package me.him188.ani.app.ui.foundation.interaction
 
 import me.him188.ani.app.platform.Context

@@ -3,7 +3,10 @@ package me.him188.ani.app.platform.notification
 import androidx.compose.ui.graphics.ImageBitmap
 import coil3.Image
 import coil3.annotation.ExperimentalCoilApi
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import kotlin.concurrent.Volatile
 import kotlin.time.Duration
 
 abstract class NotifManager { // available via inject
@@ -86,7 +89,7 @@ interface OngoingNotifChannel : NotifChannel {
     val notif: Notif
 }
 
-abstract class MediaNotifChannel<out T : MediaNotif> : NotifChannel {
+abstract class MediaNotifChannel<out T : MediaNotif> : NotifChannel, SynchronizedObject() {
     /**
      * 当前正在显示的通知
      */
