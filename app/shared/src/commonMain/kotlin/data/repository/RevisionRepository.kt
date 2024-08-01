@@ -24,13 +24,27 @@ class BangumiRevisionRepositoryImpl(
     private val logger = logger(RevisionRepository::class)
 
     override fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment> {
+        // 这个接口不支持按时间倒叙查询，所以先查询一条来获取评论总数，再从最后一页开始查询
         return PageBasedPagedSource { page ->
             try {
+                // 第一页先获取所有评论数量，获取失败则继续使用时间正序查询，也不会提供总计大小
+                if (page == 0) try {
+                    val response = client.getNextApi().subjectComments(subjectId, 1, 1).body()
+                    setTotalSize(response.total)
+                } catch (_: Exception) {
+                }
+
+                val total = totalSize
+                val offset: Int = if (total == null) {
+                    page * 16
+                } else {
+                    (total - (page + 1) * 16).coerceAtLeast(0)
+                }
+
                 val response = client.getNextApi()
-                    .subjectComments(subjectId, 16, page * 16)
+                    .subjectComments(subjectId, 16, offset)
                     .body()
 
-                setTotalSize(response.total)
                 val list = response.list.map(BangumiNextSubjectInterestCommentListInner::toSubjectComment)
                 Paged.processPagedResponse(response.total, 16, list)
             } catch (e: Exception) {

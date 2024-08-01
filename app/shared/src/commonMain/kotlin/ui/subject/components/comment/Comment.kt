@@ -79,9 +79,10 @@ class CommentState(
      */
     private var loadedOnce by mutableStateOf(false)
     private var freshLoaded by mutableStateOf(false)
+    private val _hasMore by hasMore
     val hasMore: Boolean by derivedStateOf {
         if (!freshLoaded) return@derivedStateOf false
-        hasMore.value
+        _hasMore
     }
 
     val count by derivedStateOf {

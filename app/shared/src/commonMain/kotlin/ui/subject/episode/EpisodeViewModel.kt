@@ -519,7 +519,7 @@ private class EpisodeViewModelImpl(
     override val episodeCommentState: CommentState = CommentState(
         sourceVersion = episodeCommentLoader.sourceVersion.produceState(null),
         list = episodeCommentLoader.list.produceState(emptyList()),
-        hasMore = episodeCommentLoader.hasFinished.produceState(false),
+        hasMore = episodeCommentLoader.hasFinished.map { !it }.produceState(true),
         onReload = { episodeCommentLoader.reload() },
         onLoadMore = { episodeCommentLoader.loadMore() },
         backgroundScope = backgroundScope,

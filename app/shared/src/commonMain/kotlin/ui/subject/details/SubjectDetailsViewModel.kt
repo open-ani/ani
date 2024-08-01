@@ -143,7 +143,7 @@ class SubjectDetailsViewModel(
     val subjectCommentState: CommentState = CommentState(
         sourceVersion = subjectCommentLoader.sourceVersion.produceState(null),
         list = subjectCommentLoader.list.produceState(emptyList()),
-        hasMore = subjectCommentLoader.hasFinished.produceState(false),
+        hasMore = subjectCommentLoader.hasFinished.map { !it }.produceState(true),
         onReload = { subjectCommentLoader.reload() },
         onLoadMore = { subjectCommentLoader.loadMore() },
         backgroundScope = backgroundScope,
