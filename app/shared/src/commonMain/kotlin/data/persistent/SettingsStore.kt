@@ -21,11 +21,7 @@ package me.him188.ani.app.data.persistent
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexes
 import me.him188.ani.app.platform.Context
@@ -70,7 +66,7 @@ abstract class PlatformDataStoreManager {
     val danmakuFilterStore by lazy {
         DataStoreFactory.create(
             serializer = ListSerializer(DanmakuRegexFilter.serializer())
-                .asDataStoreSerializer(emptyList<DanmakuRegexFilter>()),
+                .asDataStoreSerializer({ emptyList<DanmakuRegexFilter>() }),
             produceFile = { resolveDataStoreFile("danmakuFilter") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 emptyList<DanmakuRegexFilter>()

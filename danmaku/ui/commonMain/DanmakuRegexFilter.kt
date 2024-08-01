@@ -2,7 +2,7 @@ package me.him188.ani.danmaku.ui
 
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import java.util.UUID
+import me.him188.ani.utils.platform.Uuid
 
 @Serializable
 data class DanmakuRegexFilter(
@@ -13,7 +13,7 @@ data class DanmakuRegexFilter(
 ) {
     companion object {
         @Stable
-        val Default = DanmakuRegexFilter(UUID.randomUUID().toString())
+        val Default = DanmakuRegexFilter(Uuid.randomString())
     }
 }
 

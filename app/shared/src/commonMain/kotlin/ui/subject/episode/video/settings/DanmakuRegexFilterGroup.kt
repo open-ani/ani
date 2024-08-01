@@ -40,14 +40,13 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
-import java.util.UUID
-import java.util.regex.PatternSyntaxException
+import me.him188.ani.utils.platform.Uuid
 
 internal fun isValidRegex(pattern: String): Boolean {
     return try {
         Regex(pattern)
         true
-    } catch (e: PatternSyntaxException) {
+    } catch (e: Exception) {
         false
     }
 }
@@ -76,7 +75,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                     } else {
                         onAdd(
                             DanmakuRegexFilter(
-                                id = UUID.randomUUID().toString(),
+                                id = Uuid.randomString(),
                                 name = name,
                                 regex = regex,
                             ),
