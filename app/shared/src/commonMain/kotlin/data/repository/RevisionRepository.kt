@@ -2,26 +2,43 @@ package me.him188.ani.app.data.repository
 
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.data.models.episode.toEpisodeComment
+import me.him188.ani.app.data.models.subject.SubjectComment
+import me.him188.ani.app.data.models.subject.toSubjectComment
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextGetSubjectEpisodeComments200ResponseInner
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextSubjectInterestCommentListInner
 import me.him188.ani.utils.logging.logger
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 sealed interface RevisionRepository {
     fun getSubjectEpisodeComments(episodeId: Int): PagedSource<EpisodeComment>
+    fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment>
 }
 
-interface EpisodeRevisionRepository : RevisionRepository
-interface SubjectRevisionRepository : RevisionRepository
+class BangumiRevisionRepositoryImpl(
+    private val client: BangumiClient
+) : RevisionRepository {
+    private val logger = logger(RevisionRepository::class)
 
-class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
-    private val client by inject<BangumiClient>()
-    private val logger = logger(EpisodeRepositoryImpl::class)
+    override fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment> {
+        return PageBasedPagedSource { page ->
+            try {
+                val response = client.getNextApi()
+                    .subjectComments(subjectId, 16, page * 16)
+                    .body()
+
+                setTotalSize(response.total)
+                val list = response.list.map(BangumiNextSubjectInterestCommentListInner::toSubjectComment)
+                Paged.processPagedResponse(response.total, 16, list)
+            } catch (e: Exception) {
+                logger.warn("Exception in getSubjectComments", e)
+                null
+            }
+        }
+    }
 
     override fun getSubjectEpisodeComments(episodeId: Int): PagedSource<EpisodeComment> {
         // 未来这个接口将会支持分页属性
@@ -33,6 +50,7 @@ class EpisodeRevisionRepositoryImpl : EpisodeRevisionRepository, KoinComponent {
                         .body()
                         .map(BangumiNextGetSubjectEpisodeComments200ResponseInner::toEpisodeComment)
 
+                    setTotalSize(response.size)
                     Paged.processPagedResponse(response.size, response.size, response)
                 } else null
             } catch (e: Exception) {

@@ -121,6 +121,7 @@ class UIComment(
     val reactions: List<UICommentReaction>,
     val briefReplies: List<UIComment>,
     val replyCount: Int,
+    val rating: Int?,
 )
 
 @Immutable
@@ -164,6 +165,7 @@ fun Comment(
         }
         Column(modifier = Modifier.padding(start = 12.dp)) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {

@@ -39,12 +39,11 @@ import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.persistent.database.AniDatabase
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
+import me.him188.ani.app.data.repository.BangumiRevisionRepositoryImpl
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
-import me.him188.ani.app.data.repository.EpisodeRevisionRepository
-import me.him188.ani.app.data.repository.EpisodeRevisionRepositoryImpl
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepositoryImpl
 import me.him188.ani.app.data.repository.MediaSourceSaves
@@ -53,6 +52,7 @@ import me.him188.ani.app.data.repository.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.ProfileRepository
 import me.him188.ani.app.data.repository.RemoteBangumiSubjectRepository
+import me.him188.ani.app.data.repository.RevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepositoryImpl
@@ -123,7 +123,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<BangumiRelatedCharactersRepository> { BangumiRelatedCharactersRepository(get()) }
     single<SubjectManager> { SubjectManagerImpl(getContext()) }
     single<UserRepository> { UserRepositoryImpl() }
-    single<EpisodeRevisionRepository> { EpisodeRevisionRepositoryImpl() }
+    single<RevisionRepository> { BangumiRevisionRepositoryImpl(get()) }
     single<BangumiEpisodeRepository> { EpisodeRepositoryImpl() }
     single<MediaSourceInstanceRepository> {
         MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)

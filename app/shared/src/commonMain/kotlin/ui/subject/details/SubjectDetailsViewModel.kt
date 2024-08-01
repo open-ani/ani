@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.models.subject.RatingInfo
@@ -12,6 +13,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
+import me.him188.ani.app.data.repository.RevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.AniNavigator
@@ -25,6 +27,8 @@ import me.him188.ani.app.ui.subject.collection.progress.EpisodeListStateFactory
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressInfo
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressStateFactory
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.ui.subject.rating.RateRequest
@@ -40,6 +44,7 @@ class SubjectDetailsViewModel(
     private val browserNavigator: BrowserNavigator by inject()
     private val bangumiRelatedCharactersRepository: BangumiRelatedCharactersRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val revisionRepository: RevisionRepository by inject()
 
     private val subjectInfo: SharedFlow<SubjectInfo> = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val subjectCollectionFlow = subjectManager.subjectCollectionFlow(subjectId).shareInBackground()
@@ -127,6 +132,21 @@ class SubjectDetailsViewModel(
             )
         },
         backgroundScope,
+    )
+
+    private val subjectCommentLoader = CommentLoader.subject(
+        subjectId = flowOf(subjectId),
+        coroutineContext = backgroundScope.coroutineContext,
+        subjectCommentSource = { revisionRepository.getSubjectComments(it) },
+    )
+
+    val subjectCommentState: CommentState = CommentState(
+        sourceVersion = subjectCommentLoader.sourceVersion.produceState(null),
+        list = subjectCommentLoader.list.produceState(emptyList()),
+        hasMore = subjectCommentLoader.hasFinished.produceState(false),
+        onReload = { subjectCommentLoader.reload() },
+        onLoadMore = { subjectCommentLoader.loadMore() },
+        backgroundScope = backgroundScope,
     )
 
     fun browseSubjectBangumi(context: ContextMP) {
