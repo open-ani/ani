@@ -12,10 +12,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.session.AuthState
+import me.him188.ani.app.data.source.session.SessionStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.cache.TestMediaList
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
@@ -110,7 +113,7 @@ fun PreviewEpisodeDetailsNotAuthorized() = ProvideCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState()
     PreviewEpisodeDetailsImpl(
         state,
-        authState = rememberTestAuthState(false),
+        authState = rememberTestAuthState(SessionStatus.NoToken),
     )
 }
 
@@ -216,13 +219,16 @@ private fun PreviewEpisodeDetailsImpl(
 
 @Composable
 fun rememberTestAuthState(
-    isAuthorized: Boolean = true,
+    state: SessionStatus = SessionStatus.Verified("", UserInfo.EMPTY),
 ): AuthState {
-    val state = remember { mutableStateOf(isAuthorized) }
+    val state1 = remember { mutableStateOf(state) }
+    val scope = rememberBackgroundScope()
     return remember {
         AuthState(
-            state,
-            launchAuthorize = { state.value = !state.value },
+            state1,
+            launchAuthorize = { },
+            retry = {},
+            scope.backgroundScope,
         )
     }
 }

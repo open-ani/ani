@@ -60,6 +60,7 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.AniBuildConfigDesktop
+import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.GrantedPermissionManager
@@ -241,11 +242,9 @@ object AniDesktop {
         val navigator = AniNavigator()
 
         coroutineScope.launch {
-            val sessionManager by koin.koin.inject<SessionManager>()
-            logger.info { "[AutoLogin] Waiting for awaitNavigator" }
             navigator.awaitNavigator()
-            logger.info { "[AutoLogin] Got navigator, start requireOnline" }
-            sessionManager.requireAuthorize(navigator, navigateToWelcome = true)
+            val sessionManager by koin.koin.inject<SessionManager>()
+            AppStartupTasks.verifySession(sessionManager, navigator)
         }
 
         application {

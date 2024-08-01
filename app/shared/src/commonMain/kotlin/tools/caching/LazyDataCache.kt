@@ -4,7 +4,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.util.fastDistinctBy
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.coroutineScope
@@ -27,11 +26,15 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.models.ApiFailure
+import me.him188.ani.app.data.models.ApiResponse
+import me.him188.ani.app.data.models.fold
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.concurrent.Volatile
+import kotlin.coroutines.cancellation.CancellationException
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
@@ -82,6 +85,8 @@ interface LazyDataCache<T> {
      * @see ContentPolicy
      */
     val cachedDataFlow: Flow<List<T>>
+
+    val state: Flow<LazyDataCacheState>
 
     /**
      * 完整的数据 flow. 在 collect 这个 flow 时, 将会首先 emit [cachedDataFlow],
@@ -135,7 +140,7 @@ interface LazyDataCache<T> {
      * 如果已知已经没有更多页码了, 本函数立即返回 `false`, 不会修改缓存.
      *
      * 当成功请求一页数据并追加和持久化缓存后返回 `true`.
-     * 当没有修改缓存时返回 `false`, 意味着最后一页早就已经加载完了, 已经没有更多的页码了.
+     * 当没有修改缓存时返回 `false`, 可能意味着最后一页早就已经加载完了而已经没有更多的页码了, 也可能意味着请求失败了
      *
      * ## 线程安全
      *
@@ -144,9 +149,9 @@ interface LazyDataCache<T> {
      *
      * 此函数可以在 UI 或者其他线程调用.
      *
-     * ## 透明异常
+     * ## 异常将被捕获
      *
-     * 如果在请求网络时遇到异常, 本函数会原封不动地抛出异常. 在这种情况下, 页码不会变更.
+     * 如果在请求网络时遇到异常, 本函数会捕获异常, 并更新到 [state]
      *
      * ## 支持 Coroutine Cancellation
      *
@@ -163,18 +168,38 @@ interface LazyDataCache<T> {
      *
      * 此函数可以在 UI 或者其他线程调用.
      *
+     * ## 异常将被捕获
+     *
+     * 如果在请求网络时遇到异常, 本函数会捕获异常, 并更新到 [state]
+     *
      * ## 支持 Coroutine Cancellation
      *
      * 此函数的内部任意阶段都可被取消. 当协程被取消时, 缓存不会变更.
      *
      * @param orderPolicy 刷新时的顺序. 查看 [RefreshOrderPolicy].
      */
-    suspend fun refresh(orderPolicy: RefreshOrderPolicy)
+    suspend fun refresh(orderPolicy: RefreshOrderPolicy): Boolean
 
     /**
      * 清空所有本地缓存以及当前的 [PagedSource]. 注意, 本函数不会请求数据. 即当函数返回时, [cachedDataFlow] 为空.
      */
     suspend fun invalidate()
+}
+
+sealed class LazyDataCacheState {
+    /**
+     * 正常状态. 因为 [LazyDataCache] 是懒加载的, 所以一开始是没有数据的, 这时状态为 [Normal].
+     * 当加载列表成功时也是 [Normal].
+     */
+    data object Normal : LazyDataCacheState()
+
+    data class ApiError(
+        val reason: ApiFailure,
+    ) : LazyDataCacheState()
+
+    data class UnknownError(
+        val throwable: Throwable,
+    ) : LazyDataCacheState()
 }
 
 enum class RefreshOrderPolicy {
@@ -274,9 +299,8 @@ suspend inline fun <T> LazyDataCache<T>.getCachedData() = cachedDataFlow.first()
  * @param persistentStore 用于将内存缓存数据持久化(到文件系统). 默认为 [MemoryDataStore], 即仅在内存中保存.
  * 可通过 [DataStoreFactory] 创建一个使用 File 进行持久化的实例.
  */
-@OverloadResolutionByLambdaReturnType
 fun <T> LazyDataCache(
-    createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
+    createSource: suspend LazyDataCacheContext.() -> ApiResponse<PagedSource<T>>,
     getKey: (T) -> Any? = { it },
     debugName: String? = null,
     persistentStore: DataStore<LazyDataCacheSave<T>> = defaultPersistentStore()
@@ -318,6 +342,7 @@ class LazyDataCacheSave<T> private constructor(
     }
 }
 
+// See also `mutablePreferencesOf` from commonTest.
 class MemoryDataStore<T>(initial: T) : DataStore<T> {
     override val data: MutableStateFlow<T> = MutableStateFlow(initial)
     private val lock = Mutex()
@@ -332,7 +357,7 @@ class MemoryDataStore<T>(initial: T) : DataStore<T> {
 
 
 private class LazyDataCacheImpl<T>(
-    private val createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
+    private val createSource: suspend LazyDataCacheContext.() -> ApiResponse<PagedSource<T>>,
     private val getKey: (T) -> Any?,
     private val debugName: String? = null,
     // don't call [dataStore.updateData], call [LazyDataCacheImpl.updateDataSanitized] instead
@@ -340,18 +365,39 @@ private class LazyDataCacheImpl<T>(
 ) : LazyDataCache<T>, LazyDataCacheContext {
     private val logger = logger(LazyDataCacheImpl::class)
 
-    private class SourceInfo<T>(
-        val source: PagedSource<T>,
-    )
+    private sealed class SourceInfo<T> {
+        class Success<T>(
+            val source: PagedSource<T>?,
+        ) : SourceInfo<T>()
+
+        class ApiError<T>(
+            val reason: ApiFailure,
+        ) : SourceInfo<T>()
+
+        class UnknownError<T>(
+            val cause: Throwable,
+        ) : SourceInfo<T>()
+    }
+
+    private val SourceInfo<T>.sourceOrNull get() = (this as? SourceInfo.Success)?.source
 
     // Writes must be under lock
     private val currentSourceInfo: MutableStateFlow<SourceInfo<T>?> = MutableStateFlow(null)
-    private val currentSource get() = currentSourceInfo.map { it?.source }
+    private val currentSource get() = currentSourceInfo.map { (it as? SourceInfo.Success)?.source }
     private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(false) }
     private val persistentData = persistentStore.data.flowOn(Dispatchers.Default) // 别在 UI 算
 
     override val cachedDataFlow: Flow<List<T>> = persistentData.map {
         it.list
+    }
+    override val state: Flow<LazyDataCacheState> = currentSourceInfo.map {
+        when (it) {
+            null,
+            is SourceInfo.Success -> LazyDataCacheState.Normal
+
+            is SourceInfo.ApiError -> LazyDataCacheState.ApiError(it.reason)
+            is SourceInfo.UnknownError -> LazyDataCacheState.UnknownError(it.cause)
+        }
     }
 
     private val remoteTotalSize = currentSource.transformLatest { source ->
@@ -378,10 +424,9 @@ private class LazyDataCacheImpl<T>(
     ) {
         // 更新持久的数据, 保证缓存一致性
         persistentStore.updateData { save ->
-            val sourceInfo = currentSourceInfo.value
+            val source = currentSource.first()
             when (orderPolicy) {
                 RefreshOrderPolicy.REPLACE -> {
-                    val source = sourceInfo?.source
                     val newList = block(save.list).fastDistinctBy { getKey(it) }
                     return@updateData LazyDataCacheSave(
                         newList,
@@ -393,8 +438,6 @@ private class LazyDataCacheImpl<T>(
                 }
 
                 RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST -> {
-                    val source = sourceInfo?.source
-
                     val original = save.list
                     val originalKeys = original.mapTo(ArrayList(original.size), getKey)
                     val new = block(original).fastDistinctBy { getKey(it) }
@@ -510,12 +553,14 @@ private class LazyDataCacheImpl<T>(
                     if (save.page != null && save.page != 0) {
                         // We have a page saved, we should restore it
                         val source = getSourceOrCreate(RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST)
+                            ?: return@withContext false
                         source.skipToPage(save.page)
                         // fall through to request the next page
                     }
                 }
 
                 val source = getSourceOrCreate(RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST)
+                    ?: return@withContext false
 
                 try {
                     requestInProgress.value = true
@@ -546,27 +591,42 @@ private class LazyDataCacheImpl<T>(
     }
 
     // Unsafe, must be used under lock.
-    private suspend inline fun LazyDataCacheImpl<T>.getSourceOrCreate(orderPolicy: RefreshOrderPolicy): PagedSource<T> {
-        currentSourceInfo.value?.source?.let { return it }
-        return createSource().also {
-            currentSourceInfo.value = SourceInfo(it)
-        }
+    private suspend inline fun LazyDataCacheImpl<T>.getSourceOrCreate(orderPolicy: RefreshOrderPolicy): PagedSource<T>? {
+        (currentSourceInfo.value as? SourceInfo.Success)?.source?.let { return it }
+        return (try {
+            createSource().fold(
+                onSuccess = {
+                    SourceInfo.Success(it)
+                },
+                onKnownFailure = {
+                    SourceInfo.ApiError(it)
+                },
+            )
+        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            SourceInfo.UnknownError(e)
+        }.also {
+            currentSourceInfo.value = it
+        } as? SourceInfo.Success)?.source
     }
 
-    override suspend fun refresh(orderPolicy: RefreshOrderPolicy) {
-        lock.withLock {
+    override suspend fun refresh(orderPolicy: RefreshOrderPolicy): Boolean {
+        return lock.withLock {
             withContext(Dispatchers.IO) {
-                val source = createSource() // note: always create a new source
+                val source = createSource().getOrNull() ?: return@withContext false // note: always create a new source
                 try {
                     requestInProgress.value = true
                     val resp = source.nextPageOrNull() // cancellation-supported
 
                     // Update source only if the request was successful, as per documentation on [refresh]
-                    currentSourceInfo.value = SourceInfo(source)
+                    currentSourceInfo.value = SourceInfo.Success(source)
                     updateDataSanitized(
                         orderPolicy,
                         allowSavedPage = false,
                     ) { resp.orEmpty() } // must after currentSourceInfo update
+
+                    true
                 } finally {
                     requestInProgress.value = false
                 }

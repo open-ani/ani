@@ -1,10 +1,10 @@
 package me.him188.ani.app.data.models
 
-import io.ktor.utils.io.errors.IOException
-import kotlinx.coroutines.CancellationException
-import org.junit.jupiter.api.assertThrows
+import kotlinx.io.IOException
+import me.him188.ani.utils.coroutines.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 class ApiResponseTest {
@@ -166,6 +166,52 @@ class ApiResponseTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // flatMap
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `flatMap success`() {
+        val result = ApiResponse.success(1)
+        val mapped = result.flatMap { ApiResponse.success(it + 1) }
+        assertEquals(2, mapped.getOrNull())
+    }
+
+    @Test
+    fun `flatMap success to another type`() {
+        val result = ApiResponse.success(1)
+        val mapped = result.flatMap { ApiResponse.success(it + 1.0) }
+        assertEquals(2.0, mapped.getOrNull())
+    }
+
+    @Test
+    fun `flatMap failure to success`() {
+        val result = ApiResponse.failure<Int>(ApiFailure.NetworkError)
+        val mapped = result.flatMap { ApiResponse.success(it + 1) }
+        assertEquals(ApiFailure.NetworkError, mapped.failureOrNull())
+    }
+
+    @Test
+    fun `flatMap null to success`() {
+        val result = ApiResponse.success(null)
+        val mapped = result.flatMap { ApiResponse.success(1) }
+        assertEquals(1, mapped.getOrNull())
+    }
+
+    @Test
+    fun `flatMap null to failure`() {
+        val result = ApiResponse.success(null)
+        val mapped = result.flatMap { ApiResponse.failure<Int>(ApiFailure.NetworkError) }
+        assertEquals(ApiFailure.NetworkError, mapped.failureOrNull())
+    }
+
+    @Test
+    fun `flatMap failure to null`() {
+        val result = ApiResponse.failure<Int>(ApiFailure.NetworkError)
+        val mapped = result.flatMap { ApiResponse.success(null) }
+        assertEquals(ApiFailure.NetworkError, mapped.failureOrNull())
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // runApiRequest
     ///////////////////////////////////////////////////////////////////////////
 
@@ -190,11 +236,18 @@ class ApiResponseTest {
         val e = CancellationException()
         assertEquals(
             e,
-            assertThrows {
-                runApiRequest {
-                    throw e
-                }
+            assertFails {
+                runApiRequest { throw e }
             },
         )
+    }
+
+    @Test
+    fun `runApiRequest failure with other exceptions`() {
+        assertFailsWith<IllegalStateException> {
+            runApiRequest {
+                throw NoSuchElementException("a bug")
+            }
+        }
     }
 }
