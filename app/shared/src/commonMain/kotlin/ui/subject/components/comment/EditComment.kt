@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.filled.ExpandLess
@@ -45,11 +43,12 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,7 +67,6 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
@@ -76,7 +74,6 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -181,7 +178,7 @@ fun EditComment(
                             .fillMaxWidth()
                             .ifThen(state.editExpanded) { fillMaxHeight() }
                             .animateContentSize(),
-                        contentPadding = contentPadding,
+                        contentPadding = OutlinedTextFieldDefaults.contentPadding(),
                     )
                 } else {
                     EditCommentDefaults.EditText(
@@ -192,7 +189,6 @@ fun EditComment(
                             .fillMaxWidth()
                             .ifThen(state.editExpanded) { fillMaxHeight() }
                             .animateContentSize(),
-                        contentPadding = contentPadding,
                         onValueChange = { state.setContent(it) },
                         interactionSource = textFieldInteractionSource,
                     )
@@ -287,7 +283,6 @@ fun EditCommentBottomStubPanel(
                     hint = hint,
                     maxLines = 1,
                     modifier = Modifier.fillMaxWidth().focusProperties { canFocus = false },
-                    contentPadding = PaddingValues(8.dp),
                     onValueChange = { },
                 )
                 Spacer(
@@ -337,41 +332,32 @@ object EditCommentDefaults {
         maxLines: Int = Int.MAX_VALUE,
         modifier: Modifier = Modifier,
         shape: Shape = MaterialTheme.shapes.medium,
-        contentPadding: PaddingValues = PaddingValues(0.dp),
-        interactionSource: InteractionSource = remember { MutableInteractionSource() },
+        interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+        colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedBorderColor = Color.Transparent,
+            focusedBorderColor = Color.Transparent,
+            cursorColor = MaterialTheme.colorScheme.primary,
+        ),
         placeholder: @Composable (() -> Unit)? = { Text(hint ?: "") }
     ) {
-        BasicTextField(
+        OutlinedTextField(
             value = value,
+            onValueChange = onValueChange,
+            modifier = modifier,
             textStyle = MaterialTheme.typography.bodyMedium.merge(
                 fontSize = 15.5.sp,
                 color = LocalContentColor.current.looming(),
             ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            modifier = modifier,
+            shape = shape,
+            enabled = enabled,
             maxLines = maxLines,
-            onValueChange = onValueChange,
-            decorationBox = { innerTextField ->
-                TextFieldDefaults.DecorationBox(
-                    value = value.text,
-                    enabled = enabled,
-                    innerTextField = innerTextField,
-                    interactionSource = interactionSource,
-                    singleLine = false,
-                    visualTransformation = VisualTransformation.None,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = Color.Transparent,
-                    ),
-                    placeholder = placeholder,
-                    shape = shape,
-                    contentPadding = contentPadding,
-                )
-            },
+            placeholder = placeholder,
+            colors = colors,
+            interactionSource = interactionSource,
         )
     }
 
