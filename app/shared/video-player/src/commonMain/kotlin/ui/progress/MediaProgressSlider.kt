@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -257,6 +259,16 @@ fun MediaProgressSlider(
                         .coerceIn(0f, 1f)
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
 
+                    chapters.find {
+                        previewTimeMillis in it.offset..it.offset + it.duration
+                    }?.let {
+                        val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
+                        return@derivedStateOf chapterName + renderSeconds(
+                            previewTimeMillis / 1000,
+                            state.totalDurationMillis / 1000,
+                        ).substringBefore(" ")
+                    }
+
                     renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
                 }
             }
@@ -311,7 +323,8 @@ fun MediaProgressSlider(
                 Box(
                     modifier = Modifier
                         .clip(shape = CircleShape)
-                        .background(previewTimeBackgroundColor),
+                        .background(previewTimeBackgroundColor)
+                        .animateContentSize(),
                 ) {
                     Box(
                         Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -327,6 +340,7 @@ fun MediaProgressSlider(
                             Text(
                                 text = previewTimeText,
                                 color = previewTimeTextColor,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }
