@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -159,11 +160,13 @@ interface PlayerState {
     val chapters: StateFlow<MutableList<Chapter>>
 }
 
+@Immutable
 data class Chapter(
     val name: String,
     val duration: Long,
     val offset: Long
 )
+
 fun PlayerState.togglePause() {
     if (state.value.isPlaying) {
         pause()

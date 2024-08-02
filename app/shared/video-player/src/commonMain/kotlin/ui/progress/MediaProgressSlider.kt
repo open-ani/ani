@@ -62,7 +62,6 @@ import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -159,13 +158,13 @@ fun rememberMediaProgressSliderState(
 fun MediaProgressSlider(
     state: MediaProgressSliderState,
     cacheState: MediaCacheProgressState,
-    chaptersState: List<Chapter> = emptyList(),
+    chapters: List<Chapter> = emptyList(),
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
     trackProgressColor: Color = aniDarkColorTheme().primary,
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
     downloadingColor: Color = Color.Yellow,
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
-    stopColor: Color = aniDarkColorTheme().primary,
+    chapterColor: Color = aniDarkColorTheme().onSurface,
     previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
@@ -231,22 +230,16 @@ fun MediaProgressSlider(
             }
 
             Canvas(Modifier.matchParentSize()) {
-                chaptersState.forEach {
+                if (state.totalDurationMillis == 0L) return@Canvas
+                chapters.forEach {
                     val percent = it.offset.toFloat().div(state.totalDurationMillis)
-                    drawRect(
-                        color = Color.Gray,
-                        topLeft = Offset(size.width * percent, 0f),
-                        size = Size(size.height / 2, size.height),
+                    drawCircle(
+                        color = chapterColor,
+                        radius = 2.dp.toPx(),
+                        center = Offset(size.width * percent, this.center.y),
+                        blendMode = BlendMode.Src, // override background
                     )
                 }
-            }
-            Canvas(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)) {
-                // draw stop
-                drawCircle(
-                    stopColor,
-                    radius = 2.dp.toPx(),
-                    blendMode = BlendMode.Src, // override background
-                )
             }
         }
 
@@ -264,15 +257,6 @@ fun MediaProgressSlider(
                         .coerceIn(0f, 1f)
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
 
-                    chaptersState.find {
-                        (it.offset - previewTimeMillis).absoluteValue < 2000
-                    }?.let {
-                        return@derivedStateOf it.name + " " + renderSeconds(
-                            previewTimeMillis / 1000,
-                            state.totalDurationMillis / 1000,
-                        ).substringBefore(" ")
-                    }
-                    
                     renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
                 }
             }

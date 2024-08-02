@@ -252,9 +252,9 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    val chaptersState by playerState.chapters.collectAsState()
+                    val chapters by playerState.chapters.collectAsState()
                     MediaProgressSlider(
-                        progressSliderState, playerState.cacheProgress, chaptersState,
+                        progressSliderState, playerState.cacheProgress, chapters,
                         downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
                     )
                 },
