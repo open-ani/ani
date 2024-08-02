@@ -27,8 +27,6 @@ import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.models.subject.RatingInfo
-import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
@@ -53,7 +51,6 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.data.source.session.AuthState
-import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -79,7 +76,6 @@ import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
-import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -116,11 +112,6 @@ interface EpisodeViewModel : HasBackgroundScope {
      * 剧集列表
      */
     val episodeCarouselState: EpisodeCarouselState
-
-    /**
-     * 编辑自己的评分
-     */
-    val editableRatingState: EditableRatingState
 
     val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState
 
@@ -194,7 +185,6 @@ private class EpisodeViewModelImpl(
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialDanmakuId)
-    private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()
     private val mediaCacheManager: MediaCacheManager by inject()
@@ -411,29 +401,10 @@ private class EpisodeViewModelImpl(
         )
     }
 
-    override val editableRatingState: EditableRatingState = EditableRatingState(
-        ratingInfo = subjectInfo.map { it.ratingInfo }
-            .produceState(RatingInfo.Empty),
-        selfRatingInfo = subjectCollection.map { it?.selfRatingInfo ?: SelfRatingInfo.Empty }
-            .produceState(SelfRatingInfo.Empty),
-        enableEdit = flow {
-            emit(false) // 在加载的时候不允许编辑
-            emitAll(subjectCollection.map { true }) // 加载完成后允许编辑, 如果编辑时没有收藏, EditableRatingState 会弹框
-        }.produceState(false),
-        isCollected = {
-            val collection = subjectCollection.replayCache.firstOrNull() ?: return@EditableRatingState false
-            collection.collectionType != UnifiedCollectionType.NOT_COLLECTED
-        },
-        onRate = { request ->
-            subjectManager.updateRating(subjectId, request)
-        },
-        backgroundScope,
-    )
-
     override val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState =
         EditableSubjectCollectionTypeState(
             selfCollectionType = subjectCollection
-                .map { it?.collectionType ?: UnifiedCollectionType.NOT_COLLECTED }
+                .map { it.collectionType }
                 .produceState(UnifiedCollectionType.NOT_COLLECTED),
             hasAnyUnwatched = {
                 val collections =

@@ -210,7 +210,6 @@ private fun EpisodeSceneTabletVeryWide(
                             EpisodeDetails(
                                 vm.episodeDetailsState,
                                 vm.episodeCarouselState,
-                                vm.editableRatingState,
                                 vm.editableSubjectCollectionTypeState,
                                 vm.danmakuStatistics,
                                 vm.videoStatistics,
@@ -345,7 +344,6 @@ private fun EpisodeSceneContentPhone(
             EpisodeDetails(
                 vm.episodeDetailsState,
                 vm.episodeCarouselState,
-                vm.editableRatingState,
                 vm.editableSubjectCollectionTypeState,
                 vm.danmakuStatistics,
                 vm.videoStatistics,
