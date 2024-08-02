@@ -53,7 +53,7 @@ data class ControllerVisibility(
         @Stable
         val DetachedSliderOnly = ControllerVisibility(
             topBar = false,
-            bottomBar = true,
+            bottomBar = false,
             floatingBottomEnd = false,
             rhsBar = false,
             detachedSlider = true,
