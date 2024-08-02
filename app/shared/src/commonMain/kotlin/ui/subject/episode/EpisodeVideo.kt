@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -228,69 +227,62 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            Crossfade(
-                targetState = videoControllerState.visibility.detachedSlider,
-            ) {
-                when (it) {
-                    true -> detachedProgressSlider()
-                    false ->
-                        PlayerControllerBar(
-                            startActions = {
-                                val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
-                                    .collectAsStateWithLifecycle(false)
-                                PlayerControllerDefaults.PlaybackIcon(
-                                    isPlaying = { isPlaying },
-                                    onClick = { playerState.togglePause() },
-                                )
+            PlayerControllerBar(
+                startActions = {
+                    val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
+                        .collectAsStateWithLifecycle(false)
+                    PlayerControllerDefaults.PlaybackIcon(
+                        isPlaying = { isPlaying },
+                        onClick = { playerState.togglePause() },
+                    )
 
-                                if (hasNextEpisode && expanded) {
-                                    PlayerControllerDefaults.NextEpisodeIcon(
-                                        onClick = onClickNextEpisode,
-                                    )
-                                }
-                                PlayerControllerDefaults.DanmakuIcon(
-                                    videoControllerState.danmakuEnabled,
-                                    onClick = { videoControllerState.toggleDanmakuEnabled() },
-                                )
-                            },
-                            progressIndicator = {
-                                MediaProgressIndicatorText(progressSliderState)
-                            },
-                            progressSlider = {
-                                PlayerControllerDefaults.MediaProgressSlider(
-                                    progressSliderState,
-                                    playerState,
-                                )
-                            },
-                            danmakuEditor = danmakuEditor,
-                            endActions = {
-                                if (expanded) {
-                                    PlayerControllerDefaults.SelectEpisodeIcon(
-                                        onShowSelectEpisode,
-                                    )
-
-                                    if (currentPlatform.isDesktop()) {
-                                        PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
-                                    }
-
-                                    PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
-
-                                    val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
-                                    SpeedSwitcher(
-                                        speed,
-                                        { playerState.setPlaybackSpeed(it) },
-                                    )
-                                }
-                                PlayerControllerDefaults.FullscreenIcon(
-                                    expanded,
-                                    onClickFullscreen = onClickFullScreen,
-                                )
-                            },
-                            expanded = expanded,
+                    if (hasNextEpisode && expanded) {
+                        PlayerControllerDefaults.NextEpisodeIcon(
+                            onClick = onClickNextEpisode,
                         )
-                }
-            }
+                    }
+                    PlayerControllerDefaults.DanmakuIcon(
+                        videoControllerState.danmakuEnabled,
+                        onClick = { videoControllerState.toggleDanmakuEnabled() },
+                    )
+                },
+                progressIndicator = {
+                    MediaProgressIndicatorText(progressSliderState)
+                },
+                progressSlider = {
+                    PlayerControllerDefaults.MediaProgressSlider(
+                        progressSliderState,
+                        playerState,
+                    )
+                },
+                danmakuEditor = danmakuEditor,
+                endActions = {
+                    if (expanded) {
+                        PlayerControllerDefaults.SelectEpisodeIcon(
+                            onShowSelectEpisode,
+                        )
+
+                        if (currentPlatform.isDesktop()) {
+                            PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
+                        }
+
+                        PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
+
+                        val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
+                        SpeedSwitcher(
+                            speed,
+                            { playerState.setPlaybackSpeed(it) },
+                        )
+                    }
+                    PlayerControllerDefaults.FullscreenIcon(
+                        expanded,
+                        onClickFullscreen = onClickFullScreen,
+                    )
+                },
+                expanded = expanded,
+            )
         },
+        detachedProgressSlider = detachedProgressSlider,
         floatingBottomEnd = {
             when (config.fullscreenSwitchMode) {
                 FullscreenSwitchMode.ONLY_IN_CONTROLLER -> {}

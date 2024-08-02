@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -78,6 +79,7 @@ fun VideoScaffold(
     rhsButtons: @Composable ColumnScope.() -> Unit = {},
     gestureLock: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
+    detachedProgressSlider: @Composable () -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
 ) {
@@ -180,7 +182,14 @@ fun VideoScaffold(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                    bottomBar()
+                                    Crossfade(
+                                        targetState = controllersVisibleState.detachedSlider,
+                                    ) {
+                                        when (it) {
+                                            false -> bottomBar()
+                                            true -> detachedProgressSlider()
+                                        }
+                                    }
                                 }
                             }
                         }
