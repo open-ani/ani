@@ -37,7 +37,7 @@ class EditCommentState(
     private val logger = logger(this::class)
 
     private var onSendCompleted: (() -> Unit)? = null
-    private val editor = EditCommentTextState("", backgroundScope)
+    private val editor = EditCommentTextState("")
     private val previewer = EditCommentPreviewerState(false, backgroundScope)
 
     private val sendTasker = MonoTasker(backgroundScope)
@@ -191,12 +191,10 @@ class EditCommentPreviewerState(
 }
 
 class EditCommentTextState(
-    initialText: String,
-    coroutineScope: CoroutineScope
+    initialText: String
 ) {
-    private val textFlow = MutableStateFlow(TextFieldValue(initialText))
-
-    val textField by textFlow.produceState(TextFieldValue(""), coroutineScope)
+    var textField by mutableStateOf(TextFieldValue(initialText))
+        private set
 
     /**
      * 在当前位置插入文本，清除 selection 状态
@@ -208,7 +206,7 @@ class EditCommentTextState(
         value: String,
         cursorOffset: Int = value.length
     ) {
-        val current = textFlow.value
+        val current = textField
         val currentText = current.text
         val selectionLeft = current.selection.start
 
@@ -218,7 +216,7 @@ class EditCommentTextState(
             append(currentText.drop(selectionLeft))
         }
 
-        textFlow.value = current.copy(
+        textField = current.copy(
             annotatedString = AnnotatedString(newText),
             selection = TextRange((selectionLeft + cursorOffset).coerceIn(0..newText.lastIndex + 1)),
         )
@@ -237,7 +235,7 @@ class EditCommentTextState(
         require(secondSliceIndex in value.indices) {
             "secondSliceIndex is out of bound. value length = ${value.length}, secondSliceIndex = $secondSliceIndex"
         }
-        val current = textFlow.value
+        val current = textField
         if (current.selection.length == 0) {
             insertTextAt(value, secondSliceIndex)
             return
@@ -254,7 +252,7 @@ class EditCommentTextState(
             append(currentText.substring(selection.end, currentText.length))
         }
 
-        textFlow.value = current.copy(
+        textField = current.copy(
             annotatedString = AnnotatedString(newText),
             selection = TextRange(
                 selection.start + secondSliceIndex,
@@ -264,6 +262,6 @@ class EditCommentTextState(
     }
 
     fun override(value: TextFieldValue) {
-        textFlow.value = value
+        textField = value
     }
 }
