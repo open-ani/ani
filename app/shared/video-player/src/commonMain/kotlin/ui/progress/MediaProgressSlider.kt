@@ -56,11 +56,13 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
@@ -157,6 +159,7 @@ fun rememberMediaProgressSliderState(
 fun MediaProgressSlider(
     state: MediaProgressSliderState,
     cacheState: MediaCacheProgressState,
+    chaptersState: List<Chapter> = emptyList(),
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
     trackProgressColor: Color = aniDarkColorTheme().primary,
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
@@ -227,6 +230,16 @@ fun MediaProgressSlider(
                 )
             }
 
+            Canvas(Modifier.matchParentSize()) {
+                chaptersState.forEach {
+                    val percent = it.offset.toFloat().div(state.totalDurationMillis)
+                    drawRect(
+                        color = Color.Gray,
+                        topLeft = Offset(size.width * percent, 0f),
+                        size = Size(size.height / 2, size.height),
+                    )
+                }
+            }
             Canvas(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)) {
                 // draw stop
                 drawCircle(
@@ -250,6 +263,16 @@ fun MediaProgressSlider(
                     val percent = mousePosX.minus(thumbWidth / 2).div(containerWidth)
                         .coerceIn(0f, 1f)
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
+
+                    chaptersState.find {
+                        (it.offset - previewTimeMillis).absoluteValue < 2000
+                    }?.let {
+                        return@derivedStateOf it.name + " " + renderSeconds(
+                            previewTimeMillis / 1000,
+                            state.totalDurationMillis / 1000,
+                        ).substringBefore(" ")
+                    }
+                    
                     renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
                 }
             }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -28,6 +29,7 @@ import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.AudioTrack
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -156,6 +158,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
     }
 
+    override val chapters: StateFlow<MutableList<Chapter>> = MutableStateFlow(mutableListOf())
+
     class VlcjData(
         override val videoSource: VideoSource<*>,
         override val videoData: VideoData,
@@ -283,6 +287,20 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                    state.value = PlaybackState.READY
 //                }
 //            }
+                override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                    chapters.value.clear()
+                    chapters.value.addAll(
+                        player.chapters().allDescriptions().flatMap { title ->
+                            title.map {
+                                Chapter(
+                                    name = it.name(),
+                                    duration = it.duration(),
+                                    offset = it.offset(),
+                                )
+                            }
+                        },
+                    )
+                }
 
                 override fun playing(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.PLAYING

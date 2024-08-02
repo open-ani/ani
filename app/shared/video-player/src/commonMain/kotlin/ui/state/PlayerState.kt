@@ -155,8 +155,15 @@ interface PlayerState {
     val audioTracks: TrackGroup<AudioTrack>
 
     fun saveScreenshotFile(filename: String)
+
+    val chapters: StateFlow<MutableList<Chapter>>
 }
 
+data class Chapter(
+    val name: String,
+    val duration: Long,
+    val offset: Long
+)
 fun PlayerState.togglePause() {
     if (state.value.isPlaying) {
         pause()
@@ -446,4 +453,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override fun saveScreenshotFile(filename: String) {
     }
+
+    override val chapters: StateFlow<MutableList<Chapter>> = MutableStateFlow(
+        mutableListOf(
+            Chapter("chapter1", duration = 90_000L, 0L),
+            Chapter("chapter2", duration = 5_000L, 90_000L),
+        ),
+    )
 }
