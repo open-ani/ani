@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -52,7 +53,6 @@ import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.subject.components.comment.EditComment
 import me.him188.ani.app.ui.subject.components.comment.EditCommentState
-import kotlin.math.max
 
 @Composable
 fun EpisodeEditCommentSheet(
@@ -74,7 +74,7 @@ fun EpisodeEditCommentSheet(
         animationSpec = tween(),
     )
     var sheetHeight by rememberSaveable { mutableStateOf(0) }
-    val sheetOffset by derivedStateOf { sheetHeight * (1 - scrimAlpha) }
+    val sheetOffset by remember { derivedStateOf { sheetHeight * (1 - scrimAlpha) } }
 
     // CornerExtraLargeTop = RoundedCornerShape(28.0.dp)
     val shapeDp by animateDpAsState(if (state.editExpanded) 0.dp else 28.dp)
@@ -93,12 +93,20 @@ fun EpisodeEditCommentSheet(
         state.invokeOnSendComplete(animateToDismiss)
     }
 
-    val statusBarPadding = WindowInsets.statusBars.getTop(density)
-    val imePadding = WindowInsets.ime.getBottom(density)
-    val navigationBarPadding = WindowInsets.navigationBars.getBottom(density)
+    val statusBarPadding by rememberUpdatedState(WindowInsets.statusBars.getTop(density))
+    val imePadding by rememberUpdatedState(WindowInsets.ime.getBottom(density))
+    val navigationBarPadding by rememberUpdatedState(WindowInsets.navigationBars.getBottom(density))
     var imePresentHeight by rememberSaveable { mutableStateOf(0) }
-    LaunchedEffect(imePadding) {
-        imePresentHeight = max(imePresentHeight, imePadding - navigationBarPadding)
+    val imePresentMaxHeight by remember {
+        derivedStateOf {
+            val incomingPresentHeight = imePadding - navigationBarPadding
+            if (imePresentHeight < incomingPresentHeight) {
+                imePresentHeight = incomingPresentHeight
+                incomingPresentHeight
+            } else {
+                imePresentHeight
+            }
+        }
     }
 
     // Popup on android always clip its composeView to visible 
@@ -150,7 +158,7 @@ fun EpisodeEditCommentSheet(
                             EditComment(
                                 state = state,
                                 modifier = modifier.padding(top = contentPadding).padding(contentPadding),
-                                stickerPanelHeight = with(density) { imePresentHeight.toDp() },
+                                stickerPanelHeight = with(density) { imePresentMaxHeight.toDp() },
                                 controlSoftwareKeyboard = true,
                                 focusRequester = focusRequester,
                             )

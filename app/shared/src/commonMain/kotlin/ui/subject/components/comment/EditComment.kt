@@ -163,7 +163,6 @@ fun EditComment(
         expanded = if (!state.showExpandEditCommentButton) null else state.editExpanded,
         onClickExpanded = { state.editExpanded = it },
     ) {
-        val contentPadding = remember { PaddingValues(horizontal = 12.dp, vertical = 12.dp) }
 
         Crossfade(
             targetState = state.previewing,
@@ -430,7 +429,7 @@ object EditCommentDefaults {
         val size = ActionButtonSize.dp
         var actionExpanded by rememberSaveable { mutableStateOf(false) }
         val collapsedActionAnim by animateDpAsState(if (actionExpanded) size else 0.dp)
-        val reversedActionAnim by derivedStateOf { size - collapsedActionAnim }
+        val reversedActionAnim by remember { derivedStateOf { size - collapsedActionAnim } }
 
         val actionEnabled by derivedStateOf { !sending && !previewing }
 
