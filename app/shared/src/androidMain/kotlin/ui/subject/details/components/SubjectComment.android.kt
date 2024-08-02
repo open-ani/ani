@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.details.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -9,6 +10,7 @@ import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
+import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.components.comment.UIComment
 import me.him188.ani.app.ui.subject.components.comment.UIRichText
 import kotlin.random.Random
@@ -62,26 +64,22 @@ private fun PreviewSubjectComment() {
 
 @Preview
 @Composable
-private fun PreviewCommentColumn() {
+private fun PreviewSubjectCommentColumn() {
     ProvideCompositionLocalsForPreview {
         val scope = rememberBackgroundScope()
-//        EpisodeCommentColumn(
-//            commentState = remember {
-//                CommentState(
-//                    sourceVersion = mutableStateOf(Any()),
-//                    list = mutableStateOf(generateUiComment(4)),
-//                    hasMore = mutableStateOf(false),
-//                    onReload = { },
-//                    onLoadMore = { },
-//                    backgroundScope = scope.backgroundScope,
-//                )
-//            },
-//            editCommentStubText = "this is my new pending comment",
-//            onClickReply = { },
-//            onClickUrl = { },
-//            onClickEditCommentStub = { },
-//            onClickEditCommentStubEmoji = { },
-//        )
+        SubjectCommentColumn(
+            state = remember {
+                CommentState(
+                    sourceVersion = mutableStateOf(Any()),
+                    list = mutableStateOf(generateUiComment(4)),
+                    hasMore = mutableStateOf(false),
+                    onReload = { },
+                    onLoadMore = { },
+                    backgroundScope = scope.backgroundScope,
+                )
+            },
+            onClickUrl = { },
+        )
     }
 }
 

@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -58,79 +59,6 @@ import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import org.jetbrains.compose.resources.painterResource
-
-/**
- * A state which is read by Comment composable
- */
-@Stable
-class CommentState(
-    sourceVersion: State<Any?>,
-    list: State<List<UIComment>>,
-    hasMore: State<Boolean>,
-    private val onReload: suspend () -> Unit,
-    private val onLoadMore: suspend () -> Unit,
-    backgroundScope: CoroutineScope,
-) {
-    val sourceVersion: Any? by sourceVersion
-    val list: List<UIComment> by list
-
-    /**
-     * 至少 [onReload] 了一次
-     */
-    private var loadedOnce by mutableStateOf(false)
-    private var freshLoaded by mutableStateOf(false)
-    private val _hasMore by hasMore
-    val hasMore: Boolean by derivedStateOf {
-        if (!freshLoaded) return@derivedStateOf false
-        _hasMore
-    }
-
-    val count by derivedStateOf {
-        if (!loadedOnce) null else this.list.size
-    }
-
-    private val reloadTasker = MonoTasker(backgroundScope)
-    val isLoading get() = reloadTasker.isRunning
-
-    /**
-     * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
-     */
-    suspend fun reload() {
-        freshLoaded = false
-        onReload()
-        freshLoaded = true
-        loadedOnce = true
-    }
-
-    fun loadMore() {
-        reloadTasker.launch {
-            onLoadMore()
-        }
-    }
-}
-
-
-@Immutable
-class UIRichText(val elements: List<UIRichElement>)
-
-@Immutable
-class UIComment(
-    val id: Int,
-    val creator: UserInfo,
-    val content: UIRichText,
-    val createdAt: Long, // timestamp millis
-    val reactions: List<UICommentReaction>,
-    val briefReplies: List<UIComment>,
-    val replyCount: Int,
-    val rating: Int?,
-)
-
-@Immutable
-class UICommentReaction(
-    val id: Int,
-    val count: Int,
-    val selected: Boolean
-)
 
 /**
  * 评论项目
@@ -219,6 +147,79 @@ fun Comment(
     }
 }
 
+/**
+ * A state which is read by Comment composable
+ */
+@Stable
+class CommentState(
+    sourceVersion: State<Any?>,
+    list: State<List<UIComment>>,
+    hasMore: State<Boolean>,
+    private val onReload: suspend () -> Unit,
+    private val onLoadMore: suspend () -> Unit,
+    backgroundScope: CoroutineScope,
+) {
+    val sourceVersion: Any? by sourceVersion
+    val list: List<UIComment> by list
+
+    /**
+     * 至少 [onReload] 了一次
+     */
+    private var loadedOnce by mutableStateOf(false)
+    private var freshLoaded by mutableStateOf(false)
+    private val _hasMore by hasMore
+    val hasMore: Boolean by derivedStateOf {
+        if (!freshLoaded) return@derivedStateOf false
+        _hasMore
+    }
+
+    val count by derivedStateOf {
+        if (!loadedOnce) null else this.list.size
+    }
+
+    private val reloadTasker = MonoTasker(backgroundScope)
+    val isLoading get() = reloadTasker.isRunning
+
+    /**
+     * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
+     */
+    suspend fun reload() {
+        freshLoaded = false
+        onReload()
+        freshLoaded = true
+        loadedOnce = true
+    }
+
+    fun loadMore() {
+        reloadTasker.launch {
+            onLoadMore()
+        }
+    }
+}
+
+
+@Immutable
+class UIRichText(val elements: List<UIRichElement>)
+
+@Immutable
+class UIComment(
+    val id: Int,
+    val creator: UserInfo,
+    val content: UIRichText,
+    val createdAt: Long, // timestamp millis
+    val reactions: List<UICommentReaction>,
+    val briefReplies: List<UIComment>,
+    val replyCount: Int,
+    val rating: Int?,
+)
+
+@Immutable
+class UICommentReaction(
+    val id: Int,
+    val count: Int,
+    val selected: Boolean
+)
+
 object CommentDefaults {
     @Composable
     fun Avatar(url: String?) {
@@ -231,8 +232,8 @@ object CommentDefaults {
     @Composable
     fun Reaction(
         reaction: UICommentReaction,
-        modifier: Modifier = Modifier,
-        onClick: () -> Unit
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
     ) {
         val backgroundColor by animateColorAsState(
             if (reaction.selected) {
@@ -244,8 +245,7 @@ object CommentDefaults {
         Surface(
             onClick = onClick,
             modifier = Modifier
-                .height(40.dp)
-                .padding(vertical = 6.dp)
+                .minimumInteractiveComponentSize()
                 .then(modifier),
             enabled = true,
             shape = CircleShape,
@@ -281,15 +281,19 @@ object CommentDefaults {
     @Composable
     fun ReactionRow(
         list: List<UICommentReaction>,
-        modifier: Modifier = Modifier,
         onClickItem: (reactionId: Int) -> Unit,
+        modifier: Modifier = Modifier,
     ) {
         FlowRow(
             modifier = modifier,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             list.forEach {
-                Reaction(it) { onClickItem(it.id) }
+                Reaction(
+                    reaction = it,
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    onClick = { onClickItem(it.id) },
+                )
             }
         }
     }
@@ -297,10 +301,10 @@ object CommentDefaults {
     @Composable
     fun ActionRow(
         onClickReply: () -> Unit,
-        onClickReaction: () -> Unit,
-        onClickBlock: () -> Unit,
-        onClickReport: () -> Unit,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        onClickReaction: (() -> Unit)? = null,
+        onClickBlock: (() -> Unit)? = null,
+        onClickReport: (() -> Unit)? = null
     ) {
         Row(modifier = modifier) { 
             CompositionLocalProvider(
@@ -313,21 +317,21 @@ object CommentDefaults {
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                IconButton(onClickReaction, Modifier.size(48.dp)) {
+                if (onClickReaction != null) IconButton(onClickReaction, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.AddReaction,
                         contentDescription = "添加表情",
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                IconButton(onClickBlock, Modifier.size(48.dp)) {
+                if (onClickBlock != null) IconButton(onClickBlock, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.HeartBroken,
                         contentDescription = "拉黑用户",
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                IconButton(onClickReport, Modifier.size(48.dp)) {
+                if (onClickReport != null) IconButton(onClickReport, Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.Report,
                         contentDescription = "举报内容",
@@ -341,10 +345,10 @@ object CommentDefaults {
     @Composable
     fun ReplyList(
         replies: List<UIComment>,
-        modifier: Modifier = Modifier,
-        hiddenReplyCount: Int = 0,
         onClickUrl: (String) -> Unit,
-        onClickExpand: () -> Unit
+        onClickExpand: () -> Unit,
+        modifier: Modifier = Modifier,
+        hiddenReplyCount: Int = 0
     ) {
         val primaryColor = MaterialTheme.colorScheme.primary
 

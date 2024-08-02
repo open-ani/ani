@@ -34,8 +34,8 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
+import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
-import me.him188.ani.app.data.repository.RevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
@@ -203,7 +203,7 @@ private class EpisodeViewModelImpl(
     private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
-    private val revisionRepository: RevisionRepository by inject()
+    private val commentRepository: CommentRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -510,10 +510,10 @@ private class EpisodeViewModelImpl(
         backgroundScope,
     )
 
-    private val episodeCommentLoader = CommentLoader.episode(
+    private val episodeCommentLoader = CommentLoader.createForEpisode(
         episodeId = episodeId,
         coroutineContext = backgroundScope.coroutineContext,
-        episodeCommentSource = { revisionRepository.getSubjectEpisodeComments(it) },
+        episodeCommentSource = { commentRepository.getSubjectEpisodeComments(it) },
     )
 
     override val episodeCommentState: CommentState = CommentState(
@@ -531,7 +531,7 @@ private class EpisodeViewModelImpl(
         title = subjectInfo.combine(episodeInfo) { sub, epi ->
             "${sub.displayName} ${epi?.renderEpisodeEp()}"
         }.stateIn(backgroundScope, SharingStarted.Lazily, null),
-        stickerProvider = { BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) } },
+        stickerProvider = flow { emit(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) }) },
         onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )

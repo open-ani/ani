@@ -1,8 +1,8 @@
 package me.him188.ani.app.ui.subject.episode.comments
 
-import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -67,12 +68,12 @@ fun EpisodeEditCommentSheet(
     val scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     val contentPadding = 16.dp
 
-    var visible by remember { mutableStateOf(false) }
+    var visible by rememberSaveable { mutableStateOf(false) }
     val scrimAlpha by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = TweenSpec(),
+        animationSpec = tween(),
     )
-    var sheetHeight by remember { mutableStateOf(0) }
+    var sheetHeight by rememberSaveable { mutableStateOf(0) }
     val sheetOffset by derivedStateOf { sheetHeight * (1 - scrimAlpha) }
 
     // CornerExtraLargeTop = RoundedCornerShape(28.0.dp)
@@ -95,7 +96,7 @@ fun EpisodeEditCommentSheet(
     val statusBarPadding = WindowInsets.statusBars.getTop(density)
     val imePadding = WindowInsets.ime.getBottom(density)
     val navigationBarPadding = WindowInsets.navigationBars.getBottom(density)
-    var imePresentHeight by remember { mutableStateOf(0) }
+    var imePresentHeight by rememberSaveable { mutableStateOf(0) }
     LaunchedEffect(imePadding) {
         imePresentHeight = max(imePresentHeight, imePadding - navigationBarPadding)
     }

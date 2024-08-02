@@ -73,11 +73,11 @@ private fun PreviewEpisodeComment() {
 
 @Preview
 @Composable
-private fun PreviewCommentColumn() {
+private fun PreviewEpisodeCommentColumn() {
     ProvideCompositionLocalsForPreview {
         val scope = rememberBackgroundScope()
         EpisodeCommentColumn(
-            commentState = remember {
+            state = remember {
                 CommentState(
                     sourceVersion = mutableStateOf(Any()),
                     list = mutableStateOf(generateUiComment(4)),

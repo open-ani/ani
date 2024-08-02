@@ -39,7 +39,7 @@ import me.him188.ani.app.ui.subject.rating.FiveRatingStars
 
 @Composable
 fun SubjectCommentColumn(
-    commentState: CommentState,
+    state: CommentState,
     onClickUrl: (url: String) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
@@ -47,12 +47,9 @@ fun SubjectCommentColumn(
     val pullToRefreshState = rememberPullToRefreshState()
     val imageViewer = LocalImageViewerHandler.current
 
-    val comments = commentState.list
-    val hasMore = commentState.hasMore
-
     LaunchedEffect(true) {
         launch {
-            snapshotFlow { commentState.sourceVersion }
+            snapshotFlow { state.sourceVersion }
                 .distinctUntilChanged()
                 .collectLatest {
                     pullToRefreshState.startRefresh()
@@ -61,7 +58,7 @@ fun SubjectCommentColumn(
         launch {
             snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
                 if (!refreshing) return@collectLatest
-                commentState.reload()
+                state.reload()
                 pullToRefreshState.endRefresh()
             }
         }
@@ -81,7 +78,7 @@ fun SubjectCommentColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item { }
-            itemsIndexed(comments, key = { _, item -> item.id }) { index, item ->
+            itemsIndexed(state.list, key = { _, item -> item.id }) { index, item ->
                 SubjectComment(
                     comment = item,
                     modifier = Modifier
@@ -91,20 +88,20 @@ fun SubjectCommentColumn(
                     onClickImage = { imageViewer.viewImage(it) },
                     onClickUrl = onClickUrl,
                 )
-                if (index != comments.lastIndex) {
+                if (index != state.list.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(),
                         color = DividerDefaults.color.stronglyWeaken(),
                     )
                 }
             }
-            if (hasMore) {
+            if (state.hasMore) {
                 item("dummy loader") {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         CircularProgressIndicator()
                     }
 
-                    LaunchedEffect(true) { commentState.loadMore() }
+                    LaunchedEffect(true) { state.loadMore() }
                 }
             }
         }
@@ -115,9 +112,9 @@ fun SubjectCommentColumn(
 @Composable
 fun SubjectComment(
     comment: UIComment,
-    modifier: Modifier = Modifier,
     onClickUrl: (String) -> Unit,
     onClickImage: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Comment(
         modifier = modifier,

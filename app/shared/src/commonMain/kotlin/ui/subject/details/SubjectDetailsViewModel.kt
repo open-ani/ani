@@ -13,7 +13,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
-import me.him188.ani.app.data.repository.RevisionRepository
+import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.AniNavigator
@@ -44,7 +44,7 @@ class SubjectDetailsViewModel(
     private val browserNavigator: BrowserNavigator by inject()
     private val bangumiRelatedCharactersRepository: BangumiRelatedCharactersRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
-    private val revisionRepository: RevisionRepository by inject()
+    private val commentRepository: CommentRepository by inject()
 
     private val subjectInfo: SharedFlow<SubjectInfo> = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val subjectCollectionFlow = subjectManager.subjectCollectionFlow(subjectId).shareInBackground()
@@ -134,10 +134,10 @@ class SubjectDetailsViewModel(
         backgroundScope,
     )
 
-    private val subjectCommentLoader = CommentLoader.subject(
+    private val subjectCommentLoader = CommentLoader.createForSubject(
         subjectId = flowOf(subjectId),
         coroutineContext = backgroundScope.coroutineContext,
-        subjectCommentSource = { revisionRepository.getSubjectComments(it) },
+        subjectCommentSource = { commentRepository.getSubjectComments(it) },
     )
 
     val subjectCommentState: CommentState = CommentState(

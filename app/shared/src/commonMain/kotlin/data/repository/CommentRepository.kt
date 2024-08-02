@@ -13,15 +13,15 @@ import me.him188.ani.datasources.bangumi.next.models.BangumiNextGetSubjectEpisod
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextSubjectInterestCommentListInner
 import me.him188.ani.utils.logging.logger
 
-sealed interface RevisionRepository {
+sealed interface CommentRepository {
     fun getSubjectEpisodeComments(episodeId: Int): PagedSource<EpisodeComment>
     fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment>
 }
 
-class BangumiRevisionRepositoryImpl(
+class BangumiCommentRepositoryImpl(
     private val client: BangumiClient
-) : RevisionRepository {
-    private val logger = logger(RevisionRepository::class)
+) : CommentRepository {
+    private val logger = logger(CommentRepository::class)
 
     override fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment> {
         // 这个接口不支持按时间倒叙查询，所以先查询一条来获取评论总数，再从最后一页开始查询

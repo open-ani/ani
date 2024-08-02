@@ -8,7 +8,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 
 @Preview
 @Composable
-private fun PreviewCommentColumn() {
+private fun PreviewRichText() {
     ProvideCompositionLocalsForPreview {
         RichText(
             elements = listOf(

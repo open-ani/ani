@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
+import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
@@ -71,8 +72,10 @@ import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
+import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.details.components.CollectionData
@@ -94,6 +97,10 @@ fun SubjectDetailsScene(
     showBlurredBackground: Boolean = true,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
+    val browserNavigator = LocalBrowserNavigator.current
+    
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
         EpisodeListDialog(
@@ -104,8 +111,6 @@ fun SubjectDetailsScene(
             onDismissRequest = { showSelectEpisode = false },
         )
     }
-
-    val context = LocalContext.current
     val connectedScrollState = rememberConnectedScrollState()
 
     // image viewer
@@ -160,7 +165,7 @@ fun SubjectDetailsScene(
 
             CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
                 SubjectCommentColumn(
-                    commentState = vm.subjectCommentState,
+                    state = vm.subjectCommentState,
                     listState = lazyListState,
                     modifier = Modifier
                         .ifThen(layoutMode.showLandscapeUI) { widthIn(max = BottomSheetDefaults.SheetMaxWidth) }
@@ -168,7 +173,9 @@ fun SubjectDetailsScene(
                             nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
                         }
                         .nestedScroll(connectedScrollState.nestedScrollConnection),
-                    onClickUrl = { },
+                    onClickUrl = {
+                        RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                    },
                 )
             }
         },

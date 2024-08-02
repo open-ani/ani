@@ -73,6 +73,7 @@ import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.subject.components.comment.CommentSendTarget
@@ -220,32 +221,24 @@ private fun EpisodeSceneTabletVeryWide(
                         }
 
                         1 -> EpisodeCommentColumn(
-                            commentState = vm.episodeCommentState,
+                            state = vm.episodeCommentState,
                             editCommentStubText = vm.editCommentState.content.text,
                             modifier = Modifier.fillMaxSize(),
                             onClickReply = {
-                                vm.editCommentState.handleNewEdit(CommentSendTarget.Reply(it))
+                                vm.editCommentState.startEdit(CommentSendTarget.Reply(it))
                                 showEditCommentSheet = true
                             },
                             onClickUrl = {
-                                try {
-                                    if (it.startsWith("https://") || it.startsWith("http://")) {
-                                        browserNavigator.openBrowser(context, it)
-                                    } else {
-                                        toaster.toast("此链接可能会打开其他应用，ani 将不会打开此链接：\n$it")
-                                    }
-                                } catch (ex: Exception) {
-                                    toaster.toast("无法打开此链接：\n$it")
-                                }
+                                RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
                             },
                             onClickEditCommentStub = {
-                                vm.editCommentState.handleNewEdit(
+                                vm.editCommentState.startEdit(
                                     CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
                                 )
                                 showEditCommentSheet = true
                             },
                             onClickEditCommentStubEmoji = {
-                                vm.editCommentState.handleNewEdit(
+                                vm.editCommentState.startEdit(
                                     CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
                                 )
                                 vm.editCommentState.toggleStickerPanelState(true)
@@ -364,34 +357,26 @@ private fun EpisodeSceneContentPhone(
         },
         commentColumn = {
             EpisodeCommentColumn(
-                commentState = vm.episodeCommentState,
+                state = vm.episodeCommentState,
                 editCommentStubText = vm.editCommentState.content.text,
                 modifier = Modifier.fillMaxSize(),
                 onClickReply = {
                     showEditCommentSheet = true
-                    vm.editCommentState.handleNewEdit(CommentSendTarget.Reply(it))
+                    vm.editCommentState.startEdit(CommentSendTarget.Reply(it))
                     pauseOnPlaying()
 
                 },
                 onClickUrl = {
-                    try {
-                        if (it.startsWith("https://") || it.startsWith("http://")) {
-                            browserNavigator.openBrowser(context, it)
-                        } else {
-                            toaster.toast("此链接可能会打开其他应用，ani 将不会打开此链接：\n$it")
-                        }
-                    } catch (ex: Exception) {
-                        toaster.toast("无法打开此链接：\n$it")
-                    }
+                    RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
                 },
                 onClickEditCommentStub = {
-                    vm.editCommentState.handleNewEdit(
+                    vm.editCommentState.startEdit(
                         CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
                     )
                     showEditCommentSheet = true
                 },
                 onClickEditCommentStubEmoji = {
-                    vm.editCommentState.handleNewEdit(
+                    vm.editCommentState.startEdit(
                         CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
                     )
                     vm.editCommentState.toggleStickerPanelState(true)

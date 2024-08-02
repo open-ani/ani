@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
+import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.data.models.subject.SubjectComment
 import me.him188.ani.app.tools.caching.LazyDataCache
@@ -51,7 +52,7 @@ class CommentLoader<T>(
         /**
          * create comment loader of subject
          */
-        fun subject(
+        fun createForSubject(
             subjectId: Flow<Int>,
             coroutineContext: CoroutineContext,
             subjectCommentSource: suspend LazyDataCacheContext.(Int) -> PagedSource<SubjectComment>
@@ -67,7 +68,7 @@ class CommentLoader<T>(
             uiMapper = { comment ->
                 UIComment(
                     id = comment.id,
-                    creator = comment.creator,
+                    creator = comment.creator ?: UserInfo.EMPTY,
                     content = parseBBCode(comment.content),
                     createdAt = comment.updatedAt * 1000L,
                     reactions = emptyList(),
@@ -81,7 +82,7 @@ class CommentLoader<T>(
         /**
          * create comment loader of episode
          */
-        fun episode(
+        fun createForEpisode(
             episodeId: Flow<Int>,
             coroutineContext: CoroutineContext,
             episodeCommentSource: suspend LazyDataCacheContext.(Int) -> PagedSource<EpisodeComment>
