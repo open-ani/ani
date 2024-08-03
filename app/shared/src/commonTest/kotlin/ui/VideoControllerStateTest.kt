@@ -1,8 +1,6 @@
-package ui
+package me.him188.ani.app.videoplayer.ui
 
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
-import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
