@@ -1,4 +1,4 @@
-package ui
+package me.him188.ani.app.ui
 
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
@@ -45,53 +45,53 @@ class VideoControllerStateTest {
 
     @Test
     fun `visibility when nothing`() {
-        val state = createState(false, false, false)
+        val state = createStateRequested(false, false, false)
         assertEquals(ControllerVisibility.Invisible, state.visibility)
     }
 
     @Test
     fun `visibility when alwaysOn`() {
-        val state = createState(true, false, false)
+        val state = createStateRequested(true, false, false)
         assertEquals(ControllerVisibility.Visible, state.visibility)
     }
 
     @Test
     fun `visibility when progressBarVisible`() {
-        val state = createState(false, true, false)
+        val state = createStateRequested(false, true, false)
         assertEquals(ControllerVisibility.DetachedSliderOnly, state.visibility)
     }
 
     @Test
     fun `visibility when fullVisible`() {
-        val state = createState(false, false, true)
+        val state = createStateRequested(false, false, true)
         assertEquals(ControllerVisibility.Visible, state.visibility)
     }
 
     @Test
     fun `visibility when alwaysOn progressBarVisible`() {
-        val state = createState(true, true, false)
+        val state = createStateRequested(true, true, false)
         assertEquals(ControllerVisibility.Visible, state.visibility)
     }
 
     @Test
     fun `visibility when alwaysOn fullVisible`() {
-        val state = createState(true, false, true)
+        val state = createStateRequested(true, false, true)
         assertEquals(ControllerVisibility.Visible, state.visibility)
     }
 
     @Test
     fun `visibility when progressBarVisible fullVisible`() {
-        val state = createState(false, true, true)
+        val state = createStateRequested(false, true, true)
         assertEquals(ControllerVisibility.Visible, state.visibility)
     }
 
     @Test
     fun `visibility when alwaysOn progressBarVisible fullVisible`() {
-        val state = createState(true, true, true)
+        val state = createStateRequested(true, true, true)
         assertEquals(ControllerVisibility.Visible, state.visibility)
     }
 
-    private fun createState(
+    private fun createStateRequested(
         alwaysOn: Boolean,
         progressBarVisible: Boolean,
         fullVisible: Boolean
