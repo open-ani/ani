@@ -106,42 +106,7 @@ internal fun EpisodeVideoImpl(
     var showSettings by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
-    val progressSliderState = rememberMediaProgressSliderState(
-        playerState,
-        onPreview = {
-            // not yet supported
-        },
-        onPreviewFinished = {
-            playerState.seekTo(it)
-        },
-    )
 
-    val chapters by playerState.chapters.collectAsState()
-
-    LaunchedEffect(true) {
-        while (true) {
-            delay(1000)
-            if (progressSliderState.totalDurationMillis == 0L) continue
-            chapters.forEach {
-                val matched = when {
-                    progressSliderState.totalDurationMillis > 20 * 60 * 1000 -> {
-                        it.duration in 85_000..95_000
-                    }
-
-                    progressSliderState.totalDurationMillis > 10 * 60 * 1000 -> {
-                        it.duration in 55_000..65_000
-                    }
-
-                    else -> {
-                        false
-                    }
-                }
-                if (matched && (progressSliderState.currentPositionMillis - it.offset) in 0..500) {
-                    playerState.seekTo((it.offset + it.duration))
-                }
-            }
-        }
-    }
     VideoScaffold(
         expanded = expanded,
         modifier = modifier,
@@ -256,6 +221,16 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
+            val progressSliderState = rememberMediaProgressSliderState(
+                playerState,
+                onPreview = {
+                    // not yet supported
+                },
+                onPreviewFinished = {
+                    playerState.seekTo(it)
+                },
+            )
+
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -279,6 +254,7 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
+                    val chapters by playerState.chapters.collectAsState()
                     MediaProgressSlider(
                         progressSliderState, playerState.cacheProgress, chapters,
                         downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
