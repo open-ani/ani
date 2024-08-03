@@ -1,13 +1,11 @@
-package me.him188.ani.app.ui
+package ui
 
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.TestInstance
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class VideoControllerStateTest {
     @Test
     fun `test toggle visibility`() = runTest {
