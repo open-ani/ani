@@ -313,7 +313,13 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                    state.value = PlaybackState.READY
 //                }
 //            }
+
                 override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                    player.submit {
+                        setVolume(volume.value)
+                        toggleMute(isMute.value)
+                    }
+
                     chapters.value = player.chapters().allDescriptions().flatMap { title ->
                         title.map {
                             Chapter(
@@ -322,13 +328,6 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                                 offsetMillis = it.offset(),
                             )
                         }
-                    }
-                }
-
-                override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
-                    player.submit {
-                        setVolume(volume.value)
-                        toggleMute(isMute.value)
                     }
                 }
                 override fun playing(mediaPlayer: MediaPlayer) {
