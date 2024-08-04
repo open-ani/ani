@@ -157,14 +157,14 @@ interface PlayerState {
 
     fun saveScreenshotFile(filename: String)
 
-    val chapters: StateFlow<MutableList<Chapter>>
+    val chapters: StateFlow<List<Chapter>>
 }
 
 @Immutable
 data class Chapter(
     val name: String,
-    val duration: Long,
-    val offset: Long
+    val durationMillis: Long,
+    val offsetMillis: Long
 )
 
 fun PlayerState.togglePause() {
@@ -457,10 +457,10 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
     override fun saveScreenshotFile(filename: String) {
     }
 
-    override val chapters: StateFlow<MutableList<Chapter>> = MutableStateFlow(
-        mutableListOf(
-            Chapter("chapter1", duration = 90_000L, 0L),
-            Chapter("chapter2", duration = 5_000L, 90_000L),
+    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(
+        listOf(
+            Chapter("chapter1", durationMillis = 90_000L, 0L),
+            Chapter("chapter2", durationMillis = 5_000L, 90_000L),
         ),
     )
 }

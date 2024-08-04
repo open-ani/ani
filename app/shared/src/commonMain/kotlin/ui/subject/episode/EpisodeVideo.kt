@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -254,7 +253,7 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    val chapters by playerState.chapters.collectAsState()
+                    val chapters by playerState.chapters.collectAsStateWithLifecycle()
                     MediaProgressSlider(
                         progressSliderState, playerState.cacheProgress, chapters,
                         downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,

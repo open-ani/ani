@@ -27,7 +27,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -360,7 +359,7 @@ internal class ExoPlayerState @UiThread constructor(
         TODO("Not yet implemented")
     }
 
-    override val chapters: StateFlow<MutableList<Chapter>> = MutableStateFlow(mutableListOf())
+    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList())
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition

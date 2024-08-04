@@ -13,7 +13,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -158,7 +157,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
     }
 
-    override val chapters: StateFlow<MutableList<Chapter>> = MutableStateFlow(mutableListOf())
+    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList())
 
     class VlcjData(
         override val videoSource: VideoSource<*>,
@@ -288,18 +287,15 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                }
 //            }
                 override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
-                    chapters.value.clear()
-                    chapters.value.addAll(
-                        player.chapters().allDescriptions().flatMap { title ->
-                            title.map {
-                                Chapter(
-                                    name = it.name(),
-                                    duration = it.duration(),
-                                    offset = it.offset(),
-                                )
-                            }
-                        },
-                    )
+                    chapters.value = player.chapters().allDescriptions().flatMap { title ->
+                        title.map {
+                            Chapter(
+                                name = it.name(),
+                                durationMillis = it.duration(),
+                                offsetMillis = it.offset(),
+                            )
+                        }
+                    }
                 }
 
                 override fun playing(mediaPlayer: MediaPlayer) {

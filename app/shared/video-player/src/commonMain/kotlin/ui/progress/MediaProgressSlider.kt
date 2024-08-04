@@ -234,7 +234,7 @@ fun MediaProgressSlider(
             Canvas(Modifier.matchParentSize()) {
                 if (state.totalDurationMillis == 0L) return@Canvas
                 chapters.forEach {
-                    val percent = it.offset.toFloat().div(state.totalDurationMillis)
+                    val percent = it.offsetMillis.toFloat().div(state.totalDurationMillis)
                     drawCircle(
                         color = chapterColor,
                         radius = 2.dp.toPx(),
@@ -260,7 +260,7 @@ fun MediaProgressSlider(
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
 
                     chapters.find {
-                        previewTimeMillis in it.offset..it.offset + it.duration
+                        previewTimeMillis in it.offsetMillis..<it.offsetMillis + it.durationMillis
                     }?.let {
                         val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
                         return@derivedStateOf chapterName + renderSeconds(
