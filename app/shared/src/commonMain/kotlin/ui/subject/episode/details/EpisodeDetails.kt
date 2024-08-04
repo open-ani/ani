@@ -69,7 +69,6 @@ import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRo
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
-import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -106,7 +105,6 @@ class EpisodeDetailsState(
 fun EpisodeDetails(
     state: EpisodeDetailsState,
     episodeCarouselState: EpisodeCarouselState,
-    editableRatingState: EditableRatingState,
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
     danmakuStatistics: DanmakuStatistics,
     videoStatistics: VideoStatistics,
@@ -317,8 +315,8 @@ private fun SectionTitle(
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
-    airingStatus: @Composable() (FlowRowScope.() -> Unit),
-    subjectSuggestions: @Composable() (FlowRowScope.() -> Unit),
+    airingStatus: @Composable (FlowRowScope.() -> Unit),
+    subjectSuggestions: @Composable (FlowRowScope.() -> Unit),
     exposedEpisodeItem: @Composable (contentPadding: PaddingValues) -> Unit,
     danmakuStatisticsSummary: @Composable () -> Unit,
     danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,

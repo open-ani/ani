@@ -50,7 +50,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * - 视频: [video]
  * - 右侧侧边栏: [rhsSheet]
  *
- * @param controllersVisible 是否展示 [topBar], [rhsBar] 和 [bottomBar]
+ * @param controllersVisibility 是否展示 [topBar], [rhsBar] 和 [bottomBar]
  * @param topBar [PlayerTopBar]
  * @param video [VideoPlayer]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
@@ -65,7 +65,7 @@ fun VideoScaffold(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    controllersVisible: () -> Boolean = { true },
+    controllersVisibility: () -> ControllerVisibility = { ControllerVisibility.Visible },
     gestureLocked: () -> Boolean = { false },
     topBar: @Composable RowScope.() -> Unit = {},
     /**
@@ -78,10 +78,11 @@ fun VideoScaffold(
     rhsButtons: @Composable ColumnScope.() -> Unit = {},
     gestureLock: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
+    detachedProgressSlider: @Composable () -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
 ) {
-    val controllersVisibleState by derivedStateOf(controllersVisible)
+    val controllersVisibleState by derivedStateOf(controllersVisibility)
     val gestureLockedState by derivedStateOf(gestureLocked) // delayed access to minimize recomposition
 
     BoxWithConstraints(
@@ -123,7 +124,7 @@ fun VideoScaffold(
                 Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                     // 顶部控制栏: 返回键, 标题, 设置
                     AnimatedVisibility(
-                        visible = controllersVisibleState && !gestureLockedState,
+                        visible = controllersVisibleState.topBar && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -159,7 +160,7 @@ fun VideoScaffold(
 
                     // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                     AnimatedVisibility(
-                        visible = controllersVisibleState && !gestureLockedState,
+                        visible = controllersVisibleState.bottomBar && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -186,10 +187,18 @@ fun VideoScaffold(
                                 }
                             }
                         }
+
+                    }
+                    AnimatedVisibility(
+                        visible = controllersVisibleState.detachedSlider && !gestureLockedState,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        detachedProgressSlider()
                     }
                 }
                 AnimatedVisibility(
-                    !controllersVisibleState && !expanded,
+                    controllersVisibleState.floatingBottomEnd && !expanded,
                     Modifier.align(Alignment.BottomEnd),
                     enter = fadeIn(),
                     exit = fadeOut(),
@@ -214,7 +223,7 @@ fun VideoScaffold(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         AnimatedVisibility(
-                            visible = controllersVisibleState && !gestureLockedState,
+                            visible = controllersVisibleState.rhsBar && !gestureLockedState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
@@ -223,7 +232,7 @@ fun VideoScaffold(
 
                         // Separate from controllers, to fix position when controllers are/aren't hidden
                         AnimatedVisibility(
-                            visible = controllersVisibleState,
+                            visible = controllersVisibleState.rhsBar,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {

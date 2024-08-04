@@ -82,13 +82,16 @@ import androidx.compose.ui.window.PopupProperties
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import kotlin.math.roundToInt
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Stable
@@ -515,6 +518,23 @@ object PlayerControllerDefaults {
                 }
             }
         }
+    }
+
+    @Composable
+    fun MediaProgressSlider(
+        progressSliderState: MediaProgressSliderState,
+        playerState: PlayerState,
+        modifier: Modifier = Modifier,
+        downloadColor: Color = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
+        enabled: Boolean = true,
+    ) {
+        val chapters by playerState.chapters.collectAsStateWithLifecycle()
+        MediaProgressSlider(
+            progressSliderState, playerState.cacheProgress, chapters,
+            downloadingColor = downloadColor,
+            enabled = enabled,
+            modifier = modifier,
+        )
     }
 }
 

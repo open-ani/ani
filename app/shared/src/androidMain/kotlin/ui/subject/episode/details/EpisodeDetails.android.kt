@@ -20,7 +20,6 @@ import me.him188.ani.app.ui.subject.cache.TestMediaList
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
@@ -195,7 +194,6 @@ private fun PreviewEpisodeDetailsImpl(
                     backgroundScope = PreviewScope,
                 )
             },
-            editableRatingState = rememberTestEditableRatingState(),
             editableSubjectCollectionTypeState = editableSubjectCollectionTypeState,
             danmakuStatistics = danmakuStatistics,
             videoStatistics = remember {

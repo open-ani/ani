@@ -28,6 +28,7 @@ import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.AudioTrack
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -157,6 +158,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             player.snapshots().save(filePath.toFile())
         }
     }
+
+    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList())
 
     class VlcjData(
         override val videoSource: VideoSource<*>,
@@ -310,6 +313,17 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                    state.value = PlaybackState.READY
 //                }
 //            }
+                override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                    chapters.value = player.chapters().allDescriptions().flatMap { title ->
+                        title.map {
+                            Chapter(
+                                name = it.name(),
+                                durationMillis = it.duration(),
+                                offsetMillis = it.offset(),
+                            )
+                        }
+                    }
+                }
 
                 override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
                     player.submit {
