@@ -504,7 +504,7 @@ fun VideoGestureHost(
                                 else if (this > 0) playerState.volumeDown()
 
                                 indicatorTasker.launch {
-                                    indicatorState.showVolumeRange(playerState.volume.value / 2)
+                                    indicatorState.showVolumeRange(playerState.volume.value / playerState.maxValue)
                                 }
                             }
                         }

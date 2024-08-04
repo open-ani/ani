@@ -252,6 +252,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override val volume: MutableStateFlow<Float> = MutableStateFlow(1f)
     override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val maxValue: Float = 2f
+
     override fun toggleMute(mute: Boolean?) {
         if (player.audio().isMute == mute) {
             return

@@ -373,6 +373,7 @@ interface SupportsAudio {
 
     val volume: StateFlow<Float>
     val isMute: StateFlow<Boolean>
+    val maxValue: Float
 
     fun toggleMute(mute: Boolean? = null)
 
@@ -463,6 +464,8 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val volume: MutableStateFlow<Float> = MutableStateFlow(0f)
     override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val maxValue: Float = 1f
+
     override fun toggleMute(mute: Boolean?) {
         isMute.value = mute ?: !isMute.value
     }

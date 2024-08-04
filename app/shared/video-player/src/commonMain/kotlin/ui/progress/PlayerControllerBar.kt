@@ -139,6 +139,7 @@ object PlayerControllerDefaults {
     fun AudioIcon(
         volume: Float,
         isMute: Boolean,
+        maxValue: Float,
         onClick: () -> Unit,
         onchange: (Float) -> Unit,
         controllerState: VideoControllerState,
@@ -215,7 +216,7 @@ object PlayerControllerDefaults {
                                     colors = SliderDefaults.colors(
                                         inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
                                     ),
-                                    valueRange = 0f..2f,
+                                    valueRange = 0f..maxValue,
                                 )
                             }
                         }

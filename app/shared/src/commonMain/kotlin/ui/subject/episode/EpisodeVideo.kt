@@ -255,6 +255,7 @@ internal fun EpisodeVideoImpl(
                         PlayerControllerDefaults.AudioIcon(
                             volumeState,
                             isMute = volumeMute,
+                            maxValue = playerState.maxValue,
                             onClick = {
                                 playerState.toggleMute()
                             },
