@@ -70,6 +70,7 @@ import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Stable
@@ -408,9 +409,9 @@ object PlayerControllerDefaults {
         downloadColor: Color = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
         enabled: Boolean = true,
     ) {
-
+        val chapters by playerState.chapters.collectAsStateWithLifecycle()
         MediaProgressSlider(
-            progressSliderState, playerState.cacheProgress,
+            progressSliderState, playerState.cacheProgress, chapters,
             downloadingColor = downloadColor,
             enabled = enabled,
             modifier = modifier,
