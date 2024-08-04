@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -49,6 +48,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
@@ -62,6 +62,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,7 +82,6 @@ import androidx.compose.ui.window.PopupProperties
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.theme.aniColorScheme
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
@@ -148,15 +148,13 @@ object PlayerControllerDefaults {
         val hoverInteraction = remember { MutableInteractionSource() }
         val isHovered by hoverInteraction.collectIsHoveredAsState()
         val audioIconRequester = remember { Any() }
-        LaunchedEffect(isHovered) {
-            controllerState.setRequestAlwaysOn(audioIconRequester, isHovered)
+        LaunchedEffect(true) {
+            snapshotFlow { isHovered }.collect {
+                controllerState.setRequestAlwaysOn(audioIconRequester, isHovered)
+            }
         }
         Box(
-            modifier = modifier.hoverable(hoverInteraction)
-                .clip(CircleShape)
-                .ifThen(isHovered) {
-                    background(aniColorScheme().surface.copy(alpha = .1f))
-                },
+            modifier = modifier.hoverable(hoverInteraction),
             contentAlignment = Alignment.BottomCenter,
         ) {
             val iconButton = @Composable {
@@ -188,11 +186,10 @@ object PlayerControllerDefaults {
             Popup(
                 alignment = Alignment.BottomCenter,
             ) {
-                Box(
+                Surface(
                     modifier = Modifier
                         .hoverable(hoverInteraction)
-                        .clip(shape = CircleShape)
-                        .background(aniColorScheme().surface),
+                        .clip(shape = CircleShape),
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -207,7 +204,7 @@ object PlayerControllerDefaults {
                             ) {
                                 Text(
                                     text = volume.times(100).roundToInt().toString(),
-                                    modifier = modifier.padding(8.dp),
+                                    modifier = Modifier.padding(8.dp),
                                 )
                                 VerticalSlider(
                                     value = volume,
@@ -216,7 +213,7 @@ object PlayerControllerDefaults {
                                     modifier = Modifier.width(96.dp),
                                     thumb = {},
                                     colors = SliderDefaults.colors(
-                                        inactiveTrackColor = aniDarkColorTheme().onSurface,
+                                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
                                     ),
                                     valueRange = 0f..2f,
                                 )
