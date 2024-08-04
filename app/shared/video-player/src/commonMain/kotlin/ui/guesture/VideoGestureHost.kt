@@ -493,7 +493,7 @@ fun VideoGestureHost(
                             }
                             onExitFullscreen()
                         }
-                    }.ifThen(family.scrollForVolume) {
+                    }.ifThen(family.scrollForVolume && playerState is SupportsAudio) {
                         if (playerState !is SupportsAudio) {
                             return@ifThen this
                         }

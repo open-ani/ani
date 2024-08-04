@@ -144,11 +144,11 @@ object PlayerControllerDefaults {
         onchange: (Float) -> Unit,
         controllerState: VideoControllerState,
         modifier: Modifier = Modifier,
-        interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     ) {
         val hoverInteraction = remember { MutableInteractionSource() }
         val isHovered by hoverInteraction.collectIsHoveredAsState()
         val audioIconRequester = remember { Any() }
+
         LaunchedEffect(true) {
             snapshotFlow { isHovered }.collect {
                 controllerState.setRequestAlwaysOn(audioIconRequester, isHovered)
@@ -210,7 +210,6 @@ object PlayerControllerDefaults {
                                 VerticalSlider(
                                     value = volume,
                                     onValueChange = onchange,
-                                    interactionSource = interactionSource,
                                     modifier = Modifier.width(96.dp),
                                     thumb = {},
                                     colors = SliderDefaults.colors(
