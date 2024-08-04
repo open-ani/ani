@@ -133,8 +133,8 @@ private fun EpisodeSceneContent(
     val imageViewer = rememberImageViewerHandler()
     BackHandler(enabled = imageViewer.viewing.value) { imageViewer.clear() }
 
-    val playbackState = vm.playerState.state.collectAsStateWithLifecycle()
-    if (playbackState.value.isPlaying) {
+    val playbackState by vm.playerState.state.collectAsStateWithLifecycle()
+    if (playbackState.isPlaying) {
         ScreenOnEffect()
     }
 
