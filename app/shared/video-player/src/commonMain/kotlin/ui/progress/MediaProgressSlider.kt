@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -56,6 +58,7 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
@@ -157,12 +160,13 @@ fun rememberMediaProgressSliderState(
 fun MediaProgressSlider(
     state: MediaProgressSliderState,
     cacheState: MediaCacheProgressState,
+    chapters: List<Chapter> = emptyList(),
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
     trackProgressColor: Color = aniDarkColorTheme().primary,
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
     downloadingColor: Color = Color.Yellow,
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
-    stopColor: Color = aniDarkColorTheme().primary,
+    chapterColor: Color = aniDarkColorTheme().onSurface,
     previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
     enabled: Boolean = true,
@@ -228,13 +232,17 @@ fun MediaProgressSlider(
                 )
             }
 
-            Canvas(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)) {
-                // draw stop
-                drawCircle(
-                    stopColor,
-                    radius = 2.dp.toPx(),
-                    blendMode = BlendMode.Src, // override background
-                )
+            Canvas(Modifier.matchParentSize()) {
+                if (state.totalDurationMillis == 0L) return@Canvas
+                chapters.forEach {
+                    val percent = it.offsetMillis.toFloat().div(state.totalDurationMillis)
+                    drawCircle(
+                        color = chapterColor,
+                        radius = 2.dp.toPx(),
+                        center = Offset(size.width * percent, this.center.y),
+                        blendMode = BlendMode.Src, // override background
+                    )
+                }
             }
         }
 
@@ -251,6 +259,17 @@ fun MediaProgressSlider(
                     val percent = mousePosX.minus(thumbWidth / 2).div(containerWidth)
                         .coerceIn(0f, 1f)
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
+
+                    chapters.find {
+                        previewTimeMillis in it.offsetMillis..<it.offsetMillis + it.durationMillis
+                    }?.let {
+                        val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
+                        return@derivedStateOf chapterName + renderSeconds(
+                            previewTimeMillis / 1000,
+                            state.totalDurationMillis / 1000,
+                        ).substringBefore(" ")
+                    }
+
                     renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
                 }
             }
@@ -305,7 +324,8 @@ fun MediaProgressSlider(
                 Box(
                     modifier = Modifier
                         .clip(shape = CircleShape)
-                        .background(previewTimeBackgroundColor),
+                        .background(previewTimeBackgroundColor)
+                        .animateContentSize(),
                 ) {
                     Box(
                         Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -321,6 +341,7 @@ fun MediaProgressSlider(
                             Text(
                                 text = previewTimeText,
                                 color = previewTimeTextColor,
+                                textAlign = TextAlign.Center,
                             )
                         }
                     }

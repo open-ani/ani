@@ -87,6 +87,7 @@ import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
 
@@ -135,7 +136,10 @@ private fun EpisodeSceneContent(
     val imageViewer = rememberImageViewerHandler()
     BackHandler(enabled = imageViewer.viewing.value) { imageViewer.clear() }
 
-    ScreenOnEffect()
+    val playbackState by vm.playerState.state.collectAsStateWithLifecycle()
+    if (playbackState.isPlaying) {
+        ScreenOnEffect()
+    }
 
     AutoPauseEffect(vm)
 

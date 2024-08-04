@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -155,7 +156,16 @@ interface PlayerState {
     val audioTracks: TrackGroup<AudioTrack>
 
     fun saveScreenshotFile(filename: String)
+
+    val chapters: StateFlow<List<Chapter>>
 }
+
+@Immutable
+data class Chapter(
+    val name: String,
+    val durationMillis: Long,
+    val offsetMillis: Long
+)
 
 fun PlayerState.togglePause() {
     if (state.value.isPlaying) {
@@ -446,4 +456,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override fun saveScreenshotFile(filename: String) {
     }
+
+    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(
+        listOf(
+            Chapter("chapter1", durationMillis = 90_000L, 0L),
+            Chapter("chapter2", durationMillis = 5_000L, 90_000L),
+        ),
+    )
 }

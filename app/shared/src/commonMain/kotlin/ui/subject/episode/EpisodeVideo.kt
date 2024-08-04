@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -250,9 +251,10 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    PlayerControllerDefaults.MediaProgressSlider(
-                        progressSliderState,
-                        playerState,
+                    val chapters by playerState.chapters.collectAsStateWithLifecycle()
+                    MediaProgressSlider(
+                        progressSliderState, playerState.cacheProgress, chapters,
+                        downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
                     )
                 },
                 danmakuEditor = danmakuEditor,
