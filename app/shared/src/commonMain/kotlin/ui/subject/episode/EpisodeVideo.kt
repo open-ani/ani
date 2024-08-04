@@ -105,6 +105,7 @@ internal fun EpisodeVideoImpl(
     var showSettings by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
+
     VideoScaffold(
         expanded = expanded,
         modifier = modifier,
@@ -228,6 +229,7 @@ internal fun EpisodeVideoImpl(
                     playerState.seekTo(it)
                 },
             )
+
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -251,8 +253,9 @@ internal fun EpisodeVideoImpl(
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
+                    val chapters by playerState.chapters.collectAsStateWithLifecycle()
                     MediaProgressSlider(
-                        progressSliderState, playerState.cacheProgress,
+                        progressSliderState, playerState.cacheProgress, chapters,
                         downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
                     )
                 },
