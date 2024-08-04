@@ -206,7 +206,7 @@ object PlayerControllerDefaults {
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
                                 Text(
-                                    text = volume.times(200).roundToInt().toString(),
+                                    text = volume.times(100).roundToInt().toString(),
                                     modifier = modifier.padding(8.dp),
                                 )
                                 VerticalSlider(
@@ -218,6 +218,7 @@ object PlayerControllerDefaults {
                                     colors = SliderDefaults.colors(
                                         inactiveTrackColor = aniDarkColorTheme().onSurface,
                                     ),
+                                    valueRange = 0f..2f,
                                 )
                             }
                         }

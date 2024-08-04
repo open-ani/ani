@@ -250,7 +250,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
 
-    override val volume: MutableStateFlow<Float> = MutableStateFlow(0.5f)
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(1f)
     override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override fun toggleMute(mute: Boolean?) {
         if (player.audio().isMute == mute) {
@@ -261,8 +261,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun setVolume(volume: Float) {
-        this.volume.value = volume.coerceIn(0f, 1f)
-        player.audio().setVolume(volume.times(200).roundToInt())
+        this.volume.value = volume.coerceIn(0f, 2f)
+        player.audio().setVolume(volume.times(100).roundToInt())
     }
 
     override fun volumeUp() {
