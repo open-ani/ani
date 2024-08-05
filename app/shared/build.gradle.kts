@@ -164,6 +164,11 @@ kotlin {
         api(libs.logback.android)
     }
 
+    sourceSets.androidUnitTest.dependencies {
+        implementation(libs.mockito)
+        implementation(libs.mockito.kotlin)
+    }
+
     sourceSets.nativeMain.dependencies {
         implementation(libs.stately.common) // fixes koin bug
     }
