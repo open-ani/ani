@@ -1,6 +1,5 @@
 package me.him188.ani.android
 
-import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
@@ -21,7 +20,7 @@ import me.him188.ani.app.platform.AndroidPermissionManager
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.tools.DocumentUriParser
+import me.him188.ani.app.tools.DocumentsContractApi19
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.AndroidUpdateInstaller
@@ -36,7 +35,6 @@ import java.io.File
 private const val BT_CACHE_DIR_CHANGED = "BT 存储位置不可用，已切换回默认存储位置。"
 
 fun getAndroidModules(
-    getContext: () -> Context,
     defaultTorrentCacheDir: File,
     coroutineScope: CoroutineScope,
 ) = module {
@@ -60,9 +58,8 @@ fun getAndroidModules(
         ).apply { createChannels() }
     }
     single<BrowserNavigator> { AndroidBrowserNavigator() }
-    single<PlayerStateFactory> { ExoPlayerStateFactory() }
-
     single<TorrentManager> {
+        val context = androidContext()
         val defaultTorrentCachePath = defaultTorrentCacheDir.absolutePath
         val cacheDir = runBlocking {
             val settings = get<SettingsRepository>().mediaCacheSettings
@@ -74,13 +71,14 @@ fun getAndroidModules(
                 return@runBlocking defaultTorrentCachePath
             }
 
-            if (dir.startsWith(getContext().filesDir.absolutePath)) {
+            if (dir.startsWith(context.filesDir.absolutePath)) {
                 // 在设置中保存的是私有目录，直接返回
                 return@runBlocking dir
             }
 
-            getContext().contentResolver.persistedUriPermissions.forEach { p ->
-                if (DocumentUriParser.parseUriToStorage(getContext(), p.uri) == dir) {
+            context.contentResolver.persistedUriPermissions.forEach { p ->
+                val storage = DocumentsContractApi19.parseUriToStorage(context, p.uri)
+                if (storage != null && dir.startsWith(storage)) {
                     return@runBlocking if (p.isReadPermission && p.isWritePermission) {
                         // 在设置中保存的外部共享目录有完整的读写权限，直接返回 dir
                         dir
@@ -88,16 +86,16 @@ fun getAndroidModules(
                         // 在设置中保存的外部共享目录没有完整的读写权限，直接切换回默认的内部私有目录,
                         // 避免读写权限不足错误导致 App 崩溃
                         settings.update { copy(saveDir = defaultTorrentCachePath) }
-                        Toast.makeText(getContext(), BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
                         defaultTorrentCachePath
                     }
                 }
             }
             // 既不是内部私有目录也不是外部共享目录，那一定是外部私有目录
-            if (getContext().getExternalFilesDir(null) == null) {
+            if (context.getExternalFilesDir(null) == null) {
                 // 外部私有目录不可用，直接切换回默认的私有目录，避免读写权限不足错误导致 App 崩溃
                 settings.update { copy(saveDir = defaultTorrentCachePath) }
-                Toast.makeText(getContext(), BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
                 return@runBlocking defaultTorrentCachePath
             }
 
@@ -110,6 +108,7 @@ fun getAndroidModules(
             saveDir = { Path(cacheDir).inSystem },
         )
     }
+    single<PlayerStateFactory> { ExoPlayerStateFactory() }
 
 
     factory<VideoSourceResolver> {

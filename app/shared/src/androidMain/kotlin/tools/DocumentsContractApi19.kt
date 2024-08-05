@@ -9,7 +9,12 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import me.him188.ani.utils.logging.logger
 
-object DocumentUriParser {
+/**
+ * DocumentContract from [android.provider.DocumentsContract] since [KitKat][android.os.Build.VERSION_CODES.KITKAT].
+ *
+ * Only keeps document contract uri to local storage parser.
+ */
+object DocumentsContractApi19 {
     private val logger = logger<DocumentsContract>()
     private const val AUTHORITY_DOCUMENT_EXTERNAL_STORAGE: String = "com.android.externalstorage.documents"
     private const val AUTHORITY_DOCUMENT_DOWNLOAD: String = "com.android.providers.downloads.documents"

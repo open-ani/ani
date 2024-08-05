@@ -107,7 +107,7 @@ class AniApplication : Application() {
         startKoin {
             androidContext(this@AniApplication)
             modules(getCommonKoinModule({ this@AniApplication }, scope))
-            modules(getAndroidModules({ this@AniApplication }, defaultTorrentCacheDir, scope))
+            modules(getAndroidModules(defaultTorrentCacheDir, scope))
         }.startCommonKoinModule(scope)
 
         getKoin().get<TorrentManager>() // start sharing, connect to DHT now

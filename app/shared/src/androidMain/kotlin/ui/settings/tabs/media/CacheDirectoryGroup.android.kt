@@ -2,8 +2,12 @@ package me.him188.ani.app.ui.settings.tabs.media
 
 import android.os.Environment
 import androidx.annotation.UiThread
-import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -16,11 +20,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
-import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
@@ -28,7 +32,6 @@ import me.him188.ani.app.platform.findActivity
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionElement
@@ -78,12 +81,17 @@ private sealed interface AndroidTorrentCacheLocation {
     /**
      * 通过 [android.provider.DocumentsProvider] 获取的授权路径
      *
-     * @param basePath 授权的公共存储路径，为 `null` 则表示没有授权过外部目录
+     * @param basePath 授权的共享存储路径，为 `null` 则表示没有授权过外部目录
      * @see android.content.Intent.ACTION_OPEN_DOCUMENT_TREE
      */
     data class ExternalShared(val basePath: String?, val accessible: Boolean) : AndroidTorrentCacheLocation {
-        override val name: String = "外部公共目录"
-        override val pathPresentation: String get() = basePath ?: "不可用"
+        override val name: String = "外部共享目录"
+        override val pathPresentation: String
+            get() = when {
+                basePath == null -> "点击授权"
+                !accessible -> "不可用，点击重新授权\n$basePath"
+                else -> basePath
+            }
         override fun toString(): String {
             return "$name：$pathPresentation"
         }
@@ -94,7 +102,6 @@ private class AndroidTorrentCacheViewModel(
     private val context: ContextMP,
     private val mediaCacheSettings: AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>
 ) : AbstractSettingsViewModel(), KoinComponent {
-    private val settingsRepository: SettingsRepository by inject()
     private val permissionManager: PermissionManager by inject()
 
     private val defaultTorrentCacheDir by lazy {
@@ -117,6 +124,15 @@ private class AndroidTorrentCacheViewModel(
         -1
     }
 
+    /**
+     * 获取 [`内部私有存储`][android.content.Context.getFilesDir], [`外部私有存储`][android.content.Context.getExternalFilesDir] 和
+     * [`已授权的外部共享存储`][android.content.ContentResolver.getPersistedUriPermissions] 的可用状态, 根据 [MediaCacheSettings.saveDir]
+     * 判断当前的的选择，并更新至 [torrentLocationPresentation] 和 [currentSelection] UI 状态。
+     *
+     * @see android.content.Context.getFilesDir 内部私有存储
+     * @see android.content.Context.getExternalFilesDir 外部私有存储
+     * @see android.content.ContentResolver.getPersistedUriPermissions 获取已授权给 App 的资源位置，包括外部共享存储位置
+     */
     @UiThread
     suspend fun refreshStorageState() {
         val settings by mediaCacheSettings
@@ -129,16 +145,19 @@ private class AndroidTorrentCacheViewModel(
         val resultList = mutableListOf<SingleSelectionElement<AndroidTorrentCacheLocation>>()
 
         currentSelection = if (currentDir == null) {
-            resultList.add(SingleSelectionElement(constructInternalPrivateLocation(), true))
+            // settings preference 设定的保存目录为空，这是不可能的
+            // 因为在 Android 端启动时会默认设置为内部私有目录
+            val value = constructInternalPrivateLocation()
+            resultList.add(SingleSelectionElement(value, true))
             val externalPrivate = getExternalPrivateLocation()
+            // 如果外部私有存储不可用，则选择列表中将不允许选择这一项
             resultList.add(SingleSelectionElement(externalPrivate, externalPrivate.basePath != null))
             resultList.add(SingleSelectionElement(getAccessibleExternalSharedLocation(), true))
 
-            null
+            value
         } else if (currentDir.startsWith(internalPrivateBasePath)) {
             // 设置保存的是内部私有目录
             val value = AndroidTorrentCacheLocation.InternalPrivate(currentDir)
-
             resultList.add(SingleSelectionElement(value, true))
             val externalPrivate = getExternalPrivateLocation()
             resultList.add(SingleSelectionElement(externalPrivate, externalPrivate.basePath != null))
@@ -155,17 +174,18 @@ private class AndroidTorrentCacheViewModel(
 
             value
         } else if (currentDir.startsWith(externalSharedBasePath)) {
-            // 设置保存的是外部公共目录
+            // 设置保存的是外部共享目录
             val accessible = permissionManager.getExternalManageableDocumentPermission(context, Path((currentDir)))
             val value = AndroidTorrentCacheLocation.ExternalShared(currentDir, accessible)
 
             resultList.add(SingleSelectionElement(constructInternalPrivateLocation(), true))
             val externalPrivate = getExternalPrivateLocation()
             resultList.add(SingleSelectionElement(externalPrivate, externalPrivate.basePath != null))
-            resultList.add(SingleSelectionElement(getAccessibleExternalSharedLocation(), true))
+            resultList.add(SingleSelectionElement(value, true))
 
             value
         } else {
+            // 不是上面三种存储目录的任何一种，不可能发生
             resultList.add(SingleSelectionElement(constructInternalPrivateLocation(), true))
             val externalPrivate = getExternalPrivateLocation()
             resultList.add(SingleSelectionElement(externalPrivate, externalPrivate.basePath != null))
@@ -250,18 +270,19 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
 
         SingleSelectionItem(
             title = { Text("BT 视频缓存位置") },
-            dialogDescription = {
-                Text(
-                    "选择外部目录将允许其他应用读取 BT 视频缓存。\n" +
-                            "对于外部共享目录，你需要手动为 Ani 授权某个目录的读写权限。\n" +
-                            "更改存储目录后需要手动迁移旧存储数据。",
-                )
-            },
+            description = { Text(text = it?.toString() ?: "未知目录") },
             modifier = Modifier.placeholder(loading),
             items = cacheVm.torrentLocationPresentation,
+            dialogDescription = {
+                Column {
+                    Text("选择外部目录将允许其他应用读取 BT 视频缓存。")
+                    Text("对于外部共享目录，你需要手动为 Ani 授权某个目录的读写权限。")
+                    Text("更改存储目录后需要手动迁移旧存储数据。")
+                }
+            },
+            dialogIcon = { Icon(imageVector = Icons.Default.Storage, contentDescription = null) },
             selected = cacheVm.currentSelectionIndex,
             key = { it.name },
-            value = { Text(text = it?.toString() ?: "未知目录") },
             listItem = {
                 ItemHeader(
                     title = { Text(text = it.name) },
@@ -271,14 +292,18 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             onOpenDialog = {
                 scope.launch { cacheVm.refreshStorageState() }
             },
-            onSelectItem = {
-                if (it !is AndroidTorrentCacheLocation.ExternalShared || it.accessible) {
+            onSelectItem = { location ->
+                if (location !is AndroidTorrentCacheLocation.ExternalShared || location.accessible) {
                     return@SingleSelectionItem true
                 }
                 val deferred = CompletableDeferred<Boolean>()
                 selectExternalSharedStorageRequest = deferred
                 showAlertDialog = true
-                val selectRequest = deferred.await()
+                val selectRequest = try {
+                    deferred.await()
+                } catch (_: CancellationException) {
+                    false
+                }
                 showAlertDialog = false
 
                 if (selectRequest) {
@@ -294,27 +319,30 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
                     false
                 }
             },
-            onConfirm = {
-                scope.launch { cacheVm.setStorage(it) }
+            onConfirm = { location ->
+                scope.launch { location?.let { cacheVm.setStorage(it) } }
                 toaster.toast("BT 视频缓存位置变更在重启后生效。")
             },
         )
     }
 
     if (showAlertDialog) {
-        BasicAlertDialog(onDismissRequest = { selectExternalSharedStorageRequest?.complete(false) }) {
-            RichDialogLayout(
-                title = { Text("授予 Ani 外部共享存储权限") },
-                buttons = {
-                    TextButton({ selectExternalSharedStorageRequest?.complete(false) }) { Text("取消") }
-                    Button({ selectExternalSharedStorageRequest?.complete(true) }) { Text("确认") }
-                },
-            ) {
-                Text("将 BT 视频缓存位置设置为外部共享存储之前需要授予 Ani 对应的目录访问权限。")
-                Text("Ani 将仅拥有您授予的目录及其子目录的读写权限，您的其他文件对于 Ani 来说不可访问。")
-                Text("点击确定后将打开文件选择器，请选择一个目录并授予 Ani 权限。")
-            }
-        }
+        AlertDialog(
+            onDismissRequest = { selectExternalSharedStorageRequest?.complete(false) },
+            confirmButton = {
+                Button({ selectExternalSharedStorageRequest?.complete(true) }) { Text("确认") }
+            },
+            dismissButton = {
+                TextButton({ selectExternalSharedStorageRequest?.complete(false) }) { Text("取消") }
+            },
+            title = { Text("授予 Ani 外部共享存储权限") },
+            text = {
+                Column {
+                    Text("将 BT 视频缓存位置设置为外部共享存储之前需要授予 Ani 对应的存储访问权限。")
+                    Text("为了你的数据安全，Ani 将仅仅申请外部存储的其中一个目录的访问权限，你的其他文件将不会被 Ani 读取。")
+                    Text("点击确定后将打开文件选择器，请选择一个目录并授予 Ani 权限。")
+                }
+            },
+        )
     }
-    
 }

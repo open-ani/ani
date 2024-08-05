@@ -3,6 +3,7 @@ package me.him188.ani.app.platform
 import android.Manifest
 import android.os.Build
 import kotlinx.io.files.Path
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 
 class AndroidPermissionManager : PermissionManager {
@@ -23,7 +24,7 @@ class AndroidPermissionManager : PermissionManager {
     override suspend fun requestExternalManageableDocument(context: ContextMP): Path? {
         val activity = context.findActivity() as? BaseComponentActivity ?: return null
         val result = activity.requestExternalManageableDocument()
-        logger.info("request external shared directory result: $result")
+        logger.info { "request external shared directory result: $result" }
         return result
     }
 

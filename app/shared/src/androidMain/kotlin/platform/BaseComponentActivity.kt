@@ -39,14 +39,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.files.Path
-import me.him188.ani.app.tools.DocumentUriParser
+import me.him188.ani.app.tools.DocumentsContractApi19
 import me.him188.ani.utils.io.toFile
-import me.him188.ani.utils.logging.logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
 
 abstract class BaseComponentActivity : ComponentActivity() {
-    private val logger = logger("MainActivity")
     @Stable
     val snackbarHostState = SnackbarHostState()
 
@@ -84,7 +82,7 @@ abstract class BaseComponentActivity : ComponentActivity() {
     suspend fun requestExternalManageableDocument(): Path? {
         val res = CompletableDeferred<Path?>()
         val handler: (Uri?) -> Unit = { uri: Uri? ->
-            res.complete(uri?.let { DocumentUriParser.parseUriToStorage(this, it)?.let(::Path) })
+            res.complete(uri?.let { DocumentsContractApi19.parseUriToStorage(this, it)?.let(::Path) })
         }
 
         if (!requestExternalManageableDocumentHandler.compareAndSet(null, handler)) {
@@ -104,8 +102,8 @@ abstract class BaseComponentActivity : ComponentActivity() {
         var grant = false
         applicationContext.contentResolver.persistedUriPermissions.run b@{
             forEach { p ->
-                val storage = DocumentUriParser.parseUriToStorage(this@BaseComponentActivity, p.uri)
-                if (storage == file.absolutePath && p.isReadPermission && p.isWritePermission) {
+                val storage = DocumentsContractApi19.parseUriToStorage(this@BaseComponentActivity, p.uri)
+                if (storage != null && file.startsWith(storage) && p.isReadPermission && p.isWritePermission) {
                     grant = true
                     return@b
                 }
@@ -123,7 +121,7 @@ abstract class BaseComponentActivity : ComponentActivity() {
         var result: Path? = null
 
         applicationContext.contentResolver.persistedUriPermissions.forEach { p ->
-            val path = DocumentUriParser.parseUriToStorage(this, p.uri) ?: return@forEach
+            val path = DocumentsContractApi19.parseUriToStorage(this, p.uri) ?: return@forEach
 
             if (externalPrivateBasePath != null && path.startsWith(externalPrivateBasePath)) {
                 // 不可能出现的情况，external private directory 永远对 App 可用

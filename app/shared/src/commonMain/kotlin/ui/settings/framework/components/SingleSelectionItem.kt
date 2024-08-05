@@ -6,16 +6,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
-import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,8 +34,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 
 @Stable
 class SingleSelectionElement<T>(
@@ -87,7 +91,11 @@ private fun <T> rememberSingleSelectionState(
 /**
  * 单选对话框，不同于 [DropdownItem]，此对话框将详细解释各个选项的功能
  *
- * @param onSelectItem，在选择某个选项后进行的处理，若返回 `false` 将回退之上一个选项。
+ * @param description 选项的副标题描述，或者为当前选择的值
+ * @param listItem 选择对话框中列表的项
+ * @param icon 选项图标
+ * @param dialogIcon 对话框顶部图标
+ * @param onSelectItem 在选择某个选项后进行的处理，若返回 `false` 将回退之上一个选项。
  */
 @SettingsDsl
 @Composable
@@ -95,22 +103,23 @@ fun <T> SettingsScope.SingleSelectionItem(
     items: List<SingleSelectionElement<T>>,
     selected: Int,
     key: (T) -> Any,
-    value: @Composable (T?) -> Unit,
-    listItem: @Composable ColumnScope.(T) -> Unit,
-    onConfirm: (T) -> Unit,
-    modifier: Modifier = Modifier,
     icon: @Composable (() -> Unit)? = null,
+    description: @Composable (T?) -> Unit,
+    listItem: @Composable ColumnScope.(T) -> Unit,
+    onConfirm: (T?) -> Unit,
+    modifier: Modifier = Modifier,
+    dialogIcon: @Composable (() -> Unit)? = null,
     dialogDescription: @Composable (() -> Unit)? = null,
     onOpenDialog: (() -> Unit)? = null,
     onSelectItem: suspend (T) -> Boolean = { true },
-    title: @Composable RowScope.() -> Unit,
+    title: @Composable () -> Unit,
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     TextItem(
         modifier = modifier,
-        description = { value(items.getOrNull(selected)?.value) },
+        description = { description(items.getOrNull(selected)?.value) },
         icon = icon,
         action = {
             IconButton(
@@ -126,48 +135,45 @@ fun <T> SettingsScope.SingleSelectionItem(
             showDialog = true
             onOpenDialog?.invoke()
         },
-        title = title,
+        title = { title() },
     )
 
     if (showDialog) {
         val selectionState = rememberSingleSelectionState(items, selected)
-
-        BasicAlertDialog(onDismissRequest = { showDialog = false }) {
-            RichDialogLayout(
-                title = { title() },
-                description = dialogDescription?.let { { it() } },
-                buttons = {
-                    TextButton({ showDialog = false }) {
-                        Text("取消")
-                    }
-                    Button(
-                        {
-                            showDialog = false
-                            onConfirm(items[selectionState.currentSelected].value)
-                        },
-                    ) {
-                        Text("确认")
-                    }
-                },
-            ) {
-                LazyColumn {
-                    itemsIndexed(selectionState.presentation, { _, item -> key(item.item.value) }) { i, item ->
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { title() },
+            icon = dialogIcon,
+            confirmButton = {
+                Button(
+                    {
+                        showDialog = false
+                        onConfirm(items.getOrNull(selectionState.currentSelected)?.value)
+                    },
+                ) { Text("确认") }
+            },
+            dismissButton = {
+                TextButton({ showDialog = false }) {
+                    Text("取消")
+                }
+            },
+            text = {
+                Column {
+                    dialogDescription?.let {
                         Row(
+                            Modifier.padding(top = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Start,
-                            modifier = Modifier.fillMaxWidth().clickable {
-                                scope.launch {
-                                    selectionState.setSelection(i)
-                                    if (!onSelectItem(item.item.value)) {
-                                        selectionState.rollbackSelection()
-                                    }
-                                }
-                            },
                         ) {
-                            RadioButton(
-                                selected = item.selected,
-                                enabled = item.item.enabled,
-                                onClick = {
+                            ProvideTextStyle(MaterialTheme.typography.bodyMedium, it)
+                        }
+                    }
+                    Spacer(Modifier.fillMaxWidth().height(16.dp))
+                    LazyColumn {
+                        itemsIndexed(selectionState.presentation, { _, item -> key(item.item.value) }) { i, item ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start,
+                                modifier = Modifier.fillMaxWidth().clickable {
                                     scope.launch {
                                         selectionState.setSelection(i)
                                         if (!onSelectItem(item.item.value)) {
@@ -175,14 +181,27 @@ fun <T> SettingsScope.SingleSelectionItem(
                                         }
                                     }
                                 },
-                            )
-                            Column {
-                                listItem(item.item.value)
+                            ) {
+                                RadioButton(
+                                    selected = item.selected,
+                                    enabled = item.item.enabled,
+                                    onClick = {
+                                        scope.launch {
+                                            selectionState.setSelection(i)
+                                            if (!onSelectItem(item.item.value)) {
+                                                selectionState.rollbackSelection()
+                                            }
+                                        }
+                                    },
+                                )
+                                Column {
+                                    listItem(item.item.value)
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
+            },
+        )
     }
 }
