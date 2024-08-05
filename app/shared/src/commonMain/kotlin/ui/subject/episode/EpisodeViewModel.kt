@@ -585,7 +585,7 @@ private class EpisodeViewModelImpl(
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->
-                    if (!enabled) return@collectLatest
+                    if (!enabled && episodeSelectorState.currentIndex == 0) return@collectLatest
 
                     // 设置启用
 
