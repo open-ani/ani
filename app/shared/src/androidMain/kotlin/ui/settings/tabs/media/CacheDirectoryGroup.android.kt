@@ -28,7 +28,6 @@ import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
-import me.him188.ani.app.platform.findActivity
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -37,16 +36,15 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionElement
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionItem
 import me.him188.ani.utils.io.resolve
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
 
-private const val DEFAULT_TORRENT_CACHE_DIR_NAME = "torrent-caches"
+const val DEFAULT_TORRENT_CACHE_DIR_NAME = "torrent-caches"
 
 /**
  * 代表 Android 平台可能可以用来存储 BT 缓存的位置
  */
-private sealed interface AndroidTorrentCacheLocation {
+sealed interface AndroidTorrentCacheLocation {
     val name: String
     val pathPresentation: String
 
@@ -98,15 +96,25 @@ private sealed interface AndroidTorrentCacheLocation {
     }
 }
 
-private class AndroidTorrentCacheViewModel(
+interface AndroidEnvironment {
+    fun getExternalStorageDirectory(): File
+}
+
+private object DefaultAndroidEnvironment : AndroidEnvironment {
+    override fun getExternalStorageDirectory(): File {
+        return Environment.getExternalStorageDirectory()
+    }
+}
+
+class AndroidTorrentCacheViewModel(
     private val context: ContextMP,
-    private val mediaCacheSettings: AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>
-) : AbstractSettingsViewModel(), KoinComponent {
+    private val mediaCacheSettings: AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>,
+    private val environment: AndroidEnvironment = DefaultAndroidEnvironment // allow mock
+) : AbstractSettingsViewModel() {
     private val permissionManager: PermissionManager by inject()
 
     private val defaultTorrentCacheDir by lazy {
-        val activity = context.findActivity() ?: error("failed to find activity")
-        activity.filesDir.resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath
+        context.filesDir.resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath
     }
 
     var torrentLocationPresentation: List<SingleSelectionElement<AndroidTorrentCacheLocation>>
@@ -140,7 +148,7 @@ private class AndroidTorrentCacheViewModel(
 
         val internalPrivateBasePath = context.filesDir.absolutePath
         val externalPrivateBasePath = context.getExternalFilesDir(null)?.absolutePath
-        val externalSharedBasePath = Environment.getExternalStorageDirectory().absolutePath
+        val externalSharedBasePath = environment.getExternalStorageDirectory().absolutePath
 
         val resultList = mutableListOf<SingleSelectionElement<AndroidTorrentCacheLocation>>()
 

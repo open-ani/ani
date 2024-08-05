@@ -30,6 +30,7 @@ import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.ui.settings.tabs.media.DEFAULT_TORRENT_CACHE_DIR_NAME
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -92,7 +93,8 @@ class AniApplication : Application() {
 
         val scope = createAppRootCoroutineScope()
 
-        val defaultTorrentCacheDir = applicationContext.filesDir.resolve("torrent-caches").apply { mkdir() }
+        val defaultTorrentCacheDir = applicationContext.filesDir
+            .resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).apply { mkdir() }
 
         // since 3.5, 删除 libtorrent4j 缓存, 大概保留到 3.8 就可以删除个代码了
         defaultTorrentCacheDir.resolve("libtorrent4j").let {
