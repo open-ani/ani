@@ -19,15 +19,12 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.models.subject.RatingInfo
-import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
@@ -51,7 +48,6 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.data.source.session.AuthState
-import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -61,7 +57,6 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.components.comment.CommentLoader
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
@@ -579,6 +574,49 @@ private class EpisodeViewModelImpl(
                                 }
                             }.collect()
                         }
+                    }
+                }
+        }
+
+        // 跳过oped
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.skipOped }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    // 设置启用
+
+                    mediaFetchSession.collectLatest {
+                        combine(
+                            playerState.currentPositionMillis.sampleWithInitial(1000),
+                            playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                            playerState.chapters,
+                        ) { pos, max, chapters ->
+                            if (max == null) return@combine
+
+                            chapters.forEach {
+                                val matched = when {
+                                    max > 20 * 60 * 1000 -> {
+                                        it.durationMillis in 85_000..95_000
+                                    }
+
+                                    max > 10 * 60 * 1000 -> {
+                                        it.durationMillis in 55_000..65_000
+                                    }
+
+                                    else -> {
+                                        false
+                                    }
+                                }
+                                if (matched && (pos - it.offsetMillis) in 0..2000) {
+                                    logger.info("跳过oped")
+                                    playerState.seekTo((it.offsetMillis + it.durationMillis))
+                                }
+                            }
+                        }.collect()
                     }
                 }
         }

@@ -431,6 +431,15 @@ private fun SettingsScope.PlayerGroup(
                 Modifier.placeholder(vm.uiSettings.loading),
             )
         }
+        HorizontalDividerItem()
+        SwitchItem(
+            checked = config.skipOped,
+            onCheckedChange = {
+                vm.videoScaffoldConfig.update(config.copy(skipOped = it))
+            },
+            title = { Text("跳过oped") },
+            Modifier.placeholder(vm.uiSettings.loading),
+        )
     }
 }
 
