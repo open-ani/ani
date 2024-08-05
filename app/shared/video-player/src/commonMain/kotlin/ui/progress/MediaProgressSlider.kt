@@ -432,7 +432,7 @@ fun PreviewTimePopup(
                 .animateContentSize(),
         ) {
             Box(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 ProvideTextStyle(MaterialTheme.typography.labelLarge) {
