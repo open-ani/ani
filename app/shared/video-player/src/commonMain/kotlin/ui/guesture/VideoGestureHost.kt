@@ -73,6 +73,7 @@ import me.him188.ani.app.ui.foundation.effects.ComposeKey
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
@@ -84,6 +85,8 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEE
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -367,6 +370,7 @@ enum class GestureFamily(
     val keyboardLeftRightToSeek: Boolean = true,
     val mouseHoverForController: Boolean = true, // not supported on mobile
     val escToExitFullscreen: Boolean = true,
+    val scrollForVolume: Boolean,
 ) {
     TOUCH(
         useDesktopGestureLayoutWorkaround = false,
@@ -379,6 +383,7 @@ enum class GestureFamily(
         swipeLhsForBrightness = true,
         longPressForFastSkip = true,
         mouseHoverForController = false,
+        scrollForVolume = false,
     ),
     MOUSE(
         useDesktopGestureLayoutWorkaround = true,
@@ -390,6 +395,7 @@ enum class GestureFamily(
         swipeRhsForVolume = false,
         swipeLhsForBrightness = false,
         longPressForFastSkip = false,
+        scrollForVolume = true,
     )
 }
 
@@ -402,6 +408,7 @@ fun VideoGestureHost(
     progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
+    playerState: PlayerState,
     enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
     family: GestureFamily = currentPlatform.mouseFamily,
@@ -502,6 +509,21 @@ fun VideoGestureHost(
                                 manager.clearFocus()
                             }
                             onExitFullscreen()
+                        }
+                    }.ifThen(family.scrollForVolume && playerState is SupportsAudio && isInDebugMode()) {
+                        if (playerState !is SupportsAudio) {
+                            return@ifThen this
+                        }
+                        onPointerEventMultiplatform(PointerEventType.Scroll) { event ->
+                            event.changes.firstOrNull()?.scrollDelta?.y?.run {
+                                playerState.toggleMute(false)
+                                if (this < 0) playerState.volumeUp()
+                                else if (this > 0) playerState.volumeDown()
+
+                                indicatorTasker.launch {
+                                    indicatorState.showVolumeRange(playerState.volume.value / playerState.maxValue)
+                                }
+                            }
                         }
                     }
                     .fillMaxSize(),
