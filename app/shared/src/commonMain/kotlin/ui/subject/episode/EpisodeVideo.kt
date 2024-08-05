@@ -40,6 +40,7 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
@@ -247,7 +248,7 @@ internal fun EpisodeVideoImpl(
                         videoControllerState.danmakuEnabled,
                         onClick = { videoControllerState.toggleDanmakuEnabled() },
                     )
-                    if (expanded && playerState is SupportsAudio) {
+                    if (expanded && playerState is SupportsAudio && isInDebugMode()) {
                         val volumeState by playerState.volume.collectAsStateWithLifecycle()
                         val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
                         PlayerControllerDefaults.AudioIcon(

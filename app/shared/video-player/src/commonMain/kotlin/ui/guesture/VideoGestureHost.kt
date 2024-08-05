@@ -72,6 +72,7 @@ import me.him188.ani.app.ui.foundation.effects.ComposeKey
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
@@ -82,9 +83,9 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RES
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
+import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
-import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -496,7 +497,7 @@ fun VideoGestureHost(
                             }
                             onExitFullscreen()
                         }
-                    }.ifThen(family.scrollForVolume && playerState is SupportsAudio) {
+                    }.ifThen(family.scrollForVolume && playerState is SupportsAudio && isInDebugMode()) {
                         if (playerState !is SupportsAudio) {
                             return@ifThen this
                         }
