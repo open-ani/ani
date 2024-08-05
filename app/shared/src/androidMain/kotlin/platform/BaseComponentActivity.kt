@@ -18,6 +18,9 @@
 
 package me.him188.ani.app.platform
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Environment
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -28,38 +31,124 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Stable
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import kotlinx.atomicfu.AtomicRef
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.files.Path
+import me.him188.ani.app.tools.DocumentUriParser
+import me.him188.ani.utils.io.toFile
+import me.him188.ani.utils.logging.logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
+
 abstract class BaseComponentActivity : ComponentActivity() {
+    private val logger = logger("MainActivity")
     @Stable
     val snackbarHostState = SnackbarHostState()
 
-    private val requestPermissionResultHandlers: MutableCollection<(Boolean) -> Unit> = ConcurrentLinkedQueue()
-    private val registerForActivityResult =
+    private val requestPermissionHandlers: MutableCollection<(Boolean) -> Unit> = ConcurrentLinkedQueue()
+    private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            requestPermissionResultHandlers.forEach {
-                it.invoke(granted)
-            }
+            requestPermissionHandlers.forEach { it.invoke(granted) }
         }
     private val requestPermissionLock = Mutex()
+
+    private val requestExternalManageableDocumentHandler: AtomicRef<((Uri?) -> Unit)?> = atomic(null)
+    private val requestExternalManageableDocumentLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            if (uri != null) applicationContext.contentResolver.takePersistableUriPermission(
+                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            )
+            val handler by requestExternalManageableDocumentHandler
+            handler?.invoke(uri)
+        }
 
     suspend fun requestPermission(permission: String): Boolean {
         val res = CompletableDeferred<Boolean>()
         return requestPermissionLock.withLock {
             val handler: (Boolean) -> Unit = { res.complete(it) }
-            requestPermissionResultHandlers.add(handler)
+            requestPermissionHandlers.add(handler)
             try {
-                registerForActivityResult.launch(permission)
+                requestPermissionLauncher.launch(permission)
                 res.await()
             } finally {
-                requestPermissionResultHandlers.remove(handler)
+                requestPermissionHandlers.remove(handler)
             }
         }
+    }
+
+    suspend fun requestExternalManageableDocument(): Path? {
+        val res = CompletableDeferred<Path?>()
+        val handler: (Uri?) -> Unit = { uri: Uri? ->
+            res.complete(uri?.let { DocumentUriParser.parseUriToStorage(this, it)?.let(::Path) })
+        }
+
+        if (!requestExternalManageableDocumentHandler.compareAndSet(null, handler)) {
+            return null
+        }
+
+        return try {
+            requestExternalManageableDocumentLauncher.launch(null)
+            res.await()
+        } finally {
+            requestExternalManageableDocumentHandler.compareAndSet(handler, null)
+        }
+    }
+
+    fun getExternalManageableDocumentPermission(path: Path): Boolean {
+        val file = path.toFile()
+        var grant = false
+        applicationContext.contentResolver.persistedUriPermissions.run b@{
+            forEach { p ->
+                val storage = DocumentUriParser.parseUriToStorage(this@BaseComponentActivity, p.uri)
+                if (storage == file.absolutePath && p.isReadPermission && p.isWritePermission) {
+                    grant = true
+                    return@b
+                }
+            }
+        }
+        return grant
+    }
+
+    /**
+     * 获取一个完全授予读写权限的的外部共享空间路径，对于不可用的路径，将会释放持久化权限
+     */
+    fun getAccessibleExternalManageableDocumentPath(): Path? {
+        val externalPrivateBasePath = getExternalFilesDir(null)?.absolutePath
+        val externalStorageBasePath = Environment.getExternalStorageDirectory().absolutePath
+        var result: Path? = null
+
+        applicationContext.contentResolver.persistedUriPermissions.forEach { p ->
+            val path = DocumentUriParser.parseUriToStorage(this, p.uri) ?: return@forEach
+
+            if (externalPrivateBasePath != null && path.startsWith(externalPrivateBasePath)) {
+                // 不可能出现的情况，external private directory 永远对 App 可用
+                // 所以不会出现在 persistedUriPermissions 中
+                return@forEach
+            }
+
+            if (!path.startsWith(externalStorageBasePath)) {
+                // 不是外部共享空间的 uri，不处理
+                return@forEach
+            }
+
+            if (!p.isReadPermission || !p.isWritePermission) {
+                // 没有完整的读写权限，从 persistedUriPermissions 中移除，因为我们申请 persistedUriPermissions 仅有一种用途，
+                // 所以其他的 persistedUriPermissions 可以被视为无效路径或者用不到的路径
+                applicationContext.contentResolver.releasePersistableUriPermission(
+                    p.uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+                return@forEach
+            }
+
+            result = Path(path)
+        }
+
+        return result
     }
 
     fun enableDrawingToSystemBars() {
