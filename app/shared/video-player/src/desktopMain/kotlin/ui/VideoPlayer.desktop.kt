@@ -266,7 +266,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun setVolume(volume: Float) {
-        this.volume.value = volume.coerceIn(0f, 2f)
+        this.volume.value = volume.coerceIn(0f, maxValue)
         player.audio().setVolume(volume.times(100).roundToInt())
     }
 
