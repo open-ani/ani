@@ -618,33 +618,8 @@ private class EpisodeViewModelImpl(
                             playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
                             playerState.chapters,
                         ) { pos, max, chapters ->
-                            if (max == null) return@combine
-
-                            chapters.forEach {
-                                val matched = when {
-                                    max > 20 * 60 * 1000 -> {
-                                        it.durationMillis in 85_000..95_000
-                                    }
-
-                                    max > 10 * 60 * 1000 -> {
-                                        it.durationMillis in 55_000..65_000
-                                    }
-
-                                    else -> {
-                                        false
-                                    }
-                                }
-                                if (matched && (pos + 5000 - it.offsetMillis) in 0..1000) {
-                                    playerFloatingTipsState.leftBottomTipsVisible = true
-                                }
-                                if (matched && (pos - it.offsetMillis) in 0..1000) {
-                                    playerFloatingTipsState.leftBottomTipsVisible = false
-                                    if (!playerFloatingTipsState.skipOpEd) {
-                                        return@forEach
-                                    }
-                                    logger.info("跳过oped")
-                                    playerState.seekTo((it.offsetMillis + it.durationMillis))
-                                }
+                            playerFloatingTipsState.autoSkipOpEd(pos, max, chapters) {
+                                playerState.seekTo(it)
                             }
                         }.collect()
                     }
