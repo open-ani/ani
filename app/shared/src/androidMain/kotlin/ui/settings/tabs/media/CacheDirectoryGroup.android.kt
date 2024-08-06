@@ -36,7 +36,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionElement
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionItem
 import me.him188.ani.utils.io.resolve
-import org.koin.core.component.inject
+import org.koin.mp.KoinPlatform.getKoin
 import java.io.File
 
 const val DEFAULT_TORRENT_CACHE_DIR_NAME = "torrent-caches"
@@ -63,7 +63,7 @@ sealed interface AndroidTorrentCacheLocation {
     }
 
     /**
-     * App 外部私有存储，外部存储可能不可用
+     * App 外部私有存储，外部存储几乎不可能不可用，除非是外置的 SD 卡并且已经移除。现在几乎所有的外部目录都是模拟的
      *
      * @param basePath App 外部私有存储的根路径，为 `null` 则表示共享外部存储设备不可用
      * @see android.content.Context.getExternalFilesDir
@@ -79,16 +79,16 @@ sealed interface AndroidTorrentCacheLocation {
     /**
      * 通过 [android.provider.DocumentsProvider] 获取的授权路径
      *
-     * @param basePath 授权的共享存储路径，为 `null` 则表示没有授权过外部目录
+     * @param path 授权的共享存储路径，为 `null` 则表示没有授权过外部目录
      * @see android.content.Intent.ACTION_OPEN_DOCUMENT_TREE
      */
-    data class ExternalShared(val basePath: String?, val accessible: Boolean) : AndroidTorrentCacheLocation {
+    data class ExternalShared(val path: String?, val accessible: Boolean) : AndroidTorrentCacheLocation {
         override val name: String = "外部共享目录"
         override val pathPresentation: String
             get() = when {
-                basePath == null -> "点击授权"
-                !accessible -> "不可用，点击重新授权\n$basePath"
-                else -> basePath
+                path == null -> "点击授权"
+                !accessible -> "不可用，点击重新授权\n$path"
+                else -> path
             }
         override fun toString(): String {
             return "$name：$pathPresentation"
@@ -109,10 +109,9 @@ private object DefaultAndroidEnvironment : AndroidEnvironment {
 class AndroidTorrentCacheViewModel(
     private val context: ContextMP,
     private val mediaCacheSettings: AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>,
+    private val permissionManager: PermissionManager,
     private val environment: AndroidEnvironment = DefaultAndroidEnvironment // allow mock
 ) : AbstractSettingsViewModel() {
-    private val permissionManager: PermissionManager by inject()
-
     private val defaultTorrentCacheDir by lazy {
         context.filesDir.resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath
     }
@@ -210,7 +209,7 @@ class AndroidTorrentCacheViewModel(
         val targetPath = when (location) {
             is AndroidTorrentCacheLocation.InternalPrivate -> location.basePath
             is AndroidTorrentCacheLocation.ExternalPrivate -> location.basePath
-            is AndroidTorrentCacheLocation.ExternalShared -> location.basePath
+            is AndroidTorrentCacheLocation.ExternalShared -> location.path
         }
 
         if (targetPath == null) {
@@ -267,7 +266,9 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
     var selectExternalSharedStorageRequest: CompletableDeferred<Boolean>? by remember { mutableStateOf(null) }
 
     Group({ Text("存储设置") }) {
-        val cacheVm = rememberViewModel { AndroidTorrentCacheViewModel(context, vm.mediaCacheSettings) }
+        val cacheVm = rememberViewModel {
+            AndroidTorrentCacheViewModel(context, vm.mediaCacheSettings, getKoin().get())
+        }
         val loading = vm.mediaSelectorSettings.loading
 
         LaunchedEffect(key1 = loading) {
