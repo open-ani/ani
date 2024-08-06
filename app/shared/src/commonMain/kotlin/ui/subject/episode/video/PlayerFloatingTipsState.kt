@@ -17,8 +17,8 @@ class PlayerFloatingTipsState {
     }
 
     fun autoSkipOpEd(pos: Long, max: Long?, chapters: List<Chapter>, onSeek: (Long) -> Unit) {
-
-        if (max == null) return
+        // 已经点击过取消跳过 OP 或 ED时本集不再出现提示
+        if (max == null || !skipOpEd) return
 
         chapters.forEach {
             val matched = when {

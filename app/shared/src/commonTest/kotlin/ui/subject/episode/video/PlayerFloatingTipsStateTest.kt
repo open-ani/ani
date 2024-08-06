@@ -147,4 +147,13 @@ class PlayerFloatingTipsStateTest {
         }
         assertEquals(0L, time)
     }
+
+    @Test
+    fun `do not show tips before op 5s when already cancel skip`() {
+        val state = PlayerFloatingTipsState()
+        state.cancelSkipOpEd()
+        state.autoSkipOpEd(5_000L, _24minute, chapters) {
+        }
+        assertEquals(false, state.leftBottomTipsVisible)
+    }
 }
