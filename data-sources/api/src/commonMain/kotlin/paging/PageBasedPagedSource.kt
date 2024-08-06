@@ -12,6 +12,7 @@ import kotlinx.coroutines.sync.withLock
 
 interface PagedSourceContext {
     fun setTotalSize(size: Int)
+    val totalSize: Int?
 }
 
 private object EmptyPagedSource : PagedSource<Nothing> {
@@ -31,6 +32,8 @@ fun <T> SinglePagePagedSource(getAll: suspend PagedSourceContext.() -> Flow<T>):
     return object : AbstractPageBasedPagedSource<T>(initialPage = 0) {
         private inline val self get() = this
         private val context = object : PagedSourceContext {
+            override val totalSize: Int?
+                get() = self.totalSize.value
             override fun setTotalSize(size: Int) {
                 self.setTotalSize(size)
             }
@@ -75,6 +78,8 @@ fun <T> PageBasedPagedSource(
         override val currentPage: MutableStateFlow<Int> = MutableStateFlow(initialPage)
         private inline val self get() = this
         private val context = object : PagedSourceContext {
+            override val totalSize: Int?
+                get() = self.totalSize.value
             override fun setTotalSize(size: Int) {
                 self.setTotalSize(size)
             }

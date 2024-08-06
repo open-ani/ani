@@ -97,7 +97,7 @@ internal fun RatingScoreText(
 }
 
 @Composable
-private fun FiveRatingStars(
+fun FiveRatingStars(
     score: Int, // range 0..10
     starSize: Dp = 22.dp,
     color: Color = MaterialTheme.colorScheme.primary,

@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.foundation.richtext
 
+import androidx.annotation.UiThread
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
@@ -44,9 +45,12 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ClickableText
+import me.him188.ani.app.ui.foundation.widgets.Toaster
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
 
@@ -111,6 +115,19 @@ private fun rememberAnnotatedMaskState(
 object RichTextDefaults {
     val StickerSize: Int = 24
     val FontSize: Int = 16
+
+    @UiThread
+    fun checkSanityAndOpen(url: String, context: Context, navigator: BrowserNavigator, toaster: Toaster) {
+        try {
+            if (url.startsWith("https://") || url.startsWith("http://")) {
+                navigator.openBrowser(context, url)
+            } else {
+                toaster.toast("此链接可能会打开其他应用，ani 将不会打开此链接：\n$url")
+            }
+        } catch (ex: Exception) {
+            toaster.toast("无法打开此链接：\n$url")
+        }
+    }
 
     class AnnotatedMaskState(slice: List<UIRichElement.Annotated>) {
         private var maskConnection: Map<Int, Int> by mutableStateOf(mapOf())

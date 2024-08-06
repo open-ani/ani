@@ -55,6 +55,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
+import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.setRequestFullScreen
@@ -73,8 +74,12 @@ import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.subject.components.comment.CommentSendTarget
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
+import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
@@ -174,6 +179,11 @@ private fun EpisodeSceneTabletVeryWide(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
+    var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
+    val browserNavigator = LocalBrowserNavigator.current
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
+    
     BoxWithConstraints {
         val maxWidth = maxWidth
         Row(
@@ -217,11 +227,41 @@ private fun EpisodeSceneTabletVeryWide(
                             )
                         }
 
-                        1 -> EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+                        1 -> EpisodeCommentColumn(
+                            state = vm.episodeCommentState,
+                            editCommentStubText = vm.editCommentState.content.text,
+                            modifier = Modifier.fillMaxSize(),
+                            onClickReply = {
+                                vm.editCommentState.startEdit(CommentSendTarget.Reply(it))
+                                showEditCommentSheet = true
+                            },
+                            onClickUrl = {
+                                RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                            },
+                            onClickEditCommentStub = {
+                                vm.editCommentState.startEdit(
+                                    CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                                )
+                                showEditCommentSheet = true
+                            },
+                            onClickEditCommentStubEmoji = {
+                                vm.editCommentState.startEdit(
+                                    CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                                )
+                                vm.editCommentState.toggleStickerPanelState(true)
+                                showEditCommentSheet = true
+                            },
+                        )
                     }
                 }
             }
         }
+    }
+    if (showEditCommentSheet) {
+        EpisodeEditCommentSheet(
+            state = vm.editCommentState,
+            onDismiss = { showEditCommentSheet = false },
+        )
     }
 }
 
@@ -274,9 +314,30 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
+    val browserNavigator = LocalBrowserNavigator.current
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
+    
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
+    var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
 
+
+    val pauseOnPlaying: () -> Unit = {
+        if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
+            didSetPaused = true
+            vm.playerState.pause()
+        } else {
+            didSetPaused = false
+        }
+    }
+    val tryUnpause: () -> Unit = {
+        if (didSetPaused) {
+            didSetPaused = false
+            vm.playerState.resume()
+        }
+    }
+    
     LaunchedEffect(true) {
         vm.episodeCommentState.reload()
     }
@@ -301,19 +362,40 @@ private fun EpisodeSceneContentPhone(
             )
         },
         commentColumn = {
-            EpisodeCommentColumn(vm.episodeCommentState, Modifier.fillMaxSize())
+            EpisodeCommentColumn(
+                state = vm.episodeCommentState,
+                editCommentStubText = vm.editCommentState.content.text,
+                modifier = Modifier.fillMaxSize(),
+                onClickReply = {
+                    showEditCommentSheet = true
+                    vm.editCommentState.startEdit(CommentSendTarget.Reply(it))
+                    pauseOnPlaying()
+
+                },
+                onClickUrl = {
+                    RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                },
+                onClickEditCommentStub = {
+                    vm.editCommentState.startEdit(
+                        CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                    )
+                    showEditCommentSheet = true
+                },
+                onClickEditCommentStubEmoji = {
+                    vm.editCommentState.startEdit(
+                        CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
+                    )
+                    vm.editCommentState.toggleStickerPanelState(true)
+                    showEditCommentSheet = true
+                },
+            )
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
         tabRowContent = {
             DummyDanmakuEditor(
                 onClick = {
                     showDanmakuEditor = true
-                    if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
-                        didSetPaused = true
-                        vm.playerState.pause()
-                    } else {
-                        didSetPaused = false
-                    }
+                    pauseOnPlaying()
                 },
             )
         },
@@ -323,10 +405,7 @@ private fun EpisodeSceneContentPhone(
         val focusRequester = remember { FocusRequester() }
         val dismiss = {
             showDanmakuEditor = false
-            if (didSetPaused) {
-                didSetPaused = false
-                vm.playerState.resume()
-            }
+            tryUnpause()
         }
         ModalBottomSheet(
             onDismissRequest = dismiss,
@@ -353,6 +432,16 @@ private fun EpisodeSceneContentPhone(
         LaunchedEffect(true) {
             focusRequester.requestFocus()
         }
+    }
+
+    if (showEditCommentSheet) {
+        EpisodeEditCommentSheet(
+            vm.editCommentState,
+            onDismiss = {
+                showEditCommentSheet = false
+                tryUnpause()
+            },
+        )
     }
 }
 

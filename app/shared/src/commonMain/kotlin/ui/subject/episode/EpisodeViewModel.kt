@@ -19,20 +19,23 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.renderEpisodeEp
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
+import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
-import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
@@ -57,6 +60,9 @@ import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.components.comment.CommentLoader
 import me.him188.ani.app.ui.subject.components.comment.CommentState
+import me.him188.ani.app.ui.subject.components.comment.EditCommentState
+import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
+import me.him188.ani.app.ui.subject.details.updateRating
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
@@ -159,6 +165,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val episodeCommentState: CommentState
 
+    val editCommentState: EditCommentState
+
     @UiThread
     fun stopPlaying()
 }
@@ -187,7 +195,7 @@ private class EpisodeViewModelImpl(
     private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
-    private val episodeRevisionRepository: EpisodeRevisionRepository by inject()
+    private val commentRepository: CommentRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -475,18 +483,29 @@ private class EpisodeViewModelImpl(
         backgroundScope,
     )
 
-    private val episodeCommentLoader = CommentLoader.episode(
+    private val episodeCommentLoader = CommentLoader.createForEpisode(
         episodeId = episodeId,
         coroutineContext = backgroundScope.coroutineContext,
-        episodeCommentSource = { episodeRevisionRepository.getSubjectEpisodeComments(it) },
+        episodeCommentSource = { commentRepository.getSubjectEpisodeComments(it) },
     )
 
     override val episodeCommentState: CommentState = CommentState(
         sourceVersion = episodeCommentLoader.sourceVersion.produceState(null),
         list = episodeCommentLoader.list.produceState(emptyList()),
-        hasMore = episodeCommentLoader.hasFinished.produceState(false),
+        hasMore = episodeCommentLoader.hasFinished.map { !it }.produceState(true),
         onReload = { episodeCommentLoader.reload() },
         onLoadMore = { episodeCommentLoader.loadMore() },
+        backgroundScope = backgroundScope,
+    )
+
+    override val editCommentState: EditCommentState = EditCommentState(
+        showExpandEditCommentButton = true,
+        initialExpandEditComment = false,
+        title = subjectInfo.combine(episodeInfo) { sub, epi ->
+            "${sub.displayName} ${epi?.renderEpisodeEp()}"
+        }.stateIn(backgroundScope, SharingStarted.Lazily, null),
+        stickerProvider = flow { emit(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) }) },
+        onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )
 

@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
+import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.episode.EpisodeComment
+import me.him188.ani.app.data.models.subject.SubjectComment
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheContext
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
@@ -48,9 +50,39 @@ class CommentLoader<T>(
 
     companion object {
         /**
+         * create comment loader of subject
+         */
+        fun createForSubject(
+            subjectId: Flow<Int>,
+            coroutineContext: CoroutineContext,
+            subjectCommentSource: suspend LazyDataCacheContext.(Int) -> PagedSource<SubjectComment>
+        ) = CommentLoader(
+            source = subjectId.map { sid ->
+                LazyDataCache(
+                    createSource = { subjectCommentSource(sid) },
+                    getKey = { it.id },
+                    debugName = "subjectComment-$sid",
+                )
+            },
+            coroutineContext = coroutineContext,
+            uiMapper = { comment ->
+                UIComment(
+                    id = comment.id,
+                    creator = comment.creator ?: UserInfo.EMPTY,
+                    content = parseBBCode(comment.content),
+                    createdAt = comment.updatedAt * 1000L,
+                    reactions = emptyList(),
+                    briefReplies = emptyList(),
+                    replyCount = 0,
+                    rating = comment.rating,
+                )
+            },
+        )
+
+        /**
          * create comment loader of episode
          */
-        fun episode(
+        fun createForEpisode(
             episodeId: Flow<Int>,
             coroutineContext: CoroutineContext,
             episodeCommentSource: suspend LazyDataCacheContext.(Int) -> PagedSource<EpisodeComment>
@@ -79,9 +111,11 @@ class CommentLoader<T>(
                             reactions = emptyList(),
                             briefReplies = emptyList(),
                             replyCount = 0,
+                            rating = null,
                         )
                     },
                     replyCount = comment.replies.size,
+                    rating = null,
                 )
             },
         )
