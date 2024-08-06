@@ -48,7 +48,7 @@ data class SwipeSeekerConfig(
     // 设计上是从左到右 90 秒正好跳过 op/ed, 而全面屏手机有全面屏手势, 
     // 用户不能从最左边开始滑. 因此稍微留了点余量.
     // 实测差不多可以滑到 87 秒, 看三秒 op 让他知道他完了 op
-    val maxDragSeconds: Int = 97,
+    val maxDragSeconds: Int = 180,
 ) {
     companion object {
         val Default = SwipeSeekerConfig()
