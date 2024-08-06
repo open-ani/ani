@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -290,7 +291,7 @@ fun MediaProgressSlider(
                 }
             }
         }
-        val previewTimeOnThumb by remember {
+        val previewTimeOnThumb by remember(state) {
             derivedStateOf {
                 val previewTimeMillis = state.totalDurationMillis.times(state.displayPositionRatio).toLong()
 
@@ -306,13 +307,12 @@ fun MediaProgressSlider(
             }
         }
         if (showPreviewTime) {
-            println("mousePosX=$mousePosX")
-            PreviewTimePopup(
-                text = previewTimeText,
+            ProgressSliderPreviewPopup(
                 offsetX = { mousePosX.roundToInt() },
-                previewTimeTextColor = previewTimeTextColor,
                 previewTimeBackgroundColor = previewTimeBackgroundColor,
-            )
+            ) {
+                PreviewTimeText(previewTimeText, previewTimeTextColor)
+            }
         }
         // draw thumb
         val interactionSource = remember { MutableInteractionSource() }
@@ -333,13 +333,12 @@ fun MediaProgressSlider(
                     },
                 )
                 if (state.preview) {
-                    println("thumbSize=$thumbWidth")
-                    PreviewTimePopup(
-                        text = previewTimeOnThumb,
+                    ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
-                        previewTimeTextColor = previewTimeTextColor,
                         previewTimeBackgroundColor = previewTimeBackgroundColor,
-                    )
+                    ) {
+                        PreviewTimeText(previewTimeOnThumb, previewTimeTextColor)
+                    }
                 }
             },
             track = {
@@ -379,14 +378,13 @@ fun MediaProgressSlider(
 }
 
 @Composable
-fun PreviewTimePopup(
-    text: String,
+fun ProgressSliderPreviewPopup(
     offsetX: () -> Int,
-    previewTimeTextColor: Color,
     previewTimeBackgroundColor: Color,
     modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
 ) {
-    val offset by remember { derivedStateOf { offsetX } }
+    val density = LocalDensity.current
     val popupPositionProviderState = remember {
         object : PopupPositionProvider {
             override fun calculatePosition(
@@ -397,8 +395,8 @@ fun PreviewTimePopup(
             ): IntOffset {
                 val anchor = IntRect(
                     offset = IntOffset(
-                        offset(),
-                        -popupContentSize.height,
+                        offsetX(),
+                        with(density) { -8.dp.toPx().toInt() },
                     ) + anchorBounds.topLeft,
                     size = IntSize.Zero,
                 )
@@ -412,7 +410,7 @@ fun PreviewTimePopup(
                         popupContentSize.height * 2,
                     ),
                 )
-                val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
+                val position = Alignment.TopCenter.align(popupContentSize, tooltipArea.size, layoutDirection)
 
                 return IntOffset(
                     x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
@@ -426,32 +424,41 @@ fun PreviewTimePopup(
         popupPositionProvider = popupPositionProviderState,
     ) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .clip(shape = CircleShape)
                 .background(previewTimeBackgroundColor)
                 .animateContentSize(),
         ) {
             Box(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                    Text(
-                        // 占位置
-                        text = text,
-                        Modifier.alpha(0f),
-                        fontFamily = FontFamily.Monospace,
-                    )
-                    Text(
-                        text = text,
-                        color = previewTimeTextColor,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                content()
             }
         }
     }
 }
+
+@Composable
+fun PreviewTimeText(
+    text: String,
+    previewTimeTextColor: Color,
+) {
+    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+        Text(
+            // 占位置
+            text = text,
+            Modifier.alpha(0f),
+            fontFamily = FontFamily.Monospace,
+        )
+        Text(
+            text = text,
+            color = previewTimeTextColor,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
 private inline fun forEachConsecutiveChunk(
     chunks: List<Chunk>,
     action: (state: ChunkState, weight: Float) -> Unit
