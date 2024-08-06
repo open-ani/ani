@@ -66,6 +66,7 @@ import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
+import me.him188.ani.app.ui.subject.episode.video.PlayerFloatingTipsState
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
@@ -159,9 +160,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val episodeCommentState: CommentState
 
-
-    var leftBottomTipsVisible: Boolean
-    var cancelSkipOped: Boolean
+    val playerFloatingTipsState: PlayerFloatingTipsState
+    
     @UiThread
     fun stopPlaying()
 }
@@ -423,7 +423,7 @@ private class EpisodeViewModelImpl(
         playerState.stop()
         switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
         this.episodeId.value = episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
-        cancelSkipOped = false // 切换ep后重置跳过oped
+        playerFloatingTipsState.skipOpEd = true // 切换ep后重置跳过oped
     }
 
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
@@ -493,8 +493,7 @@ private class EpisodeViewModelImpl(
         onLoadMore = { episodeCommentLoader.loadMore() },
         backgroundScope = backgroundScope,
     )
-    override var leftBottomTipsVisible: Boolean by mutableStateOf(false)
-    override var cancelSkipOped: Boolean by mutableStateOf(false)
+    override val playerFloatingTipsState: PlayerFloatingTipsState = PlayerFloatingTipsState()
 
     override fun stopPlaying() {
         playerState.stop()
@@ -602,7 +601,7 @@ private class EpisodeViewModelImpl(
                 }
         }
 
-        // 跳过oped
+        // 跳过 OP 和 ED
         launchInBackground {
             settingsRepository.videoScaffoldConfig.flow
                 .map { it.autoSkipOpEd }
@@ -636,11 +635,11 @@ private class EpisodeViewModelImpl(
                                     }
                                 }
                                 if (matched && (pos + 5000 - it.offsetMillis) in 0..1000) {
-                                    leftBottomTipsVisible = true
+                                    playerFloatingTipsState.leftBottomTipsVisible = true
                                 }
                                 if (matched && (pos - it.offsetMillis) in 0..1000) {
-                                    leftBottomTipsVisible = false
-                                    if (cancelSkipOped) {
+                                    playerFloatingTipsState.leftBottomTipsVisible = false
+                                    if (!playerFloatingTipsState.skipOpEd) {
                                         return@forEach
                                     }
                                     logger.info("跳过oped")
@@ -661,4 +660,3 @@ private class EpisodeViewModelImpl(
         isSelf = selfId == data.senderId,
     )
 }
-

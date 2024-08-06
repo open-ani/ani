@@ -575,14 +575,13 @@ private fun EpisodeVideo(
         progressSliderState = progressSliderState,
         leftBottomTips = {
             AnimatedVisibility(
-                visible = vm.leftBottomTipsVisible,
+                visible = vm.playerFloatingTipsState.leftBottomTipsVisible,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
                 PlayerControllerDefaults.LeftBottomTips(
                     onClick = {
-                        vm.cancelSkipOped = true
-                        vm.leftBottomTipsVisible = false
+                        vm.playerFloatingTipsState.cancelSkipOpEd()
                     },
                 )
             }
