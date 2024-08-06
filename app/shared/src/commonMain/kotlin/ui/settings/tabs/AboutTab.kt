@@ -32,13 +32,15 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.media.MediaAutoCacheService
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.isSessionVerified
-import me.him188.ani.app.data.source.session.unverifiedAccessToken
+import me.him188.ani.app.data.source.session.unverifiedAccessTokenOrNull
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.AniHelpSection
 import me.him188.ani.app.ui.profile.DebugInfo
@@ -55,6 +57,7 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
 
     val debugInfo = debugInfoFlow().shareInBackground(started = SharingStarted.Eagerly)
 
+    @OptIn(OpaqueSession::class)
     private fun debugInfoFlow() = combine(
         sessionManager.state,
         sessionManager.processingRequest.flatMapLatest { it?.state ?: flowOf(null) },
@@ -65,7 +68,7 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
                 val buildConfig = currentAniBuildConfig
                 put("isDebug", buildConfig.isDebug.toString())
                 if (buildConfig.isDebug) {
-                    put("accessToken", session.unverifiedAccessToken)
+                    put("accessToken", session.unverifiedAccessTokenOrNull)
                     put("data/source/session", session.toString())
                 }
                 put("processingRequest.state", processingRequest.toString())
@@ -204,7 +207,7 @@ fun AboutTab(
             description = { Text("在反馈问题时附上日志可能有用") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (currentAniBuildConfig.isDebug) {
+                if (isInDebugMode()) {
                     val debugInfo by vm.debugInfo.collectAsStateWithLifecycle(null)
                     val clipboard = LocalClipboardManager.current
                     for ((name, value) in debugInfo?.properties.orEmpty()) {
@@ -226,12 +229,22 @@ fun AboutTab(
                     ) {
                         Text("执行自动缓存")
                     }
+
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch {
+                                KoinPlatform.getKoin().get<SessionManager>().clearSession()
+                            }
+                        },
+                    ) {
+                        Text("清除游客模式记录")
+                    }
                 }
 
                 FilledTonalButton(
                     {
                         GlobalScope.launch {
-                            KoinPlatform.getKoin().get<SessionManager>().logout()
+                            KoinPlatform.getKoin().get<SessionManager>().clearSession()
                         }
                     },
                 ) {

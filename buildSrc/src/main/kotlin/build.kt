@@ -70,7 +70,7 @@ val optInAnnotations = arrayOf(
 )
 
 val testLanguageFeatures: List<String> = listOf(
-//    "ContextReceivers"
+//    "ContextReceivers" // causes segfault on ios
 )
 
 fun Project.configureKotlinOptIns() {

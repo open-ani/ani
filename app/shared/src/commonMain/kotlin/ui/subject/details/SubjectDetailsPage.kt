@@ -108,7 +108,7 @@ fun SubjectDetailsScene(
             )
         },
         collectionActions = {
-            if (vm.authState.isKnownLoggedOut) {
+            if (vm.authState.isKnownExpired) {
                 val navigator = LocalNavigator.current
                 OutlinedButton({ vm.authState.launchAuthorize(navigator) }) {
                     Text("登录后可收藏")

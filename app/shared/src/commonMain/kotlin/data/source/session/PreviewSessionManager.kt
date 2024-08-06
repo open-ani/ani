@@ -6,20 +6,20 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.repository.AccessTokenSession
 import me.him188.ani.app.data.repository.Session
-import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.time.Duration.Companion.days
 
-object TestSessionManager : SessionManager {
+object PreviewSessionManager : SessionManager {
     private val savedSession: MutableStateFlow<Session?> = MutableStateFlow(
-        Session(
+        AccessTokenSession(
             accessToken = "testToken",
             expiresAtMillis = currentTimeMillis() + 1.days.inWholeMilliseconds,
         ),
     )
-    override val state: Flow<SessionState> =
-        MutableStateFlow(SessionState.Verified("testToken", UserInfo.EMPTY))
+    override val state: Flow<SessionStatus> =
+        MutableStateFlow(SessionStatus.Verified("testToken", UserInfo.EMPTY))
     override val processingRequest: MutableStateFlow<ExternalOAuthRequest?> =
         MutableStateFlow(null)
     override val events: SharedFlow<SessionEvent> = MutableSharedFlow(
@@ -27,21 +27,20 @@ object TestSessionManager : SessionManager {
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
 
-    override suspend fun requireAuthorize(
-        navigator: AniNavigator,
-        navigateToWelcome: Boolean,
-        ignoreGuest: Boolean
-    ) {
+    override suspend fun requireAuthorize(onLaunch: suspend () -> Unit, skipOnGuest: Boolean) {
     }
 
-    override fun requireOnlineAsync(navigator: AniNavigator, navigateToWelcome: Boolean, ignoreGuest: Boolean) {
+    override fun requireAuthorizeAsync(onLaunch: suspend () -> Unit, skipOnGuest: Boolean) {
     }
 
     override suspend fun setSession(session: Session) {
         savedSession.value = session
     }
 
-    override suspend fun logout() {
+    override suspend fun retry() {
+    }
+
+    override suspend fun clearSession() {
         savedSession.value = null
     }
 }

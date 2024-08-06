@@ -1,6 +1,9 @@
+@file:Suppress("unused")
+
 package me.him188.ani.app.tools.caching
 
 import kotlinx.coroutines.flow.flowOf
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 
 class LazyDataCacheSamples {
@@ -11,11 +14,13 @@ class LazyDataCacheSamples {
 
     private val cache = LazyDataCache(
         {
-            SinglePagePagedSource {
-                flowOf(
-                    Subject(1), Subject(2), Subject(3),
-                )
-            }
+            ApiResponse.success(
+                SinglePagePagedSource {
+                    flowOf(
+                        Subject(1), Subject(2), Subject(3),
+                    )
+                },
+            )
         },
     )
 

@@ -3,10 +3,10 @@ package me.him188.ani.app.data.models
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.CancellationException
 import kotlinx.io.IOException
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.jvm.JvmInline
 
 sealed interface ApiFailure {
@@ -53,6 +53,23 @@ value class ApiResponse<out T> private constructor(
     }
 }
 
+fun <T> ApiResponse.Companion.unauthorized(): ApiResponse<T> = failure(ApiFailure.Unauthorized)
+fun <T> ApiResponse.Companion.networkError(): ApiResponse<T> = failure(ApiFailure.NetworkError)
+fun <T> ApiResponse.Companion.serviceUnavailable(): ApiResponse<T> = failure(ApiFailure.ServiceUnavailable)
+
+/**
+ * 执行一个请求 [block], 并把它的结果封装为 [ApiResponse].
+ *
+ * 执行请求时抛出的已知类型异常将会被转换为 [ApiResponse.failure]. [block] 只能抛出已知异常类型或 [CancellationException].
+ *
+ * 已知类型包含:
+ * - [HttpStatusCode.Unauthorized] or [HttpStatusCode.Forbidden] -> [ApiFailure.Unauthorized]
+ * - [ServerResponseException] -> [ApiFailure.ServiceUnavailable]
+ * - [IOException] -> [ApiFailure.NetworkError]
+ *
+ * 为了支持 cancellation, [CancellationException] 会原封不动地抛出.
+ * 其他异常将会被是作为 bug, 会被封装为 [IllegalStateException] 后抛出. [Error] 会被原封不动地抛出.
+ */
 inline fun <T> runApiRequest(block: () -> T): ApiResponse<T> {
     try {
         return ApiResponse.success(block())
@@ -60,16 +77,17 @@ inline fun <T> runApiRequest(block: () -> T): ApiResponse<T> {
         if (e.response.status == HttpStatusCode.Unauthorized || e.response.status == HttpStatusCode.Forbidden) {
             return ApiResponse.failure(ApiFailure.Unauthorized)
         }
-        throw e
+        throw IllegalStateException("runApiRequest failed, see cause", e)
     } catch (e: ServerResponseException) {
         return ApiResponse.failure(ApiFailure.ServiceUnavailable)
     } catch (e: CancellationException) {
         throw e
     } catch (e: IOException) {
         return ApiResponse.failure(ApiFailure.NetworkError)
+    } catch (e: Exception) {
+        throw IllegalStateException("runApiRequest failed, see cause", e)
     }
 }
-
 
 inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> {
     contract { callsInPlace(transform, InvocationKind.AT_MOST_ONCE) }
@@ -107,5 +125,19 @@ inline fun <T, R> ApiResponse<T>.fold(
     return when {
         isSuccess -> onSuccess(getOrNull() as T) // T can be null
         else -> onKnownFailure(failureOrNull()!!)
+    }
+}
+
+inline fun <T, R> ApiResponse<T>.flatMap(
+    onSuccess: (value: T) -> ApiResponse<R>,
+): ApiResponse<R> {
+    contract {
+        callsInPlace(onSuccess, InvocationKind.AT_MOST_ONCE)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    return when {
+        isSuccess -> onSuccess(getOrNull() as T) // T can be null
+        else -> this as ApiResponse<R> // does not contain a T so it's safe to cast
     }
 }
