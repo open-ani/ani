@@ -24,10 +24,10 @@ import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -400,9 +400,9 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
-            danmakuRegexFilterGroup()
+            if (isInDebugMode()) {
+                danmakuRegexFilterGroup()
 
-            if (currentAniBuildConfig.isDebug) {
                 SwitchItem(
                     danmakuConfig.isDebug,
                     onCheckedChange = {
