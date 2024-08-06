@@ -120,30 +120,34 @@ abstract class BaseComponentActivity : ComponentActivity() {
         val externalStorageBasePath = Environment.getExternalStorageDirectory().absolutePath
         var result: Path? = null
 
-        applicationContext.contentResolver.persistedUriPermissions.forEach { p ->
-            val path = DocumentsContractApi19.parseUriToStorage(this, p.uri) ?: return@forEach
+        applicationContext.contentResolver.persistedUriPermissions.run {
+            forEach { p ->
+                val path = DocumentsContractApi19.parseUriToStorage(this@BaseComponentActivity, p.uri)
+                    ?: return@forEach
 
-            if (externalPrivateBasePath != null && path.startsWith(externalPrivateBasePath)) {
-                // 不可能出现的情况，external private directory 永远对 App 可用
-                // 所以不会出现在 persistedUriPermissions 中
-                return@forEach
+                if (externalPrivateBasePath != null && path.startsWith(externalPrivateBasePath)) {
+                    // 不可能出现的情况，external private directory 永远对 App 可用
+                    // 所以不会出现在 persistedUriPermissions 中
+                    return@forEach
+                }
+
+                if (!path.startsWith(externalStorageBasePath)) {
+                    // 不是外部共享空间的 uri，不处理
+                    return@forEach
+                }
+
+                if (!p.isReadPermission || !p.isWritePermission) {
+                    // 没有完整的读写权限，从 persistedUriPermissions 中移除，因为我们申请 persistedUriPermissions 仅有一种用途，
+                    // 所以其他的 persistedUriPermissions 可以被视为无效路径或者用不到的路径
+                    applicationContext.contentResolver.releasePersistableUriPermission(
+                        p.uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                    )
+                    return@forEach
+                }
+
+                result = Path(path)
+                return@run
             }
-
-            if (!path.startsWith(externalStorageBasePath)) {
-                // 不是外部共享空间的 uri，不处理
-                return@forEach
-            }
-
-            if (!p.isReadPermission || !p.isWritePermission) {
-                // 没有完整的读写权限，从 persistedUriPermissions 中移除，因为我们申请 persistedUriPermissions 仅有一种用途，
-                // 所以其他的 persistedUriPermissions 可以被视为无效路径或者用不到的路径
-                applicationContext.contentResolver.releasePersistableUriPermission(
-                    p.uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                )
-                return@forEach
-            }
-
-            result = Path(path)
         }
 
         return result
