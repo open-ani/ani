@@ -96,6 +96,7 @@ internal fun EpisodeVideoImpl(
     onClickScreenshot: () -> Unit,
     detachedProgressSlider: @Composable () -> Unit,
     progressSliderState: MediaProgressSliderState,
+    leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -226,6 +227,7 @@ internal fun EpisodeVideoImpl(
                 GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }
         },
+        leftBottomTips = leftBottomTips,
         bottomBar = {
             PlayerControllerBar(
                 startActions = {

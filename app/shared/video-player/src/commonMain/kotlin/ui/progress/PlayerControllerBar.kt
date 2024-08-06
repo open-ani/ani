@@ -1,5 +1,9 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -48,6 +53,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -416,6 +422,37 @@ object PlayerControllerDefaults {
             enabled = enabled,
             modifier = modifier,
         )
+    }
+
+    @Composable
+    fun LeftBottomTips(
+        visible: Boolean,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Box(
+                modifier = modifier.clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = .3f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                        Text(
+                            text = "即将跳过oped",
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                        TextButton(onClick = onClick) {
+                            Text("取消")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -570,6 +570,15 @@ private fun EpisodeVideo(
             )
         },
         progressSliderState = progressSliderState,
+        leftBottomTips = {
+            PlayerControllerDefaults.LeftBottomTips(
+                visible = vm.leftBottomTipsVisible,
+                onClick = {
+                    vm.cancelSkipOped = true
+                    vm.leftBottomTipsVisible = false
+                },
+            )
+        },
     )
 }
 
