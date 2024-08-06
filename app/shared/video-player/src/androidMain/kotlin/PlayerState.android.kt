@@ -40,6 +40,7 @@ import me.him188.ani.app.videoplayer.media.VideoDataDataSource
 import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.AudioTrack
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -354,9 +355,12 @@ internal class ExoPlayerState @UiThread constructor(
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
+
     override fun saveScreenshotFile(filename: String) {
         TODO("Not yet implemented")
     }
+
+    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList())
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition

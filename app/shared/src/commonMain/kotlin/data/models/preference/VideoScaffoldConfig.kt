@@ -50,6 +50,10 @@ data class VideoScaffoldConfig(
      * 横屏时自动全屏
      */
     val autoFullscreenOnLandscapeMode: Boolean = false,
+    /**
+     * 自动连播
+     */
+    val autoPlayNext: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

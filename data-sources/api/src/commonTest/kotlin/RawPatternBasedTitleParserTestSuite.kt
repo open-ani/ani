@@ -22,17 +22,15 @@ import me.him188.ani.datasources.api.topic.EpisodeRange.Companion.range
 import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
 import me.him188.ani.datasources.api.topic.titles.PatternBasedRawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.TestFactory
+import me.him188.ani.test.DynamicTestsResult
+import me.him188.ani.test.TestContainer
+import me.him188.ani.test.TestFactory
+import me.him188.ani.test.dynamicTest
+import me.him188.ani.test.runDynamicTests
 import kotlin.test.assertEquals
 
+@TestContainer
 internal class RawPatternBasedTitleParserTestSuite {
-    val data = mapOf(
-        "Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]" to ParsedTopicTitle(
-            listOf("Baha", "WEB-DL", "AVC", "AAC", "MP4"),
-        ),
-    )
-
     private val dataA = """
             Lilith-Raws [Lilith-Raws] Overlord IV - 05 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4]
             NC-Raws [NC-Raws] OVERLORD IV / Overlord S4 - 05 (B-Global 3840x2160 HEVC AAC MKV)
@@ -45,24 +43,26 @@ internal class RawPatternBasedTitleParserTestSuite {
     """.trimIndent().lines()
 
     @TestFactory
-    fun testParserA(): List<DynamicTest> {
+    fun testParserA(): DynamicTestsResult {
         val parser = PatternBasedRawTitleParser()
-        return dataA.map { data ->
-            val allianceName = data.substringBefore(' ').trim()
-            DynamicTest.dynamicTest(allianceName) {
-                val builder = ParsedTopicTitle.Builder()
-                parser.parse(
-                    data.substringAfter(' ').trim(),
-                    allianceName,
-                    builder,
-                )
-                builder.build().run {
-                    // TODO: 2022/8/4 test TopicDetails
-                    println(this)
+        return runDynamicTests(
+            dataA.map { data ->
+                val allianceName = data.substringBefore(' ').trim()
+                dynamicTest(allianceName) {
+                    val builder = ParsedTopicTitle.Builder()
+                    parser.parse(
+                        data.substringAfter(' ').trim(),
+                        allianceName,
+                        builder,
+                    )
+                    builder.build().run {
+                        // TODO: 2022/8/4 test TopicDetails
+                        println(this)
 //                    assertEquals("", chineseTitle)
+                    }
                 }
-            }
-        }
+            },
+        )
     }
 
     // https://www.dmhy.org/topics/list?keyword=&sort_id=31&team_id=0&order=date-desc
@@ -78,19 +78,20 @@ internal class RawPatternBasedTitleParserTestSuite {
     )
 
     @TestFactory
-    fun testParseRange(): List<DynamicTest> {
+    fun testParseRange(): DynamicTestsResult {
         val parser = PatternBasedRawTitleParser()
-        return buildList {
-            for ((expected, title) in episodeRangeData) {
-                add(
-                    DynamicTest.dynamicTest("$expected - $title") {
-                        assertEquals(
-                            expected, parser.parse(title, null).episodeRange,
-                        )
-                    },
-                )
-            }
-
-        }
+        return runDynamicTests(
+            buildList {
+                for ((expected, title) in episodeRangeData) {
+                    add(
+                        dynamicTest("$expected - $title") {
+                            assertEquals(
+                                expected, parser.parse(title, null).episodeRange,
+                            )
+                        },
+                    )
+                }
+            },
+        )
     }
 }
