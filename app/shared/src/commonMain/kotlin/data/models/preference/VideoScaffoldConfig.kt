@@ -51,6 +51,10 @@ data class VideoScaffoldConfig(
      */
     val autoFullscreenOnLandscapeMode: Boolean = false,
     /**
+     * 自动连播
+     */
+    val autoPlayNext: Boolean = false,
+    /**
      * 跳过oped
      */
     val skipOped: Boolean = false, 

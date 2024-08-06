@@ -34,6 +34,7 @@ import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -52,12 +53,13 @@ import java.nio.file.Path
 import java.util.Locale
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createDirectories
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 
 @Stable
 class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
-    AbstractPlayerState<VlcjData>(parentCoroutineContext) {
+    AbstractPlayerState<VlcjData>(parentCoroutineContext), SupportsAudio {
     private companion object {
         private val logger = logger<VlcjVideoPlayerState>()
 
@@ -251,6 +253,31 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
 
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(1f)
+    override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val maxValue: Float = 2f
+
+    override fun toggleMute(mute: Boolean?) {
+        if (player.audio().isMute == mute) {
+            return
+        }
+        isMute.value = mute ?: !isMute.value
+        player.audio().mute()
+    }
+
+    override fun setVolume(volume: Float) {
+        this.volume.value = volume.coerceIn(0f, maxValue)
+        player.audio().setVolume(volume.times(100).roundToInt())
+    }
+
+    override fun volumeUp() {
+        setVolume(volume.value + 0.05f)
+    }
+
+    override fun volumeDown() {
+        setVolume(volume.value - 0.05f)
+    }
+
     init {
         // NOTE: must not call native player in a event
         player.events().addMediaEventListener(
@@ -286,7 +313,13 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                    state.value = PlaybackState.READY
 //                }
 //            }
+
                 override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                    player.submit {
+                        setVolume(volume.value)
+                        toggleMute(isMute.value)
+                    }
+
                     chapters.value = player.chapters().allDescriptions().flatMap { title ->
                         title.map {
                             Chapter(
@@ -297,7 +330,6 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                         }
                     }
                 }
-
                 override fun playing(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.PLAYING
                     player.submit { player.media().parsing().parse() }

@@ -431,6 +431,15 @@ private fun SettingsScope.PlayerGroup(
                 Modifier.placeholder(vm.uiSettings.loading),
             )
         }
+        HorizontalDividerItem()
+        SwitchItem(
+            checked = config.autoPlayNext,
+            onCheckedChange = {
+                vm.videoScaffoldConfig.update(config.copy(autoPlayNext = it))
+            },
+            title = { Text("自动连播") },
+            Modifier.placeholder(vm.uiSettings.loading),
+        )
         if (currentPlatform.isDesktop()) {
             HorizontalDividerItem()
             SwitchItem(

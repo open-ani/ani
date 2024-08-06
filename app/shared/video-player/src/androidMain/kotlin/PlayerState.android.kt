@@ -355,6 +355,7 @@ internal class ExoPlayerState @UiThread constructor(
     override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
 
     override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
+
     override fun saveScreenshotFile(filename: String) {
         TODO("Not yet implemented")
     }

@@ -72,6 +72,7 @@ import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -579,6 +580,23 @@ private class EpisodeViewModelImpl(
                                     cancelScope() // 标记成功一次后就不要再检查了
                                 }
                             }.collect()
+                        }
+                    }
+                }
+        }
+
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoPlayNext }
+                .distinctUntilChanged()
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    playerState.state.collect { playback ->
+                        if (playback != PlaybackState.FINISHED) return@collect
+                        launchInMain {// state changes must be in main thread
+                            logger.info("播放完毕，切换下一集")
+                            episodeSelectorState.takeIf { it.hasNextEpisode }?.selectNext()
                         }
                     }
                 }
