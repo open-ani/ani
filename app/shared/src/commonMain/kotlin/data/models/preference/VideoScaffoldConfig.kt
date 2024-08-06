@@ -55,9 +55,9 @@ data class VideoScaffoldConfig(
      */
     val autoPlayNext: Boolean = false,
     /**
-     * 跳过oped
+     * 跳过 OP 和 ED
      */
-    val skipOped: Boolean = false, 
+    val autoSkipOpEd: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

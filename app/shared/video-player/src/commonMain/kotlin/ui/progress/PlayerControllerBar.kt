@@ -540,29 +540,22 @@ object PlayerControllerDefaults {
 
     @Composable
     fun LeftBottomTips(
-        visible: Boolean,
         onClick: () -> Unit,
         modifier: Modifier = Modifier
     ) {
-        AnimatedVisibility(
-            visible = visible,
-            enter = fadeIn(),
-            exit = fadeOut(),
+        Box(
+            modifier = modifier.clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.CenterStart,
         ) {
-            Box(
-                modifier = modifier.clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = .3f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                        Text(
-                            text = "即将跳过oped",
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
-                        TextButton(onClick = onClick) {
-                            Text("取消")
-                        }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                    Text(
+                        text = "即将跳过 OP 或 ED",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    )
+                    TextButton(onClick = onClick) {
+                        Text("取消")
                     }
                 }
             }

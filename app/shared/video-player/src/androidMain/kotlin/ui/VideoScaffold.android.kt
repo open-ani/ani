@@ -135,7 +135,7 @@ private fun PreviewVideoScaffoldImpl(
         },
         progressSliderState = progressSliderState,
         leftBottomTips = {
-            PlayerControllerDefaults.LeftBottomTips(visible = true, onClick = {})
+            PlayerControllerDefaults.LeftBottomTips(onClick = {})
         },
     )
 

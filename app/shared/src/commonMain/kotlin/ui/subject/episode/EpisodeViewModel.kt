@@ -605,7 +605,7 @@ private class EpisodeViewModelImpl(
         // 跳过oped
         launchInBackground {
             settingsRepository.videoScaffoldConfig.flow
-                .map { it.skipOped }
+                .map { it.autoSkipOpEd }
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->

@@ -443,11 +443,11 @@ private fun SettingsScope.PlayerGroup(
         if (currentPlatform.isDesktop()) {
             HorizontalDividerItem()
             SwitchItem(
-                checked = config.skipOped,
+                checked = config.autoSkipOpEd,
                 onCheckedChange = {
-                    vm.videoScaffoldConfig.update(config.copy(skipOped = it))
+                    vm.videoScaffoldConfig.update(config.copy(autoSkipOpEd = it))
                 },
-                title = { Text("跳过oped") },
+                title = { Text("自动跳过 OP 和 ED") },
                 Modifier.placeholder(vm.uiSettings.loading),
             )
         }

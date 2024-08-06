@@ -1,5 +1,8 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -571,13 +574,18 @@ private fun EpisodeVideo(
         },
         progressSliderState = progressSliderState,
         leftBottomTips = {
-            PlayerControllerDefaults.LeftBottomTips(
+            AnimatedVisibility(
                 visible = vm.leftBottomTipsVisible,
-                onClick = {
-                    vm.cancelSkipOped = true
-                    vm.leftBottomTipsVisible = false
-                },
-            )
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                PlayerControllerDefaults.LeftBottomTips(
+                    onClick = {
+                        vm.cancelSkipOped = true
+                        vm.leftBottomTipsVisible = false
+                    },
+                )
+            }
         },
     )
 }
