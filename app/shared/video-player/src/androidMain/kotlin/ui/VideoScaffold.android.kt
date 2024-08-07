@@ -70,7 +70,8 @@ private fun PreviewVideoScaffoldImpl(
     val controllerState = rememberVideoControllerState(initialVisibility = controllerVisibility)
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
-
+    var danmakuEnabled by remember { mutableStateOf(true) }
+    
     val progressSliderState = rememberMediaProgressSliderState(
         playerState,
         onPreview = {
@@ -96,6 +97,8 @@ private fun PreviewVideoScaffoldImpl(
         danmakuHostState = remember {
             DanmakuHostState()
         },
+        danmakuEnabled = danmakuEnabled,
+        onToggleDanmaku = { danmakuEnabled = !danmakuEnabled },
         videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
         danmakuConfig = { DanmakuConfig.Default },
         onClickFullScreen = { },

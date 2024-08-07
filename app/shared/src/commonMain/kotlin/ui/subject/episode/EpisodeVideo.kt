@@ -86,6 +86,8 @@ internal fun EpisodeVideoImpl(
     videoControllerState: VideoControllerState,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
+    danmakuEnabled: Boolean,
+    onToggleDanmaku: () -> Unit,
     videoLoadingState: () -> VideoLoadingState,
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
@@ -160,7 +162,7 @@ internal fun EpisodeVideoImpl(
         },
         danmakuHost = {
             AnimatedVisibility(
-                videoControllerState.danmakuEnabled,
+                danmakuEnabled,
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200)),
             ) {
@@ -245,8 +247,8 @@ internal fun EpisodeVideoImpl(
                         )
                     }
                     PlayerControllerDefaults.DanmakuIcon(
-                        videoControllerState.danmakuEnabled,
-                        onClick = { videoControllerState.toggleDanmakuEnabled() },
+                        danmakuEnabled,
+                        onClick = { onToggleDanmaku() },
                     )
                     if (expanded && playerState is SupportsAudio && isInDebugMode()) {
                         val volumeState by playerState.volume.collectAsStateWithLifecycle()

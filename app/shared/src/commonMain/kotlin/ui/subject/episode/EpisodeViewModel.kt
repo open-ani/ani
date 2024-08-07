@@ -599,6 +599,8 @@ private class EpisodeViewModelImpl(
                     }
                 }
         }
+
+        danmaku.setEnabled(true)
     }
 
     private fun createDanmakuPresentation(
