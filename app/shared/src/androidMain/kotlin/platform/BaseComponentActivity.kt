@@ -99,17 +99,10 @@ abstract class BaseComponentActivity : ComponentActivity() {
 
     fun getExternalManageableDocumentPermission(path: Path): Boolean {
         val file = path.toFile()
-        var grant = false
-        applicationContext.contentResolver.persistedUriPermissions.run b@{
-            forEach { p ->
-                val storage = DocumentsContractApi19.parseUriToStorage(this@BaseComponentActivity, p.uri)
-                if (storage != null && file.startsWith(storage) && p.isReadPermission && p.isWritePermission) {
-                    grant = true
-                    return@b
-                }
-            }
+        return applicationContext.contentResolver.persistedUriPermissions.any { p ->
+            val storage = DocumentsContractApi19.parseUriToStorage(this@BaseComponentActivity, p.uri)
+            storage != null && file.startsWith(storage) && p.isReadPermission && p.isWritePermission
         }
-        return grant
     }
 
     /**
