@@ -97,15 +97,17 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
 
                 val grantDir = cacheVm.requestExternalSharedStorage()
                 when (grantDir) {
-                    null -> {} // 关闭了请求对话框
+                    null -> false // 关闭了请求对话框
                     "" -> {
                         toaster.toast("未选择任何目录并授予权限。")
+                        false
                     }
 
-                    else -> cacheVm.refreshStorageState()
+                    else -> {
+                        cacheVm.refreshStorageState()
+                        true
+                    }
                 }
-
-                grantDir.isNullOrEmpty()
             },
             onConfirm = { location ->
                 scope.launch { location?.let { cacheVm.setStorage(it) } }
