@@ -33,7 +33,7 @@ val TestMediaList = listOf(
         originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 1,
         episodeRange = EpisodeRange.single(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
@@ -52,7 +52,7 @@ val TestMediaList = listOf(
         originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 2,
         episodeRange = EpisodeRange.single(EpisodeSort(1)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
@@ -71,7 +71,7 @@ val TestMediaList = listOf(
         originalTitle = "夜晚的水母不会游泳",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 3,
         episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseTraditional).map { it.id },
@@ -89,7 +89,7 @@ val TestMediaList = listOf(
         originalTitle = "葬送的芙莉莲",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 4,
         episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(ChineseSimplified).map { it.id },
@@ -107,7 +107,7 @@ val TestMediaList = listOf(
         originalTitle = "某个生肉",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 5,
         episodeRange = EpisodeRange.single(EpisodeSort(3)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf(),
