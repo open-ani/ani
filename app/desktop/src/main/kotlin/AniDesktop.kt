@@ -236,7 +236,7 @@ object AniDesktop {
             val desktopUpdateInstaller = koin.koin.get<UpdateInstaller>() as DesktopUpdateInstaller
             desktopUpdateInstaller.deleteOldUpdater()
         }.onFailure {
-            logger.error(it) { "Failed to update installer" }
+            logger.error(it) { "Failed to delete update installer" }
         }
 
         kotlin.runCatching {
