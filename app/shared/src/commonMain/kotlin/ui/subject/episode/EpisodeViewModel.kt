@@ -423,7 +423,6 @@ private class EpisodeViewModelImpl(
         playerState.stop()
         switchEpisodeCompleted.value = false // 要在修改 episodeId 之前才安全, 但会有极小的概率在 fetchSession 更新前有 mediaList 更新
         this.episodeId.value = episodeId // ep 要在取消选择 media 之后才能变, 否则会导致使用旧的 media
-        playerFloatingTipsState.skipOpEd = true // 切换ep后重置跳过oped
     }
 
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
@@ -561,7 +560,7 @@ private class EpisodeViewModelImpl(
                         cancellableCoroutineScope {
                             combine(
                                 playerState.currentPositionMillis.sampleWithInitial(5000),
-                                playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                                playerState.videoProperties.map { it?.durationMillis }.debounce(1000),
                             ) { pos, max ->
                                 if (max == null) return@combine
                                 if (episodePresentationFlow.first().collectionType == UnifiedCollectionType.DONE) {
@@ -608,7 +607,7 @@ private class EpisodeViewModelImpl(
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->
-                    //未启用 或 第一集时返回
+                    // 未启用 或 第一集时返回
                     if (!enabled || episodeSelectorState.currentIndex == 0) return@collectLatest
 
                     // 设置启用
@@ -619,9 +618,12 @@ private class EpisodeViewModelImpl(
                             playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
                             playerState.chapters,
                         ) { pos, max, chapters ->
-                            playerFloatingTipsState.autoSkipOpEd(pos, max, chapters) {
+
+                            if (max == null) return@combine
+                            playerFloatingTipsState.calculateTargetTime(chapters, pos, max)?.let {
                                 playerState.seekTo(it)
                             }
+
                         }.collect()
                     }
                 }

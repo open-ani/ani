@@ -575,7 +575,7 @@ private fun EpisodeVideo(
         progressSliderState = progressSliderState,
         leftBottomTips = {
             AnimatedVisibility(
-                visible = vm.playerFloatingTipsState.leftBottomTipsVisible,
+                visible = vm.playerFloatingTipsState.showSkipOpEd,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {

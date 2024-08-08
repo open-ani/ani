@@ -8,42 +8,44 @@ import me.him188.ani.app.videoplayer.ui.state.Chapter
 
 @Stable
 class PlayerFloatingTipsState {
-    var leftBottomTipsVisible: Boolean by mutableStateOf(false)
-    var skipOpEd: Boolean by mutableStateOf(true)
+    /**
+     * 显示 "即将跳过 OP/ED" 的提示, 通常在播放器左下角
+     */
+    var showSkipOpEd: Boolean by mutableStateOf(false)
+        private set
 
+    /**
+     * 允许跳过 OP/ED
+     */
+    var enableSkipOpEd: Boolean by mutableStateOf(true)
+
+    /**
+     * 取消跳过 OP/ED 并隐藏提示
+     */
     fun cancelSkipOpEd() {
-        leftBottomTipsVisible = false
-        skipOpEd = false
+        showSkipOpEd = false
+        enableSkipOpEd = false
     }
 
-    fun autoSkipOpEd(pos: Long, max: Long?, chapters: List<Chapter>, onSeek: (Long) -> Unit) {
+    fun calculateTargetTime(chapters: List<Chapter>, pos: Long, max: Long): Long? {
+
         // 已经点击过取消跳过 OP 或 ED时本集不再出现提示
-        if (max == null || !skipOpEd) return
-
-        chapters.forEach {
+        if (!enableSkipOpEd) return null
+        chapters.forEach { chapter ->
             val matched = when {
-                max > 20 * 60 * 1000 -> {
-                    it.durationMillis in 85_000..95_000
-                }
-
-                max > 10 * 60 * 1000 -> {
-                    it.durationMillis in 55_000..65_000
-                }
-
-                else -> {
-                    false
-                }
+                max > 20 * 60 * 1000 -> chapter.durationMillis in 85_000..95_000
+                max > 10 * 60 * 1000 -> chapter.durationMillis in 55_000..65_000
+                else -> false
             }
-            if (matched && (pos + 5000 - it.offsetMillis) in 0..1000) {
-                leftBottomTipsVisible = true
+
+            if (matched && (pos + 5000 - chapter.offsetMillis) in 0..1000) {
+                showSkipOpEd = true
             }
-            if (matched && (pos - it.offsetMillis) in 0..1000) {
-                leftBottomTipsVisible = false
-                if (!skipOpEd) {
-                    return@forEach
-                }
-                onSeek(it.offsetMillis + it.durationMillis)
+            if (matched && (pos - chapter.offsetMillis) in 0..1000) {
+                showSkipOpEd = false
+                return chapter.offsetMillis + chapter.durationMillis
             }
         }
+        return null
     }
 }
