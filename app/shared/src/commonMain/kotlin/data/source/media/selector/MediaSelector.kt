@@ -383,6 +383,8 @@ class DefaultMediaSelector(
 
         val preferKind = mediaSelectorSettings.preferKind
 
+        val anyFilter = "*"
+
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
                 yield(it)
@@ -403,7 +405,7 @@ class DefaultMediaSelector(
                 return@sequence
             }
             if (allianceRegexes.isEmpty()) {
-                yieldAll(availableAlliances)
+                yield("*")
             } else {
                 for (regex in allianceRegexes) {
                     for (alliance in availableAlliances) {
@@ -457,23 +459,30 @@ class DefaultMediaSelector(
 
         fun selectImpl(candidates: List<Media>): Media? {
             for (resolution in resolutions) { // DFS 尽可能匹配第一个分辨率
-                val filteredByResolution = candidates.filter { resolution == it.properties.resolution }
+                val filteredByResolution =
+                    if (resolution == anyFilter) candidates
+                    else candidates.filter { resolution == it.properties.resolution }
                 if (filteredByResolution.isEmpty()) continue
 
                 for (languageId in languageIds) {
                     val filteredByLanguage =
-                        filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
+                        if (languageId == anyFilter) filteredByResolution
+                        else filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
                     if (filteredByLanguage.isEmpty()) continue
 
                     for (alliance in alliances) { // 能匹配第一个最好
                         // 这里是消耗最大的地方, 因为有正则匹配
-                        val filteredByAlliance = filteredByLanguage.filter { alliance == it.properties.alliance }
+                        val filteredByAlliance =
+                            if (alliance == anyFilter) filteredByLanguage
+                            else filteredByLanguage.filter { alliance == it.properties.alliance }
                         if (filteredByAlliance.isEmpty()) continue
 
                         for (mediaSource in mediaSources) {
-                            val filteredByMediaSource = filteredByAlliance.filter {
-                                mediaSource == null || mediaSource == it.mediaSourceId
-                            }
+                            val filteredByMediaSource =
+                                if (mediaSource == anyFilter) filteredByAlliance
+                                else filteredByAlliance.filter {
+                                    mediaSource == null || mediaSource == it.mediaSourceId
+                                }
                             if (filteredByMediaSource.isEmpty()) continue
                             return selectAny(filteredByMediaSource)
                         }
@@ -482,9 +491,11 @@ class DefaultMediaSelector(
                     // 字幕组没匹配到, 但最好不要换更差语言
 
                     for (mediaSource in mediaSources) {
-                        val filteredByMediaSource = filteredByLanguage.filter {
-                            mediaSource == null || mediaSource == it.mediaSourceId
-                        }
+                        val filteredByMediaSource =
+                            if (mediaSource == anyFilter) filteredByLanguage
+                            else filteredByLanguage.filter {
+                                mediaSource == null || mediaSource == it.mediaSourceId
+                            }
                         if (filteredByMediaSource.isEmpty()) continue
                         return selectAny(filteredByMediaSource)
                     }
