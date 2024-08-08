@@ -29,7 +29,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("01..25", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -871,7 +871,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("29..29", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -1010,7 +1010,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("28..28", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -1158,7 +1158,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("27..27", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -1252,7 +1252,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -1396,7 +1396,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("01..25", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2148,7 +2148,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2158,7 +2158,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2597,7 +2597,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3111,7 +3111,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3121,7 +3121,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3131,7 +3131,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3742,7 +3742,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4226,7 +4226,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4236,7 +4236,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4992,7 +4992,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
     assertEquals("Spy..Spy", r.episodeRange.toString())
     assertEquals("CHC, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test

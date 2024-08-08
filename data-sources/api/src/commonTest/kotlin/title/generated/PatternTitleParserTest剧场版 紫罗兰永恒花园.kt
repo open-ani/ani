@@ -198,7 +198,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test

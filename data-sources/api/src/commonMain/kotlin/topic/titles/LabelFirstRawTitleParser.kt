@@ -68,7 +68,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 builder.subtitleKind = when {
                     "内嵌" in text || "內嵌" in text -> SubtitleKind.EMBEDDED
                     "内封" in text || "內封" in text -> SubtitleKind.CLOSED
-                    "外挂" in text || "外掛" in text -> SubtitleKind.EXTERNAL
+                    "外挂" in text || "外掛" in text -> SubtitleKind.EXTERNAL_DISCOVER
                     else -> null
                 }
             }
