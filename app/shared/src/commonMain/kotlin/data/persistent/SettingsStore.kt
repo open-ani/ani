@@ -21,6 +21,8 @@ package me.him188.ani.app.data.persistent
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import kotlinx.serialization.builtins.ListSerializer
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexes
 import me.him188.ani.app.platform.Context
@@ -56,6 +58,18 @@ abstract class PlatformDataStoreManager {
             produceFile = { resolveDataStoreFile("mediaSourceSaves") },
             corruptionHandler = ReplaceFileCorruptionHandler {
                 MediaSourceSaves.Default
+            },
+        )
+    }
+
+    // creata a datastore<List<DanmakuFilter>>
+    val danmakuFilterStore by lazy {
+        DataStoreFactory.create(
+            serializer = ListSerializer(DanmakuRegexFilter.serializer())
+                .asDataStoreSerializer({ emptyList() }),
+            produceFile = { resolveDataStoreFile("danmakuFilter") },
+            corruptionHandler = ReplaceFileCorruptionHandler {
+                emptyList()
             },
         )
     }

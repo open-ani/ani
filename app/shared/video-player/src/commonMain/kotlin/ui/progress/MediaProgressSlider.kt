@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -92,7 +94,19 @@ class MediaProgressSliderState(
     val totalDurationMillis: Long by derivedStateOf(totalDurationMillis)
 
     private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
+    private val previewRequests = SnapshotStateList<Any>()
 
+    fun setRequestPreview(requester: Any, isPreview: Boolean) {
+        if (isPreview) {
+            previewRequests.add(requester)
+        } else {
+            previewRequests.remove(requester)
+        }
+    }
+
+    val preview: Boolean by derivedStateOf {
+        previewRequests.isNotEmpty()
+    }
     /**
      * Sets the slider to move to the given position.
      * [onPreview] will be triggered.
@@ -250,6 +264,19 @@ fun MediaProgressSlider(
         var thumbWidth by rememberSaveable { mutableIntStateOf(0) }
         var sliderWidth by rememberSaveable { mutableIntStateOf(0) }
 
+        fun renderPreviewTime(previewTimeMillis: Long): String {
+            chapters.find {
+                previewTimeMillis in it.offsetMillis..<it.offsetMillis + it.durationMillis
+            }?.let {
+                val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
+                return chapterName + renderSeconds(
+                    previewTimeMillis / 1000,
+                    state.totalDurationMillis / 1000,
+                ).substringBefore(" ")
+            }
+
+            return renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+        }
         val previewTimeText by remember {
             derivedStateOf {
                 val containerWidth = sliderWidth - thumbWidth
@@ -260,18 +287,15 @@ fun MediaProgressSlider(
                         .coerceIn(0f, 1f)
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
 
-                    chapters.find {
-                        previewTimeMillis in it.offsetMillis..<it.offsetMillis + it.durationMillis
-                    }?.let {
-                        val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
-                        return@derivedStateOf chapterName + renderSeconds(
-                            previewTimeMillis / 1000,
-                            state.totalDurationMillis / 1000,
-                        ).substringBefore(" ")
-                    }
-
-                    renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+                    renderPreviewTime(previewTimeMillis)
                 }
+            }
+        }
+        val previewTimeOnThumb by remember(state) {
+            derivedStateOf {
+                val previewTimeMillis = state.totalDurationMillis.times(state.displayPositionRatio).toLong()
+
+                renderPreviewTime(previewTimeMillis)
             }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
@@ -282,70 +306,12 @@ fun MediaProgressSlider(
                 isHovered || isPressed
             }
         }
-        val popupPositionProviderState = remember {
-            object : PopupPositionProvider {
-                override fun calculatePosition(
-                    anchorBounds: IntRect,
-                    windowSize: IntSize,
-                    layoutDirection: LayoutDirection,
-                    popupContentSize: IntSize
-                ): IntOffset {
-                    val anchor = IntRect(
-                        offset = IntOffset(
-                            mousePosX.roundToInt(),
-                            -popupContentSize.height,
-                        ) + anchorBounds.topLeft,
-                        size = IntSize.Zero,
-                    )
-                    val tooltipArea = IntRect(
-                        IntOffset(
-                            anchor.left - popupContentSize.width,
-                            anchor.top - popupContentSize.height,
-                        ),
-                        IntSize(
-                            popupContentSize.width * 2,
-                            popupContentSize.height * 2,
-                        ),
-                    )
-                    val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
-
-                    return IntOffset(
-                        x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
-                        y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
-                    )
-                }
-            }
-        }
         if (showPreviewTime) {
-            Popup(
-                properties = PlatformPopupProperties(usePlatformInsets = false),
-                popupPositionProvider = popupPositionProviderState,
+            ProgressSliderPreviewPopup(
+                offsetX = { mousePosX.roundToInt() },
+                previewTimeBackgroundColor = previewTimeBackgroundColor,
             ) {
-                Box(
-                    modifier = Modifier
-                        .clip(shape = CircleShape)
-                        .background(previewTimeBackgroundColor)
-                        .animateContentSize(),
-                ) {
-                    Box(
-                        Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                            Text(
-                                // 占位置
-                                text = previewTimeText,
-                                Modifier.alpha(0f),
-                                fontFamily = FontFamily.Monospace,
-                            )
-                            Text(
-                                text = previewTimeText,
-                                color = previewTimeTextColor,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
-                }
+                PreviewTimeText(previewTimeText, previewTimeTextColor)
             }
         }
         // draw thumb
@@ -366,6 +332,14 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
+                if (state.preview) {
+                    ProgressSliderPreviewPopup(
+                        offsetX = { thumbWidth / 2 },
+                        previewTimeBackgroundColor = previewTimeBackgroundColor,
+                    ) {
+                        PreviewTimeText(previewTimeOnThumb, previewTimeTextColor)
+                    }
+                }
             },
             track = {
                 SliderDefaults.Track(
@@ -399,6 +373,88 @@ fun MediaProgressSlider(
                         isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
                     }
                 },
+        )
+    }
+}
+
+@Composable
+fun ProgressSliderPreviewPopup(
+    offsetX: () -> Int,
+    previewTimeBackgroundColor: Color,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    val popupPositionProviderState = remember {
+        object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect,
+                windowSize: IntSize,
+                layoutDirection: LayoutDirection,
+                popupContentSize: IntSize
+            ): IntOffset {
+                val anchor = IntRect(
+                    offset = IntOffset(
+                        offsetX(),
+                        with(density) { -8.dp.toPx().toInt() },
+                    ) + anchorBounds.topLeft,
+                    size = IntSize.Zero,
+                )
+                val tooltipArea = IntRect(
+                    IntOffset(
+                        anchor.left - popupContentSize.width,
+                        anchor.top - popupContentSize.height,
+                    ),
+                    IntSize(
+                        popupContentSize.width * 2,
+                        popupContentSize.height * 2,
+                    ),
+                )
+                val position = Alignment.TopCenter.align(popupContentSize, tooltipArea.size, layoutDirection)
+
+                return IntOffset(
+                    x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
+                    y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
+                )
+            }
+        }
+    }
+    Popup(
+        properties = PlatformPopupProperties(usePlatformInsets = false),
+        popupPositionProvider = popupPositionProviderState,
+    ) {
+        Box(
+            modifier = modifier
+                .clip(shape = CircleShape)
+                .background(previewTimeBackgroundColor)
+                .animateContentSize(),
+        ) {
+            Box(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun PreviewTimeText(
+    text: String,
+    previewTimeTextColor: Color,
+) {
+    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+        Text(
+            // 占位置
+            text = text,
+            Modifier.alpha(0f),
+            fontFamily = FontFamily.Monospace,
+        )
+        Text(
+            text = text,
+            color = previewTimeTextColor,
+            textAlign = TextAlign.Center,
         )
     }
 }

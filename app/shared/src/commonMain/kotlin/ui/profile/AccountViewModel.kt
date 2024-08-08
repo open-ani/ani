@@ -4,8 +4,8 @@ import androidx.annotation.UiThread
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import me.him188.ani.app.data.repository.ProfileRepository
 import me.him188.ani.app.data.source.session.AuthState
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.userInfo
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -16,8 +16,8 @@ import org.koin.core.component.inject
 // TODO: review and maybe refactor AccountViewModel
 class AccountViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
-    private val profileRepository: ProfileRepository by inject()
 
+    @OptIn(OpaqueSession::class)
     val selfInfo by sessionManager.userInfo.produceState(null)
 
     var logoutEnabled by mutableStateOf(true)
@@ -29,7 +29,7 @@ class AccountViewModel : AbstractViewModel(), KoinComponent {
     fun logout() {
         logoutEnabled = false
         launchInBackground {
-            sessionManager.logout()
+            sessionManager.clearSession()
         }
         logoutEnabled = true
     }

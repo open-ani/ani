@@ -19,6 +19,7 @@
 package me.him188.ani.datasources.api.topic
 
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.MediaSource
 
@@ -69,6 +70,7 @@ class TopicDetails(
     val frameRate: FrameRate?,
     val mediaOrigin: MediaOrigin?,
     val subtitleLanguages: List<SubtitleLanguage>,
+    val subtitleKind: SubtitleKind?,
 )
 
 fun DownloadSearchQuery.matches(topic: Topic, allowEpMatch: Boolean): Boolean {

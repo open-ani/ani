@@ -242,6 +242,22 @@ class MediaProperties private constructor(
      * 若未来实现文件大小排序筛选, 用户可能会倾向于选择更大或更小的文件, 而未知的文件大小在这两个种情况下都将会排序在最后, 导致最低优先级选择. (具体行为待定)
      */ // 提供的话, 在数据源选择器中会有一个标签显示这个大小
     val size: FileSize = 0.bytes, // note: default value only for compatibility
+    /**
+     * 字幕类型. 为 `null` 表示未知. 注意, `null` 并不代表没有字幕.
+     *
+     * ## APP 行为细节
+     *
+     * 由于各个平台的播放器有不同的缺陷, 客户端会强制过滤掉或低优先选择部分类型的资源
+     * 详见 <https://github.com/open-ani/ani/issues/615>.
+     *
+     * 缺陷列表:
+     * - macOS 完全不能播放内封类型，只能播放内嵌
+     * - Android 播放双语内封时可能有问题，要低优先选择内封
+     * - 所有平台均不能播放外挂资源
+     *
+     * @since 3.7
+     */
+    val subtitleKind: SubtitleKind?, // #615
     @Suppress("unused")
     @Transient private val _primaryConstructorMarker: Unit = Unit,
 ) {
@@ -251,12 +267,45 @@ class MediaProperties private constructor(
         resolution: String,
         alliance: String,
         size: FileSize,
+        subtitleKind: SubtitleKind?,
     ) : this(
-        subtitleLanguageIds, resolution, alliance, size,
+        subtitleLanguageIds, resolution, alliance, size, subtitleKind,
         _primaryConstructorMarker = Unit,
     )
 
     override fun toString(): String {
         return "MediaProperties(subtitleLanguageIds=$subtitleLanguageIds, resolution='$resolution', alliance='$alliance', size=$size)"
     }
+}
+
+/**
+ * 视频字幕类型
+ * @see MediaProperties.subtitleKind
+ */
+@Serializable
+enum class SubtitleKind {
+    /**
+     * 硬字幕（内嵌字幕），硬字幕是直接嵌入在视频画面中的，无法通过播放器设置来隐藏或去除。
+     */
+    EMBEDDED,
+
+    /**
+     * "内封字幕"是指嵌入在视频文件中的字幕，可以通过播放器的设置来显示或隐藏。这类字幕通常存在于视频文件的字幕轨道中，因此用户可以选择是否显示这些字幕。
+     */
+    CLOSED,
+
+    /**
+     * 通过 [Media.extraFiles] 提供的外挂字幕. 自建数据源通常为此类型.
+     */
+    EXTERNAL_PROVIDED, // Android 和 Windows 均支持此类型, macOS 无法渲染.
+
+    /**
+     * 需要播放器自行在视频目录下搜寻和匹配的的外挂字幕.
+     */
+    EXTERNAL_DISCOVER, // 所有平台均不支持
+
+    /**
+     * 可能是 [CLOSED] 或 [EXTERNAL_DISCOVER].
+     */
+    CLOSED_OR_EXTERNAL_DISCOVER,
 }

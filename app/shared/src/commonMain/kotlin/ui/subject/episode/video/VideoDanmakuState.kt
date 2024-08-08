@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.subject.SubjectInfo
@@ -85,6 +87,8 @@ interface DanmakuLoader {
 class DanmakuLoaderImpl(
     requestFlow: Flow<LoadDanmakuRequest?>,
     currentPosition: Flow<Duration>,
+    danmakuFilterConfig: Flow<DanmakuFilterConfig>,
+    danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
     private val onFetch: suspend (request: DanmakuSearchRequest) -> CombinedDanmakuFetchResult,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), DanmakuLoader {
@@ -131,7 +135,11 @@ class DanmakuLoaderImpl(
         }.shareInBackground(started = SharingStarted.Lazily)
 
     private val sessionFlow: Flow<DanmakuSession> = collectionFlow.mapLatest { session ->
-        session.at(progress = currentPosition)
+        session.at(
+            progress = currentPosition,
+            danmakuRegexFilterList = danmakuRegexFilterList,
+            danmakuFilterConfig = danmakuFilterConfig,
+        )
     }.shareInBackground(started = SharingStarted.Lazily)
 
     override val eventFlow: Flow<DanmakuEvent> = sessionFlow.flatMapLatest { it.events }

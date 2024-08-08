@@ -1,15 +1,13 @@
 package me.him188.ani.app.data.source.session
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.completeWith
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.withContext
-import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.utils.platform.currentTimeMillis
-import org.koin.core.component.KoinComponent
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 表示一个外部 OAuth 授权请求.
@@ -25,7 +23,10 @@ interface ExternalOAuthRequest {
      */
     fun onCallback(code: Result<OAuthResult>)
 
-    fun cancel()
+    /**
+     * @param reason for debugging
+     */
+    fun cancel(reason: String? = null)
 
     /**
      * Does not throw
@@ -61,14 +62,13 @@ interface ExternalOAuthRequest {
 data class OAuthResult(
     val accessToken: String,
     val refreshToken: String,
-    val expiresInSeconds: Long,
+    val expiresIn: Duration,
 )
 
-internal class BangumiOAuthRequest(
-    private val aniNavigator: AniNavigator,
-    private val navigateToWelcome: Boolean,
-    private val setSession: suspend (NewSession) -> Unit,
-) : ExternalOAuthRequest, KoinComponent {
+class ExternalOAuthRequestImpl(
+    private val onLaunch: suspend () -> Unit,
+    private val onSuccess: suspend (NewSession) -> Unit,
+) : ExternalOAuthRequest {
     override val state: MutableStateFlow<ExternalOAuthRequest.State> =
         MutableStateFlow(ExternalOAuthRequest.State.Launching)
 
@@ -81,28 +81,41 @@ internal class BangumiOAuthRequest(
         this.result.completeWith(code)
     }
 
-    override fun cancel() {
-        result.cancel()
+    override fun cancel(reason: String?) {
+        result.cancel(
+            kotlinx.coroutines.CancellationException(
+                if (reason != null) {
+                    "ExternalOAuthRequestImpl was cancelled: $reason"
+                } else {
+                    "ExternalOAuthRequestImpl was cancelled"
+                },
+            ),
+        )
     }
 
     override suspend fun invoke() {
         state.value = ExternalOAuthRequest.State.Launching
-        withContext(Dispatchers.Main) {
-            if (navigateToWelcome) {
-                aniNavigator.navigateWelcome()
-            } else {
-                aniNavigator.navigateBangumiOAuthOrTokenAuth()
-            }
+        try {
+            onLaunch()
+        } catch (e: CancellationException) {
+            state.value = ExternalOAuthRequest.State.Cancelled(e)
+            return
+        } catch (e: Throwable) {
+            state.value = ExternalOAuthRequest.State.Failed(e)
+            return
+        }
+        check(state.value == ExternalOAuthRequest.State.Launching) {
+            "onLaunch must not change state"
         }
         state.value = ExternalOAuthRequest.State.AwaitingCallback
         try {
             val result = result.await()
             state.value = ExternalOAuthRequest.State.Processing
 
-            setSession(
+            onSuccess(
                 NewSession(
                     result.accessToken,
-                    currentTimeMillis() + result.expiresInSeconds * 1000,
+                    (currentTimeMillis().milliseconds + result.expiresIn).inWholeMilliseconds,
                     result.refreshToken,
                 ),
             )

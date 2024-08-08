@@ -1,12 +1,12 @@
 package me.him188.ani.app.data.source.session
 
 sealed interface SessionEvent {
-    /**
-     * token 有变更
-     */
-    sealed interface UserActionEvent : SessionEvent
-    data object Login : UserActionEvent
-    data object Logout : UserActionEvent
+    sealed interface UserChanged : SessionEvent
+
+    data object Login : UserChanged
+    data object Logout : UserChanged
+
+    data object SwitchToGuest : SessionEvent
 
     data object TokenRefreshed : SessionEvent
 }

@@ -6,8 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.episode.type
@@ -155,7 +156,14 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         }
 
         launchInBackground {
-            sessionManager.events.filterIsInstance<SessionEvent.UserActionEvent>().collect {
+            sessionManager.events.filter {
+                when (it) {
+                    SessionEvent.SwitchToGuest -> false
+                    SessionEvent.TokenRefreshed -> false
+                    SessionEvent.Login -> true
+                    SessionEvent.Logout -> true
+                }
+            }.collectLatest {
                 logger.info { "登录信息变更, 清空缓存" }
                 // 如果有变更登录, 清空缓存
                 for (collections in collectionsByType) {

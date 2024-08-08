@@ -18,6 +18,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.data.models.subject.toInfoboxItem
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.username
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
@@ -123,6 +124,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         return flow {
             emit(
                 try {
+                    @OptIn(OpaqueSession::class)
                     client.getApi().getUserCollection(sessionManager.username.first() ?: "-", subjectId).body()
                 } catch (e: ResponseException) {
                     if (e.response.status == HttpStatusCode.NotFound) {
@@ -139,6 +141,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         return flow {
             emit(
                 try {
+                    @OptIn(OpaqueSession::class)
                     val username = sessionManager.username.first() ?: "-"
                     client.getApi().getUserCollection(username, subjectId).body().type.toCollectionType()
                 } catch (e: ResponseException) {
