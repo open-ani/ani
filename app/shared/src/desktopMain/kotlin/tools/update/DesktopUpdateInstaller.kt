@@ -56,7 +56,7 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
 
         val updateExecutable = appDir.resolve("app/resources/ani_update.exe")
         if (!updateExecutable.exists()) {
-            logger.info { "'ani_update.exe' not found. Fallback to manual update" }
+            logger.error { "'ani_update.exe' not found. Fallback to manual update" }
             return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
         }
 
