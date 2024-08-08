@@ -102,11 +102,16 @@ class MediaProgressSliderState(
         } else {
             previewRequests.remove(requester)
         }
+        
+        if (previewRequests.isEmpty()) {
+            finishPreview()
+        }
     }
 
     val preview: Boolean by derivedStateOf {
         previewRequests.isNotEmpty()
     }
+
     /**
      * Sets the slider to move to the given position.
      * [onPreview] will be triggered.
@@ -277,6 +282,7 @@ fun MediaProgressSlider(
 
             return renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
         }
+
         val previewTimeText by remember {
             derivedStateOf {
                 val containerWidth = sliderWidth - thumbWidth
