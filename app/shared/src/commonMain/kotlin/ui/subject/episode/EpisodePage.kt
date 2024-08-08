@@ -83,11 +83,8 @@ import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
-import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.lifecycle.Lifecycle
 import moe.tlaster.precompose.navigation.BackHandler
@@ -187,7 +184,7 @@ private fun EpisodeSceneTabletVeryWide(
                 vm,
                 expanded = true,
                 maintainAspectRatio = false,
-                initialControllerVisibility = ControllerVisibility.Visible,
+                initialControllerVisible = true,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
             )
 
@@ -433,12 +430,12 @@ private fun EpisodeVideo(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    initialControllerVisibility: ControllerVisibility = ControllerVisibility.Invisible,
+    initialControllerVisible: Boolean = false,
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    val videoControllerState = remember { VideoControllerState(initialControllerVisibility) }
+    val videoControllerState = remember { VideoControllerState(initialControllerVisible) }
     val videoDanmakuState = vm.danmaku
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
@@ -447,16 +444,6 @@ private fun EpisodeVideo(
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
     val danmakuTextPlaceholder = remember { randomDanmakuPlaceholder() }
     val window = LocalPlatformWindow.current
-
-    val progressSliderState = rememberMediaProgressSliderState(
-        vm.playerState,
-        onPreview = {
-            // not yet supported
-        },
-        onPreviewFinished = {
-            vm.playerState.seekTo(it)
-        },
-    )
 
     EpisodeVideoImpl(
         vm.playerState,
@@ -562,15 +549,6 @@ private fun EpisodeVideo(
             val filename = "${vm.subjectId}-${vm.episodePresentation.ep}-${currentPosition}.png"
             vm.playerState.saveScreenshotFile(filename)
         },
-        detachedProgressSlider = {
-            PlayerControllerDefaults.MediaProgressSlider(
-                progressSliderState,
-                vm.playerState,
-                Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
-                enabled = false,
-            )
-        },
-        progressSliderState = progressSliderState,
     )
 }
 

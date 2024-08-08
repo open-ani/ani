@@ -82,7 +82,6 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RES
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
-import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
@@ -392,10 +391,8 @@ enum class GestureFamily(
 fun VideoGestureHost(
     controllerState: VideoControllerState,
     seekerState: SwipeSeekerState,
-    progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
-    enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
     family: GestureFamily = Platform.currentPlatform.mouseFamily,
     onTogglePauseResume: () -> Unit = {},
@@ -472,13 +469,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.toggleFullVisible(true)
+                            controllerState.isVisible = true
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
                                     delay(3000)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.toggleFullVisible(false)
+                                    controllerState.isVisible = false
                                 }
                             }
                         }
@@ -512,7 +509,7 @@ fun VideoGestureHost(
                                         onTogglePauseResumeState()
                                     }
                                     if (family.clickToToggleController) {
-                                        controllerState.toggleFullVisible()
+                                        controllerState.toggleVisible()
                                     }
                                 }
                             },
@@ -607,7 +604,7 @@ fun VideoGestureHost(
                                     onTogglePauseResumeState()
                                 }
                                 if (family.clickToToggleController) {
-                                    controllerState.toggleFullVisible()
+                                    controllerState.toggleVisible()
                                 }
                             }
                         },
@@ -622,28 +619,8 @@ fun VideoGestureHost(
                             }
                         },
                     )
-                    .ifThen(family.swipeToSeek && enableSwipeToSeek) {
-                        val swipeToSeekRequester = remember { Any() }
-                        swipeToSeek(
-                            seekerState,
-                            Orientation.Horizontal,
-                            onDragStarted = {
-                                controllerState.setRequestProgressBar(swipeToSeekRequester)
-                                if (controllerState.visibility.detachedSlider)
-                                    progressSliderState.setRequestPreview(swipeToSeekRequester, true)
-                            },
-                            onDragStopped = {
-                                controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
-                                progressSliderState.setRequestPreview(swipeToSeekRequester, false)
-                            },
-                        ) {
-                            progressSliderState.run {
-                                if (totalDurationMillis == 0L) return@run
-                                val offsetRatio =
-                                    (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
-                                previewPositionRatio(offsetRatio)
-                            }
-                        }
+                    .ifThen(family.swipeToSeek) {
+                        swipeToSeek(seekerState, Orientation.Horizontal)
                     }
                     .ifThen(family.keyboardLeftRightToSeek) {
                         onKeyboardHorizontalDirection(

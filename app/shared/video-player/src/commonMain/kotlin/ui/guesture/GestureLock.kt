@@ -24,9 +24,7 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -94,8 +92,8 @@ fun GestureLock(
  */
 @Composable
 fun LockedScreenGestureHost(
-    controllerVisibility: () -> ControllerVisibility,
-    setFullVisible: (visible: Boolean) -> Unit,
+    controllerVisible: () -> Boolean,
+    setControllerVisible: (visible: Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -103,14 +101,14 @@ fun LockedScreenGestureHost(
             .clickable(
                 remember { MutableInteractionSource() },
                 indication = null,
-                onClick = { setFullVisible(true) },
+                onClick = { setControllerVisible(true) },
             ).fillMaxSize(),
     )
 
-    if (controllerVisibility() == ControllerVisibility.Visible) {
+    if (controllerVisible()) {
         LaunchedEffect(true) {
             delay(2.seconds)
-            setFullVisible(false)
+            setControllerVisible(false)
         }
     }
     return
@@ -121,26 +119,22 @@ fun LockedScreenGestureHost(
 fun LockableVideoGestureHost(
     controllerState: VideoControllerState,
     seekerState: SwipeSeekerState,
-    progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
     locked: Boolean,
-    enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
 ) {
     if (locked) {
-        LockedScreenGestureHost({ controllerState.visibility }, controllerState.setFullVisible, modifier)
+        LockedScreenGestureHost({ controllerState.isVisible }, controllerState.setVisible, modifier)
     } else {
         VideoGestureHost(
             controllerState,
             seekerState,
-            progressSliderState,
             indicatorState,
             fastSkipState,
-            enableSwipeToSeek = enableSwipeToSeek,
             onTogglePauseResume = onTogglePauseResume,
             onToggleFullscreen = onToggleFullscreen,
             onExitFullscreen = onExitFullscreen,

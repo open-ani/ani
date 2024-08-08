@@ -183,7 +183,6 @@ fun MediaProgressSlider(
     chapterColor: Color = aniDarkColorTheme().onSurface,
     previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
-    enabled: Boolean = true,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -355,7 +354,6 @@ fun MediaProgressSlider(
             onValueChangeFinished = {
                 state.finishPreview()
             },
-            enabled = enabled,
             modifier = Modifier.fillMaxWidth().height(24.dp)
                 .onSizeChanged {
                     sliderWidth = it.width
