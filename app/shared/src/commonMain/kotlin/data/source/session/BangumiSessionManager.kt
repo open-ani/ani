@@ -39,9 +39,12 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
 import me.him188.ani.utils.platform.annotations.TestOnly
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.Koin
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 fun BangumiSessionManager(
     koin: Koin,
@@ -59,7 +62,11 @@ fun BangumiSessionManager(
         },
         refreshAccessToken = refreshAccessToken@{ refreshToken ->
             client.refreshAccessToken(refreshToken).map {
-                NewSession(it.accessToken, it.expiresIn * 1000, it.refreshToken)
+                NewSession(
+                    it.accessToken,
+                    (currentTimeMillis().milliseconds + it.expiresIn.seconds).inWholeMilliseconds,
+                    it.refreshToken,
+                )
             }
         },
         parentCoroutineContext,
