@@ -69,6 +69,9 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                     "内嵌" in text || "內嵌" in text -> SubtitleKind.EMBEDDED
                     "内封" in text || "內封" in text -> SubtitleKind.CLOSED
                     "外挂" in text || "外掛" in text -> SubtitleKind.EXTERNAL_DISCOVER
+
+                    // 将同时有超过两个非日语语言的资源，标记为非内嵌 #719
+                    builder.subtitleLanguages.count { it != SubtitleLanguage.Japanese } >= 2 -> SubtitleKind.CLOSED
                     else -> null
                 }
             }

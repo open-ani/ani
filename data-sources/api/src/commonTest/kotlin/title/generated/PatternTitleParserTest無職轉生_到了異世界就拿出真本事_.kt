@@ -2897,7 +2897,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2907,7 +2907,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3052,7 +3052,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3062,7 +3062,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3180,7 +3180,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3190,7 +3190,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3220,7 +3220,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3300,7 +3300,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3427,7 +3427,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3554,7 +3554,7 @@ public class PatternTitleParserTest無職轉生_到了異世界就拿出真本�
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
-    assertEquals(null, r.subtitleKind)
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
