@@ -89,8 +89,6 @@ interface BangumiClient : Closeable {
         @SerialName("refresh_token") val refreshToken: String,
     )
 
-    suspend fun refreshAccessToken(refreshToken: String): GetAccessTokenResponse
-
     suspend fun executeGraphQL(query: String): JsonObject
 
     @Serializable
@@ -100,8 +98,6 @@ interface BangumiClient : Closeable {
         @SerialName("expires") val expires: Long, // timestamp
         @SerialName("user_id") val userId: Int,
     )
-
-    suspend fun getTokenStatus(accessToken: String): GetTokenStatusResponse
 
     suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser
 
@@ -131,14 +127,7 @@ interface BangumiClient : Closeable {
 class DelegateBangumiClient(
     private val client: Flow<BangumiClient>,
 ) : BangumiClient {
-    override suspend fun refreshAccessToken(
-        refreshToken: String,
-    ): BangumiClient.GetAccessTokenResponse = client.first().refreshAccessToken(refreshToken)
-
     override suspend fun executeGraphQL(query: String): JsonObject = client.first().executeGraphQL(query)
-
-    override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse =
-        client.first().getTokenStatus(accessToken)
 
     override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser =
         client.first().getSelfInfoByToken(accessToken)
@@ -174,28 +163,6 @@ internal class BangumiClientImpl(
 
     private val logger = logger(this::class)
 
-    override suspend fun refreshAccessToken(
-        refreshToken: String
-    ): BangumiClient.GetAccessTokenResponse {
-        val resp = httpClient.post("$BANGUMI_HOST/oauth/access_token") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                buildJsonObject {
-                    put("grant_type", "refresh_token")
-                    put("client_id", clientId)
-                    put("client_secret", clientSecret)
-                    put("refresh_token", refreshToken)
-                },
-            )
-        }
-
-        if (!resp.status.isSuccess()) {
-            throw IllegalStateException("Failed to get access token: $resp")
-        }
-
-        return resp.body<BangumiClient.GetAccessTokenResponse>()
-    }
-
     override suspend fun executeGraphQL(query: String): JsonObject {
         val resp = httpClient.post("$BANGUMI_API_HOST/v0/graphql") {
             contentType(ContentType.Application.Json)
@@ -207,14 +174,6 @@ internal class BangumiClientImpl(
         }
 
         return resp.body()
-    }
-
-    override suspend fun getTokenStatus(accessToken: String): BangumiClient.GetTokenStatusResponse {
-        val resp = httpClient.post("$BANGUMI_HOST/oauth/token_status") {
-            parameter("access_token", accessToken)
-        }
-
-        return resp.body<BangumiClient.GetTokenStatusResponse>()
     }
 
     override suspend fun getSelfInfoByToken(accessToken: String?): BangumiUser {

@@ -71,6 +71,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.effects.ScreenRotationEffect
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
@@ -148,7 +149,7 @@ private fun EpisodeSceneContent(
 
     VideoNotifEffect(vm)
 
-    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode) {
+    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode && isInDebugMode()) {
         ScreenRotationEffect {
             vm.isFullscreen = it
         }

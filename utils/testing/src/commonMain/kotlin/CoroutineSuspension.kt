@@ -1,4 +1,4 @@
-package me.him188.ani.app.torrent
+package me.him188.ani.test
 
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel

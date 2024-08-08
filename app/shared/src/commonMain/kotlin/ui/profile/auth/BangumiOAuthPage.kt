@@ -54,7 +54,7 @@ fun BangumiOAuthScene(
         }
     }
     BackHandler {
-        vm.onCancel()
+        vm.onCancel("BangumiOAuthScene BackHandler")
         nav.goBack()
     }
     BangumiOAuthPage(
@@ -216,4 +216,3 @@ fun BangumiOAuthPage(
         )
     }
 }
-

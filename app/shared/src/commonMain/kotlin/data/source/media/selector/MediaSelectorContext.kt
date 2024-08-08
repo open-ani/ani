@@ -19,17 +19,22 @@ data class MediaSelectorContext(
      * 当使用完所有偏好的数据源后都没有筛选到资源时, 将会 fallback 为选择任意数据源的资源
      */
     val mediaSourcePrecedence: List<String>?,
+    /**
+     * 用于针对各个平台的播放器缺陷，调整选择资源的优先级
+     */
+    val subtitlePreferences: MediaSelectorSubtitlePreferences?,
 ) {
     fun allFieldsLoaded() = subjectFinished != null
             && mediaSourcePrecedence != null
+            && subtitlePreferences != null
 
     companion object {
         /**
          * 刚开始查询时的默认值
          */
-        val Initial = MediaSelectorContext(null, null)
+        val Initial = MediaSelectorContext(null, null, null)
 
-        val EmptyForPreview get() = MediaSelectorContext(false, emptyList())
+        val EmptyForPreview get() = MediaSelectorContext(false, emptyList(), null)
     }
 }
 
@@ -38,11 +43,15 @@ data class MediaSelectorContext(
  */
 fun MediaSelectorContext.Companion.createFlow(
     subjectCompleted: Flow<Boolean>,
-    mediaSourcePrecedence: Flow<List<String>>
-): Flow<MediaSelectorContext> = combine(subjectCompleted, mediaSourcePrecedence) { completed, instances ->
+    mediaSourcePrecedence: Flow<List<String>>,
+    subtitleKindFilters: Flow<MediaSelectorSubtitlePreferences>,
+): Flow<MediaSelectorContext> = combine(
+    subjectCompleted, mediaSourcePrecedence, subtitleKindFilters,
+) { completed, instances, filters ->
     MediaSelectorContext(
         subjectFinished = completed,
         mediaSourcePrecedence = instances,
+        subtitlePreferences = filters,
     )
 }.onStart {
     emit(Initial) // 否则如果一直没获取到剧集信息, 就无法选集, #385
@@ -54,10 +63,12 @@ fun MediaSelectorContext.Companion.createFlow(
 @JvmName("createFlow2")
 fun MediaSelectorContext.Companion.createFlow(
     subjectCompleted: Flow<Boolean>,
-    mediaSourcePrecedence: Flow<List<MediaSourceInstance>>
+    mediaSourcePrecedence: Flow<List<MediaSourceInstance>>,
+    subtitleKindFilters: Flow<MediaSelectorSubtitlePreferences>,
 ): Flow<MediaSelectorContext> = createFlow(
     subjectCompleted,
     mediaSourcePrecedence.map { list ->
         list.map { it.mediaSourceId }
     },
+    subtitleKindFilters,
 )

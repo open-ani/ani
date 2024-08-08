@@ -49,8 +49,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.source.session.AuthState
+import me.him188.ani.app.data.source.session.userInfoOrNull
 import me.him188.ani.app.navigation.BrowserNavigator
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import org.koin.mp.KoinPlatform
 
@@ -67,12 +69,12 @@ fun ProfilePage(
         modifier = modifier.fillMaxSize(),
         topBar = {
             SelfInfo(
-                viewModel.selfInfo,
-                viewModel.authState.isKnownLoggedIn,
+                viewModel.authState,
+                viewModel.authState.isKnownLoggedOut,
+                onClickSettings,
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .fillMaxWidth(),
-                onClickSettings,
             )
         },
     ) { topBarPaddings ->
@@ -160,24 +162,29 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
 
 @Composable
 internal fun SelfInfo(
-    selfInfo: UserInfo?,
-    isLoggedIn: Boolean?,
-    modifier: Modifier = Modifier,
+    authState: AuthState,
+    isLoggedOut: Boolean,
     onClickSettings: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
     ) {
         UserInfoRow(
-            selfInfo,
+            authState.status?.userInfoOrNull,
             onClickEditNickname = {},
             onClickSettings = onClickSettings,
             modifier,
         )
 
-        if (isLoggedIn == false) {
-            Surface(Modifier.matchParentSize()) {
-                UnauthorizedTips(Modifier.fillMaxSize())
+        if (isLoggedOut) {
+            Surface(Modifier.align(Alignment.Center)) {
+                val navigator = LocalNavigator.current
+                Box(Modifier.padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
+                    OutlinedButton({ authState.launchAuthorize(navigator) }) {
+                        Text("请先登录")
+                    }
+                }
             }
         }
     }

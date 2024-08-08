@@ -35,6 +35,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
@@ -44,11 +45,11 @@ import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
 import org.koin.mp.KoinPlatformTools
-
 
 class MainActivity : AniComponentActivity() {
     private val sessionManager: SessionManager by inject()
@@ -133,7 +134,9 @@ class MainActivity : AniComponentActivity() {
 
         lifecycleScope.launch {
             runCatching {
-                sessionManager.requireAuthorize(aniNavigator, navigateToWelcome = true)
+                AppStartupTasks.verifySession(sessionManager, aniNavigator)
+            }.onFailure {
+                logger.error(it)
             }
         }
     }
