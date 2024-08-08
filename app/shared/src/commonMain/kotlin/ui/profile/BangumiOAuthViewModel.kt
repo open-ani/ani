@@ -23,11 +23,11 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import io.ktor.http.encodeURLParameter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.source.AniAuthClient
 import me.him188.ani.app.data.source.session.ExternalOAuthRequest
 import me.him188.ani.app.data.source.session.OAuthResult
@@ -46,7 +46,7 @@ import kotlin.time.Duration.Companion.seconds
 @Stable
 class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
-    private val client by lazy { AniAuthClient().also { addCloseable(it) } }
+    private val client: AniAuthClient by inject()
 
     /**
      * 需要进行授权
@@ -83,31 +83,39 @@ class BangumiOAuthViewModel : AbstractViewModel(), KoinComponent {
     }.localCachedStateFlow(null)
 
     suspend fun doCheckResult() {
-        withContext(Dispatchers.Default) {
+        withContext(backgroundScope.coroutineContext) {
             while (true) {
-                val resp = client.getResultOrNull(requestIdFlow.value)
+                val resp = client.getResult(requestIdFlow.value)
                 logger.info { "Check OAuth result: $resp" }
-                if (resp != null) {
-                    sessionManager.processingRequest.value?.onCallback(
-                        Result.success(
-                            OAuthResult(
-                                accessToken = resp.accessToken,
-                                refreshToken = resp.refreshToken,
-                                expiresIn = resp.expiresIn.seconds,
+                resp.fold(
+                    onSuccess = { result ->
+                        if (result == null) {
+                            return@fold
+                        }
+                        val request = sessionManager.processingRequest.value
+                        logger.info {
+                            "Check OAuth result success, request is $request, " +
+                                    "token expires in ${result.expiresIn.seconds}"
+                        }
+                        request?.onCallback(
+                            Result.success(
+                                OAuthResult(
+                                    accessToken = result.accessToken,
+                                    refreshToken = result.refreshToken,
+                                    expiresIn = result.expiresIn.seconds,
+                                ),
                             ),
-                        ),
-                    )
-                }
+                        )
+                        return@withContext
+                    },
+                    onKnownFailure = {
+                        logger.info { "Check OAuth result failed: $it" }
+                    },
+                )
+
                 delay(1000)
             }
         }
-    }
-
-    /**
-     * Set callback code. Only used by Desktop platform. For Android, see `MainActivity.onNewIntent`
-     */
-    private fun setCode(oAuthResult: OAuthResult) {
-
     }
 
     @UiThread

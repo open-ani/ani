@@ -15,30 +15,29 @@
 
 package me.him188.ani.client.models
 
-
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param accessToken
- * @param expiresIn
- * @param refreshToken
- * @param userId 
+ *
+ * @param color
+ * @param location
+ * @param playTime
+ * @param text
  */
 @Serializable
 
-data class AniBangumiUserToken(
+data class AniMehim188anidanmakuprotocolDanmakuInfo(
 
-    @SerialName(value = "accessToken") @Required val accessToken: kotlin.String,
+    @SerialName(value = "color") @Required val color: kotlin.Int,
 
-    @SerialName(value = "expiresIn") @Required val expiresIn: kotlin.Long,
+    @SerialName(value = "location") @Required val location: AniMehim188anidanmakuprotocolDanmakuLocation,
 
-    @SerialName(value = "refreshToken") @Required val refreshToken: kotlin.String,
+    @SerialName(value = "playTime") @Required val playTime: kotlin.Long,
 
-    @SerialName(value = "userId") @Required val userId: kotlin.Int
+    @SerialName(value = "text") @Required val text: kotlin.String
 
 )
 

@@ -21,16 +21,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
+ *
  *
  * @param accessToken
  * @param expiresIn
  * @param refreshToken
- * @param userId 
+ * @param userId
  */
 @Serializable
 
-data class AniBangumiUserToken(
+data class AniMehim188anidanmakuprotocolBangumiUserToken(
 
     @SerialName(value = "accessToken") @Required val accessToken: kotlin.String,
 
