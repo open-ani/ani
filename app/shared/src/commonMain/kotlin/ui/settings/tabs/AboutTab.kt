@@ -45,6 +45,7 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.AniHelpSection
 import me.him188.ani.app.ui.profile.DebugInfo
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.utils.platform.annotations.TestOnly
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -96,7 +97,7 @@ private const val ACG_RIP = "https://acg.rip/"
 @Stable
 private const val MIKAN = "https://mikanime.tv/"
 
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, TestOnly::class)
 @Composable
 fun AboutTab(
     vm: AboutTabViewModel = rememberViewModel { AboutTabViewModel() },
@@ -238,6 +239,14 @@ fun AboutTab(
                         },
                     ) {
                         Text("清除游客模式记录")
+                    }
+
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch { KoinPlatform.getKoin().get<SessionManager>().invalidateSession() }
+                        },
+                    ) {
+                        Text("Invalidate Session")
                     }
                 }
 

@@ -416,4 +416,19 @@ class BangumiSessionManager(
             events.tryEmit(SessionEvent.Logout)
         }
     }
+
+    @TestOnly
+    override suspend fun invalidateSession() {
+        tokenRepository.session.first()?.let {
+            when (it) {
+                is AccessTokenSession -> {
+                    tokenRepository.setSession(it.copy(expiresAtMillis = 1L))
+                }
+
+                GuestSession -> {
+                }
+            }
+
+        }
+    }
 }
