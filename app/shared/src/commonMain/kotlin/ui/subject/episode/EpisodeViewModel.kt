@@ -612,6 +612,11 @@ private class EpisodeViewModelImpl(
                     // 设置启用
 
                     mediaFetchSession.collectLatest {
+                        // 更换 ep 时重置
+                        launchInMain {
+                            playerFloatingTipsState.enableSkipOpEd = true
+                        }
+                        
                         combine(
                             playerState.currentPositionMillis.sampleWithInitial(1000),
                             playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
