@@ -226,6 +226,7 @@ fun SessionTipsIcon(
     TextButton(
         action,
         modifier.animateContentSize(),
+        enabled = status !is SessionStatus.Verified,
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
