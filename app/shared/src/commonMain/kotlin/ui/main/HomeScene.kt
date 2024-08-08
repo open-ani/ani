@@ -188,7 +188,7 @@ private fun HomeSceneLandscape(
                                         Text("登录")
                                     }
                                 } else {
-                                    SessionTipsIcon(vm.authState)
+                                    SessionTipsIcon(vm.authState, showLabel = false)
                                 }
                             }
                         },

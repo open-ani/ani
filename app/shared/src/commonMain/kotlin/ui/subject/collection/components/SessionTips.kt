@@ -188,7 +188,9 @@ private fun RetryButton(onRetry: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun SessionTipsIcon(
     authState: AuthState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLoading: Boolean = true,
+    showLabel: Boolean = true,
 ) {
     val navigator = LocalNavigator.current
     SessionTipsIcon(
@@ -200,6 +202,8 @@ fun SessionTipsIcon(
             authState.retry()
         },
         modifier,
+        showLoading = showLoading,
+        showLabel = showLabel,
     )
 }
 
@@ -213,6 +217,7 @@ fun SessionTipsIcon(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     showLoading: Boolean = true,
+    showLabel: Boolean = true,
 ) {
     val action = when (status) {
         SessionStatus.Guest -> onLogin
@@ -268,9 +273,11 @@ fun SessionTipsIcon(
                     ProvideContentColor(MaterialTheme.colorScheme.error) {
                         Icon(
                             Icons.Rounded.SyncProblem,
-                            null,
+                            "登录过期",
                         )
-                        Text("登录过期")
+                        if (showLabel) {
+                            Text("登录过期")
+                        }
                     }
                 }
 
@@ -281,7 +288,9 @@ fun SessionTipsIcon(
                             "网络错误",
                             tint = MaterialTheme.colorScheme.error,
                         )
-                        Text("网络错误")
+                        if (showLabel) {
+                            Text("网络错误")
+                        }
                     }
                 }
 
@@ -292,12 +301,16 @@ fun SessionTipsIcon(
                             "服务器异常",
                             tint = MaterialTheme.colorScheme.error,
                         )
-                        Text("服务异常")
+                        if (showLabel) {
+                            Text("服务异常")
+                        }
                     }
                 }
 
                 SessionStatus.Guest -> {
-                    Text("游客模式")
+                    if (showLabel) {
+                        Text("游客模式")
+                    }
                 }
             }
 
