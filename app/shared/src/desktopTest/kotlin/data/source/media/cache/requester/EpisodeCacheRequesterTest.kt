@@ -20,6 +20,7 @@ import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
+import me.him188.ani.app.data.source.media.selector.MediaSelectorSubtitlePreferences
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
@@ -78,6 +79,7 @@ class EpisodeCacheRequesterTest {
         MediaSelectorContext(
             subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
+            subtitlePreferences = MediaSelectorSubtitlePreferences.AllNormal,
         ),
     )
     private val storage = TestMediaCacheStorage()
@@ -281,6 +283,7 @@ class EpisodeCacheRequesterTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,
@@ -326,6 +329,7 @@ class EpisodeCacheRequesterTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,
@@ -371,6 +375,7 @@ class EpisodeCacheRequesterTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.retry
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.topic.EpisodeRange
@@ -69,6 +70,7 @@ abstract class ThreeStepWebMediaSource : WebMediaSource() {
                     resolution = "1080P",
                     alliance = mediaSourceId,
                     size = FileSize.Unspecified,
+                    subtitleKind = SubtitleKind.EMBEDDED,
                 ),
                 episodeRange = EpisodeRange.single(
                     if (isPossiblyMovie(ep.name) && sort is EpisodeSort.Special) {

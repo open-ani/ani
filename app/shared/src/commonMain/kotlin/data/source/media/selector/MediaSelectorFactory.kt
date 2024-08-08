@@ -2,6 +2,7 @@ package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.subjectCompletedFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
@@ -48,6 +49,7 @@ interface MediaSelectorFactory {
                     MediaSelectorContext.createFlow(
                         subjectManager.subjectCompletedFlow(subjectId),
                         mediaSourceManager.allInstances,
+                        flowOf(MediaSelectorSubtitlePreferences.CurrentPlatform),
                     ),
                     mediaList,
                     savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),

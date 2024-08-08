@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.retry
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.matcher.WebVideo
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
@@ -129,6 +130,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
                         resolution = "1080P",
                         alliance = ID,
                         size = FileSize.Unspecified,
+                        subtitleKind = SubtitleKind.EMBEDDED,
                     ),
                     episodeRange = EpisodeRange.single(
                         if (isPossiblyMovie(ep.name) && sort is EpisodeSort.Special) {

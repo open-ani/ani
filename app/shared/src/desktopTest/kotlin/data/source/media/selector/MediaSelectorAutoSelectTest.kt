@@ -46,6 +46,7 @@ class MediaSelectorAutoSelectTest {
         MediaSelectorContext(
             subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
+            subtitlePreferences = MediaSelectorSubtitlePreferences.AllNormal,
         ),
     )
 
@@ -81,6 +82,7 @@ class MediaSelectorAutoSelectTest {
         MediaSelectorContext(
             subjectFinished = subjectCompleted,
             mediaSourcePrecedence = mediaSourcePrecedence,
+            subtitlePreferences = MediaSelectorSubtitlePreferences.AllNormal,
         )
 
     private val mediaFetcher: MediaSourceMediaFetcher = MediaSourceMediaFetcher(
@@ -158,6 +160,7 @@ class MediaSelectorAutoSelectTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.LocalCache, // note here
             location = MediaSourceLocation.Online,
@@ -183,6 +186,7 @@ class MediaSelectorAutoSelectTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.LocalCache, // note here
             location = MediaSourceLocation.Online,

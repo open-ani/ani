@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
@@ -195,17 +194,25 @@ class DefaultMediaSelector(
     private val mediaSelectorContext = mediaSelectorContextNotCached.cached()
 
     override val mediaList: Flow<List<Media>> = combine(
-        mediaListNotCached.mapLatest { list ->
-            list.sortedWith(
-                compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes },
-            )
-        }.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
+        mediaListNotCached.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
         savedDefaultPreference, // 只需要使用 default, 因为目前不能覆盖生肉设置
         // 如果依赖 merged pref, 会产生循环依赖 (mediaList -> mediaPreferenceItem -> newPreferences -> mediaList)
         this.mediaSelectorSettings,
         this.mediaSelectorContext,
     ) { list, pref, settings, context ->
         filterMediaList(pref, settings, context, list)
+            .sortedWith(
+                compareByDescending<Media> { media ->
+                    val subtitleKind = media.properties.subtitleKind
+                    if (context.subtitlePreferences != null && subtitleKind != null) {
+                        if (context.subtitlePreferences[subtitleKind] == SubtitleKindPreference.LOW_PRIORITY) {
+                            return@compareByDescending 0
+                        }
+                    }
+                    1
+                }.then(compareBy { it.costForDownload })
+                    .thenByDescending { it.properties.size.inBytes },
+            )
     }.flowOn(flowCoroutineContext)
 
     /**
@@ -234,6 +241,13 @@ class DefaultMediaSelector(
             if (!preference.showWithoutSubtitle && media.properties.subtitleLanguageIds.isEmpty()) {
                 // 不显示无字幕的
                 return@filter false
+            }
+
+            val subtitleKind = media.properties.subtitleKind
+            if (context.subtitlePreferences != null && subtitleKind != null) {
+                if (context.subtitlePreferences[subtitleKind] == SubtitleKindPreference.HIDE) {
+                    return@filter false
+                }
             }
 
             true
