@@ -21,24 +21,24 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param accessToken
- * @param expiresIn
- * @param refreshToken
- * @param userId 
+ *
+ * @param bangumiToken
+ * @param clientArch
+ * @param clientOS
+ * @param clientVersion
  */
 @Serializable
 
-data class AniBangumiUserToken(
+data class AniBangumiLoginRequest(
 
-    @SerialName(value = "accessToken") @Required val accessToken: kotlin.String,
+    @SerialName(value = "bangumiToken") @Required val bangumiToken: kotlin.String,
 
-    @SerialName(value = "expiresIn") @Required val expiresIn: kotlin.Long,
+    @SerialName(value = "clientArch") val clientArch: kotlin.String? = null,
 
-    @SerialName(value = "refreshToken") @Required val refreshToken: kotlin.String,
+    @SerialName(value = "clientOS") val clientOS: kotlin.String? = null,
 
-    @SerialName(value = "userId") @Required val userId: kotlin.Int
+    @SerialName(value = "clientVersion") val clientVersion: kotlin.String? = null
 
 )
 
