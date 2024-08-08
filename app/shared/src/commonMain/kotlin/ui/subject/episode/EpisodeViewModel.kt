@@ -607,9 +607,8 @@ private class EpisodeViewModelImpl(
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->
-                    // 未启用 或 第一集时返回
-                    if (!enabled || episodeSelectorState.currentIndex == 0) return@collectLatest
-
+                    if (!enabled) return@collectLatest
+                    
                     // 设置启用
 
                     mediaFetchSession.collectLatest {
@@ -617,9 +616,11 @@ private class EpisodeViewModelImpl(
                             playerState.currentPositionMillis.sampleWithInitial(1000),
                             playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
                             playerState.chapters,
-                        ) { pos, max, chapters ->
-
-                            if (max == null) return@combine
+                            episodeId,
+                            episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
+                        ) { pos, max, chapters, epId, collections ->
+                            // 第一集不跳过
+                            if (max == null || collections.indexOfFirst { it.episodeId == epId } == 0) return@combine
                             playerFloatingTipsState.calculateTargetTime(chapters, pos, max)?.let {
                                 playerState.seekTo(it)
                             }
