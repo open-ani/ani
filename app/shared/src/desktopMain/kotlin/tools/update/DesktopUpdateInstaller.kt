@@ -57,7 +57,7 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
         val resourcesDir = File(System.getProperty("compose.application.resources.dir") ?: throw IllegalStateException("Cannot get resources directory"))
         val updateExecutable = resourcesDir.resolve("ani_update.exe")
         if (!updateExecutable.exists()) {
-            logger.error { "'ani_update.exe' not found. Fallback to manual update" }
+            logger.info { "'ani_update.exe' not found. Fallback to manual update" }
             return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
         }
 
