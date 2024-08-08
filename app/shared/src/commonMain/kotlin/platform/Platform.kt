@@ -47,11 +47,22 @@ sealed class Platform {
 
     @Stable
     companion object {
+        private val _currentPlatform =
+            kotlin.runCatching { currentPlatformImpl() } // throw only on get
+
+        /**
+         * Note: this is soft deprecated. Use [me.him188.ani.app.platform.currentPlatform] and [currentPlatformDesktop] instead.
+         */
         @Stable
-        val currentPlatform: Platform = currentPlatformImpl()
+        val currentPlatform: Platform get() = _currentPlatform.getOrThrow()
     }
 }
 
+/**
+ * 获取当前的平台. 在 Linux 上使用时会抛出 [UnsupportedOperationException].
+ *
+ * CI 会跑 Ubuntu test (比较快), 所以在 test 环境需要谨慎使用此 API.
+ */
 @Stable
 val currentPlatform: Platform
     get() = Platform.currentPlatform
@@ -59,8 +70,9 @@ val currentPlatform: Platform
 @Stable
 val currentPlatformDesktop: Platform.Desktop
     get() {
-        check(Platform.currentPlatform is Platform.Desktop)
-        return Platform.currentPlatform
+        val platform = Platform.currentPlatform
+        check(platform is Platform.Desktop)
+        return platform
     }
 
 @Immutable

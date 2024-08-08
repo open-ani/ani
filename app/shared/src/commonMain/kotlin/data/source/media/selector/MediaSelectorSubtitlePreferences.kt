@@ -33,7 +33,9 @@ value class MediaSelectorSubtitlePreferences(
             ImmutableEnumMap { NORMAL },
         )
 
-        val CurrentPlatform = forPlatform()
+        val CurrentPlatform by lazy {
+            forPlatform()
+        }
 
         fun forPlatform(platform: Platform = currentPlatform): MediaSelectorSubtitlePreferences {
             // 对于缺陷列表, 查看 https://github.com/open-ani/ani/issues/615

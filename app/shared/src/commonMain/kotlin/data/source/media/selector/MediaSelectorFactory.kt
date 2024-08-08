@@ -39,6 +39,7 @@ interface MediaSelectorFactory {
             settingsRepository: SettingsRepository,
             subjectManager: SubjectManager,
             mediaSourceManager: MediaSourceManager,
+            subtitlePreferences: MediaSelectorSubtitlePreferences = MediaSelectorSubtitlePreferences.CurrentPlatform,
         ): MediaSelectorFactory = object : MediaSelectorFactory {
             override fun create(
                 subjectId: Int,
@@ -49,7 +50,7 @@ interface MediaSelectorFactory {
                     MediaSelectorContext.createFlow(
                         subjectManager.subjectCompletedFlow(subjectId),
                         mediaSourceManager.allInstances,
-                        flowOf(MediaSelectorSubtitlePreferences.CurrentPlatform),
+                        flowOf(subtitlePreferences),
                     ),
                     mediaList,
                     savedUserPreference = episodePreferencesRepository.mediaPreferenceFlow(subjectId),
