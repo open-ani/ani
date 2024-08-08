@@ -19,6 +19,7 @@
 package me.him188.ani.datasources.api.topic.titles
 
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FrameRate
 import me.him188.ani.datasources.api.topic.MediaOrigin
@@ -59,6 +60,16 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                     ) {
                         builder.episodeRange = EpisodeRange.unknownSeason()
                     }
+                }
+            }
+
+            // 判断字幕类型
+            if (builder.subtitleKind == null) {
+                builder.subtitleKind = when {
+                    "内嵌" in text || "內嵌" in text -> SubtitleKind.EMBEDDED
+                    "内封" in text || "內封" in text -> SubtitleKind.CLOSED
+                    "外挂" in text || "外掛" in text -> SubtitleKind.EXTERNAL
+                    else -> null
                 }
             }
         }

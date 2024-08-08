@@ -8,6 +8,7 @@
   "SpellCheckingInspection",
 )
 
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.title.PatternBasedTitleParserTestSuite
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,6 +28,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -35,6 +37,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -43,6 +46,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -51,6 +55,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -59,6 +64,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -67,6 +73,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -75,6 +82,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -83,6 +91,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -92,6 +101,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -101,6 +111,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -110,6 +121,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -118,6 +130,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -126,6 +139,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -134,6 +148,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -142,6 +157,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -150,6 +166,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -158,6 +175,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -166,6 +184,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -174,6 +193,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -182,6 +202,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -191,6 +212,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -200,6 +222,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -208,6 +231,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -216,6 +240,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -224,6 +249,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -233,6 +259,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -242,6 +269,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -251,6 +279,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -259,6 +288,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -267,6 +297,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -276,6 +307,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -284,6 +316,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -292,6 +325,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -300,6 +334,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -308,6 +343,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -316,6 +352,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -324,6 +361,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -332,6 +370,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -340,6 +379,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -348,6 +388,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -356,6 +397,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -364,6 +406,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -372,6 +415,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -380,6 +424,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -389,6 +434,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -397,6 +443,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -405,6 +452,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -413,6 +461,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -422,6 +471,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -431,6 +481,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -440,6 +491,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -448,6 +500,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -456,6 +509,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -464,6 +518,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -472,6 +527,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -480,6 +536,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -488,6 +545,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -496,6 +554,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -504,6 +563,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -512,6 +572,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -520,6 +581,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -528,6 +590,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -536,6 +599,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -545,6 +609,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -553,6 +618,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -561,6 +627,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -569,6 +636,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -577,6 +645,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -586,6 +655,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -595,6 +665,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -604,6 +675,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -613,6 +685,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -622,6 +695,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -630,6 +704,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -638,6 +713,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -646,6 +722,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -654,6 +731,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -662,6 +740,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -670,6 +749,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -678,6 +758,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -686,6 +767,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -694,6 +776,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -702,6 +785,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -710,6 +794,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -718,6 +803,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -727,6 +813,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -736,6 +823,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -745,6 +833,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -754,6 +843,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -763,6 +853,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -772,6 +863,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -780,6 +872,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -789,6 +882,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -797,6 +891,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -805,6 +900,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -814,6 +910,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -822,6 +919,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -830,6 +928,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -838,6 +937,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -846,6 +946,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -854,6 +955,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -862,6 +964,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -870,6 +973,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -878,6 +982,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -886,6 +991,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -894,6 +1000,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -902,6 +1009,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -910,6 +1018,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -918,6 +1027,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -926,6 +1036,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -934,6 +1045,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -942,6 +1054,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -951,6 +1064,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -959,6 +1073,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -968,6 +1083,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -976,6 +1092,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -984,6 +1101,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -992,6 +1110,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1000,6 +1119,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1008,6 +1128,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1017,6 +1138,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1026,6 +1148,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1035,6 +1158,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1044,6 +1168,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1053,6 +1178,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1062,6 +1188,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1071,6 +1198,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1080,6 +1208,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1089,6 +1218,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1098,6 +1228,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1107,6 +1238,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("Special..Special", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1116,6 +1248,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1125,6 +1258,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1134,6 +1268,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1144,6 +1279,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1153,6 +1289,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1163,6 +1300,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
         r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1173,6 +1311,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1183,6 +1322,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("特别篇..特别篇", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1192,6 +1332,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1200,6 +1341,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1210,6 +1352,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1219,6 +1362,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S1+S2+SP+Moviex4", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1228,6 +1372,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1237,6 +1382,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1247,6 +1393,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1257,6 +1404,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("2019..2019", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1267,6 +1415,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("2019..2019", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1275,6 +1424,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1283,6 +1433,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1293,6 +1444,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1302,6 +1454,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1312,6 +1465,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1322,6 +1476,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1332,6 +1487,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1341,6 +1497,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1351,6 +1508,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1359,6 +1517,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S2", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1367,6 +1526,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("BDSP..BDSP", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1376,6 +1536,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S1+S2+Movie", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1385,6 +1546,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("全13話+SP..全13話+SP", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1393,6 +1555,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("SP01..SP07", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1402,6 +1565,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1411,6 +1575,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1421,6 +1586,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1431,6 +1597,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1439,6 +1606,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -1447,6 +1615,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1455,6 +1624,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1463,6 +1633,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("SP7..SP7", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1473,6 +1644,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..07", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -1481,6 +1653,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("SP6..SP6", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1489,6 +1662,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("SP5..SP5", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1497,6 +1671,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("SP1..SP4", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1506,6 +1681,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1515,6 +1691,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1523,6 +1700,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1531,6 +1709,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1539,6 +1718,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1547,6 +1727,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1555,6 +1736,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1563,6 +1745,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1571,6 +1754,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1579,6 +1763,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1587,6 +1772,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1595,6 +1781,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1603,6 +1790,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1611,6 +1799,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1619,6 +1808,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1627,6 +1817,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1635,6 +1826,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1643,6 +1835,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1651,6 +1844,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1659,6 +1853,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1667,6 +1862,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1675,6 +1871,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1683,6 +1880,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1691,6 +1889,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1699,6 +1898,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1707,6 +1907,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1715,6 +1916,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1723,6 +1925,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1731,6 +1934,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1739,6 +1943,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1747,6 +1952,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1755,6 +1961,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1763,6 +1970,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1771,6 +1979,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1779,6 +1988,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1787,6 +1997,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..08", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1795,6 +2006,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1803,6 +2015,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1811,6 +2024,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1819,6 +2033,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1827,6 +2042,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1835,6 +2051,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1843,6 +2060,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1851,6 +2069,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1859,6 +2078,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1867,6 +2087,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1875,6 +2096,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1883,6 +2105,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1891,6 +2114,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1899,6 +2123,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1907,6 +2132,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1915,6 +2141,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1923,6 +2150,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1931,6 +2159,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1939,6 +2168,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1947,6 +2177,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1955,6 +2186,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1963,6 +2195,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1971,6 +2204,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1979,6 +2213,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1987,6 +2222,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1995,6 +2231,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2003,6 +2240,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2011,6 +2249,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2019,6 +2258,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2027,6 +2267,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2035,6 +2276,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2043,6 +2285,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2051,6 +2294,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2059,6 +2303,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2067,6 +2312,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2075,6 +2321,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2083,6 +2330,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2091,6 +2339,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2099,6 +2348,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2107,6 +2357,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2115,6 +2366,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2123,6 +2375,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2131,6 +2384,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2139,6 +2393,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2147,6 +2402,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2155,6 +2411,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2163,6 +2420,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2171,6 +2429,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2179,6 +2438,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2187,6 +2447,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2197,6 +2458,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2205,6 +2467,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -2214,6 +2477,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2224,6 +2488,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2232,6 +2497,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -2241,6 +2507,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("Vol.1-Vol.7+OVA..Vol.1-Vol.7+OVA", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL, r.subtitleKind)
   }
 
   @Test
@@ -2250,6 +2517,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -2258,6 +2526,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -2266,6 +2535,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..07", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2274,6 +2544,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..14", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2282,6 +2553,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("番外篇..番外篇", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2290,6 +2562,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2298,6 +2571,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("番外篇..番外篇", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2306,6 +2580,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2314,6 +2589,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2323,6 +2599,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..14", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2331,6 +2608,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2339,6 +2617,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2347,6 +2626,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2355,6 +2635,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2363,6 +2644,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..13", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2371,6 +2653,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2379,6 +2662,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2387,6 +2671,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2395,6 +2680,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2403,6 +2689,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2411,6 +2698,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2419,6 +2707,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2427,6 +2716,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2435,6 +2725,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2443,6 +2734,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2451,6 +2743,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2459,6 +2752,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2467,6 +2761,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2475,6 +2770,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2483,6 +2779,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2491,6 +2788,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2499,6 +2797,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2507,6 +2806,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2515,6 +2815,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2523,6 +2824,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2531,6 +2833,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2539,6 +2842,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2547,6 +2851,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2555,6 +2860,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2563,6 +2869,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2571,6 +2878,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2579,6 +2887,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2587,6 +2896,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2595,6 +2905,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2603,6 +2914,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2611,6 +2923,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2619,6 +2932,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2627,6 +2941,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2635,6 +2950,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2643,6 +2959,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2651,6 +2968,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2659,6 +2977,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2667,6 +2986,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2675,6 +2995,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2683,6 +3004,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2691,6 +3013,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2699,6 +3022,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 }
 

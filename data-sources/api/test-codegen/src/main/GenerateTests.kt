@@ -10,7 +10,7 @@ import java.io.File
  */
 fun main(args: Array<String>) { // 直接 run 就行
     val inputDir = File(args.getOrNull(0) ?: "testData")
-    val outputDir = File(args.getOrNull(1) ?: "../test/title/generated")
+    val outputDir = File(args.getOrNull(1) ?: "../src/commonTest/kotlin/title/generated")
 
     val suites = inputDir.walk().filter { it.extension == "json" }
         .map {
