@@ -211,7 +211,7 @@ class DefaultMediaSelector(
                     }
                     1
                 }.then(compareBy { it.costForDownload })
-                    .thenByDescending { it.properties.size.inBytes },
+                    .thenByDescending { it.publishedTime },
             )
     }.flowOn(flowCoroutineContext)
 

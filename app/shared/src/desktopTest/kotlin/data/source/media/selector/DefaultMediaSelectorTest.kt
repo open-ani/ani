@@ -621,6 +621,22 @@ class DefaultMediaSelectorTest : AbstractDefaultMediaSelectorTest() {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // sort
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `sort by date`() = runTest {
+        // https://github.com/open-ani/ani/issues/445
+        val m1 = media(alliance = "字幕组1", publishedTime = 1)
+        val m4 = media(alliance = "字幕组2", publishedTime = 4)
+        val m3 = media(alliance = "字幕组6", publishedTime = 3)
+        val m2 = media(alliance = "字幕组5", publishedTime = 2)
+        addMedia(m1, m4, m3, m2)
+        assertEquals(listOf(m4, m3, m2, m1), selector.mediaList.first())
+        assertEquals(listOf(m4, m3, m2, m1), selector.filteredCandidates.first())
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Events
     ///////////////////////////////////////////////////////////////////////////
 
