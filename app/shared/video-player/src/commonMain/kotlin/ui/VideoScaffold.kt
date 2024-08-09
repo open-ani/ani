@@ -192,7 +192,9 @@ fun VideoScaffold(
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        detachedProgressSlider()
+                        Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
+                            detachedProgressSlider()
+                        }
                     }
                 }
                 AnimatedVisibility(

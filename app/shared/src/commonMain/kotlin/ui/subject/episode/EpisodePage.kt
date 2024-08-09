@@ -566,7 +566,6 @@ private fun EpisodeVideo(
             PlayerControllerDefaults.MediaProgressSlider(
                 progressSliderState,
                 vm.playerState,
-                Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
                 enabled = false,
             )
         },
