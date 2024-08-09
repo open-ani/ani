@@ -76,6 +76,13 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
             }
         }
 
+        suspend fun updateSuspended(value: T) {
+            tasker.launch {
+                logger.info { "Updating $debugName: $value" }
+                pref.set(value)
+            }.join()
+        }
+
         fun updateDebounced(value: T, delay: Duration = 500.milliseconds) {
             tasker.launch {
                 delay(delay)

@@ -12,6 +12,7 @@ import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -28,6 +29,7 @@ import org.koin.core.component.inject
 class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
     private val torrentManager: TorrentManager by inject()
+    val permissionManager: PermissionManager by inject()
 
     @Stable
     private val placeholderMediaPreference = MediaPreference.Empty.copy() // don't remove .copy, we need identity check

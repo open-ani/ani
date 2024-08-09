@@ -27,7 +27,7 @@ interface MonoTasker {
         context: CoroutineContext = EmptyCoroutineContext,
         start: CoroutineStart = CoroutineStart.DEFAULT,
         block: suspend CoroutineScope.() -> Unit
-    )
+    ): Job
 
     fun <R> async(
         context: CoroutineContext = EmptyCoroutineContext,
@@ -63,16 +63,18 @@ fun MonoTasker(
         context: CoroutineContext,
         start: CoroutineStart,
         block: suspend CoroutineScope.() -> Unit
-    ) {
+    ): Job {
         job?.cancel()
-        job = scope.launch(context, start, block).apply {
+        val newJob = scope.launch(context, start, block).apply {
             invokeOnCompletion {
                 if (job === this) {
                     _isRunning.value = false
                 }
             }
-        }
+        }.also { job = it }
         _isRunning.value = true
+
+        return newJob
     }
 
     override fun <R> async(
