@@ -632,6 +632,7 @@ fun VideoGestureHost(
                             },
                             onDragStopped = {
                                 controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
+                                progressSliderState.finishPreview()
                             },
                         ) {
                             progressSliderState.run {
