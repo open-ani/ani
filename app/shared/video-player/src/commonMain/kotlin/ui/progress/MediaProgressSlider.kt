@@ -324,7 +324,9 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
-                if (state.isPreviewing) {
+                
+                // 仅在 detached slider 上显示
+                if (state.isPreviewing && !enabled) {
                     ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
                         previewTimeBackgroundColor = previewTimeBackgroundColor,
