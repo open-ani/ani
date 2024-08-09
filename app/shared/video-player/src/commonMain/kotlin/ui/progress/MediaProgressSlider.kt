@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -94,19 +93,11 @@ class MediaProgressSliderState(
     val totalDurationMillis: Long by derivedStateOf(totalDurationMillis)
 
     private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
-    private val previewRequests = SnapshotStateList<Any>()
 
-    fun setRequestPreview(requester: Any, isPreview: Boolean) {
-        if (isPreview) {
-            previewRequests.add(requester)
-        } else {
-            previewRequests.remove(requester)
-        }
+    val isPreviewing: Boolean by derivedStateOf {
+        !previewPositionRatio.isNaN()
     }
 
-    val preview: Boolean by derivedStateOf {
-        previewRequests.isNotEmpty()
-    }
     /**
      * Sets the slider to move to the given position.
      * [onPreview] will be triggered.
@@ -277,6 +268,7 @@ fun MediaProgressSlider(
 
             return renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
         }
+
         val previewTimeText by remember {
             derivedStateOf {
                 val containerWidth = sliderWidth - thumbWidth
@@ -332,7 +324,7 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
-                if (state.preview) {
+                if (state.isPreviewing) {
                     ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
                         previewTimeBackgroundColor = previewTimeBackgroundColor,

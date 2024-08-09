@@ -101,7 +101,7 @@ sealed class AbstractDefaultMediaSelectorTest {
         resolution: String = "1080P",
         alliance: String = "字幕组",
         size: FileSize = 1.megaBytes,
-        publishedTime: Long = System.currentTimeMillis(),
+        publishedTime: Long = 0,
         subtitleLanguages: List<String> = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
         location: MediaSourceLocation = MediaSourceLocation.Online,
         kind: MediaSourceKind = MediaSourceKind.BitTorrent,

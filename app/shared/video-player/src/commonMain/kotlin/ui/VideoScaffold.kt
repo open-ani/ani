@@ -180,10 +180,8 @@ fun VideoScaffold(
                                 Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                MaterialTheme(aniDarkColorTheme()) {
-                                    CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                        bottomBar()
-                                    }
+                                CompositionLocalProvider(LocalContentColor provides Color.White) {
+                                    bottomBar()
                                 }
                             }
                         }
