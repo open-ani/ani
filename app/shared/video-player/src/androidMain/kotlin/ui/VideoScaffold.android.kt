@@ -127,7 +127,7 @@ private fun PreviewVideoScaffoldImpl(
         detachedProgressSlider = {
             PlayerControllerDefaults.MediaProgressSlider(
                 progressSliderState,
-                playerState,
+                cacheProgressState = playerState.cacheProgress,
                 enabled = false,
             )
         },
