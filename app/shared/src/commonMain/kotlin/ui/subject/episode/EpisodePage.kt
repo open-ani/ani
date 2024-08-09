@@ -497,7 +497,8 @@ private fun EpisodeVideo(
              * 是否设置了暂停
              */
             var didSetPaused by rememberSaveable { mutableStateOf(false) }
-
+            val focusRequester = remember { FocusRequester() }
+            
             DanmakuEditor(
                 text = videoDanmakuState.danmakuEditorText,
                 onTextChange = { videoDanmakuState.danmakuEditorText = it },
@@ -514,7 +515,7 @@ private fun EpisodeVideo(
                         ),
                     )
                 },
-                modifier = Modifier.onFocusChanged {
+                modifier = Modifier.focusRequester(focusRequester).onFocusChanged {
                     if (it.isFocused) {
                         if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
                             didSetPaused = true
