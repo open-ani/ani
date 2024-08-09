@@ -102,7 +102,7 @@ class MediaProgressSliderState(
         } else {
             previewRequests.remove(requester)
         }
-        
+
         if (previewRequests.isEmpty()) {
             finishPreview()
         }
