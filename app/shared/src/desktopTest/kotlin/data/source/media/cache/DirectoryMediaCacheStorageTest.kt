@@ -36,7 +36,7 @@ class DirectoryMediaCacheStorageTest {
         originalTitle = "夜晚的水母不会游泳 02 测试剧集",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 0,
         episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf("CHT"),

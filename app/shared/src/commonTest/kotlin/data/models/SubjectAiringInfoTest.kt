@@ -57,7 +57,7 @@ class SubjectAiringInfoTest {
     }
 
     @Test
-    fun `some episodes completed, some upcoming`() {
+    fun `some episodes completed - some upcoming`() {
         val eps = listOf(
             ep(1, PackedDate(2023, 1, 8)),
             ep(2, PackedDate(2023, 1, 8 + 7)),
@@ -73,7 +73,7 @@ class SubjectAiringInfoTest {
     }
 
     @Test
-    fun `one episode but has invalid date, when subject has invalid air date`() {
+    fun `one episode but has invalid date - when subject has invalid air date`() {
         val eps = listOf(
             ep(1, PackedDate.Invalid),
         )
@@ -87,7 +87,7 @@ class SubjectAiringInfoTest {
     }
 
     @Test
-    fun `one episode but has invalid date, when subject is known broadcast`() {
+    fun `one episode but has invalid date - when subject is known broadcast`() {
         val eps = listOf(
             ep(1, PackedDate.Invalid),
         )
@@ -101,7 +101,7 @@ class SubjectAiringInfoTest {
     }
 
     @Test
-    fun `one episode but has invalid date, when subject is known broadcast for 10+ years`() {
+    fun `one episode but has invalid date - when subject is known broadcast for 10+ years`() {
         val eps = listOf(
             ep(1, PackedDate.Invalid),
         )
@@ -115,7 +115,7 @@ class SubjectAiringInfoTest {
     }
 
     @Test
-    fun `one episode has invalid date, when subject is known upcoming`() {
+    fun `one episode has invalid date - when subject is known upcoming`() {
         val eps = listOf(
             ep(1, PackedDate.Invalid),
         )

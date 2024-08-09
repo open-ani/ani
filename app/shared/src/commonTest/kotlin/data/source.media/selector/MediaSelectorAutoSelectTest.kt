@@ -154,7 +154,7 @@ class MediaSelectorAutoSelectTest {
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
-            publishedTime = System.currentTimeMillis(),
+            publishedTime = 0,
             episodeRange = EpisodeRange.single(EpisodeSort(1)),
             properties = MediaProperties(
                 subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
@@ -180,7 +180,7 @@ class MediaSelectorAutoSelectTest {
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
-            publishedTime = System.currentTimeMillis(),
+            publishedTime = 0,
             episodeRange = EpisodeRange.single(EpisodeSort(1)),
             properties = MediaProperties(
                 subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
