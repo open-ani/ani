@@ -36,8 +36,8 @@ import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceReso
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
+import me.him188.ani.app.data.source.session.PreviewSessionManager
 import me.him188.ani.app.data.source.session.SessionManager
-import me.him188.ani.app.data.source.session.TestSessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -88,7 +88,7 @@ fun ProvideCompositionLocalsForPreview(
                         single<PlayerStateFactory> {
                             playerStateFactory
                         }
-                        single<SessionManager> { TestSessionManager }
+                        single<SessionManager> { PreviewSessionManager }
                         factory<VideoSourceResolver> {
                             VideoSourceResolver.from(
                                 get<TorrentManager>().engines

@@ -27,16 +27,24 @@ interface TokenRepository : Repository {
     suspend fun clear()
 }
 
+sealed interface Session
+
 /**
- * Bangumi 账号信息.
+ * 以游客登录
  */
-data class Session(
+data object GuestSession : Session
+
+/**
+ * 以 Bangumi access token 登录
+ */
+// don't remove `data`. required for equals
+data class AccessTokenSession(
     val accessToken: String,
     val expiresAtMillis: Long,
-)
+) : Session
 
-fun Session.isValid() = !isExpired()
-fun Session.isExpired() = expiresAtMillis <= currentTimeMillis() + 1.hours.inWholeMilliseconds
+fun AccessTokenSession.isValid() = !isExpired()
+fun AccessTokenSession.isExpired() = expiresAtMillis <= currentTimeMillis() + 1.hours.inWholeMilliseconds
 
 internal class TokenRepositoryImpl(
     store: DataStore<Preferences>,
@@ -44,6 +52,9 @@ internal class TokenRepositoryImpl(
     private companion object Keys {
         val USER_ID = longPreferencesKey("user_id")
         val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+
+        // Note: we added this because we cannot change ACCESS_TOKEN anymore because old users are using them.
+        val IS_GUEST = stringPreferencesKey("is_guest")
         val ACCESS_TOKEN = stringPreferencesKey("access_token")
         val ACCESS_TOKEN_EXPIRE_AT = longPreferencesKey("access_token_expire_at")
     }
@@ -59,19 +70,34 @@ internal class TokenRepositoryImpl(
     override val session: Flow<Session?> = tokenStore.data.map { preferences ->
         val accessToken = preferences[ACCESS_TOKEN]
         val expireAt = preferences[ACCESS_TOKEN_EXPIRE_AT]
-        if (accessToken == null || expireAt == null) {
-            return@map null
+        val isGuest = preferences[IS_GUEST]?.toBooleanStrict()
+        if (isGuest == true) {
+            GuestSession
+        } else {
+            if (accessToken == null || expireAt == null) {
+                return@map null
+            }
+            AccessTokenSession(
+                accessToken = accessToken,
+                expiresAtMillis = expireAt,
+            )
         }
-        Session(
-            accessToken = accessToken,
-            expiresAtMillis = expireAt,
-        )
     }
 
     override suspend fun setSession(session: Session) {
         tokenStore.edit {
-            it[ACCESS_TOKEN] = session.accessToken
-            it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAtMillis
+            when (session) {
+                is AccessTokenSession -> {
+                    it[ACCESS_TOKEN] = session.accessToken
+                    it[ACCESS_TOKEN_EXPIRE_AT] = session.expiresAtMillis
+                    it[IS_GUEST] = false.toString()
+                }
+
+                GuestSession -> {
+                    it[IS_GUEST] = true.toString()
+                }
+            }
+
         }
     }
 
@@ -81,6 +107,7 @@ internal class TokenRepositoryImpl(
             it.remove(ACCESS_TOKEN)
             it.remove(ACCESS_TOKEN_EXPIRE_AT)
             it.remove(REFRESH_TOKEN)
+            it.remove(IS_GUEST)
         }
     }
 }

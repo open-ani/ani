@@ -2,6 +2,7 @@ package me.him188.ani.datasources.nyafun
 
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSourceKind
@@ -61,6 +62,7 @@ class NyafunMediaSourceTest {
                         resolution = "1080P",
                         NyafunMediaSource.ID,
                         size = FileSize.Unspecified,
+                        subtitleKind = SubtitleKind.EMBEDDED,
                     ),
                     episodeRange = EpisodeRange.single("01"),
                     location = MediaSourceLocation.Online,

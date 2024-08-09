@@ -343,3 +343,14 @@ if (enableAnitorrent) {
     // IDE 会识别这个格式并给出明显提示
     logger.warn("w:: Anitorrent 没有启用. PC 构建将不支持 BT 功能. Android 不受影响. 可阅读 $readmeFile 了解如何启用")
 }
+
+
+idea {
+    module {
+        excludeDirs.add(file("appResources/macos-x64/lib"))
+        excludeDirs.add(file("appResources/macos-x64/plugins"))
+        excludeDirs.add(file("appResources/macos-arm64/lib"))
+        excludeDirs.add(file("appResources/macos-arm64/plugins"))
+        excludeDirs.add(file("appResources/windows-x64/lib"))
+    }
+}

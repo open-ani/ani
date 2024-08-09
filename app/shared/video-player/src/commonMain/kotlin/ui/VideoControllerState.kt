@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -11,29 +12,88 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 
 
 /**
- * @param initialVisible 变更不会更新
+ * @param initialVisibility 变更不会更新
  */
 @Composable
 fun rememberVideoControllerState(
-    initialVisible: Boolean = false
+    initialVisibility: ControllerVisibility = ControllerVisibility.Invisible
 ): VideoControllerState {
     return remember {
-        VideoControllerState(initialVisible)
+        VideoControllerState(initialVisibility)
+    }
+}
+
+@Immutable
+data class ControllerVisibility(
+    val topBar: Boolean,
+    val bottomBar: Boolean,
+    val floatingBottomEnd: Boolean,
+    val rhsBar: Boolean,
+    val detachedSlider: Boolean
+) {
+    companion object {
+        @Stable
+        val Visible = ControllerVisibility(
+            topBar = true,
+            bottomBar = true,
+            floatingBottomEnd = false,
+            rhsBar = true,
+            detachedSlider = false,
+        )
+
+        @Stable
+        val Invisible = ControllerVisibility(
+            topBar = false,
+            bottomBar = false,
+            floatingBottomEnd = true,
+            rhsBar = false,
+            detachedSlider = false,
+        )
+
+        @Stable
+        val DetachedSliderOnly = ControllerVisibility(
+            topBar = false,
+            bottomBar = false,
+            floatingBottomEnd = false,
+            rhsBar = false,
+            detachedSlider = true,
+        )
     }
 }
 
 @Stable
 class VideoControllerState(
-    initialVisible: Boolean = false
+    initialVisibility: ControllerVisibility = ControllerVisibility.Visible
 ) {
-    /**
-     * 控制器是否可见.
-     */
-    var isVisible: Boolean by mutableStateOf(initialVisible)
-    val setVisible: (Boolean) -> Unit = { isVisible = it }
+    private var fullVisible by mutableStateOf(initialVisibility == ControllerVisibility.Visible)
+    private val hasProgressBarRequester by derivedStateOf { progressBarRequesters.isNotEmpty() }
 
-    fun toggleVisible(desired: Boolean? = null) {
-        isVisible = desired ?: !isVisible
+    /**
+     * 当前 UI 应当显示的状态
+     */
+    val visibility: ControllerVisibility by derivedStateOf {
+        // 根据 hasProgressBarRequester, alwaysOn 和 fullVisible 计算正确的 `ControllerVisibility`
+        if (alwaysOn) return@derivedStateOf ControllerVisibility.Visible
+        if (fullVisible) return@derivedStateOf ControllerVisibility.Visible
+        if (hasProgressBarRequester) return@derivedStateOf ControllerVisibility.DetachedSliderOnly
+        ControllerVisibility.Invisible
+    }
+
+    /**
+     * 切换显示或隐藏整个控制器.
+     *
+     * 此操作拥有比 [setRequestProgressBar] 更低的优先级.
+     * 如果此时有人请求显示进度条, `toggleEntireVisible(false)` 将会延迟到那个人取消请求后才隐藏进度条.
+     * 如果此时没有人请求显示进度条, 此函数将立即生效.
+     *
+     * @param visible 为 `true` 时显示整个控制器
+     */
+    fun toggleFullVisible(visible: Boolean? = null) {
+        fullVisible = visible ?: !fullVisible
+    }
+
+    val setFullVisible: (visible: Boolean) -> Unit = {
+        fullVisible = it
     }
 
     var danmakuEnabled by mutableStateOf(true)
@@ -59,5 +119,26 @@ class VideoControllerState(
         } else {
             alwaysOnRequests.remove(requester)
         }
+    }
+
+    private val progressBarRequesters = SnapshotStateList<Any>()
+
+    /**
+     * 请求显示进度条
+     * 当目前没有显示进度条时, 将显示独立的进度条.
+     * 若目前已经有进度条, 则会保持该状态, 防止自动关闭.
+     *
+     * @param requester 是谁希望请求显示进度条. 在 [cancelRequestProgressBarVisible] 时需要传入相同实例. 同一时刻有任一 requester 则会让进度条一直显示.
+     */
+    fun setRequestProgressBar(requester: Any) {
+        if (requester in progressBarRequesters) return
+        progressBarRequesters.add(requester)
+    }
+
+    /**
+     * 取消显示进度条
+     */
+    fun cancelRequestProgressBarVisible(requester: Any) {
+        progressBarRequesters.remove(requester)
     }
 }

@@ -22,12 +22,13 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeCollections
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.models.preference.DebugSettings
+import me.him188.ani.app.data.models.unauthorized
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -40,6 +41,7 @@ import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.username
 import me.him188.ani.app.platform.Context
@@ -57,7 +59,6 @@ import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.subject.episode.list.EpisodeProgressItem
-import me.him188.ani.datasources.api.paging.emptyPagedSource
 import me.him188.ani.datasources.api.paging.mapNotNull
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiEpType
@@ -248,7 +249,7 @@ class SubjectManagerImpl(
 ) : KoinComponent, SubjectManager() {
     private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
     private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
-    private val settingsRepository by inject<SettingsRepository>()
+    private val settingsRepository: SettingsRepository by inject()
 
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
@@ -257,14 +258,18 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
-                    sessionManager.state
-                    val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
+                    @OptIn(OpaqueSession::class)
+                    val username =
+                        sessionManager.username.filterNotNull().firstOrNull()
+                            ?: return@LazyDataCache ApiResponse.unauthorized()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
                         subjectType = BangumiSubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
                     ).mapNotNull {
                         it.fetchToSubjectCollection()
+                    }.let {
+                        ApiResponse.success(it)
                     }
                 },
                 getKey = { it.subjectId },

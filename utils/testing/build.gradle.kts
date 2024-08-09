@@ -20,3 +20,19 @@ plugins {
     kotlin("multiplatform")
     `ani-mpp-lib-targets`
 }
+
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            api(kotlin("test-annotations-common", libs.versions.kotlin.get()))
+            api(libs.kotlinx.coroutines.test)
+            api(projects.utils.coroutines)
+        }
+    }
+
+    sourceSets.jvmMain {
+        dependencies {
+            implementation(kotlin("test-junit5", libs.versions.kotlin.get()))
+        }
+    }
+}

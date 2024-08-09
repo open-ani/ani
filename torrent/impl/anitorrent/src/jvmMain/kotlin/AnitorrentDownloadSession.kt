@@ -234,6 +234,7 @@ class AnitorrentDownloadSession(
         check(this.actualTorrentInfo.isActive) {
             "actualTorrentInfo has already been completed or closed"
         }
+        logger.info { "initializeTorrentInfo" }
         val allPiecesInTorrent =
             Piece.buildPieces(info.num_pieces) {
                 if (it == info.num_pieces - 1) {
@@ -285,17 +286,29 @@ class AnitorrentDownloadSession(
 
     fun onTorrentChecked() {
         logger.info { "[$handleId] onTorrentChecked" }
+        reloadFilesAndInitializeIfNotYet()
+    }
+
+    private fun reloadFilesAndInitializeIfNotYet() {
+        if (!actualTorrentInfo.isCompleted) {
+            initializeTorrentInfo(
+                reloadFiles(),
+            ) // split to multiple lines for debugging
+        }
+    }
+
+    /**
+     * @throws IllegalStateException 当文件信息还没被 native 解析出来时抛出.
+     */
+    private fun reloadFiles(): torrent_info_t {
+        logger.info { "[$handleId] reloadFiles" }
         val res = handle.reload_file()
         if (res != torrent_handle_t.reload_file_result_t.kReloadFileSuccess) {
             logger.error { "[$handleId] Reload file result: $res" }
             throw IllegalStateException("Failed to reload file, native returned $res")
         }
         val info = handle.get_info_view()
-        if (info != null) {
-            initializeTorrentInfo(info)
-        } else {
-            logger.error { "[$handleId] onTorrentChecked: info is null" }
-        }
+        return info ?: throw IllegalStateException("Failed to get info view, native get_info_view returned null")
     }
 
     fun onPieceDownloading(pieceIndex: Int) {
@@ -345,6 +358,7 @@ class AnitorrentDownloadSession(
         // 注意, 这个事件不一定是所有文件下载完成了. 
         // 在刚刚创建任务的时候所有文件都是完全不下载的状态, libtorrent 会立即广播这个事件.
         logger.info { "[$handleId] onTorrentFinished" }
+        reloadFilesAndInitializeIfNotYet()
         handle.post_save_resume()
     }
 
