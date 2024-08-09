@@ -4,8 +4,10 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import me.him188.ani.android.activity.MainActivity
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
@@ -28,9 +30,12 @@ import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import java.io.File
+import java.io.IOException
 
 private const val BT_CACHE_DIR_CHANGED = "BT 存储位置不可用，已切换回默认存储位置。"
 
@@ -60,10 +65,17 @@ fun getAndroidModules(
     single<BrowserNavigator> { AndroidBrowserNavigator() }
     single<TorrentManager> {
         val context = androidContext()
+        val logger = logger<TorrentManager>()
         val defaultTorrentCachePath = defaultTorrentCacheDir.absolutePath
         val cacheDir = runBlocking {
             val settings = get<SettingsRepository>().mediaCacheSettings
             val dir = settings.flow.first().saveDir
+
+            val resetToDefault = suspend {
+                settings.update { copy(saveDir = defaultTorrentCachePath) }
+                Toast.makeText(context, BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
+                defaultTorrentCachePath
+            }
 
             // 首次启动设置为应用内部私有目录
             if (dir == null) {
@@ -78,25 +90,34 @@ fun getAndroidModules(
 
             context.contentResolver.persistedUriPermissions.forEach { p ->
                 val storage = DocumentsContractApi19.parseUriToStorage(context, p.uri)
+
                 if (storage != null && dir.startsWith(storage)) {
                     return@runBlocking if (p.isReadPermission && p.isWritePermission) {
-                        // 在设置中保存的外部共享目录有完整的读写权限，直接返回 dir
-                        dir
+                        // 需要再次验证目录权限
+                        try {
+                            withContext(Dispatchers.IO) {
+                                File(storage, ".nomedia").apply { createNewFile() }.writeText(" ")
+                            }
+                            dir
+                        } catch (ex: IOException) {
+                            // 实际上没有权限，释放 uri
+                            logger.warn(ex) { "failed to write to .nomedia" }
+                            context.contentResolver.releasePersistableUriPermission(
+                                p.uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                            )
+                            resetToDefault()
+                        }
                     } else {
                         // 在设置中保存的外部共享目录没有完整的读写权限，直接切换回默认的内部私有目录,
                         // 避免读写权限不足错误导致 App 崩溃
-                        settings.update { copy(saveDir = defaultTorrentCachePath) }
-                        Toast.makeText(context, BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
-                        defaultTorrentCachePath
+                        resetToDefault()
                     }
                 }
             }
             // 既不是内部私有目录也不是外部共享目录，那一定是外部私有目录
             if (context.getExternalFilesDir(null) == null) {
                 // 外部私有目录不可用，直接切换回默认的私有目录，避免读写权限不足错误导致 App 崩溃
-                settings.update { copy(saveDir = defaultTorrentCachePath) }
-                Toast.makeText(context, BT_CACHE_DIR_CHANGED, Toast.LENGTH_LONG).show()
-                return@runBlocking defaultTorrentCachePath
+                return@runBlocking resetToDefault()
             }
 
             // 外部私有目录可用
