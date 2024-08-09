@@ -37,12 +37,12 @@ interface BangumiEpisodeRepository : Repository {
     /**
      * 获取条目下的所有剧集.
      */
-    suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode>
+    suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType?): Flow<BangumiEpisode>
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态. 当用户没有收藏此条目时返回 `null`
      */
-    suspend fun getSubjectEpisodeCollections(subjectId: Int, type: BangumiEpType): Flow<BangumiUserEpisodeCollection>?
+    suspend fun getSubjectEpisodeCollections(subjectId: Int, type: BangumiEpType?): Flow<BangumiUserEpisodeCollection>?
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态.
@@ -67,7 +67,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         }
     }
 
-    override suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode> {
+    override suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType?): Flow<BangumiEpisode> {
         val episodes = PageBasedPagedSource { page ->
             runCatching {
                 withContext(Dispatchers.IO) {
@@ -82,7 +82,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 
     override suspend fun getSubjectEpisodeCollections(
         subjectId: Int,
-        type: BangumiEpType
+        type: BangumiEpType?
     ): Flow<BangumiUserEpisodeCollection>? {
         val firstPage = try {
             client.getApi().getUserSubjectEpisodeCollection(
