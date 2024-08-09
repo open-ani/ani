@@ -67,6 +67,7 @@ import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
+import me.him188.ani.app.ui.subject.episode.video.PlayerFloatingTipsState
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
@@ -160,6 +161,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val episodeCommentState: CommentState
 
+    val playerFloatingTipsState: PlayerFloatingTipsState
+    
     @UiThread
     fun stopPlaying()
 }
@@ -493,6 +496,7 @@ private class EpisodeViewModelImpl(
         onLoadMore = { episodeCommentLoader.loadMore() },
         backgroundScope = backgroundScope,
     )
+    override val playerFloatingTipsState: PlayerFloatingTipsState = PlayerFloatingTipsState()
 
     override fun stopPlaying() {
         playerState.stop()
@@ -560,7 +564,7 @@ private class EpisodeViewModelImpl(
                         cancellableCoroutineScope {
                             combine(
                                 playerState.currentPositionMillis.sampleWithInitial(5000),
-                                playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                                playerState.videoProperties.map { it?.durationMillis }.debounce(1000),
                             ) { pos, max ->
                                 if (max == null) return@combine
                                 if (episodePresentationFlow.first().collectionType == UnifiedCollectionType.DONE) {
@@ -599,6 +603,41 @@ private class EpisodeViewModelImpl(
                     }
                 }
         }
+
+        // 跳过 OP 和 ED
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoSkipOpEd }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+                    
+                    // 设置启用
+
+                    mediaFetchSession.collectLatest {
+                        // 更换 ep 时重置
+                        launchInMain {
+                            playerFloatingTipsState.enableSkipOpEd = true
+                        }
+                        
+                        combine(
+                            playerState.currentPositionMillis.sampleWithInitial(1000),
+                            playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                            playerState.chapters,
+                            episodeId,
+                            episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
+                        ) { pos, max, chapters, epId, collections ->
+                            // 第一集不跳过
+                            if (max == null || collections.indexOfFirst { it.episodeId == epId } == 0) return@combine
+                            playerFloatingTipsState.calculateTargetTime(chapters, pos, max)?.let {
+                                playerState.seekTo(it)
+                            }
+
+                        }.collect()
+                    }
+                }
+        }
     }
 
     private fun createDanmakuPresentation(
@@ -609,4 +648,3 @@ private class EpisodeViewModelImpl(
         isSelf = selfId == data.senderId,
     )
 }
-
