@@ -96,11 +96,6 @@ class VideoControllerState(
         fullVisible = it
     }
 
-    var danmakuEnabled by mutableStateOf(true)
-    fun toggleDanmakuEnabled() {
-        danmakuEnabled = !danmakuEnabled
-    }
-
     private val alwaysOnRequests = SnapshotStateList<Any>()
 
     /**
