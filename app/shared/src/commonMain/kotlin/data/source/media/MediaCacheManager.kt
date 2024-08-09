@@ -169,6 +169,14 @@ abstract class MediaCacheManager(
         return false
     }
 
+    suspend fun closeAllCaches() {
+        for (storage in enabledStorages.first()) {
+            for (mediaCache in storage.listFlow.first()) {
+                mediaCache.close()
+            }
+        }
+    }
+
     init {
         if (notificationManager.hasPermission()) {
             startNotificationJob()
