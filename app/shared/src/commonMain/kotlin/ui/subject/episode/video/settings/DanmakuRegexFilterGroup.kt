@@ -40,7 +40,6 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
-import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.utils.platform.Uuid
 
 internal fun isValidRegex(pattern: String): Boolean {

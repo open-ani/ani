@@ -4,8 +4,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
-import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext

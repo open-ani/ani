@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import me.him188.ani.danmaku.ui.DanmakuFilterConfig
-import me.him188.ani.danmaku.ui.DanmakuRegexFilter
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
