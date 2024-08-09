@@ -12,8 +12,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.verifiedAccessToken
 import me.him188.ani.app.platform.getAniUserAgent
@@ -100,10 +103,11 @@ class DanmakuManagerImpl(
         DanmakuProviderLoader.load { config }
     }.shareInBackground(started = SharingStarted.Lazily)
 
+    @OptIn(OpaqueSession::class)
     private val sender: Flow<AniDanmakuSender> = config.mapAutoClose { config ->
         AniDanmakuSenderImpl(
             config,
-            sessionManager.verifiedAccessToken,
+            sessionManager.verifiedAccessToken, // TODO: Handle danmaku sender errors 
             backgroundScope.coroutineContext,
         )
     }.shareInBackground(started = SharingStarted.Lazily)

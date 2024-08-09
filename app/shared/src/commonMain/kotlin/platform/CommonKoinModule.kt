@@ -62,6 +62,7 @@ import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
+import me.him188.ani.app.data.source.AniAuthClient
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
@@ -77,6 +78,8 @@ import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.source.media.createWithKoin
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.data.source.media.toClientProxyConfig
+import me.him188.ani.app.data.source.session.BangumiSessionManager
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
@@ -102,15 +105,17 @@ import kotlin.coroutines.CoroutineContext
 
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
+    single<AniAuthClient> { AniAuthClient() }
     single<TokenRepository> { TokenRepositoryImpl(getContext().dataStores.tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().dataStores.preferredAllianceStore) }
-    single<SessionManager> { SessionManager(koin, coroutineScope.coroutineContext) }
+    single<SessionManager> { BangumiSessionManager(koin, coroutineScope.coroutineContext) }
     single<BangumiClient> {
         val settings = get<SettingsRepository>()
         val sessionManager by inject<SessionManager>()
         DelegateBangumiClient(
             settings.proxySettings.flow.map { it.default }.map { proxySettings ->
                 createBangumiClient(
+                    @OptIn(OpaqueSession::class)
                     sessionManager.unverifiedAccessToken,
                     proxySettings.toClientProxyConfig(),
                     coroutineScope.coroutineContext,

@@ -30,7 +30,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.repository.Session
+import me.him188.ani.app.data.repository.AccessTokenSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -49,12 +49,12 @@ import kotlin.time.Duration.Companion.days
 class BangumiTokenAuthViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
 
-    fun onCancel() {
-        sessionManager.processingRequest.value?.cancel()
+    fun onCancel(reason: String? = null) {
+        sessionManager.processingRequest.value?.cancel(reason)
     }
 
     suspend fun authByToken(token: String) {
-        sessionManager.setSession(Session(token, currentTimeMillis() + 365.days.inWholeMilliseconds))
+        sessionManager.setSession(AccessTokenSession(token, currentTimeMillis() + 365.days.inWholeMilliseconds))
     }
 }
 
@@ -66,7 +66,7 @@ fun BangumiTokenAuthPage(
     var token by rememberSaveable { mutableStateOf("") }
     val navigator = LocalNavigator.current
     BackHandler {
-        vm.onCancel()
+        vm.onCancel("BangumiTokenAuthPage BackHandler")
         navigator.goBack()
     }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -131,7 +131,7 @@ fun BangumiTokenAuthPage(
 
                 Button(
                     onClick = {
-                        vm.onCancel()
+                        vm.onCancel("BangumiTokenAuthPage 用令牌登录")
                         vm.launchInBackground {
                             authByToken(token)
                             withContext(Dispatchers.Main) {

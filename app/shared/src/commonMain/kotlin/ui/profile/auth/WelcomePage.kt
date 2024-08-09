@@ -34,12 +34,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.repository.GuestSession
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.LocalNavigator
@@ -59,7 +64,13 @@ class WelcomeViewModel : AbstractViewModel(), KoinComponent {
     val authState: AuthState = AuthState()
 
     fun cancelRequest() {
-        sessionManager.processingRequest.value?.cancel()
+        sessionManager.processingRequest.value?.cancel("WelcomeViewModel")
+    }
+
+    suspend fun logInAsGuest() {
+        withContext(Dispatchers.Default) {
+            sessionManager.setSession(GuestSession)
+        }
     }
 }
 
@@ -77,9 +88,15 @@ fun WelcomeScene(
     if (vm.authState.isKnownLoggedIn) {
         SideEffect(goBack)
     }
+    val scope = rememberCoroutineScope()
     WelcomePage(
-        onClickLogin = { navigator.navigateBangumiOAuthOrTokenAuth() },
-        onClickGuest = goBack,
+        onClickLogin = { vm.authState.launchAuthorize(navigator) },
+        onClickGuest = {
+            scope.launch {
+                vm.logInAsGuest() // needs to be done before goBack. goBack cancels the oauth request.
+                goBack()
+            }
+        },
         modifier = modifier,
     )
 }

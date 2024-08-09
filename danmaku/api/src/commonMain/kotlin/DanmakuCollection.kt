@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import me.him188.ani.danmaku.ui.DanmakuFilterConfig
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -65,14 +68,13 @@ fun emptyDanmakuCollection(): DanmakuCollection {
 
 class TimeBasedDanmakuSession private constructor(
     /**
-     * List of danmaku. Must be sorted by playTime, and must not change after construction.
+     * 一个[Danmaku] list. 必须根据 [DanmakuInfo.playTime] 排序且创建后不可更改，是一条动漫完整的弹幕列表.
      */
     private val list: List<Danmaku>,
     private val shiftMillis: Long = 0,
     private val flowCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuCollection {
     override val totalCount: Flow<Int?> = flowOf(list.size)
-
     companion object {
         fun create(
             sequence: Sequence<Danmaku>,

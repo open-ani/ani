@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
@@ -70,7 +71,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                 if (regex.isBlank()) {
                     showAdd = false
                 } else {
-                    if (!isValidRegex(regex)){
+                    if (!isValidRegex(regex)) {
                         errorMessage = "正则输入法不正确"
                     } else {
                         onAdd(
@@ -133,6 +134,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
 }
 
 private const val DISABLED_ALPHA = 0.38f
+
 @Composable
 internal fun RegexFilterItem(
     item: DanmakuRegexFilter,

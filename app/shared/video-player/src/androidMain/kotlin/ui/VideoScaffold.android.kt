@@ -23,6 +23,7 @@ import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
@@ -41,18 +42,42 @@ private fun PreviewVideoScaffold() {
     PreviewVideoScaffoldImpl(expanded = false)
 }
 
+@Preview("Landscape Fullscreen - Light", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_NO)
+@Preview("Landscape Fullscreen - Dark", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
+@Composable
+private fun PreviewDetachedSliderFullscreen() {
+    PreviewVideoScaffoldImpl(expanded = true, controllerVisibility = ControllerVisibility.DetachedSliderOnly)
+}
+
+@Preview("Portrait - Light", heightDp = 300, device = Devices.PHONE, uiMode = UI_MODE_NIGHT_NO)
+@Preview("Portrait - Dark", heightDp = 300, device = Devices.PHONE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
+@Composable
+private fun PreviewDetachedSlider() {
+    PreviewVideoScaffoldImpl(expanded = false, controllerVisibility = ControllerVisibility.DetachedSliderOnly)
+}
+
 @Composable
 private fun PreviewVideoScaffoldImpl(
     expanded: Boolean,
+    controllerVisibility: ControllerVisibility = ControllerVisibility.Visible
 ) = ProvideCompositionLocalsForPreview {
     val playerState = remember {
         DummyPlayerState()
     }
 
-    val controllerState = rememberVideoControllerState(initialVisible = true)
+    val controllerState = rememberVideoControllerState(initialVisibility = controllerVisibility)
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
+    val progressSliderState = rememberMediaProgressSliderState(
+        playerState,
+        onPreview = {
+            // not yet supported
+        },
+        onPreviewFinished = {
+            playerState.seekTo(it)
+        },
+    )
     EpisodeVideoImpl(
         playerState = playerState,
         expanded = expanded,
@@ -99,6 +124,14 @@ private fun PreviewVideoScaffoldImpl(
         onShowMediaSelector = { isMediaSelectorVisible = true },
         onShowSelectEpisode = { isEpisodeSelectorVisible = true },
         onClickScreenshot = {},
+        detachedProgressSlider = {
+            PlayerControllerDefaults.MediaProgressSlider(
+                progressSliderState,
+                playerState,
+                enabled = false,
+            )
+        },
+        progressSliderState = progressSliderState,
     )
 
 //    VideoScaffold(

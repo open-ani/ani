@@ -3,6 +3,7 @@ package me.him188.ani.app.data.repository
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.danmaku.ui.DanmakuRegexFilter
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 
 interface DanmakuRegexFilterRepository : Repository {
 
