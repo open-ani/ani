@@ -497,7 +497,6 @@ private fun EpisodeVideo(
              * 是否设置了暂停
              */
             var didSetPaused by rememberSaveable { mutableStateOf(false) }
-
             DanmakuEditor(
                 text = videoDanmakuState.danmakuEditorText,
                 onTextChange = { videoDanmakuState.danmakuEditorText = it },

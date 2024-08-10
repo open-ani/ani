@@ -607,6 +607,7 @@ fun VideoGestureHost(
                                     onTogglePauseResumeState()
                                 }
                                 if (family.clickToToggleController) {
+                                    focusManager.clearFocus()
                                     controllerState.toggleFullVisible()
                                 }
                             }
