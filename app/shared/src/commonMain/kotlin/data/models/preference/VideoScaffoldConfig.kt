@@ -57,7 +57,7 @@ data class VideoScaffoldConfig(
     /**
      * 跳过 OP 和 ED
      */
-    val autoSkipOpEd: Boolean = false,
+    val autoSkipOpEdExperimental: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {

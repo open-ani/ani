@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
@@ -607,7 +609,7 @@ private class EpisodeViewModelImpl(
         // 跳过 OP 和 ED
         launchInBackground {
             settingsRepository.videoScaffoldConfig.flow
-                .map { it.autoSkipOpEd }
+                .map { it.autoSkipOpEdExperimental }
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->
@@ -617,19 +619,19 @@ private class EpisodeViewModelImpl(
 
                     mediaFetchSession.collectLatest {
                         // 更换 ep 时重置
-                        launchInMain {
+                        withContext(Dispatchers.Main) {
                             playerFloatingTipsState.enableSkipOpEd = true
                         }
                         
                         combine(
                             playerState.currentPositionMillis.sampleWithInitial(1000),
-                            playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
+                            playerState.videoProperties.map { it?.durationMillis }.debounce(1000).filterNotNull(),
                             playerState.chapters,
                             episodeId,
-                            episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
+                            episodeCollectionsFlow,
                         ) { pos, max, chapters, epId, collections ->
                             // 第一集不跳过
-                            if (max == null || collections.indexOfFirst { it.episodeId == epId } == 0) return@combine
+                            if (collections.getOrNull(0)?.episode?.id == epId) return@combine
                             playerFloatingTipsState.calculateTargetTime(chapters, pos, max)?.let {
                                 playerState.seekTo(it)
                             }
