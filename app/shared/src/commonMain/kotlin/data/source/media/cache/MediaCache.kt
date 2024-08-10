@@ -107,18 +107,11 @@ interface MediaCache {
     /**
      * 从引擎中关闭此缓存任务, 关闭后不能再开启.
      *
-     * 若当前状态不支持暂停, 例如已经被删除, 则忽略本次请求, 不会抛出异常.
-     */
-    suspend fun close()
-
-    /**
-     * 从引擎中关闭此缓存任务, 关闭后不能再开启.
-     *
      * 此函数会等待此资源完全关闭并释放资源后返回.
      *
      * 若当前状态不支持暂停, 例如已经被删除, 则忽略本次请求, 不会抛出异常.
      */
-    suspend fun closeBlocking()
+    suspend fun close()
 
     /**
      * 请求恢复下载.
@@ -167,10 +160,6 @@ open class TestMediaCache(
 
     override suspend fun close() {
         println("stop")
-    }
-
-    override suspend fun closeBlocking() {
-        println("stop blocking")
     }
 
     override suspend fun resume() {

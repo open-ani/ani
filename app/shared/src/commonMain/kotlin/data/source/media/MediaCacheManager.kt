@@ -6,10 +6,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +24,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.source.media.cache.sum
@@ -172,22 +170,12 @@ abstract class MediaCacheManager(
         return false
     }
 
-    suspend fun closeAllCaches() {
+    suspend fun closeAllCaches() = supervisorScope {
         for (storage in enabledStorages.first()) {
             for (mediaCache in storage.listFlow.first()) {
                 mediaCache.close()
             }
         }
-    }
-
-    suspend fun closeAllCachesBlocking() {
-        val deferred = mutableListOf<Deferred<Unit>>()
-        for (storage in enabledStorages.first()) {
-            for (mediaCache in storage.listFlow.first()) {
-                deferred.add(backgroundScope.async { mediaCache.closeBlocking() })
-            }
-        }
-        deferred.awaitAll()
     }
 
     init {

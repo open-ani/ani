@@ -239,10 +239,7 @@ fun AboutTab(
                         Text(
                             "$name: $value",
                             Modifier.fillMaxWidth().clickable {
-                                value?.let {
-                                    clipboard.setText(AnnotatedString(it))
-                                    toaster.toast("已复制。")
-                                }
+                                value?.let { clipboard.setText(AnnotatedString(it)) }
                             },
                             style = MaterialTheme.typography.labelSmall,
                         )
@@ -261,9 +258,9 @@ fun AboutTab(
                     FilledTonalButton(
                         {
                             GlobalScope.launch {
-                                KoinPlatform.getKoin().get<MediaCacheManager>().closeAllCachesBlocking()
+                                KoinPlatform.getKoin().get<MediaCacheManager>().closeAllCaches()
                                 withContext(Dispatchers.Main) {
-                                    toaster.toast("已关闭所有缓存任务。")
+                                    toaster.toast("已关闭所有缓存任务")
                                 }
                             }
                         },

@@ -134,7 +134,9 @@ internal class ExoPlayerState @UiThread constructor(
             data,
             releaseResource = {
                 file.close()
-                data.close()
+                backgroundScope.launch {
+                    data.close()
+                }
             },
             setMedia = {
                 player.setMediaSource(factory.createMediaSource(MediaItem.fromUri(source.uri)))

@@ -111,14 +111,9 @@ class AnitorrentDownloadSession(
         inner class EntryHandle : AbstractTorrentFileHandle() {
             override val entry get() = this@AnitorrentEntry
 
-            override fun closeImpl() {
+            override suspend fun closeImpl() {
                 openFiles.remove(this)
                 closeIfNotInUse()
-            }
-
-            override suspend fun closeBlockingImpl() {
-                openFiles.remove(this)
-                closeIfNotInUseBlocking()
             }
 
             override fun resumeImpl(priority: FilePriority) {
@@ -126,7 +121,7 @@ class AnitorrentDownloadSession(
                 handle.resume()
             }
 
-            override fun closeAndDelete() {
+            override suspend fun closeAndDelete() {
                 close()
                 deleteEntireTorrentIfNotInUse()
             }
@@ -397,38 +392,25 @@ class AnitorrentDownloadSession(
     }
 
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
-
-    private fun preClose() = synchronized(this) {
-        if (closed) {
-            return
-        }
-        state.value = TorrentDownloadState.Closed
-        closed = true
-    }
     
     private var closed = false
-    override fun close() {
-        if (closed) {
-            return
-        }
-        preClose()
-        logger.info { "[$handleId] closing" }
-
-        onClose(this)
-        scope.cancel()
-        onPostClose(this)
-    }
-
-    override suspend fun closeBlocking() {
-        if (closed) {
+    override suspend fun close() {
+        if (closed) { // 多次调用此 close 会等待同一个 deferred，完成时一起返回
             closeBlockingDeferred?.await()
             return
         }
         val currentDeferred = CompletableDeferred<Unit>()
         closeBlockingDeferred = currentDeferred
-        preClose()
 
-        logger.info { "[$handleId] block closing" }
+        synchronized(this) {
+            if (closed) {
+                return
+            }
+            state.value = TorrentDownloadState.Closed
+            closed = true
+        }
+
+        logger.info { "[$handleId] closing" }
         onClose(this)
         currentDeferred.await() // 收到 on_torrent_removed 事件时返回
         scope.cancel()
@@ -440,15 +422,9 @@ class AnitorrentDownloadSession(
         closeBlockingDeferred?.complete(Unit)
     }
 
-    override fun closeIfNotInUse() {
+    override suspend fun closeIfNotInUse() {
         if (openFiles.isEmpty()) {
             close()
-        }
-    }
-
-    override suspend fun closeIfNotInUseBlocking() {
-        if (openFiles.isEmpty()) {
-            closeBlocking()
         }
     }
 

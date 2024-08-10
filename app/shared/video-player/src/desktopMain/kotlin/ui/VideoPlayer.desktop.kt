@@ -207,7 +207,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             },
             releaseResource = {
                 input.close()
-                data.close()
+                backgroundScope.launch {
+                    data.close()
+                }
             },
         )
     }

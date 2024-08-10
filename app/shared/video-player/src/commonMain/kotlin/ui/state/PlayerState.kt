@@ -398,7 +398,9 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
             source,
             data,
             releaseResource = {
-                data.close()
+                backgroundScope.launch {
+                    data.close()
+                }
             },
         )
     }

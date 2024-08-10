@@ -24,7 +24,7 @@ class TorrentVideoData(
 
     override suspend fun createInput(): SeekableInput = entry.createInput()
 
-    override fun close() {
+    override suspend fun close() {
         handle.close()
     }
 
