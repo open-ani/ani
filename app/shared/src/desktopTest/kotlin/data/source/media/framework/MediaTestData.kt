@@ -3,6 +3,7 @@ package me.him188.ani.app.data.source.media.framework
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
+import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -17,10 +18,11 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
+import me.him188.ani.datasources.dmhy.DmhyMediaSource
 
 
-const val SOURCE_DMHY = "dmhy"
-const val SOURCE_ACG = "acg.rip"
+const val SOURCE_DMHY = DmhyMediaSource.ID
+const val SOURCE_ACG = AcgRipMediaSource.ID
 
 // Used by many test, don't change it. 
 // If you want to change it, copy it instead.

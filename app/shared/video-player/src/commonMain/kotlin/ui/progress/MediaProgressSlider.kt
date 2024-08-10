@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -97,9 +98,22 @@ class MediaProgressSliderState(
     val chapters by chapters
 
     private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
+    private val previewRequests = SnapshotStateList<Any>()
 
-    val isPreviewing: Boolean by derivedStateOf {
-        !previewPositionRatio.isNaN()
+    fun setRequestPreview(requester: Any, isPreview: Boolean) {
+        if (isPreview) {
+            previewRequests.add(requester)
+        } else {
+            previewRequests.remove(requester)
+        }
+
+        if (previewRequests.isEmpty()) {
+            finishPreview()
+        }
+    }
+
+    val preview: Boolean by derivedStateOf {
+        previewRequests.isNotEmpty()
     }
 
     /**
@@ -329,7 +343,7 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
-                if (state.isPreviewing) {
+                if (state.preview) {
                     ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
                         previewTimeBackgroundColor = previewTimeBackgroundColor,
