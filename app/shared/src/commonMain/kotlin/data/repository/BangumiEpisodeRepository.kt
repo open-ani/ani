@@ -168,7 +168,7 @@ fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
         type = EpisodeType(this.type),
         name = name,
         nameCn = nameCn,
-        sort = EpisodeSort(this.sort),
+        sort = EpisodeSort(this.sort, this.type),
         airDate = PackedDate.parseFromDate(this.airdate),
         comment = comment,
         duration = duration,
