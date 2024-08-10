@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.Subtitle
@@ -80,10 +81,21 @@ class IkarosClient(
         return baseUrl + url
     }
 
-    suspend fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
+    suspend fun subjectDetails2SizedSource(
+        subjectDetails: IkarosSubjectDetails,
+        episodeSort: EpisodeSort
+    ): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
-        val episode = episodes.find { ep -> ep.sequence == seq && "MAIN" == ep.group }
+        var ikarosEpisodeGroup = "MAIN";
+        var ikarosEpisodeSequence = episodeSort.number ?: 1
+        if (episodeSort is EpisodeSort.Special) {
+            ikarosEpisodeGroup = "SPECIAL_PROMOTION";
+            ikarosEpisodeSequence = episodeSort.toString().substring(2).toFloat()
+        }
+        val episode = episodes.find { ep ->
+            ep.sequence == ikarosEpisodeSequence && ikarosEpisodeGroup == ep.group
+        }
         if (episode?.resources != null && episode.resources.isNotEmpty()) {
             for (epRes in episode.resources) {
                 val media = epRes?.let {
