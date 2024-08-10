@@ -9,15 +9,7 @@ import platform.Foundation.dataWithContentsOfFile
 import platform.posix.memcpy
 
 actual fun Any.readTestResourceAsString(path: String): String {
-    // pathParts looks like 
-    // [, , test_case_input_one, bin]
-    val p = NSBundle.mainBundle
-        .pathForResource(
-            "resources/${path.substringBeforeLast(".").removePrefix("/")}",
-            path.substringAfterLast("."),
-        )
-    val data = NSData.dataWithContentsOfFile(p!!)
-    return data!!.toByteArray().decodeToString()
+    return readTestResourceAsByteArray(path).decodeToString()
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -27,4 +19,16 @@ internal fun NSData.toByteArray(): ByteArray {
             memcpy(it.addressOf(0), bytes, length)
         }
     }
+}
+
+actual fun Any.readTestResourceAsByteArray(path: String): ByteArray {
+    // pathParts looks like 
+    // [, , test_case_input_one, bin]
+    val p = NSBundle.mainBundle
+        .pathForResource(
+            "resources/${path.substringBeforeLast(".").removePrefix("/")}",
+            path.substringAfterLast("."),
+        )
+    val data = NSData.dataWithContentsOfFile(p!!)
+    return data!!.toByteArray()
 }
