@@ -21,12 +21,15 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
 import androidx.media3.exoplayer.trackselection.TrackSelection
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -361,7 +364,7 @@ internal class ExoPlayerState @UiThread constructor(
         TODO("Not yet implemented")
     }
 
-    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList())
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(persistentListOf())
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition
