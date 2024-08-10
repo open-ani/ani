@@ -185,6 +185,7 @@ class AnitorrentDownloadSession(
      * @see useTorrentInfoOrLaunch
      */
     inner class TorrentInfo(
+        val name: String,
         val allPiecesInTorrent: List<Piece>,
         val pieceLength: Int,
         val entries: List<AnitorrentEntry>,
@@ -287,7 +288,12 @@ class AnitorrentDownloadSession(
             }
             list
         }
-        val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
+        val value = TorrentInfo(
+            name = info.name,
+            allPiecesInTorrent,
+            pieceLength = info.piece_length,
+            entries,
+        )
         logger.info { "[$handleId] Got torrent info: $value" }
         this.overallStats.totalSize.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
@@ -393,6 +399,8 @@ class AnitorrentDownloadSession(
         logger.info { "[$handleId] saving resume data to: ${fastResumeFile.absolutePath}" }
         data.save_to_file(fastResumeFile.absolutePath)
     }
+
+    override suspend fun getName(): String = this.actualTorrentInfo.await().name
 
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
 

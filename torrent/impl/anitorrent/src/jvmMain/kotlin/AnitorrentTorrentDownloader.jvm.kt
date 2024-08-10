@@ -237,10 +237,10 @@ class AnitorrentTorrentDownloader(
             } else {
                 // torrent_removed_alerts 事件处理时其 handle 可能已经无效
                 // 但是它的 torrent_name 还是有效的
-                // 在这里 runBlocking 是没问题的，因为 on_torrent_removed 一定只会在 actualTorrentInfo 之后调用
+                // 在这里 runBlocking 是没问题的, 因为 on_torrent_removed 一定只会在 actualTorrentInfo 之后调用
                 runBlocking(Dispatchers.IO) {
                     openSessions.value.values.firstOrNull { session ->
-                        session.getFiles().any { it.pathInTorrent == torrentName }
+                        session.getName() == torrentName 
                     }
                 }?.onTorrentRemoved()
             }

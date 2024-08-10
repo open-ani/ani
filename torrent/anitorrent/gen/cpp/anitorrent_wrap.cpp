@@ -2043,6 +2043,42 @@ SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anito
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1info_1t_1name_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+  anilt::torrent_info_t *arg1 = (anilt::torrent_info_t *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_info_t **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return ;
+  }
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return ;
+  std::string arg2_str(arg2_pstr);
+  arg2 = &arg2_str;
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  if (arg1) (arg1)->name = *arg2;
+}
+
+
+SWIGEXPORT jstring JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1info_1t_1name_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  anilt::torrent_info_t *arg1 = (anilt::torrent_info_t *) 0 ;
+  std::string *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_info_t **)&jarg1; 
+  result = (std::string *) & ((arg1)->name);
+  jresult = jenv->NewStringUTF(result->c_str()); 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1info_1t_1total_1size_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   anilt::torrent_info_t *arg1 = (anilt::torrent_info_t *) 0 ;
   int64_t arg2 ;

@@ -23,6 +23,8 @@ public class anitorrentJNI {
   public final static native long new_torrent_file_t();
   public final static native void delete_torrent_file_t(long jarg1);
   public final static native long new_torrent_info_t();
+  public final static native void torrent_info_t_name_set(long jarg1, torrent_info_t jarg1_, String jarg2);
+  public final static native String torrent_info_t_name_get(long jarg1, torrent_info_t jarg1_);
   public final static native void torrent_info_t_total_size_set(long jarg1, torrent_info_t jarg1_, long jarg2);
   public final static native long torrent_info_t_total_size_get(long jarg1, torrent_info_t jarg1_);
   public final static native void torrent_info_t_num_pieces_set(long jarg1, torrent_info_t jarg1_, int jarg2);

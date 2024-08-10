@@ -17,6 +17,11 @@ interface TorrentDownloadSession {
     val saveDirectory: SystemPath
 
     /**
+     * 该下载任务的名称
+     */
+    suspend fun getName(): String
+
+    /**
      * 获取该种子资源中的所有文件.
      */
     suspend fun getFiles(): List<TorrentFileEntry>
