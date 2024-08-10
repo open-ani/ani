@@ -195,6 +195,7 @@ abstract class AbstractTorrentFileEntry(
             if (closed) return
 
             synchronized(this) {
+                if (closed) return
                 closed = true
 
                 logger.info { "[$torrentId] Close handle $pathInTorrent, remove priority request" }

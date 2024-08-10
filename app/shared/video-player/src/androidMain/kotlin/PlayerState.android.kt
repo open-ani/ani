@@ -26,6 +26,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,7 +138,7 @@ internal class ExoPlayerState @UiThread constructor(
             data,
             releaseResource = {
                 file.close()
-                backgroundScope.launch {
+                backgroundScope.launch(NonCancellable) {
                     data.close()
                 }
             },
