@@ -173,7 +173,7 @@ abstract class MediaCacheManager(
     suspend fun closeAllCaches() = supervisorScope {
         for (storage in enabledStorages.first()) {
             for (mediaCache in storage.listFlow.first()) {
-                mediaCache.close()
+                launch { mediaCache.close() }
             }
         }
     }
