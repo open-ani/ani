@@ -385,7 +385,7 @@ fun interface PlayerStateFactory {
  * For previewing
  */
 class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
-    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PLAYING)
     override fun stopImpl() {
 
     }
