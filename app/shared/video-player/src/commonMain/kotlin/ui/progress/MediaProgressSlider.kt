@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -67,6 +68,8 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+
+internal const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
 
 /**
  * 播放器进度滑块的状态.
@@ -436,6 +439,7 @@ fun ProgressSliderPreviewPopup(
     ) {
         Box(
             modifier = modifier
+                .testTag(TAG_PROGRESS_SLIDER_PREVIEW_POPUP)
                 .clip(shape = CircleShape)
                 .background(previewTimeBackgroundColor)
                 .animateContentSize(),

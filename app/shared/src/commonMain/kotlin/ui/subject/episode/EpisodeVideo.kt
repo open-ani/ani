@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -72,6 +73,8 @@ import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
+
+internal const val TAG_EPISODE_VIDEO_TOP_BAR = "EpisodeVideoTopBar"
 
 /**
  * 剧集详情页面顶部的视频控件.
@@ -118,6 +121,7 @@ internal fun EpisodeVideoImpl(
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
+                Modifier.testTag(TAG_EPISODE_VIDEO_TOP_BAR),
                 title = if (expanded) {
                     { title() }
                 } else {
