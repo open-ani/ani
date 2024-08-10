@@ -51,9 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.platform.isMobile
@@ -159,9 +156,12 @@ fun rememberMediaProgressSliderState(
     onPreviewFinished: (positionMillis: Long) -> Unit,
 ): MediaProgressSliderState {
     val currentPosition by playerState.currentPositionMillis.collectAsStateWithLifecycle()
-    val totalDuration by remember(playerState) {
-        playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(0L)
+    val videoProperties by playerState.videoProperties.collectAsStateWithLifecycle()
+    val totalDuration by remember {
+        derivedStateOf {
+            videoProperties?.durationMillis ?: 0L
+        }
+    }
 
     val onPreviewUpdated by rememberUpdatedState(onPreview)
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
