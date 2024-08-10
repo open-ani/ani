@@ -11,10 +11,10 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class DefaultMediaSelectorTest : AbstractDefaultMediaSelectorTest() {

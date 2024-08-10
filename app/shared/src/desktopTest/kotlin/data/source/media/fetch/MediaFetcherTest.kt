@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.source.media.fetch
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
@@ -16,6 +15,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
 import me.him188.ani.test.assertCoroutineSuspends
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
@@ -451,8 +451,8 @@ class MediaFetcherTest {
 
     @Test
     fun `double awaitCompletedResults`() = runTest {
-        val firstFetchCalled = atomic(0)
-        val secondFetchCalled = atomic(0)
+        val firstFetchCalled = AtomicInteger(0)
+        val secondFetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -481,18 +481,18 @@ class MediaFetcherTest {
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Succeed>(res1.state.value)
         assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
-        assertEquals(1, firstFetchCalled.value)
-        assertEquals(1, secondFetchCalled.value)
+        assertEquals(1, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Succeed>(res1.state.value)
         assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
-        assertEquals(1, firstFetchCalled.value)
-        assertEquals(1, secondFetchCalled.value)
+        assertEquals(1, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
     }
 
     @Test
     fun `fetch is called once and then cached`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -508,16 +508,16 @@ class MediaFetcherTest {
         val res = session.mediaSourceResults.first()
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
         session.awaitCompletedResults()
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
         res.results.first()
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
     }
 
     @Test
     fun `restart calls fetch again`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -533,15 +533,15 @@ class MediaFetcherTest {
         val res = session.mediaSourceResults.first()
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
         res.restart()
         session.awaitCompletedResults()
-        assertEquals(2, fetchCalled.value)
+        assertEquals(2, fetchCalled.get())
     }
 
     @Test
     fun `restart resets state to be Idle`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -557,12 +557,12 @@ class MediaFetcherTest {
         val res = session.mediaSourceResults.first()
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
         res.restart()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Completed>(res.state.value)
-        assertEquals(2, fetchCalled.value)
+        assertEquals(2, fetchCalled.get())
     }
 
     @Test
@@ -590,7 +590,7 @@ class MediaFetcherTest {
 
     @Test
     fun `new result is made available to cumulativeResults`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -622,8 +622,8 @@ class MediaFetcherTest {
 
     @Test
     fun `restarting one source does not restart other completed ones`() = runTest {
-        val firstFetchCalled = atomic(0)
-        val secondFetchCalled = atomic(0)
+        val firstFetchCalled = AtomicInteger(0)
+        val secondFetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -654,23 +654,23 @@ class MediaFetcherTest {
         assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
         assertEquals(2, res1.results.first().size)
         assertEquals(3, res2.results.first().size)
-        assertEquals(1, firstFetchCalled.value)
-        assertEquals(1, secondFetchCalled.value)
+        assertEquals(1, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
 
         res1.restart()
         assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
-        assertEquals(1, firstFetchCalled.value)
-        assertEquals(1, secondFetchCalled.value)
+        assertEquals(1, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
 
         assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
         assertEquals(3, res2.results.first().size)
-        assertEquals(1, secondFetchCalled.value)
+        assertEquals(1, secondFetchCalled.get())
 
         session.awaitCompletedResults()
         assertIs<MediaSourceFetchState.Succeed>(res2.state.value)
 
-        assertEquals(2, firstFetchCalled.value)
-        assertEquals(1, secondFetchCalled.value)
+        assertEquals(2, firstFetchCalled.get())
+        assertEquals(1, secondFetchCalled.get())
 
         assertEquals(2, res1.results.first().size)
         assertEquals(3, res2.results.first().size)
@@ -683,7 +683,7 @@ class MediaFetcherTest {
 
     @Test
     fun `enable disabled source before collecting result`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -707,7 +707,7 @@ class MediaFetcherTest {
 
     @Test
     fun `enable twice does not restart`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -729,12 +729,12 @@ class MediaFetcherTest {
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
         res.enable()
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
     }
 
     @Test
-    fun `enable restarted does not restart`() = runTest {
-        val fetchCalled = atomic(0)
+    fun `enable restarted does not resatrt`() = runTest {
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -758,12 +758,12 @@ class MediaFetcherTest {
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
         assertEquals(5, session.awaitCompletedResults().size)
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
     }
 
     @Test
     fun `enable disabled source after collecting result`() = runTest {
-        val fetchCalled = atomic(0)
+        val fetchCalled = AtomicInteger(0)
         val session = createFetcher(
             createTestMediaSourceInstance(
                 TestHttpMediaSource(
@@ -780,15 +780,15 @@ class MediaFetcherTest {
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
         assertIs<MediaSourceFetchState.Disabled>(res.state.value)
-        assertEquals(0, fetchCalled.value)
+        assertEquals(0, fetchCalled.get())
         assertEquals(0, session.awaitCompletedResults().size)
-        assertEquals(0, fetchCalled.value)
+        assertEquals(0, fetchCalled.get())
         assertIs<MediaSourceFetchState.Disabled>(res.state.value)
 
         res.enable()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
         assertEquals(5, session.awaitCompletedResults().size)
-        assertEquals(1, fetchCalled.value)
+        assertEquals(1, fetchCalled.get())
         assertIs<MediaSourceFetchState.Succeed>(res.state.value)
     }
 }

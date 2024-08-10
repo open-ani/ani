@@ -221,7 +221,7 @@ class EpisodeCacheRequesterTest {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    fun `SelectMedia select - cancel - and select same`() = runTest {
+    fun `SelectMedia select, cancel, and select same`() = runTest {
         val request = createRequest()
         requester.request(request).run {
             select(mediaList.value.first())
@@ -232,7 +232,7 @@ class EpisodeCacheRequesterTest {
     }
 
     @Test
-    fun `SelectMedia select - cancel - and select different`() = runTest {
+    fun `SelectMedia select, cancel, and select different`() = runTest {
         val request = createRequest()
         requester.request(request).run {
             select(mediaList.value.first())
@@ -276,7 +276,7 @@ class EpisodeCacheRequesterTest {
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
-            publishedTime = 0,
+            publishedTime = System.currentTimeMillis(),
             episodeRange = EpisodeRange.single(EpisodeSort(1)), // note here: single
             properties = MediaProperties(
                 subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
@@ -322,7 +322,7 @@ class EpisodeCacheRequesterTest {
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
-            publishedTime = 0,
+            publishedTime = System.currentTimeMillis(),
             episodeRange = EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)),
             properties = MediaProperties(
                 subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
@@ -368,7 +368,7 @@ class EpisodeCacheRequesterTest {
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
-            publishedTime = 0,
+            publishedTime = System.currentTimeMillis(),
             episodeRange = epRange,
             properties = MediaProperties(
                 subtitleLanguageIds = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
@@ -572,7 +572,7 @@ class EpisodeCacheRequesterTest {
     }
 
     @Test
-    fun `SelectStorage trySelectByCache selects one if it is in storage - shuffled`() = runTest {
+    fun `SelectStorage trySelectByCache selects one if it is in storage, shuffled`() = runTest {
         val request = createRequest()
         val originalMedia = createDefaultMedia("$SOURCE_DMHY.1", EpisodeRange.range(EpisodeSort(1), EpisodeSort(12)))
         val mediaCache = createMediaCache(originalMedia, EpisodeSort(1), EpisodeSort(1))

@@ -251,7 +251,7 @@ internal fun EpisodeVideoImpl(
                 },
                 progressSlider = {
                     PlayerControllerDefaults.MediaProgressSlider(
-                        progressSliderState, playerState,
+                        progressSliderState, cacheProgressState = playerState.cacheProgress,
                     )
                 },
                 danmakuEditor = danmakuEditor,

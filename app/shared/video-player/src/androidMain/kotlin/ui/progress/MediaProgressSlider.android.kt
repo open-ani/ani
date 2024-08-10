@@ -12,11 +12,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import me.him188.ani.app.tools.torrent.TorrentMediaCacheProgressState
 import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -57,7 +59,9 @@ fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview
             MediaProgressSlider(
                 remember {
                     MediaProgressSliderState(
-                        { currentPositionMillis }, { totalDurationMillis },
+                        currentPositionMillis = { currentPositionMillis },
+                        totalDurationMillis = { totalDurationMillis },
+                        chapters = stateOf(persistentListOf()),
                         onPreview = {},
                         onPreviewFinished = { currentPositionMillis = it },
                     )
@@ -94,6 +98,7 @@ fun PreviewMediaProgressSliderNonConsecutiveCacheImpl(
                     MediaProgressSliderState(
                         currentPositionMillis = { 2000 },
                         totalDurationMillis = { 30_000 },
+                        chapters = stateOf(persistentListOf()),
                         onPreview = {},
                         onPreviewFinished = { },
                     )

@@ -6,6 +6,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -157,7 +159,7 @@ interface PlayerState {
 
     fun saveScreenshotFile(filename: String)
 
-    val chapters: StateFlow<List<Chapter>>
+    val chapters: StateFlow<ImmutableList<Chapter>>
 }
 
 @Immutable
@@ -457,8 +459,8 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
     override fun saveScreenshotFile(filename: String) {
     }
 
-    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(
-        listOf(
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(
+        persistentListOf(
             Chapter("chapter1", durationMillis = 90_000L, 0L),
             Chapter("chapter2", durationMillis = 5_000L, 90_000L),
         ),
