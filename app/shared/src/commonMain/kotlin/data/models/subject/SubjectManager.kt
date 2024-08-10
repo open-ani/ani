@@ -562,11 +562,12 @@ class SubjectManagerImpl(
     }
 
     private suspend fun fetchEpisodeCollections(subjectId: Int): List<EpisodeCollection> {
+        val type: BangumiEpType? = if (showAllEpisodes.first()) null else BangumiEpType.MainStory
         // 查收藏状态, 没收藏就查剧集, 认为所有剧集都没有收藏
-        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, BangumiEpType.MainStory)
+        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, type)
             .let { collections ->
                 collections?.toList()?.map { it.toEpisodeCollection() }
-                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, BangumiEpType.MainStory)
+                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, type)
                         .toList()
                         .map {
                             EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)
