@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.runtime.snapshots.Snapshot
@@ -35,6 +37,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import org.junit.jupiter.api.TestInstance
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
@@ -44,6 +47,7 @@ import kotlin.test.assertIs
 /**
  * @see EpisodeCacheState
  */
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class EpisodeCacheStateTest {
     private val infoFlow = MutableStateFlow(
         EpisodeCacheInfo(

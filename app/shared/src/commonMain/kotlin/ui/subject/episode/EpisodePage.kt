@@ -565,7 +565,7 @@ private fun EpisodeVideo(
         detachedProgressSlider = {
             PlayerControllerDefaults.MediaProgressSlider(
                 progressSliderState,
-                vm.playerState,
+                cacheProgressState = vm.playerState.cacheProgress,
                 enabled = false,
             )
         },

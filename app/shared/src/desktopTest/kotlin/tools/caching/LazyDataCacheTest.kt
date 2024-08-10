@@ -16,7 +16,7 @@ import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
-import kotlin.test.Ignore
+import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -131,7 +131,7 @@ class LazyDataCacheTest {
         assertEquals(true, requested)
     }
 
-    @Ignore
+    @Disabled
     @Test
     fun `source created on allData`() = runTest {
         var requested = false
@@ -179,7 +179,7 @@ class LazyDataCacheTest {
     // allData
     ///////////////////////////////////////////////////////////////////////////
 
-    @Ignore
+    @Disabled
     @Test
     fun `allData emits initial empty list`() = runTest {
         val cache = LazyDataCache(
@@ -193,7 +193,7 @@ class LazyDataCacheTest {
         assertEquals(emptyList(), cache.allDataFlow.first())
     }
 
-    @Ignore
+    @Disabled
     @Test
     fun `allData emits first page`() = runTest {
         val cache = LazyDataCache(
@@ -207,7 +207,7 @@ class LazyDataCacheTest {
         assertEquals(listOf(1, 2, 3), cache.allDataFlow.drop(1).first())
     }
 
-    @Ignore // allDataFlow 是异步的, 有时候 test 会判断错误
+    @Disabled // allDataFlow 是异步的, 有时候 test 会判断错误
     @Test
     fun `allData emits second page`() = runTest {
         val cache = LazyDataCache(
