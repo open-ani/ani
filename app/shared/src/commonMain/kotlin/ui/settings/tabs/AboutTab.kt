@@ -28,10 +28,13 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,20 +65,16 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
 
-    private val activeMediaCacheTasks = kotlin.run {
-        val mediaCacheListFromStorages = cacheManager.storages.map { storageFlow ->
-            storageFlow.flatMapLatest { storage ->
-                if (storage == null) {
-                    return@flatMapLatest emptyFlow()
-                }
-                storage.listFlow
-            }.onStart { emit(emptyList()) }
+    private val activeMediaCacheTasks = cacheManager.storages.map { storageFlow ->
+        storageFlow.flatMapLatest { storage ->
+            if (storage == null) {
+                return@flatMapLatest emptyFlow()
+            }
+            storage.listFlow
         }
-
-        combine(mediaCacheListFromStorages) { lists ->
-            lists.asSequence().flatten().map { it.isValid() }.toList().size
-        }
-    }
+            .onStart { emit(emptyList()) }
+            .map { list -> list.count { it.isValid() } }
+    }.asFlow()
 
     val debugInfo = debugInfoFlow().shareInBackground(started = SharingStarted.Eagerly)
 
@@ -96,7 +95,8 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
                 }
                 put("processingRequest.state", processingRequest.toString())
                 put("sessionManager.isSessionValid", isSessionValid.toString())
-                put("mediaCacheManager.validTasks", activeTasks.toString())
+                val validTaskCount = activeTasks.fold(0) { acc, curr -> acc + curr }
+                put("mediaCacheManager.validTasks", validTaskCount.toString())
             },
         )
     }
