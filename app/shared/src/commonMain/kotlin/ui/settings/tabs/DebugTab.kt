@@ -47,5 +47,19 @@ fun DebugTab(
                 description = { Text("已开启调试模式，点击关闭") },
             )
         }
+        Group(
+            title = { Text("条目选集") },
+            useThinHeader = true,
+        ) {
+            SwitchItem(
+                checked = debugSettings.showAllEpisodes,
+                onCheckedChange = { checked ->
+                    vm.debugSettings.update(debugSettings.copy(showAllEpisodes = checked))
+                },
+                title = { Text("显示所有剧集") },
+                Modifier.placeholder(vm.debugSettings.loading),
+                description = { Text("显示所有剧集，包括SP、OP、ED等，目前仅部分在线源支持，请谨慎启用") },
+            )
+        }
     }
 }

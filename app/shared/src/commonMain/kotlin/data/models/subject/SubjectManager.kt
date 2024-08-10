@@ -28,10 +28,12 @@ import me.him188.ani.app.data.models.episode.EpisodeCollections
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
 import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.unauthorized
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repository.toEpisodeCollection
 import me.him188.ani.app.data.repository.toEpisodeInfo
@@ -85,6 +87,13 @@ abstract class SubjectManager {
      * 本地 subject 缓存
      */
     abstract val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollection>>
+
+    /**
+     * 是否显示所有的剧集
+     *
+     * @see DebugSettings.showAllEpisodes
+     */
+    abstract val showAllEpisodes: Flow<Boolean>
 
     /**
      * 获取所有收藏的条目列表
@@ -241,6 +250,7 @@ class SubjectManagerImpl(
 ) : KoinComponent, SubjectManager() {
     private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
     private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
+    private val settingsRepository by inject<SettingsRepository>()
 
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
@@ -276,6 +286,9 @@ class SubjectManagerImpl(
                 ),
             )
         }
+
+    override val showAllEpisodes: Flow<Boolean> = settingsRepository.debugSettings.flow.map { it.showAllEpisodes }
+
 
     override fun subjectCollectionFlow(subjectId: Int, contentPolicy: ContentPolicy): Flow<SubjectCollection?> {
         return flow {
