@@ -108,6 +108,7 @@ configure<KotlinMultiplatformExtension> {
             sourceSet.dependencies {
                 // https://developer.android.com/develop/ui/compose/testing#setup
                 implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
+                implementation("androidx.compose.ui:ui-test-manifest:1.6.8")
             }
         }
 
