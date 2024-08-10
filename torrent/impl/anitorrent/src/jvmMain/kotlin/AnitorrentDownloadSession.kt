@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.AnitorrentEntry.EntryHandle
 import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
@@ -43,6 +45,7 @@ import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
@@ -412,7 +415,14 @@ class AnitorrentDownloadSession(
 
         logger.info { "[$handleId] closing" }
         onClose(this)
-        currentDeferred.await() // 收到 on_torrent_removed 事件时返回
+        try {
+            withTimeout(30000L) {
+                currentDeferred.await() // 收到 on_torrent_removed 事件时返回
+            }
+        } catch (timeout: TimeoutCancellationException) {
+            logger.warn { "[$handleId] timeout on closing this session, force to mark as closed." }
+            closeBlockingDeferred?.complete(Unit)
+        }
         scope.cancel()
         onPostClose(this)
     }
