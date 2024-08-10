@@ -87,6 +87,7 @@ import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
+import kotlin.time.Duration.Companion.seconds
 
 @Stable
 private fun renderTime(seconds: Int): String {
@@ -392,6 +393,8 @@ enum class GestureFamily(
     )
 }
 
+internal val VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION = 3.seconds
+
 @Composable
 fun VideoGestureHost(
     controllerState: VideoControllerState,
@@ -480,7 +483,7 @@ fun VideoGestureHost(
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
-                                    delay(3000)
+                                    delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
                                     if (controllerState.alwaysOn) return@launch
                                     controllerState.toggleFullVisible(false)
                                 }
