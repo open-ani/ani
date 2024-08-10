@@ -100,6 +100,7 @@ internal fun EpisodeVideoImpl(
     progressSliderState: MediaProgressSliderState,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    danmakuFrozen: Boolean = false,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
@@ -164,7 +165,7 @@ internal fun EpisodeVideoImpl(
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200)),
             ) {
-                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig)
+                DanmakuHost(danmakuHostState, danmakuConfig, Modifier.matchParentSize(), frozen = danmakuFrozen)
             }
         },
         gestureHost = {
@@ -205,6 +206,7 @@ internal fun EpisodeVideoImpl(
                     onClickFullScreen()
                 },
                 onExitFullscreen = onExitFullscreen,
+                isDesktop = currentPlatform.isDesktop(),
             )
         },
         floatingMessage = {
