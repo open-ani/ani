@@ -78,6 +78,9 @@ class DummyMediaCache(
     override suspend fun close() {
     }
 
+    override suspend fun closeBlocking() {
+    }
+
     override suspend fun resume() {
     }
 

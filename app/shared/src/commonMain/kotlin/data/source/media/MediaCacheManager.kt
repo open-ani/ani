@@ -6,7 +6,10 @@ import kotlinx.atomicfu.atomic
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -175,6 +178,16 @@ abstract class MediaCacheManager(
                 mediaCache.close()
             }
         }
+    }
+
+    suspend fun closeAllCachesBlocking() {
+        val deferred = mutableListOf<Deferred<Unit>>()
+        for (storage in enabledStorages.first()) {
+            for (mediaCache in storage.listFlow.first()) {
+                deferred.add(backgroundScope.async { mediaCache.closeBlocking() })
+            }
+        }
+        deferred.awaitAll()
     }
 
     init {

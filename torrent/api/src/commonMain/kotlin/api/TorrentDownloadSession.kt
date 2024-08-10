@@ -23,7 +23,11 @@ interface TorrentDownloadSession : AutoCloseable {
 
     override fun close()
 
+    suspend fun closeBlocking()
+
     fun closeIfNotInUse()
+
+    suspend fun closeIfNotInUseBlocking()
 }
 
 

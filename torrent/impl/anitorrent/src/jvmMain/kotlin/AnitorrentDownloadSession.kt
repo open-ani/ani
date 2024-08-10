@@ -14,6 +14,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.AnitorrentEntry.EntryHandle
+import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
@@ -51,6 +52,7 @@ class AnitorrentDownloadSession(
     override val saveDirectory: SystemPath,
     val fastResumeFile: SystemPath,
     private val onClose: (AnitorrentDownloadSession) -> Unit,
+    private val onPostClose: (AnitorrentDownloadSession) -> Unit,
     private val onDelete: (AnitorrentDownloadSession) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloadSession {
@@ -112,6 +114,11 @@ class AnitorrentDownloadSession(
             override fun closeImpl() {
                 openFiles.remove(this)
                 closeIfNotInUse()
+            }
+
+            override suspend fun closeBlockingImpl() {
+                openFiles.remove(this)
+                closeIfNotInUseBlocking()
             }
 
             override fun resumeImpl(priority: FilePriority) {
@@ -194,6 +201,11 @@ class AnitorrentDownloadSession(
     }
 
     private val actualTorrentInfo = CompletableDeferred<TorrentInfo>()
+
+    /**
+     * 在某些时候 [close] 需要等待此 session 完全关闭，通过 [event_listener_t.on_torrent_removed] 来监听此事件
+     */
+    private var closeBlockingDeferred: CompletableDeferred<Unit>? = null
 
     /**
      * 当 [actualTorrentInfo] 还未完成时的任务队列, 用于延迟执行需要 [TorrentInfo] 的任务.
@@ -386,26 +398,57 @@ class AnitorrentDownloadSession(
 
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
 
+    private fun preClose() = synchronized(this) {
+        if (closed) {
+            return
+        }
+        state.value = TorrentDownloadState.Closed
+        closed = true
+    }
+    
     private var closed = false
     override fun close() {
         if (closed) {
             return
         }
-        synchronized(this) {
-            if (closed) {
-                return
-            }
-            state.value = TorrentDownloadState.Closed
-            closed = true
-        }
-        logger.info { "AnitorrentDownloadSession closing" }
-        scope.cancel()
+        preClose()
+        logger.info { "[$handleId] closing" }
+
         onClose(this)
+        scope.cancel()
+        onPostClose(this)
+    }
+
+    override suspend fun closeBlocking() {
+        if (closed) {
+            closeBlockingDeferred?.await()
+            return
+        }
+        val currentDeferred = CompletableDeferred<Unit>()
+        closeBlockingDeferred = currentDeferred
+        preClose()
+
+        logger.info { "[$handleId] block closing" }
+        onClose(this)
+        currentDeferred.await() // 收到 on_torrent_removed 事件时返回
+        scope.cancel()
+        onPostClose(this)
+    }
+
+    fun onTorrentRemoved() {
+        logger.info { "[$handleId] onTorrentRemoved" }
+        closeBlockingDeferred?.complete(Unit)
     }
 
     override fun closeIfNotInUse() {
         if (openFiles.isEmpty()) {
             close()
+        }
+    }
+
+    override suspend fun closeIfNotInUseBlocking() {
+        if (openFiles.isEmpty()) {
+            closeBlocking()
         }
     }
 

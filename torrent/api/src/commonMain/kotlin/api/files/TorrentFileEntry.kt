@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.api.files
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -11,6 +12,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
+import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
@@ -123,6 +125,15 @@ interface TorrentFileHandle : AutoCloseable {
      */
     override fun close()
 
+    /**
+     * 停止下载并关闭此 [TorrentFileHandle]. 后续将不能再 [resume] 或 [pause] 等.
+     *
+     * 若此 torrent 文件是其背后 [TorrentDownloadSession] 最后一个要关闭的 torrent 文件，则该函数会挂起，
+     * 直到 [TorrentDownloadSession] 完全关闭
+     *
+     */
+    suspend fun closeBlocking()
+
     fun closeAndDelete()
 }
 
@@ -183,9 +194,9 @@ abstract class AbstractTorrentFileEntry(
         @Volatile
         private var closed = false
         private var closeException: Throwable? = null
+        private val closingDeferred by lazy { CompletableDeferred<Unit>() }
 
-        final override fun close(): Unit = synchronized(this) {
-            if (closed) return
+        private inline fun preClose() {
             closed = true
 
             logger.info { "[$torrentId] Close handle $pathInTorrent, remove priority request" }
@@ -194,11 +205,25 @@ abstract class AbstractTorrentFileEntry(
             if (isDebug) {
                 closeException = Exception("Stacktrace for close()")
             }
+        }
 
+        final override fun close(): Unit = synchronized(this) {
+            if (closed) return
+            preClose()
             closeImpl()
         }
 
+
+        final override suspend fun closeBlocking() {
+            if (closed) return closingDeferred.await()
+            preClose()
+            closeBlockingImpl()
+            closingDeferred.complete(Unit)
+        }
+
         protected abstract fun closeImpl()
+
+        protected abstract suspend fun closeBlockingImpl()
 
         final override fun pause() {
             checkClosed()

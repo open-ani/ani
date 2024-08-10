@@ -117,6 +117,8 @@ class event_listener_t { // inherited from Kotlin
 
     virtual void on_file_completed(handle_id_t handle_id, int file_index) {}
 
+    virtual void on_torrent_removed(handle_id_t handle_id, const char *torrent_name) {}
+
     virtual void on_session_stats(handle_id_t handle_id, session_stats_t &stats) {}
 
   private:
