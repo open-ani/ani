@@ -5,3 +5,9 @@ actual fun Any.readTestResourceAsString(path: String): String {
         .getResource(path)!!
         .readText()
 }
+
+actual fun Any.readTestResourceAsByteArray(path: String): ByteArray {
+    return this::class.java
+        .getResource(path)!!
+        .readBytes()
+}
