@@ -159,7 +159,7 @@ open class TestMediaCache(
     }
 
     override suspend fun close() {
-        println("stop")
+        println("close")
     }
 
     override suspend fun resume() {
