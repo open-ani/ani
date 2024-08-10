@@ -30,7 +30,7 @@ fun EpisodeVideoLoadingIndicator(
     optimizeForFullscreen: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val isBuffering by playerState.isBuffering.collectAsStateWithLifecycle(true)
+    val isBuffering by playerState.isBuffering.collectAsStateWithLifecycle(false)
     val state by playerState.state.collectAsStateWithLifecycle()
 
     val speed by remember(playerState) {
