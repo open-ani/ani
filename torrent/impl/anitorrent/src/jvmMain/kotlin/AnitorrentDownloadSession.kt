@@ -395,24 +395,31 @@ class AnitorrentDownloadSession(
     }
 
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
-    
+
+    @Volatile
     private var closed = false
+    
     override suspend fun close() {
-        if (closed) { // 多次调用此 close 会等待同一个 deferred，完成时一起返回
+        if (closed) { // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
             closeBlockingDeferred.await()
             return
         }
 
-        synchronized(this) {
-            if (closed) return
-            state.value = TorrentDownloadState.Closed
-            closed = true
+        kotlin.run {
+            synchronized(this) {
+                if (closed) return@synchronized // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
+                state.value = TorrentDownloadState.Closed
+                closed = true
+                return@run // set close = true, 跳出 run lambda 并真正执行 onClose() 并等待
+            }
+            closeBlockingDeferred.await() // 只有在 synchronized 里检查 closed == true 时会在此 await
+            return
         }
 
         logger.info { "[$handleId] closing" }
         onClose(this)
         try {
-            withTimeout(30000L) {
+            withTimeout(7500L) {
                 closeBlockingDeferred.await() // 收到 on_torrent_removed 事件时返回
             }
         } catch (timeout: TimeoutCancellationException) {
