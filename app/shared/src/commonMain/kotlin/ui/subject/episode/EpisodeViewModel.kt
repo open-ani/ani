@@ -599,7 +599,6 @@ private class EpisodeViewModelImpl(
                     }
                 }
         }
-
     }
 
     private fun createDanmakuPresentation(
