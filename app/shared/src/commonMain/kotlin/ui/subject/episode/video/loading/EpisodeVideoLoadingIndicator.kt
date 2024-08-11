@@ -136,4 +136,5 @@ fun renderCause(cause: VideoLoadingState.Failed): String = when (cause) {
     is VideoLoadingState.UnsupportedMedia -> "不支持该文件类型"
     VideoLoadingState.NoMatchingFile -> "未找到可播放的文件"
     VideoLoadingState.Cancelled -> "已取消"
+    VideoLoadingState.NetworkError -> "网络错误"
 }

@@ -60,6 +60,7 @@ sealed interface VideoLoadingState {
 
     sealed class Failed : VideoLoadingState
     data object ResolutionTimedOut : Failed()
+    data object NetworkError : Failed()
     data object Cancelled : Failed()
 
     /**
@@ -152,6 +153,7 @@ fun VideoLoadingSummary(
                     }
 
                     VideoLoadingState.Cancelled -> Text("已取消")
+                    VideoLoadingState.NetworkError -> Text("网络错误，请检查网络连接状况")
                 }
             }
         }
