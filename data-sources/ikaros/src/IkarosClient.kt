@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.Subtitle
@@ -24,6 +25,7 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
+import me.him188.ani.datasources.ikaros.models.IkarosEpisodeGroup
 import me.him188.ani.datasources.ikaros.models.IkarosSubjectDetails
 import me.him188.ani.datasources.ikaros.models.IkarosVideoSubtitle
 import me.him188.ani.utils.logging.error
@@ -87,14 +89,26 @@ class IkarosClient(
     ): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
-        var ikarosEpisodeGroup = "MAIN";
-        var ikarosEpisodeSequence = episodeSort.number ?: 1
+        var ikarosEpisodeGroup = IkarosEpisodeGroup.MAIN;
         if (episodeSort is EpisodeSort.Special) {
-            ikarosEpisodeGroup = "SPECIAL_PROMOTION";
-            ikarosEpisodeSequence = episodeSort.toString().substring(2).toFloat()
+            var epNumStr = ""
+            if (episodeSort.number?.rem(1) == 0f) { // 有小数部分q
+                epNumStr = episodeSort.number!!.toInt().toString()
+            }
+            val endIndex = episodeSort.toString().indexOf(epNumStr)
+            val typeStr = episodeSort.toString().subSequence(0, endIndex)
+            ikarosEpisodeGroup = when (typeStr) {
+                EpisodeType.SP.name -> IkarosEpisodeGroup.SPECIAL_PROMOTION
+                EpisodeType.OP.name -> IkarosEpisodeGroup.OPENING_SONG
+                EpisodeType.ED.name -> IkarosEpisodeGroup.ENDING_SONG
+                EpisodeType.PV.name -> IkarosEpisodeGroup.PROMOTION_VIDEO
+                EpisodeType.MAD.name -> IkarosEpisodeGroup.SMALL_THEATER
+                EpisodeType.OTHER.name -> IkarosEpisodeGroup.OTHER
+                else -> IkarosEpisodeGroup.MAIN
+            }
         }
         val episode = episodes.find { ep ->
-            ep.sequence == ikarosEpisodeSequence && ikarosEpisodeGroup == ep.group
+            ep.sequence == episodeSort.number && ikarosEpisodeGroup.name == ep.group
         }
         if (episode?.resources != null && episode.resources.isNotEmpty()) {
             for (epRes in episode.resources) {
