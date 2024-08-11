@@ -92,7 +92,7 @@ class IkarosClient(
         var ikarosEpisodeGroup = IkarosEpisodeGroup.MAIN;
         if (episodeSort is EpisodeSort.Special) {
             var epNumStr = ""
-            if (episodeSort.number?.rem(1) == 0f) { // 有小数部分q
+            if (episodeSort.number?.rem(1) == 0f) { // 有小数部分
                 epNumStr = episodeSort.number!!.toInt().toString()
             }
             val endIndex = episodeSort.toString().indexOf(epNumStr)
