@@ -250,7 +250,7 @@ class SubjectManagerImpl(
 ) : KoinComponent, SubjectManager() {
     private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
     private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
-    private val settingsRepository by inject<SettingsRepository>()
+    private val settingsRepository: SettingsRepository by inject()
 
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
