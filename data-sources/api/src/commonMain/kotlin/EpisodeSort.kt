@@ -70,8 +70,8 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
     @Serializable
     class Special internal constructor(
         override val raw: String,
+        override val number: Float? = null,
     ) : EpisodeSort() {
-        override val number: Float? get() = null
         override fun toString(): String = raw
     }
 
@@ -136,12 +136,12 @@ fun EpisodeSort(int: BigNum): EpisodeSort {
 fun EpisodeSort(int: BigNum, type: Int): EpisodeSort {
     return when (type) {
         EpisodeType.MainStory.value -> EpisodeSort(int)
-        EpisodeType.SP.value -> Special("SP$int")
-        EpisodeType.OP.value -> Special("OP$int")
-        EpisodeType.ED.value -> Special("ED$int")
-        EpisodeType.PV.value -> Special("PV$int")
-        EpisodeType.MAD.value -> Special("MAD$int")
-        EpisodeType.OTHER.value -> Special("OTHER$int")
+        EpisodeType.SP.value -> Special("SP$int", int.toFloat())
+        EpisodeType.OP.value -> Special("OP$int", int.toFloat())
+        EpisodeType.ED.value -> Special("ED$int", int.toFloat())
+        EpisodeType.PV.value -> Special("PV$int", int.toFloat())
+        EpisodeType.MAD.value -> Special("MAD$int", int.toFloat())
+        EpisodeType.OTHER.value -> Special("OTHER$int", int.toFloat())
         else -> EpisodeSort(int)
     }
 }
