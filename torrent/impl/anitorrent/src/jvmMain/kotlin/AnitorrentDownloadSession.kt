@@ -204,7 +204,7 @@ class AnitorrentDownloadSession(
     /**
      * 在某些时候 [close] 需要等待此 session 完全关闭，通过 [event_listener_t.on_torrent_removed] 来监听此事件
      */
-    private val closeBlockingDeferred: CompletableDeferred<Unit> by lazy { CompletableDeferred() }
+    private val closingDeferred: CompletableDeferred<Unit> by lazy { CompletableDeferred() }
 
     /**
      * 当 [actualTorrentInfo] 还未完成时的任务队列, 用于延迟执行需要 [TorrentInfo] 的任务.
@@ -409,7 +409,7 @@ class AnitorrentDownloadSession(
     
     override suspend fun close() {
         if (closed) { // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
-            closeBlockingDeferred.await()
+            closingDeferred.await()
             return
         }
 
@@ -420,7 +420,7 @@ class AnitorrentDownloadSession(
                 closed = true
                 return@run // set close = true, 跳出 run lambda 并真正执行 onClose() 并等待
             }
-            closeBlockingDeferred.await() // 只有在 synchronized 里检查 closed == true 时会在此 await
+            closingDeferred.await() // 只有在 synchronized 里检查 closed == true 时会在此 await
             return
         }
 
@@ -428,11 +428,11 @@ class AnitorrentDownloadSession(
         onClose(this)
         try {
             withTimeout(7500L) {
-                closeBlockingDeferred.await() // 收到 on_torrent_removed 事件时返回
+                closingDeferred.await() // 收到 on_torrent_removed 事件时返回
             }
         } catch (timeout: TimeoutCancellationException) {
             logger.warn { "[$handleId] timeout on closing this session, force to mark as closed." }
-            closeBlockingDeferred.complete(Unit)
+            closingDeferred.complete(Unit)
         }
         scope.cancel()
         onPostClose(this)
@@ -440,7 +440,7 @@ class AnitorrentDownloadSession(
 
     fun onTorrentRemoved() {
         logger.info { "[$handleId] onTorrentRemoved" }
-        closeBlockingDeferred.complete(Unit)
+        closingDeferred.complete(Unit)
     }
 
     override suspend fun closeIfNotInUse() {
