@@ -195,7 +195,7 @@ class AnitorrentDownloadSession(
         }
 
         override fun toString(): String {
-            return "TorrentInfo(numPieces=${allPiecesInTorrent.size}, entries.size=${entries.size})"
+            return "TorrentInfo(name=$name, numPieces=${allPiecesInTorrent.size}, entries.size=${entries.size})"
         }
     }
 
