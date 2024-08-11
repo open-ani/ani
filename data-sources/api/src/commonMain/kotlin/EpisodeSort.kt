@@ -129,14 +129,19 @@ fun EpisodeSort(int: BigNum): EpisodeSort {
     if (int.isNegative()) return Special(int.toString())
     return EpisodeSort(int.toString())
 }
+
+/**
+ * @see EpisodeType
+ */
 fun EpisodeSort(int: BigNum, type: Int): EpisodeSort {
-    var episodeSort = EpisodeSort(int);
-    if (type != 0) {
-        var prefix = ""
-        if (type == 1) prefix = "SP"
-        if (type == 2) prefix = "OP"
-        if (type == 3) prefix = "ED"
-        episodeSort = Special(prefix + int.toString())
+    return when (type) {
+        EpisodeType.MainStory.value -> EpisodeSort(int)
+        EpisodeType.SP.value -> Special("SP$int")
+        EpisodeType.OP.value -> Special("OP$int")
+        EpisodeType.ED.value -> Special("ED$int")
+        EpisodeType.PV.value -> Special("PV$int")
+        EpisodeType.MAD.value -> Special("MAD$int")
+        EpisodeType.OTHER.value -> Special("OTHER$int")
+        else -> EpisodeSort(int)
     }
-    return episodeSort
 }
