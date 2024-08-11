@@ -475,8 +475,8 @@ private fun EpisodeVideo(
             )
         },
         danmakuHostState = videoDanmakuState.danmakuHostState,
-        danmakuEnabled = videoDanmakuState.enabled,
-        onToggleDanmaku = { videoDanmakuState.setEnabled(!videoDanmakuState.enabled) },
+        danmakuEnabled = videoDanmakuState.currentEnabled,
+        onToggleDanmaku = { videoDanmakuState.currentEnabled = !videoDanmakuState.currentEnabled },
         videoLoadingState = { vm.videoStatistics.videoLoadingState },
         danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {
