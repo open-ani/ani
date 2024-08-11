@@ -72,6 +72,7 @@ fun Topic.toOnlineMedia(mediaSourceId: String): DefaultMedia {
             resolution = details?.resolution?.toString() ?: Resolution.R1080P.toString(),
             alliance = alliance,
             size = size,
+            subtitleKind = details?.subtitleKind,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,

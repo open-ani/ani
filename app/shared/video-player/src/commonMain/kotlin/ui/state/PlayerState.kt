@@ -6,6 +6,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -157,7 +159,7 @@ interface PlayerState {
 
     fun saveScreenshotFile(filename: String)
 
-    val chapters: StateFlow<List<Chapter>>
+    val chapters: StateFlow<ImmutableList<Chapter>>
 }
 
 @Immutable
@@ -379,28 +381,10 @@ fun interface PlayerStateFactory {
     fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState
 }
 
-interface SupportsAudio {
-
-    val volume: StateFlow<Float>
-    val isMute: StateFlow<Boolean>
-    val maxValue: Float
-
-    fun toggleMute(mute: Boolean? = null)
-
-    @UiThread
-    fun setVolume(volume: Float)
-
-    @UiThread
-    fun volumeUp()
-
-    @UiThread
-    fun volumeDown()
-}
-
 /**
  * For previewing
  */
-class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext), SupportsAudio {
+class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override fun stopImpl() {
 
@@ -472,31 +456,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
 
-    override val volume: MutableStateFlow<Float> = MutableStateFlow(0f)
-    override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    override val maxValue: Float = 1f
-
-    override fun toggleMute(mute: Boolean?) {
-        isMute.value = mute ?: !isMute.value
-    }
-
-    override fun setVolume(volume: Float) {
-        this.volume.value = volume
-    }
-
-    override fun volumeUp() {
-        setVolume(volume.value + 0.05f)
-    }
-
-    override fun volumeDown() {
-        setVolume(volume.value - 0.05f)
-    }
-
     override fun saveScreenshotFile(filename: String) {
     }
 
-    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(
-        listOf(
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(
+        persistentListOf(
             Chapter("chapter1", durationMillis = 90_000L, 0L),
             Chapter("chapter2", durationMillis = 5_000L, 90_000L),
         ),

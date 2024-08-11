@@ -58,6 +58,7 @@ val generateApi = tasks.register("generateApiV0", GenerateTask::class) {
     packageName.set("me.him188.ani.client")
     modelNamePrefix.set("Ani")
     apiNameSuffix.set("Ani")
+    removeOperationIdPrefix = true
     // https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/kotlin.md
     additionalProperties.set(
         mapOf(

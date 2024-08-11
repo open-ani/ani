@@ -13,6 +13,7 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.Subtitle
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
@@ -102,6 +103,7 @@ class IkarosClient(
                             resolution = parseResult.resolution?.displayName ?: "480P",
                             alliance = IkarosMediaSource.ID,
                             size = FileSize(attachment?.size ?: 0),
+                            subtitleKind = SubtitleKind.EXTERNAL_PROVIDED,
                         ),
                         episodeRange = parseResult.episodeRange,
                         location = MediaSourceLocation.Online,

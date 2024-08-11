@@ -180,10 +180,8 @@ fun VideoScaffold(
                                 Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                MaterialTheme(aniDarkColorTheme()) {
-                                    CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                        bottomBar()
-                                    }
+                                CompositionLocalProvider(LocalContentColor provides Color.White) {
+                                    bottomBar()
                                 }
                             }
                         }
@@ -194,7 +192,9 @@ fun VideoScaffold(
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        detachedProgressSlider()
+                        Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
+                            detachedProgressSlider()
+                        }
                     }
                 }
                 AnimatedVisibility(

@@ -19,6 +19,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -81,6 +83,7 @@ import kotlin.math.roundToLong
 class MediaProgressSliderState(
     currentPositionMillis: () -> Long,
     totalDurationMillis: () -> Long,
+    chapters: State<ImmutableList<Chapter>>,
     /**
      * 当用户正在拖动进度条时触发. 每有一个 change 都会调用.
      */
@@ -92,6 +95,7 @@ class MediaProgressSliderState(
 ) {
     val currentPositionMillis: Long by derivedStateOf(currentPositionMillis)
     val totalDurationMillis: Long by derivedStateOf(totalDurationMillis)
+    val chapters by chapters
 
     private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
     private val previewRequests = SnapshotStateList<Any>()
@@ -102,11 +106,16 @@ class MediaProgressSliderState(
         } else {
             previewRequests.remove(requester)
         }
+
+        if (previewRequests.isEmpty()) {
+            finishPreview()
+        }
     }
 
     val preview: Boolean by derivedStateOf {
         previewRequests.isNotEmpty()
     }
+
     /**
      * Sets the slider to move to the given position.
      * [onPreview] will be triggered.
@@ -156,10 +165,12 @@ fun rememberMediaProgressSliderState(
 
     val onPreviewUpdated by rememberUpdatedState(onPreview)
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
+    val chapters = playerState.chapters.collectAsStateWithLifecycle()
     return remember {
         MediaProgressSliderState(
             { currentPosition },
             { totalDuration },
+            chapters,
             onPreviewUpdated,
             onPreviewFinishedUpdated,
         )
@@ -174,7 +185,6 @@ fun rememberMediaProgressSliderState(
 fun MediaProgressSlider(
     state: MediaProgressSliderState,
     cacheState: MediaCacheProgressState,
-    chapters: List<Chapter> = emptyList(),
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
     trackProgressColor: Color = aniDarkColorTheme().primary,
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
@@ -248,7 +258,7 @@ fun MediaProgressSlider(
 
             Canvas(Modifier.matchParentSize()) {
                 if (state.totalDurationMillis == 0L) return@Canvas
-                chapters.forEach {
+                state.chapters.forEach {
                     val percent = it.offsetMillis.toFloat().div(state.totalDurationMillis)
                     drawCircle(
                         color = chapterColor,
@@ -265,7 +275,7 @@ fun MediaProgressSlider(
         var sliderWidth by rememberSaveable { mutableIntStateOf(0) }
 
         fun renderPreviewTime(previewTimeMillis: Long): String {
-            chapters.find {
+            state.chapters.find {
                 previewTimeMillis in it.offsetMillis..<it.offsetMillis + it.durationMillis
             }?.let {
                 val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
@@ -277,6 +287,7 @@ fun MediaProgressSlider(
 
             return renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
         }
+
         val previewTimeText by remember {
             derivedStateOf {
                 val containerWidth = sliderWidth - thumbWidth

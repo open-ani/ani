@@ -76,6 +76,7 @@ class TestGenerator(
         )
         addImport("me.him188.ani.datasources.api.title", "PatternBasedTitleParserTestSuite")
         addImport("kotlin.test", "assertEquals") // 它不允许 "*"
+        addImport("me.him188.ani.datasources.api", "SubtitleKind") // 它不允许 "*"
         addType(
             TypeSpec.classBuilder(
                 ClassName(
@@ -112,6 +113,16 @@ class TestGenerator(
                                 "assertEquals(%S, r.resolution.toString())" + "\n",
                                 resolution.toString(),
                             )
+                            .run {
+                                if (subtitleKind == null) {
+                                    addCode("assertEquals(null, r.subtitleKind)" + "\n")
+                                } else {
+                                    addCode(
+                                        "assertEquals(SubtitleKind.%L, r.subtitleKind)" + "\n",
+                                        subtitleKind,
+                                    )
+                                }
+                            }
                             .build(),
                     )
                 }

@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.repository.Session
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -110,6 +111,13 @@ interface SessionManager { // For unit tests, see BangumiSessionManagerTest
      * 仅当之前有 session 时, 此函数才会通过 [events] 广播 [SessionEvent.Logout] 事件.
      */
     suspend fun clearSession()
+
+    /**
+     * 将当前会话复写为过期会话, 以触发 refresh. 仅供 debug 用, 未经过测试.
+     */
+    @TestOnly
+    suspend fun invalidateSession() {
+    }
 }
 
 @RequiresOptIn(

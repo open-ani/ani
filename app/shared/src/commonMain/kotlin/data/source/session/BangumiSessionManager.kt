@@ -1,7 +1,5 @@
 package me.him188.ani.app.data.source.session
 
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -26,17 +24,16 @@ import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.flatMap
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.models.map
-import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.repository.AccessTokenSession
 import me.him188.ani.app.data.repository.GuestSession
 import me.him188.ani.app.data.repository.ProfileRepository
 import me.him188.ani.app.data.repository.Session
 import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.isValid
+import me.him188.ani.app.data.source.AniAuthClient
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -46,6 +43,8 @@ import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.Koin
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 fun BangumiSessionManager(
     koin: Koin,
@@ -53,7 +52,7 @@ fun BangumiSessionManager(
 ): BangumiSessionManager {
     val tokenRepository: TokenRepository by koin.inject()
     val profileRepository: ProfileRepository by koin.inject()
-    val client: BangumiClient by koin.inject()
+    val client: AniAuthClient by koin.inject()
 
     return BangumiSessionManager(
         tokenRepository,
@@ -62,17 +61,12 @@ fun BangumiSessionManager(
             profileRepository.getSelfUserInfo(accessToken)
         },
         refreshAccessToken = refreshAccessToken@{ refreshToken ->
-            runApiRequest {
-                try {
-                    client.refreshAccessToken(refreshToken).let {
-                        NewSession(it.accessToken, it.expiresIn * 1000L + currentTimeMillis(), it.refreshToken)
-                    }
-                } catch (e: ClientRequestException) {
-                    if (e.response.status == HttpStatusCode.BadRequest) {
-                        return@refreshAccessToken ApiResponse.failure(ApiFailure.Unauthorized)
-                    }
-                    throw e
-                }
+            client.refreshAccessToken(refreshToken).map {
+                NewSession(
+                    it.accessToken,
+                    (currentTimeMillis().milliseconds + it.expiresIn.seconds).inWholeMilliseconds,
+                    it.refreshToken,
+                )
             }
         },
         parentCoroutineContext,
@@ -427,6 +421,21 @@ class BangumiSessionManager(
         tokenRepository.clear()
         if (curr !is GuestSession) {
             events.tryEmit(SessionEvent.Logout)
+        }
+    }
+
+    @TestOnly
+    override suspend fun invalidateSession() {
+        tokenRepository.session.first()?.let {
+            when (it) {
+                is AccessTokenSession -> {
+                    tokenRepository.setSession(it.copy(expiresAtMillis = 1L))
+                }
+
+                GuestSession -> {
+                }
+            }
+
         }
     }
 }

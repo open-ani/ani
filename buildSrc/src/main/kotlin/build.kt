@@ -53,6 +53,7 @@ val testOptInAnnotations = arrayOf(
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
     "kotlinx.serialization.ExperimentalSerializationApi",
     "me.him188.ani.utils.platform.annotations.TestOnly",
+    "androidx.compose.ui.test.ExperimentalTestApi",
 )
 
 val optInAnnotations = arrayOf(
@@ -202,18 +203,26 @@ fun Project.configureKotlinTestSettings() {
                     .find { it.name == sourceSet.name.substringBeforeLast("Main").substringBeforeLast("Test") }
 
                 if (sourceSet.name.contains("test", ignoreCase = true)) {
-                    if (isJvmFinalTarget(target)) {
-                        // For android, this should be done differently. See Android.kt
-                        sourceSet.configureJvmTest(b)
-                    } else {
-                        if (sourceSet.name == "commonTest") {
+                    when {
+                        target?.platformType == KotlinPlatformType.jvm -> {
+                            // For android, this should be done differently. See Android.kt
+                            sourceSet.configureJvmTest(b)
+                        }
+
+                        sourceSet.name == "commonTest" -> {
                             sourceSet.dependencies {
                                 implementation(kotlin("test"))?.because(b)
                                 implementation(kotlin("test-annotations-common"))?.because(b)
                             }
-                        } else {
-                            // can be an Android sourceSet
-                            // Do not even add "kotlin-test" for Android sourceSets. IDEA can't resolve them on sync
+                        }
+
+                        target?.platformType == KotlinPlatformType.androidJvm -> {
+                            // Android uses JUnit4
+                            sourceSet.dependencies {
+                                implementation(kotlin("test"))?.because(b)
+                                implementation("junit:junit:4.13")?.because(b)
+                                implementation(kotlin("test-junit"))?.because(b)
+                            }
                         }
                     }
                 }
@@ -221,9 +230,6 @@ fun Project.configureKotlinTestSettings() {
         }
     }
 }
-
-private fun isJvmFinalTarget(target: KotlinTarget?) =
-    target?.platformType == KotlinPlatformType.jvm
 
 fun KotlinSourceSet.configureJvmTest(because: String) {
     dependencies {

@@ -499,7 +499,6 @@ private fun EpisodeVideo(
              * 是否设置了暂停
              */
             var didSetPaused by rememberSaveable { mutableStateOf(false) }
-
             DanmakuEditor(
                 text = videoDanmakuState.danmakuEditorText,
                 onTextChange = { videoDanmakuState.danmakuEditorText = it },
@@ -567,8 +566,7 @@ private fun EpisodeVideo(
         detachedProgressSlider = {
             PlayerControllerDefaults.MediaProgressSlider(
                 progressSliderState,
-                vm.playerState,
-                Modifier.padding(horizontal = 4.dp, vertical = 12.dp),
+                cacheProgressState = vm.playerState.cacheProgress,
                 enabled = false,
             )
         },

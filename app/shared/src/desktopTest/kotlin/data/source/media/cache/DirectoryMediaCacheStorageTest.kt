@@ -43,6 +43,7 @@ class DirectoryMediaCacheStorageTest {
             resolution = "1080P",
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
             size = 233.megaBytes,
+            subtitleKind = null,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,

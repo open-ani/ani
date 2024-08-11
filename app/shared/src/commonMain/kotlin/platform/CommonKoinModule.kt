@@ -62,6 +62,7 @@ import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
+import me.him188.ani.app.data.source.AniAuthClient
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
@@ -104,6 +105,7 @@ import kotlin.coroutines.CoroutineContext
 
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
+    single<AniAuthClient> { AniAuthClient() }
     single<TokenRepository> { TokenRepositoryImpl(getContext().dataStores.tokenStore) }
     single<EpisodePreferencesRepository> { EpisodePreferencesRepositoryImpl(getContext().dataStores.preferredAllianceStore) }
     single<SessionManager> { BangumiSessionManager(koin, coroutineScope.coroutineContext) }

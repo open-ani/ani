@@ -1,7 +1,10 @@
 import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.compose.ComposePlugin
+import org.jetbrains.compose.ExperimentalComposeLibrary
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 /*
@@ -38,7 +41,10 @@ configure<KotlinMultiplatformExtension> {
     iosSimulatorArm64() // to run tests
     if (android != null) {
         jvm("desktop")
-        androidTarget()
+        androidTarget {
+            @OptIn(ExperimentalKotlinGradlePluginApi::class)
+            instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.instrumentedTest)
+        }
 
         applyDefaultHierarchyTemplate {
             common {
@@ -81,7 +87,33 @@ configure<KotlinMultiplatformExtension> {
         }
     }
     sourceSets.commonTest.dependencies {
+        // https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-test.html#writing-and-running-tests-with-compose-multiplatform
+        if (composeExtension != null) {
+            val compose = ComposePlugin.Dependencies(project)
+            @OptIn(ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+        }
         implementation(project(":utils:testing"))
+    }
+
+    if (composeExtension != null) {
+        sourceSets.getByName("desktopMain").dependencies {
+            val compose = ComposePlugin.Dependencies(project)
+            implementation(compose.desktop.uiTestJUnit4)
+        }
+    }
+
+    if (android != null) {
+        listOf(sourceSets.androidInstrumentedTest, sourceSets.androidUnitTest).forEach { sourceSet ->
+            sourceSet.dependencies {
+                // https://developer.android.com/develop/ui/compose/testing#setup
+                implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
+            }
+        }
+
+        dependencies {
+            "debugImplementation"("androidx.compose.ui:ui-test-manifest:1.6.8")
+        }
     }
 }
 
@@ -123,6 +155,7 @@ if (android != null) {
         compileSdk = getIntProperty("android.compile.sdk")
         defaultConfig {
             minSdk = getIntProperty("android.min.sdk")
+            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
         buildTypes.getByName("release") {
             isMinifyEnabled = false // shared 不能 minify, 否则构建 app 会失败
