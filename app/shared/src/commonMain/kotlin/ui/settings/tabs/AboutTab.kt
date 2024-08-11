@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,15 +62,18 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
 
-    private val validMediaCacheTasks = cacheManager.storages.map { storageFlow ->
-        storageFlow.flatMapLatest { storage ->
-            if (storage == null) {
-                return@flatMapLatest emptyFlow()
-            }
-            storage.listFlow
-        }.onStart { emit(emptyList()) }
-    }.map { lists ->
-        lists.map { list -> list.count { it.isValid() } }
+    private val validMediaCacheTasks = kotlin.run {
+        val mediaCacheListFromStorages = cacheManager.storages.map { storageFlow ->
+            storageFlow.flatMapLatest { storage ->
+                if (storage == null) {
+                    return@flatMapLatest emptyFlow()
+                }
+                storage.listFlow
+            }.onStart { emit(emptyList()) }
+        }
+        combine(mediaCacheListFromStorages) { lists ->
+            lists.asSequence().flatten().count { it.isValid() }
+        }
     }
 
     val debugInfo = debugInfoFlow().shareInBackground(started = SharingStarted.Eagerly)
@@ -81,7 +83,7 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
         sessionManager.state,
         sessionManager.processingRequest.flatMapLatest { it?.state ?: flowOf(null) },
         sessionManager.isSessionVerified,
-        combine(validMediaCacheTasks) { list -> list.sum() },
+        validMediaCacheTasks,
     ) { session, processingRequest, isSessionValid, activeTasks ->
         DebugInfo(
             properties = buildMap {
