@@ -19,12 +19,4 @@ sealed interface AndroidTorrentCacheLocation {
      * @see android.content.Context.getExternalFilesDir
      */
     data class ExternalPrivate(val path: String?) : AndroidTorrentCacheLocation
-
-    /**
-     * 通过 [android.provider.DocumentsProvider] 获取的授权路径
-     *
-     * @param path 授权的共享存储路径，为 `null` 则表示没有授权过外部目录
-     * @see android.content.Intent.ACTION_OPEN_DOCUMENT_TREE
-     */
-    data class ExternalShared(val path: String?, val accessible: Boolean) : AndroidTorrentCacheLocation
 }

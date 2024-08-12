@@ -24,8 +24,6 @@ import java.io.File
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -36,7 +34,6 @@ private val INTERNAL_PRIVATE_BASE by lazy { File("/data/data/me.him188.ani/files
 private val EXTERNAL_PRIVATE_BASE by lazy {
     File("/storage/emulated/0/Android/data/me.him188.ani/files").absolutePath
 }
-private val EXTERNAL_SHARED_BASE by lazy { File("/storage/emulated/0/").absolutePath }
 
 class AndroidTorrentCacheViewModelTest : KoinTest {
     @Test
@@ -48,7 +45,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
 
         assertTrue { mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) == true }
 
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
+        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
@@ -67,13 +64,6 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
                 it.value is AndroidTorrentCacheLocation.ExternalPrivate && it.enabled
             },
         )
-        // 默认情况下没有授权任何外部共享目录
-        assertNotNull(
-            locationPresentation.find {
-                val value = it.value
-                value is AndroidTorrentCacheLocation.ExternalShared && value.path == null
-            },
-        )
     }
 
     @Test
@@ -84,7 +74,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation()
         assertTrue { mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) == true }
 
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
+        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
@@ -103,13 +93,6 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
                 it.value is AndroidTorrentCacheLocation.ExternalPrivate && !it.enabled
             },
         )
-        // 默认情况下没有授权任何外部共享目录
-        assertNotNull(
-            locationPresentation.find {
-                val value = it.value
-                value is AndroidTorrentCacheLocation.ExternalShared && value.path == null
-            },
-        )
     }
 
     @Test
@@ -121,7 +104,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         )
         assertTrue { mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) == true }
 
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
+        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
@@ -140,13 +123,6 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
                 it.value is AndroidTorrentCacheLocation.ExternalPrivate && it.enabled
             },
         )
-        // 默认情况下没有授权任何外部共享目录
-        assertNotNull(
-            locationPresentation.find {
-                val value = it.value
-                value is AndroidTorrentCacheLocation.ExternalShared && value.path == null
-            },
-        )
     }
 
     @Test
@@ -158,18 +134,9 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         )
         assertTrue { mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) == true }
 
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
+        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
-
-        // 如果当前 external private 不可用，那就可能是 external shared。并且同样不可用
-        assertEquals(
-            AndroidTorrentCacheLocation.ExternalShared(
-                File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
-                accessible = false,
-            ),
-            vm.currentSelection,
-        )
 
         val locationPresentation = vm.torrentLocationPresentation
         assertEquals(3, locationPresentation.size)
@@ -177,13 +144,6 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         assertNotNull(
             locationPresentation.find {
                 it.value is AndroidTorrentCacheLocation.ExternalPrivate && !it.enabled
-            },
-        )
-        assertNotNull(
-            locationPresentation.find {
-                val value = it.value
-                value is AndroidTorrentCacheLocation.ExternalShared &&
-                        value.path != null && !value.accessible
             },
         )
     }
@@ -196,7 +156,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
             File("/system/app/unavailable_path").absolutePath,
         )
 
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
+        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
@@ -211,113 +171,6 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
                 it.value is AndroidTorrentCacheLocation.ExternalPrivate && it.enabled
             },
         )
-        assertNotNull(
-            locationPresentation.find {
-                val value = it.value
-                value is AndroidTorrentCacheLocation.ExternalShared &&
-                        value.path == null && !value.accessible
-            },
-        )
-    }
-
-    @Test
-    fun `test has permitted external shared path`() = runComposeStateTest {
-        val childPath = "permitted/test/awa1123"
-        val context = createMockContext(externalAvailable = true)
-        val permissionManager = createTestPermissionManager(
-            requestedPath = null,
-            getAccessiblePath = File(EXTERNAL_PRIVATE_BASE, childPath).absolutePath,
-        )
-        val mediaCacheSettings by createMockMediaCacheSettingsDelegation()
-
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
-        vm.refreshStorageState()
-        takeSnapshot()
-
-        val locationPresentation = vm.torrentLocationPresentation
-        val item = locationPresentation.find { it.value is AndroidTorrentCacheLocation.ExternalShared }
-        assertNotNull(item)
-        val externalSharedLocation = item.value
-        assertIs<AndroidTorrentCacheLocation.ExternalShared>(externalSharedLocation)
-        assertEquals(
-            File(EXTERNAL_PRIVATE_BASE, "$childPath/$DEFAULT_TORRENT_CACHE_DIR_NAME").absolutePath,
-            externalSharedLocation.path,
-        )
-        assertTrue(externalSharedLocation.accessible)
-    }
-
-    @Test
-    fun `test request new external shared path an set to current`() = runComposeStateTest {
-        val childPath = "newpermitted/test/awa1123"
-        val context = createMockContext(externalAvailable = true)
-        val permissionManager = createTestPermissionManager(
-            requestedPath = File(EXTERNAL_SHARED_BASE, childPath).absolutePath,
-        )
-        val mediaCacheSettings by createMockMediaCacheSettingsDelegation(null)
-
-        val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager, MockAndroidEnvironment)
-        vm.refreshStorageState()
-        takeSnapshot()
-
-        kotlin.run {
-            assertFalse(vm.currentSelection is AndroidTorrentCacheLocation.ExternalShared)
-            // 没 request 的时候没有可用 path
-            val locationPresentation = vm.torrentLocationPresentation
-            val item = locationPresentation.find { it.value is AndroidTorrentCacheLocation.ExternalShared }
-            assertNotNull(item)
-            val externalSharedLocation = item.value
-            assertIs<AndroidTorrentCacheLocation.ExternalShared>(externalSharedLocation)
-
-            assertEquals(null, externalSharedLocation.path)
-            assertTrue(!externalSharedLocation.accessible)
-        }
-
-        // request 了新的 path
-        vm.requestExternalSharedStorage()
-        vm.refreshStorageState()
-        takeSnapshot()
-
-        kotlin.run {
-            assertFalse(vm.currentSelection is AndroidTorrentCacheLocation.ExternalShared)
-            val locationPresentation = vm.torrentLocationPresentation
-            val item = locationPresentation.find { it.value is AndroidTorrentCacheLocation.ExternalShared }
-            assertNotNull(item)
-            val externalSharedLocation = item.value
-            assertIs<AndroidTorrentCacheLocation.ExternalShared>(externalSharedLocation)
-
-            assertEquals(
-                File(EXTERNAL_SHARED_BASE, "$childPath/$DEFAULT_TORRENT_CACHE_DIR_NAME").absolutePath,
-                externalSharedLocation.path,
-            )
-            assertTrue(externalSharedLocation.accessible)
-
-            // 设置为外部共享存储
-            vm.setStorage(externalSharedLocation)
-            vm.refreshStorageState()
-            takeSnapshot()
-        }
-
-        kotlin.run {
-            assertTrue(vm.currentSelection is AndroidTorrentCacheLocation.ExternalShared)
-            // 没 request 的时候没有可用 path
-            val locationPresentation = vm.torrentLocationPresentation
-            val item = locationPresentation.find { it.value is AndroidTorrentCacheLocation.ExternalShared }
-            assertNotNull(item)
-            val externalSharedLocation = item.value
-            assertIs<AndroidTorrentCacheLocation.ExternalShared>(externalSharedLocation)
-
-            assertEquals(
-                File(EXTERNAL_SHARED_BASE, "$childPath/$DEFAULT_TORRENT_CACHE_DIR_NAME").absolutePath,
-                externalSharedLocation.path,
-            )
-            assertTrue(externalSharedLocation.accessible)
-        }
-    }
-}
-
-private object MockAndroidEnvironment : AndroidEnvironment {
-    override fun getExternalStorageDirectory(): File {
-        return File(EXTERNAL_SHARED_BASE)
     }
 }
 

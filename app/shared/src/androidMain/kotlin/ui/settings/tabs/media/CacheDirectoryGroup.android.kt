@@ -25,7 +25,6 @@ private fun renderTorrentCacheLocationName(cacheLocation: AndroidTorrentCacheLoc
     return when (cacheLocation) {
         is AndroidTorrentCacheLocation.InternalPrivate -> "内部私有目录"
         is AndroidTorrentCacheLocation.ExternalPrivate -> "外部私有目录"
-        is AndroidTorrentCacheLocation.ExternalShared -> "外部共享目录"
     }
 }
 
@@ -34,23 +33,17 @@ private fun renderTorrentCacheLocation(cacheLocation: AndroidTorrentCacheLocatio
     return when (cacheLocation) {
         is AndroidTorrentCacheLocation.InternalPrivate -> cacheLocation.path
         is AndroidTorrentCacheLocation.ExternalPrivate -> cacheLocation.path ?: "不可用"
-        is AndroidTorrentCacheLocation.ExternalShared -> when {
-            cacheLocation.path == null -> "点击授权"
-            !cacheLocation.accessible -> "授权失效，点击重新授权\n${cacheLocation.path}"
-            else -> cacheLocation.path
-        }
     }
 }
 
 @Composable
 private fun renderTorrentCacheLocationDescription(cacheLocation: AndroidTorrentCacheLocation) = buildString {
-    if (cacheLocation is AndroidTorrentCacheLocation.ExternalPrivate ||
-        cacheLocation is AndroidTorrentCacheLocation.ExternalShared
-    ) {
-        appendLine("此目录允许其他应用访问")
-    } else {
-        appendLine("此目录仅 Ani 可访问")
-    }
+    appendLine(
+        when (cacheLocation) {
+            is AndroidTorrentCacheLocation.ExternalPrivate -> "此目录允许其他应用访问"
+            is AndroidTorrentCacheLocation.InternalPrivate -> "此目录仅 Ani 可访问"
+        },
+    )
     append(renderTorrentCacheLocation(cacheLocation))
 }
 
@@ -80,7 +73,7 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             items = cacheVm.torrentLocationPresentation,
             dialogIcon = { Icon(imageVector = Icons.Default.Storage, contentDescription = null) },
             selected = cacheVm.currentSelectionIndex,
-            key = { it.javaClass.canonicalName },
+            key = { it.javaClass.name },
             listItem = {
                 ItemHeader(
                     title = { Text(text = renderTorrentCacheLocationName(it)) },
@@ -90,7 +83,7 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             onOpenDialog = {
                 scope.launch { cacheVm.refreshStorageState() }
             },
-            onSelectItem = { location ->
+            /*onSelectItem = { location ->
                 if (location !is AndroidTorrentCacheLocation.ExternalShared || location.accessible) {
                     return@SingleSelectionItem true
                 }
@@ -108,7 +101,7 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
                         true
                     }
                 }
-            },
+            },*/
             onConfirm = { location ->
                 scope.launch { location?.let { cacheVm.setStorage(it) } }
                 toaster.toast("BT 视频缓存位置变更在重启后生效。")
