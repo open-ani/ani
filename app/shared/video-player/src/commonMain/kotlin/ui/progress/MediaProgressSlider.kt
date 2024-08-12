@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -181,6 +180,7 @@ fun MediaProgressSlider(
     previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
     enabled: Boolean = true,
+    showPreviewTimeTextOnThumb: Boolean = true,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -332,7 +332,7 @@ fun MediaProgressSlider(
                 )
                 
                 // 仅在 detached slider 上显示
-                if (state.isPreviewing && !enabled) {
+                if (state.isPreviewing && showPreviewTimeTextOnThumb) {
                     ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
                         previewTimeBackgroundColor = previewTimeBackgroundColor,
