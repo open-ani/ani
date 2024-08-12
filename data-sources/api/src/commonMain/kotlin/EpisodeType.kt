@@ -3,17 +3,17 @@ package me.him188.ani.datasources.api
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class EpisodeType(val code: Int) {
-    MainStory(0),
-    SP(1),
-    OP(2),
-    ED(3),
-    PV(4),
-    MAD(5),
-    OTHER(6);
+enum class EpisodeType(val code: Int, val value: String) {
+    MainStory(0, "MainStory"),
+    SP(1, "SP"),
+    OP(2, "OP"),
+    ED(3, "ED"),
+    PV(4, "PV"),
+    MAD(5, "MAD"),
+    OTHER(6, "OTHER");
 
     companion object {
-        fun codeOf(code: Int): EpisodeType {
+        fun fromCodeOrOther(code: Int): EpisodeType {
             return when (code) {
                 0 -> MainStory
                 1 -> SP

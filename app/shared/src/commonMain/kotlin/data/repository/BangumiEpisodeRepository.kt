@@ -148,7 +148,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = this.id,
-        type = EpisodeType.codeOf(this.type),
+        type = EpisodeType.fromCodeOrOther(this.type),
         name = this.name,
         nameCn = this.nameCn,
         airDate = PackedDate.parseFromDate(this.airdate),
@@ -165,10 +165,10 @@ fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
 fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = id,
-        type = EpisodeType.codeOf(this.type),
+        type = EpisodeType.fromCodeOrOther(this.type),
         name = name,
         nameCn = nameCn,
-        sort = EpisodeSort(this.sort, this.type),
+        sort = EpisodeSort(this.sort, EpisodeType.fromCodeOrOther(this.type)),
         airDate = PackedDate.parseFromDate(this.airdate),
         comment = comment,
         duration = duration,

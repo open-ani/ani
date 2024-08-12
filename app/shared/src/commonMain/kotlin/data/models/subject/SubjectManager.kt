@@ -93,7 +93,7 @@ abstract class SubjectManager {
      *
      * @see DebugSettings.showAllEpisodes
      */
-    abstract val showAllEpisodes: Flow<Boolean>
+    protected abstract val showAllEpisodes: Flow<Boolean>
 
     /**
      * 获取所有收藏的条目列表

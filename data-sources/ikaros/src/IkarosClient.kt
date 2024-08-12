@@ -95,15 +95,14 @@ class IkarosClient(
             } else {
                 episodeSort.number.toString()
             }
-            val endIndex = episodeSort.toString().indexOf(epNumStr)
-            val typeStr = episodeSort.toString().subSequence(0, endIndex)
+            val typeStr = episodeSort.toString().substringBefore(epNumStr)
             when (typeStr) {
-                EpisodeType.SP.name -> IkarosEpisodeGroup.SPECIAL_PROMOTION
-                EpisodeType.OP.name -> IkarosEpisodeGroup.OPENING_SONG
-                EpisodeType.ED.name -> IkarosEpisodeGroup.ENDING_SONG
-                EpisodeType.PV.name -> IkarosEpisodeGroup.PROMOTION_VIDEO
-                EpisodeType.MAD.name -> IkarosEpisodeGroup.SMALL_THEATER
-                EpisodeType.OTHER.name -> IkarosEpisodeGroup.OTHER
+                EpisodeType.SP.value -> IkarosEpisodeGroup.SPECIAL_PROMOTION
+                EpisodeType.OP.value -> IkarosEpisodeGroup.OPENING_SONG
+                EpisodeType.ED.value -> IkarosEpisodeGroup.ENDING_SONG
+                EpisodeType.PV.value -> IkarosEpisodeGroup.PROMOTION_VIDEO
+                EpisodeType.MAD.value -> IkarosEpisodeGroup.SMALL_THEATER
+                EpisodeType.OTHER.value -> IkarosEpisodeGroup.OTHER
                 else -> IkarosEpisodeGroup.MAIN
             }
         } else {

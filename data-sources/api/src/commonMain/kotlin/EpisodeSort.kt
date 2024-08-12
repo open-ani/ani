@@ -133,15 +133,14 @@ fun EpisodeSort(int: BigNum): EpisodeSort {
 /**
  * @see EpisodeType
  */
-fun EpisodeSort(int: BigNum, type: Int): EpisodeSort {
+fun EpisodeSort(int: BigNum, type: EpisodeType): EpisodeSort {
     return when (type) {
-        EpisodeType.MainStory.code -> EpisodeSort(int)
-        EpisodeType.SP.code -> Special("SP$int", int.toFloat())
-        EpisodeType.OP.code -> Special("OP$int", int.toFloat())
-        EpisodeType.ED.code -> Special("ED$int", int.toFloat())
-        EpisodeType.PV.code -> Special("PV$int", int.toFloat())
-        EpisodeType.MAD.code -> Special("MAD$int", int.toFloat())
-        EpisodeType.OTHER.code -> Special("OTHER$int", int.toFloat())
-        else -> EpisodeSort(int)
+        EpisodeType.MainStory -> EpisodeSort(int)
+        EpisodeType.SP -> Special("SP$int", int.toFloat())
+        EpisodeType.OP -> Special("OP$int", int.toFloat())
+        EpisodeType.ED -> Special("ED$int", int.toFloat())
+        EpisodeType.PV -> Special("PV$int", int.toFloat())
+        EpisodeType.MAD -> Special("MAD$int", int.toFloat())
+        EpisodeType.OTHER -> Special("OTHER$int", int.toFloat())
     }
 }
