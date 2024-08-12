@@ -96,6 +96,10 @@ public class event_listener_t {
     if (getClass() == event_listener_t.class) anitorrentJNI.event_listener_t_on_file_completed(swigCPtr, this, handle_id, file_index); else anitorrentJNI.event_listener_t_on_file_completedSwigExplicitevent_listener_t(swigCPtr, this, handle_id, file_index);
   }
 
+  public void on_torrent_removed(long handle_id, String torrent_name) {
+    if (getClass() == event_listener_t.class) anitorrentJNI.event_listener_t_on_torrent_removed(swigCPtr, this, handle_id, torrent_name); else anitorrentJNI.event_listener_t_on_torrent_removedSwigExplicitevent_listener_t(swigCPtr, this, handle_id, torrent_name);
+  }
+
   public void on_session_stats(long handle_id, session_stats_t stats) {
     if (getClass() == event_listener_t.class) anitorrentJNI.event_listener_t_on_session_stats(swigCPtr, this, handle_id, session_stats_t.getCPtr(stats), stats); else anitorrentJNI.event_listener_t_on_session_statsSwigExplicitevent_listener_t(swigCPtr, this, handle_id, session_stats_t.getCPtr(stats), stats);
   }

@@ -8,7 +8,7 @@ import me.him188.ani.utils.io.SystemPath
 /**
  * 表示一整个 BT 资源的下载任务.
  */
-interface TorrentDownloadSession : AutoCloseable {
+interface TorrentDownloadSession {
 
     val state: StateFlow<TorrentDownloadState> // not used, not tested
 
@@ -17,13 +17,18 @@ interface TorrentDownloadSession : AutoCloseable {
     val saveDirectory: SystemPath
 
     /**
+     * 该下载任务的名称
+     */
+    suspend fun getName(): String
+
+    /**
      * 获取该种子资源中的所有文件.
      */
     suspend fun getFiles(): List<TorrentFileEntry>
 
-    override fun close()
+    suspend fun close()
 
-    fun closeIfNotInUse()
+    suspend fun closeIfNotInUse()
 }
 
 
