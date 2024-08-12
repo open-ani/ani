@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -9,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Modifier
+import me.him188.ani.app.ui.foundation.interaction.hoverable
 
 
 /**
@@ -142,3 +145,47 @@ class VideoControllerState(
         progressBarRequesters.remove(requester)
     }
 }
+
+interface AlwaysOnRequester {
+    fun request()
+    fun cancelRequest()
+}
+
+@Composable
+fun rememberAlwaysOnRequester(
+    controllerState: VideoControllerState,
+    debugName: String
+): AlwaysOnRequester {
+    val requester = remember(controllerState, debugName) {
+        object : AlwaysOnRequester {
+            override fun request() {
+                controllerState.setRequestAlwaysOn(this, true)
+            }
+
+            override fun cancelRequest() {
+                controllerState.setRequestAlwaysOn(this, false)
+            }
+
+            override fun toString(): String {
+                return "AlwaysOnRequester($debugName)"
+            }
+        }
+    }
+    DisposableEffect(requester) {
+        onDispose {
+            requester.cancelRequest()
+        }
+    }
+    return requester
+}
+
+fun Modifier.hoverToRequestAlwaysOn(
+    requester: AlwaysOnRequester
+): Modifier = hoverable(
+    onHover = {
+        requester.request()
+    },
+    onUnhover = {
+        requester.cancelRequest()
+    },
+)

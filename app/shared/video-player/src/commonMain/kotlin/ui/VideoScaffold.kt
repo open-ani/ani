@@ -50,7 +50,6 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * - 视频: [video]
  * - 右侧侧边栏: [rhsSheet]
  *
- * @param controllersVisibility 是否展示 [topBar], [rhsBar] 和 [bottomBar]
  * @param topBar [PlayerTopBar]
  * @param video [VideoPlayer]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
@@ -139,8 +138,10 @@ fun VideoScaffold(
                                         ),
                                     ),
                             )
+                            val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "topBar")
                             Column(
                                 Modifier
+                                    .hoverToRequestAlwaysOn(alwaysOnRequester)
                                     .fillMaxWidth()
                                     .statusBarsPadding(),
                             ) {
@@ -163,8 +164,10 @@ fun VideoScaffold(
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
+                        val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "bottomBar")
                         Column(
                             Modifier
+                                .hoverToRequestAlwaysOn(alwaysOnRequester)
                                 .fillMaxWidth()
                                 .background(
                                     Brush.verticalGradient(

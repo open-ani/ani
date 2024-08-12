@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.SkikoComposeUiTest
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
@@ -31,6 +33,7 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
+import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
@@ -100,7 +103,7 @@ class EpisodeVideoControllerTest {
                 hasNextEpisode = true,
                 onClickNextEpisode = {},
                 videoControllerState = controllerState,
-                title = {},
+                title = { PlayerTopBar() },
                 danmakuHostState = remember { DanmakuHostState() },
                 danmakuEnabled = false,
                 onToggleDanmaku = {},
@@ -304,11 +307,72 @@ class EpisodeVideoControllerTest {
 
     /**
      * 鼠标悬浮在控制器上, 会保持显示
-     *
-     * @see GestureFamily.mouseHoverForController
      */
     @Test
-    fun `mouse - hover to always on`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - bottom bar`() = runSkikoComposeUiTest {
+        testRequestAlwaysOn(
+            performGesture = {
+                // 鼠标移动到控制器上
+                onRoot().performMouseInput {
+                    moveTo(bottomCenter) // 肯定在 bottomBar 区域内
+                }
+            },
+            expectAlwaysOn = true,
+        )
+    }
+
+    /**
+     * 鼠标悬浮在控制器上, 会保持显示
+     */
+    @Test
+    fun `mouse - hover to always on - top bar`() = runSkikoComposeUiTest {
+        testRequestAlwaysOn(
+            performGesture = {
+                // 鼠标移动到控制器上
+                onRoot().performMouseInput {
+                    moveTo(topCenter) // 肯定在 topBar 区域内
+                }
+            },
+            expectAlwaysOn = true,
+        )
+    }
+
+    /**
+     * 手指单击控制器, 不会触发保持显示
+     */
+    @Test
+    fun `mouse - clicking does not request always on - bottom bar`() = runSkikoComposeUiTest {
+        testRequestAlwaysOn(
+            performGesture = {
+                // 手指单击控制器
+                onRoot().performTouchInput {
+                    click(bottomCenter) // 肯定在 bottomBar 区域内
+                }
+            },
+            expectAlwaysOn = false,
+        )
+    }
+
+    /**
+     * 手指单击控制器, 不会触发保持显示
+     */
+    @Test
+    fun `mouse - clicking does not request always on - top bar`() = runSkikoComposeUiTest {
+        testRequestAlwaysOn(
+            performGesture = {
+                // 手指单击控制器
+                onRoot().performTouchInput {
+                    click(topCenter) // 肯定在 topBar 区域内
+                }
+            },
+            expectAlwaysOn = false,
+        )
+    }
+
+    private fun SkikoComposeUiTest.testRequestAlwaysOn(
+        performGesture: () -> Unit,
+        expectAlwaysOn: Boolean = false,
+    ) {
         setContent {
             Player(GestureFamily.MOUSE)
         }
@@ -332,20 +396,26 @@ class EpisodeVideoControllerTest {
             )
         }
 
-        // 鼠标移动到控制器上
-        onRoot().performMouseInput {
-            moveTo(bottomCenter) // 肯定在 bottomBar 区域内
-        }
+        performGesture()
 
         mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
         mainClock.autoAdvance = true
-        // TODO: 应但是经过几秒后应当仍然显示
+        // 手指点击不应当显示
         runOnIdle {
-            waitUntil { topBar.doesNotExist() }
-            assertEquals(
-                NORMAL_INVISIBLE,
-                controllerState.visibility,
-            )
+            assertEquals(expectAlwaysOn, controllerState.alwaysOn)
+            if (expectAlwaysOn) {
+                waitUntil { topBar.exists() }
+                assertEquals(
+                    NORMAL_VISIBLE,
+                    controllerState.visibility,
+                )
+            } else {
+                waitUntil { topBar.doesNotExist() }
+                assertEquals(
+                    NORMAL_INVISIBLE,
+                    controllerState.visibility,
+                )
+            }
         }
     }
 }
