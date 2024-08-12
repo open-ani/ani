@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.episode.EpisodeInfo
-import me.him188.ani.app.data.models.episode.EpisodeType
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.processPagedResponse
@@ -148,7 +148,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = this.id,
-        type = EpisodeType(this.type),
+        type = EpisodeType.codeOf(this.type),
         name = this.name,
         nameCn = this.nameCn,
         airDate = PackedDate.parseFromDate(this.airdate),
@@ -165,7 +165,7 @@ fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
 fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = id,
-        type = EpisodeType(this.type),
+        type = EpisodeType.codeOf(this.type),
         name = name,
         nameCn = nameCn,
         sort = EpisodeSort(this.sort, this.type),
