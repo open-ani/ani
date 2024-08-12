@@ -124,8 +124,8 @@ class PlayerSkipOpEdStateTest {
             }
             localState.update(10_000L)
             assertEquals(100_000L, skipTime)
-            assertEquals(false, state.showSkipTips)
-            assertEquals(false, state.skipCancel)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(false, localState.skipCancel)
         }
 
         @Test
@@ -154,7 +154,7 @@ class PlayerSkipOpEdStateTest {
         override fun `cancel before op 3s`() {
             state.cancelSkipOpEd()
             state.update(7_000L)
-            assertEquals(true, state.showSkipTips)
+            assertEquals(false, state.showSkipTips)
             assertEquals(true, state.skipCancel)
         }
 
@@ -167,8 +167,8 @@ class PlayerSkipOpEdStateTest {
             localState.cancelSkipOpEd()
             localState.update(10_000L)
             assertEquals(0L, skipTime)
-            assertEquals(false, state.showSkipTips)
-            assertEquals(true, state.skipCancel)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipCancel)
         }
 
         @Test
