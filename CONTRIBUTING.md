@@ -61,11 +61,6 @@ Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开�
 >   git config core.filemode false
 >   git add --update --renormalize
 >   ```
->
-> > *为什么?*
-> >  - PR 中所有 CRLF 的文件都不会被接受
-> >  - 如果不忽略文件权限, 在 Windows 上将会看到数百个文件修改
-> >  - 这些命令只对本项目有效, 不会修改你的全局设置
 
 ## 2. 代码风格
 
@@ -143,7 +138,7 @@ flowchart TD
 
 > [!NOTE]
 > Compose Multiplatform 在 `desktop` 和 `ios` 均使用 Skiko 渲染, 因此共享的 `skiko` 源集.
-> 中间源集 `skiko` 为辅助作用. 主要的平台适配代码在 `jvm` 和 `apple` 中.Compose Multiplatform
+> 中间源集 `skiko` 为辅助作用. 主要的平台适配代码在 `jvm` 和 `apple` 中.
 
 > [!TIP]
 > 实际上有些模块的源集结构是不完整的 (更简单一些). 例如工具模块 `:utils:io` 不区分 `android`
@@ -314,7 +309,7 @@ App 主要通过 `repository` 和 `source` 与外部数据交互.
 
 data
 还提供了一个 [
-`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/source/media/MediaFetcher.kt#L42),
+`MediaFetcher`](https://github.com/open-ani/ani/tree/master/app/shared/src/commonMain/kotlin/data/source/media/fetch/MediaFetcher.kt#L59),
 封装了对番剧的下载链接获取逻辑.
 
 ### `foundation`: 基础组件
