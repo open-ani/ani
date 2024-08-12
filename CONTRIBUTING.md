@@ -258,6 +258,8 @@ Ani 使用 Gradle Version Catalogs.
 > 如果提示找不到 `Res.*` , 请生成 Compose Multiplatform 资源:
 > 执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
 
+### 构建桌面应用
+
 要构建桌面应用，请参考 [Compose for Desktop]
 官方文档，或简单执行 `./gradlew createReleaseDistributable`
 ，结果保存在 `app/desktop/build/compose/binaries` 中。
@@ -265,12 +267,14 @@ Ani 使用 Gradle Version Catalogs.
 > [!NOTE]
 > 一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
 
-要构建 Android 应用，请执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
-，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
-
 > [!WARNING]
 > 默认情况下, 桌面端不会构建 Anitorrent (C++), 也就没有 BT 支持.
 > 可阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md) 了解如何配置 C++ 构建.
+
+### 构建 Android 应用
+
+要构建 Android 应用，请执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
+，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
 
 > [!TIP]
 > **重复运行所有测试**
