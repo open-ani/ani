@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipe
@@ -34,6 +35,7 @@ import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.seconds
 
 private const val TAG_DETACHED_PROGRESS_SLIDER = "detachedProgressSlider"
 
@@ -291,6 +293,53 @@ class EpisodeVideoControllerTest {
 
         mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
         mainClock.autoAdvance = true
+        runOnIdle {
+            waitUntil { topBar.doesNotExist() }
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+    }
+
+    /**
+     * 鼠标悬浮在控制器上, 会保持显示
+     *
+     * @see GestureFamily.mouseHoverForController
+     */
+    @Test
+    fun `mouse - hover to always on`() = runSkikoComposeUiTest {
+        setContent {
+            Player(GestureFamily.MOUSE)
+        }
+        runOnIdle {
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+
+        // 显示控制器
+        mainClock.autoAdvance = false
+        onRoot().performTouchInput {
+            swipe(centerLeft, center)
+        }
+        runOnIdle {
+            waitUntil { topBar.exists() }
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        }
+
+        // 鼠标移动到控制器上
+        onRoot().performMouseInput {
+            moveTo(bottomCenter) // 肯定在 bottomBar 区域内
+        }
+
+        mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
+        mainClock.autoAdvance = true
+        // TODO: 应但是经过几秒后应当仍然显示
         runOnIdle {
             waitUntil { topBar.doesNotExist() }
             assertEquals(
