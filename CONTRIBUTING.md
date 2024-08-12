@@ -256,26 +256,26 @@ Ani 使用 Gradle Version Catalogs.
 
 ## 5. 构建打包
 
-### 5.1. 生成 Compose Multiplatform 资源
-
-执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
-
-### 5.2 安装 Native 依赖
-
-阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md)
-
-### 5.3. 执行构建
-
 执行 `./gradlew build` 即可编译并运行测试 (前提是你已经配置了上面的几步)。需要正确的 Android SDK
 配置才能完成编译。在没有配置时，编译将会出错并提示如何配置。
 
-要构建桌面应用，请参考 [Compose for Desktop] 官方文档，或简单执行 `./gradlew package`
-。这将进行 `desktop` 模块的所有编译打包操作，结果保存在 `desktop/build/compose/binaries` 中。
+> [!NOTE]
+> 如果提示找不到 `Res.*` , 请生成 Compose Multiplatform 资源:
+> 执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
 
-一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
+要构建桌面应用，请参考 [Compose for Desktop]
+官方文档，或简单执行 `./gradlew createReleaseDistributable`
+，结果保存在 `app/desktop/build/compose/binaries` 中。
+
+> [!NOTE]
+> 一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
 
 要构建 Android 应用，请执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
 ，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
+
+> [!WARNING]
+> 默认情况下, 桌面端不会构建 Anitorrent (C++), 也就没有 BT 支持.
+> 可阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md) 了解如何配置 C++ 构建.
 
 > [!TIP]
 > **重复运行所有测试**
