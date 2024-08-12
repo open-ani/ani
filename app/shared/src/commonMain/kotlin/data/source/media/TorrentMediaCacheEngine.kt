@@ -157,6 +157,11 @@ class TorrentMediaCacheEngine(
             lazyFileHandle.handle.first()?.pause()
         }
 
+        override suspend fun close() {
+            if (isDeleted.value) return
+            lazyFileHandle.handle.first()?.close()
+        }
+
         override suspend fun resume() {
             if (isDeleted.value) return
             val file = lazyFileHandle.handle.first()

@@ -262,6 +262,7 @@ kotlin {
             } else {
                 sourceSets.all {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
+                    resources.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/resources"))
                 }
             }
         }

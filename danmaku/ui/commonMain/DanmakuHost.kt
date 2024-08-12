@@ -114,8 +114,9 @@ fun DanmakuHostState(
 @Composable
 fun DanmakuHost(
     state: DanmakuHostState,
-    modifier: Modifier = Modifier,
     configProvider: () -> DanmakuConfig,
+    modifier: Modifier = Modifier,
+    frozen: Boolean = false,
 ) {
     BoxWithConstraints(modifier) {
         val baseStyle = MaterialTheme.typography.bodyMedium
@@ -132,7 +133,13 @@ fun DanmakuHost(
         Column(Modifier.matchParentSize().background(Color.Transparent)) {
             if (config.enableTop) {
                 for (track in state.topTracks) {
-                    FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    FixedDanmakuTrack(
+                        track,
+                        Modifier.fillMaxWidth(),
+                        configProvider,
+                        baseStyle = baseStyle,
+                        frozen = frozen,
+                    ) {
                         HeightHolder(verticalPadding)
                         track.visibleDanmaku?.let {
                             danmaku(it)
@@ -143,7 +150,13 @@ fun DanmakuHost(
             Spacer(Modifier.weight(1f))
             if (config.enableBottom) {
                 for (track in state.bottomTracks) {
-                    FixedDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    FixedDanmakuTrack(
+                        track,
+                        Modifier.fillMaxWidth(),
+                        configProvider,
+                        baseStyle = baseStyle,
+                        frozen = frozen,
+                    ) {
                         HeightHolder(verticalPadding)
                         track.visibleDanmaku?.let {
                             danmaku(it)
@@ -183,7 +196,13 @@ fun DanmakuHost(
                 }
 
                 for (track in state.floatingTracks) {
-                    FloatingDanmakuTrack(track, Modifier.fillMaxWidth(), configProvider, baseStyle = baseStyle) {
+                    FloatingDanmakuTrack(
+                        track,
+                        Modifier.fillMaxWidth(),
+                        configProvider,
+                        baseStyle = baseStyle,
+                        frozen = frozen,
+                    ) {
                         HeightHolder(verticalPadding)
 
                         for (danmaku in track.visibleDanmaku) {

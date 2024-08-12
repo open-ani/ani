@@ -19,6 +19,7 @@
 package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -29,9 +30,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
+import androidx.datastore.preferences.core.mutablePreferencesOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.io.files.Path
+import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
@@ -49,6 +53,7 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
+import me.him188.ani.app.tools.caching.MemoryDataStore
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
@@ -75,56 +80,56 @@ fun ProvideCompositionLocalsForPreview(
         DummyPlayerState()
     },
     module: Module.() -> Unit = {},
+    colorScheme: ColorScheme = MaterialTheme.colorScheme,
     content: @Composable () -> Unit,
 ) {
-    MaterialTheme {
-        PlatformPreviewCompositionLocalProvider {
-            val context = LocalContext.current
-            runCatching { stopKoin() }
-            startKoin {
-                modules(getCommonKoinModule({ context }, globalScope))
-                modules(
-                    module {
-                        single<PlayerStateFactory> {
-                            playerStateFactory
-                        }
-                        single<SessionManager> { PreviewSessionManager }
-                        factory<VideoSourceResolver> {
-                            VideoSourceResolver.from(
-                                get<TorrentManager>().engines
-                                    .map { TorrentVideoSourceResolver(it) }
-                                    .plus(LocalFileVideoSourceResolver())
-                                    .plus(HttpStreamingVideoSourceResolver()),
-                            )
-                        }
-                        single<TorrentManager> {
-                            DefaultTorrentManager(globalScope.coroutineContext) { Path("preview-cache").inSystem }
-                        }
-                        single<PermissionManager> { GrantedPermissionManager }
-                        single<NotifManager> { NoopNotifManager }
-                        single<BrowserNavigator> { NoopBrowserNavigator }
-                        module()
-                    },
-                )
-            }
-            val aniNavigator = remember { AniNavigator() }
-            val showLandscapeUI = isInLandscapeMode()
-
-            BoxWithConstraints {
-                val size by rememberUpdatedState(
-                    with(LocalDensity.current) {
-                        DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
-                    },
-                )
-                CompositionLocalProvider(
-                    LocalIsPreviewing provides true,
-                    LocalNavigator provides aniNavigator,
-                    LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
-                    LocalImageViewerHandler provides rememberImageViewerHandler(),
-                ) {
-                    AniApp {
-                        content()
+    PlatformPreviewCompositionLocalProvider {
+        val context = LocalContext.current
+        runCatching { stopKoin() }
+        startKoin {
+            modules(getCommonKoinModule({ context }, globalScope))
+            modules(
+                module {
+                    single<PlayerStateFactory> {
+                        playerStateFactory
                     }
+                    single<SessionManager> { PreviewSessionManager }
+                    factory<VideoSourceResolver> {
+                        VideoSourceResolver.from(
+                            get<TorrentManager>().engines
+                                .map { TorrentVideoSourceResolver(it) }
+                                .plus(LocalFileVideoSourceResolver())
+                                .plus(HttpStreamingVideoSourceResolver()),
+                        )
+                    }
+                    single<TorrentManager> {
+                        DefaultTorrentManager(globalScope.coroutineContext) { Path("preview-cache").inSystem }
+                    }
+                    single<PermissionManager> { GrantedPermissionManager }
+                    single<NotifManager> { NoopNotifManager }
+                    single<BrowserNavigator> { NoopBrowserNavigator }
+                    single<SettingsRepository> { PreferencesRepositoryImpl(MemoryDataStore(mutablePreferencesOf())) }
+                    module()
+                },
+            )
+        }
+        val aniNavigator = remember { AniNavigator() }
+        val showLandscapeUI = isInLandscapeMode()
+
+        BoxWithConstraints {
+            val size by rememberUpdatedState(
+                with(LocalDensity.current) {
+                    DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
+                },
+            )
+            CompositionLocalProvider(
+                LocalIsPreviewing provides true,
+                LocalNavigator provides aniNavigator,
+                LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
+                LocalImageViewerHandler provides rememberImageViewerHandler(),
+            ) {
+                AniApp(colorScheme = colorScheme) {
+                    content()
                 }
             }
         }

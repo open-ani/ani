@@ -96,19 +96,22 @@ configure<KotlinMultiplatformExtension> {
         implementation(project(":utils:testing"))
     }
 
-//    if (composeExtension != null) {
-//        sourceSets.getByName("desktopMain").dependencies {
-//            val compose = ComposePlugin.Dependencies(project)
-//            implementation(compose.desktop.uiTestJUnit4)
-//        }
-//    }
-    
+    if (composeExtension != null) {
+        sourceSets.getByName("desktopMain").dependencies {
+            val compose = ComposePlugin.Dependencies(project)
+            implementation(compose.desktop.uiTestJUnit4)
+        }
+    }
 
     if (android != null) {
-        sourceSets.androidInstrumentedTest.dependencies {
-            //https://developer.android.com/develop/ui/compose/testing#setup
-            implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
+        listOf(sourceSets.getByName("androidInstrumentedTest"), sourceSets.getByName("androidUnitTest")).forEach { sourceSet ->
+            sourceSet.dependencies {
+                // https://developer.android.com/develop/ui/compose/testing#setup
+                implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
+                implementation("androidx.compose.ui:ui-test-manifest:1.6.8")
+            }
         }
+
         dependencies {
             "debugImplementation"("androidx.compose.ui:ui-test-manifest:1.6.8")
         }

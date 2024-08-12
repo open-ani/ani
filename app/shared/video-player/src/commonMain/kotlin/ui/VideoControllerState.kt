@@ -16,7 +16,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
  */
 @Composable
 fun rememberVideoControllerState(
-    initialVisibility: ControllerVisibility = ControllerVisibility.Invisible
+    initialVisibility: ControllerVisibility = VideoControllerState.DEFAULT_INITIAL_VISIBILITY
 ): VideoControllerState {
     return remember {
         VideoControllerState(initialVisibility)
@@ -63,8 +63,12 @@ data class ControllerVisibility(
 
 @Stable
 class VideoControllerState(
-    initialVisibility: ControllerVisibility = ControllerVisibility.Visible
+    initialVisibility: ControllerVisibility = DEFAULT_INITIAL_VISIBILITY
 ) {
+    companion object {
+        val DEFAULT_INITIAL_VISIBILITY = ControllerVisibility.Invisible
+    }
+
     private var fullVisible by mutableStateOf(initialVisibility == ControllerVisibility.Visible)
     private val hasProgressBarRequester by derivedStateOf { progressBarRequesters.isNotEmpty() }
 
@@ -94,11 +98,6 @@ class VideoControllerState(
 
     val setFullVisible: (visible: Boolean) -> Unit = {
         fullVisible = it
-    }
-
-    var danmakuEnabled by mutableStateOf(true)
-    fun toggleDanmakuEnabled() {
-        danmakuEnabled = !danmakuEnabled
     }
 
     private val alwaysOnRequests = SnapshotStateList<Any>()

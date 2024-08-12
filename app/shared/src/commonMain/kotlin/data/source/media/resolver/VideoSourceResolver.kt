@@ -78,6 +78,8 @@ enum class ResolutionFailures {
      */
     FETCH_TIMEOUT,
 
+    NETWORK_ERROR,
+
     /**
      * 引擎自身错误 (bug)
      */
