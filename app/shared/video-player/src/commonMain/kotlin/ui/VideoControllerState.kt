@@ -114,6 +114,7 @@ class VideoControllerState(
      */
     fun setRequestAlwaysOn(requester: Any, isAlwaysOn: Boolean) {
         if (isAlwaysOn) {
+            if (requester in alwaysOnRequests) return
             alwaysOnRequests.add(requester)
         } else {
             alwaysOnRequests.remove(requester)
