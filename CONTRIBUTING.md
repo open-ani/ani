@@ -2,7 +2,7 @@
 
 [动漫花园]: https://www.dmhy.org/
 
-[context receivers]: https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md
+[KMP]: https://kotlinlang.org/docs/multiplatform.html
 
 # 参与开发
 
@@ -41,23 +41,31 @@
 - Jetpack Compose
 - Compose Multiplatform IDE Support
 - Compose colors preview (可选安装, 用于预览颜色)
+- ANTLR v4 (如果你要修改 BBCode 解析模块)
 
 ### 配置 Android NDK
 
-Android 包含使用 Android NDK 的 C++ 代码. 要配置 NDK:
+Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开发:
 
 1. 打开 SDK Manager (Android Studio 中 Tools -> SDK Manager)
 2. 安装 NDK 和 Cmake
 
-### Windows 特别提示
-
-1. 设置 Git 使用 LF 并忽略文件权限
-   ```shell
-   git config core.autocrlf false
-   git config core.eol lf
-   git config core.filemode false
-   git add --update --renormalize
-   ```
+> [!WARNING]
+> **Windows 特别提示**
+>
+> 建议设置 Git 使用 LF 并忽略文件权限.
+>
+>   ```shell
+>   git config core.autocrlf false
+>   git config core.eol lf
+>   git config core.filemode false
+>   git add --update --renormalize
+>   ```
+>
+> > *为什么?*
+> >  - PR 中所有 CRLF 的文件都不会被接受
+> >  - 如果不忽略文件权限, 在 Windows 上将会看到数百个文件修改
+> >  - 这些命令只对本项目有效, 不会修改你的全局设置
 
 ## 2. 代码风格
 
@@ -71,48 +79,173 @@ Android 包含使用 Android NDK 的 C++ 代码. 要配置 NDK:
 
 ### 代码规范
 
-这是一个轻松的项目，能跑的代码就是好代码，不过也请至少遵守遵循 [Kotlin 官方代码风格指南](https://kotlinlang.org/docs/coding-conventions.html).
-在 PR 过程中尝试一些最佳实践不是更好吗?
+我们力求打造一个示范级质量的 Compose Multiplatform 项目.
+
+为了达成这一点:
+
+- 请遵循 [Kotlin 官方代码风格指南](https://kotlinlang.org/docs/coding-conventions.html)
+- 请为新功能增加单元测试
+- 请为新功能增加 UI 测试 (如何编写测试将在下面说明)
+- PR 审核将会比较严格. 在保证项目代码质量的同时, 我们也希望尽可能地帮助你提高技术水平.
+  审核者技术有限, 如有意见不统一的情况, 请务必提出, 相互学习 :)
 
 ## 3. 模块结构
 
-模块结构也对应目录结构.
+Ani 现在已经是一个不小的项目, 本章节将给你一个全局的了解.
 
-```
-ani
-├── buildSrc (Gradle 构建)
-├── ci-helper (GitHub release 用)
-├── danmaku (独立弹幕引擎)
-├── torrent (独立 BitTorrent 下载支持库)
-├── data-sources (数据源)
-│   ├── api (数据源抽象接口)
-│   ├── bangumi (Bangumi API)
-│   ├── Mikan (对接 mikanani.me)
-│   ├── acg.rip (对接 acg.rip)
-│   └── dmhy (对接 dmhy.org)
-├── app (客户端)
-│   ├── shared (桌面端与客户端共享代码)
-│   ├── desktop (桌面端入口点)
-│   ├── video-player (视频播放器支持库)
-│   └── android (Android 客户端入口点)
-└── utils (共享工具库)
-```
+Ani 基于 Kotlin 多平台代码技术, 目前正式支持 Android, macOS, Windows 三个平台. 代码库中有正在开发中的
+iOS 代码, 但还没有配置构建 iOS APP.
 
-> 独立在 app 之外的库, 其实全都可以单独做成一个库发布.
-
-客户端架构细节请参考后文.
-
-### 客户端入口点
-
-注意到 `:app` 模块下有 `:app:desktop` 与 `:app:android` 两个子模块. 它们都是客户端的入口点.
-它们内部只有微量代码用来启动来自 `:app:shared` 模块的 UI 等.
-绝大部分客户端代码都在共享模块 `:app:shared` 中.
-
-> 这样做的一个原因是各个平台的构建限制:
+> [!TIP]
+> [Kotlin 多平台][KMP] (Kotlin Multiplatform, 简称 KMP、MPP), 是 Kotlin 的多平台代码共享技术.
+> 一个项目可以拥有多个编译目标平台, 例如桌面 JVM、 Android、iOS.
 >
-> - Android 方面是因为 Android Library 无法在 manifest 定义 Activity.
-> - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
-> - 将这些入口代码分开也能让系统架构更清晰一些.
+> 每个目标平台由多个源集组成. `common` 源集为全平台共享的通用代码, 多个目标之间能以任意程度共享代码.
+> 例如, `android` 和 `desktop` 可以共同继承于一个 `jvm` 源集, 在 `jvm` 源集中的代码就可以共享给安卓和桌面平台;
+> 同时 `ios` 和 `desktop` 还可以共同继承于一个 `skiko` 源集 (因为这两个平台上的 UI 都是用 Skiko
+> 渲染的).
+>
+> 共享源集内, 可以使用各个平台的专有 API. 例如安卓和桌面都是 JVM, 也就都可以使用 JDK (Java) API.
+> 在 iOS 源集内, 则可使用 native API, 例如 UIKit. 在 iOS 上, Kotlin 还支持 C/Objective-C 交互.
+
+### 多平台源集结构
+
+Ani 项目的几乎所有模块都使用 KMP. 源集结构如下:
+
+```mermaid
+flowchart TD
+    subgraph "多平台项目统一源集结构"
+        direction BT
+        style common fill: white
+        style android fill: aqua
+        style desktop fill: aqua
+        style iosArm64 fill: aqua
+        style iosSimulatorArm64 fill: lightgreen
+        style skiko fill: #ECECEBA0, stroke-dasharray: 4 4
+        jvm ---> common
+        android --> jvm
+        desktop --> jvm
+        skiko .-> common
+        desktop .-> skiko
+        ios .-> skiko
+        native --> common
+        apple --> native
+        ios --> apple
+        iosArm64 --> ios
+        iosSimulatorArm64 --> ios
+
+    end
+```
+
+> [!NOTE]
+> 蓝色为最终目标. 它们将会构建成为 APP.
+> 绿色的是 iOS 模拟器目标, 仅为运行测试.
+
+> [!NOTE]
+> Compose Multiplatform 在 `desktop` 和 `ios` 均使用 Skiko 渲染, 因此共享的 `skiko` 源集.
+> 中间源集 `skiko` 为辅助作用. 主要的平台适配代码在 `jvm` 和 `apple` 中.Compose Multiplatform
+
+> [!TIP]
+> 实际上有些模块的源集结构是不完整的 (更简单一些). 例如工具模块 `:utils:io` 不区分 `android`
+> 和 `desktop`, 其 `jvm`
+> 为最终目标. 因此它也没有中间源集 `skiko`.
+
+### 模块结构
+
+模块结构也对应源码目录结构.
+
+```mermaid
+flowchart TD
+    classDef omitted fill: transparent, stroke: transparent
+
+    subgraph "基础工具"
+        :utils:platform
+        :utils:io
+        :utils:serialization
+        :utils:logging
+        :utils:coroutines
+        :utils:testing
+        :utils:...(...)
+        class :utils:... omitted
+    end
+
+    subgraph "数据源"
+        direction LR
+
+        subgraph "BT"
+            direction TB
+            dmhy(dmhy)
+            acg.rip(acg.rip)
+            mikan(mikan)
+        end
+
+        subgraph "在线"
+            direction TB
+            data-sources:nyafun(nyafun) --> data-sources:web-base
+            data-sources:ntdm(ntdm) --> data-sources:web-base
+            data-sources:...(...) --> data-sources:web-base
+            class data-sources:... omitted
+            data-sources:web-base[:data-sources:web-base]
+        end
+
+        在线 --> data-sources:api
+        BT --> data-sources:api
+        data-sources:bangumi(:data-sources:bangumi\nBangumi, 提供条目数据) --> data-sources:api
+    end
+
+    数据源 --> 基础工具
+    APP --> 基础工具
+    APP --> 数据源
+
+    subgraph "弹幕"
+        danmaku:api[:danmaku:api \n 多弹幕源接口]
+        danmaku:dandanplay[:danmaku:dandanplay\n 弹弹 play] --> danmaku:api
+        danmaku:ui[:danmaku:ui\n 视频播放器 UI 的弹幕层] --> danmaku:api
+    end
+
+    弹幕 --> 基础工具
+    APP --> 弹幕
+
+    subgraph "BitTorrent"
+        torrent:api[:torrent:api\n多 BT 引擎接口]
+        torrent:anitorrent[:torrent:anitorrent\nAnitorrent 自身]
+        torrent:impl:anitorrent[:torrent:impl:anitorrent\n用 Anitorrent 实现 BT 引擎] --> torrent:api
+        torrent:impl:anitorrent .-> torrent:anitorrent
+    end
+
+    BitTorrent --> 基础工具
+    APP --> BitTorrent
+
+    subgraph "APP"
+        android[":app:android \n Android 入口"] --> shared
+        desktop[":app:desktop \n 桌面端入口"] --> shared
+        ios[":app:ios \n 计划"] --> shared
+        client[":client\nAni 服务客户端 (弹幕+登录)"]
+        shared[":app:shared\nAPP 主要代码"] --> client
+        style android fill: cyan
+        style desktop fill: cyan
+        style ios fill: cyan, stroke-dasharray: 4 4
+
+        subgraph "UI组件"
+            direction TB
+            image-viewer[:app:shared:image-view\n图片查看器]
+            video-player[:app:shared:video-player\n视频播放器]
+            placeholder[:app:shared:placeholder\n载入特效组件]
+            reorderable[:app:shared:reorderable\n长按排序组件]
+        end
+
+        shared --> UI组件
+    end
+```
+
+> [!TIP]
+> 蓝色的模块为 APP 的入口点. 它们里面只有微量的代码用来启动 `:app:shared` 中的 UI 等.
+> 绝大部分客户端代码都在共享模块 `:app:shared` 中.
+>
+> > 这样做的一个原因是各个平台的构建限制:
+> >
+> > - Android 方面是因为 Android Library 无法在 manifest 定义 Activity.
+> > - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
 
 ## 4. 依赖管理
 
@@ -123,71 +256,15 @@ Ani 使用 Gradle Version Catalogs.
 
 ## 5. 构建打包
 
-要构建项目, 你需要首先进行几个简单配置:
+### 5.1. 生成 Compose Multiplatform 资源
 
-### 5.1. 配置 Bangumi OAuth
+执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
 
-1. 前往 <https://bangumi.tv/dev/app>
-2. 创建一个新应用
-    - 应用名任意, 例如 Ani Android
-    - 主页地址请**不要**填写本项目地址, 请填写你的私人 fork 地址或个人主页地址.
-3. 编辑你刚刚创建的新应用
-    - 回调地址设置为 `ani://bangumi-oauth-callback`
-    - 记录 App ID 和 App Secret
-4. 在项目根目录的 `local.properties` 或 Gradle Home 的 `gradle.properties` 中添加如下内容 (
-   替换相应内容为你应用的):
-    - `bangumi.oauth.client.android.appId=bgmXXXXXXXX`
-    - `bangumi.oauth.client.android.secret=XXXXXXXX`
-
-[//]: # (5. 再次前往 <https://bangumi.tv/dev/app>)
-
-[//]: # (6. 再次创建一个新应用)
-
-[//]: # (    - 应用名任意, 例如 Ani Desktop)
-
-[//]: # (    - 主页地址请**不要**填写本项目地址, 请填写你的私人 fork 地址或个人主页地址.)
-
-[//]: # (7. 编辑你刚刚创建的新应用)
-
-[//]: # (    - 回调地址**留空** &#40;必须留空, 否则在桌面端登录时会报错地址不符, 因为桌面端使用 HTTP)
-
-[//]: # (      服务器完成回调&#41;)
-
-[//]: # (    - 记录 App ID 和 App Secret)
-
-[//]: # (8. 在项目根目录的 `local.properties` 或 Gradle Home 的 `gradle.properties` 中添加如下内容 &#40;)
-
-[//]: # (   替换相应内容为你应用的&#41;:)
-
-[//]: # (    - `bangumi.oauth.client.desktop.appId=bgmXXXXXXXX`)
-
-[//]: # (    - `bangumi.oauth.client.desktop.secret=XXXXXXXX`)
-
-5. 在 IDE 同步项目, 执行一次构建 (`./gradlew build`). 待构建完成后 (双击 shift)
-   查看生成的 `me.him188.ani.app.platform.AniBuildConfigAndroid`, 你应当能看到你的应用 ID 和
-   Secret 已经更新到该文件中.
-
-[//]: # (   > 桌面端也会自动有类似的 BuildConfig 文件生成 &#40;`)
-
-[//]: # (   me.him188.ani.app.platform.AniBuildConfigDesktop&#41;. 它与 Android 端的是同步的.)
-
-### 5.2. 配置 Android 签名
-
-在构建安卓目标时会自动弹出配置. 跟随 IDE 的指引即可.
-
-[//]: # ()
-
-[//]: # (### 5.3. 生成 Compose Multiplatform 资源)
-
-[//]: # ()
-
-[//]: # (执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.)
-
-### 5.3 安装 Native 依赖
+### 5.2 安装 Native 依赖
 
 阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md)
 
-### 5.4. 执行构建
+### 5.3. 执行构建
 
 执行 `./gradlew build` 即可编译并运行测试 (前提是你已经配置了上面的几步)。需要正确的 Android SDK
 配置才能完成编译。在没有配置时，编译将会出错并提示如何配置。
@@ -200,10 +277,12 @@ Ani 使用 Gradle Version Catalogs.
 要构建 Android 应用，请执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
 ，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
 
-### 5.5. 重复运行所有测试
-
-由于启用了 build cache, 如果代码没有修改, test 就不会执行.
-可使用 `./gradlew clean generateComposeResClass check` 清空测试的缓存并重新运行所有测试.
+> [!TIP]
+> **重复运行所有测试**
+>
+> 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
+>
+> 可使用 `./gradlew clean generateComposeResClass check` 清空测试的缓存并重新运行所有测试.
 
 ## 6. App 项目架构
 
@@ -234,7 +313,8 @@ Ani 按照功能进行了一定程度的模块化.
 App 主要通过 `repository` 和 `source` 与外部数据交互.
 
 data
-还提供了一个 [`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/source/media/MediaFetcher.kt#L42),
+还提供了一个 [
+`MediaFetcher`](https://github.com/Him188/ani/tree/master/app/shared/data/common/data/source/media/MediaFetcher.kt#L42),
 封装了对番剧的下载链接获取逻辑.
 
 ### `foundation`: 基础组件
@@ -356,7 +436,8 @@ fun VideoScaffold() {
 }
 ```
 
-[`PreviewVideoScaffold`](https://github.com/Him188/ani/tree/master/app/shared/video-player/android/ui/VideoScaffold.android.kt#L47)
+[
+`PreviewVideoScaffold`](https://github.com/Him188/ani/tree/master/app/shared/video-player/android/ui/VideoScaffold.android.kt#L47)
 位于 `app/shared/video-player/android/ui/VideoScaffold.android.kt`:
 
 ```kotlin
