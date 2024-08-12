@@ -27,7 +27,6 @@ class PlayerSkipOpEdStateTest {
             get() = 24.minutes
 
         override fun `before op 6s`() {
-
         }
 
         override fun `before op 3s`() {
@@ -58,7 +57,6 @@ class PlayerSkipOpEdStateTest {
         }
 
         override fun `cancel before op 3s`() {
-
         }
 
         @Test
@@ -83,6 +81,15 @@ class PlayerSkipOpEdStateTest {
             state.update(6000)
             assertEquals(false, state.showSkipTips)
             assertEquals(true, state.skipCancel)
+        }
+
+        override fun `cancel before op 6s then play to op`() {
+        }
+
+        override fun `cancel before op 3s then play to op`() {
+        }
+
+        override fun `after show tips user seek to other place`() {
         }
 
     }
@@ -187,6 +194,45 @@ class PlayerSkipOpEdStateTest {
             assertEquals(true, state.skipCancel)
         }
 
+        override fun `cancel before op 6s then play to op`() {
+            var skipTime = 0L
+            val localState = createState_opChapterOnChapter2_24minutes {
+                skipTime = it
+            }
+            localState.cancelSkipOpEd()
+            localState.update(4_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipCancel)
+            localState.update(10_000L)
+            assertEquals(0L, skipTime)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipCancel)
+        }
+
+        override fun `cancel before op 3s then play to op`() {
+            var skipTime = 0L
+            val localState = createState_opChapterOnChapter2_24minutes {
+                skipTime = it
+            }
+            localState.cancelSkipOpEd()
+            localState.update(7_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipCancel)
+            localState.update(10_000L)
+            assertEquals(0L, skipTime)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipCancel)
+        }
+
+        override fun `after show tips user seek to other place`() {
+            state.update(7_000L)
+            assertEquals(true, state.showSkipTips)
+            assertEquals(false, state.skipCancel)
+            state.update(40_000L)
+            assertEquals(false, state.showSkipTips)
+            assertEquals(false, state.skipCancel)
+        }
+
     }
 
     class `24 minutes - noOpChapter` : NeedTest() {
@@ -239,6 +285,18 @@ class PlayerSkipOpEdStateTest {
             TODO("Not yet implemented")
         }
 
+        override fun `cancel before op 6s then play to op`() {
+            TODO("Not yet implemented")
+        }
+
+        override fun `cancel before op 3s then play to op`() {
+            TODO("Not yet implemented")
+        }
+
+        override fun `after show tips user seek to other place`() {
+            TODO("Not yet implemented")
+        }
+
     }
 }
 
@@ -259,6 +317,11 @@ abstract class NeedTest {
     abstract fun `cancel on op`()
     abstract fun `cancel after op 3s`()
     abstract fun `cancel after op 6s`()
+
+    abstract fun `cancel before op 6s then play to op`()
+    abstract fun `cancel before op 3s then play to op`()
+
+    abstract fun `after show tips user seek to other place`()
 
     fun createState_opChapterOnStart_24minutes(onSkip: (targetMillis: Long) -> Unit = {}): PlayerSkipOpEdState {
         return PlayerSkipOpEdState(
