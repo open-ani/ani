@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
@@ -69,8 +70,8 @@ import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
-import me.him188.ani.app.ui.subject.episode.video.PlayerFloatingTipsState
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
+import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
@@ -163,7 +164,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val episodeCommentState: CommentState
 
-    val playerFloatingTipsState: PlayerFloatingTipsState
+    val playerSkipOpEdState: PlayerSkipOpEdState
     
     @UiThread
     fun stopPlaying()
@@ -498,7 +499,14 @@ private class EpisodeViewModelImpl(
         onLoadMore = { episodeCommentLoader.loadMore() },
         backgroundScope = backgroundScope,
     )
-    override val playerFloatingTipsState: PlayerFloatingTipsState = PlayerFloatingTipsState()
+    override val playerSkipOpEdState: PlayerSkipOpEdState = PlayerSkipOpEdState(
+        chapters = playerState.chapters.produceState(),
+        onSkip = {
+            playerState.seekTo(it)
+        },
+        videoLength = playerState.videoProperties.mapNotNull { it?.durationMillis?.milliseconds }
+            .produceState(0.milliseconds),
+    )
 
     override fun stopPlaying() {
         playerState.stop()
@@ -614,28 +622,20 @@ private class EpisodeViewModelImpl(
                 .debounce(1000)
                 .collectLatest { enabled ->
                     if (!enabled) return@collectLatest
-                    
-                    // 设置启用
 
+                    // 设置启用
                     mediaFetchSession.collectLatest {
-                        // 更换 ep 时重置
                         withContext(Dispatchers.Main) {
-                            playerFloatingTipsState.enableSkipOpEd = true
+                            playerSkipOpEdState.resetSkipOpEd()
                         }
-                        
                         combine(
                             playerState.currentPositionMillis.sampleWithInitial(1000),
-                            playerState.videoProperties.map { it?.durationMillis }.debounce(1000).filterNotNull(),
-                            playerState.chapters,
                             episodeId,
                             episodeCollectionsFlow,
-                        ) { pos, max, chapters, epId, collections ->
-                            // 第一集不跳过
-                            if (collections.getOrNull(0)?.episode?.id == epId) return@combine
-                            playerFloatingTipsState.calculateTargetTime(chapters, pos, max)?.let {
-                                playerState.seekTo(it)
-                            }
-
+                        ) { pos, epId, collections ->
+                            // 不止一集并且当前是第一集时不跳过
+                            if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == epId) return@combine
+                            playerSkipOpEdState.update(pos)
                         }.collect()
                     }
                 }
