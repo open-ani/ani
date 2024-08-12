@@ -624,17 +624,16 @@ private class EpisodeViewModelImpl(
                     if (!enabled) return@collectLatest
 
                     // 设置启用
-                    mediaFetchSession.collectLatest {
+                    episodeId.collectLatest { id ->
                         withContext(Dispatchers.Main) {
                             playerSkipOpEdState.resetSkipOpEd()
                         }
                         combine(
                             playerState.currentPositionMillis.sampleWithInitial(1000),
-                            episodeId,
                             episodeCollectionsFlow,
-                        ) { pos, epId, collections ->
+                        ) { pos, collections ->
                             // 不止一集并且当前是第一集时不跳过
-                            if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == epId) return@combine
+                            if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == id) return@combine
                             playerSkipOpEdState.update(pos)
                         }.collect()
                     }
