@@ -60,8 +60,8 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
@@ -165,7 +165,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val episodeCommentState: CommentState
 
-    val editCommentState: EditCommentState
+    val commentEditorState: CommentEditorState
 
     @UiThread
     fun stopPlaying()
@@ -501,7 +501,7 @@ private class EpisodeViewModelImpl(
         backgroundScope = backgroundScope,
     )
 
-    override val editCommentState: EditCommentState = EditCommentState(
+    override val commentEditorState: CommentEditorState = CommentEditorState(
         showExpandEditCommentButton = true,
         initialEditExpanded = false,
         panelTitle = subjectInfo

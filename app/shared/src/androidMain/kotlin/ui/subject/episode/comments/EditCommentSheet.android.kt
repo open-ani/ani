@@ -7,10 +7,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.EditComment
 import me.him188.ani.app.ui.subject.components.comment.EditCommentBottomStubPanel
 import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults
-import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
 
 @Preview
@@ -20,7 +20,7 @@ fun PreviewEditComment() {
         val scope = rememberBackgroundScope()
         EditComment(
             state = remember {
-                EditCommentState(
+                CommentEditorState(
                     showExpandEditCommentButton = true,
                     initialEditExpanded = false,
                     panelTitle = mutableStateOf("评论：我心里危险的东西 第二季"),

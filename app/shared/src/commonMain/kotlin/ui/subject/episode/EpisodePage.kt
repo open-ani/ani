@@ -77,9 +77,9 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentSendTarget
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
@@ -244,7 +244,7 @@ private fun EpisodeSceneTabletVeryWide(
 
                         1 -> EpisodeCommentColumn(
                             commentState = vm.episodeCommentState,
-                            editCommentState = vm.editCommentState,
+                            commentEditorState = vm.commentEditorState,
                             subjectId = vm.subjectId,
                             episodeId = vm.episodePresentation.episodeId,
                             setShowEditCommentSheet = { showEditCommentSheet = it },
@@ -257,7 +257,7 @@ private fun EpisodeSceneTabletVeryWide(
     }
     if (showEditCommentSheet) {
         EpisodeEditCommentSheet(
-            state = vm.editCommentState,
+            state = vm.commentEditorState,
             onDismiss = {
                 showEditCommentSheet = false
                 tryUnpause()
@@ -361,7 +361,7 @@ private fun EpisodeSceneContentPhone(
         commentColumn = {
             EpisodeCommentColumn(
                 commentState = vm.episodeCommentState,
-                editCommentState = vm.editCommentState,
+                commentEditorState = vm.commentEditorState,
                 subjectId = vm.subjectId,
                 episodeId = vm.episodePresentation.episodeId,
                 setShowEditCommentSheet = { showEditCommentSheet = it },
@@ -414,7 +414,7 @@ private fun EpisodeSceneContentPhone(
 
     if (showEditCommentSheet) {
         EpisodeEditCommentSheet(
-            vm.editCommentState,
+            vm.commentEditorState,
             onDismiss = {
                 showEditCommentSheet = false
                 tryUnpause()
@@ -644,7 +644,7 @@ private fun EpisodeVideo(
 @Composable
 private fun EpisodeCommentColumn(
     commentState: CommentState,
-    editCommentState: EditCommentState,
+    commentEditorState: CommentEditorState,
     subjectId: Int,
     episodeId: Int,
     setShowEditCommentSheet: (Boolean) -> Unit,
@@ -656,11 +656,11 @@ private fun EpisodeCommentColumn(
 
     EpisodeCommentColumn(
         state = commentState,
-        editCommentStubText = editCommentState.content.text,
+        editCommentStubText = commentEditorState.content.text,
         modifier = Modifier.fillMaxSize(),
         onClickReply = {
             setShowEditCommentSheet(true)
-            editCommentState.startEdit(CommentSendTarget.Reply(it))
+            commentEditorState.startEdit(CommentSendTarget.Reply(it))
             pauseOnPlaying()
 
         },
@@ -668,16 +668,16 @@ private fun EpisodeCommentColumn(
             RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
         },
         onClickEditCommentStub = {
-            editCommentState.startEdit(
+            commentEditorState.startEdit(
                 CommentSendTarget.Episode(subjectId, episodeId),
             )
             setShowEditCommentSheet(true)
         },
         onClickEditCommentStubEmoji = {
-            editCommentState.startEdit(
+            commentEditorState.startEdit(
                 CommentSendTarget.Episode(subjectId, episodeId),
             )
-            editCommentState.toggleStickerPanelState(true)
+            commentEditorState.toggleStickerPanelState(true)
             setShowEditCommentSheet(true)
         },
     )

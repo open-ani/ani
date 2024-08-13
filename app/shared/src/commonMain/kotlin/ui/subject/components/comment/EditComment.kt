@@ -45,7 +45,7 @@ import me.him188.ani.app.ui.foundation.text.ProvideContentColor
  */
 @Composable
 fun EditComment(
-    state: EditCommentState,
+    state: CommentEditorState,
     modifier: Modifier = Modifier,
     controlSoftwareKeyboard: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },

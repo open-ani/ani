@@ -11,7 +11,7 @@ import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.ui.foundation.produceState
 
 @Stable
-class EditCommentPreviewerState(
+class CommentEditorPreviewerState(
     initialPreviewing: Boolean,
     coroutineScope: CoroutineScope
 ) {

@@ -7,7 +7,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 
-class EditCommentTextState(
+class CommentEditorTextState(
     initialText: String
 ) {
     var textField by mutableStateOf(TextFieldValue(initialText))

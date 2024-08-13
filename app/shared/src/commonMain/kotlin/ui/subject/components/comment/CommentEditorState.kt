@@ -18,16 +18,16 @@ import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 
 @Stable
-class EditCommentState(
+class CommentEditorState(
     val showExpandEditCommentButton: Boolean,
     initialEditExpanded: Boolean,
-    val panelTitle: State<String?>,
+    panelTitle: State<String?>,
     stickerProvider: Flow<List<EditCommentSticker>>,
     private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    private val editor = EditCommentTextState("")
-    private val previewer = EditCommentPreviewerState(false, backgroundScope)
+    private val editor = CommentEditorTextState("")
+    private val previewer = CommentEditorPreviewerState(false, backgroundScope)
 
     private val sendTasker = MonoTasker(backgroundScope)
 
@@ -37,6 +37,7 @@ class EditCommentState(
 
     var currentSendTarget: CommentSendTarget? by mutableStateOf(null)
         private set
+    val panelTitle by panelTitle
     val content get() = editor.textField
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
@@ -69,22 +70,22 @@ class EditCommentState(
     }
 
     /**
-     * @see EditCommentTextState.wrapSelectionWith
+     * @see CommentEditorTextState.wrapSelectionWith
      */
     fun wrapSelectionWith(value: String, secondSliceIndex: Int) {
         editor.wrapSelectionWith(value, secondSliceIndex)
     }
 
     /**
-     * @see EditCommentTextState.insertTextAt
+     * @see CommentEditorTextState.insertTextAt
      */
     fun insertTextAt(value: String, cursorOffset: Int = value.length) {
         editor.insertTextAt(value, cursorOffset)
     }
 
     /**
-     * @see EditCommentPreviewerState.closePreview
-     * @see EditCommentPreviewerState.submitPreview
+     * @see CommentEditorPreviewerState.closePreview
+     * @see CommentEditorPreviewerState.submitPreview
      */
     fun togglePreview() {
         if (previewing) {
@@ -117,7 +118,7 @@ data class EditCommentSticker(
 )
 
 /**
- * 评论发送的对象，在 [EditCommentState.onSend] 需要提供。
+ * 评论发送的对象，在 [CommentEditorState.onSend] 需要提供。
  */
 @Immutable
 sealed interface CommentSendTarget {

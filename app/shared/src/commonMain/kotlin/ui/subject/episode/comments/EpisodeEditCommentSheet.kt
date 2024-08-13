@@ -12,13 +12,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.rememberImeMaxHeight
+import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.EditComment
-import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import rememberModalBottomImeAwareSheetState
 
 @Composable
 fun EpisodeEditCommentSheet(
-    state: EditCommentState,
+    state: CommentEditorState,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
