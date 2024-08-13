@@ -116,7 +116,6 @@ fun EditComment(
         expanded = if (!state.showExpandEditCommentButton) null else state.editExpanded,
         onClickExpanded = { state.editExpanded = it },
     ) {
-
         Crossfade(
             targetState = state.previewing,
             modifier = Modifier.weight(1.0f, fill = false),

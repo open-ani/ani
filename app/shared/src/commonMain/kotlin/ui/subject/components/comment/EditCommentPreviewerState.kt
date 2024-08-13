@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.components.comment
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.stateIn
 import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.ui.foundation.produceState
 
+@Stable
 class EditCommentPreviewerState(
     initialPreviewing: Boolean,
     coroutineScope: CoroutineScope
