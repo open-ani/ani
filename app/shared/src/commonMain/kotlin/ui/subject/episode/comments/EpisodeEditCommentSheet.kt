@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -96,14 +95,16 @@ fun EpisodeEditCommentSheet(
 
     // Popup on android always clip its composeView to visible 
     Popup(
-        popupPositionProvider = object : PopupPositionProvider {
-            override fun calculatePosition(
-                anchorBounds: IntRect,
-                windowSize: IntSize,
-                layoutDirection: LayoutDirection,
-                popupContentSize: IntSize
-            ): IntOffset {
-                return IntOffset(0, statusBarPadding)
+        popupPositionProvider = remember {
+            object : PopupPositionProvider {
+                override fun calculatePosition(
+                    anchorBounds: IntRect,
+                    windowSize: IntSize,
+                    layoutDirection: LayoutDirection,
+                    popupContentSize: IntSize
+                ): IntOffset {
+                    return IntOffset(0, statusBarPadding)
+                }
             }
         },
         onDismissRequest = animateToDismiss,
@@ -139,15 +140,13 @@ fun EpisodeEditCommentSheet(
                 Layout(
                     modifier = Modifier.ifThen(!state.stickerPanelOpened) { imePadding() },
                     content = {
-                        Box {
-                            EditComment(
-                                state = state,
-                                modifier = modifier.padding(top = contentPadding).padding(contentPadding),
-                                stickerPanelHeight = rememberImeMaxHeight(),
-                                controlSoftwareKeyboard = true,
-                                focusRequester = focusRequester,
-                            )
-                        }
+                        EditComment(
+                            state = state,
+                            modifier = modifier.padding(top = contentPadding).padding(contentPadding),
+                            stickerPanelHeight = rememberImeMaxHeight(),
+                            controlSoftwareKeyboard = true,
+                            focusRequester = focusRequester,
+                        )
                     },
                 ) { measurable, constraint ->
                     val placeable = measurable.single().measure(constraint.copy(minWidth = 0, minHeight = 0))
