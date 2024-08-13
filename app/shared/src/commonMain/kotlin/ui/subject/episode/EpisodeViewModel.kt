@@ -561,8 +561,9 @@ private class EpisodeViewModelImpl(
                             combine(
                                 playerState.currentPositionMillis.sampleWithInitial(5000),
                                 playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
-                            ) { pos, max ->
-                                if (max == null) return@combine
+                                playerState.state,
+                            ) { pos, max, playback ->
+                                if (max == null || !playback.isPlaying) return@combine
                                 if (episodePresentationFlow.first().collectionType == UnifiedCollectionType.DONE) {
                                     cancelScope() // 已经看过了
                                 }

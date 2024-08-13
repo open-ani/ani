@@ -10,6 +10,7 @@ import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -22,7 +23,6 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListStateFactory
-import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressInfo
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressStateFactory
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
