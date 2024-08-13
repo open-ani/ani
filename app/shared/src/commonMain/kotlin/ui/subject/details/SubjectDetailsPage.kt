@@ -43,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,7 +65,6 @@ import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
-import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
@@ -161,14 +159,13 @@ fun SubjectDetailsScene(
         },
         commentsTab = {
             val lazyListState = rememberLazyListState()
-            val layoutMode by rememberUpdatedState(LocalLayoutMode.current)
 
             CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
                 SubjectCommentColumn(
                     state = vm.subjectCommentState,
                     listState = lazyListState,
                     modifier = Modifier
-                        .ifThen(layoutMode.showLandscapeUI) { widthIn(max = BottomSheetDefaults.SheetMaxWidth) }
+                        .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
                         .ifThen(currentPlatform.isDesktop()) {
                             nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
                         }
