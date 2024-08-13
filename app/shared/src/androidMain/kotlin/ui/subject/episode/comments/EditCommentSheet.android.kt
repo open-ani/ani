@@ -22,7 +22,7 @@ fun PreviewEditComment() {
             state = remember {
                 EditCommentState(
                     showExpandEditCommentButton = true,
-                    initialExpandEditComment = false,
+                    initialEditExpanded = false,
                     panelTitle = mutableStateOf("评论：我心里危险的东西 第二季"),
                     stickerProvider = flow {
                         emit(

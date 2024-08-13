@@ -20,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 @Stable
 class EditCommentState(
     val showExpandEditCommentButton: Boolean,
-    initialExpandEditComment: Boolean,
+    initialEditExpanded: Boolean,
     val panelTitle: State<String?>,
     stickerProvider: Flow<List<EditCommentSticker>>,
     private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
@@ -40,7 +40,7 @@ class EditCommentState(
     val content get() = editor.textField
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
-    var editExpanded: Boolean by mutableStateOf(initialExpandEditComment)
+    var editExpanded: Boolean by mutableStateOf(initialEditExpanded)
     var stickerPanelOpened: Boolean by mutableStateOf(false)
         private set
     val sending: Boolean get() = sendTasker.isRunning

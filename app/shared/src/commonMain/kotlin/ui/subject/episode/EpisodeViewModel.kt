@@ -503,7 +503,7 @@ private class EpisodeViewModelImpl(
 
     override val editCommentState: EditCommentState = EditCommentState(
         showExpandEditCommentButton = true,
-        initialExpandEditComment = false,
+        initialEditExpanded = false,
         panelTitle = subjectInfo
             .combine(episodeInfo) { sub, epi -> "${sub.displayName} ${epi?.renderEpisodeEp()}" }
             .produceState(null),
