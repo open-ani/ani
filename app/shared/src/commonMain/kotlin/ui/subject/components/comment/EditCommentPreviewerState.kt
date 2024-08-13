@@ -22,7 +22,7 @@ class EditCommentPreviewerState(
             if (!preview || text.isEmpty()) return@combine UIRichText(emptyList())
             with(CommentMapperContext) { parseBBCode(text) }
         }
-        .stateIn(coroutineScope, SharingStarted.Lazily, UIRichText(emptyList()))
+        .stateIn(coroutineScope, SharingStarted.Lazily, null)
 
     fun submitPreview(value: String) {
         richText.value = value

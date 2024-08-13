@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.IconButton
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.richtext.RichText
@@ -125,21 +126,31 @@ object EditCommentDefaults {
 
     @Composable
     fun Preview(
-        content: UIRichText,
+        content: UIRichText?,
         modifier: Modifier = Modifier,
         contentPadding: PaddingValues = PaddingValues(0.dp)
     ) {
         Surface(
-            modifier = modifier,
+            modifier = modifier.placeholder(content == null),
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
         ) {
             LazyColumn {
-                item {
-                    RichText(
-                        elements = content.elements,
-                        modifier = Modifier.padding(contentPadding),
-                    )
+                if (content == null) {
+                    item {
+                        Text(
+                            text = "渲染中...",
+                            modifier = Modifier.padding(contentPadding),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        )
+                    }
+                } else {
+                    item {
+                        RichText(
+                            elements = content.elements,
+                            modifier = Modifier.padding(contentPadding),
+                        )
+                    }
                 }
             }
         }
