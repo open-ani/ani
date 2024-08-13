@@ -48,7 +48,7 @@ class BangumiCommentRepositoryImpl(
                     .body()
 
                 val list = response.list.map(BangumiNextSubjectInterestCommentListInner::toSubjectComment)
-                Paged.processPagedResponse(response.total, 16, list)
+                Paged.processPagedResponse(total = response.total, pageSize = 16, data = list)
             } catch (e: Exception) {
                 logger.warn("Exception in getSubjectComments", e)
                 null
