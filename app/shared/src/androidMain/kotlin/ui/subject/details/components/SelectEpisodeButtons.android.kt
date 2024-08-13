@@ -6,10 +6,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
-import me.him188.ani.app.ui.subject.collection.progress.ContinueWatchingStatus
-import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressInfo
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 import me.him188.ani.datasources.api.EpisodeSort
 
