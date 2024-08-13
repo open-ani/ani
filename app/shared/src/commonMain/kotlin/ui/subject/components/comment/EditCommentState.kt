@@ -13,13 +13,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.produceState
-import me.him188.ani.utils.logging.logger
 import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 
@@ -30,13 +28,11 @@ import kotlin.coroutines.CoroutineContext
 class EditCommentState(
     val showExpandEditCommentButton: Boolean,
     initialExpandEditComment: Boolean,
-    title: StateFlow<String?>,
+    title: Flow<String?>,
     stickerProvider: Flow<List<EditCommentSticker>>,
     private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    private val logger = logger(this::class)
-
     private var onSendCompleted: (() -> Unit)? = null
     private val editor = EditCommentTextState("")
     private val previewer = EditCommentPreviewerState(false, backgroundScope)

@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -504,10 +504,8 @@ private class EpisodeViewModelImpl(
     override val editCommentState: EditCommentState = EditCommentState(
         showExpandEditCommentButton = true,
         initialExpandEditComment = false,
-        title = subjectInfo.combine(episodeInfo) { sub, epi ->
-            "${sub.displayName} ${epi?.renderEpisodeEp()}"
-        }.stateIn(backgroundScope, SharingStarted.Lazily, null),
-        stickerProvider = flow { emit(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) }) },
+        title = subjectInfo.combine(episodeInfo) { sub, epi -> "${sub.displayName} ${epi?.renderEpisodeEp()}" },
+        stickerProvider = flowOf(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) }),
         onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )
