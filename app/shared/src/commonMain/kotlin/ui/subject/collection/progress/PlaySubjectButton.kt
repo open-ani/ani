@@ -22,15 +22,15 @@ fun PlaySubjectButton(
     state: SubjectProgressState,
     modifier: Modifier = Modifier,
 ) {
-    val onPlay: () -> Unit = { state.episodeToPlay?.let { state.play(it.id) } }
+    val onPlay: () -> Unit = { state.episodeIdToPlay?.let { state.play(it) } }
     IndicatedBox(
         indicator = {
-            state.episodeToPlay?.let { episode ->
+            state.episodeIdToPlay?.let { episode ->
                 HorizontalIndicator(
                     6.dp,
                     CircleShape,
                     cacheStatusIndicationColor(
-                        state.episodeCacheStatus(episode.id),
+                        state.episodeCacheStatus(episode),
                         state.continueWatchingStatus is ContinueWatchingStatus.Watched,
                     ),
                     Modifier.offset(y = (-2).dp),
@@ -51,7 +51,7 @@ fun PlaySubjectButton(
             }
 
             ContinueWatchingStatus.Done -> {
-                FilledTonalButton({ state.episodeToPlay?.let { state.play(it.id) } }, modifier) {
+                FilledTonalButton({ state.episodeIdToPlay?.let { state.play(it) } }, modifier) {
                     Text("已看完", Modifier.requiredWidth(IntrinsicSize.Max), softWrap = false)
                 }
             }

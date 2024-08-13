@@ -18,25 +18,25 @@ object TestSubjectProgressInfos {
     @Stable
     val NotOnAir = SubjectProgressInfo(
         continueWatchingStatus = ContinueWatchingStatus.NotOnAir,
-        nextEpisodeToPlay = null,
+        nextEpisodeIdToPlay = null,
     )
 
     @Stable
     val ContinueWatching2 = SubjectProgressInfo(
         continueWatchingStatus = ContinueWatchingStatus.Continue(1, EpisodeSort(2)),
-        nextEpisodeToPlay = null,
+        nextEpisodeIdToPlay = null,
     )
 
     @Stable
     val Watched2 = SubjectProgressInfo(
         continueWatchingStatus = ContinueWatchingStatus.Watched(1, EpisodeSort(2)),
-        nextEpisodeToPlay = null,
+        nextEpisodeIdToPlay = null,
     )
 
     @Stable
     val Done = SubjectProgressInfo(
         continueWatchingStatus = ContinueWatchingStatus.Done,
-        nextEpisodeToPlay = null,
+        nextEpisodeIdToPlay = null,
     )
 }
 
