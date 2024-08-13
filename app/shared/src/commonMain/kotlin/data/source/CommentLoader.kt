@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.subject.components.comment
+package me.him188.ani.app.data.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -16,6 +16,8 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.toUIBriefText
 import me.him188.ani.app.ui.foundation.richtext.toUIRichElements
+import me.him188.ani.app.ui.subject.components.comment.UIComment
+import me.him188.ani.app.ui.subject.components.comment.UIRichText
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.utils.bbcode.BBCode
 import kotlin.coroutines.CoroutineContext
@@ -60,7 +62,7 @@ class CommentLoader<T>(
         ) = CommentLoader(
             source = subjectId.map { sid ->
                 LazyDataCache(
-                    createSource = { subjectCommentSource(sid) },
+                    createSource = { ApiResponse.success(subjectCommentSource(sid)) },
                     getKey = { it.id },
                     debugName = "subjectComment-$sid",
                 )
