@@ -504,7 +504,9 @@ private class EpisodeViewModelImpl(
     override val editCommentState: EditCommentState = EditCommentState(
         showExpandEditCommentButton = true,
         initialExpandEditComment = false,
-        title = subjectInfo.combine(episodeInfo) { sub, epi -> "${sub.displayName} ${epi?.renderEpisodeEp()}" },
+        panelTitle = subjectInfo
+            .combine(episodeInfo) { sub, epi -> "${sub.displayName} ${epi?.renderEpisodeEp()}" }
+            .produceState(null),
         stickerProvider = flowOf(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) }),
         onSend = { _, _ -> },
         backgroundScope = backgroundScope,

@@ -1,9 +1,9 @@
 package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
@@ -23,7 +23,7 @@ fun PreviewEditComment() {
                 EditCommentState(
                     showExpandEditCommentButton = true,
                     initialExpandEditComment = false,
-                    title = MutableStateFlow("评论：我心里危险的东西 第二季"),
+                    panelTitle = mutableStateOf("评论：我心里危险的东西 第二季"),
                     stickerProvider = flow {
                         emit(
                             (0..64)

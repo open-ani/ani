@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.components.comment
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
 class EditCommentState(
     val showExpandEditCommentButton: Boolean,
     initialExpandEditComment: Boolean,
-    title: Flow<String?>,
+    val panelTitle: State<String?>,
     stickerProvider: Flow<List<EditCommentSticker>>,
     private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
     backgroundScope: CoroutineScope,
@@ -34,7 +35,6 @@ class EditCommentState(
      * 评论是否正在提交发送，在 [send] 时设置为 true，当 [onSend] 返回或发生错误时设置为 false
      */
 
-    val panelTitle by title.produceState(null, backgroundScope)
     var currentSendTarget: CommentSendTarget? by mutableStateOf(null)
         private set
     val content get() = editor.textField
