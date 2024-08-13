@@ -70,6 +70,7 @@ fun EditComment(
     }
 
     EditCommentScaffold(
+        previewing = state.previewing,
         modifier = modifier,
         title = {
             state.panelTitle?.let { EditCommentDefaults.Title(it) }
@@ -116,37 +117,32 @@ fun EditComment(
         },
         expanded = if (!state.showExpandEditCommentButton) null else state.editExpanded,
         onClickExpanded = { state.editExpanded = it },
-    ) {
-        Crossfade(
-            targetState = state.previewing,
-            modifier = Modifier.weight(1.0f, fill = false),
-        ) { previewing ->
-            ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
-                if (previewing) {
-                    val richText by state.previewContent.collectAsState()
-                    EditCommentDefaults.Preview(
-                        content = richText,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .ifThen(state.editExpanded) { fillMaxHeight() }
-                            .animateContentSize(),
-                        contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-                    )
-                } else {
-                    EditCommentDefaults.EditText(
-                        value = state.content,
-                        maxLines = if (state.editExpanded) Int.MAX_VALUE else 3,
-                        modifier = Modifier
-                            .focusRequester(focusRequester)
-                            .fillMaxWidth()
-                            .ifThen(state.editExpanded) { fillMaxHeight() }
-                            .animateContentSize(),
-                        onValueChange = { state.setContent(it) },
-                        interactionSource = textFieldInteractionSource,
-                    )
-                    LaunchedEffect(Unit) {
-                        focusRequester.requestFocus()
-                    }
+    ) { previewing ->
+        ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
+            if (previewing) {
+                val richText by state.previewContent.collectAsState()
+                EditCommentDefaults.Preview(
+                    content = richText,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .ifThen(state.editExpanded) { fillMaxHeight() }
+                        .animateContentSize(),
+                    contentPadding = OutlinedTextFieldDefaults.contentPadding(),
+                )
+            } else {
+                EditCommentDefaults.EditText(
+                    value = state.content,
+                    maxLines = if (state.editExpanded) Int.MAX_VALUE else 3,
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .fillMaxWidth()
+                        .ifThen(state.editExpanded) { fillMaxHeight() }
+                        .animateContentSize(),
+                    onValueChange = { state.setContent(it) },
+                    interactionSource = textFieldInteractionSource,
+                )
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
                 }
             }
         }
@@ -156,6 +152,7 @@ fun EditComment(
 /**
  * 评论编辑 Scaffold
  *
+ * @param previewing 是否正在 preview
  * @param actionRow 操作按钮, 进行富文本编辑和评论发送. see [EditCommentDefaults.ActionRow].
  * @param expanded 展开按钮状态, 为 `null` 时不显示按钮.
  * @param onClickExpanded 点击展开按钮时触发该点击事件.
@@ -164,13 +161,14 @@ fun EditComment(
  */
 @Composable
 fun EditCommentScaffold(
+    previewing: Boolean,
     actionRow: @Composable ColumnScope.() -> Unit,
     onClickExpanded: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     expanded: Boolean? = null,
     title: (@Composable () -> Unit)? = null,
     contentColor: Color = Color.Unspecified,
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable ColumnScope.(previewing: Boolean) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -197,7 +195,13 @@ fun EditCommentScaffold(
         }
 
         ProvideContentColor(contentColor) {
-            content()
+            Crossfade(
+                targetState = previewing,
+                modifier = Modifier.weight(1.0f, fill = false),
+            ) { previewing ->
+                content(previewing)
+            }
+            
         }
         Column {
             actionRow()
