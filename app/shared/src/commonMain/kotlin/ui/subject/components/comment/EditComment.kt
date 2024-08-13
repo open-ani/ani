@@ -4,7 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -389,7 +388,7 @@ object EditCommentDefaults {
         contentDescription: String? = null,
         enabled: Boolean = true,
         iconSize: Dp = 22.dp,
-        indication: Indication? = null
+        hasIndication: Boolean = true
     ) {
         val icon = @Composable {
             Icon(
@@ -398,17 +397,17 @@ object EditCommentDefaults {
                 modifier = Modifier.size(iconSize),
             )
         }
-        if (indication != null) IconButton(
+        if (hasIndication) IconButton(
             modifier = modifier,
             enabled = enabled,
             onClick = onClick,
-            indication = indication,
             content = icon,
         ) else IconButton(
             modifier = modifier,
             enabled = enabled,
             onClick = onClick,
             content = icon,
+            indication = null,
         )
     }
 
@@ -579,7 +578,7 @@ object EditCommentDefaults {
                     enabled = true,
                     onClick = { actionExpanded = true },
                     modifier = Modifier.size(height = size, width = reversedActionAnim),
-                    indication = null,
+                    hasIndication = false,
                 )
 
                 Row(modifier = Modifier.layoutId(ActionRowPrimaryAction)) {

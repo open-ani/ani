@@ -358,7 +358,7 @@ object CommentDefaults {
                     iconSize = iconSize,
                     onClick = { actionExpanded = true },
                     modifier = Modifier.size(height = size, width = reversedActionAnim),
-                    indication = null,
+                    hasIndication = false,
                 )
             }
         }
