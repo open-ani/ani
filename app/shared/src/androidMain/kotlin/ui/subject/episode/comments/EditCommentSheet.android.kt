@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.episode.comments
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -57,7 +58,7 @@ fun PreviewEditCommentStickerPanel() {
 fun PreviewEditCommentBottomStubPanel() {
     ProvideCompositionLocalsForPreview {
         EditCommentBottomStubPanel(
-            text = "发送评论",
+            text = TextFieldValue("发送评论"),
             onClickEditText = { },
             onClickEmoji = { },
         )

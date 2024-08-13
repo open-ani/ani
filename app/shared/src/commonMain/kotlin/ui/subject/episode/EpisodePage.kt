@@ -656,7 +656,7 @@ private fun EpisodeCommentColumn(
 
     EpisodeCommentColumn(
         state = commentState,
-        editCommentStubText = commentEditorState.content.text,
+        editCommentStubText = commentEditorState.content,
         modifier = Modifier.fillMaxSize(),
         onClickReply = {
             setShowEditCommentSheet(true)

@@ -32,6 +32,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
@@ -50,7 +51,7 @@ import me.him188.ani.app.ui.subject.components.comment.UIComment
 @Composable
 fun EpisodeCommentColumn(
     state: CommentState,
-    editCommentStubText: String,
+    editCommentStubText: TextFieldValue,
     onClickReply: (commentId: Int) -> Unit,
     onClickEditCommentStub: () -> Unit,
     onClickEditCommentStubEmoji: () -> Unit,

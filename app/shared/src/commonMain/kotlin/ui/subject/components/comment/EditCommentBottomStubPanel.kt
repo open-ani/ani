@@ -14,8 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,13 +26,12 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun EditCommentBottomStubPanel(
-    text: String,
+    text: TextFieldValue,
     onClickEditText: () -> Unit,
     onClickEmoji: () -> Unit,
     modifier: Modifier = Modifier,
     hint: String? = "",
 ) {
-    val textFieldValue by derivedStateOf { TextFieldValue(text) }
     Surface(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = NavigationBarDefaults.Elevation,
@@ -47,7 +44,7 @@ fun EditCommentBottomStubPanel(
         ) {
             Box(modifier = Modifier.weight(1.0f)) {
                 EditCommentDefaults.EditText(
-                    value = textFieldValue,
+                    value = text,
                     hint = hint,
                     maxLines = 1,
                     modifier = Modifier.fillMaxWidth().focusProperties { canFocus = false },
