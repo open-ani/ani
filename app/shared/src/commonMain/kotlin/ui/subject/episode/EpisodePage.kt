@@ -78,6 +78,8 @@ import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.subject.components.comment.CommentSendTarget
+import me.him188.ani.app.ui.subject.components.comment.CommentState
+import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
@@ -180,9 +182,22 @@ private fun EpisodeSceneTabletVeryWide(
     modifier: Modifier = Modifier,
 ) {
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
-    val browserNavigator = LocalBrowserNavigator.current
-    val context = LocalContext.current
-    val toaster = LocalToaster.current
+    var didSetPaused by rememberSaveable { mutableStateOf(false) }
+
+    val pauseOnPlaying: () -> Unit = {
+        if (vm.playerState.state.value.isPlaying) {
+            didSetPaused = true
+            vm.playerState.pause()
+        } else {
+            didSetPaused = false
+        }
+    }
+    val tryUnpause: () -> Unit = {
+        if (didSetPaused) {
+            didSetPaused = false
+            vm.playerState.resume()
+        }
+    }
     
     BoxWithConstraints {
         val maxWidth = maxWidth
@@ -228,29 +243,12 @@ private fun EpisodeSceneTabletVeryWide(
                         }
 
                         1 -> EpisodeCommentColumn(
-                            state = vm.episodeCommentState,
-                            editCommentStubText = vm.editCommentState.content.text,
-                            modifier = Modifier.fillMaxSize(),
-                            onClickReply = {
-                                vm.editCommentState.startEdit(CommentSendTarget.Reply(it))
-                                showEditCommentSheet = true
-                            },
-                            onClickUrl = {
-                                RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
-                            },
-                            onClickEditCommentStub = {
-                                vm.editCommentState.startEdit(
-                                    CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
-                                )
-                                showEditCommentSheet = true
-                            },
-                            onClickEditCommentStubEmoji = {
-                                vm.editCommentState.startEdit(
-                                    CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
-                                )
-                                vm.editCommentState.toggleStickerPanelState(true)
-                                showEditCommentSheet = true
-                            },
+                            commentState = vm.episodeCommentState,
+                            editCommentState = vm.editCommentState,
+                            subjectId = vm.subjectId,
+                            episodeId = vm.episodePresentation.episodeId,
+                            setShowEditCommentSheet = { showEditCommentSheet = it },
+                            pauseOnPlaying = pauseOnPlaying,
                         )
                     }
                 }
@@ -260,7 +258,10 @@ private fun EpisodeSceneTabletVeryWide(
     if (showEditCommentSheet) {
         EpisodeEditCommentSheet(
             state = vm.editCommentState,
-            onDismiss = { showEditCommentSheet = false },
+            onDismiss = {
+                showEditCommentSheet = false
+                tryUnpause()
+            },
         )
     }
 }
@@ -314,14 +315,10 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val browserNavigator = LocalBrowserNavigator.current
-    val context = LocalContext.current
-    val toaster = LocalToaster.current
     
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
-    var didSetPaused by rememberSaveable { mutableStateOf(false) }
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
-
+    var didSetPaused by rememberSaveable { mutableStateOf(false) }
 
     val pauseOnPlaying: () -> Unit = {
         if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
@@ -363,31 +360,12 @@ private fun EpisodeSceneContentPhone(
         },
         commentColumn = {
             EpisodeCommentColumn(
-                state = vm.episodeCommentState,
-                editCommentStubText = vm.editCommentState.content.text,
-                modifier = Modifier.fillMaxSize(),
-                onClickReply = {
-                    showEditCommentSheet = true
-                    vm.editCommentState.startEdit(CommentSendTarget.Reply(it))
-                    pauseOnPlaying()
-
-                },
-                onClickUrl = {
-                    RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
-                },
-                onClickEditCommentStub = {
-                    vm.editCommentState.startEdit(
-                        CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
-                    )
-                    showEditCommentSheet = true
-                },
-                onClickEditCommentStubEmoji = {
-                    vm.editCommentState.startEdit(
-                        CommentSendTarget.Episode(vm.subjectId, vm.episodePresentation.episodeId),
-                    )
-                    vm.editCommentState.toggleStickerPanelState(true)
-                    showEditCommentSheet = true
-                },
+                commentState = vm.episodeCommentState,
+                editCommentState = vm.editCommentState,
+                subjectId = vm.subjectId,
+                episodeId = vm.episodePresentation.episodeId,
+                setShowEditCommentSheet = { showEditCommentSheet = it },
+                pauseOnPlaying = pauseOnPlaying,
             )
         },
         modifier.then(if (vm.isFullscreen) Modifier.fillMaxSize() else Modifier.navigationBarsPadding()),
@@ -660,6 +638,48 @@ private fun EpisodeVideo(
             )
         },
         progressSliderState = progressSliderState,
+    )
+}
+
+@Composable
+private fun EpisodeCommentColumn(
+    commentState: CommentState,
+    editCommentState: EditCommentState,
+    subjectId: Int,
+    episodeId: Int,
+    setShowEditCommentSheet: (Boolean) -> Unit,
+    pauseOnPlaying: () -> Unit
+) {
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
+    val browserNavigator = LocalBrowserNavigator.current
+
+    EpisodeCommentColumn(
+        state = commentState,
+        editCommentStubText = editCommentState.content.text,
+        modifier = Modifier.fillMaxSize(),
+        onClickReply = {
+            setShowEditCommentSheet(true)
+            editCommentState.startEdit(CommentSendTarget.Reply(it))
+            pauseOnPlaying()
+
+        },
+        onClickUrl = {
+            RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+        },
+        onClickEditCommentStub = {
+            editCommentState.startEdit(
+                CommentSendTarget.Episode(subjectId, episodeId),
+            )
+            setShowEditCommentSheet(true)
+        },
+        onClickEditCommentStubEmoji = {
+            editCommentState.startEdit(
+                CommentSendTarget.Episode(subjectId, episodeId),
+            )
+            editCommentState.toggleStickerPanelState(true)
+            setShowEditCommentSheet(true)
+        },
     )
 }
 
