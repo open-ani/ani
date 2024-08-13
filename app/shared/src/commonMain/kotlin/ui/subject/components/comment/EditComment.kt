@@ -54,7 +54,6 @@ fun EditComment(
 ) {
     val scope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
-    val textFieldInteractionSource = remember { MutableInteractionSource() }
 
     val requiredStickerPanelHeight =
         remember(stickerPanelHeight) { max(EditCommentDefaults.MinStickerHeight.dp, stickerPanelHeight) }
@@ -138,7 +137,7 @@ fun EditComment(
                         .ifThen(state.editExpanded) { fillMaxHeight() }
                         .animateContentSize(),
                     onValueChange = { state.setContent(it) },
-                    interactionSource = textFieldInteractionSource,
+                    interactionSource = remember { MutableInteractionSource() },
                 )
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
