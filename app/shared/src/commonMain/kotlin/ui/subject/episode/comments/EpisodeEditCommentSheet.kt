@@ -32,7 +32,7 @@ fun EpisodeEditCommentSheet(
     ModalBottomImeAwareSheet(
         state = sheetState,
         onDismiss = onDismiss,
-        modifier = Modifier.ifThen(!state.stickerPanelOpened) { imePadding() },
+        modifier = Modifier.ifThen(!state.showStickerPanel) { imePadding() },
     ) {
         EditComment(
             state = state,

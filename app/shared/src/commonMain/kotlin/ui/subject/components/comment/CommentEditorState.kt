@@ -42,7 +42,7 @@ class CommentEditorState(
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
     var editExpanded: Boolean by mutableStateOf(initialEditExpanded)
-    var stickerPanelOpened: Boolean by mutableStateOf(false)
+    var showStickerPanel: Boolean by mutableStateOf(false)
         private set
     val sending: Boolean get() = sendTasker.isRunning
     val stickers by stickerProvider
@@ -62,7 +62,7 @@ class CommentEditorState(
     }
 
     fun toggleStickerPanelState(desired: Boolean? = null) {
-        stickerPanelOpened = desired ?: !stickerPanelOpened
+        showStickerPanel = desired ?: !showStickerPanel
     }
 
     fun setContent(value: TextFieldValue) {

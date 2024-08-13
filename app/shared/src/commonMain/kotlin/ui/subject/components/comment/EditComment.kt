@@ -84,7 +84,7 @@ fun EditComment(
                 onClickUrl = { state.wrapSelectionWith("[url=][/url]", 5) },
                 onClickEmoji = {
                     state.toggleStickerPanelState()
-                    if (state.stickerPanelOpened) keyboard?.hide()
+                    if (state.showStickerPanel) keyboard?.hide()
                 },
                 onPreview = {
                     keyboard?.hide()
@@ -100,7 +100,7 @@ fun EditComment(
                 },
             )
 
-            if (state.stickerPanelOpened) {
+            if (state.showStickerPanel) {
                 EditCommentDefaults.StickerSelector(
                     list = state.stickers,
                     modifier = Modifier.fillMaxWidth()
