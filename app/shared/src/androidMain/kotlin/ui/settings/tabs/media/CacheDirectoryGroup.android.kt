@@ -1,22 +1,26 @@
 package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionItem
 
@@ -48,10 +52,19 @@ private fun renderTorrentCacheLocationDescription(cacheLocation: AndroidTorrentC
 }
 
 @Composable
+private fun renderMigrationStatus(status: AndroidTorrentCacheViewModel.MigrationStatus) = when (status) {
+    is AndroidTorrentCacheViewModel.MigrationStatus.Init -> "正在准备..."
+    is AndroidTorrentCacheViewModel.MigrationStatus.Cache ->
+        if (status.currentFile != null) "迁移缓存: \n${status.currentFile}" else "迁移缓存..."
+
+    is AndroidTorrentCacheViewModel.MigrationStatus.Metadata ->
+        if (status.currentMetadata != null) "合并元数据: \n${status.currentMetadata}" else "合并元数据..."
+}
+
+@Composable
 actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val toaster = LocalToaster.current
 
     val cacheVm = rememberViewModel {
         AndroidTorrentCacheViewModel(context, vm.mediaCacheSettings, vm.permissionManager)
@@ -72,6 +85,9 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             modifier = Modifier.placeholder(loading),
             items = cacheVm.torrentLocationPresentation,
             dialogIcon = { Icon(imageVector = Icons.Default.Storage, contentDescription = null) },
+            dialogDescription = {
+                Text("更改缓存目录后 Ani 会将所有缓存移动至新的位置。")
+            },
             selected = cacheVm.currentSelectionIndex,
             key = { it.javaClass.name },
             listItem = {
@@ -104,7 +120,26 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             },*/
             onConfirm = { location ->
                 scope.launch { location?.let { cacheVm.setStorage(it) } }
-                toaster.toast("BT 视频缓存位置变更在重启后生效。")
+            },
+        )
+    }
+
+    if (cacheVm.showMigrationDialog) {
+        AlertDialog(
+            title = { Text("正在迁移缓存") },
+            text = {
+                Column {
+                    Text(renderMigrationStatus(status = cacheVm.migrationStatus))
+                    Spacer(modifier = Modifier.height(24.dp))
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text("迁移数据需要一些时间，提前取消可能导致缓存数据损坏。")
+                    Text("迁移完成或取消迁移后请重启 Ani。")
+                }
+            },
+            onDismissRequest = { /* not dismiss-able */ },
+            confirmButton = {
+                TextButton({ cacheVm.cancelCacheMigration() }) { Text("取消") }
             },
         )
     }

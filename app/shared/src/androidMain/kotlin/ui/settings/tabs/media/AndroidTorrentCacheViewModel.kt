@@ -6,13 +6,39 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
+import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
+import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage.MediaCacheSave
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.platform.findActivity
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionElement
+import me.him188.ani.utils.io.deleteRecursively
+import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.isRegularFile
+import me.him188.ani.utils.io.moveDirectoryRecursively
+import me.him188.ani.utils.io.name
+import me.him188.ani.utils.io.readText
+import me.him188.ani.utils.io.useDirectoryEntries
+import me.him188.ani.utils.io.writeText
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.warn
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.io.File
+import kotlin.coroutines.resume
+import kotlin.system.exitProcess
 
 const val DEFAULT_TORRENT_CACHE_DIR_NAME = "torrent-caches"
 
@@ -20,7 +46,9 @@ class AndroidTorrentCacheViewModel(
     private val context: ContextMP,
     private val mediaCacheSettings: AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>,
     private val permissionManager: PermissionManager,
-) : AbstractViewModel() {
+) : AbstractViewModel(), KoinComponent {
+    private val cacheManager: MediaCacheManager by inject()
+    
     private val defaultTorrentCacheDir by lazy {
         context.filesDir.resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath
     }
@@ -41,6 +69,12 @@ class AndroidTorrentCacheViewModel(
     private var selectExternalSharedStorageRequest: CompletableDeferred<Boolean>? by mutableStateOf(null)
     val showExternalSharedStorageRequestDialog by derivedStateOf { selectExternalSharedStorageRequest != null }
 
+    private val json by lazy { Json { ignoreUnknownKeys = true } }
+    private var migrationTasker = MonoTasker(backgroundScope)
+    val showMigrationDialog by derivedStateOf { migrationTasker.isRunning }
+    var migrationStatus: MigrationStatus by mutableStateOf(MigrationStatus.Init)
+        private set
+    
     /**
      * 获取 [`内部私有存储`][android.content.Context.getFilesDir] 和 [`外部私有存储`][android.content.Context.getExternalFilesDir]
      * 的可用状态, 根据 [MediaCacheSettings.saveDir] 判断当前的的选择，并更新至 [torrentLocationPresentation] 和 [currentSelection] UI 状态。
@@ -98,18 +132,22 @@ class AndroidTorrentCacheViewModel(
 
     @UiThread
     suspend fun setStorage(location: AndroidTorrentCacheLocation) {
-        val targetPath = when (location) {
+        val newSaveDir = when (location) {
             is AndroidTorrentCacheLocation.InternalPrivate -> location.path
             is AndroidTorrentCacheLocation.ExternalPrivate -> location.path
         }
 
-        if (targetPath == null) {
+        if (newSaveDir == null) {
             // failed to set
             return
         }
 
         val settings by mediaCacheSettings
-        mediaCacheSettings.updateSuspended(settings.copy(saveDir = targetPath))
+        val prevSaveDir = settings.saveDir
+        if (prevSaveDir != null && prevSaveDir != newSaveDir) {
+            requestMigrateCaches(prevSaveDir, newSaveDir)
+        }
+        mediaCacheSettings.updateSuspended(settings.copy(saveDir = newSaveDir))
 
         refreshStorageState()
     }
@@ -141,6 +179,88 @@ class AndroidTorrentCacheViewModel(
         selectExternalSharedStorageRequest?.complete(allow)
     }
 
+    private suspend fun requestMigrateCaches(prevPath: String, newPath: String) {
+        migrationTasker.launch {
+            logger.info { "[migration] request migrate cache, from: $prevPath, to: $newPath" }
+            withContext(Dispatchers.Main) { migrationStatus = MigrationStatus.Init }
+
+            cacheManager.closeAllCaches()
+
+            withContext(Dispatchers.Main) { migrationStatus = MigrationStatus.Cache(null) }
+            val prevCachePath = Path(prevPath).inSystem
+            val newCachePath = Path(newPath).inSystem.apply {
+                deleteRecursively() // new path should be empty
+            }
+
+            suspendCancellableCoroutine { cont ->
+                logger.info { "[migration] start move from $prevCachePath to $newCachePath" }
+                prevCachePath.moveDirectoryRecursively(newCachePath) {
+                    migrationStatus = MigrationStatus.Cache(it.name)
+                }
+                logger.info { "[migration] move complete." }
+                cont.resume(Unit)
+            }
+
+            migrationStatus = MigrationStatus.Metadata(null)
+            cacheManager.storages.forEach { storage ->
+                @Suppress("NAME_SHADOWING")
+                val storage = storage.firstOrNull() ?: return@forEach
+                if (storage !is DirectoryMediaCacheStorage) return@forEach // 只移动 DirectoryMediaCacheStorage
+
+                withContext(Dispatchers.IO) {
+                    storage.metadataDir.useDirectoryEntries { seq ->
+                        seq.forEach seq@{ file ->
+                            if (!file.isRegularFile()) return@seq
+
+                            logger.info { "[migration] migrating metadata: $file" }
+                            withContext(Dispatchers.Main) { migrationStatus = MigrationStatus.Metadata(file.name) }
+
+                            // read metadata file
+                            val metadataSave = try {
+                                json.decodeFromString(MediaCacheSave.serializer(), file.readText())
+                            } catch (e: Exception) {
+                                logger.warn(e) { "[migration] Failed to migrate metadata file ${file.name}" }
+                                return@seq
+                            }
+
+                            // replace torrent cache dir
+                            val torrentDir =
+                                metadataSave.metadata.extra[TorrentMediaCacheEngine.EXTRA_TORRENT_CACHE_DIR]
+                                    ?: return@seq // 只处理 TorrentMediaCacheEngine 创建的 metadata
+                            val newTorrentDir = Path(newPath, torrentDir.substringAfter(prevPath)).toString()
+
+                            // write new metadata to original file
+                            val migratedMetadata = MediaCacheSave(
+                                metadataSave.origin,
+                                metadataSave.metadata.copy(
+                                    extra = metadataSave.metadata.extra.toMutableMap().apply {
+                                        set(TorrentMediaCacheEngine.EXTRA_TORRENT_CACHE_DIR, newTorrentDir)
+                                    },
+                                ),
+                            )
+
+                            file.writeText(
+                                json.encodeToString(MediaCacheSave.serializer(), migratedMetadata),
+                            )
+                        }
+                    }
+                }
+            }
+        }.apply {
+            invokeOnCompletion { throwable ->
+                if (throwable != null) {
+                    logger.warn(throwable) { "[migration] failed to migrate caches." }
+                }
+                context.findActivity()?.finishAffinity()
+                exitProcess(0)
+            }
+        }
+    }
+
+    fun cancelCacheMigration() {
+        migrationTasker.cancel()
+    }
+
     /**
      * 获取内部私有目录
      */
@@ -156,5 +276,11 @@ class AndroidTorrentCacheViewModel(
         return AndroidTorrentCacheLocation.ExternalPrivate(
             externalPrivateBasePath?.let { File(it).resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath },
         )
+    }
+
+    sealed interface MigrationStatus {
+        object Init : MigrationStatus
+        class Cache(val currentFile: String?) : MigrationStatus
+        class Metadata(val currentMetadata: String?) : MigrationStatus
     }
 }

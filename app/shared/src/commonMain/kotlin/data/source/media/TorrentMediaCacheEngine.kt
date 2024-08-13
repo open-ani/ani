@@ -52,8 +52,7 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import kotlin.coroutines.CoroutineContext
 
-private const val EXTRA_TORRENT_DATA = "torrentData"
-private const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
+
 //private const val EXTRA_TORRENT_CACHE_FILE =
 //    "torrentCacheFile" // MediaCache 所对应的视频文件. 该文件一定是 [EXTRA_TORRENT_CACHE_DIR] 目录中的文件 (的其中一个)
 
@@ -65,8 +64,11 @@ class TorrentMediaCacheEngine(
 //    override val mediaCacheEngineId: String,
     val torrentEngine: TorrentEngine,
 ) : MediaCacheEngine {
-    private companion object {
-        val logger = logger<TorrentMediaCacheEngine>()
+    companion object {
+        private const val EXTRA_TORRENT_DATA = "torrentData"
+        const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
+
+        private val logger = logger<TorrentMediaCacheEngine>()
     }
 
     class LazyFileHandle(

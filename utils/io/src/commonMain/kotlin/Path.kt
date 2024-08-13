@@ -76,6 +76,8 @@ expect fun SystemPath.isDirectory(): Boolean
 
 expect fun SystemPath.isRegularFile(): Boolean
 
+expect fun SystemPath.moveDirectoryRecursively(target: SystemPath, visitor: ((SystemPath) -> Unit)? = null)
+
 /**
  * @see Path.resolve
  */
