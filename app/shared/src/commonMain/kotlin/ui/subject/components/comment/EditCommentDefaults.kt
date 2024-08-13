@@ -205,8 +205,8 @@ object EditCommentDefaults {
     ) {
         // maybe we can extract the layout
         val size = ActionButtonSize.dp
-        var actionExpanded by rememberSaveable { mutableStateOf(false) }
-        val expandableActionWidth by animateDpAsState(if (actionExpanded) size else 0.dp)
+        var actionRowExpanded by rememberSaveable { mutableStateOf(false) }
+        val expandableActionWidth by animateDpAsState(if (actionRowExpanded) size else 0.dp)
 
         val actionEnabled by derivedStateOf { !sending && !previewing }
 
@@ -292,7 +292,7 @@ object EditCommentDefaults {
                     modifier = Modifier.size(size),
                     enabled = actionEnabled,
                 )
-                if (actionExpanded) {
+                if (actionRowExpanded) {
                     ActionButton(
                         imageVector = Icons.Outlined.FormatBold,
                         contentDescription = "加粗",
@@ -336,7 +336,7 @@ object EditCommentDefaults {
                     modifier = Modifier.size(size),
                     enabled = actionEnabled,
                 )
-                if (actionExpanded) {
+                if (actionRowExpanded) {
                     ActionButton(
                         imageVector = Icons.Outlined.Link,
                         contentDescription = "链接",
@@ -350,7 +350,7 @@ object EditCommentDefaults {
                     imageVector = Icons.Outlined.MoreHoriz,
                     contentDescription = "更多评论编辑功能",
                     enabled = true,
-                    onClick = { actionExpanded = true },
+                    onClick = { actionRowExpanded = true },
                     modifier = Modifier.size(height = size, width = size - expandableActionWidth),
                     hasIndication = false,
                 )

@@ -312,8 +312,8 @@ object CommentDefaults {
     ) {
         val size = ActionButtonSize.dp
         val iconSize = 20.dp
-        var actionExpanded by rememberSaveable { mutableStateOf(false) }
-        val expandableActionWidth by animateDpAsState(if (actionExpanded) size else 0.dp)
+        var actionRowExpanded by rememberSaveable { mutableStateOf(false) }
+        val expandableActionWidth by animateDpAsState(if (actionRowExpanded) size else 0.dp)
         
         Row(modifier = modifier) { 
             CompositionLocalProvider(
@@ -326,7 +326,7 @@ object CommentDefaults {
                     iconSize = iconSize,
                 )
 
-                if (actionExpanded) {
+                if (actionRowExpanded) {
                     ActionButton(
                         imageVector = Icons.Outlined.AddReaction,
                         contentDescription = "添加表情",
@@ -355,7 +355,7 @@ object CommentDefaults {
                     imageVector = Icons.Outlined.MoreHoriz,
                     contentDescription = "展开更多评论功能",
                     iconSize = iconSize,
-                    onClick = { actionExpanded = true },
+                    onClick = { actionRowExpanded = true },
                     modifier = Modifier.size(height = size, width = size - expandableActionWidth),
                     hasIndication = false,
                 )
