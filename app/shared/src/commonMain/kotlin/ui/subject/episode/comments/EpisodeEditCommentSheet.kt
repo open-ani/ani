@@ -4,7 +4,6 @@ import ModalBottomImeAwareSheet
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -30,12 +29,6 @@ fun EpisodeEditCommentSheet(
     val contentPadding = 16.dp
     val imePresentMaxHeight by rememberImeMaxHeight()
 
-    SideEffect {
-        state.invokeOnSendComplete {
-            sheetState.close()
-        }
-    }
-
     ModalBottomImeAwareSheet(
         state = sheetState,
         onDismiss = onDismiss,
@@ -47,6 +40,7 @@ fun EpisodeEditCommentSheet(
             stickerPanelHeight = with(density) { imePresentMaxHeight.toDp() },
             controlSoftwareKeyboard = true,
             focusRequester = focusRequester,
+            onSendComplete = { sheetState.close() },
         )
     }
 }

@@ -50,6 +50,7 @@ fun EditComment(
     controlSoftwareKeyboard: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
+    onSendComplete: () -> Unit = { },
 ) {
     val scope = rememberCoroutineScope()
     val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
@@ -95,7 +96,10 @@ fun EditComment(
                 },
                 onSend = {
                     keyboard?.hide()
-                    scope.launch { state.send() }
+                    scope.launch {
+                        state.send()
+                        onSendComplete()
+                    }
                 },
             )
             if (state.stickerPanelOpened) {

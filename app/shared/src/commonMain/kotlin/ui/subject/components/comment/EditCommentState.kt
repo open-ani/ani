@@ -28,7 +28,6 @@ class EditCommentState(
     private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    private var onSendCompleted: (() -> Unit)? = null
     private val editor = EditCommentTextState("")
     private val previewer = EditCommentPreviewerState(false, backgroundScope)
 
@@ -111,14 +110,6 @@ class EditCommentState(
         sendTasker.join()
 
         editor.override(TextFieldValue(""))
-        onSendCompleted?.let { it() }
-    }
-
-    /**
-     * Invoke after [onSend] completes, this will be in context of caller of [send].
-     */
-    fun invokeOnSendComplete(block: () -> Unit) {
-        onSendCompleted = block
     }
 }
 
