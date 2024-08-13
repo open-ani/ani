@@ -5,7 +5,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +24,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
@@ -624,19 +622,15 @@ private class EpisodeViewModelImpl(
                     if (!enabled) return@collectLatest
 
                     // 设置启用
-                    episodeId.collectLatest { id ->
-                        withContext(Dispatchers.Main) {
-                            playerSkipOpEdState.resetSkipOpEd()
-                        }
-                        combine(
-                            playerState.currentPositionMillis.sampleWithInitial(1000),
-                            episodeCollectionsFlow,
-                        ) { pos, collections ->
-                            // 不止一集并且当前是第一集时不跳过
-                            if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == id) return@combine
-                            playerSkipOpEdState.update(pos)
-                        }.collect()
-                    }
+                    combine(
+                        playerState.currentPositionMillis.sampleWithInitial(1000),
+                        episodeId,
+                        episodeCollectionsFlow,
+                    ) { pos, id, collections ->
+                        // 不止一集并且当前是第一集时不跳过
+                        if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == id) return@combine
+                        playerSkipOpEdState.update(pos)
+                    }.collect()
                 }
         }
     }

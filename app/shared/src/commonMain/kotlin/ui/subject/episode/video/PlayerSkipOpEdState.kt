@@ -23,7 +23,7 @@ class PlayerSkipOpEdState(
         chapters.value.filter {
             OpEdLength.fromVideoLengthOrNull(videoLength.value)
                 ?.isOpEdChapter(it.durationMillis.milliseconds) == true
-        }
+        }.map { CurrentChapter(chapter = it, true) }
     }
 
     val skipped: Boolean by derivedStateOf {
@@ -34,13 +34,9 @@ class PlayerSkipOpEdState(
     }
 
     fun cancelSkipOpEd() {
-        currentChapter = currentChapter?.copy(skipped = false)
-        println(currentChapter?.skipped)
+        currentChapter = opEdChapters.find { it == currentChapter }?.apply { this.skipped = false }?.copy()
     }
 
-    fun resetSkipOpEd() {
-        currentChapter = null
-    }
 
     /**
      * 每秒调用一次update
@@ -51,15 +47,15 @@ class PlayerSkipOpEdState(
     fun update(currentPos: Long) {
         if (opEdChapters.isEmpty()) return
         // 在显示跳过提示范围
-        opEdChapters.find { it.offsetMillis in currentPos - 1000..currentPos + 5000 }?.let {
+        opEdChapters.find { it.chapter.offsetMillis in currentPos - 1000..currentPos + 5000 }?.let {
             if (currentChapter == null) {
-                currentChapter = CurrentChapter(it, true)
+                currentChapter = it.copy()
             }
         } ?: run {
             currentChapter = null
         }
         // 在跳过 OP/ED 范围
-        opEdChapters.find { it.offsetMillis in currentPos - 1000..currentPos }?.run {
+        opEdChapters.map { it.chapter }.find { it.offsetMillis in currentPos - 1000..currentPos }?.run {
             if (currentChapter?.skipped == false) return
             onSkip(offsetMillis + durationMillis)
             currentChapter = null
