@@ -20,8 +20,8 @@ import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
 import org.jetbrains.compose.resources.DrawableResource
+import kotlin.coroutines.CoroutineContext
 
 /**
  * [panelTitle] 将承担所有的 state 刷新工作，也就是此 state 的唯一标识
@@ -107,18 +107,15 @@ class EditCommentState(
         }
     }
 
-    suspend fun send() {
+    suspend fun send(context: CoroutineContext = Dispatchers.Default) {
         val target = currentSendTarget
         val content = editor.textField.text
 
         editExpanded = false
 
-        sendTasker.launch(Dispatchers.Default) {
-            if (target != null) {
-                onSend(target, content)
-            } else {
-                logger.warn { "current send target is null." }
-            }
+        sendTasker.launch(context) {
+            checkNotNull(target)
+            onSend(target, content)
         }
         sendTasker.join()
 
