@@ -161,7 +161,7 @@ fun SubjectDetailsScene(
             val lazyListState = rememberLazyListState()
 
             CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
-                SubjectCommentColumn(
+                SubjectDetailsDefaults.SubjectCommentColumn(
                     state = vm.subjectCommentState,
                     listState = lazyListState,
                     modifier = Modifier

@@ -35,7 +35,7 @@ private fun PreviewSubjectComment() {
 @Composable
 private fun PreviewSubjectCommentColumn() {
     ProvideCompositionLocalsForPreview {
-        SubjectCommentColumn(
+        SubjectDetailsDefaults.SubjectCommentColumn(
             state = rememberTestCommentState(generateUiComment(4)),
             onClickUrl = { },
         )

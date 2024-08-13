@@ -38,7 +38,7 @@ import me.him188.ani.app.ui.subject.components.comment.UIComment
 import me.him188.ani.app.ui.subject.rating.FiveRatingStars
 
 @Composable
-fun SubjectCommentColumn(
+fun SubjectDetailsDefaults.SubjectCommentColumn(
     state: CommentState,
     onClickUrl: (url: String) -> Unit,
     modifier: Modifier = Modifier,
