@@ -1,17 +1,16 @@
 package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.subject.episode.details.rememberTestAuthState
 
 internal val TestSelfRatingInfo = SelfRatingInfo(
     score = 7,
@@ -37,19 +36,10 @@ private fun PreviewCollectionPage() {
             }
         }
 
+        WindowInsets.ime
         CollectionPage(
             onClickCaches = {},
             contentPadding = PaddingValues(0.dp),
         )
-    }
-}
-
-@Composable
-@PreviewLightDark
-private fun PreviewCollectionPageUnauthorizedTips() {
-    ProvideCompositionLocalsForPreview {
-        Surface {
-            CollectionPageUnauthorizedTips(rememberTestAuthState(false))
-        }
     }
 }

@@ -33,6 +33,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.CommentRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
@@ -76,7 +77,9 @@ import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -191,6 +194,7 @@ private class EpisodeViewModelImpl(
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val commentRepository: CommentRepository by inject()
@@ -217,7 +221,7 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val videoControllerState = VideoControllerState(false)
+    private val videoControllerState = VideoControllerState(ControllerVisibility.Invisible)
 
     /**
      * 更换 EP 是否已经完成了.
@@ -456,6 +460,8 @@ private class EpisodeViewModelImpl(
             )
         },
         currentPosition = playerState.currentPositionMillis.map { it.milliseconds },
+        danmakuFilterConfig = settingsRepository.danmakuFilterConfig.flow,
+        danmakuRegexFilterList = danmakuRegexFilterRepository.flow,
         onFetch = {
             danmakuManager.fetch(it)
         },
@@ -476,7 +482,7 @@ private class EpisodeViewModelImpl(
             settingsRepository.danmakuEnabled.set(it)
         },
         onHideController = {
-            videoControllerState.setVisible(false)
+            videoControllerState.toggleFullVisible(false)
         },
         backgroundScope,
     )
@@ -574,8 +580,9 @@ private class EpisodeViewModelImpl(
                             combine(
                                 playerState.currentPositionMillis.sampleWithInitial(5000),
                                 playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
-                            ) { pos, max ->
-                                if (max == null) return@combine
+                                playerState.state,
+                            ) { pos, max, playback ->
+                                if (max == null || !playback.isPlaying) return@combine
                                 if (episodePresentationFlow.first().collectionType == UnifiedCollectionType.DONE) {
                                     cancelScope() // 已经看过了
                                 }
@@ -591,6 +598,23 @@ private class EpisodeViewModelImpl(
                                     cancelScope() // 标记成功一次后就不要再检查了
                                 }
                             }.collect()
+                        }
+                    }
+                }
+        }
+
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoPlayNext }
+                .distinctUntilChanged()
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    playerState.state.collect { playback ->
+                        if (playback != PlaybackState.FINISHED) return@collect
+                        launchInMain {// state changes must be in main thread
+                            logger.info("播放完毕，切换下一集")
+                            episodeSelectorState.takeIf { it.hasNextEpisode }?.selectNext()
                         }
                     }
                 }

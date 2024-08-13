@@ -8,6 +8,7 @@
   "SpellCheckingInspection",
 )
 
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.title.PatternBasedTitleParserTestSuite
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,6 +29,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -37,6 +39,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -46,6 +49,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -55,6 +59,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -64,6 +69,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -73,6 +79,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -82,6 +89,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -91,6 +99,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -99,6 +108,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("TV + OVA Fin..TV + OVA Fin", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -108,6 +118,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -116,6 +127,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("2011..2011", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -124,6 +136,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -132,6 +145,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26+OVA", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -140,6 +154,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -148,6 +163,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -156,6 +172,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -164,6 +181,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -172,6 +190,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -180,6 +199,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26+OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -188,6 +208,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -197,6 +218,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -206,6 +228,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -214,6 +237,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -222,6 +246,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -230,6 +255,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("ENG, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -238,6 +264,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -246,6 +273,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -255,6 +283,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("ENG, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -263,6 +292,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("ENG, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -271,6 +301,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("ENG, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -279,6 +310,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("null", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -288,6 +320,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -296,6 +329,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -305,6 +339,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -313,6 +348,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -322,6 +358,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -330,6 +367,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -338,6 +376,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -346,6 +385,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -354,6 +394,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..09", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -362,6 +403,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..09", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -370,6 +412,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26+SP", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -378,6 +421,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26+SP", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -386,6 +430,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -394,6 +439,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -402,6 +448,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -410,6 +457,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -418,6 +466,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -426,6 +475,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -434,6 +484,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -442,6 +493,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -450,6 +502,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -458,6 +511,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -466,6 +520,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -474,6 +529,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("null", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -482,6 +538,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -490,6 +547,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -498,6 +556,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -506,6 +565,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -514,6 +574,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -522,6 +583,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -530,6 +592,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -538,6 +601,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -546,6 +610,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -554,6 +619,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -562,6 +628,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -570,6 +637,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -578,6 +646,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -586,6 +655,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -594,6 +664,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -602,6 +673,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -610,6 +682,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -618,6 +691,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -626,6 +700,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -634,6 +709,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -642,6 +718,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -650,6 +727,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -658,6 +736,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -666,6 +745,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -674,6 +754,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -682,6 +763,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -690,6 +772,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -698,6 +781,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -706,6 +790,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -714,6 +799,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -722,6 +808,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -730,6 +817,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -738,6 +826,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -746,6 +835,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -754,6 +844,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -762,6 +853,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -770,6 +862,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("26..26", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -778,6 +871,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -786,6 +880,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -794,6 +889,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -802,6 +898,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -810,6 +907,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -818,6 +916,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -826,6 +925,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -834,6 +934,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -842,6 +943,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -850,6 +952,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -858,6 +961,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -866,6 +970,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -874,6 +979,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -882,6 +988,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -890,6 +997,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -898,6 +1006,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -906,6 +1015,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -914,6 +1024,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -922,6 +1033,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -930,6 +1042,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -938,6 +1051,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -946,6 +1060,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -954,6 +1069,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("25..25", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -962,6 +1078,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -970,6 +1087,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -978,6 +1096,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..24", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -986,6 +1105,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -994,6 +1114,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1002,6 +1123,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1010,6 +1132,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1018,6 +1141,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1026,6 +1150,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1034,6 +1159,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1042,6 +1168,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1050,6 +1177,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1058,6 +1186,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1066,6 +1195,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1074,6 +1204,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1082,6 +1213,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1090,6 +1222,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1098,6 +1231,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1106,6 +1240,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1114,6 +1249,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1122,6 +1258,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1130,6 +1267,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1138,6 +1276,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1146,6 +1285,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("24..24", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1154,6 +1294,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1162,6 +1303,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1170,6 +1312,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1178,6 +1321,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1186,6 +1330,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1194,6 +1339,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1202,6 +1348,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1210,6 +1357,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1218,6 +1366,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1226,6 +1375,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1234,6 +1384,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1242,6 +1393,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1250,6 +1402,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1258,6 +1411,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1266,6 +1420,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1274,6 +1429,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1282,6 +1438,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1290,6 +1447,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1298,6 +1456,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1306,6 +1465,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1314,6 +1474,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1322,6 +1483,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1330,6 +1492,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1338,6 +1501,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1346,6 +1510,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1354,6 +1519,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("23..23", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1362,6 +1528,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1370,6 +1537,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1378,6 +1546,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1386,6 +1555,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1394,6 +1564,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1402,6 +1573,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1410,6 +1582,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1418,6 +1591,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1426,6 +1600,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1434,6 +1609,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1442,6 +1618,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1450,6 +1627,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1458,6 +1636,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1466,6 +1645,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1474,6 +1654,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1482,6 +1663,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1490,6 +1672,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1498,6 +1681,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1506,6 +1690,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1514,6 +1699,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("22..22", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1522,6 +1708,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1530,6 +1717,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1538,6 +1726,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1546,6 +1735,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1554,6 +1744,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1562,6 +1753,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1570,6 +1762,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1578,6 +1771,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1586,6 +1780,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1594,6 +1789,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1602,6 +1798,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1610,6 +1807,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1618,6 +1816,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1626,6 +1825,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1634,6 +1834,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1642,6 +1843,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1650,6 +1852,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1658,6 +1861,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1666,6 +1870,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1674,6 +1879,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1682,6 +1888,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1690,6 +1897,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("21..21", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1698,6 +1906,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1706,6 +1915,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1714,6 +1924,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1722,6 +1933,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..20", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1730,6 +1942,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1738,6 +1951,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1746,6 +1960,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1754,6 +1969,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1762,6 +1978,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1770,6 +1987,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1778,6 +1996,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1786,6 +2005,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1794,6 +2014,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1802,6 +2023,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1810,6 +2032,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1818,6 +2041,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1826,6 +2050,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1834,6 +2059,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1842,6 +2068,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1850,6 +2077,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1858,6 +2086,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1866,6 +2095,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("20..20", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1874,6 +2104,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -1882,6 +2113,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1890,6 +2122,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1898,6 +2131,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -1906,6 +2140,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1914,6 +2149,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1922,6 +2158,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1930,6 +2167,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1938,6 +2176,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1946,6 +2185,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1954,6 +2194,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1962,6 +2203,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1970,6 +2212,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1978,6 +2221,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1986,6 +2230,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -1994,6 +2239,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2002,6 +2248,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2010,6 +2257,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2018,6 +2266,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2026,6 +2275,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2034,6 +2284,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2042,6 +2293,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("19..19", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2050,6 +2302,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2058,6 +2311,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2066,6 +2320,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2074,6 +2329,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2082,6 +2338,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2090,6 +2347,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2098,6 +2356,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2106,6 +2365,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2114,6 +2374,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2122,6 +2383,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2130,6 +2392,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2138,6 +2401,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2146,6 +2410,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2154,6 +2419,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2162,6 +2428,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2170,6 +2437,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2178,6 +2446,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2186,6 +2455,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2194,6 +2464,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2202,6 +2473,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2210,6 +2482,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2218,6 +2491,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2226,6 +2500,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2234,6 +2509,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2242,6 +2518,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("18..18", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2250,6 +2527,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2258,6 +2536,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2266,6 +2545,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2274,6 +2554,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2282,6 +2563,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2290,6 +2572,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2298,6 +2581,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2306,6 +2590,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2314,6 +2599,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2322,6 +2608,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2330,6 +2617,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2338,6 +2626,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2346,6 +2635,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2354,6 +2644,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2362,6 +2653,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2370,6 +2662,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2378,6 +2671,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2386,6 +2680,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2394,6 +2689,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2402,6 +2698,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2410,6 +2707,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2418,6 +2716,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2426,6 +2725,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2434,6 +2734,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2442,6 +2743,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2450,6 +2752,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("17..17", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2458,6 +2761,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2466,6 +2770,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2474,6 +2779,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2482,6 +2788,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2490,6 +2797,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2498,6 +2806,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2506,6 +2815,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2514,6 +2824,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2522,6 +2833,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2530,6 +2842,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2538,6 +2851,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2546,6 +2860,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2554,6 +2869,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2562,6 +2878,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2570,6 +2887,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2578,6 +2896,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2586,6 +2905,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2594,6 +2914,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2602,6 +2923,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2610,6 +2932,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2618,6 +2941,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2626,6 +2950,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2634,6 +2959,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2642,6 +2968,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("16..16", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2650,6 +2977,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2658,6 +2986,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2666,6 +2995,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("null", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2674,6 +3004,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2682,6 +3013,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2690,6 +3022,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2698,6 +3031,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2706,6 +3040,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2714,6 +3049,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2722,6 +3058,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2730,6 +3067,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2738,6 +3076,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2746,6 +3085,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2754,6 +3094,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2762,6 +3103,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2770,6 +3112,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2778,6 +3121,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2786,6 +3130,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2794,6 +3139,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2802,6 +3148,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2810,6 +3157,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("15..15", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2818,6 +3166,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2826,6 +3175,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -2834,6 +3184,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2842,6 +3193,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2851,6 +3203,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2859,6 +3212,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2867,6 +3221,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2875,6 +3230,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2883,6 +3239,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2891,6 +3248,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2899,6 +3257,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2907,6 +3266,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2915,6 +3275,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2923,6 +3284,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2931,6 +3293,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -2939,6 +3302,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2947,6 +3311,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2955,6 +3320,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2963,6 +3329,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2971,6 +3338,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2979,6 +3347,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2987,6 +3356,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -2995,6 +3365,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3003,6 +3374,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3011,6 +3383,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("14..14", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3019,6 +3392,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3027,6 +3401,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3035,6 +3410,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3043,6 +3419,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3051,6 +3428,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3059,6 +3437,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3067,6 +3446,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3075,6 +3455,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3083,6 +3464,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3091,6 +3473,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3099,6 +3482,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3107,6 +3491,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3115,6 +3500,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3123,6 +3509,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3131,6 +3518,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3139,6 +3527,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3147,6 +3536,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3155,6 +3545,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3163,6 +3554,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3171,6 +3563,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3179,6 +3572,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3187,6 +3581,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3195,6 +3590,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3203,6 +3599,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("13..13", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3211,6 +3608,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3219,6 +3617,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3227,6 +3626,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3235,6 +3635,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3243,6 +3644,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3251,6 +3653,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3259,6 +3662,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3267,6 +3671,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3275,6 +3680,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3283,6 +3689,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3291,6 +3698,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3299,6 +3707,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3307,6 +3716,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3315,6 +3725,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3323,6 +3734,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3331,6 +3743,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3339,6 +3752,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3347,6 +3761,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3355,6 +3770,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3363,6 +3779,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3371,6 +3788,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3379,6 +3797,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3387,6 +3806,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3395,6 +3815,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3403,6 +3824,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3411,6 +3833,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3419,6 +3842,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3427,6 +3851,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("12..12", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3435,6 +3860,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3443,6 +3869,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3451,6 +3878,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3459,6 +3887,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3467,6 +3896,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3475,6 +3905,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3483,6 +3914,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3491,6 +3923,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3499,6 +3932,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3507,6 +3941,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3515,6 +3950,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3523,6 +3959,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3531,6 +3968,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3539,6 +3977,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3547,6 +3986,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3555,6 +3995,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3563,6 +4004,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3571,6 +4013,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3579,6 +4022,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3587,6 +4031,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3595,6 +4040,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3603,6 +4049,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3611,6 +4058,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3619,6 +4067,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("11..11", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3627,6 +4076,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3635,6 +4085,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3643,6 +4094,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3651,6 +4103,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3659,6 +4112,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3667,6 +4121,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3675,6 +4130,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3683,6 +4139,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3692,6 +4149,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3700,6 +4158,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3708,6 +4167,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3716,6 +4176,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3724,6 +4185,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3732,6 +4194,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3740,6 +4203,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3748,6 +4212,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3756,6 +4221,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3764,6 +4230,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3772,6 +4239,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3780,6 +4248,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3788,6 +4257,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3796,6 +4266,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3804,6 +4275,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3812,6 +4284,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3820,6 +4293,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3828,6 +4302,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("10..10", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3836,6 +4311,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3844,6 +4320,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3852,6 +4329,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3860,6 +4338,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3868,6 +4347,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3876,6 +4356,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3884,6 +4365,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3892,6 +4374,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -3900,6 +4383,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3908,6 +4392,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -3916,6 +4401,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3924,6 +4410,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3932,6 +4419,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3940,6 +4428,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3948,6 +4437,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3956,6 +4446,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3964,6 +4455,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3972,6 +4464,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3980,6 +4473,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3988,6 +4482,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -3996,6 +4491,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4004,6 +4500,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4012,6 +4509,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4020,6 +4518,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4028,6 +4527,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4036,6 +4536,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4044,6 +4545,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4052,6 +4554,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("09..09", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4060,6 +4563,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4068,6 +4572,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4076,6 +4581,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4084,6 +4590,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4092,6 +4599,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4100,6 +4608,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4108,6 +4617,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4116,6 +4626,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4124,6 +4635,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4132,6 +4644,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4140,6 +4653,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4148,6 +4662,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4156,6 +4671,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4164,6 +4680,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4172,6 +4689,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4180,6 +4698,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4188,6 +4707,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4196,6 +4716,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4204,6 +4725,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4212,6 +4734,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4220,6 +4743,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4228,6 +4752,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4236,6 +4761,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4244,6 +4770,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("08..08", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4252,6 +4779,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4260,6 +4788,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4268,6 +4797,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4276,6 +4806,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4284,6 +4815,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4292,6 +4824,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4300,6 +4833,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4308,6 +4842,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4316,6 +4851,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4324,6 +4860,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4332,6 +4869,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4340,6 +4878,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4348,6 +4887,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4356,6 +4896,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4364,6 +4905,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4372,6 +4914,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4380,6 +4923,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4388,6 +4932,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4396,6 +4941,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4404,6 +4950,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4412,6 +4959,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4420,6 +4968,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4428,6 +4977,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4436,6 +4986,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4444,6 +4995,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4452,6 +5004,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("07..07", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4460,6 +5013,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4468,6 +5022,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4476,6 +5031,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4484,6 +5040,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4492,6 +5049,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4500,6 +5058,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4508,6 +5067,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4516,6 +5076,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4524,6 +5085,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4532,6 +5094,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("null", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4540,6 +5103,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4548,6 +5112,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4556,6 +5121,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4564,6 +5130,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4572,6 +5139,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4580,6 +5148,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4588,6 +5157,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4596,6 +5166,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4604,6 +5175,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4612,6 +5184,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4620,6 +5193,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4628,6 +5202,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4636,6 +5211,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4644,6 +5220,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4652,6 +5229,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4660,6 +5238,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4668,6 +5247,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4676,6 +5256,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("06..06", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4684,6 +5265,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4692,6 +5274,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4700,6 +5283,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4708,6 +5292,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4716,6 +5301,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4724,6 +5310,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4732,6 +5319,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4740,6 +5328,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4748,6 +5337,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4756,6 +5346,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4764,6 +5355,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4772,6 +5364,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4780,6 +5373,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4788,6 +5382,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4796,6 +5391,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4804,6 +5400,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -4812,6 +5409,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4820,6 +5418,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4828,6 +5427,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4836,6 +5436,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4844,6 +5445,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4852,6 +5454,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4860,6 +5463,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4868,6 +5472,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4876,6 +5481,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4884,6 +5490,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4892,6 +5499,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4900,6 +5508,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4908,6 +5517,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4916,6 +5526,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4924,6 +5535,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("05..05", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4932,6 +5544,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4941,6 +5554,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4949,6 +5563,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4957,6 +5572,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4965,6 +5581,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4973,6 +5590,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4981,6 +5599,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -4989,6 +5608,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -4997,6 +5617,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5005,6 +5626,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5013,6 +5635,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5021,6 +5644,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5029,6 +5653,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5037,6 +5662,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5045,6 +5671,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5053,6 +5680,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5061,6 +5689,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5069,6 +5698,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5077,6 +5707,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5085,6 +5716,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5093,6 +5725,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5101,6 +5734,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5109,6 +5743,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5117,6 +5752,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5125,6 +5761,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5133,6 +5770,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5141,6 +5779,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5149,6 +5788,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("04..04", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5157,6 +5797,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -5165,6 +5806,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5173,6 +5815,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5181,6 +5824,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5189,6 +5833,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5197,6 +5842,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5205,6 +5851,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5213,6 +5860,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5221,6 +5869,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5229,6 +5878,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5237,6 +5887,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5245,6 +5896,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5253,6 +5905,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5261,6 +5914,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5269,6 +5923,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5277,6 +5932,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5285,6 +5941,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5293,6 +5950,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5301,6 +5959,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5309,6 +5968,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5317,6 +5977,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5325,6 +5986,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5333,6 +5995,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5341,6 +6004,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5349,6 +6013,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5357,6 +6022,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("03..03", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5365,6 +6031,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5373,6 +6040,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5381,6 +6049,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5389,6 +6058,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5397,6 +6067,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -5405,6 +6076,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5413,6 +6085,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5421,6 +6094,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5429,6 +6103,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5437,6 +6112,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5445,6 +6121,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5453,6 +6130,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5461,6 +6139,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5469,6 +6148,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..02", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5477,6 +6157,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5485,6 +6166,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5493,6 +6175,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5501,6 +6184,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5509,6 +6193,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5517,6 +6202,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5525,6 +6211,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5533,6 +6220,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5541,6 +6229,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5549,6 +6238,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5557,6 +6247,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5565,6 +6256,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5573,6 +6265,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5581,6 +6274,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("02..02", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5589,6 +6283,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OVA..OVA", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5597,6 +6292,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PSP_480P..PSP_480P", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5605,6 +6301,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5613,6 +6310,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5621,6 +6319,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -5629,6 +6328,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5637,6 +6337,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5645,6 +6346,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5653,6 +6355,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5661,6 +6364,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5669,6 +6373,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5677,6 +6382,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("PC&PSP兼容MP4..PC&PSP兼容MP4", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5685,6 +6391,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5693,6 +6400,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5701,6 +6409,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5709,6 +6418,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5717,6 +6427,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5725,6 +6436,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5733,6 +6445,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5741,6 +6454,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5749,6 +6463,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5757,6 +6472,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5765,6 +6481,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5773,6 +6490,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5781,6 +6499,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("01..01", r.episodeRange.toString())
     assertEquals("JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5789,6 +6508,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -5797,6 +6517,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5805,6 +6526,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -5813,6 +6535,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("480P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -5821,6 +6544,7 @@ public class PatternTitleParserTest未来日记 : PatternBasedTitleParserTestSui
     assertEquals("OAD..OAD", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 }
 

@@ -21,6 +21,8 @@ class torrent_info_t {
   public:
     torrent_info_t() = default;
 
+    std::string name{};
+    
     int64_t total_size{};
 
     int num_pieces{};

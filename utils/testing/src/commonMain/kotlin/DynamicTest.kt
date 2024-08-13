@@ -23,7 +23,10 @@ annotation class TestContainer
 /**
  * Annotates a function to be a [Test] factory that must return a [DynamicTestsResult].
  *
- * On JVM, this delegates to JUnit's `TestFactory`. On Native, test functions are executed in-place.
+ * On JVM, this delegates to JUnit's `TestFactory`.
+ *
+ * On Native, test functions are executed in-place.
+ * 注意, 这意味着所有 test case 会共享一个 class instance.
  *
  * Tips: To run [TestFactory]s in IDEA, you can press `Ctrl + Shift + R`(for both macOS and Windows) with caret in the test function.
  */

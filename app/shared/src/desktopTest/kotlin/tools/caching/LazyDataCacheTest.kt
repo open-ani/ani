@@ -1,5 +1,6 @@
 package me.him188.ani.app.tools.caching
 
+import androidx.datastore.core.DataStore
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
@@ -9,8 +10,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import org.junit.jupiter.api.Disabled
@@ -20,6 +23,16 @@ import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class LazyDataCacheTest {
+    @Suppress("TestFunctionName")
+    private fun <T> LazyDataCache(
+        createSource: suspend LazyDataCacheContext.() -> PagedSource<T>,
+        getKey: (T) -> Any? = { it },
+        debugName: String? = null,
+        persistentStore: DataStore<LazyDataCacheSave<T>> = MemoryDataStore(LazyDataCacheSave.empty())
+    ): LazyDataCache<T> = me.him188.ani.app.tools.caching.LazyDataCache(
+        { ApiResponse.success(createSource()) }, getKey, debugName, persistentStore,
+    )
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Lazy loading behavior

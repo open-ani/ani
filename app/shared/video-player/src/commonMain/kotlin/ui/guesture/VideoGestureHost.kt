@@ -58,6 +58,7 @@ import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -65,8 +66,8 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.StreamType
+import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.getComponentAccessors
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.effects.ComposeKey
 import me.him188.ani.app.ui.foundation.effects.onKey
@@ -82,9 +83,11 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.RES
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEEKING
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
+import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.absoluteValue
+import kotlin.time.Duration.Companion.seconds
 
 @Stable
 private fun renderTime(seconds: Int): String {
@@ -350,6 +353,7 @@ val Platform.mouseFamily: GestureFamily
 
 @Immutable
 enum class GestureFamily(
+    val useDesktopGestureLayoutWorkaround: Boolean,
     val clickToPauseResume: Boolean,
     val clickToToggleController: Boolean,
     val doubleClickToFullscreen: Boolean,
@@ -365,6 +369,7 @@ enum class GestureFamily(
     val escToExitFullscreen: Boolean = true,
 ) {
     TOUCH(
+        useDesktopGestureLayoutWorkaround = false,
         clickToPauseResume = false,
         clickToToggleController = true,
         doubleClickToFullscreen = false,
@@ -376,6 +381,7 @@ enum class GestureFamily(
         mouseHoverForController = false,
     ),
     MOUSE(
+        useDesktopGestureLayoutWorkaround = true,
         clickToPauseResume = true,
         clickToToggleController = false,
         doubleClickToFullscreen = true,
@@ -387,14 +393,18 @@ enum class GestureFamily(
     )
 }
 
+internal val VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION = 3.seconds
+
 @Composable
 fun VideoGestureHost(
     controllerState: VideoControllerState,
     seekerState: SwipeSeekerState,
+    progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
+    enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
-    family: GestureFamily = Platform.currentPlatform.mouseFamily,
+    family: GestureFamily = currentPlatform.mouseFamily,
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
@@ -428,7 +438,7 @@ fun VideoGestureHost(
         }
 
         // TODO: 临时解决方案, 安卓和 PC 需要不同的组件层级关系才能实现各种快捷手势
-        if (Platform.currentPlatform.isDesktop()) {
+        if (family.useDesktopGestureLayoutWorkaround) {
             val indicatorTasker = rememberUiMonoTasker()
             val focusRequester = remember { FocusRequester() }
             val manager = LocalFocusManager.current
@@ -469,13 +479,13 @@ fun VideoGestureHost(
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
                         onPointerEventMultiplatform(PointerEventType.Move) { events ->
-                            controllerState.isVisible = true
+                            controllerState.toggleFullVisible(true)
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {
                                 scope.launch {
-                                    delay(3000)
+                                    delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
                                     if (controllerState.alwaysOn) return@launch
-                                    controllerState.isVisible = false
+                                    controllerState.toggleFullVisible(false)
                                 }
                             }
                         }
@@ -509,7 +519,7 @@ fun VideoGestureHost(
                                         onTogglePauseResumeState()
                                     }
                                     if (family.clickToToggleController) {
-                                        controllerState.toggleVisible()
+                                        controllerState.toggleFullVisible()
                                     }
                                 }
                             },
@@ -587,6 +597,7 @@ fun VideoGestureHost(
 
             Box(
                 modifier
+                    .testTag("VideoGestureHost")
                     .ifThen(needWorkaroundForFocusManager) {
                         onFocusEvent {
                             if (it.hasFocus) {
@@ -604,7 +615,8 @@ fun VideoGestureHost(
                                     onTogglePauseResumeState()
                                 }
                                 if (family.clickToToggleController) {
-                                    controllerState.toggleVisible()
+                                    focusManager.clearFocus()
+                                    controllerState.toggleFullVisible()
                                 }
                             }
                         },
@@ -619,8 +631,26 @@ fun VideoGestureHost(
                             }
                         },
                     )
-                    .ifThen(family.swipeToSeek) {
-                        swipeToSeek(seekerState, Orientation.Horizontal)
+                    .ifThen(family.swipeToSeek && enableSwipeToSeek) {
+                        val swipeToSeekRequester = remember { Any() }
+                        swipeToSeek(
+                            seekerState,
+                            Orientation.Horizontal,
+                            onDragStarted = {
+                                controllerState.setRequestProgressBar(swipeToSeekRequester)
+                            },
+                            onDragStopped = {
+                                controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
+                                progressSliderState.finishPreview()
+                            },
+                        ) {
+                            progressSliderState.run {
+                                if (totalDurationMillis == 0L) return@run
+                                val offsetRatio =
+                                    (currentPositionMillis + seekerState.deltaSeconds.times(1000)).toFloat() / totalDurationMillis
+                                previewPositionRatio(offsetRatio)
+                            }
+                        }
                     }
                     .ifThen(family.keyboardLeftRightToSeek) {
                         onKeyboardHorizontalDirection(

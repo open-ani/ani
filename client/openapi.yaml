@@ -13,27 +13,518 @@
   } ],
   "tags": [ ],
   "paths": {
-    "/status": {
+    "/v1/danmaku/{episodeId}": {
       "get": {
-        "tags": [ ],
+        "tags": [ "Danmaku" ],
+        "summary": "获取弹幕",
+        "description": "获取某一剧集内的弹幕，可指定某一时间范围及最大获取数量。",
+        "operationId": "getDanmaku",
+        "parameters": [ {
+          "name": "episodeId",
+          "in": "path",
+          "description": "剧集 ID",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "maxCount",
+          "in": "query",
+          "description": "最大弹幕获取数量，默认为 8000",
+          "required": false,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "Int",
+            "type": "integer",
+            "format": "int32"
+          }
+        }, {
+          "name": "fromTime",
+          "in": "query",
+          "description": "过滤范围开始时间，单位为毫秒，默认为 0",
+          "required": false,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          }
+        }, {
+          "name": "toTime",
+          "in": "query",
+          "description": "过滤范围结束时间，单位为毫秒，默认为 -1；值为负数时表示不限制结束时间",
+          "required": false,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          }
+        } ],
+        "responses": {
+          "200": {
+            "description": "成功获取内容",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DanmakuGetResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "danmakuList": [ {
+                        "id": "ba1f213a-50bd-4e09-a4e0-de6e24b72e22",
+                        "senderId": "3db414d0-930a-4144-84cf-b841f486215e",
+                        "danmakuInfo": {
+                          "playTime": 0,
+                          "color": -16777216,
+                          "text": "Hello, world!",
+                          "location": "NORMAL"
+                        }
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "headers": { }
+          },
+          "451": {
+            "description": "请求弹幕数量过多。maxCount 参数传入值超过 8000 时会返回此错误。",
+            "headers": { }
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [ "Danmaku" ],
+        "summary": "发送弹幕",
+        "description": "发送一条弹幕至某一剧集，可指定弹幕时间、内容、颜色和内容。需要用户登录。",
+        "operationId": "postDanmaku",
+        "parameters": [ {
+          "name": "episodeId",
+          "in": "path",
+          "description": "剧集 ID",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        } ],
+        "requestBody": {
+          "description": "弹幕信息",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DanmakuPostRequest"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "danmakuInfo": {
+                      "playTime": 0,
+                      "color": -16777216,
+                      "text": "Hello, world!",
+                      "location": "NORMAL"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "弹幕发送成功",
+            "headers": { }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "headers": { }
+          },
+          "401": {
+            "description": "未登录或用户 token 无效",
+            "headers": { }
+          },
+          "441": {
+            "description": "弹幕内容为空",
+            "headers": { }
+          }
+        },
+        "deprecated": false,
+        "security": [ {
+          "auth-jwt": [ ]
+        } ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "tags": [ "User" ],
+        "summary": "查看当前用户信息",
+        "description": "查看当前携带的 token 对应用户的信息，包含其 Ani ID，Bangumi 昵称以及 Bangumi 头像 URL。",
+        "operationId": "getUser",
         "parameters": [ ],
-        "responses": { },
+        "responses": {
+          "200": {
+            "description": "成功获取用户信息",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AniUser"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "id": "762e10b5-37c2-4a2b-a39b-b3033a5979f8",
+                      "nickname": "Him188",
+                      "smallAvatar": "https://example.com/avatarSmall.jpg",
+                      "mediumAvatar": "https://example.com/avatarMedium.jpg",
+                      "largeAvatar": "https://example.com/avatarLarge.jpg",
+                      "registerTime": 1714404248957,
+                      "lastLoginTime": 1714404248957,
+                      "clientVersion": "3.0.0-beta22",
+                      "clientPlatforms": [ "macos-aarch64", "android-aarch64", "windows-x86_64" ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未登录或用户 token 无效",
+            "headers": { }
+          },
+          "404": {
+            "description": "用户 token 对应的用户不存在",
+            "headers": { }
+          }
+        },
+        "deprecated": false,
+        "security": [ {
+          "auth-jwt": [ ]
+        } ]
+      }
+    },
+    "/v1/updates/incremental": {
+      "get": {
+        "tags": [ "Updates" ],
+        "summary": "获取可更新的版本号列表",
+        "description": "返回所有大于当前版本的更新版本号。",
+        "operationId": "getUpdates",
+        "parameters": [ {
+          "name": "clientVersion",
+          "in": "query",
+          "description": "客户端当前版本号。不合法的版本号会导致服务器返回 461 Invalid Client Version 错误。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "clientPlatform",
+          "in": "query",
+          "description": "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "clientArch",
+          "in": "query",
+          "description": "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "releaseClass",
+          "in": "query",
+          "description": "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回 400 Bad Request 错误。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        } ],
+        "responses": {
+          "200": {
+            "description": "成功获取内容",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseUpdatesResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "versions": [ "3.0.0-rc01", "3.0.0-rc02", "3.0.0-rc03" ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "headers": { }
+          },
+          "461": {
+            "description": "不合法的客户端版本号",
+            "headers": { }
+          }
+        },
         "deprecated": false
       }
     },
-    "/favicon.ico": {
+    "/v1/updates/incremental/details": {
       "get": {
-        "tags": [ ],
-        "parameters": [ ],
-        "responses": { },
+        "tags": [ "Updates" ],
+        "summary": "获取可更新的版本详情",
+        "description": "返回所有大于当前版本的更新版本的详细信息，包括版本号、下载地址、发布时间以及更新内容。",
+        "operationId": "getDetailedUpdates",
+        "parameters": [ {
+          "name": "clientVersion",
+          "in": "query",
+          "description": "客户端当前版本号。不合法的版本号会导致服务器返回 461 Invalid Client Version 错误。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "clientPlatform",
+          "in": "query",
+          "description": "客户端平台，例：windows, android。不合法的值会导致服务器返回空的版本号列表。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "clientArch",
+          "in": "query",
+          "description": "客户端架构，例：x86_64, aarch64。不合法的值会导致服务器返回空的版本号列表。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        }, {
+          "name": "releaseClass",
+          "in": "query",
+          "description": "更新版本的发布类型，可选值：alpha, beta, rc, stable。不合法的发布类型会导致服务器返回 400 Bad Request 错误。",
+          "required": true,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        } ],
+        "responses": {
+          "200": {
+            "description": "成功获取内容",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseUpdatesDetailedResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "updates": [ {
+                        "version": "3.0.0-rc01",
+                        "downloadUrlAlternatives": [ "https://d.myani.org/v3.0.0-rc01/ani-3.0.0-rc01.apk" ],
+                        "publishTime": 1716604732,
+                        "description": "## 主要更新\n    - 重新设计资源选择器 #328\n       - 了解每个数据源的查询结果, 失败时点击重试 #327 #309\n       - 支持临时启用禁用数据源以应对未找到的情况\n       - 区分 BT 源和在线源并增加提示 #330\n    - 优化资源选择算法\n      - 默认隐藏生肉资源, 可在设置中恢复显示\n      - 支持番剧完结后隐藏单集 BT 资源, 默认启用, 可在设置关闭\n      - 支持优先选择季度全集资源 #304\n      - 自动优先选择本地缓存资源, 不再需要等待 #258 #260\n    ## 次要更新\n    - 提高弹幕匹配准确率 #338\n    - 自动选择数据源时不再覆盖偏好设置\n    - 自动选择数据源时不再保存不准确的字幕语言设置\n    - 在切换数据源时, 将会按顺序自动取消筛选直到显示列表不为空\n    - 在取消选择数据源的过滤时也记忆偏好设置\n    - 修复有时候选择资源时会崩溃的问题\n    - 优化数据源请求时的性能\n    - 修复标题过长挤掉按钮的问题 #311\n    - 修复会请求过多条目的问题\n    - 修复条目缓存页可能有资源泄露的问题 #190"
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "headers": { }
+          },
+          "461": {
+            "description": "不合法的客户端版本号",
+            "headers": { }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/updates/latest": {
+      "get": {
+        "tags": [ "Updates" ],
+        "summary": "获取最新版本下载链接",
+        "description": "返回最新版本的下载链接及二维码及二维码，不包括版本更新信息。",
+        "operationId": "getLatestVersion",
+        "parameters": [ {
+          "name": "releaseClass",
+          "in": "query",
+          "description": "版本的发布类型，可选值：alpha, beta, rc, stable，默认值为 stable。不合法的发布类型会导致服务器返回 400 Bad Request 错误。",
+          "required": false,
+          "deprecated": false,
+          "allowEmptyValue": true,
+          "explode": false,
+          "allowReserved": true,
+          "schema": {
+            "title": "String",
+            "type": "string"
+          }
+        } ],
+        "responses": {
+          "200": {
+            "description": "成功获取内容",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestVersionInfo"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "version": "3.5.0",
+                      "downloadUrlAlternativesMap": {
+                        "android": [ "https://d.myani.org/v3.5.0/ani-3.5.0.apk", "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v3.5.0/ani-3.5.0.apk" ],
+                        "windows-x86_64": [ "https://d.myani.org/v3.5.0/ani-3.5.0-windows-x86_64.zip", "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v3.5.0/ani-3.5.0-windows-x86_64.zip" ],
+                        "macos-x86_64": [ "https://d.myani.org/v3.5.0/ani-3.5.0-macos-x86_64.dmg", "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v3.5.0/ani-3.5.0-macos-x86_64.dmg" ],
+                        "macos-aarch64": [ "https://d.myani.org/v3.5.0/ani-3.5.0-macos-aarch64.dmg", "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v3.5.0/ani-3.5.0-macos-aarch64.dmg" ]
+                      },
+                      "publishTime": 1721869947,
+                      "qrcodeUrls": [ "https://d.myani.org/v3.5.0/ani-3.5.0.apk.cloudflare.qrcode.png", "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v3.5.0/ani-3.5.0.apk.cloudflare.qrcode.png", "https://d.myani.org/v3.5.0/ani-3.5.0.apk.github.qrcode.png", "https://mirror.ghproxy.com/?q=https://github.com/open-ani/ani/releases/download/v3.5.0/ani-3.5.0.apk.github.qrcode.png" ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "headers": { }
+          }
+        },
         "deprecated": false
       }
     },
     "/v1/login/bangumi": {
       "post": {
-        "tags": [ ],
+        "tags": [ "Bangumi OAuth" ],
+        "summary": "使用 Bangumi token 登录",
+        "description": "使用 Bangumi token 登录并获取用户会话 token。",
+        "operationId": "bangumiLogin",
         "parameters": [ ],
-        "responses": { },
+        "requestBody": {
+          "description": "Bangumi token 字符串以及客户端版本与平台架构信息。 clientOS参数可选值：`windows, macos, android, ios, linux, debian, ubuntu, redhat`；clientArch参数可选值：`aarch64, x86, x86_64`。",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BangumiLoginRequest"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "bangumiToken": "VAcbHKhXqcjpCOVY5KFxwYEeQCOw4i0u",
+                    "clientVersion": "3.0.0-beta24",
+                    "clientOS": "android",
+                    "clientArch": "aarch64"
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "成功获取用户会话 token",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BangumiLoginResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJIZWxsbyB0aGVyZSJ9.TNpICIfOzK-BvxxV72ApTiD4SlAwvzHbu_0O3FXq-s4"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bangumi token 无效",
+            "headers": { }
+          },
+          "461": {
+            "description": "请求体中客户端版本无效",
+            "headers": { }
+          }
+        },
         "deprecated": false
       }
     },
@@ -42,6 +533,7 @@
         "tags": [ "Bangumi OAuth" ],
         "summary": "获取 Bangumi OAuth 授权链接",
         "description": "获取 Bangumi OAuth 授权链接，用于获取 Bangumi token。",
+        "operationId": "getBangumiOauthUrl",
         "parameters": [ {
           "name": "requestId",
           "in": "query",
@@ -71,6 +563,7 @@
         "tags": [ "Bangumi OAuth" ],
         "summary": "Bangumi OAuth 回调",
         "description": "用于 Bangumi OAuth 授权回调，用户不应自行调用该接口。",
+        "operationId": "bangumiOauthCallback",
         "parameters": [ {
           "name": "code",
           "in": "query",
@@ -114,6 +607,7 @@
         "tags": [ "Bangumi OAuth" ],
         "summary": "获取 Bangumi token",
         "description": "获取 Bangumi token，用于登录。",
+        "operationId": "getBangumiToken",
         "parameters": [ {
           "name": "requestId",
           "in": "query",
@@ -154,10 +648,311 @@
         },
         "deprecated": false
       }
+    },
+    "/v1/login/bangumi/oauth/refresh": {
+      "post": {
+        "tags": [ "Bangumi OAuth" ],
+        "summary": "刷新 Bangumi token",
+        "description": "刷新 Bangumi token。",
+        "operationId": "refreshBangumiToken",
+        "parameters": [ ],
+        "requestBody": {
+          "description": "上次登录时提供的刷新 token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshBangumiTokenRequest"
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "refreshToken": "6f91bc748d8afe18e9dfe014a3da6340efcbaee2"
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "成功刷新 Bangumi token",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnonymousBangumiUserToken"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "accessToken": "35a2b4f1b068ccf490b2c1768b8c910723303741",
+                      "refreshToken": "dfe040e6f91bc748d8afe18e9fcbaee214a3da63",
+                      "expiresIn": 604800
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "刷新 token 无效",
+            "headers": { }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {
     "schemas": {
+      "DanmakuInfo": {
+        "title": "DanmakuInfo",
+        "required": [ "color", "location", "playTime", "text" ],
+        "type": "object",
+        "properties": {
+          "color": {
+            "title": "Int",
+            "type": "integer",
+            "format": "int32"
+          },
+          "location": {
+            "$ref": "#/components/schemas/DanmakuLocation"
+          },
+          "playTime": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "text": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "DanmakuLocation": {
+        "title": "DanmakuLocation",
+        "enum": [ "TOP", "BOTTOM", "NORMAL" ]
+      },
+      "DanmakuPostRequest": {
+        "title": "DanmakuPostRequest",
+        "required": [ "danmakuInfo" ],
+        "type": "object",
+        "properties": {
+          "danmakuInfo": {
+            "$ref": "#/components/schemas/DanmakuInfo"
+          }
+        }
+      },
+      "Danmaku": {
+        "title": "Danmaku",
+        "required": [ "danmakuInfo", "id", "senderId" ],
+        "type": "object",
+        "properties": {
+          "danmakuInfo": {
+            "$ref": "#/components/schemas/DanmakuInfo"
+          },
+          "id": {
+            "title": "String",
+            "type": "string"
+          },
+          "senderId": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "DanmakuGetResponse": {
+        "title": "DanmakuGetResponse",
+        "required": [ "danmakuList" ],
+        "type": "object",
+        "properties": {
+          "danmakuList": {
+            "title": "List<Danmaku>",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Danmaku"
+            }
+          }
+        }
+      },
+      "AniUser": {
+        "title": "AniUser",
+        "required": [ "clientPlatforms", "id", "largeAvatar", "lastLoginTime", "mediumAvatar", "nickname", "registerTime", "smallAvatar" ],
+        "type": "object",
+        "properties": {
+          "clientPlatforms": {
+            "title": "Set<String>",
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "title": "String",
+              "type": "string"
+            }
+          },
+          "clientVersion": {
+            "title": "String",
+            "type": "string"
+          },
+          "id": {
+            "title": "String",
+            "type": "string"
+          },
+          "largeAvatar": {
+            "title": "String",
+            "type": "string"
+          },
+          "lastLoginTime": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "mediumAvatar": {
+            "title": "String",
+            "type": "string"
+          },
+          "nickname": {
+            "title": "String",
+            "type": "string"
+          },
+          "registerTime": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "smallAvatar": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "ReleaseUpdatesResponse": {
+        "title": "ReleaseUpdatesResponse",
+        "required": [ "versions" ],
+        "type": "object",
+        "properties": {
+          "versions": {
+            "title": "List<String>",
+            "type": "array",
+            "items": {
+              "title": "String",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "UpdateInfo": {
+        "title": "UpdateInfo",
+        "required": [ "description", "downloadUrlAlternatives", "publishTime", "version" ],
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "String",
+            "type": "string"
+          },
+          "downloadUrlAlternatives": {
+            "title": "List<String>",
+            "type": "array",
+            "items": {
+              "title": "String",
+              "type": "string"
+            }
+          },
+          "publishTime": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "version": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "ReleaseUpdatesDetailedResponse": {
+        "title": "ReleaseUpdatesDetailedResponse",
+        "required": [ "updates" ],
+        "type": "object",
+        "properties": {
+          "updates": {
+            "title": "List<UpdateInfo>",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateInfo"
+            }
+          }
+        }
+      },
+      "LatestVersionInfo": {
+        "title": "LatestVersionInfo",
+        "required": [ "downloadUrlAlternativesMap", "publishTime", "qrcodeUrls", "version" ],
+        "type": "object",
+        "properties": {
+          "downloadUrlAlternativesMap": {
+            "title": "Map<String,List<String>>",
+            "type": "object",
+            "additionalProperties": {
+              "title": "List<String>",
+              "type": "array",
+              "items": {
+                "title": "String",
+                "type": "string"
+              }
+            }
+          },
+          "publishTime": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "qrcodeUrls": {
+            "title": "List<String>",
+            "type": "array",
+            "items": {
+              "title": "String",
+              "type": "string"
+            }
+          },
+          "version": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "BangumiLoginRequest": {
+        "title": "BangumiLoginRequest",
+        "required": [ "bangumiToken" ],
+        "type": "object",
+        "properties": {
+          "bangumiToken": {
+            "title": "String",
+            "type": "string"
+          },
+          "clientArch": {
+            "title": "String",
+            "type": "string"
+          },
+          "clientOS": {
+            "title": "String",
+            "type": "string"
+          },
+          "clientVersion": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "BangumiLoginResponse": {
+        "title": "BangumiLoginResponse",
+        "required": [ "token" ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
       "BangumiUserToken": {
         "title": "BangumiUserToken",
         "required": [ "accessToken", "expiresIn", "refreshToken", "userId" ],
@@ -180,6 +975,37 @@
             "title": "Int",
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "RefreshBangumiTokenRequest": {
+        "title": "RefreshBangumiTokenRequest",
+        "required": [ "refreshToken" ],
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "AnonymousBangumiUserToken": {
+        "title": "AnonymousBangumiUserToken",
+        "required": [ "accessToken", "expiresIn", "refreshToken" ],
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "title": "String",
+            "type": "string"
+          },
+          "expiresIn": {
+            "title": "Long",
+            "type": "integer",
+            "format": "int64"
+          },
+          "refreshToken": {
+            "title": "String",
+            "type": "string"
           }
         }
       }

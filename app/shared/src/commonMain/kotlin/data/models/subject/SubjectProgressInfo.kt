@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.subject.collection.progress
+package me.him188.ani.app.data.models.subject
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -6,16 +6,28 @@ import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.isKnownCompleted
 import me.him188.ani.app.data.models.episode.type
-import me.him188.ani.app.data.models.subject.SubjectCollection
-import me.him188.ani.app.data.models.subject.hasStarted
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 @Immutable
 data class SubjectProgressInfo(
     val continueWatchingStatus: ContinueWatchingStatus?,
-    val nextEpisodeToPlay: EpisodeInfo?,
+    val nextEpisodeIdToPlay: Int?,
 ) {
+    /**
+     * 仅供 [calculate]
+     */
+    class Episode(
+        val id: Int,
+        val type: UnifiedCollectionType,
+        val sort: EpisodeSort,
+        /**
+         * 是否一定已经播出了
+         * @see EpisodeInfo.isKnownCompleted
+         */
+        val isKnownCompleted: Boolean,
+    )
+
     companion object {
         @Stable
         val Empty = SubjectProgressInfo(
@@ -26,20 +38,34 @@ data class SubjectProgressInfo(
         fun calculate(
             collection: SubjectCollection,
         ): SubjectProgressInfo {
-            val subjectStarted = collection.hasStarted
-            val episodes = collection.episodes
+            return calculate(
+                collection.hasStarted,
+                collection.episodes.map {
+                    Episode(
+                        it.episode.id,
+                        it.type,
+                        it.episode.sort,
+                        it.episode.isKnownCompleted,
+                    )
+                },
+            )
+        }
 
-            val lastWatchedEpIndex = collection.episodes.indexOfLast {
+        fun calculate(
+            subjectStarted: Boolean,
+            episodes: List<Episode>,
+        ): SubjectProgressInfo {
+            val lastWatchedEpIndex = episodes.indexOfLast {
                 it.type == UnifiedCollectionType.DONE || it.type == UnifiedCollectionType.DROPPED
             }
 
             val continueWatchingStatus = kotlin.run {
                 val latestEp = kotlin.run {
-                    episodes.lastOrNull { it.episode.isKnownCompleted }
+                    episodes.lastOrNull { it.isKnownCompleted }
                 }
 
                 val latestEpIndex: Int? =
-                    episodes.indexOfFirst { it.episode.id == latestEp?.episode?.id }
+                    episodes.indexOfFirst { it == latestEp }
                         .takeIf { it != -1 }
                         ?: episodes.lastIndex.takeIf { it != -1 }
 
@@ -59,13 +85,13 @@ data class SubjectProgressInfo(
                             // 更新了 n+1 集
                             ContinueWatchingStatus.Continue(
                                 lastWatchedEpIndex + 1,
-                                episodes.getOrNull(lastWatchedEpIndex + 1)?.episode?.sort,
+                                episodes.getOrNull(lastWatchedEpIndex + 1)?.sort,
                             )
                         } else {
                             // 还没更新
                             ContinueWatchingStatus.Watched(
                                 lastWatchedEpIndex,
-                                episodes.getOrNull(lastWatchedEpIndex)?.episode?.sort,
+                                episodes.getOrNull(lastWatchedEpIndex)?.sort,
                             )
                         }
                     }
@@ -95,7 +121,7 @@ data class SubjectProgressInfo(
 
             return SubjectProgressInfo(
                 continueWatchingStatus,
-                episodeToPlay?.episode,
+                episodeToPlay?.id,
             )
         }
     }
@@ -112,7 +138,7 @@ sealed class ContinueWatchingStatus {
     /**
      * 继续看
      */
-    class Continue(
+    data class Continue(
         val episodeIndex: Int,
         val episodeSort: EpisodeSort?, // "12.5"
     ) : ContinueWatchingStatus()
@@ -120,7 +146,7 @@ sealed class ContinueWatchingStatus {
     /**
      * 看到了, 但是下一集还没更新
      */
-    class Watched(
+    data class Watched(
         val episodeIndex: Int,
         val episodeSort: EpisodeSort?, // "12.5"
     ) : ContinueWatchingStatus()

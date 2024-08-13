@@ -28,6 +28,7 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
@@ -62,6 +63,7 @@ val TestMediaList = listOf(
             resolution = "1080P",
             alliance = "桜都字幕组",
             size = 122.megaBytes,
+            subtitleKind = SubtitleKind.EMBEDDED,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,
@@ -80,6 +82,7 @@ val TestMediaList = listOf(
             resolution = "1080P",
             alliance = "桜都字幕组",
             size = 122.megaBytes,
+            subtitleKind = SubtitleKind.EMBEDDED,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,
@@ -98,6 +101,7 @@ val TestMediaList = listOf(
             resolution = "1080P",
             alliance = "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
             size = 233.megaBytes,
+            subtitleKind = SubtitleKind.CLOSED,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,
@@ -115,6 +119,7 @@ val TestMediaList = listOf(
             resolution = "1080P",
             alliance = "桜都字幕组",
             size = 0.bytes,
+            subtitleKind = SubtitleKind.EMBEDDED,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,
@@ -132,6 +137,7 @@ val TestMediaList = listOf(
             resolution = "1080P",
             alliance = "Lilith-Raws",
             size = 702.megaBytes,
+            subtitleKind = SubtitleKind.EXTERNAL_PROVIDED,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,

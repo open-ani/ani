@@ -9,8 +9,15 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import com.sun.jna.platform.win32.KnownFolders
+import com.sun.jna.platform.win32.Shell32
+import com.sun.jna.ptr.PointerByReference
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -28,6 +35,7 @@ import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.AudioTrack
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Label
 import me.him188.ani.app.videoplayer.ui.state.MutableTrackGroup
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
@@ -144,8 +152,10 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override fun saveScreenshotFile(filename: String) {
         player.submit {
-            val screenshotPath: Path =
-                Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
+            val ppszPath = PointerByReference()
+            Shell32.INSTANCE.SHGetKnownFolderPath(KnownFolders.FOLDERID_Pictures, 0, null, ppszPath)
+            val picturesPath = ppszPath.value.getWideString(0)
+            val screenshotPath: Path = Path.of(picturesPath).resolve("Ani")
             try {
                 screenshotPath.createDirectories()
             } catch (ex: IOException) {
@@ -155,6 +165,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             player.snapshots().save(filePath.toFile())
         }
     }
+
+    override val chapters: MutableStateFlow<ImmutableList<Chapter>> = MutableStateFlow(persistentListOf())
 
     class VlcjData(
         override val videoSource: VideoSource<*>,
@@ -204,7 +216,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             },
             releaseResource = {
                 input.close()
-                data.close()
+                backgroundScope.launch(NonCancellable) {
+                    data.close()
+                }
             },
         )
     }
@@ -283,6 +297,17 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //                    state.value = PlaybackState.READY
 //                }
 //            }
+                override fun mediaPlayerReady(mediaPlayer: MediaPlayer?) {
+                    chapters.value = player.chapters().allDescriptions().flatMap { title ->
+                        title.map {
+                            Chapter(
+                                name = it.name(),
+                                durationMillis = it.duration(),
+                                offsetMillis = it.offset(),
+                            )
+                        }
+                    }.toImmutableList()
+                }
 
                 override fun playing(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.PLAYING

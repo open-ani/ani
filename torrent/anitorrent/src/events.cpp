@@ -46,6 +46,13 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
     if (!torrent_alert) {
         return;
     }
+
+    // torrent_removed_alert 可能在 set handle invalid 之后触发，需要提前处理
+    if (const auto a = lt::alert_cast<lt::torrent_removed_alert>(torrent_alert)) {
+        function_printer_t _fp("call_listener:torrent_removed_alert");
+        listener.on_torrent_removed(a->handle.id(), a->torrent_name());
+    }
+    
     const auto handle = torrent_alert->handle;
     if (!handle.is_valid())
         return;

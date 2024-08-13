@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +14,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloadSession.AnitorrentEntry.EntryHandle
+import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
@@ -42,6 +45,7 @@ import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import java.io.RandomAccessFile
 import kotlin.coroutines.CoroutineContext
 
@@ -51,6 +55,7 @@ class AnitorrentDownloadSession(
     override val saveDirectory: SystemPath,
     val fastResumeFile: SystemPath,
     private val onClose: (AnitorrentDownloadSession) -> Unit,
+    private val onPostClose: (AnitorrentDownloadSession) -> Unit,
     private val onDelete: (AnitorrentDownloadSession) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloadSession {
@@ -109,7 +114,7 @@ class AnitorrentDownloadSession(
         inner class EntryHandle : AbstractTorrentFileHandle() {
             override val entry get() = this@AnitorrentEntry
 
-            override fun closeImpl() {
+            override suspend fun closeImpl() {
                 openFiles.remove(this)
                 closeIfNotInUse()
             }
@@ -119,7 +124,7 @@ class AnitorrentDownloadSession(
                 handle.resume()
             }
 
-            override fun closeAndDelete() {
+            override suspend fun closeAndDelete() {
                 close()
                 deleteEntireTorrentIfNotInUse()
             }
@@ -180,6 +185,7 @@ class AnitorrentDownloadSession(
      * @see useTorrentInfoOrLaunch
      */
     inner class TorrentInfo(
+        val name: String,
         val allPiecesInTorrent: List<Piece>,
         val pieceLength: Int,
         val entries: List<AnitorrentEntry>,
@@ -189,11 +195,16 @@ class AnitorrentDownloadSession(
         }
 
         override fun toString(): String {
-            return "TorrentInfo(numPieces=${allPiecesInTorrent.size}, entries.size=${entries.size})"
+            return "TorrentInfo(name=$name, numPieces=${allPiecesInTorrent.size}, entries.size=${entries.size})"
         }
     }
 
     private val actualTorrentInfo = CompletableDeferred<TorrentInfo>()
+
+    /**
+     * 在某些时候 [close] 需要等待此 session 完全关闭，通过 [event_listener_t.on_torrent_removed] 来监听此事件
+     */
+    private val closingDeferred: CompletableDeferred<Unit> by lazy { CompletableDeferred() }
 
     /**
      * 当 [actualTorrentInfo] 还未完成时的任务队列, 用于延迟执行需要 [TorrentInfo] 的任务.
@@ -234,6 +245,7 @@ class AnitorrentDownloadSession(
         check(this.actualTorrentInfo.isActive) {
             "actualTorrentInfo has already been completed or closed"
         }
+        logger.info { "initializeTorrentInfo" }
         val allPiecesInTorrent =
             Piece.buildPieces(info.num_pieces) {
                 if (it == info.num_pieces - 1) {
@@ -276,7 +288,12 @@ class AnitorrentDownloadSession(
             }
             list
         }
-        val value = TorrentInfo(allPiecesInTorrent, pieceLength = info.piece_length, entries)
+        val value = TorrentInfo(
+            name = info.name,
+            allPiecesInTorrent,
+            pieceLength = info.piece_length,
+            entries,
+        )
         logger.info { "[$handleId] Got torrent info: $value" }
         this.overallStats.totalSize.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
@@ -285,17 +302,29 @@ class AnitorrentDownloadSession(
 
     fun onTorrentChecked() {
         logger.info { "[$handleId] onTorrentChecked" }
+        reloadFilesAndInitializeIfNotYet()
+    }
+
+    private fun reloadFilesAndInitializeIfNotYet() {
+        if (!actualTorrentInfo.isCompleted) {
+            initializeTorrentInfo(
+                reloadFiles(),
+            ) // split to multiple lines for debugging
+        }
+    }
+
+    /**
+     * @throws IllegalStateException 当文件信息还没被 native 解析出来时抛出.
+     */
+    private fun reloadFiles(): torrent_info_t {
+        logger.info { "[$handleId] reloadFiles" }
         val res = handle.reload_file()
         if (res != torrent_handle_t.reload_file_result_t.kReloadFileSuccess) {
             logger.error { "[$handleId] Reload file result: $res" }
             throw IllegalStateException("Failed to reload file, native returned $res")
         }
         val info = handle.get_info_view()
-        if (info != null) {
-            initializeTorrentInfo(info)
-        } else {
-            logger.error { "[$handleId] onTorrentChecked: info is null" }
-        }
+        return info ?: throw IllegalStateException("Failed to get info view, native get_info_view returned null")
     }
 
     fun onPieceDownloading(pieceIndex: Int) {
@@ -345,6 +374,7 @@ class AnitorrentDownloadSession(
         // 注意, 这个事件不一定是所有文件下载完成了. 
         // 在刚刚创建任务的时候所有文件都是完全不下载的状态, libtorrent 会立即广播这个事件.
         logger.info { "[$handleId] onTorrentFinished" }
+        reloadFilesAndInitializeIfNotYet()
         handle.post_save_resume()
     }
 
@@ -370,26 +400,50 @@ class AnitorrentDownloadSession(
         data.save_to_file(fastResumeFile.absolutePath)
     }
 
+    override suspend fun getName(): String = this.actualTorrentInfo.await().name
+
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
 
+    @Volatile
     private var closed = false
-    override fun close() {
-        if (closed) {
+    
+    override suspend fun close() {
+        if (closed) { // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
+            closingDeferred.await()
             return
         }
-        synchronized(this) {
-            if (closed) {
-                return
+
+        kotlin.run {
+            synchronized(this) {
+                if (closed) return@synchronized // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
+                state.value = TorrentDownloadState.Closed
+                closed = true
+                return@run // set close = true, 跳出 run lambda 并真正执行 onClose() 并等待
             }
-            state.value = TorrentDownloadState.Closed
-            closed = true
+            closingDeferred.await() // 只有在 synchronized 里检查 closed == true 时会在此 await
+            return
         }
-        logger.info { "AnitorrentDownloadSession closing" }
-        scope.cancel()
+
+        logger.info { "[$handleId] closing" }
         onClose(this)
+        try {
+            withTimeout(7500L) {
+                closingDeferred.await() // 收到 on_torrent_removed 事件时返回
+            }
+        } catch (timeout: TimeoutCancellationException) {
+            logger.warn { "[$handleId] timeout on closing this session, force to mark as closed." }
+            closingDeferred.complete(Unit)
+        }
+        scope.cancel()
+        onPostClose(this)
     }
 
-    override fun closeIfNotInUse() {
+    fun onTorrentRemoved() {
+        logger.info { "[$handleId] onTorrentRemoved" }
+        closingDeferred.complete(Unit)
+    }
+
+    override suspend fun closeIfNotInUse() {
         if (openFiles.isEmpty()) {
             close()
         }

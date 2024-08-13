@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.data.models.subject.SubjectComment
@@ -89,7 +90,7 @@ class CommentLoader<T>(
         ) = CommentLoader(
             source = episodeId.map { eid ->
                 LazyDataCache(
-                    createSource = { episodeCommentSource(eid) },
+                    createSource = { ApiResponse.success(episodeCommentSource(eid)) },
                     getKey = { it.id },
                     debugName = "episodeComment-$eid",
                 )

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,8 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -40,9 +41,7 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
-import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
@@ -52,20 +51,21 @@ import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
+import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
+import me.him188.ani.app.videoplayer.ui.guesture.mouseFamily
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
 import me.him188.ani.app.videoplayer.ui.progress.AudioSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressIndicatorText
-import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSlider
+import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
-import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -73,6 +73,8 @@ import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
+
+internal const val TAG_EPISODE_VIDEO_TOP_BAR = "EpisodeVideoTopBar"
 
 /**
  * 剧集详情页面顶部的视频控件.
@@ -87,6 +89,8 @@ internal fun EpisodeVideoImpl(
     videoControllerState: VideoControllerState,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
+    danmakuEnabled: Boolean,
+    onToggleDanmaku: () -> Unit,
     videoLoadingState: () -> VideoLoadingState,
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
@@ -97,8 +101,12 @@ internal fun EpisodeVideoImpl(
     onShowMediaSelector: () -> Unit,
     onShowSelectEpisode: () -> Unit,
     onClickScreenshot: () -> Unit,
+    detachedProgressSlider: @Composable () -> Unit,
+    progressSliderState: MediaProgressSliderState,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    danmakuFrozen: Boolean = false,
+    gestureFamily: GestureFamily = currentPlatform.mouseFamily,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
@@ -109,10 +117,11 @@ internal fun EpisodeVideoImpl(
         expanded = expanded,
         modifier = modifier,
         maintainAspectRatio = maintainAspectRatio,
-        controllersVisible = { videoControllerState.isVisible },
+        controllerState = videoControllerState,
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
+                Modifier.testTag(TAG_EPISODE_VIDEO_TOP_BAR),
                 title = if (expanded) {
                     { title() }
                 } else {
@@ -159,25 +168,34 @@ internal fun EpisodeVideoImpl(
         },
         danmakuHost = {
             AnimatedVisibility(
-                videoControllerState.danmakuEnabled,
+                danmakuEnabled,
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200)),
             ) {
-                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig)
+                DanmakuHost(danmakuHostState, danmakuConfig, Modifier.matchParentSize(), frozen = danmakuFrozen)
             }
         },
         gestureHost = {
             val swipeSeekerState = rememberSwipeSeekerState(constraints.maxWidth) {
                 playerState.seekTo(playerState.currentPositionMillis.value + it * 1000)
             }
+            val videoPropertiesState by playerState.videoProperties.collectAsState()
+            val enableSwipeToSeek by remember {
+                derivedStateOf {
+                    videoPropertiesState?.let { it.durationMillis != 0L } ?: false
+                }
+            }
+
             val indicatorTasker = rememberUiMonoTasker()
             val indicatorState = rememberGestureIndicatorState()
             LockableVideoGestureHost(
                 videoControllerState,
                 swipeSeekerState,
+                progressSliderState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
                 locked = isLocked,
+                enableSwipeToSeek = enableSwipeToSeek,
                 Modifier.padding(top = 100.dp),
                 onTogglePauseResume = {
                     if (playerState.state.value.isPlaying) {
@@ -195,6 +213,7 @@ internal fun EpisodeVideoImpl(
                     onClickFullScreen()
                 },
                 onExitFullscreen = onExitFullscreen,
+                family = gestureFamily,
             )
         },
         floatingMessage = {
@@ -219,15 +238,6 @@ internal fun EpisodeVideoImpl(
             }
         },
         bottomBar = {
-            val progressSliderState = rememberMediaProgressSliderState(
-                playerState,
-                onPreview = {
-                    // not yet supported
-                },
-                onPreviewFinished = {
-                    playerState.seekTo(it)
-                },
-            )
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -243,17 +253,18 @@ internal fun EpisodeVideoImpl(
                         )
                     }
                     PlayerControllerDefaults.DanmakuIcon(
-                        videoControllerState.danmakuEnabled,
-                        onClick = { videoControllerState.toggleDanmakuEnabled() },
+                        danmakuEnabled,
+                        onClick = { onToggleDanmaku() },
                     )
                 },
                 progressIndicator = {
                     MediaProgressIndicatorText(progressSliderState)
                 },
                 progressSlider = {
-                    MediaProgressSlider(
-                        progressSliderState, playerState.cacheProgress,
-                        downloadingColor = if (isInDebugMode()) Color.Yellow else aniDarkColorTheme().surface,
+                    PlayerControllerDefaults.MediaProgressSlider(
+                        progressSliderState,
+                        cacheProgressState = playerState.cacheProgress,
+                        showPreviewTimeTextOnThumb = false,
                     )
                 },
                 danmakuEditor = danmakuEditor,
@@ -283,6 +294,7 @@ internal fun EpisodeVideoImpl(
                 expanded = expanded,
             )
         },
+        detachedProgressSlider = detachedProgressSlider,
         floatingBottomEnd = {
             when (config.fullscreenSwitchMode) {
                 FullscreenSwitchMode.ONLY_IN_CONTROLLER -> {}

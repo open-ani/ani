@@ -8,6 +8,7 @@
   "SpellCheckingInspection",
 )
 
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.title.PatternBasedTitleParserTestSuite
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,6 +30,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -37,6 +39,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("null", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -45,6 +48,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -53,6 +57,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -62,6 +67,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -71,6 +77,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -80,6 +87,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -89,6 +97,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -98,6 +107,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.CLOSED, r.subtitleKind)
   }
 
   @Test
@@ -107,6 +117,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -116,6 +127,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -126,6 +138,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("4K", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -134,6 +147,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -143,6 +157,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -152,6 +167,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("null", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -161,6 +177,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("null", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(SubtitleKind.EMBEDDED, r.subtitleKind)
   }
 
   @Test
@@ -170,6 +187,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("null", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -180,6 +198,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(SubtitleKind.EXTERNAL_DISCOVER, r.subtitleKind)
   }
 
   @Test
@@ -190,6 +209,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -200,6 +220,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -210,6 +231,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHT, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 
   @Test
@@ -220,6 +242,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
     assertEquals("S?", r.episodeRange.toString())
     assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
+    assertEquals(null, r.subtitleKind)
   }
 }
 

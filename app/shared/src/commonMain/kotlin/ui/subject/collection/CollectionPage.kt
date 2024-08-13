@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -55,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +71,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
@@ -83,7 +84,8 @@ import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.subject.collection.progress.ContinueWatchingStatus
+import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
+import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
 import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.rememberSubjectProgressState
@@ -124,6 +126,14 @@ fun CollectionPage(
         rememberPagerState(initialPage = COLLECTION_TABS_SORTED.size / 2) { COLLECTION_TABS_SORTED.size }
     val scope = rememberCoroutineScope()
 
+    // 如果有缓存, 列表区域要展示缓存, 错误就用图标放在角落
+    val showSessionErrorInList by remember(vm) {
+        derivedStateOf {
+            val collection = vm.collectionsByType(COLLECTION_TABS_SORTED[pagerState.currentPage])
+            collection.subjectCollectionColumnState.isKnownEmpty
+        }
+    }
+
     Scaffold(
         modifier,
         topBar = {
@@ -132,6 +142,10 @@ fun CollectionPage(
                     title = { Text("我的追番") },
                     modifier = Modifier.alpha(0.97f),
                     actions = {
+                        if (!showSessionErrorInList) {
+                            SessionTipsIcon(vm.authState)
+                        }
+
                         if (!isShowLandscapeUI()) {
                             TextButtonUpdateLogo()
 
@@ -257,10 +271,13 @@ fun CollectionPage(
                 start = 0.dp,
                 end = 0.dp,
             )
-            if (vm.authState.isKnownLoggedOut) {
-                CollectionPageUnauthorizedTips(
+            if (vm.authState.isKnownLoggedOut && showSessionErrorInList) {
+                SessionTipsArea(
                     vm.authState,
-                    Modifier.padding(top = 32.dp).padding(tabContentPadding),
+                    guest = { GuestTips(vm.authState) },
+                    Modifier.padding(top = 32.dp)
+                        .padding(horizontal = 16.dp)
+                        .padding(tabContentPadding),
                 )
             } else {
                 Box(
@@ -290,32 +307,6 @@ fun CollectionPage(
     }
 }
 
-@Composable
-fun CollectionPageUnauthorizedTips(
-    authState: AuthState,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier.padding(horizontal = 16.dp).fillMaxWidth().widthIn(max = 400.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        val navigator = LocalNavigator.current
-        Text("游客模式下请搜索后观看，或登录后使用收藏功能")
-
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedButton({ authState.launchAuthorize(navigator) }, Modifier.weight(1f)) {
-                Icon(Icons.Rounded.HowToReg, null)
-                Text("登录", Modifier.padding(start = 8.dp))
-            }
-
-            Button({ navigator.navigateSearch() }, Modifier.weight(1f)) {
-                Icon(Icons.Rounded.Search, null)
-                Text("搜索", Modifier.padding(start = 8.dp))
-            }
-        }
-    }
-}
 
 /**
  * @param contentPadding overall content padding
@@ -426,5 +417,29 @@ private fun UnifiedCollectionType.displayText(): String {
         UnifiedCollectionType.ON_HOLD -> "搁置"
         UnifiedCollectionType.DROPPED -> "抛弃"
         UnifiedCollectionType.NOT_COLLECTED -> "未收藏"
+    }
+}
+
+
+@Composable
+private fun GuestTips(
+    authState: AuthState,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier) {
+        val navigator = LocalNavigator.current
+        Text("游客模式下请搜索后观看，或登录后使用收藏功能")
+
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            OutlinedButton({ authState.launchAuthorize(navigator) }, Modifier.weight(1f)) {
+                Icon(Icons.Rounded.HowToReg, null)
+                Text("登录", Modifier.padding(start = 8.dp))
+            }
+
+            Button({ navigator.navigateSearch() }, Modifier.weight(1f)) {
+                Icon(Icons.Rounded.Search, null)
+                Text("搜索", Modifier.padding(start = 8.dp))
+            }
+        }
     }
 }

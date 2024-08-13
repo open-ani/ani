@@ -164,6 +164,11 @@ kotlin {
         api(libs.logback.android)
     }
 
+    sourceSets.androidUnitTest.dependencies {
+        implementation(libs.mockito)
+        implementation(libs.mockito.kotlin)
+    }
+
     sourceSets.nativeMain.dependencies {
         implementation(libs.stately.common) // fixes koin bug
     }
@@ -256,6 +261,7 @@ kotlin {
             } else {
                 sourceSets.all {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
+                    resources.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/resources"))
                 }
             }
         }

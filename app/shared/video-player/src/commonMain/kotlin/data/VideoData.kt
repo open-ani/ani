@@ -12,7 +12,7 @@ import me.him188.ani.utils.io.emptySeekableInput
  * Holds information about a video file.
  */
 @Stable
-interface VideoData : AutoCloseable {
+interface VideoData {
     val filename: String // 会显示在 UI
 
     /**
@@ -56,7 +56,7 @@ interface VideoData : AutoCloseable {
      */
     suspend fun createInput(): SeekableInput
 
-    override fun close()
+    suspend fun close()
 }
 
 fun emptyVideoData(): VideoData = EmptyVideoData
@@ -68,5 +68,5 @@ private object EmptyVideoData : VideoData {
     override val uploadRate: Flow<FileSize> get() = emptyFlow()
     override fun computeHash(): String? = null
     override suspend fun createInput(): SeekableInput = emptySeekableInput()
-    override fun close() {}
+    override suspend fun close() {}
 }

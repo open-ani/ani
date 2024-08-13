@@ -13,6 +13,7 @@ kotlin {
 
     sourceSets.commonMain.dependencies {
         implementation(libs.atomicfu)
+        implementation(libs.kotlinx.collections.immutable)
     }
 
     sourceSets.jvmMain.dependencies {

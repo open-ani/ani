@@ -98,6 +98,7 @@ class PlayerLauncher(
                 videoLoadingStateFlow.value = when (e.reason) {
                     ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
                     ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
+                    ResolutionFailures.NETWORK_ERROR -> VideoLoadingState.NetworkError
                 }
                 emit(null)
             } catch (e: CancellationException) {

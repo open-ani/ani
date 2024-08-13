@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
@@ -195,17 +194,25 @@ class DefaultMediaSelector(
     private val mediaSelectorContext = mediaSelectorContextNotCached.cached()
 
     override val mediaList: Flow<List<Media>> = combine(
-        mediaListNotCached.mapLatest { list ->
-            list.sortedWith(
-                compareBy<Media> { it.costForDownload }.thenByDescending { it.properties.size.inBytes },
-            )
-        }.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
+        mediaListNotCached.cached(), // cache 是必要的, 当 newPreferences 变更的时候不能重新加载 media list (网络)
         savedDefaultPreference, // 只需要使用 default, 因为目前不能覆盖生肉设置
         // 如果依赖 merged pref, 会产生循环依赖 (mediaList -> mediaPreferenceItem -> newPreferences -> mediaList)
         this.mediaSelectorSettings,
         this.mediaSelectorContext,
     ) { list, pref, settings, context ->
         filterMediaList(pref, settings, context, list)
+            .sortedWith(
+                compareByDescending<Media> { media ->
+                    val subtitleKind = media.properties.subtitleKind
+                    if (context.subtitlePreferences != null && subtitleKind != null) {
+                        if (context.subtitlePreferences[subtitleKind] == SubtitleKindPreference.LOW_PRIORITY) {
+                            return@compareByDescending 0
+                        }
+                    }
+                    1
+                }.then(compareBy { it.costForDownload })
+                    .thenByDescending { it.publishedTime },
+            )
     }.flowOn(flowCoroutineContext)
 
     /**
@@ -234,6 +241,13 @@ class DefaultMediaSelector(
             if (!preference.showWithoutSubtitle && media.properties.subtitleLanguageIds.isEmpty()) {
                 // 不显示无字幕的
                 return@filter false
+            }
+
+            val subtitleKind = media.properties.subtitleKind
+            if (context.subtitlePreferences != null && subtitleKind != null) {
+                if (context.subtitlePreferences[subtitleKind] == SubtitleKindPreference.HIDE) {
+                    return@filter false
+                }
             }
 
             true
@@ -383,6 +397,8 @@ class DefaultMediaSelector(
 
         val preferKind = mediaSelectorSettings.preferKind
 
+        val anyFilter = "*"
+
         val languageIds = sequence {
             selectedSubtitleLanguageId?.let {
                 yield(it)
@@ -403,7 +419,7 @@ class DefaultMediaSelector(
                 return@sequence
             }
             if (allianceRegexes.isEmpty()) {
-                yieldAll(availableAlliances)
+                yield("*")
             } else {
                 for (regex in allianceRegexes) {
                     for (alliance in availableAlliances) {
@@ -457,23 +473,30 @@ class DefaultMediaSelector(
 
         fun selectImpl(candidates: List<Media>): Media? {
             for (resolution in resolutions) { // DFS 尽可能匹配第一个分辨率
-                val filteredByResolution = candidates.filter { resolution == it.properties.resolution }
+                val filteredByResolution =
+                    if (resolution == anyFilter) candidates
+                    else candidates.filter { resolution == it.properties.resolution }
                 if (filteredByResolution.isEmpty()) continue
 
                 for (languageId in languageIds) {
                     val filteredByLanguage =
-                        filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
+                        if (languageId == anyFilter) filteredByResolution
+                        else filteredByResolution.filter { languageId in it.properties.subtitleLanguageIds }
                     if (filteredByLanguage.isEmpty()) continue
 
                     for (alliance in alliances) { // 能匹配第一个最好
                         // 这里是消耗最大的地方, 因为有正则匹配
-                        val filteredByAlliance = filteredByLanguage.filter { alliance == it.properties.alliance }
+                        val filteredByAlliance =
+                            if (alliance == anyFilter) filteredByLanguage
+                            else filteredByLanguage.filter { alliance == it.properties.alliance }
                         if (filteredByAlliance.isEmpty()) continue
 
                         for (mediaSource in mediaSources) {
-                            val filteredByMediaSource = filteredByAlliance.filter {
-                                mediaSource == null || mediaSource == it.mediaSourceId
-                            }
+                            val filteredByMediaSource =
+                                if (mediaSource == anyFilter) filteredByAlliance
+                                else filteredByAlliance.filter {
+                                    mediaSource == null || mediaSource == it.mediaSourceId
+                                }
                             if (filteredByMediaSource.isEmpty()) continue
                             return selectAny(filteredByMediaSource)
                         }
@@ -482,9 +505,11 @@ class DefaultMediaSelector(
                     // 字幕组没匹配到, 但最好不要换更差语言
 
                     for (mediaSource in mediaSources) {
-                        val filteredByMediaSource = filteredByLanguage.filter {
-                            mediaSource == null || mediaSource == it.mediaSourceId
-                        }
+                        val filteredByMediaSource =
+                            if (mediaSource == anyFilter) filteredByLanguage
+                            else filteredByLanguage.filter {
+                                mediaSource == null || mediaSource == it.mediaSourceId
+                            }
                         if (filteredByMediaSource.isEmpty()) continue
                         return selectAny(filteredByMediaSource)
                     }
