@@ -35,19 +35,24 @@ private fun PreviewSubjectComment() {
 @Composable
 private fun PreviewSubjectCommentColumn() {
     ProvideCompositionLocalsForPreview {
-        val scope = rememberBackgroundScope()
         SubjectCommentColumn(
-            state = remember {
-                CommentState(
-                    sourceVersion = mutableStateOf(Any()),
-                    list = mutableStateOf(generateUiComment(4)),
-                    hasMore = mutableStateOf(false),
-                    onReload = { },
-                    onLoadMore = { },
-                    backgroundScope = scope.backgroundScope,
-                )
-            },
+            state = rememberTestCommentState(generateUiComment(4)),
             onClickUrl = { },
+        )
+    }
+}
+
+@Composable
+fun rememberTestCommentState(commentList: List<UIComment>): CommentState {
+    val scope = rememberBackgroundScope()
+    return remember {
+        CommentState(
+            sourceVersion = mutableStateOf(Any()),
+            list = mutableStateOf(commentList),
+            hasMore = mutableStateOf(false),
+            onReload = { },
+            onLoadMore = { },
+            backgroundScope = scope.backgroundScope,
         )
     }
 }

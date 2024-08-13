@@ -2,16 +2,14 @@ package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
-import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.components.comment.UIRichText
 import me.him188.ani.app.ui.subject.details.components.generateUiComment
+import me.him188.ani.app.ui.subject.details.components.rememberTestCommentState
 
 @Preview
 @Composable
@@ -46,18 +44,8 @@ private fun PreviewEpisodeComment() {
 @Composable
 private fun PreviewEpisodeCommentColumn() {
     ProvideCompositionLocalsForPreview {
-        val scope = rememberBackgroundScope()
         EpisodeCommentColumn(
-            state = remember {
-                CommentState(
-                    sourceVersion = mutableStateOf(Any()),
-                    list = mutableStateOf(generateUiComment(4)),
-                    hasMore = mutableStateOf(false),
-                    onReload = { },
-                    onLoadMore = { },
-                    backgroundScope = scope.backgroundScope,
-                )
-            },
+            state = rememberTestCommentState(commentList = generateUiComment(4)),
             editCommentStubText = "this is my new pending comment",
             onClickReply = { },
             onClickUrl = { },
