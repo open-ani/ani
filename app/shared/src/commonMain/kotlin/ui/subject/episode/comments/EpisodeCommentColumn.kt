@@ -176,6 +176,9 @@ fun EpisodeComment(
         actionRow = {
             CommentDefaults.ActionRow(
                 onClickReply = onActionReply,
+                onClickReaction = {},
+                onClickBlock = {},
+                onClickReport = {},
             )
         },
         reply = if (comment.briefReplies.isNotEmpty()) {

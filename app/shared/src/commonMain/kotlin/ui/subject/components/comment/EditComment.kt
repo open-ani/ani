@@ -36,7 +36,6 @@ import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.SentimentSatisfied
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -387,25 +386,30 @@ object EditCommentDefaults {
         imageVector: ImageVector,
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
+        contentDescription: String? = null,
         enabled: Boolean = true,
         iconSize: Dp = 22.dp,
-        indication: Indication? = rememberRipple(
-            bounded = false,
-            radius = 20.dp, /* IconButtonTokens.StateLayerSize / 2 */
-        )
+        indication: Indication? = null
     ) {
-        me.him188.ani.app.ui.foundation.IconButton(
+        val icon = @Composable {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(iconSize),
+            )
+        }
+        if (indication != null) IconButton(
             modifier = modifier,
             enabled = enabled,
             onClick = onClick,
             indication = indication,
-        ) {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = null,
-                modifier = Modifier.size(iconSize),
-            )
-        }
+            content = icon,
+        ) else IconButton(
+            modifier = modifier,
+            enabled = enabled,
+            onClick = onClick,
+            content = icon,
+        )
     }
 
     @Composable
@@ -509,50 +513,69 @@ object EditCommentDefaults {
             },
             content = {
                 ActionButton(
-                    Icons.Outlined.SentimentSatisfied,
-                    onClickEmoji,
-                    Modifier.size(size),
-                    actionEnabled,
+                    imageVector = Icons.Outlined.SentimentSatisfied,
+                    contentDescription = "添加表情",
+                    onClick = onClickEmoji,
+                    modifier = Modifier.size(size),
+                    enabled = actionEnabled,
                 )
                 if (actionExpanded) {
                     ActionButton(
-                        Icons.Outlined.FormatBold,
-                        onClickBold,
-                        Modifier.size(height = size, width = collapsedActionAnim),
-                        actionEnabled,
+                        imageVector = Icons.Outlined.FormatBold,
+                        contentDescription = "加粗",
+                        onClick = onClickBold,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        enabled = actionEnabled,
                     )
                     ActionButton(
-                        Icons.Outlined.FormatItalic,
-                        onClickItalic,
-                        Modifier.size(height = size, width = collapsedActionAnim),
-                        actionEnabled,
+                        imageVector = Icons.Outlined.FormatItalic,
+                        contentDescription = "斜体",
+                        onClick = onClickItalic,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        enabled = actionEnabled,
                     )
                     ActionButton(
-                        Icons.Outlined.FormatUnderlined,
-                        onClickUnderlined,
-                        Modifier.size(height = size, width = collapsedActionAnim),
-                        actionEnabled,
+                        imageVector = Icons.Outlined.FormatUnderlined,
+                        contentDescription = "下划线",
+                        onClick = onClickUnderlined,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        enabled = actionEnabled,
                     )
                     ActionButton(
-                        Icons.Outlined.FormatStrikethrough,
-                        onClickStrikethrough,
-                        Modifier.size(height = size, width = collapsedActionAnim),
-                        actionEnabled,
+                        imageVector = Icons.Outlined.FormatStrikethrough,
+                        contentDescription = "删除线",
+                        onClick = onClickStrikethrough,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        enabled = actionEnabled,
                     )
                 }
-                ActionButton(Icons.Outlined.VisibilityOff, onClickMask, Modifier.size(size), actionEnabled)
-                ActionButton(Icons.Outlined.Image, onClickImage, Modifier.size(size), actionEnabled)
+                ActionButton(
+                    imageVector = Icons.Outlined.VisibilityOff,
+                    contentDescription = "遮罩",
+                    onClick = onClickMask,
+                    modifier = Modifier.size(size),
+                    enabled = actionEnabled,
+                )
+                ActionButton(
+                    imageVector = Icons.Outlined.Image,
+                    contentDescription = "图片",
+                    onClick = onClickImage,
+                    modifier = Modifier.size(size),
+                    enabled = actionEnabled,
+                )
                 if (actionExpanded) {
                     ActionButton(
-                        Icons.Outlined.Link,
-                        onClickUrl,
-                        Modifier.size(height = size, width = collapsedActionAnim),
-                        actionEnabled,
+                        imageVector = Icons.Outlined.Link,
+                        contentDescription = "链接",
+                        onClick = onClickUrl,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        enabled = actionEnabled,
                     )
                 }
                 // 最后一个按钮不要有 ripple effect，看起来比较奇怪
                 ActionButton(
                     imageVector = Icons.Outlined.MoreHoriz,
+                    contentDescription = "更多评论编辑功能",
                     enabled = true,
                     onClick = { actionExpanded = true },
                     modifier = Modifier.size(height = size, width = reversedActionAnim),

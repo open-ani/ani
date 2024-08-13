@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.components.comment
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,10 +22,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddReaction
 import androidx.compose.material.icons.outlined.HeartBroken
 import androidx.compose.material.icons.outlined.ModeComment
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material.icons.rounded.Face
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +42,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +60,8 @@ import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults.ActionButton
+import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults.ActionButtonSize
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -302,42 +306,60 @@ object CommentDefaults {
     fun ActionRow(
         onClickReply: () -> Unit,
         modifier: Modifier = Modifier,
-        onClickReaction: (() -> Unit)? = null,
-        onClickBlock: (() -> Unit)? = null,
-        onClickReport: (() -> Unit)? = null
+        onClickReaction: () -> Unit,
+        onClickBlock: () -> Unit,
+        onClickReport: () -> Unit
     ) {
+        val size = ActionButtonSize.dp
+        val iconSize = 20.dp
+        var actionExpanded by rememberSaveable { mutableStateOf(false) }
+        val collapsedActionAnim by animateDpAsState(if (actionExpanded) size else 0.dp)
+        val reversedActionAnim by remember { derivedStateOf { size - collapsedActionAnim } }
+        
         Row(modifier = modifier) { 
             CompositionLocalProvider(
                 LocalContentColor provides MaterialTheme.colorScheme.onSurface.stronglyWeaken(),
             ) {
-                IconButton(onClickReply, Modifier.size(48.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.ModeComment,
-                        contentDescription = "回复评论",
-                        modifier = Modifier.size(20.dp),
-                    )
-                }
-                if (onClickReaction != null) IconButton(onClickReaction, Modifier.size(48.dp)) {
-                    Icon(
+                ActionButton(
+                    imageVector = Icons.Outlined.ModeComment,
+                    contentDescription = "回复评论",
+                    onClick = onClickReply,
+                    iconSize = iconSize,
+                )
+
+                if (actionExpanded) {
+                    ActionButton(
                         imageVector = Icons.Outlined.AddReaction,
                         contentDescription = "添加表情",
-                        modifier = Modifier.size(20.dp),
+                        onClick = onClickReaction,
+                        iconSize = iconSize,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
                     )
-                }
-                if (onClickBlock != null) IconButton(onClickBlock, Modifier.size(48.dp)) {
-                    Icon(
+                    ActionButton(
                         imageVector = Icons.Outlined.HeartBroken,
                         contentDescription = "拉黑用户",
-                        modifier = Modifier.size(20.dp),
+                        onClick = onClickBlock,
+                        iconSize = iconSize,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
                     )
-                }
-                if (onClickReport != null) IconButton(onClickReport, Modifier.size(48.dp)) {
-                    Icon(
+                    ActionButton(
                         imageVector = Icons.Outlined.Report,
-                        contentDescription = "举报内容",
-                        modifier = Modifier.size(20.dp),
+                        contentDescription = "举报用户",
+                        onClick = onClickReport,
+                        iconSize = iconSize,
+                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
                     )
                 }
+
+                // 最后一个按钮不要有 ripple effect，看起来比较奇怪
+                ActionButton(
+                    imageVector = Icons.Outlined.MoreHoriz,
+                    contentDescription = "展开更多评论功能",
+                    iconSize = iconSize,
+                    onClick = { actionExpanded = true },
+                    modifier = Modifier.size(height = size, width = reversedActionAnim),
+                    indication = null,
+                )
             }
         }
     }
