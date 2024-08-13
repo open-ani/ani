@@ -55,9 +55,6 @@ fun EditComment(
     val scope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
 
-    val requiredStickerPanelHeight =
-        remember(stickerPanelHeight) { max(EditCommentDefaults.MinStickerHeight.dp, stickerPanelHeight) }
-
     val imeVisible = isImeVisible()
     var previousImeVisible by remember { mutableStateOf(false) }
     SideEffect {
@@ -102,10 +99,12 @@ fun EditComment(
                     }
                 },
             )
+
             if (state.stickerPanelOpened) {
                 EditCommentDefaults.StickerSelector(
                     list = state.stickers,
-                    modifier = Modifier.fillMaxWidth().height(requiredStickerPanelHeight),
+                    modifier = Modifier.fillMaxWidth()
+                        .height(max(EditCommentDefaults.MinStickerHeight.dp, stickerPanelHeight)),
                     onClickItem = { stickerId ->
                         val inserted = "(bgm$stickerId)"
                         state.insertTextAt(inserted, inserted.length)
