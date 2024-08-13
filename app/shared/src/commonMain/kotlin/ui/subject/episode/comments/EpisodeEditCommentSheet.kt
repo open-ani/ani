@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
@@ -51,6 +49,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.rememberImeMaxHeight
 import me.him188.ani.app.ui.subject.components.comment.EditComment
 import me.him188.ani.app.ui.subject.components.comment.EditCommentState
 
@@ -94,20 +93,6 @@ fun EpisodeEditCommentSheet(
     }
 
     val statusBarPadding by rememberUpdatedState(WindowInsets.statusBars.getTop(density))
-    val imePadding by rememberUpdatedState(WindowInsets.ime.getBottom(density))
-    val navigationBarPadding by rememberUpdatedState(WindowInsets.navigationBars.getBottom(density))
-    var imePresentHeight by rememberSaveable { mutableStateOf(0) }
-    val imePresentMaxHeight by remember {
-        derivedStateOf {
-            val incomingPresentHeight = imePadding - navigationBarPadding
-            if (imePresentHeight < incomingPresentHeight) {
-                imePresentHeight = incomingPresentHeight
-                incomingPresentHeight
-            } else {
-                imePresentHeight
-            }
-        }
-    }
 
     // Popup on android always clip its composeView to visible 
     Popup(
@@ -158,7 +143,7 @@ fun EpisodeEditCommentSheet(
                             EditComment(
                                 state = state,
                                 modifier = modifier.padding(top = contentPadding).padding(contentPadding),
-                                stickerPanelHeight = with(density) { imePresentMaxHeight.toDp() },
+                                stickerPanelHeight = rememberImeMaxHeight(),
                                 controlSoftwareKeyboard = true,
                                 focusRequester = focusRequester,
                             )
