@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -50,9 +51,11 @@ import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
+import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
+import me.him188.ani.app.videoplayer.ui.guesture.mouseFamily
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberSwipeSeekerState
@@ -71,6 +74,8 @@ import me.him188.ani.danmaku.ui.DanmakuHostState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
+internal const val TAG_EPISODE_VIDEO_TOP_BAR = "EpisodeVideoTopBar"
+
 /**
  * 剧集详情页面顶部的视频控件.
  * @param title 仅在全屏时显示的标题
@@ -84,6 +89,8 @@ internal fun EpisodeVideoImpl(
     videoControllerState: VideoControllerState,
     title: @Composable () -> Unit,
     danmakuHostState: DanmakuHostState,
+    danmakuEnabled: Boolean,
+    onToggleDanmaku: () -> Unit,
     videoLoadingState: () -> VideoLoadingState,
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
@@ -98,6 +105,8 @@ internal fun EpisodeVideoImpl(
     progressSliderState: MediaProgressSliderState,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    danmakuFrozen: Boolean = false,
+    gestureFamily: GestureFamily = currentPlatform.mouseFamily,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
@@ -108,10 +117,11 @@ internal fun EpisodeVideoImpl(
         expanded = expanded,
         modifier = modifier,
         maintainAspectRatio = maintainAspectRatio,
-        controllersVisibility = { videoControllerState.visibility },
+        controllerState = videoControllerState,
         gestureLocked = { isLocked },
         topBar = {
             EpisodeVideoTopBar(
+                Modifier.testTag(TAG_EPISODE_VIDEO_TOP_BAR),
                 title = if (expanded) {
                     { title() }
                 } else {
@@ -158,11 +168,11 @@ internal fun EpisodeVideoImpl(
         },
         danmakuHost = {
             AnimatedVisibility(
-                videoControllerState.danmakuEnabled,
+                danmakuEnabled,
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200)),
             ) {
-                DanmakuHost(danmakuHostState, Modifier.matchParentSize(), danmakuConfig)
+                DanmakuHost(danmakuHostState, danmakuConfig, Modifier.matchParentSize(), frozen = danmakuFrozen)
             }
         },
         gestureHost = {
@@ -203,6 +213,7 @@ internal fun EpisodeVideoImpl(
                     onClickFullScreen()
                 },
                 onExitFullscreen = onExitFullscreen,
+                family = gestureFamily,
             )
         },
         floatingMessage = {
@@ -242,8 +253,8 @@ internal fun EpisodeVideoImpl(
                         )
                     }
                     PlayerControllerDefaults.DanmakuIcon(
-                        videoControllerState.danmakuEnabled,
-                        onClick = { videoControllerState.toggleDanmakuEnabled() },
+                        danmakuEnabled,
+                        onClick = { onToggleDanmaku() },
                     )
                 },
                 progressIndicator = {

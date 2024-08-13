@@ -25,13 +25,18 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.source.media.MediaAutoCacheService
+import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.isSessionVerified
@@ -42,6 +47,7 @@ import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.profile.AniHelpSection
 import me.him188.ani.app.ui.profile.DebugInfo
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -54,7 +60,21 @@ import org.koin.mp.KoinPlatform
 class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     val browserNavigator: BrowserNavigator by inject()
     private val sessionManager: SessionManager by inject()
+    private val cacheManager: MediaCacheManager by inject()
 
+    private val validMediaCacheTasks = kotlin.run {
+        val mediaCacheListFromStorages = cacheManager.storages.map { storageFlow ->
+            storageFlow.flatMapLatest { storage ->
+                if (storage == null) {
+                    return@flatMapLatest emptyFlow()
+                }
+                storage.listFlow
+            }.onStart { emit(emptyList()) }
+        }
+        combine(mediaCacheListFromStorages) { lists ->
+            lists.asSequence().flatten().count { it.isValid() }
+        }
+    }
 
     val debugInfo = debugInfoFlow().shareInBackground(started = SharingStarted.Eagerly)
 
@@ -63,7 +83,8 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
         sessionManager.state,
         sessionManager.processingRequest.flatMapLatest { it?.state ?: flowOf(null) },
         sessionManager.isSessionVerified,
-    ) { session, processingRequest, isSessionValid ->
+        validMediaCacheTasks,
+    ) { session, processingRequest, isSessionValid, activeTasks ->
         DebugInfo(
             properties = buildMap {
                 val buildConfig = currentAniBuildConfig
@@ -74,6 +95,7 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
                 }
                 put("processingRequest.state", processingRequest.toString())
                 put("sessionManager.isSessionValid", isSessionValid.toString())
+                put("mediaCacheManager.validTasks", activeTasks.toString())
             },
         )
     }
@@ -105,6 +127,7 @@ fun AboutTab(
     onTriggerDebugMode: () -> Unit = { },
 ) {
     val context by rememberUpdatedState(LocalContext.current)
+    val toaster = LocalToaster.current
 
     SettingsTab(modifier) {
         Group(
@@ -229,6 +252,19 @@ fun AboutTab(
                         },
                     ) {
                         Text("执行自动缓存")
+                    }
+
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch {
+                                KoinPlatform.getKoin().get<MediaCacheManager>().closeAllCaches()
+                                withContext(Dispatchers.Main) {
+                                    toaster.toast("已关闭所有缓存任务")
+                                }
+                            }
+                        },
+                    ) {
+                        Text("关闭所有缓存任务")
                     }
 
                     FilledTonalButton(

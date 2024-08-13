@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
 import me.him188.ani.app.data.source.media.cache.sum
@@ -167,6 +168,14 @@ abstract class MediaCacheManager(
             }
         }
         return false
+    }
+
+    suspend fun closeAllCaches() = supervisorScope {
+        for (storage in enabledStorages.first()) {
+            for (mediaCache in storage.listFlow.first()) {
+                launch { mediaCache.close() }
+            }
+        }
     }
 
     init {

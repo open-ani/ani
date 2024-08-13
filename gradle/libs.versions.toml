@@ -1,7 +1,7 @@
 [versions]
 bencode = "1.4.1"
 jna = "5.13.0"
-kotlin = "2.0.20-Beta2"
+kotlin = "2.0.10"
 # kotlinx
 coroutines = "1.8.1"
 ksoup = "0.1.2"
@@ -32,7 +32,7 @@ mongodb-driver-kotlin-coroutine = "4.10.1"
 kompendium = "3.14.4"
 logback = "1.4.14"
 aws = "2.25.49"
-ksp = "2.0.20-Beta2-1.0.23"
+ksp = "2.0.10-1.0.24" # 2.0.20-Beta2-1.0.23
 room = "2.7.0-alpha03"
 snakeyaml = "2.2"
 sqlite = "2.5.0-alpha03"

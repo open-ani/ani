@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
@@ -59,6 +60,8 @@ class TorrentVideoSourceResolver(
                     throw VideoSourceResolutionException(ResolutionFailures.FETCH_TIMEOUT)
                 } catch (e: CancellationException) {
                     throw e
+                } catch (e: IOException) {
+                    throw VideoSourceResolutionException(ResolutionFailures.NETWORK_ERROR, e)
                 } catch (e: Exception) {
                     throw VideoSourceResolutionException(ResolutionFailures.ENGINE_ERROR, e)
                 }
