@@ -48,13 +48,12 @@ import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 fun EditComment(
     state: CommentEditorState,
     modifier: Modifier = Modifier,
-    controlSoftwareKeyboard: Boolean = false,
     focusRequester: FocusRequester = remember { FocusRequester() },
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
     onSendComplete: () -> Unit = { },
 ) {
     val scope = rememberCoroutineScope()
-    val keyboard = if (!controlSoftwareKeyboard) null else LocalSoftwareKeyboardController.current
+    val keyboard = LocalSoftwareKeyboardController.current
     val textFieldInteractionSource = remember { MutableInteractionSource() }
 
     val requiredStickerPanelHeight =
