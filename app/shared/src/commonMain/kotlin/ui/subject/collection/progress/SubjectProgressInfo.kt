@@ -55,7 +55,7 @@ data class SubjectProgressInfo(
 
                     // 看了第 n 集并且还有第 n+1 集
                     in 0..<episodes.size - 1 -> {
-                        if (latestEpIndex != null && lastWatchedEpIndex < latestEpIndex) {
+                        if (latestEpIndex != null && lastWatchedEpIndex < latestEpIndex && subjectStarted) {
                             // 更新了 n+1 集
                             ContinueWatchingStatus.Continue(
                                 lastWatchedEpIndex + 1,
