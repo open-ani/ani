@@ -638,12 +638,10 @@ fun VideoGestureHost(
                             Orientation.Horizontal,
                             onDragStarted = {
                                 controllerState.setRequestProgressBar(swipeToSeekRequester)
-                                if (controllerState.visibility.detachedSlider)
-                                    progressSliderState.setRequestPreview(swipeToSeekRequester, true)
                             },
                             onDragStopped = {
                                 controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
-                                progressSliderState.setRequestPreview(swipeToSeekRequester, false)
+                                progressSliderState.finishPreview()
                             },
                         ) {
                             progressSliderState.run {
