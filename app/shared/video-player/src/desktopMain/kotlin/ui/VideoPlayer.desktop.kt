@@ -9,6 +9,9 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import com.sun.jna.platform.win32.KnownFolders
+import com.sun.jna.platform.win32.Shell32
+import com.sun.jna.ptr.PointerByReference
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -149,8 +152,10 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override fun saveScreenshotFile(filename: String) {
         player.submit {
-            val screenshotPath: Path =
-                Path.of(System.getProperty("user.home")).resolve("Pictures").resolve("Ani")
+            val ppszPath = PointerByReference()
+            Shell32.INSTANCE.SHGetKnownFolderPath(KnownFolders.FOLDERID_Pictures, 0, null, ppszPath)
+            val picturesPath = ppszPath.value.getWideString(0)
+            val screenshotPath: Path = Path.of(picturesPath).resolve("Ani")
             try {
                 screenshotPath.createDirectories()
             } catch (ex: IOException) {
