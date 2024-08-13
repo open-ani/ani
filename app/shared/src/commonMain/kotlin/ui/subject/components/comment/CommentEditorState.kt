@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.subject.components.comment
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 
 @Stable
 class CommentEditorState(
-    val showExpandEditCommentButton: Boolean,
+    showExpandEditCommentButton: Boolean,
     initialEditExpanded: Boolean,
     panelTitle: State<String?>,
     stickerProvider: Flow<List<EditCommentSticker>>,
@@ -31,20 +32,21 @@ class CommentEditorState(
 
     private val sendTasker = MonoTasker(backgroundScope)
 
-    /**
-     * 评论是否正在提交发送，在 [send] 时设置为 true，当 [onSend] 返回或发生错误时设置为 false
-     */
+    val panelTitle by panelTitle
 
     var currentSendTarget: CommentContext? by mutableStateOf(null)
         private set
-    val panelTitle by panelTitle
+    val sending: Boolean get() = sendTasker.isRunning
+    
     val content get() = editor.textField
     val previewing get() = previewer.previewing
     val previewContent get() = previewer.list
+
     var editExpanded: Boolean by mutableStateOf(initialEditExpanded)
+    val expandButtonState by derivedStateOf { if (!showExpandEditCommentButton) null else editExpanded }
+    
     var showStickerPanel: Boolean by mutableStateOf(false)
         private set
-    val sending: Boolean get() = sendTasker.isRunning
     val stickers by stickerProvider
         .stateIn(backgroundScope, SharingStarted.Lazily, listOf())
         .produceState(emptyList(), backgroundScope)

@@ -112,8 +112,8 @@ fun EditComment(
                 )
             }
         },
-        expanded = if (!state.showExpandEditCommentButton) null else state.editExpanded,
-        onClickExpanded = { state.editExpanded = it },
+        expanded = state.expandButtonState,
+        onClickExpand = { state.editExpanded = it },
     ) { previewing ->
         ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
             if (previewing) {
@@ -152,7 +152,7 @@ fun EditComment(
  * @param previewing 是否正在 preview
  * @param actionRow 操作按钮, 进行富文本编辑和评论发送. see [EditCommentDefaults.ActionRow].
  * @param expanded 展开按钮状态, 为 `null` 时不显示按钮.
- * @param onClickExpanded 点击展开按钮时触发该点击事件.
+ * @param onClickExpand 点击展开按钮时触发该点击事件.
  * @param title 评论编辑标题, 一般显示 正在为哪个对象发送评论. see [EditCommentDefaults.Title].
  * @param content 评论编辑框. see [EditCommentDefaults.EditText].
  */
@@ -160,7 +160,7 @@ fun EditComment(
 fun EditCommentScaffold(
     previewing: Boolean,
     actionRow: @Composable ColumnScope.() -> Unit,
-    onClickExpanded: (Boolean) -> Unit,
+    onClickExpand: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     expanded: Boolean? = null,
     title: (@Composable () -> Unit)? = null,
@@ -185,7 +185,7 @@ fun EditCommentScaffold(
                 EditCommentDefaults.ActionButton(
                     imageVector = if (expanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
                     enabled = true,
-                    onClick = { onClickExpanded(!expanded) },
+                    onClick = { onClickExpand(!expanded) },
                 )
             }
 
