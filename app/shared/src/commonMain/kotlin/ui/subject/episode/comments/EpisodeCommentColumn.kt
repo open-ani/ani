@@ -30,7 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -131,7 +131,7 @@ fun EpisodeCommentColumn(
             hint = "发送评论",
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .onPlaced { stubPanelHeight = it.size.height },
+                .onSizeChanged { stubPanelHeight = it.height },
             onClickEmoji = onClickEditCommentStubEmoji,
             onClickEditText = onClickEditCommentStub,
         )
