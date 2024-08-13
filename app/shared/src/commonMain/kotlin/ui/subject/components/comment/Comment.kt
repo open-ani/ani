@@ -350,7 +350,7 @@ object CommentDefaults {
                     )
                 }
 
-                // 最后一个按钮不要有 ripple effect，看起来比较奇怪
+                // 最后一个按钮不要有 ripple effect，因为有动画，看起来比较奇怪
                 ActionButton(
                     imageVector = Icons.Outlined.MoreHoriz,
                     contentDescription = "展开更多评论功能",
