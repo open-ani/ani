@@ -72,6 +72,22 @@ class SubjectProgressInfoTest {
     }
 
     @Test
+    fun `subject not started - first ep done - first ep not completed`() {
+        SubjectProgressInfo.calculate(
+            subjectStarted = false,
+            episodes = listOf(
+                ep(DONE, 1, isKnownCompleted = false),
+                ep(WISH, 2, isKnownCompleted = false),
+            ),
+        ).run {
+            // TODO: This should be Watched(0, EpisodeSort(1))
+            assertEquals(ContinueWatchingStatus.Continue(1, EpisodeSort(2)), continueWatchingStatus)
+            // TODO: This should be 1
+            assertEquals(2, nextEpisodeIdToPlay)
+        }
+    }
+
+    @Test
     fun `subject not started - first ep done - second ep completed`() {
         SubjectProgressInfo.calculate(
             subjectStarted = false,
