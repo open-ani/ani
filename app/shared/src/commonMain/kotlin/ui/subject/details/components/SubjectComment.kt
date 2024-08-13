@@ -118,10 +118,10 @@ fun SubjectComment(
 ) {
     Comment(
         modifier = modifier,
-        avatar = { CommentDefaults.Avatar(comment.creator.avatarUrl) },
+        avatar = { CommentDefaults.Avatar(comment.creator?.avatarUrl) },
         primaryTitle = {
             Text(
-                text = comment.creator.nickname ?: comment.creator.id.toString(),
+                text = comment.creator?.nickname ?: comment.creator?.id.toString(),
                 textAlign = TextAlign.Center,
             )
         },

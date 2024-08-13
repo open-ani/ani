@@ -204,7 +204,7 @@ class UIRichText(val elements: List<UIRichElement>)
 @Immutable
 class UIComment(
     val id: Int,
-    val creator: UserInfo,
+    val creator: UserInfo?,
     val content: UIRichText,
     val createdAt: Long, // timestamp millis
     val reactions: List<UICommentReaction>,
@@ -356,7 +356,7 @@ object CommentDefaults {
             replies.forEach { reply ->
                 val prepended = remember(reply.content, primaryColor) {
                     reply.content.prependText(
-                        prependix = "${reply.creator.nickname ?: reply.creator.id.toString()}：",
+                        prependix = "${reply.creator?.nickname ?: reply.creator?.id.toString()}：",
                         color = primaryColor,
                     )
                 }
