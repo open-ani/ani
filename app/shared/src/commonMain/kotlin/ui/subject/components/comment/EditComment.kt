@@ -127,7 +127,7 @@ fun EditComment(
                     contentPadding = OutlinedTextFieldDefaults.contentPadding(),
                 )
             } else {
-                EditCommentDefaults.EditText(
+                EditCommentDefaults.CommentTextField(
                     value = state.content,
                     maxLines = if (state.editExpanded) Int.MAX_VALUE else 3,
                     modifier = Modifier
@@ -154,7 +154,7 @@ fun EditComment(
  * @param expanded 展开按钮状态, 为 `null` 时不显示按钮.
  * @param onClickExpand 点击展开按钮时触发该点击事件.
  * @param title 评论编辑标题, 一般显示 正在为哪个对象发送评论. see [EditCommentDefaults.Title].
- * @param content 评论编辑框. see [EditCommentDefaults.EditText].
+ * @param content 评论编辑框. see [EditCommentDefaults.CommentTextField].
  */
 @Composable
 fun EditCommentScaffold(

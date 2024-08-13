@@ -87,7 +87,7 @@ object EditCommentDefaults {
     }
 
     @Composable
-    fun EditText(
+    fun CommentTextField(
         value: TextFieldValue,
         onValueChange: (TextFieldValue) -> Unit,
         enabled: Boolean = true,

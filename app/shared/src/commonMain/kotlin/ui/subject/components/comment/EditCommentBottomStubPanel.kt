@@ -44,7 +44,7 @@ fun EditCommentBottomStubPanel(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Box(modifier = Modifier.weight(1.0f)) {
-                EditCommentDefaults.EditText(
+                EditCommentDefaults.CommentTextField(
                     value = text,
                     maxLines = 1,
                     modifier = Modifier.fillMaxWidth().focusProperties { canFocus = false },
