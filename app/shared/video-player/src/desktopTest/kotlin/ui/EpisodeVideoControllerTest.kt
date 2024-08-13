@@ -277,7 +277,7 @@ class EpisodeVideoControllerTest {
         runOnIdle {
             assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
             detachedProgressSlider.assertDoesNotExist()
-            assertEquals(false, progressSliderState.preview)
+            assertEquals(false, progressSliderState.isPreviewing)
             assertEquals(0.0f, progressSliderState.displayPositionRatio)
         }
 
@@ -289,7 +289,7 @@ class EpisodeVideoControllerTest {
         runOnIdle {
             waitUntil { detachedProgressSlider.exists() }
             assertEquals(PREVIEW_DETACHED_SLIDER, controllerState.visibility)
-            assertEquals(true, progressSliderState.preview)
+            assertEquals(true, progressSliderState.isPreviewing)
             assertEquals(0.47f, progressSliderState.displayPositionRatio)
         }
 
@@ -300,7 +300,7 @@ class EpisodeVideoControllerTest {
         runOnIdle {
             waitUntil { detachedProgressSlider.doesNotExist() }
             assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
-            assertEquals(false, progressSliderState.preview)
+            assertEquals(false, progressSliderState.isPreviewing)
             assertEquals(0.47f, progressSliderState.displayPositionRatio)
         }
 
