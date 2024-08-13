@@ -125,17 +125,12 @@ fun EpisodeSort(int: Int): EpisodeSort {
     return Normal(int.toFloat())
 }
 
-fun EpisodeSort(int: BigNum): EpisodeSort {
-    if (int.isNegative()) return Special(int.toString())
-    return EpisodeSort(int.toString())
-}
-
 /**
  * @see EpisodeType
  */
-fun EpisodeSort(int: BigNum, type: EpisodeType): EpisodeSort {
+fun EpisodeSort(int: BigNum, type: EpisodeType = EpisodeType.MainStory): EpisodeSort {
     return when (type) {
-        EpisodeType.MainStory -> EpisodeSort(int)
+        EpisodeType.MainStory -> Normal(int.toFloat())
         EpisodeType.SP -> Special("SP$int", int.toFloat())
         EpisodeType.OP -> Special("OP$int", int.toFloat())
         EpisodeType.ED -> Special("ED$int", int.toFloat())

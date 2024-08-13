@@ -162,13 +162,17 @@ fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     )
 }
 
+fun getEpisodeSortByBangumiEpisodeCode(bangumiEpisodeTypeCode: Int): EpisodeType {
+    return EpisodeType.fromCodeOrOther(bangumiEpisodeTypeCode)
+}
+
 fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = id,
         type = EpisodeType.fromCodeOrOther(this.type),
         name = name,
         nameCn = nameCn,
-        sort = EpisodeSort(this.sort, EpisodeType.fromCodeOrOther(this.type)),
+        sort = EpisodeSort(this.sort, getEpisodeSortByBangumiEpisodeCode(this.type)),
         airDate = PackedDate.parseFromDate(this.airdate),
         comment = comment,
         duration = duration,
