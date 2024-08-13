@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.minutes
 
 class PlayerSkipOpEdStateTest {
 
-    class `24 minutes - opChapterOnStart` : NeedTest() {
+    class `OP chapter on start` : NeedTest() {
         override val opChapterOnStart = listOf(
             Chapter("chapter1 op", 90_000L, 0),
             Chapter("chapter2", 10_000L, 100_000L),
@@ -21,9 +21,6 @@ class PlayerSkipOpEdStateTest {
         fun setup() {
             state = createState_opChapterOnStart_24minutes()
         }
-
-        override val videoLength: Duration
-            get() = 24.minutes
 
         override fun `before op 6s`() {
         }
@@ -96,9 +93,7 @@ class PlayerSkipOpEdStateTest {
 
     }
 
-    class `24 minutes - opChapterOnChapter2` : NeedTest() {
-        override val videoLength: Duration
-            get() = 24.minutes
+    class `OP chapter on chapter 2` : NeedTest() {
 
         override val opChapterOnChapter2 = listOf(
             Chapter("chapter1", 10_000L, 0),
@@ -244,9 +239,7 @@ class PlayerSkipOpEdStateTest {
 
     }
 
-    class `24 minutes - noOpChapter` : NeedTest() {
-        override val videoLength: Duration
-            get() = 24.minutes
+    class `no OP chapter` : NeedTest() {
 
         override val noOpChapter = listOf(
             Chapter("chapter1", 10_000L, 0),
@@ -311,7 +304,7 @@ class PlayerSkipOpEdStateTest {
 
 abstract class NeedTest {
     lateinit var state: PlayerSkipOpEdState
-    abstract val videoLength: Duration
+    private val videoLength: Duration = 24.minutes
     open val opChapterOnStart: List<Chapter> = emptyList()
     open val opChapterOnChapter2: List<Chapter> = emptyList()
     open val noOpChapter: List<Chapter> = emptyList()
