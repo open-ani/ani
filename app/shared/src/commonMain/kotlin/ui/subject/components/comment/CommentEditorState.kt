@@ -128,12 +128,12 @@ sealed interface CommentContext {
     data class Episode(val subjectId: Int, val episodeId: Int) : CommentContext
 
     /**
-     * 番剧吐槽箱
+     * 条目吐槽箱
      */
     data class Subject(val subjectId: Int) : CommentContext
 
     /**
-     *  回复某个人的评论
+     * 回复某个人的评论
      */
     data class Reply(val commentId: Int) : CommentContext
 }
