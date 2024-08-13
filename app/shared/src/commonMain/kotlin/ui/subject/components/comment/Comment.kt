@@ -369,20 +369,13 @@ object CommentDefaults {
                 )
             }
             if (hiddenReplyCount > 0) {
-                val prepended = remember(hiddenReplyCount) {
-                    UIRichText(emptyList()).prependText(
-                        prependix = "查看更多 $hiddenReplyCount 条回复>",
-                        color = primaryColor,
-                    )
-                }
-
-                RichText(
-                    elements = prepended.elements,
+                Text(
+                    text = "查看更多 $hiddenReplyCount 条回复>",
+                    color = primaryColor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                         .clickable(onClick = onClickExpand),
-                    onClickUrl = { },
                 )
             }
         }
