@@ -478,7 +478,9 @@ fun VideoGestureHost(
                     }
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
-                        onPointerEventMultiplatform(PointerEventType.Move) { events ->
+                        // 这里不能用 hover, 因为在当控制器隐藏后, hover 状态仍然有, 于是下次移动鼠标时不会重复触发 hover 事件, 也就无法显示
+                        // See test case: `mouse - mouseHoverForController - center screen twice`
+                        onPointerEventMultiplatform(PointerEventType.Move) { _ ->
                             controllerState.toggleFullVisible(true)
                             keyboardFocus.requestFocus()
                             if (!controllerState.alwaysOn) {

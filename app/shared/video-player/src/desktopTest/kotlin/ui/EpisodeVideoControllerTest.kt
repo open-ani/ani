@@ -332,10 +332,16 @@ class EpisodeVideoControllerTest {
                 controllerState.visibility,
             )
         }
+        testMoveMouseAndWaitForHide()
+    }
 
-        mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
-        onRoot().performTouchInput { // 似乎 mouseInput 不太工作, 但我们就用 touch 也能实现
-            swipe(centerLeft, center)
+    private fun SkikoComposeUiTest.testMoveMouseAndWaitForHide() {
+        // 移动鼠标来显示控制器
+        runOnIdle {
+            mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
+            onRoot().performTouchInput { // Move 事件才能触发 
+                swipe(centerLeft, center)
+            }
         }
         runOnIdle {
             waitUntil { topBar.exists() }
@@ -346,8 +352,11 @@ class EpisodeVideoControllerTest {
         }
 
 
-        mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-        mainClock.autoAdvance = true
+        // 等待隐藏
+        runOnIdle {
+            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+            mainClock.autoAdvance = true
+        }
         runOnIdle {
             waitUntil { topBar.doesNotExist() }
             assertEquals(
@@ -355,6 +364,29 @@ class EpisodeVideoControllerTest {
                 controllerState.visibility,
             )
         }
+    }
+
+    /**
+     * [GestureFamily.MOUSE] 在屏幕中间滑动鼠标, 会临时显示几秒控制器. 几秒后自动隐藏.
+     * 隐藏后再次移动鼠标, 应当能重新显示几秒然后隐藏.
+     *
+     * @see GestureFamily.mouseHoverForController
+     */
+    @Test
+    fun `mouse - mouseHoverForController - center screen twice`() = runSkikoComposeUiTest {
+        setContent {
+            Player(GestureFamily.MOUSE)
+        }
+        runOnIdle {
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+
+        testMoveMouseAndWaitForHide()
+        // 隐藏后再次移动鼠标
+        testMoveMouseAndWaitForHide()
     }
 
     ///////////////////////////////////////////////////////////////////////////
