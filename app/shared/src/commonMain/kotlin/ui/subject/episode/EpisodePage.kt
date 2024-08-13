@@ -77,8 +77,8 @@ import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.subject.components.comment.CommentContext
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
-import me.him188.ani.app.ui.subject.components.comment.CommentSendTarget
 import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
@@ -660,7 +660,7 @@ private fun EpisodeCommentColumn(
         modifier = Modifier.fillMaxSize(),
         onClickReply = {
             setShowEditCommentSheet(true)
-            commentEditorState.startEdit(CommentSendTarget.Reply(it))
+            commentEditorState.startEdit(CommentContext.Reply(it))
             pauseOnPlaying()
 
         },
@@ -669,13 +669,13 @@ private fun EpisodeCommentColumn(
         },
         onClickEditCommentStub = {
             commentEditorState.startEdit(
-                CommentSendTarget.Episode(subjectId, episodeId),
+                CommentContext.Episode(subjectId, episodeId),
             )
             setShowEditCommentSheet(true)
         },
         onClickEditCommentStubEmoji = {
             commentEditorState.startEdit(
-                CommentSendTarget.Episode(subjectId, episodeId),
+                CommentContext.Episode(subjectId, episodeId),
             )
             commentEditorState.toggleStickerPanelState(true)
             setShowEditCommentSheet(true)

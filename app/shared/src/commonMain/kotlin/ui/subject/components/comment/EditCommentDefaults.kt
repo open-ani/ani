@@ -189,7 +189,7 @@ object EditCommentDefaults {
 
     @Composable
     fun ActionRow(
-        sendTarget: CommentSendTarget?,
+        sendTarget: CommentContext?,
         onClickBold: () -> Unit,
         onClickItalic: () -> Unit,
         onClickUnderlined: () -> Unit,

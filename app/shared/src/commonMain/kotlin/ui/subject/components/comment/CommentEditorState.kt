@@ -23,7 +23,7 @@ class CommentEditorState(
     initialEditExpanded: Boolean,
     panelTitle: State<String?>,
     stickerProvider: Flow<List<EditCommentSticker>>,
-    private val onSend: suspend (target: CommentSendTarget, content: String) -> Unit,
+    private val onSend: suspend (target: CommentContext, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
     private val editor = CommentEditorTextState("")
@@ -35,7 +35,7 @@ class CommentEditorState(
      * 评论是否正在提交发送，在 [send] 时设置为 true，当 [onSend] 返回或发生错误时设置为 false
      */
 
-    var currentSendTarget: CommentSendTarget? by mutableStateOf(null)
+    var currentSendTarget: CommentContext? by mutableStateOf(null)
         private set
     val panelTitle by panelTitle
     val content get() = editor.textField
@@ -52,7 +52,7 @@ class CommentEditorState(
     /**
      * 连续开关为同一个评论的编辑框将保存编辑内容和编辑框状态
      */
-    fun startEdit(newTarget: CommentSendTarget) {
+    fun startEdit(newTarget: CommentContext) {
         if (newTarget != currentSendTarget) {
             editor.override(TextFieldValue(""))
         }
@@ -121,24 +121,24 @@ data class EditCommentSticker(
  * 评论发送的对象，在 [CommentEditorState.onSend] 需要提供。
  */
 @Immutable
-sealed interface CommentSendTarget {
+sealed interface CommentContext {
     /**
      * 剧集评论
      */
-    data class Episode(val subjectId: Int, val episodeId: Int) : CommentSendTarget
+    data class Episode(val subjectId: Int, val episodeId: Int) : CommentContext
 
     /**
      * 番剧吐槽箱
      */
-    data class Subject(val subjectId: Int) : CommentSendTarget
+    data class Subject(val subjectId: Int) : CommentContext
 
     /**
      * 番剧长评
      */
-    data class SubjectLong(val subjectId: Int) : CommentSendTarget
+    data class SubjectLong(val subjectId: Int) : CommentContext
 
     /**
      *  回复某个人的评论
      */
-    data class Reply(val commentId: Int) : CommentSendTarget
+    data class Reply(val commentId: Int) : CommentContext
 }
