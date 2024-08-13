@@ -145,6 +145,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
 
     // Video
+    val videoControllerState: VideoControllerState
     val videoScaffoldConfig: VideoScaffoldConfig
 
     /**
@@ -213,7 +214,7 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val videoControllerState = VideoControllerState(ControllerVisibility.Invisible)
+    override val videoControllerState = VideoControllerState(ControllerVisibility.Invisible)
 
     /**
      * 更换 EP 是否已经完成了.
