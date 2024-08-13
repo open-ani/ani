@@ -38,7 +38,6 @@ fun EpisodeEditCommentSheet(
             state = state,
             modifier = modifier.padding(top = contentPadding).padding(contentPadding),
             stickerPanelHeight = with(density) { imePresentMaxHeight.toDp() },
-            controlSoftwareKeyboard = true,
             focusRequester = focusRequester,
             onSendComplete = { sheetState.close() },
         )

@@ -313,8 +313,7 @@ object CommentDefaults {
         val size = ActionButtonSize.dp
         val iconSize = 20.dp
         var actionExpanded by rememberSaveable { mutableStateOf(false) }
-        val collapsedActionAnim by animateDpAsState(if (actionExpanded) size else 0.dp)
-        val reversedActionAnim by remember { derivedStateOf { size - collapsedActionAnim } }
+        val expandableActionWidth by animateDpAsState(if (actionExpanded) size else 0.dp)
         
         Row(modifier = modifier) { 
             CompositionLocalProvider(
@@ -333,21 +332,21 @@ object CommentDefaults {
                         contentDescription = "添加表情",
                         onClick = onClickReaction,
                         iconSize = iconSize,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                     )
                     ActionButton(
                         imageVector = Icons.Outlined.HeartBroken,
                         contentDescription = "拉黑用户",
                         onClick = onClickBlock,
                         iconSize = iconSize,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                     )
                     ActionButton(
                         imageVector = Icons.Outlined.Report,
                         contentDescription = "举报用户",
                         onClick = onClickReport,
                         iconSize = iconSize,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                     )
                 }
 
@@ -357,7 +356,7 @@ object CommentDefaults {
                     contentDescription = "展开更多评论功能",
                     iconSize = iconSize,
                     onClick = { actionExpanded = true },
-                    modifier = Modifier.size(height = size, width = reversedActionAnim),
+                    modifier = Modifier.size(height = size, width = size - expandableActionWidth),
                     hasIndication = false,
                 )
             }

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.SentimentSatisfied
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,10 +46,12 @@ fun EditCommentBottomStubPanel(
             Box(modifier = Modifier.weight(1.0f)) {
                 EditCommentDefaults.EditText(
                     value = text,
-                    hint = hint,
                     maxLines = 1,
                     modifier = Modifier.fillMaxWidth().focusProperties { canFocus = false },
                     onValueChange = { },
+                    placeholder = if (hint != null) {
+                        { Text(hint) }
+                    } else null,
                 )
                 Spacer(
                     modifier = Modifier

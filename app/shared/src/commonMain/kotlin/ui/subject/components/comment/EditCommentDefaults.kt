@@ -91,7 +91,6 @@ object EditCommentDefaults {
         value: TextFieldValue,
         onValueChange: (TextFieldValue) -> Unit,
         enabled: Boolean = true,
-        hint: String? = null,
         maxLines: Int = Int.MAX_VALUE,
         modifier: Modifier = Modifier,
         shape: Shape = MaterialTheme.shapes.medium,
@@ -105,7 +104,7 @@ object EditCommentDefaults {
             focusedBorderColor = Color.Transparent,
             cursorColor = MaterialTheme.colorScheme.primary,
         ),
-        placeholder: @Composable (() -> Unit)? = { Text(hint ?: "") }
+        placeholder: @Composable (() -> Unit)? = null
     ) {
         OutlinedTextField(
             value = value,
@@ -207,8 +206,7 @@ object EditCommentDefaults {
         // maybe we can extract the layout
         val size = ActionButtonSize.dp
         var actionExpanded by rememberSaveable { mutableStateOf(false) }
-        val collapsedActionAnim by animateDpAsState(if (actionExpanded) size else 0.dp)
-        val reversedActionAnim by remember { derivedStateOf { size - collapsedActionAnim } }
+        val expandableActionWidth by animateDpAsState(if (actionExpanded) size else 0.dp)
 
         val actionEnabled by derivedStateOf { !sending && !previewing }
 
@@ -299,28 +297,28 @@ object EditCommentDefaults {
                         imageVector = Icons.Outlined.FormatBold,
                         contentDescription = "加粗",
                         onClick = onClickBold,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                         enabled = actionEnabled,
                     )
                     ActionButton(
                         imageVector = Icons.Outlined.FormatItalic,
                         contentDescription = "斜体",
                         onClick = onClickItalic,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                         enabled = actionEnabled,
                     )
                     ActionButton(
                         imageVector = Icons.Outlined.FormatUnderlined,
                         contentDescription = "下划线",
                         onClick = onClickUnderlined,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                         enabled = actionEnabled,
                     )
                     ActionButton(
                         imageVector = Icons.Outlined.FormatStrikethrough,
                         contentDescription = "删除线",
                         onClick = onClickStrikethrough,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                         enabled = actionEnabled,
                     )
                 }
@@ -343,7 +341,7 @@ object EditCommentDefaults {
                         imageVector = Icons.Outlined.Link,
                         contentDescription = "链接",
                         onClick = onClickUrl,
-                        modifier = Modifier.size(height = size, width = collapsedActionAnim),
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
                         enabled = actionEnabled,
                     )
                 }
@@ -353,7 +351,7 @@ object EditCommentDefaults {
                     contentDescription = "更多评论编辑功能",
                     enabled = true,
                     onClick = { actionExpanded = true },
-                    modifier = Modifier.size(height = size, width = reversedActionAnim),
+                    modifier = Modifier.size(height = size, width = size - expandableActionWidth),
                     hasIndication = false,
                 )
 
