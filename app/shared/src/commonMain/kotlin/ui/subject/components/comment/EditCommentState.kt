@@ -117,7 +117,7 @@ class EditCommentState(
             if (target != null) {
                 onSend(target, content)
             } else {
-                logger.warn("current send target is null.")
+                logger.warn { "current send target is null." }
             }
         }
         sendTasker.join()

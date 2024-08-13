@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,7 +19,6 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.unit.Dp
 
 @OptIn(ExperimentalLayoutApi::class)
 fun Modifier.clearFocusOnKeyboardDismiss(onClear: (() -> Unit)? = null): Modifier = composed {
@@ -57,14 +57,14 @@ expect inline fun isImeVisible(): Boolean
  * 返回 IME 最大的高度
  */
 @Composable
-fun rememberImeMaxHeight(): Dp {
+fun rememberImeMaxHeight(): State<Int> {
     val density = LocalDensity.current
-
+    
     val imePadding by rememberUpdatedState(WindowInsets.ime.getBottom(density))
     val navigationBarPadding by rememberUpdatedState(WindowInsets.navigationBars.getBottom(density))
 
     var imePresentHeight by rememberSaveable { mutableStateOf(0) }
-    val imePresentMaxHeight by remember {
+    return remember {
         derivedStateOf {
             val incomingPresentHeight = imePadding - navigationBarPadding
             if (imePresentHeight < incomingPresentHeight) {
@@ -75,6 +75,4 @@ fun rememberImeMaxHeight(): Dp {
             }
         }
     }
-
-    return with(density) { imePresentMaxHeight.toDp() }
 }
