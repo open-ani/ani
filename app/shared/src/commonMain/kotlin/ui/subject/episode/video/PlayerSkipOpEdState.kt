@@ -4,13 +4,13 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import me.him188.ani.app.videoplayer.ui.state.Chapter
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Stable
 class PlayerSkipOpEdState(
@@ -18,70 +18,56 @@ class PlayerSkipOpEdState(
     private val onSkip: (targetMillis: Long) -> Unit,
     videoLength: State<Duration>,
 ) {
+    private var currentChapter: CurrentChapter? by mutableStateOf(null) 
     private val opEdChapters by derivedStateOf {
         chapters.value.filter {
             OpEdLength.fromVideoLengthOrNull(videoLength.value)
-                ?.isOpEdChapter(it.durationMillis.toDuration(DurationUnit.MILLISECONDS)) == true
-        }
-    }
-    private val skipCancelRequests = SnapshotStateList<Any>()
-    private fun requestSkipCancel(requester: Any, cancel: Boolean) {
-        if (cancel) {
-            if (skipCancelRequests.contains(requester)) return
-            skipCancelRequests.add(requester)
-        } else {
-            skipCancelRequests.remove(requester)
+                ?.isOpEdChapter(it.durationMillis.milliseconds) == true
         }
     }
 
-    val skipCancel by derivedStateOf {
-        skipCancelRequests.isNotEmpty()
+    val skipped: Boolean by derivedStateOf {
+        currentChapter?.skipped ?: false
     }
-    private val showSkipTipsRequests = SnapshotStateList<Any>()
-    private fun requestShowSkipTips(requester: Any, show: Boolean) {
-        if (show) {
-            if (showSkipTipsRequests.contains(requester)) return
-            showSkipTipsRequests.add(requester)
-        } else {
-            showSkipTipsRequests.remove(requester)
-        }
-    }
-
-    val showSkipTips by derivedStateOf {
-        showSkipTipsRequests.isNotEmpty()
+    val showSkipTips: Boolean by derivedStateOf {
+        currentChapter != null && skipped
     }
 
     fun cancelSkipOpEd() {
-        requestSkipCancel(this, true)
-        requestShowSkipTips(this, false)
+        currentChapter = currentChapter?.copy(skipped = false)
+        println(currentChapter?.skipped)
     }
 
     fun resetSkipOpEd() {
-        skipCancelRequests.clear()
+        currentChapter = null
     }
 
     /**
      * 每秒调用一次update
      * 根据[currentPos]感知[currentPos]到5秒后这个区间是否会有章节开头，
      * 根据当前秒的位置显示/隐藏tips，
-     * 并且如果[currentPos]在章节开头的位置，根据[skipCancel]跳过该章节
+     * 并且如果[currentPos]在章节开头的位置，根据[skipped]跳过该章节
      */
     fun update(currentPos: Long) {
         if (opEdChapters.isEmpty()) return
+        // 在显示跳过提示范围
+        opEdChapters.find { it.offsetMillis in currentPos - 1000..currentPos + 5000 }?.let {
+            if (currentChapter == null) {
+                currentChapter = CurrentChapter(it, true)
+            }
+        } ?: run {
+            currentChapter = null
+        }
         // 在跳过 OP/ED 范围
         opEdChapters.find { it.offsetMillis in currentPos - 1000..currentPos }?.run {
-            if (skipCancel) return
+            if (currentChapter?.skipped == false) return
             onSkip(offsetMillis + durationMillis)
-            return
-        }
-        // 在显示跳过提示范围
-        opEdChapters.find { it.offsetMillis in currentPos..currentPos + 5000 }.run {
-            if (skipCancel) return
-            if (this == null) requestShowSkipTips(this@PlayerSkipOpEdState, false)
-            else requestShowSkipTips(this@PlayerSkipOpEdState, true)
+            currentChapter = null
         }
     }
 }
+
+data class CurrentChapter(val chapter: Chapter, var skipped: Boolean)
 
 fun interface OpEdLength {
     fun isOpEdChapter(chapterLength: Duration): Boolean
