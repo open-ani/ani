@@ -16,9 +16,6 @@ import me.him188.ani.app.ui.foundation.produceState
 import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 
-/**
- * [panelTitle] 将承担所有的 state 刷新工作，也就是此 state 的唯一标识
- */
 @Stable
 class EditCommentState(
     val showExpandEditCommentButton: Boolean,
