@@ -11,7 +11,6 @@ import me.him188.ani.test.TestFactory
 import me.him188.ani.test.dynamicTest
 import me.him188.ani.test.permutedSequence
 import me.him188.ani.test.runDynamicTests
-import me.him188.ani.utils.serialization.BigNum
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import me.him188.ani.datasources.api.EpisodeSort as ep
@@ -121,11 +120,11 @@ class EpisodeSortTest {
     fun compare() = runDynamicTests(
         listOf(
             // Original to Sorted Ascending
-            "int" to listOf(ep(BigNum(1)), ep(BigNum(2)), ep(BigNum(3))),
-            "float" to listOf(ep(BigNum(1)), ep("1.5"), ep("2"), ep(BigNum(3))),
+            "int" to listOf(ep(1), ep(2), ep(3)),
+            "float" to listOf(ep(1), ep("1.5"), ep("2"), ep(3)),
             "sp" to listOf(ep("SP1"), ep("SP2")),
-            "int with sp" to listOf(ep(BigNum(1)), ep(BigNum(3)), ep("SP1")),
-            "float with sp" to listOf(ep("1.5"), ep(BigNum(3)), ep("SP1")),
+            "int with sp" to listOf(ep(1), ep(3), ep("SP1")),
+            "float with sp" to listOf(ep("1.5"), ep(3), ep("SP1")),
         ).flatMap { (name, sorted) ->
             sorted.permutedSequence().map { unsorted ->
                 dynamicTest("$name: $unsorted => $sorted") {
