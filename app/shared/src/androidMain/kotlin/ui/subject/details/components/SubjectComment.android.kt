@@ -26,6 +26,7 @@ private fun PreviewSubjectComment() {
             modifier = Modifier.fillMaxWidth(),
             onClickImage = { },
             onClickUrl = { },
+            onClickReaction = { _, _ -> },
         )
 
     }
@@ -52,6 +53,7 @@ fun rememberTestCommentState(commentList: List<UIComment>): CommentState {
             hasMore = mutableStateOf(false),
             onReload = { },
             onLoadMore = { },
+            onSubmitCommentReaction = { _, _ -> },
             backgroundScope = scope.backgroundScope,
         )
     }

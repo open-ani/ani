@@ -87,6 +87,9 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
                         .padding(top = 12.dp, bottom = 12.dp),
                     onClickImage = { imageViewer.viewImage(it) },
                     onClickUrl = onClickUrl,
+                    onClickReaction = { commentId, reactionId ->
+                        state.submitReaction(commentId, reactionId)
+                    },
                 )
                 if (index != state.list.lastIndex) {
                     HorizontalDivider(
@@ -114,6 +117,7 @@ fun SubjectComment(
     comment: UIComment,
     onClickUrl: (String) -> Unit,
     onClickImage: (String) -> Unit,
+    onClickReaction: (commentId: Int, reactionId: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Comment(
@@ -143,7 +147,7 @@ fun SubjectComment(
             {
                 CommentDefaults.ReactionRow(
                     comment.reactions,
-                    onClickItem = { },
+                    onClickItem = { onClickReaction(comment.id, it) },
                 )
             }
         } else null,

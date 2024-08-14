@@ -498,6 +498,7 @@ private class EpisodeViewModelImpl(
         hasMore = episodeCommentLoader.hasFinished.map { !it }.produceState(true),
         onReload = { episodeCommentLoader.reload() },
         onLoadMore = { episodeCommentLoader.loadMore() },
+        onSubmitCommentReaction = { _, _ -> },
         backgroundScope = backgroundScope,
     )
 

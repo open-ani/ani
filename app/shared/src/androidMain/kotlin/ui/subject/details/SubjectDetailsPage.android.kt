@@ -27,7 +27,6 @@ import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
-import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
@@ -37,6 +36,7 @@ import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
 import me.him188.ani.app.ui.subject.details.components.generateUiComment
+import me.him188.ani.app.ui.subject.details.components.rememberTestCommentState
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.rating.EditableRating
@@ -115,21 +115,6 @@ internal val TestSubjectCharacterList = listOf(
 )
 
 @Composable
-fun rememberTestSubjectCommentState(): CommentState {
-    val backgroundScope = rememberBackgroundScope()
-    return remember {
-        CommentState(
-            sourceVersion = mutableStateOf(Unit),
-            list = mutableStateOf(generateUiComment(10)),
-            hasMore = mutableStateOf(false),
-            onReload = { },
-            onLoadMore = { },
-            backgroundScope = backgroundScope.backgroundScope,
-        )
-    }
-}
-
-@Composable
 fun rememberTestEditableRatingState(): EditableRatingState {
     val backgroundScope = rememberBackgroundScope()
     return remember {
@@ -201,7 +186,7 @@ internal fun PreviewSubjectDetails() {
                 val lazyListState = rememberLazyListState()
 
                 SubjectDetailsDefaults.SubjectCommentColumn(
-                    state = rememberTestSubjectCommentState(),
+                    state = rememberTestCommentState(commentList = generateUiComment(10)),
                     listState = lazyListState,
                     modifier = Modifier
                         .widthIn(max = BottomSheetDefaults.SheetMaxWidth)

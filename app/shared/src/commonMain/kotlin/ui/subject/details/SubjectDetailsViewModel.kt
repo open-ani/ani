@@ -146,6 +146,7 @@ class SubjectDetailsViewModel(
         hasMore = subjectCommentLoader.hasFinished.map { !it }.produceState(true),
         onReload = { subjectCommentLoader.reload() },
         onLoadMore = { subjectCommentLoader.loadMore() },
+        onSubmitCommentReaction = { _, _ -> },
         backgroundScope = backgroundScope,
     )
 

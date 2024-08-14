@@ -161,6 +161,7 @@ class CommentState(
     hasMore: State<Boolean>,
     private val onReload: suspend () -> Unit,
     private val onLoadMore: suspend () -> Unit,
+    private val onSubmitCommentReaction: suspend (commentId: Int, reactionId: Int) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
     val sourceVersion: Any? by sourceVersion
@@ -184,6 +185,8 @@ class CommentState(
     private val reloadTasker = MonoTasker(backgroundScope)
     val isLoading get() = reloadTasker.isRunning
 
+    private val reactionSubmitTasker = MonoTasker(backgroundScope)
+
     /**
      * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
      */
@@ -197,6 +200,12 @@ class CommentState(
     fun loadMore() {
         reloadTasker.launch {
             onLoadMore()
+        }
+    }
+
+    fun submitReaction(commentId: Int, reactionId: Int) {
+        reactionSubmitTasker.launch {
+            onSubmitCommentReaction(commentId, reactionId)
         }
     }
 }
