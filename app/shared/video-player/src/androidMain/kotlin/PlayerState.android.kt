@@ -26,6 +26,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,7 +138,9 @@ internal class ExoPlayerState @UiThread constructor(
             data,
             releaseResource = {
                 file.close()
-                data.close()
+                backgroundScope.launch(NonCancellable) {
+                    data.close()
+                }
             },
             setMedia = {
                 player.setMediaSource(factory.createMediaSource(MediaItem.fromUri(source.uri)))
@@ -232,7 +235,7 @@ internal class ExoPlayerState @UiThread constructor(
 
                     override fun onPlayerError(error: PlaybackException) {
                         state.value = PlaybackState.ERROR
-                        logger.warn("ExoPlayer error: ${error.errorCodeName}")
+                        logger.warn("ExoPlayer error: ${error.errorCodeName}", error)
                     }
 
                     override fun onVideoSizeChanged(videoSize: VideoSize) {

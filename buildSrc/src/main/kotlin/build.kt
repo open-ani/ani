@@ -219,9 +219,7 @@ fun Project.configureKotlinTestSettings() {
                         target?.platformType == KotlinPlatformType.androidJvm -> {
                             // Android uses JUnit4
                             sourceSet.dependencies {
-                                implementation(kotlin("test"))?.because(b)
                                 implementation("junit:junit:4.13")?.because(b)
-                                implementation(kotlin("test-junit"))?.because(b)
                             }
                         }
                     }

@@ -92,8 +92,9 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             Box(Modifier.weight(1f)) {
                 DanmakuHost(
                     state,
+                    { config },
                     Modifier.fillMaxHeight(),
-                ) { config }
+                )
                 Column {
                     Text("Emitted: $emitted")
                     state.topTracks.forEachIndexed { index, danmakuTrackState ->
@@ -132,8 +133,9 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             ) {
                 DanmakuHost(
                     state,
+                    { config },
                     Modifier.fillMaxWidth(),
-                ) { config }
+                )
                 Column {
                     Text("Emitted: $emitted")
                     state.floatingTracks.forEachIndexed { index, danmakuTrackState ->

@@ -17,7 +17,7 @@ import com.sun.jna.ptr.IntByReference
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
 
-class WindowsWindowUtils : WindowUtils {
+class WindowsWindowUtils : AwtWindowUtils() {
     private val dwmAPi: Dwmapi = Native.load("dwmapi", Dwmapi::class.java, W32APIOptions.DEFAULT_OPTIONS)
 
     override fun setTitleBarColor(hwnd: Long, color: Color): Boolean {

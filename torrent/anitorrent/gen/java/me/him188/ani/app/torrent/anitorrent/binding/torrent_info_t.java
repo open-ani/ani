@@ -53,6 +53,14 @@ public class torrent_info_t {
     this(anitorrentJNI.new_torrent_info_t(), true);
   }
 
+  public void setName(String value) {
+    anitorrentJNI.torrent_info_t_name_set(swigCPtr, this, value);
+  }
+
+  public String getName() {
+    return anitorrentJNI.torrent_info_t_name_get(swigCPtr, this);
+  }
+
   public void setTotal_size(long value) {
     anitorrentJNI.torrent_info_t_total_size_set(swigCPtr, this, value);
   }

@@ -1,10 +1,14 @@
 package me.him188.ani.app.ui.subject.components.comment
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +17,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddReaction
+import androidx.compose.material.icons.outlined.HeartBroken
+import androidx.compose.material.icons.outlined.ModeComment
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Report
+import androidx.compose.material.icons.rounded.Face
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -28,6 +42,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,83 +51,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-
-/**
- * A state which is read by Comment composable
- */
-@Stable
-class CommentState(
-    sourceVersion: State<Any?>,
-    list: State<List<UIComment>>,
-    hasMore: State<Boolean>,
-    private val onReload: suspend () -> Unit,
-    private val onLoadMore: suspend () -> Unit,
-    backgroundScope: CoroutineScope,
-) {
-    val sourceVersion: Any? by sourceVersion
-    val list: List<UIComment> by list
-
-    /**
-     * 至少 [onReload] 了一次
-     */
-    private var loadedOnce by mutableStateOf(false)
-    private var freshLoaded by mutableStateOf(false)
-    val hasMore: Boolean by derivedStateOf {
-        if (!freshLoaded) return@derivedStateOf false
-        hasMore.value
-    }
-
-    val count by derivedStateOf {
-        if (!loadedOnce) null else this.list.size
-    }
-
-    private val reloadTasker = MonoTasker(backgroundScope)
-    val isLoading get() = reloadTasker.isRunning
-
-    /**
-     * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
-     */
-    suspend fun reload() {
-        freshLoaded = false
-        onReload()
-        freshLoaded = true
-        loadedOnce = true
-    }
-
-    fun loadMore() {
-        reloadTasker.launch {
-            onLoadMore()
-        }
-    }
-}
-
-
-@Immutable
-class UIRichText(val elements: List<UIRichElement>)
-
-@Immutable
-class UIComment(
-    val id: Int,
-    val creator: UserInfo,
-    val content: UIRichText,
-    val createdAt: Long, // timestamp millis
-    val reactions: List<UICommentReaction>,
-    val briefReplies: List<UIComment>,
-    val replyCount: Int,
-)
-
-@Immutable
-class UICommentReaction(
-    val id: Int,
-    val count: Int,
-    val selected: Boolean
-)
+import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults.ActionButton
+import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults.ActionButtonSize
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * 评论项目
@@ -143,19 +93,20 @@ fun Comment(
         modifier = modifier,
         verticalAlignment = Alignment.Top,
     ) {
-        Box(modifier = Modifier.clip(CircleShape)) {
+        Box(modifier = Modifier.padding(top = 2.dp).clip(CircleShape)) {
             avatar()
         }
         Column(modifier = Modifier.padding(start = 12.dp)) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
-                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyLarge) {
+                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
                         primaryTitle()
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     CompositionLocalProvider(
                         LocalTextStyle provides MaterialTheme.typography.labelMedium.copy(
                             color = LocalContentColor.current.slightlyWeaken(),
@@ -166,33 +117,32 @@ fun Comment(
                 }
                 rhsTitle()
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             SelectionContainer(
-                modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 content()
             }
             if (reactionRow != null) {
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 SelectionContainer(
-                    modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     reactionRow()
                 }
             }
             if (actionRow != null) {
-                Spacer(modifier = Modifier.height(6.dp))
                 SelectionContainer(
-                    modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     actionRow()
                 }
             }
             if (reply != null) {
                 Surface(
-                    modifier = Modifier.padding(top = 12.dp),
+                    modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 0.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.small,
                 ) {
                     reply()
                 }
@@ -200,6 +150,88 @@ fun Comment(
         }
     }
 }
+
+/**
+ * A state which is read by Comment composable
+ */
+@Stable
+class CommentState(
+    sourceVersion: State<Any?>,
+    list: State<List<UIComment>>,
+    hasMore: State<Boolean>,
+    private val onReload: suspend () -> Unit,
+    private val onLoadMore: suspend () -> Unit,
+    private val onSubmitCommentReaction: suspend (commentId: Int, reactionId: Int) -> Unit,
+    backgroundScope: CoroutineScope,
+) {
+    val sourceVersion: Any? by sourceVersion
+    val list: List<UIComment> by list
+
+    /**
+     * 至少 [onReload] 了一次
+     */
+    private var loadedOnce by mutableStateOf(false)
+    private var freshLoaded by mutableStateOf(false)
+    private val _hasMore by hasMore
+    val hasMore: Boolean by derivedStateOf {
+        if (!freshLoaded) return@derivedStateOf false
+        _hasMore
+    }
+
+    val count by derivedStateOf {
+        if (!loadedOnce) null else this.list.size
+    }
+
+    private val reloadTasker = MonoTasker(backgroundScope)
+    val isLoading get() = reloadTasker.isRunning
+
+    private val reactionSubmitTasker = MonoTasker(backgroundScope)
+
+    /**
+     * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
+     */
+    suspend fun reload() {
+        freshLoaded = false
+        onReload()
+        freshLoaded = true
+        loadedOnce = true
+    }
+
+    fun loadMore() {
+        reloadTasker.launch {
+            onLoadMore()
+        }
+    }
+
+    fun submitReaction(commentId: Int, reactionId: Int) {
+        reactionSubmitTasker.launch {
+            onSubmitCommentReaction(commentId, reactionId)
+        }
+    }
+}
+
+
+@Immutable
+class UIRichText(val elements: List<UIRichElement>)
+
+@Immutable
+class UIComment(
+    val id: Int,
+    val creator: UserInfo?,
+    val content: UIRichText,
+    val createdAt: Long, // timestamp millis
+    val reactions: List<UICommentReaction>,
+    val briefReplies: List<UIComment>,
+    val replyCount: Int,
+    val rating: Int?,
+)
+
+@Immutable
+class UICommentReaction(
+    val id: Int,
+    val count: Int,
+    val selected: Boolean
+)
 
 object CommentDefaults {
     @Composable
@@ -211,27 +243,152 @@ object CommentDefaults {
     }
 
     @Composable
+    fun Reaction(
+        reaction: UICommentReaction,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
+    ) {
+        val backgroundColor by animateColorAsState(
+            if (reaction.selected) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                Color.Transparent
+            },
+        )
+        Surface(
+            onClick = onClick,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .then(modifier),
+            enabled = true,
+            shape = CircleShape,
+            color = backgroundColor,
+            border = SuggestionChipDefaults.suggestionChipBorder(true),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                val previewing = LocalIsPreviewing.current
+                val reactionDrawableRes = BangumiCommentSticker[reaction.id]
+
+                if (previewing || reactionDrawableRes == null) Icon(
+                    imageVector = Icons.Rounded.Face,
+                    modifier = Modifier.padding(end = 4.dp).size(24.dp),
+                    contentDescription = null,
+                ) else Icon(
+                    painter = painterResource(reactionDrawableRes),
+                    modifier = Modifier.padding(end = 4.dp).size(24.dp),
+                    contentDescription = null,
+                )
+
+                Text(
+                    text = reaction.count.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(end = 4.dp),
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun ReactionRow(
+        list: List<UICommentReaction>,
+        onClickItem: (reactionId: Int) -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        FlowRow(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            list.forEach {
+                Reaction(
+                    reaction = it,
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    onClick = { onClickItem(it.id) },
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun ActionRow(
+        onClickReply: () -> Unit,
+        modifier: Modifier = Modifier,
+        onClickReaction: () -> Unit,
+        onClickBlock: () -> Unit,
+        onClickReport: () -> Unit
+    ) {
+        val size = ActionButtonSize.dp
+        val iconSize = 20.dp
+        var actionRowExpanded by rememberSaveable { mutableStateOf(false) }
+        val expandableActionWidth by animateDpAsState(if (actionRowExpanded) size else 0.dp)
+        
+        Row(modifier = modifier) { 
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.onSurface.stronglyWeaken(),
+            ) {
+                ActionButton(
+                    imageVector = Icons.Outlined.ModeComment,
+                    contentDescription = "回复评论",
+                    onClick = onClickReply,
+                    iconSize = iconSize,
+                )
+
+                if (actionRowExpanded) {
+                    ActionButton(
+                        imageVector = Icons.Outlined.AddReaction,
+                        contentDescription = "添加表情",
+                        onClick = onClickReaction,
+                        iconSize = iconSize,
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
+                    )
+                    ActionButton(
+                        imageVector = Icons.Outlined.HeartBroken,
+                        contentDescription = "拉黑用户",
+                        onClick = onClickBlock,
+                        iconSize = iconSize,
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
+                    )
+                    ActionButton(
+                        imageVector = Icons.Outlined.Report,
+                        contentDescription = "举报用户",
+                        onClick = onClickReport,
+                        iconSize = iconSize,
+                        modifier = Modifier.size(height = size, width = expandableActionWidth),
+                    )
+                }
+
+                // 最后一个按钮不要有 ripple effect，因为有动画，看起来比较奇怪
+                ActionButton(
+                    imageVector = Icons.Outlined.MoreHoriz,
+                    contentDescription = "展开更多评论功能",
+                    iconSize = iconSize,
+                    onClick = { actionRowExpanded = true },
+                    modifier = Modifier.size(height = size, width = size - expandableActionWidth),
+                    hasIndication = false,
+                )
+            }
+        }
+    }
+
+    @Composable
     fun ReplyList(
         replies: List<UIComment>,
-        replyCount: Int = replies.size,
-        onClickUrl: (String) -> Unit = { },
-
-        ) {
+        onClickUrl: (String) -> Unit,
+        onClickExpand: () -> Unit,
+        modifier: Modifier = Modifier,
+        hiddenReplyCount: Int = 0
+    ) {
         val primaryColor = MaterialTheme.colorScheme.primary
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-        ) {
+        Column(modifier = modifier) {
             replies.forEach { reply ->
-                val prepended by remember {
-                    derivedStateOf {
-                        reply.content.prependText(
-                            prependix = "${reply.creator.nickname ?: reply.creator.id.toString()}：",
-                            color = primaryColor,
-                        )
-                    }
+                val prepended = remember(reply.content, primaryColor) {
+                    reply.content.prependText(
+                        prependix = "${reply.creator?.nickname ?: reply.creator?.id.toString()}：",
+                        color = primaryColor,
+                    )
                 }
                 RichText(
                     elements = prepended.elements,
@@ -241,22 +398,14 @@ object CommentDefaults {
                     onClickUrl = onClickUrl,
                 )
             }
-            if (replyCount > 3) {
-                val prepended by remember {
-                    derivedStateOf {
-                        UIRichText(emptyList()).prependText(
-                            prependix = "查看更多 ${replyCount - 3} 条回复>",
-                            color = primaryColor,
-                        )
-                    }
-                }
-
-                RichText(
-                    elements = prepended.elements,
+            if (hiddenReplyCount > 0) {
+                Text(
+                    text = "查看更多 $hiddenReplyCount 条回复>",
+                    color = primaryColor,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    onClickUrl = { },
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .clickable(onClick = onClickExpand),
                 )
             }
         }

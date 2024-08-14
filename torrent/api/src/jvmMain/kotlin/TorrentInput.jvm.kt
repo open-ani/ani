@@ -1,6 +1,7 @@
 package me.him188.ani.app.torrent.io
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.IOException
 import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.awaitFinished
@@ -8,8 +9,22 @@ import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.utils.io.BufferedInput
 import me.him188.ani.utils.io.SeekableInput
+import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.toFile
 import me.him188.ani.utils.platform.annotations.Range
 import java.io.RandomAccessFile
+
+@Suppress("FunctionName")
+@Throws(IOException::class)
+actual fun TorrentInput(
+    file: SystemPath,
+    pieces: List<Piece>, // must support random access
+    logicalStartOffset: Long, // 默认为第一个 piece 开头
+    onWait: suspend (Piece) -> Unit,
+    bufferSize: Int,
+    size: Long,
+): SeekableInput =
+    TorrentInput(RandomAccessFile(file.toFile(), "r"), pieces, logicalStartOffset, onWait, bufferSize, size)
 
 
 /**

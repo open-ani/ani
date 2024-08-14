@@ -57,7 +57,6 @@ sealed class SubtitleLanguage(
                 "Zh-Hans",
                 "Zh_Hans",
                 "zh_cn",
-                "SC",
                 "zh",
             )
 

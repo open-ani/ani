@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator
 import me.him188.ani.app.ui.foundation.indication.IndicatedBox
 import me.him188.ani.app.ui.subject.episode.list.cacheStatusIndicationColor
@@ -21,15 +22,15 @@ fun PlaySubjectButton(
     state: SubjectProgressState,
     modifier: Modifier = Modifier,
 ) {
-    val onPlay: () -> Unit = { state.episodeToPlay?.let { state.play(it.id) } }
+    val onPlay: () -> Unit = { state.episodeIdToPlay?.let { state.play(it) } }
     IndicatedBox(
         indicator = {
-            state.episodeToPlay?.let { episode ->
+            state.episodeIdToPlay?.let { episode ->
                 HorizontalIndicator(
                     6.dp,
                     CircleShape,
                     cacheStatusIndicationColor(
-                        state.episodeCacheStatus(episode.id),
+                        state.episodeCacheStatus(episode),
                         state.continueWatchingStatus is ContinueWatchingStatus.Watched,
                     ),
                     Modifier.offset(y = (-2).dp),
@@ -50,7 +51,7 @@ fun PlaySubjectButton(
             }
 
             ContinueWatchingStatus.Done -> {
-                FilledTonalButton({ state.episodeToPlay?.let { state.play(it.id) } }, modifier) {
+                FilledTonalButton({ state.episodeIdToPlay?.let { state.play(it) } }, modifier) {
                     Text("已看完", Modifier.requiredWidth(IntrinsicSize.Max), softWrap = false)
                 }
             }

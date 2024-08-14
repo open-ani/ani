@@ -30,6 +30,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
+            run_tests: true
           - os: ubuntu-20.04
             name: Ubuntu x86_64
             uploadApk: false
@@ -37,6 +38,7 @@ jobs:
             anitorrent: false
             anitorrent_separate_build: false
             compose_resource_triple: linux-x64
+            run_tests: false
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
@@ -44,6 +46,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
+            run_tests: true
           - os: macos-14
             name: macOS aarch64
             uploadApk: true
@@ -51,6 +54,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
+            run_tests: true
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -176,6 +180,7 @@ jobs:
 
 
       - name: Check
+        if: ${{ matrix.run_tests }}
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package Desktop
