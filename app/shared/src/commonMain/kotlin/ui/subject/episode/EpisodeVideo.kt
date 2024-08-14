@@ -127,12 +127,15 @@ internal fun EpisodeVideoImpl(
     // auto hide cursor
     val videoInteractionSource = remember { MutableInteractionSource() }
     val isVideoHovered by videoInteractionSource.collectIsHoveredAsState()
-    val showCursor by remember(videoControllerState) {
+    val showCursor by remember(videoControllerState, showEditDanmakuRegexFilterSideSheet, showSettings) {
         derivedStateOf {
             !isVideoHovered || (videoControllerState.visibility.bottomBar
-                    || videoControllerState.visibility.detachedSlider)
+                    || videoControllerState.visibility.detachedSlider
+                    || showEditDanmakuRegexFilterSideSheet
+                    || showSettings)
         }
     }
+
     CursorVisibilityEffect(
         key = Unit,
         visible = showCursor,
@@ -378,6 +381,7 @@ internal fun EpisodeVideoImpl(
                         rememberViewModel { EpisodeVideoSettingsViewModel(
                             onOverlayContentShow = { 
                                 showEditDanmakuRegexFilterSideSheet = true
+                                println("Pressed $showEditDanmakuRegexFilterSideSheet")
                             },
                         ) },
                     )
