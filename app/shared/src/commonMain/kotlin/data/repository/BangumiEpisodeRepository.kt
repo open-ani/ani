@@ -12,6 +12,13 @@ import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.EpisodeType
+import me.him188.ani.datasources.api.EpisodeType.ED
+import me.him188.ani.datasources.api.EpisodeType.MAD
+import me.him188.ani.datasources.api.EpisodeType.MainStory
+import me.him188.ani.datasources.api.EpisodeType.OP
+import me.him188.ani.datasources.api.EpisodeType.OTHER
+import me.him188.ani.datasources.api.EpisodeType.PV
+import me.him188.ani.datasources.api.EpisodeType.SP
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.processPagedResponse
@@ -148,7 +155,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = this.id,
-        type = EpisodeType.fromCodeOrOther(this.type),
+        type = getEpisodeTypeByBangumiCode(this.type),
         name = this.name,
         nameCn = this.nameCn,
         airDate = PackedDate.parseFromDate(this.airdate),
@@ -162,17 +169,26 @@ fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     )
 }
 
-fun getEpisodeSortByBangumiEpisodeCode(bangumiEpisodeTypeCode: Int): EpisodeType {
-    return EpisodeType.fromCodeOrOther(bangumiEpisodeTypeCode)
+private fun getEpisodeTypeByBangumiCode(code: Int): EpisodeType {
+    return when (code) {
+        0 -> MainStory
+        1 -> SP
+        2 -> OP
+        3 -> ED
+        4 -> PV
+        5 -> MAD
+        6 -> OTHER
+        else -> OTHER
+    }
 }
 
 fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = id,
-        type = EpisodeType.fromCodeOrOther(this.type),
+        type = getEpisodeTypeByBangumiCode(this.type),
         name = name,
         nameCn = nameCn,
-        sort = EpisodeSort(this.sort, getEpisodeSortByBangumiEpisodeCode(this.type)),
+        sort = EpisodeSort(this.sort, getEpisodeTypeByBangumiCode(this.type)),
         airDate = PackedDate.parseFromDate(this.airdate),
         comment = comment,
         duration = duration,
