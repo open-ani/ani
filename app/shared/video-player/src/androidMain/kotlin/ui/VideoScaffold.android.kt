@@ -132,6 +132,10 @@ private fun PreviewVideoScaffoldImpl(
             )
         },
         progressSliderState = progressSliderState,
+        danmakuRegexFilterList = emptyList(),
+        onAddDanmakuRegexFilter = {},
+        onRemoveDanmakuRegexFilter = {},
+        onSwitchDanmakuRegexFilter = {},
     )
 
 //    VideoScaffold(

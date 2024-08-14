@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.platform.currentPlatform
@@ -46,6 +47,7 @@ import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingInd
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EditDanmakuRegexFilterSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
@@ -98,10 +100,15 @@ internal fun EpisodeVideoImpl(
     progressSliderState: MediaProgressSliderState,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    danmakuRegexFilterList: List<DanmakuRegexFilter>,
+    onAddDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
+    onSwitchDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
+    onRemoveDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showEditDanmakuRegexFilterSideSheet by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
     VideoScaffold(
@@ -313,6 +320,19 @@ internal fun EpisodeVideoImpl(
             }
         },
         rhsSheet = {
+            if (showEditDanmakuRegexFilterSideSheet) {
+                showSettings = false
+                EditDanmakuRegexFilterSideSheet(
+                    danmakuRegexFilterList = danmakuRegexFilterList,
+                    onRemove = onRemoveDanmakuRegexFilter,
+                    onSwitch = onSwitchDanmakuRegexFilter,
+                    onAdd = onAddDanmakuRegexFilter,
+                    onDismissRequest = { 
+                        showEditDanmakuRegexFilterSideSheet = false
+                        showSettings = true },
+                )
+            }
+            
             if (showSettings) {
                 EpisodeVideoSettingsSideSheet(
                     onDismissRequest = { showSettings = false },
@@ -324,7 +344,11 @@ internal fun EpisodeVideoImpl(
                     },
                 ) {
                     EpisodeVideoSettings(
-                        rememberViewModel { EpisodeVideoSettingsViewModel() },
+                        rememberViewModel { EpisodeVideoSettingsViewModel(
+                            onOverlayContentShow = { 
+                                showEditDanmakuRegexFilterSideSheet = true
+                            },
+                        ) },
                     )
                 }
             }

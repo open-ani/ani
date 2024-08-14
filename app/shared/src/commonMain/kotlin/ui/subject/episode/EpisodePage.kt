@@ -569,6 +569,10 @@ private fun EpisodeVideo(
             )
         },
         progressSliderState = progressSliderState,
+        danmakuRegexFilterList = vm.danmakuRegexFilterList,
+        onAddDanmakuRegexFilter = {vm.addDanmakuRegexFilter(it)},
+        onRemoveDanmakuRegexFilter = {vm.removeDanmakuRegexFilter(it)},
+        onSwitchDanmakuRegexFilter =  {vm.switchDanmakuRegexFilter(it)},
     )
 }
 
