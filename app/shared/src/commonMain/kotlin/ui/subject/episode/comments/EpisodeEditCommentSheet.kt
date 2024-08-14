@@ -1,8 +1,9 @@
 package me.him188.ani.app.ui.subject.episode.comments
 
-import ModalBottomImeAwareSheet
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -12,9 +13,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.rememberImeMaxHeight
+import me.him188.ani.app.ui.foundation.widgets.ModalBottomImeAwareSheet
+import me.him188.ani.app.ui.foundation.widgets.rememberModalBottomImeAwareSheetState
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.EditComment
-import rememberModalBottomImeAwareSheetState
 
 @Composable
 fun EpisodeEditCommentSheet(
@@ -32,7 +34,10 @@ fun EpisodeEditCommentSheet(
     ModalBottomImeAwareSheet(
         state = sheetState,
         onDismiss = onDismiss,
-        modifier = Modifier.ifThen(!state.showStickerPanel) { imePadding() },
+        modifier = Modifier
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .ifThen(!state.showStickerPanel) { imePadding() },
     ) {
         EditComment(
             state = state,

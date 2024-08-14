@@ -1,16 +1,17 @@
+package me.him188.ani.app.ui.foundation.widgets
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
@@ -23,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -32,15 +32,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -61,7 +59,7 @@ class ModalBottomImeAwareSheetState {
 }
 
 /**
- * 与 [ModalBottomSheet] 相似, 但不使用 [imePadding].
+ * 与 [ModalBottomSheet] 相似, 但不使用 [imePadding] 和任何 [WindowInsets]
  *
  * 默认的 [ModalBottomSheet] 在 Android 平台总是为悬浮窗口添加了 [imePadding],
  * 此实现移除了 [imePadding].
@@ -109,11 +107,7 @@ fun ModalBottomImeAwareSheet(
             .collect { if (it) animateToDismiss() }
     }
 
-    val density = LocalDensity.current
-    val statusBarPadding by rememberUpdatedState(WindowInsets.statusBars.getTop(density))
-
-    // Popup on android always clip its composeView to visible 
-    Popup(
+    ModalBottomImeAwareSheetPopup(
         popupPositionProvider = remember {
             object : PopupPositionProvider {
                 override fun calculatePosition(
@@ -122,7 +116,7 @@ fun ModalBottomImeAwareSheet(
                     layoutDirection: LayoutDirection,
                     popupContentSize: IntSize
                 ): IntOffset {
-                    return IntOffset(0, statusBarPadding)
+                    return IntOffset.Zero
                 }
             }
         },
@@ -130,11 +124,11 @@ fun ModalBottomImeAwareSheet(
         properties = PlatformPopupProperties(
             focusable = true,
             usePlatformDefaultWidth = false,
-            usePlatformInsets = false,
+            excludeFromSystemGesture = false,
             clippingEnabled = false,
         ),
     ) {
-        BoxWithConstraints(Modifier.windowInsetsPadding(BottomSheetDefaults.windowInsets)) {
+        BoxWithConstraints {
             Canvas(
                 modifier = Modifier.fillMaxSize()
                     .clickable(
@@ -156,13 +150,8 @@ fun ModalBottomImeAwareSheet(
                 contentColor = contentColor,
                 tonalElevation = tonalElevation,
             ) {
-                Layout(
-                    modifier = modifier,
-                    content = content,
-                ) { measurable, constraint ->
-                    val placeable = measurable.single().measure(constraint.copy(minWidth = 0, minHeight = 0))
-                    sheetHeight = placeable.height
-                    layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
+                Box(modifier = modifier.onSizeChanged { sheetHeight = it.height }) {
+                    content()
                 }
             }
         }

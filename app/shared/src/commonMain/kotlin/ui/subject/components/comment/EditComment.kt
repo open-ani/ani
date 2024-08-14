@@ -194,7 +194,10 @@ fun EditCommentScaffold(
         }
 
         ProvideContentColor(contentColor) {
-            Crossfade(targetState = previewing) { previewing ->
+            Crossfade(
+                targetState = previewing,
+                modifier = Modifier.weight(1.0f, fill = false),
+            ) { previewing ->
                 content(previewing)
             }
             
