@@ -42,6 +42,8 @@ import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 /**
  * 评论编辑.
  *
+ * @param stickerPanelHeight 表情面板的高度，调用者可以提供 IME 高度来配合实现沉浸效果
+ *
  * @see EditCommentScaffold
  */
 @Composable
