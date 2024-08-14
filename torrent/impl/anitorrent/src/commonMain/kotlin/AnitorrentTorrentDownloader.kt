@@ -44,6 +44,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 
 internal expect fun createAnitorrentTorrentDownloader(
@@ -109,6 +110,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
      * 在 [startDownload] 时初始化, 用于缓存在调用 native startDownload 后, 到 [openSessions] 更新之前的事件.
      * 否则将会丢失事件.
      */
+    @Volatile
     protected var handleTaskBuffer: DisposableTaskQueue<AnitorrentTorrentDownloader<THandle, TAddInfo>>? = null
 
     /**
