@@ -55,6 +55,7 @@ import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
@@ -131,12 +132,14 @@ fun Comment(
                     reactionRow()
                 }
             }
-            if (actionRow != null) {
+            if (actionRow != null && isInDebugMode()) {
                 SelectionContainer(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     actionRow()
                 }
+            } else {
+                Spacer(Modifier.height(8.dp))
             }
             if (reply != null) {
                 Surface(
