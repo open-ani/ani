@@ -51,7 +51,7 @@ import kotlin.coroutines.CoroutineContext
 class AnitorrentDownloadSession(
     private val session: session_t, // we should hold session to prevent it from being GCed
     private val handle: torrent_handle_t,
-    override val saveDirectory: SystemPath,
+    private val saveDirectory: SystemPath,
     val fastResumeFile: SystemPath,
     private val onClose: (AnitorrentDownloadSession) -> Unit,
     private val onPostClose: (AnitorrentDownloadSession) -> Unit,
