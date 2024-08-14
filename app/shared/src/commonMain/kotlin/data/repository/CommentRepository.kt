@@ -28,6 +28,7 @@ class BangumiCommentRepositoryImpl(
         return PageBasedPagedSource { page ->
             try {
                 // 第一页先获取所有评论数量，获取失败则继续使用时间正序查询，也不会提供总计大小
+                // see: https://github.com/open-ani/ani/pull/634/files#r1716216199
                 if (page == 0) {
                     try {
                         // 查询一个不可能存在的评论，API 只会返回少量内容：一个空的数组和评论总大小

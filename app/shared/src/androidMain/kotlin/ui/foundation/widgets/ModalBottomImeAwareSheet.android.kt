@@ -14,6 +14,9 @@ import android.window.OnBackInvokedDispatcher
 import androidx.annotation.DoNotInline
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.DisposableEffect
@@ -32,6 +35,7 @@ import androidx.compose.ui.platform.ViewRootForInspector
 import androidx.compose.ui.semantics.popup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.SecureFlagPolicy
@@ -45,6 +49,22 @@ import java.util.UUID
 
 /**
  * Popup specific for modal bottom ime aware sheet.
+ *
+ * Taken from ModalBottomSheet.android.kt
+ *
+ * ### 为什么不用 [Popup]?
+ *
+ * 在安卓平台的实现中, [Popup] 使用的 Android window 无法配置为完整的屏幕大小. 其 window 总是排除
+ * 了 systemBar padding 和 navigationBar padding. 可能与 [WindowManager.LayoutParams.type] 有关.
+ *
+ * [ModalBottomImeAwareSheet] 需要默认可以显示完整的屏幕大小.
+ *
+ * ### 为什么不直接用 [ModalBottomSheet]?
+ *
+ * 在安卓平台的实现中, [ModalBottomSheet] 背后的 `ModalBottomSheetPopup` 强制添加了 [imePadding].
+ *
+ * [ModalBottomImeAwareSheet] 需要默认不包含任何 [WindowInsets] 和 padding.
+ * 
  */
 @Composable
 actual fun ModalBottomImeAwareSheetPopup(

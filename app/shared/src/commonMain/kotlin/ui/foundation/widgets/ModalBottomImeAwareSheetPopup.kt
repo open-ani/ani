@@ -5,7 +5,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 
 /**
- * Popup specific for modal bottom sheet.
+ * Popup specific for modal bottom ime aware sheet.
  */
 @Composable
 expect fun ModalBottomImeAwareSheetPopup(
