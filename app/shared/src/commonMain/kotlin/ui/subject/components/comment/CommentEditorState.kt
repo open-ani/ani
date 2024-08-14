@@ -11,6 +11,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.utils.coroutines.childScope
 import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 
@@ -23,8 +24,10 @@ class CommentEditorState(
     private val onSend: suspend (target: CommentContext, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
+    private val childScope = backgroundScope.childScope()
+    
     private val editor = CommentEditorTextState("")
-    private val previewer = CommentEditorPreviewerState(false, backgroundScope)
+    private val previewer = CommentEditorPreviewerState(false, childScope)
 
     private val sendTasker = MonoTasker(backgroundScope)
 
