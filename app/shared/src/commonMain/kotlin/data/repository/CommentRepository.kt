@@ -30,7 +30,8 @@ class BangumiCommentRepositoryImpl(
                 // 第一页先获取所有评论数量，获取失败则继续使用时间正序查询，也不会提供总计大小
                 if (page == 0) {
                     try {
-                        val response = client.getNextApi().subjectComments(subjectId, 1, 1).body()
+                        // 查询一个不可能存在的评论，API 只会返回少量内容：一个空的数组和评论总大小
+                        val response = client.getNextApi().subjectComments(subjectId, 99999999, 1).body()
                         setTotalSize(response.total)
                     } catch (_: Exception) {
                     }
@@ -46,6 +47,10 @@ class BangumiCommentRepositoryImpl(
                 val response = client.getNextApi()
                     .subjectComments(subjectId, 16, offset)
                     .body()
+
+                if (totalSize == null) {
+                    setTotalSize(response.total)
+                }
 
                 val list = response.list.map(BangumiNextSubjectInterestCommentListInner::toSubjectComment)
                 Paged.processPagedResponse(total = response.total, pageSize = 16, data = list)
