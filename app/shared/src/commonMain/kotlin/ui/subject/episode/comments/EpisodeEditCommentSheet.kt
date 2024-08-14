@@ -36,12 +36,14 @@ fun EpisodeEditCommentSheet(
         onDismiss = onDismiss,
         modifier = Modifier
             .navigationBarsPadding()
-            .ifThen(state.editExpanded) { statusBarsPadding() }
             .ifThen(!state.showStickerPanel) { imePadding() },
     ) {
         EditComment(
             state = state,
-            modifier = modifier.padding(top = contentPadding).padding(contentPadding),
+            modifier = modifier
+                .ifThen(state.editExpanded) { statusBarsPadding() }
+                .ifThen(!state.editExpanded) { padding(top = contentPadding) }
+                .padding(contentPadding),
             stickerPanelHeight = with(density) { imePresentMaxHeight.toDp() },
             focusRequester = focusRequester,
             onSendComplete = { sheetState.close() },
