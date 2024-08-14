@@ -9,12 +9,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.outlined.FormatBold
@@ -400,29 +401,26 @@ object EditCommentDefaults {
         modifier: Modifier = Modifier,
     ) {
         val previewing = LocalIsPreviewing.current
+        val scrollState = rememberScrollState()
 
-        LazyColumn(modifier = modifier) {
-            item {
-                FlowRow(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Start,
-                ) {
-                    list.forEach { sticker ->
-                        IconButton(onClick = { onClickItem(sticker.id) }) {
-                            if (previewing || sticker.drawableRes == null) {
-                                Icon(
-                                    Icons.Outlined.SentimentSatisfied,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            } else {
-                                Image(
-                                    painterResource(sticker.drawableRes),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            }
-                        }
+        FlowRow(
+            modifier = modifier.verticalScroll(scrollState),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            list.forEach { sticker ->
+                IconButton(onClick = { onClickItem(sticker.id) }) {
+                    if (previewing || sticker.drawableRes == null) {
+                        Icon(
+                            Icons.Outlined.SentimentSatisfied,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    } else {
+                        Image(
+                            painterResource(sticker.drawableRes),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                        )
                     }
                 }
             }
