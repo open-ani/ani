@@ -361,30 +361,34 @@ internal fun EpisodeVideoImpl(
                     onRemove = onRemoveDanmakuRegexFilter,
                     onSwitch = onSwitchDanmakuRegexFilter,
                     onAdd = onAddDanmakuRegexFilter,
-                    onDismissRequest = { 
+                    onDismissRequest = {
                         showEditDanmakuRegexFilterSideSheet = false
-                        showSettings = true },
-                )
-            }
-            
-            if (showSettings) {
-                EpisodeVideoSettingsSideSheet(
-                    onDismissRequest = { showSettings = false },
-                    title = { Text(text = "弹幕设置") },
-                    closeButton = {
-                        IconButton(onClick = { showSettings = false }) {
-                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
-                        }
+                        showSettings = true
                     },
-                ) {
-                    EpisodeVideoSettings(
-                        rememberViewModel { EpisodeVideoSettingsViewModel(
-                            onOverlayContentShow = { 
-                                showEditDanmakuRegexFilterSideSheet = true
-                                println("Pressed $showEditDanmakuRegexFilterSideSheet")
+                )
+            } else {
+                if (showSettings) {
+                    showEditDanmakuRegexFilterSideSheet = false
+                    EpisodeVideoSettingsSideSheet(
+                        onDismissRequest = { showSettings = false },
+                        title = { Text(text = "弹幕设置") },
+                        closeButton = {
+                            IconButton(onClick = { showSettings = false }) {
+                                Icon(Icons.Rounded.Close, contentDescription = "关闭")
+                            }
+                        },
+                    ) {
+                        EpisodeVideoSettings(
+                            rememberViewModel {
+                                EpisodeVideoSettingsViewModel(
+                                    onOverlayContentShow = {
+                                        showEditDanmakuRegexFilterSideSheet = true
+                                        println("Pressed $showEditDanmakuRegexFilterSideSheet")
+                                    },
+                                )
                             },
-                        ) },
-                    )
+                        )
+                    }
                 }
             }
 
