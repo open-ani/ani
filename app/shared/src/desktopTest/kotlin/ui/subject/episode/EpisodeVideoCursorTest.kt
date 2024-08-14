@@ -104,6 +104,10 @@ class EpisodeVideoCursorTest {
                     danmakuFrozen = true,
                     gestureFamily = gestureFamily,
                     modifier = Modifier.weight(1f),
+                    danmakuRegexFilterList = emptyList(),
+                    onAddDanmakuRegexFilter = {},
+                    onRemoveDanmakuRegexFilter = {},
+                    onSwitchDanmakuRegexFilter = {},
                 )
 
                 Column(Modifier.fillMaxHeight().requiredWidth(100.dp)) {

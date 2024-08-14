@@ -128,6 +128,10 @@ class EpisodeVideoControllerTest {
                 progressSliderState = progressSliderState,
                 danmakuFrozen = true,
                 gestureFamily = gestureFamily,
+                danmakuRegexFilterList = emptyList(),
+                onAddDanmakuRegexFilter = {},
+                onRemoveDanmakuRegexFilter = {},
+                onSwitchDanmakuRegexFilter = {},
             )
         }
     }
