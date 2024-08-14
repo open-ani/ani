@@ -35,8 +35,8 @@ fun EpisodeEditCommentSheet(
         state = sheetState,
         onDismiss = onDismiss,
         modifier = Modifier
-            .statusBarsPadding()
             .navigationBarsPadding()
+            .ifThen(state.editExpanded) { statusBarsPadding() }
             .ifThen(!state.showStickerPanel) { imePadding() },
     ) {
         EditComment(
