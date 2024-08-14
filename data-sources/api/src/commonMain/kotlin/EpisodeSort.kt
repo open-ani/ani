@@ -140,13 +140,17 @@ private fun getSpecialByRaw(raw: String): EpisodeSort {
         return Special(MAD, numStr.toFloat())
     }
     if (raw.length > 2) {
-        val typeStr = raw.subSequence(0, 2).toString()
-        val type = EpisodeType.valueOf(typeStr)
-        val numStr = raw.substringAfter(typeStr)
-        if (numStr.startsWith("0")) { // 个位数
-            return Special(type, numStr.substringAfter("0").toFloat())
+        return try {
+            val typeStr = raw.subSequence(0, 2).toString()
+            val type = EpisodeType.valueOf(typeStr)
+            val numStr = raw.substringAfter(typeStr)
+            if (numStr.startsWith("0")) { // 个位数
+                return Special(type, numStr.substringAfter("0").toFloat())
+            }
+            Special(type, numStr.toFloat())
+        } catch (exception: IllegalArgumentException) {
+            EpisodeSort.Unknown(raw)
         }
-        return Special(type, numStr.toFloat())
     }
     return EpisodeSort.Unknown(raw)
 }
