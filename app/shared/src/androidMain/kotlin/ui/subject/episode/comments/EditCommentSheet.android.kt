@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
@@ -30,6 +33,11 @@ fun PreviewEditComment() {
                             .toList(),
                     ),
                     onSend = { _, _ -> },
+                    richTextRenderer = {
+                        withContext(Dispatchers.Default) {
+                            with(CommentMapperContext) { parseBBCode(it) }
+                        }
+                    },
                     backgroundScope = scope.backgroundScope,
                 )
             },

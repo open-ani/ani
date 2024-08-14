@@ -19,7 +19,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -119,9 +118,9 @@ fun EditComment(
     ) { previewing ->
         ProvideContentColor(MaterialTheme.colorScheme.onSurface) {
             if (previewing) {
-                val richText by state.previewContent.collectAsState()
+                LaunchedEffect(Unit) { state.renderPreview() }
                 EditCommentDefaults.Preview(
-                    content = richText,
+                    content = state.previewContent,
                     modifier = Modifier
                         .fillMaxWidth()
                         .ifThen(state.editExpanded) { fillMaxHeight() }

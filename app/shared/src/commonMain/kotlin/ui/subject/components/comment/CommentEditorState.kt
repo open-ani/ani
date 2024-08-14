@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.components.comment
 
+import androidx.annotation.UiThread
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -11,7 +12,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.utils.coroutines.childScope
 import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 
@@ -21,13 +21,11 @@ class CommentEditorState(
     initialEditExpanded: Boolean,
     panelTitle: State<String?>,
     stickers: State<List<EditCommentSticker>>,
+    private val richTextRenderer: suspend (String) -> UIRichText,
     private val onSend: suspend (target: CommentContext, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    private val childScope = backgroundScope.childScope()
-    
     private val editor = CommentEditorTextState("")
-    private val previewer = CommentEditorPreviewerState(false, childScope)
 
     private val sendTasker = MonoTasker(backgroundScope)
 
@@ -38,8 +36,10 @@ class CommentEditorState(
     val sending: Boolean get() = sendTasker.isRunning
     
     val content get() = editor.textField
-    val previewing get() = previewer.previewing
-    val previewContent get() = previewer.list
+    var previewing by mutableStateOf(false)
+        private set
+    var previewContent: UIRichText? by mutableStateOf(null)
+        private set
 
     var editExpanded: Boolean by mutableStateOf(initialEditExpanded)
     val expandButtonState by derivedStateOf { if (!showExpandEditCommentButton) null else editExpanded }
@@ -56,7 +56,8 @@ class CommentEditorState(
             editor.override(TextFieldValue(""))
         }
         currentSendTarget = newTarget
-        previewer.closePreview()
+        previewing = false
+        previewContent = null
         editExpanded = false
     }
 
@@ -82,16 +83,15 @@ class CommentEditorState(
         editor.insertTextAt(value, cursorOffset)
     }
 
-    /**
-     * @see CommentEditorPreviewerState.closePreview
-     * @see CommentEditorPreviewerState.submitPreview
-     */
     fun togglePreview() {
-        if (previewing) {
-            previewer.closePreview()
-        } else {
-            previewer.submitPreview(editor.textField.text)
-        }
+        previewing = !previewing
+    }
+
+    @UiThread
+    suspend fun renderPreview() {
+        previewContent = null
+        val rendered = richTextRenderer(content.text)
+        previewContent = rendered
     }
 
     suspend fun send(context: CoroutineContext = Dispatchers.Default) {

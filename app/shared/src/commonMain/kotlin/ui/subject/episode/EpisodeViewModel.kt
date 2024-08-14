@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
@@ -38,6 +40,7 @@ import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.data.source.CommentLoader
+import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.MediaCacheManager
@@ -510,6 +513,11 @@ private class EpisodeViewModelImpl(
             .produceState(null),
         stickers = flowOf(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) })
             .produceState(emptyList()),
+        richTextRenderer = { text ->
+            withContext(Dispatchers.Default) {
+                with(CommentMapperContext) { parseBBCode(text) }
+            }
+        },
         onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )
