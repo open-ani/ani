@@ -1,11 +1,17 @@
 package me.him188.ani.datasources.api
 
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType.MAD
+import me.him188.ani.datasources.api.EpisodeType.OTHER
+import me.him188.ani.datasources.api.EpisodeType.PV
+import me.him188.ani.datasources.api.EpisodeType.SP
 import me.him188.ani.test.DynamicTestsResult
 import me.him188.ani.test.TestContainer
 import me.him188.ani.test.TestFactory
 import me.him188.ani.test.dynamicTest
 import me.him188.ani.test.permutedSequence
 import me.him188.ani.test.runDynamicTests
+import me.him188.ani.utils.serialization.BigNum
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import me.him188.ani.datasources.api.EpisodeSort as ep
@@ -28,10 +34,14 @@ class EpisodeSortTest {
                 "0.5" to normal(0.5f),
                 "05.5" to normal(5.5f),
                 "30.5" to normal(30.5f),
-                "-1" to special("-1"),
-                "1.1" to special("1.1"),
-                "SP1" to special("SP1"),
-                "SP1.5" to special("SP1.5"),
+                "-1" to special(OTHER, -1f),
+                "1.1" to EpisodeSort.Unknown("1.1"),
+                "SP1" to special(SP, 1f),
+                "SP02" to special(SP, 2f),
+                "SP1.5" to special(SP, 1.5f),
+                "MAD1" to special(MAD, 1f),
+                "MAD02" to special(MAD, 2f),
+                "S" to EpisodeSort.Unknown("S"),
             ).map {
                 dynamicTest(it.first) {
                     val (raw, expected) = it
@@ -56,10 +66,10 @@ class EpisodeSortTest {
                 normal(0.5f) to "0.5",
                 normal(5.5f) to "5.5",
                 normal(30.5f) to "30.5",
-                special("-1") to "-1",
-                special("1.1") to "1.1",
-                special("s") to "s",
-                special("SP1") to "SP1",
+                special(SP, -1f) to "SP-1",
+                special(MAD, 1.5f) to "MAD1.5",
+                special(OTHER, -999f) to "OTHER-999",
+                EpisodeSort.Unknown("S") to "S",
             ).map {
                 dynamicTest(it.second) {
                     val (raw, expected) = it
@@ -76,9 +86,9 @@ class EpisodeSortTest {
             normal(1f) to normal(1f),
             normal(1.5f) to normal(1.5f),
             normal(0f) to normal(0f),
-            special("1") to special("1"),
-            special("2") to special("2"),
-            special("SP") to special("SP"),
+            special(SP, 1f) to special(SP, 1f),
+            special(MAD, 2f) to special(MAD, 2f),
+            EpisodeSort.Unknown("S") to EpisodeSort.Unknown("S"),
         ).map {
             dynamicTest(it.toString()) {
                 val (a, b) = it
@@ -93,9 +103,10 @@ class EpisodeSortTest {
     fun `not equals`() = runDynamicTests(
         listOf(
             normal(1f) to normal(2f),
-            normal(1f) to special("1"),
-            special("1.0") to special("1"),
-            special("1 ") to special("1"),
+            normal(1f) to special(SP, 1f),
+            special(PV, 1.5f) to special(PV, 1f),
+            special(MAD, 1.0f) to special(PV, 1f),
+            EpisodeSort.Unknown("1 ") to EpisodeSort.Unknown("1"),
         ).map {
             dynamicTest(it.toString()) {
                 val (a, b) = it
@@ -110,11 +121,11 @@ class EpisodeSortTest {
     fun compare() = runDynamicTests(
         listOf(
             // Original to Sorted Ascending
-            "int" to listOf(ep(1), ep(2), ep(3)),
-            "float" to listOf(ep(1), ep("1.5"), ep("2"), ep(3)),
+            "int" to listOf(ep(BigNum(1)), ep(BigNum(2)), ep(BigNum(3))),
+            "float" to listOf(ep(BigNum(1)), ep("1.5"), ep("2"), ep(BigNum(3))),
             "sp" to listOf(ep("SP1"), ep("SP2")),
-            "int with sp" to listOf(ep(1), ep(3), ep("SP1")),
-            "float with sp" to listOf(ep("1.5"), ep(3), ep("SP1")),
+            "int with sp" to listOf(ep(BigNum(1)), ep(BigNum(3)), ep("SP1")),
+            "float with sp" to listOf(ep("1.5"), ep(BigNum(3)), ep("SP1")),
         ).flatMap { (name, sorted) ->
             sorted.permutedSequence().map { unsorted ->
                 dynamicTest("$name: $unsorted => $sorted") {

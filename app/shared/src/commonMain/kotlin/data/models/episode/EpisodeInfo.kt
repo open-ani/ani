@@ -55,37 +55,4 @@ val EpisodeInfo.isKnownOnAir
     get() = airDate.isValid && airDate > PackedDate.now() // TODO: consider time 
 
 @Stable
-fun EpisodeInfo.renderEpisodeEp() = when (type) {
-    EpisodeType.MainStory -> { // 本篇
-        sort.toString()
-    } // "01", "12", "26", "120"
-
-    EpisodeType.SP -> { // SP
-        "SP$sort"
-    } // "SP", "SP1", "SP10"
-
-    EpisodeType.OP -> { // OP
-        "OP$sort"
-    } // "OP"
-
-    EpisodeType.ED -> { // ED
-        "ED$sort"
-    } // "ED"
-
-    EpisodeType.PV -> { // PV
-        "PV$sort"
-    } // "PV"
-
-    EpisodeType.MAD -> { // MAD
-        "MAD$sort"
-    } // "MAD"
-
-    EpisodeType.OTHER -> { // OTHER
-        "OTHER$sort"
-    } // "OTHER"
-
-    else -> {
-        "OTHER$sort"
-    } // "OTHER"
-}
-
+fun EpisodeInfo.renderEpisodeEp() = sort.toString()

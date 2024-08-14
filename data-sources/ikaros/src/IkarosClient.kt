@@ -91,20 +91,13 @@ class IkarosClient(
         val mediaMatchs = mutableListOf<MediaMatch>()
         val epSortNumber = if (episodeSort.number == null) 1 else episodeSort.number
         val ikarosEpisodeGroup = if (episodeSort is EpisodeSort.Special) {
-            val epNumStr = if (episodeSort.number?.rem(1) == 0f) { // 有小数部分
-                episodeSort.number!!.toInt().toString()
-            } else {
-                episodeSort.number.toString()
-            }
-            val typeStr = if (epNumStr == "1") episodeSort.toString()
-            else episodeSort.toString().substringBefore(epNumStr)
-            when (typeStr) {
-                EpisodeType.SP.value -> IkarosEpisodeGroup.SPECIAL_PROMOTION
-                EpisodeType.OP.value -> IkarosEpisodeGroup.OPENING_SONG
-                EpisodeType.ED.value -> IkarosEpisodeGroup.ENDING_SONG
-                EpisodeType.PV.value -> IkarosEpisodeGroup.PROMOTION_VIDEO
-                EpisodeType.MAD.value -> IkarosEpisodeGroup.SMALL_THEATER
-                EpisodeType.OTHER.value -> IkarosEpisodeGroup.OTHER
+            when (episodeSort.type) {
+                EpisodeType.SP -> IkarosEpisodeGroup.SPECIAL_PROMOTION
+                EpisodeType.OP -> IkarosEpisodeGroup.OPENING_SONG
+                EpisodeType.ED -> IkarosEpisodeGroup.ENDING_SONG
+                EpisodeType.PV -> IkarosEpisodeGroup.PROMOTION_VIDEO
+                EpisodeType.MAD -> IkarosEpisodeGroup.SMALL_THEATER
+                EpisodeType.OTHER -> IkarosEpisodeGroup.OTHER
                 else -> IkarosEpisodeGroup.MAIN
             }
         } else {
