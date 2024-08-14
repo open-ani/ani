@@ -48,7 +48,6 @@ fun EditDanmakuRegexFilterSideSheet(
         modifier = modifier,
     ) {
         var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
-        var regexTextFieldOutlineTitleColor by rememberSaveable { mutableStateOf(Color.Unspecified) }
         var regexTextFieldOutlineTitleText by rememberSaveable { mutableStateOf("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") }
 
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -65,12 +64,10 @@ fun EditDanmakuRegexFilterSideSheet(
                             regexTextFieldValue = it
                             regexTextFieldOutlineTitleText =
                                 "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
-                            regexTextFieldOutlineTitleColor = Color.Unspecified
                         },
                         label = {
                             Text(
                                 text = regexTextFieldOutlineTitleText,
-                                color = regexTextFieldOutlineTitleColor,
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -90,7 +87,6 @@ fun EditDanmakuRegexFilterSideSheet(
                                 )
                             } else {
                                 regexTextFieldOutlineTitleText = "正则输入法不能为空"
-                                regexTextFieldOutlineTitleColor = Color.Red
                             }
                         },
                     ) {
