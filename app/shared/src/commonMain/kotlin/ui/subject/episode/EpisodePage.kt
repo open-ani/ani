@@ -197,7 +197,7 @@ private fun EpisodeSceneTabletVeryWide(
             vm.playerState.resume()
         }
     }
-    
+
     BoxWithConstraints {
         val maxWidth = maxWidth
         Row(
@@ -314,7 +314,7 @@ private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
 ) {
-    
+
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
@@ -333,7 +333,7 @@ private fun EpisodeSceneContentPhone(
             vm.playerState.resume()
         }
     }
-    
+
     LaunchedEffect(true) {
         vm.episodeCommentState.reload()
     }
@@ -545,8 +545,8 @@ private fun EpisodeVideo(
             )
         },
         danmakuHostState = videoDanmakuState.danmakuHostState,
-        danmakuEnabled = videoDanmakuState.currentEnabled,
-        onToggleDanmaku = { videoDanmakuState.currentEnabled = !videoDanmakuState.currentEnabled },
+        danmakuEnabled = videoDanmakuState.enabled,
+        onToggleDanmaku = { videoDanmakuState.setEnabled(!videoDanmakuState.enabled) },
         videoLoadingState = { vm.videoStatistics.videoLoadingState },
         danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {

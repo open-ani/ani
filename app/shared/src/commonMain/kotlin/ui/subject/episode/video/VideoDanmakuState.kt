@@ -154,7 +154,6 @@ interface VideoDanmakuState {
     val config: DanmakuConfig
 
     val enabled: Boolean
-    var currentEnabled: Boolean
     val isSettingEnabled: Boolean
     fun setEnabled(enabled: Boolean)
 
@@ -177,7 +176,6 @@ class VideoDanmakuStateImpl(
     override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuTrackProperties)
 
     override val enabled: Boolean by danmakuEnabled
-    override var currentEnabled: Boolean by mutableStateOf(enabled)
     override val isSettingEnabled: Boolean get() = setEnabledTasker.isRunning
     private val setEnabledTasker = MonoTasker(backgroundScope)
     override fun setEnabled(enabled: Boolean) {
