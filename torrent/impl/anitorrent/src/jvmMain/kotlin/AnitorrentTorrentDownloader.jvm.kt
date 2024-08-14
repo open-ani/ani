@@ -24,6 +24,10 @@ import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_resume_data_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_state_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
+import me.him188.ani.app.torrent.anitorrent.session.AnitorrentDownloadSession
+import me.him188.ani.app.torrent.anitorrent.session.SwigAnitorrentHandle
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentResumeData
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentStats
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
@@ -185,7 +189,7 @@ class AnitorrentTorrentDownloader(
         override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
             data ?: return
             dispatchToSession(handleId) {
-                it.onSaveResumeData(data)
+                it.onSaveResumeData(SwigTorrentResumeData(data))
             }
         }
 
@@ -219,7 +223,7 @@ class AnitorrentTorrentDownloader(
         override fun on_status_update(handleId: Long, stats: torrent_stats_t?) {
             stats ?: return
             dispatchToSession(handleId) {
-                it.onStatsUpdate(stats)
+                it.onStatsUpdate(SwigTorrentStats(stats))
             }
         }
 
@@ -240,7 +244,7 @@ class AnitorrentTorrentDownloader(
                 // 在这里 runBlocking 是没问题的, 因为 on_torrent_removed 一定只会在 actualTorrentInfo 之后调用
                 runBlocking(Dispatchers.IO) {
                     openSessions.value.values.firstOrNull { session ->
-                        session.getName() == torrentName 
+                        session.getName() == torrentName
                     }
                 }?.onTorrentRemoved()
             }
@@ -274,8 +278,8 @@ class AnitorrentTorrentDownloader(
             if (cacheFile.exists()) {
                 val data = cacheFile.readText().hexToByteArray()
                 logger.info { "HTTP torrent file '${uri}' found in cache: $cacheFile, length=${data.size}" }
-                return AnitorrentTorrentInfo.encode(
-                    AnitorrentTorrentInfo(
+                return AnitorrentAddTorrentInfo.encode(
+                    AnitorrentAddTorrentInfo(
                         AnitorrentTorrentData.TorrentFile(data),
                         httpTorrentFilePath = cacheFile.absolutePath,
                     ),
@@ -286,8 +290,8 @@ class AnitorrentTorrentDownloader(
             logger.info { "Fetching http url success, file length = ${data.size}" }
             cacheFile.writeText(data.toHexString())
             logger.info { "Saved cache file: $cacheFile" }
-            return AnitorrentTorrentInfo.encode(
-                AnitorrentTorrentInfo(
+            return AnitorrentAddTorrentInfo.encode(
+                AnitorrentAddTorrentInfo(
                     AnitorrentTorrentData.TorrentFile(data),
                     httpTorrentFilePath = cacheFile.absolutePath,
                 ),
@@ -295,8 +299,8 @@ class AnitorrentTorrentDownloader(
         }
 
         require(uri.startsWith("magnet")) { "Expected uri to start with \"magnet\": $uri" }
-        return AnitorrentTorrentInfo.encode(
-            AnitorrentTorrentInfo(
+        return AnitorrentAddTorrentInfo.encode(
+            AnitorrentAddTorrentInfo(
                 AnitorrentTorrentData.MagnetUri(uri),
                 httpTorrentFilePath = null,
             ),
@@ -348,7 +352,7 @@ class AnitorrentTorrentDownloader(
     ): TorrentDownloadSession = withHandleTaskQueue {
         // 这个函数的 native 部分跑得也都很快, 整个函数十几毫秒就可以跑完, 所以 lock 也不会影响性能 (刚启动时需要尽快恢复 resume)
 
-        val info = AnitorrentTorrentInfo.decodeFrom(data)
+        val info = AnitorrentAddTorrentInfo.decodeFrom(data)
         val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
         val fastResumeFile = saveDir.resolve(FAST_RESUME_FILENAME)
 
@@ -389,11 +393,11 @@ class AnitorrentTorrentDownloader(
         }
 
         return@withHandleTaskQueue AnitorrentDownloadSession(
-            this.nativeSession, handle,
+            SwigAnitorrentHandle(this.nativeSession, handle),
             saveDir,
             fastResumeFile = fastResumeFile,
             onClose = { nativeSession.release_handle(handle) },
-            onPostClose = { openSessions.value -= data.data.contentHashCode().toString() }, 
+            onPostClose = { openSessions.value -= data.data.contentHashCode().toString() },
             onDelete = {
                 scope.launch {
                     // http 下载的 .torrent 文件保存在全局路径, 需要删除
