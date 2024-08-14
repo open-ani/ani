@@ -86,7 +86,7 @@ private fun BangumiNextSubjectInterestCommentListInner.toSubjectComment() = Subj
         UserInfo(
             id = u.id,
             nickname = u.nickname,
-            username = u.id.toString(),
+            username = null,
             avatarUrl = u.avatar.medium,
         ) // 没有username
     },
