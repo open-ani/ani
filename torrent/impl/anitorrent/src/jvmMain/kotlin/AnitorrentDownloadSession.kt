@@ -23,7 +23,6 @@ import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_resume_data_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
-import me.him188.ani.app.torrent.api.TorrentDownloadState
 import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
 import me.him188.ani.app.torrent.api.files.DownloadStats
 import me.him188.ani.app.torrent.api.files.FilePriority
@@ -78,9 +77,6 @@ class AnitorrentDownloadSession(
             }
         }
     }
-
-    override val state: MutableStateFlow<TorrentDownloadState> =
-        MutableStateFlow(TorrentDownloadState.Starting)
 
     override val overallStats: MutableDownloadStats = MutableDownloadStats()
 
@@ -406,7 +402,7 @@ class AnitorrentDownloadSession(
 
     @Volatile
     private var closed = false
-    
+
     override suspend fun close() {
         if (closed) { // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
             closingDeferred.await()
@@ -416,7 +412,6 @@ class AnitorrentDownloadSession(
         kotlin.run {
             synchronized(this) {
                 if (closed) return@synchronized // 多次调用此 close 会等待同一个 deferred, 完成时一起返回
-                state.value = TorrentDownloadState.Closed
                 closed = true
                 return@run // set close = true, 跳出 run lambda 并真正执行 onClose() 并等待
             }
