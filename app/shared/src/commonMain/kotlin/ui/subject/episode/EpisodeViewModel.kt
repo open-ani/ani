@@ -507,7 +507,8 @@ private class EpisodeViewModelImpl(
         panelTitle = subjectInfo
             .combine(episodeInfo) { sub, epi -> "${sub.displayName} ${epi?.renderEpisodeEp()}" }
             .produceState(null),
-        stickerProvider = flowOf(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) }),
+        stickers = flowOf(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) })
+            .produceState(emptyList()),
         onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )

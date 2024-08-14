@@ -10,11 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.foundation.produceState
 import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 
@@ -23,7 +19,7 @@ class CommentEditorState(
     showExpandEditCommentButton: Boolean,
     initialEditExpanded: Boolean,
     panelTitle: State<String?>,
-    stickerProvider: Flow<List<EditCommentSticker>>,
+    stickers: State<List<EditCommentSticker>>,
     private val onSend: suspend (target: CommentContext, content: String) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
@@ -47,9 +43,7 @@ class CommentEditorState(
     
     var showStickerPanel: Boolean by mutableStateOf(false)
         private set
-    val stickers by stickerProvider
-        .stateIn(backgroundScope, SharingStarted.Lazily, listOf())
-        .produceState(emptyList(), backgroundScope)
+    val stickers by stickers
 
     /**
      * 连续开关为同一个评论的编辑框将保存编辑内容和编辑框状态
