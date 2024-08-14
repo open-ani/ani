@@ -114,7 +114,7 @@ internal fun EpisodeVideoImpl(
     danmakuRegexFilterList: List<DanmakuRegexFilter>,
     onAddDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
     onSwitchDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
-    onRemoveDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit
+    onRemoveDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
     danmakuFrozen: Boolean = false,
     gestureFamily: GestureFamily = currentPlatform.mouseFamily,
 ) {
