@@ -5,6 +5,9 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -41,6 +44,7 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.effects.CursorVisibilityEffect
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
@@ -113,9 +117,23 @@ internal fun EpisodeVideoImpl(
     var showSettings by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
+    // auto hide cursor
+    val videoInteractionSource = remember { MutableInteractionSource() }
+    val isVideoHovered by videoInteractionSource.collectIsHoveredAsState()
+    val showCursor by remember(videoControllerState) {
+        derivedStateOf {
+            !isVideoHovered || (videoControllerState.visibility.bottomBar
+                    || videoControllerState.visibility.detachedSlider)
+        }
+    }
+    CursorVisibilityEffect(
+        key = Unit,
+        visible = showCursor,
+    )
+
     VideoScaffold(
         expanded = expanded,
-        modifier = modifier,
+        modifier = modifier.hoverable(videoInteractionSource),
         maintainAspectRatio = maintainAspectRatio,
         controllerState = videoControllerState,
         gestureLocked = { isLocked },

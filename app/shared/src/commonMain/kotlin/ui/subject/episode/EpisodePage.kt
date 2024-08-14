@@ -83,7 +83,6 @@ import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
-import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
@@ -185,10 +184,10 @@ private fun EpisodeSceneTabletVeryWide(
         ) {
             EpisodeVideo(
                 vm,
+                vm.videoControllerState,
                 expanded = true,
-                maintainAspectRatio = false,
-                initialControllerVisibility = ControllerVisibility.Visible,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
+                maintainAspectRatio = false,
             )
 
             if (vm.isFullscreen) {
@@ -285,7 +284,7 @@ private fun EpisodeSceneContentPhone(
         videoOnly = vm.isFullscreen,
         commentCount = { vm.episodeCommentState.count },
         video = {
-            EpisodeVideo(vm, vm.isFullscreen, Modifier)
+            EpisodeVideo(vm, vm.videoControllerState, vm.isFullscreen)
         },
         episodeDetails = {
             EpisodeDetails(
@@ -430,15 +429,19 @@ fun EpisodeSceneContentPhoneScaffold(
 @Composable
 private fun EpisodeVideo(
     vm: EpisodeViewModel,
+    videoControllerState: VideoControllerState,
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    initialControllerVisibility: ControllerVisibility = ControllerVisibility.Invisible,
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    val videoControllerState = remember { VideoControllerState(initialControllerVisibility) }
+    OnLifecycleEvent {
+        if (it == Lifecycle.State.Active) {
+            videoControllerState.toggleFullVisible(false) // 每次切换全屏后隐藏
+        }
+    }
     val videoDanmakuState = vm.danmaku
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
@@ -533,7 +536,8 @@ private fun EpisodeVideo(
             )
         },
         configProvider = remember(vm) { { vm.videoScaffoldConfig } },
-        modifier = modifier.fillMaxWidth().background(Color.Black)
+        modifier = modifier
+            .fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
         sideSheets = {

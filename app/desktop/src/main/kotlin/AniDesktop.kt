@@ -256,7 +256,12 @@ object AniDesktop {
                 CompositionLocalProvider(
                     LocalContext provides context,
                     LocalWindowState provides windowState,
-                    LocalPlatformWindow provides remember(window.windowHandle) { PlatformWindow(windowHandle = window.windowHandle) },
+                    LocalPlatformWindow provides remember(window.windowHandle) {
+                        PlatformWindow(
+                            windowHandle = window.windowHandle,
+                            composeWindow = window,
+                        )
+                    },
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true
