@@ -1,12 +1,10 @@
 package me.him188.ani.app.torrent.anitorrent.session
 
-import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
 import me.him188.ani.app.torrent.api.files.FilePriority
 
 class SwigAnitorrentHandle(
-    private val session: session_t, // hold reference to prevent gc
     private val native: torrent_handle_t,
 ) : AnitorrentHandle {
     override val id: Any = native.id
