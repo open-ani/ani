@@ -18,7 +18,7 @@ class PlayerSkipOpEdState(
     private val onSkip: (targetMillis: Long) -> Unit,
     videoLength: State<Duration>,
 ) {
-    private var currentChapter: CurrentChapter? by mutableStateOf(null) 
+    private var currentChapter: CurrentChapter? by mutableStateOf(null)
     private val opEdChapters by derivedStateOf {
         chapters.value.filter {
             OpEdLength.fromVideoLengthOrNull(videoLength.value)
@@ -29,12 +29,13 @@ class PlayerSkipOpEdState(
     val skipped: Boolean by derivedStateOf {
         currentChapter?.skipped ?: false
     }
+
     val showSkipTips: Boolean by derivedStateOf {
         currentChapter != null && !skipped
     }
 
     fun cancelSkipOpEd() {
-        currentChapter = opEdChapters.find { it == currentChapter }?.apply { this.skipped = true }?.copy()
+        currentChapter?.skipped = true
     }
 
 
@@ -49,22 +50,26 @@ class PlayerSkipOpEdState(
         // 在显示跳过提示范围
         opEdChapters.find { it.chapter.offsetMillis in currentPos - 1000..currentPos + 5000 }?.let {
             if (currentChapter == null) {
-                currentChapter = it.copy()
+                currentChapter = it
             }
         } ?: run {
+            currentChapter?.skipped = true
             currentChapter = null
         }
         // 在跳过 OP/ED 范围
-        opEdChapters.find { it.chapter.offsetMillis in currentPos - 1000..currentPos }?.run {
-            if (currentChapter?.skipped == true) return
+        currentChapter?.takeIf { it.chapter.offsetMillis in currentPos - 1000..currentPos }?.run {
+            if (skipped) return@run
             onSkip(chapter.offsetMillis + chapter.durationMillis)
-            this.skipped = true
+            skipped = true
             currentChapter = null
         }
     }
 }
 
-data class CurrentChapter(val chapter: Chapter, var skipped: Boolean)
+@Stable
+class CurrentChapter(val chapter: Chapter, skipped: Boolean) {
+    var skipped by mutableStateOf(skipped)
+}
 
 fun interface OpEdLength {
     fun isOpEdChapter(chapterLength: Duration): Boolean

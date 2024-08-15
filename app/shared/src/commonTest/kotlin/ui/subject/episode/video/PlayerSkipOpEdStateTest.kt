@@ -77,6 +77,30 @@ class PlayerSkipOpEdStateTest {
             assertEquals(false, state.showSkipTips)
             assertEquals(false, state.skipped)
         }
+
+        /**
+         * 成功自动跳过 OP 后, 用户又回到 OP 开头, 此时不能触发自动跳过
+         */
+        @Test
+        fun `after skip op and return to op`() {
+            var skipTime = 0L
+            val localState = createState_opChapterOnStart_24minutes() {
+                skipTime = it
+            }
+            // 到达 OP 开头
+            localState.update(0L)
+            assertEquals(90_000L, skipTime)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 跳过 OP
+            localState.update(skipTime)
+            skipTime = 0L
+            // 回到 OP 开头
+            localState.update(0L)
+            assertEquals(0L, skipTime)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipped)
+        }
     }
 
     class `OP chapter on chapter 2` {
@@ -316,6 +340,31 @@ class PlayerSkipOpEdStateTest {
             // 回到 OP 开头
             localState.update(10_000L)
             assertEquals(0L, skipTime)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipped)
+        }
+
+        @Test
+        fun `from not show skip tips and seek to after op then return to show skip tips and reach op start`() {
+            var skipTime = 0L
+            val localState = createState_opChapterOnChapter2_24minutes {
+                skipTime = it
+            }
+            // 到达 OP 前10秒
+            localState.update(0)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 滑到 OP 后
+            localState.update(110_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 回到显示跳过提示
+            localState.update(7_000L)
+            assertEquals(true, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 到达 OP 开头
+            localState.update(10_000L)
+            assertEquals(100_000L, skipTime)
             assertEquals(false, localState.showSkipTips)
             assertEquals(false, localState.skipped)
         }
