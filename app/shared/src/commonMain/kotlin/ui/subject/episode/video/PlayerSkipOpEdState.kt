@@ -23,18 +23,18 @@ class PlayerSkipOpEdState(
         chapters.value.filter {
             OpEdLength.fromVideoLengthOrNull(videoLength.value)
                 ?.isOpEdChapter(it.durationMillis.milliseconds) == true
-        }.map { CurrentChapter(chapter = it, true) }
+        }.map { CurrentChapter(chapter = it, false) }
     }
 
     val skipped: Boolean by derivedStateOf {
         currentChapter?.skipped ?: false
     }
     val showSkipTips: Boolean by derivedStateOf {
-        currentChapter != null && skipped
+        currentChapter != null && !skipped
     }
 
     fun cancelSkipOpEd() {
-        currentChapter = opEdChapters.find { it == currentChapter }?.apply { this.skipped = false }?.copy()
+        currentChapter = opEdChapters.find { it == currentChapter }?.apply { this.skipped = true }?.copy()
     }
 
 
@@ -55,9 +55,10 @@ class PlayerSkipOpEdState(
             currentChapter = null
         }
         // 在跳过 OP/ED 范围
-        opEdChapters.map { it.chapter }.find { it.offsetMillis in currentPos - 1000..currentPos }?.run {
-            if (currentChapter?.skipped == false) return
-            onSkip(offsetMillis + durationMillis)
+        opEdChapters.find { it.chapter.offsetMillis in currentPos - 1000..currentPos }?.run {
+            if (currentChapter?.skipped == true) return
+            onSkip(chapter.offsetMillis + chapter.durationMillis)
+            this.skipped = true
             currentChapter = null
         }
     }
