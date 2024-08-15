@@ -3,14 +3,7 @@ package me.him188.ani.app.torrent.api.files
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import kotlin.jvm.JvmInline
 
-interface TorrentInfo {
-    /**
-     * [TorrentDownloader.fetchTorrent] 的时候使用的 URI.
-     * 对于旧版本数据此项为 `null`.
-     */
-    @Deprecated("to be removed by 3.5.0", ReplaceWith("data"))
-    val originalUri: String?
-}
+interface AddTorrentInfo
 
 @JvmInline
 value class EncodedTorrentInfo private constructor(

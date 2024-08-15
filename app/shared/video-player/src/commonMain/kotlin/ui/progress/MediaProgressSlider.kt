@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -51,9 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.platform.isMobile
@@ -70,6 +67,8 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+
+internal const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
 
 /**
  * 播放器进度滑块的状态.
@@ -98,22 +97,9 @@ class MediaProgressSliderState(
     val chapters by chapters
 
     private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
-    private val previewRequests = SnapshotStateList<Any>()
 
-    fun setRequestPreview(requester: Any, isPreview: Boolean) {
-        if (isPreview) {
-            previewRequests.add(requester)
-        } else {
-            previewRequests.remove(requester)
-        }
-
-        if (previewRequests.isEmpty()) {
-            finishPreview()
-        }
-    }
-
-    val preview: Boolean by derivedStateOf {
-        previewRequests.isNotEmpty()
+    val isPreviewing: Boolean by derivedStateOf {
+        !previewPositionRatio.isNaN()
     }
 
     /**
@@ -159,9 +145,12 @@ fun rememberMediaProgressSliderState(
     onPreviewFinished: (positionMillis: Long) -> Unit,
 ): MediaProgressSliderState {
     val currentPosition by playerState.currentPositionMillis.collectAsStateWithLifecycle()
-    val totalDuration by remember(playerState) {
-        playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(0L)
+    val videoProperties by playerState.videoProperties.collectAsStateWithLifecycle()
+    val totalDuration by remember {
+        derivedStateOf {
+            videoProperties?.durationMillis ?: 0L
+        }
+    }
 
     val onPreviewUpdated by rememberUpdatedState(onPreview)
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
@@ -194,6 +183,7 @@ fun MediaProgressSlider(
     previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
     enabled: Boolean = true,
+    showPreviewTimeTextOnThumb: Boolean = true,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -343,7 +333,9 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
-                if (state.preview) {
+                
+                // 仅在 detached slider 上显示
+                if (state.isPreviewing && showPreviewTimeTextOnThumb) {
                     ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
                         previewTimeBackgroundColor = previewTimeBackgroundColor,
@@ -436,6 +428,7 @@ fun ProgressSliderPreviewPopup(
     ) {
         Box(
             modifier = modifier
+                .testTag(TAG_PROGRESS_SLIDER_PREVIEW_POPUP)
                 .clip(shape = CircleShape)
                 .background(previewTimeBackgroundColor)
                 .animateContentSize(),

@@ -782,7 +782,7 @@ namespace Swig {
 namespace Swig {
   namespace {
     jclass jclass_anitorrentJNI = NULL;
-    jmethodID director_method_ids[10];
+    jmethodID director_method_ids[11];
   }
 }
 
@@ -1707,6 +1707,38 @@ void SwigDirector_event_listener_t::on_file_completed(anilt::handle_id_t handle_
   if (swigjobj) jenv->DeleteLocalRef(swigjobj);
 }
 
+void SwigDirector_event_listener_t::on_torrent_removed(anilt::handle_id_t handle_id,char const *torrent_name) {
+  JNIEnvWrapper swigjnienv(this) ;
+  JNIEnv * jenv = swigjnienv.getJNIEnv() ;
+  jobject swigjobj = (jobject) NULL ;
+  jlong jhandle_id  ;
+  jstring jtorrent_name = 0 ;
+  
+  if (!swig_override[8]) {
+    anilt::event_listener_t::on_torrent_removed(handle_id,torrent_name);
+    return;
+  }
+  swigjobj = swig_get_self(jenv);
+  if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
+    jhandle_id = (jlong) handle_id;
+    jtorrent_name = 0;
+    if (torrent_name) {
+      jtorrent_name = jenv->NewStringUTF((const char *)torrent_name);
+      if (!jtorrent_name) return ;
+    }
+    Swig::LocalRefGuard torrent_name_refguard(jenv, jtorrent_name);
+    jenv->CallStaticVoidMethod(Swig::jclass_anitorrentJNI, Swig::director_method_ids[8], swigjobj, jhandle_id, jtorrent_name);
+    jthrowable swigerror = jenv->ExceptionOccurred();
+    if (swigerror) {
+      Swig::DirectorException::raise(jenv, swigerror);
+    }
+    
+  } else {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null upcall object in anilt::event_listener_t::on_torrent_removed ");
+  }
+  if (swigjobj) jenv->DeleteLocalRef(swigjobj);
+}
+
 void SwigDirector_event_listener_t::on_session_stats(anilt::handle_id_t handle_id,anilt::session_stats_t &stats) {
   JNIEnvWrapper swigjnienv(this) ;
   JNIEnv * jenv = swigjnienv.getJNIEnv() ;
@@ -1714,7 +1746,7 @@ void SwigDirector_event_listener_t::on_session_stats(anilt::handle_id_t handle_i
   jlong jhandle_id  ;
   jlong jstats = 0 ;
   
-  if (!swig_override[8]) {
+  if (!swig_override[9]) {
     anilt::event_listener_t::on_session_stats(handle_id,stats);
     return;
   }
@@ -1722,7 +1754,7 @@ void SwigDirector_event_listener_t::on_session_stats(anilt::handle_id_t handle_i
   if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
     jhandle_id = (jlong) handle_id;
     *(anilt::session_stats_t **)&jstats = (anilt::session_stats_t *) &stats; 
-    jenv->CallStaticVoidMethod(Swig::jclass_anitorrentJNI, Swig::director_method_ids[8], swigjobj, jhandle_id, jstats);
+    jenv->CallStaticVoidMethod(Swig::jclass_anitorrentJNI, Swig::director_method_ids[9], swigjobj, jhandle_id, jstats);
     jthrowable swigerror = jenv->ExceptionOccurred();
     if (swigerror) {
       Swig::DirectorException::raise(jenv, swigerror);
@@ -1746,12 +1778,13 @@ void SwigDirector_event_listener_t::swig_connect_director(JNIEnv *jenv, jobject 
     SwigDirectorMethod(jenv, baseclass, "on_piece_finished", "(JI)V"),
     SwigDirectorMethod(jenv, baseclass, "on_status_update", "(JLme/him188/ani/app/torrent/anitorrent/binding/torrent_stats_t;)V"),
     SwigDirectorMethod(jenv, baseclass, "on_file_completed", "(JI)V"),
+    SwigDirectorMethod(jenv, baseclass, "on_torrent_removed", "(JLjava/lang/String;)V"),
     SwigDirectorMethod(jenv, baseclass, "on_session_stats", "(JLme/him188/ani/app/torrent/anitorrent/binding/session_stats_t;)V")
   };
   
   if (swig_set_self(jenv, jself, swig_mem_own, weak_global)) {
     bool derived = (jenv->IsSameObject(baseclass, jcls) ? false : true);
-    for (int i = 0; i < 9; ++i) {
+    for (int i = 0; i < 10; ++i) {
       swig_override[i] = false;
       if (derived) {
         jmethodID methid = jenv->GetMethodID(jcls, methods[i].name, methods[i].desc);
@@ -1782,7 +1815,7 @@ void SwigDirector_new_event_listener_t::on_new_events() {
   }
   swigjobj = swig_get_self(jenv);
   if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
-    jenv->CallStaticVoidMethod(Swig::jclass_anitorrentJNI, Swig::director_method_ids[9], swigjobj);
+    jenv->CallStaticVoidMethod(Swig::jclass_anitorrentJNI, Swig::director_method_ids[10], swigjobj);
     jthrowable swigerror = jenv->ExceptionOccurred();
     if (swigerror) {
       Swig::DirectorException::raise(jenv, swigerror);
@@ -2006,6 +2039,42 @@ SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anito
   (void)jcls;
   result = (anilt::torrent_info_t *)new anilt::torrent_info_t();
   *(anilt::torrent_info_t **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1info_1t_1name_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+  anilt::torrent_info_t *arg1 = (anilt::torrent_info_t *) 0 ;
+  std::string *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_info_t **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return ;
+  }
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return ;
+  std::string arg2_str(arg2_pstr);
+  arg2 = &arg2_str;
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  if (arg1) (arg1)->name = *arg2;
+}
+
+
+SWIGEXPORT jstring JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1info_1t_1name_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  anilt::torrent_info_t *arg1 = (anilt::torrent_info_t *) 0 ;
+  std::string *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_info_t **)&jarg1; 
+  result = (std::string *) & ((arg1)->name);
+  jresult = jenv->NewStringUTF(result->c_str()); 
   return jresult;
 }
 
@@ -3269,6 +3338,46 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_event_1listener_1t_1on_1torrent_1removed(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jstring jarg3) {
+  anilt::event_listener_t *arg1 = (anilt::event_listener_t *) 0 ;
+  anilt::handle_id_t arg2 ;
+  char *arg3 = (char *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::event_listener_t **)&jarg1; 
+  arg2 = (anilt::handle_id_t)jarg2; 
+  arg3 = 0;
+  if (jarg3) {
+    arg3 = (char *)jenv->GetStringUTFChars(jarg3, 0);
+    if (!arg3) return ;
+  }
+  (arg1)->on_torrent_removed(arg2,(char const *)arg3);
+  if (arg3) jenv->ReleaseStringUTFChars(jarg3, (const char *)arg3);
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_event_1listener_1t_1on_1torrent_1removedSwigExplicitevent_1listener_1t(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jstring jarg3) {
+  anilt::event_listener_t *arg1 = (anilt::event_listener_t *) 0 ;
+  anilt::handle_id_t arg2 ;
+  char *arg3 = (char *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::event_listener_t **)&jarg1; 
+  arg2 = (anilt::handle_id_t)jarg2; 
+  arg3 = 0;
+  if (jarg3) {
+    arg3 = (char *)jenv->GetStringUTFChars(jarg3, 0);
+    if (!arg3) return ;
+  }
+  (arg1)->anilt::event_listener_t::on_torrent_removed(arg2,(char const *)arg3);
+  if (arg3) jenv->ReleaseStringUTFChars(jarg3, (const char *)arg3);
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_event_1listener_1t_1on_1session_1stats(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jlong jarg3, jobject jarg3_) {
   anilt::event_listener_t *arg1 = (anilt::event_listener_t *) 0 ;
   anilt::handle_id_t arg2 ;
@@ -4020,7 +4129,7 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
   static struct {
     const char *method;
     const char *signature;
-  } methods[10] = {
+  } methods[11] = {
     {
       "SwigDirector_event_listener_t_on_checked", "(Lme/him188/ani/app/torrent/anitorrent/binding/event_listener_t;J)V" 
     },
@@ -4044,6 +4153,9 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
     },
     {
       "SwigDirector_event_listener_t_on_file_completed", "(Lme/him188/ani/app/torrent/anitorrent/binding/event_listener_t;JI)V" 
+    },
+    {
+      "SwigDirector_event_listener_t_on_torrent_removed", "(Lme/him188/ani/app/torrent/anitorrent/binding/event_listener_t;JLjava/lang/String;)V" 
     },
     {
       "SwigDirector_event_listener_t_on_session_stats", "(Lme/him188/ani/app/torrent/anitorrent/binding/event_listener_t;JJ)V" 

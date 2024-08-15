@@ -3,6 +3,8 @@ package me.him188.ani.utils.io
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
 import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.files.SystemTemporaryDirectory
+import me.him188.ani.utils.platform.Uuid
 import platform.posix.getenv
 
 actual fun SystemPath.length(): Long = SystemFileSystem.metadataOrNull(path)?.size ?: 0
@@ -31,3 +33,16 @@ actual val SystemPath.absolutePath: String
         val pwd = getenv("pwd")?.toKString() ?: error("Cannot get current working directory")
         return resolveImpl(pwd, path.toString())
     }
+
+actual fun SystemPaths.createTempDirectory(
+    prefix: String,
+): SystemPath = SystemPath(SystemTemporaryDirectory.resolve(prefix + Uuid.randomString().take(8))).apply {
+    createDirectories()
+}
+
+actual fun SystemPaths.createTempFile(
+    prefix: String,
+    suffix: String
+): SystemPath = SystemPath(SystemTemporaryDirectory.resolve(prefix + Uuid.randomString().take(8) + suffix)).apply {
+    writeBytes(byteArrayOf())
+}

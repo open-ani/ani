@@ -1,48 +1,29 @@
 package me.him188.ani.app.torrent.anitorrent
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.new_event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_settings_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
-import me.him188.ani.app.torrent.anitorrent.binding.torrent_add_info_t
-import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_resume_data_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_state_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
+import me.him188.ani.app.torrent.anitorrent.session.AnitorrentHandle
+import me.him188.ani.app.torrent.anitorrent.session.SwigAnitorrentHandle
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentAddInfo
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentHandle
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentResumeData
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentSession
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentStats
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
-import me.him188.ani.app.torrent.api.TorrentLibInfo
-import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.utils.io.SystemPath
-import me.him188.ani.utils.io.absolutePath
-import me.him188.ani.utils.io.createDirectories
-import me.him188.ani.utils.io.exists
-import me.him188.ani.utils.io.inSystem
-import me.him188.ani.utils.io.list
-import me.him188.ani.utils.io.readText
-import me.him188.ani.utils.io.resolve
-import me.him188.ani.utils.io.writeText
-import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 
 internal actual fun createAnitorrentTorrentDownloader(
@@ -75,116 +56,31 @@ internal actual fun createAnitorrentTorrentDownloader(
         settings.delete() // 其实也可以等 GC, 不过反正我们都不用了
     }
     AnitorrentTorrentDownloader.logger.info { "AnitorrentTorrentDownloader created" }
-    return AnitorrentTorrentDownloader(
+    return SwigAnitorrentTorrentDownloader(
         rootDataDirectory = rootDataDirectory,
-        nativeSession = session,
+        native = SwigTorrentSession(session),
         httpFileDownloader = httpFileDownloader,
         parentCoroutineContext = parentCoroutineContext,
     )
 }
 
 
-class AnitorrentTorrentDownloader(
-    /**
-     * 目录结构:
-     * ```
-     * rootDataDirectory
-     *  |- torrentFiles
-     *      |- <uri hash>.txt
-     *  |- pieces
-     *      |- <uri hash>
-     *          |- [libtorrent save files]
-     *          |- fastresume
-     * ```
-     *
-     * 其中 uri hash 可能是 magnet URI 的 hash, 也可能是 HTTP URL 的 hash, 取决于 [startDownload] 时提供的是什么.
-     */
+internal class SwigAnitorrentTorrentDownloader(
     rootDataDirectory: SystemPath,
-    val nativeSession: session_t, // must hold reference. 
-    private val httpFileDownloader: HttpFileDownloader,
-    parentCoroutineContext: CoroutineContext,
-) : TorrentDownloader {
-    companion object {
-        private const val FAST_RESUME_FILENAME = "fastresume"
-        internal val logger = logger<AnitorrentTorrentDownloader>()
-    }
-
-    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
-
-    // key is uri hash
-    // must be thread-safe
-    val openSessions = MutableStateFlow<Map<String, AnitorrentDownloadSession>>(emptyMap())
-
-    override val totalUploaded = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.uploadedBytes }) { it.sum() }
-    }
-    override val totalDownloaded = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.downloadedBytes }) { it.sum() }
-    }
-    override val totalUploadRate = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.uploadRate }) { it.sum() }
-    }
-    override val totalDownloadRate = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.downloadRate }) { it.sum() }
-    }
-
-    override val vendor: TorrentLibInfo = TorrentLibInfo(
-        vendor = "Anitorrent",
-        version = "1.0.0",
-        supportsStreaming = true,
-    )
-
-    /**
-     * 在 [startDownload] 时初始化, 用于缓存在调用 native startDownload 后, 到 [openSessions] 更新之前的事件.
-     * 否则将会丢失事件.
-     */
-    private var handleTaskBuffer: DisposableTaskQueue<AnitorrentTorrentDownloader>? = null
+    override val native: SwigTorrentSession,
+    httpFileDownloader: HttpFileDownloader,
+    parentCoroutineContext: CoroutineContext
+) : AnitorrentTorrentDownloader<SwigTorrentHandle, SwigTorrentAddInfo>(
+    rootDataDirectory,
+    httpFileDownloader,
+    parentCoroutineContext,
+) {
 
     private val eventListener = object : event_listener_t() {
-
-        /**
-         * Note: can be called concurrently,
-         * from [withHandleTaskQueue] or [newEventListener]
-         */
-        private inline fun AnitorrentTorrentDownloader.dispatchToSession(
-            id: HandleId,
-            crossinline block: (AnitorrentDownloadSession) -> Unit // will be inlined twice, for good amortized performance
-        ): Unit = synchronized(this) {
-            // contention is very low in most cases, except for when we are creating a new session.
-
-            try {
-                openSessions.value.values.find { it.handleId == id }?.let {
-                    block(it)
-                    return
-                }
-                // 这个 handle 仍然在创建中, 需要缓存 block, 延迟执行
-
-                val handleTaskBuffer = handleTaskBuffer
-                if (handleTaskBuffer == null) {
-                    logger.warn {
-                        "Session not found for handleId $id while handleTaskBuffer is not set. We are missing event"
-                    }
-                    return
-                }
-                handleTaskBuffer.add {
-                    // this block does not capture anything
-
-                    // Now we should have the session since the startDownload is locked
-                    openSessions.value.values.find { it.handleId == id }?.let {
-                        block(it)
-                        return@add
-                    }
-                    logger.warn { "A delayed task failed to find session on execute. handleId=$id" }
-                }
-            } catch (e: Throwable) {
-                logger.error(e) { "Error while handling event" }
-            }
-        }
-
         override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
             data ?: return
             dispatchToSession(handleId) {
-                it.onSaveResumeData(data)
+                it.onSaveResumeData(SwigTorrentResumeData(data))
             }
         }
 
@@ -218,13 +114,30 @@ class AnitorrentTorrentDownloader(
         override fun on_status_update(handleId: Long, stats: torrent_stats_t?) {
             stats ?: return
             dispatchToSession(handleId) {
-                it.onStatsUpdate(stats)
+                it.onStatsUpdate(SwigTorrentStats(stats))
             }
         }
 
         override fun on_file_completed(handleId: Long, fileIndex: Int) {
             dispatchToSession(handleId) {
                 it.onFileCompleted(fileIndex)
+            }
+        }
+
+        override fun on_torrent_removed(handleId: Long, torrentName: String) {
+            if (handleId != 0L) {
+                dispatchToSession(handleId) {
+                    it.onTorrentRemoved()
+                }
+            } else {
+                // torrent_removed_alerts 事件处理时其 handle 可能已经无效
+                // 但是它的 torrent_name 还是有效的
+                // 在这里 runBlocking 是没问题的, 因为 on_torrent_removed 一定只会在 actualTorrentInfo 之后调用
+                runBlocking(Dispatchers.IO) {
+                    openSessions.value.values.firstOrNull { session ->
+                        session.getName() == torrentName
+                    }
+                }?.onTorrentRemoved()
             }
         }
     }
@@ -240,225 +153,23 @@ class AnitorrentTorrentDownloader(
     }
 
     init {
-        nativeSession.set_new_event_listener(newEventListener)
+        native.native.set_new_event_listener(newEventListener)
         scope.launch(Dispatchers.IO) {
             while (isActive) {
                 eventSignal.receive() // await new events
-                nativeSession.process_events(eventListener) // can block thread
+                native.native.process_events(eventListener) // can block thread
             }
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    override suspend fun fetchTorrent(uri: String, timeoutSeconds: Int): EncodedTorrentInfo {
-        if (uri.startsWith("http", ignoreCase = true)) {
-            val cacheFile = getHttpTorrentFileCacheFile(uri)
-            if (cacheFile.exists()) {
-                val data = cacheFile.readText().hexToByteArray()
-                logger.info { "HTTP torrent file '${uri}' found in cache: $cacheFile, length=${data.size}" }
-                return AnitorrentTorrentInfo.encode(
-                    AnitorrentTorrentInfo(
-                        AnitorrentTorrentData.TorrentFile(data),
-                        httpTorrentFilePath = cacheFile.absolutePath,
-                    ),
-                )
-            }
-            logger.info { "Fetching http url: $uri" }
-            val data = httpFileDownloader.download(uri)
-            logger.info { "Fetching http url success, file length = ${data.size}" }
-            cacheFile.writeText(data.toHexString())
-            logger.info { "Saved cache file: $cacheFile" }
-            return AnitorrentTorrentInfo.encode(
-                AnitorrentTorrentInfo(
-                    AnitorrentTorrentData.TorrentFile(data),
-                    httpTorrentFilePath = cacheFile.absolutePath,
-                ),
-            )
-        }
-
-        require(uri.startsWith("magnet")) { "Expected uri to start with \"magnet\": $uri" }
-        return AnitorrentTorrentInfo.encode(
-            AnitorrentTorrentInfo(
-                AnitorrentTorrentData.MagnetUri(uri),
-                httpTorrentFilePath = null,
-            ),
-        )
-    }
-
-    private val httpTorrentFileCacheDir = rootDataDirectory.resolve("torrentFiles").apply {
-        createDirectories()
-    }
-
-    private fun getHttpTorrentFileCacheFile(uri: String): SystemPath {
-        return httpTorrentFileCacheDir.resolve(uri.hashCode().toString() + ".txt")
-    }
-
-    private val downloadCacheDir = rootDataDirectory.resolve("pieces").apply {
-        createDirectories()
-    }
-
-    private val sessionsLock = Mutex()
-
-    private suspend inline fun <R> withHandleTaskQueue(crossinline block: suspend () -> R): R =
-        sessionsLock.withLock { // 必须只能同时有一个任务在添加. see eventListener
-
-            val queue = DisposableTaskQueue(this)
-            check(handleTaskBuffer == null) { "handleTaskBuffer is not null" }
-            handleTaskBuffer = queue
-            return kotlin.runCatching { block() }
-                .also {
-                    check(handleTaskBuffer == queue) {
-                        "handleTaskBuffer changed while executing block"
-                    }
-                }
-                .onSuccess {
-                    val size = queue.runAndDispose()
-                    logger.info { "withHandleTaskQueue: executed $size delayed tasks" }
-                    this.handleTaskBuffer = null
-                }
-                .onFailure {
-                    // drop all queued tasks
-                    this.handleTaskBuffer = null
-                }
-                .getOrThrow() // rethrow exception
-        }
-
-    override suspend fun startDownload(
-        data: EncodedTorrentInfo,
-        parentCoroutineContext: CoroutineContext,
-        overrideSaveDir: SystemPath?
-    ): TorrentDownloadSession = withHandleTaskQueue {
-        // 这个函数的 native 部分跑得也都很快, 整个函数十几毫秒就可以跑完, 所以 lock 也不会影响性能 (刚启动时需要尽快恢复 resume)
-
-        val info = AnitorrentTorrentInfo.decodeFrom(data)
-        val saveDir = overrideSaveDir ?: getSaveDirForTorrent(data)
-        val fastResumeFile = saveDir.resolve(FAST_RESUME_FILENAME)
-
-        openSessions.value[data.data.contentHashCode().toString()]?.let {
-            logger.info { "Found existing session" }
-            return@withHandleTaskQueue it
-        }
-
-        val handle = torrent_handle_t()
-        val addInfo = torrent_add_info_t()
-        when (info.data) {
-            is AnitorrentTorrentData.MagnetUri -> {
-                addInfo.kind = torrent_add_info_t.kKindMagnetUri
-                addInfo.magnet_uri = info.data.uri
-                logger.info { "Creating a session using magnetUri. length=${info.data.uri.length}" }
-            }
-
-            is AnitorrentTorrentData.TorrentFile -> {
-                addInfo.kind = torrent_add_info_t.kKindTorrentFile
-                withContext(Dispatchers.IO) {
-                    val tempFile = kotlin.io.path.createTempFile("anitorrent", ".torrent").toFile()
-                    tempFile.writeBytes(info.data.data)
-                    addInfo.torrent_file_path = tempFile.absolutePath
-                }
-                logger.info { "Creating a session using torrent file. data length=${info.data.data.size}" }
-            }
-        }
-        check(addInfo.kind != torrent_add_info_t.kKindUnset)
-
-        if (fastResumeFile.exists()) {
-            logger.info { "start_download: including fastResumeFile: ${fastResumeFile.absolutePath}" }
-            addInfo.resume_data_path = fastResumeFile.absolutePath
-        }
-
-        // start_download 之后它就会开始发射 event
-        if (!nativeSession.start_download(handle, addInfo, saveDir.absolutePath)) {
-            throw IllegalStateException("Failed to start download, native failed")
-        }
-
-        return@withHandleTaskQueue AnitorrentDownloadSession(
-            this.nativeSession, handle,
-            saveDir,
-            fastResumeFile = fastResumeFile,
-            onClose = {
-                openSessions.value -= data.data.contentHashCode().toString()
-                nativeSession.release_handle(handle)
-            },
-            onDelete = {
-                scope.launch {
-                    // http 下载的 .torrent 文件保存在全局路径, 需要删除
-                    info.httpTorrentFilePath?.let(::File)?.let { cacheFile ->
-                        withContext(Dispatchers.IO) {
-                            if (cacheFile.exists()) {
-                                cacheFile.delete()
-                            }
-                        }
-                    }
-                    // fast resume 保存在 saveDir 内, 已经被删除
-                }
-            },
-            parentCoroutineContext = parentCoroutineContext,
-        ).also {
-            openSessions.value += data.data.contentHashCode().toString() to it // 放进去之后才能处理 alert
-            val trackers = trackers.split(", ")
-            logger.info { "[${it.handleId}] AnitorrentDownloadSession created, adding ${trackers.size} trackers" }
-            for (tracker in trackers) {
-                handle.add_tracker(tracker, 0, 0)
-            }
-            nativeSession.resume()
-        }
-    }
-
-    override fun getSaveDirForTorrent(data: EncodedTorrentInfo): SystemPath =
-        downloadCacheDir.resolve(data.data.contentHashCode().toString())
-
-    override fun listSaves(): List<SystemPath> {
-        return downloadCacheDir.list().toList().map { it.inSystem }
+    override fun createAnitorrentHandle(
+        handle: SwigTorrentHandle
+    ): AnitorrentHandle {
+        return SwigAnitorrentHandle(handle.native)
     }
 
     override fun close() {
-        nativeSession.remove_listener() // must remove, before gc-ing this object
-        logger.info { "AnitorrentDownloadSession closing" }
-        scope.cancel()
-        httpFileDownloader.close()
+        native.native.remove_listener() // must remove, before gc-ing this object
+        super.close()
     }
-}
-
-typealias HandleId = Long
-
-private val trackers by lazy {
-    """
-udp://tracker1.itzmx.com:8080/announce
-udp://moonburrow.club:6969/announce
-udp://new-line.net:6969/announce
-udp://opentracker.io:6969/announce
-udp://tamas3.ynh.fr:6969/announce
-udp://tracker.bittor.pw:1337/announce
-udp://tracker.dump.cl:6969/announce
-udp://tracker1.myporn.club:9337/announce
-udp://tracker2.dler.org:80/announce
-https://tracker.tamersunion.org:443/announce
-udp://open.demonii.com:1337/announce
-udp://open.stealth.si:80/announce
-udp://tracker.torrent.eu.org:451/announce
-udp://exodus.desync.com:6969/announce
-udp://tracker.moeking.me:6969/announce
-udp://explodie.org:6969/announce
-udp://tracker1.bt.moack.co.kr:80/announce
-udp://tracker.tiny-vps.com:6969/announce
-udp://retracker01-msk-virt.corbina.net:80/announce
-udp://bt1.archive.org:6969/announce
-
-udp://tracker2.itzmx.com:6961/announce
-
-udp://tracker3.itzmx.com:6961/announce
-
-udp://tracker4.itzmx.com:2710/announce
-
-http://tracker1.itzmx.com:8080/announce
-
-http://tracker2.itzmx.com:6961/announce
-
-http://tracker3.itzmx.com:6961/announce
-
-http://tracker4.itzmx.com:2710/announce
-
-udp://tracker.opentrackr.org:1337/announce
-
-http://tracker.opentrackr.org:1337/announce
-                    """.trimIndent().lineSequence().filter { it.isNotBlank() }.joinToString()
 }

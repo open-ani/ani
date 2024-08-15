@@ -44,7 +44,7 @@ class FileVideoData(
     override val uploadRate: Flow<FileSize> = MutableStateFlow(FileSize.Unspecified)
 
     override suspend fun createInput(): SeekableInput = runInterruptible { file.toSeekableInput() }
-    override fun close() {
+    override suspend fun close() {
         // no-op
     }
 }
