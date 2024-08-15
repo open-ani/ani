@@ -207,9 +207,9 @@ class PlayerSkipOpEdStateTest {
             assertEquals(false, localState.showSkipTips)
             assertEquals(false, localState.skipped)
             localState.update(10_000L)
-            assertEquals(0L, skipTime)
+            assertEquals(100_000L, skipTime)
             assertEquals(false, localState.showSkipTips)
-            assertEquals(true, localState.skipped)
+            assertEquals(false, localState.skipped)
         }
 
         @Test
