@@ -63,11 +63,8 @@ data class SubjectProgressInfo(
                     episodes.lastOrNull { it.isKnownCompleted }
                 }
 
-                var actualSubjectStarted = subjectStarted
                 // 有剧集 isKnownCompleted == true 时就认为已开播
-                if (latestEp != null) {
-                    actualSubjectStarted = true
-                }
+                val actualSubjectStarted = latestEp != null || subjectStarted
                 
                 val latestEpIndex: Int? =
                     episodes.indexOfFirst { it == latestEp }
