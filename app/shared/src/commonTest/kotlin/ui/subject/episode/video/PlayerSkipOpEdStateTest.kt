@@ -368,5 +368,39 @@ class PlayerSkipOpEdStateTest {
             assertEquals(false, localState.showSkipTips)
             assertEquals(false, localState.skipped)
         }
+
+        @Test
+        fun `from show skip tips and seek to after op then return to show skip tips`() {
+            val localState = createState_opChapterOnChapter2_24minutes()
+            // 到达 OP 前3秒
+            localState.update(7_000L)
+            assertEquals(true, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 滑到 OP 后
+            localState.update(110_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 回到显示跳过提示
+            localState.update(7_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipped)
+        }
+
+        @Test
+        fun `from show skip tips and seek to at op then return to show skip tips`() {
+            val localState = createState_opChapterOnChapter2_24minutes()
+            // 到达 OP 前3秒
+            localState.update(7_000L)
+            assertEquals(true, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 滑到 OP 后
+            localState.update(40_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(false, localState.skipped)
+            // 回到显示跳过提示
+            localState.update(7_000L)
+            assertEquals(false, localState.showSkipTips)
+            assertEquals(true, localState.skipped)
+        }
     }
 }
