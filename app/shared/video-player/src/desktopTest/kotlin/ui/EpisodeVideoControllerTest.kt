@@ -14,6 +14,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
@@ -282,7 +283,7 @@ class EpisodeVideoControllerTest {
             moveBy(center)
         }
         runOnIdle {
-            assertEquals(0.46f, progressSliderState.displayPositionRatio)
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
@@ -291,7 +292,7 @@ class EpisodeVideoControllerTest {
             up()
         }
         runOnIdle {
-            assertEquals(0.46f, progressSliderState.displayPositionRatio)
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
@@ -315,7 +316,7 @@ class EpisodeVideoControllerTest {
             moveBy(center)
         }
         runOnIdle {
-            assertEquals(0.46f, progressSliderState.displayPositionRatio)
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
@@ -324,14 +325,14 @@ class EpisodeVideoControllerTest {
             up()
         }
         runOnIdle {
-            assertEquals(0.46f, progressSliderState.displayPositionRatio)
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
         currentPositionMillis += 5000L // 播放 5 秒
         
         runOnIdle {
-            assertEquals(0.51f, progressSliderState.displayPositionRatio)
+            waitUntil { onNodeWithText("00:51 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
