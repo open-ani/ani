@@ -235,7 +235,7 @@ internal class ExoPlayerState @UiThread constructor(
 
                     override fun onPlayerError(error: PlaybackException) {
                         state.value = PlaybackState.ERROR
-                        logger.warn("ExoPlayer error: ${error.errorCodeName}")
+                        logger.warn("ExoPlayer error: ${error.errorCodeName}", error)
                     }
 
                     override fun onVideoSizeChanged(videoSize: VideoSize) {

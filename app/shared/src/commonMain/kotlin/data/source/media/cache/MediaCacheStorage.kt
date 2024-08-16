@@ -41,16 +41,6 @@ interface MediaCacheStorage : AutoCloseable {
     val cacheMediaSource: MediaSource
 
     /**
-     * Number of caches in this storage.
-     */
-    val count: Flow<Int>
-
-    /**
-     * Total size of the cache.
-     */
-    val totalSize: Flow<FileSize>
-
-    /**
      * 此存储的总体统计
      */
     val stats: MediaStats
@@ -88,6 +78,22 @@ interface MediaCacheStorage : AutoCloseable {
     suspend fun deleteFirst(predicate: (MediaCache) -> Boolean): Boolean
 }
 
+/**
+ * 所有缓存项目的大小总和
+ */
+val MediaCacheStorage.totalSize: Flow<FileSize>
+    get() = listFlow.flatMapLatest { caches ->
+        combine(caches.map { it.totalSize }) { sizes ->
+            sizes.sumOf { it.inBytes }.bytes
+        }
+    }
+
+/**
+ * Number of caches in this storage.
+ */
+val MediaCacheStorage.count: Flow<Int>
+    get() = listFlow.map { it.size }
+
 suspend inline fun MediaCacheStorage.contains(cache: MediaCache): Boolean = listFlow.first().any { it === cache }
 
 val MediaCacheStorage.anyCaching: Flow<Boolean>
@@ -102,12 +108,6 @@ class TestMediaCacheStorage : MediaCacheStorage {
     override val cacheMediaSource: MediaSource
         get() = throw UnsupportedOperationException()
     override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(listOf())
-    override val count: Flow<Int> = listFlow.map { it.size }
-    override val totalSize: Flow<FileSize> = listFlow.flatMapLatest { caches ->
-        combine(caches.map { it.totalSize }) { sizes ->
-            sizes.sumOf { it.inBytes }.bytes
-        }
-    }
     override val stats: MediaStats = emptyMediaStats()
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {

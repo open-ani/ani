@@ -187,7 +187,7 @@ fun SystemPath.metadataOrNull() = SystemFileSystem.metadataOrNull(path)
 
 /**
  * Will throw if the file does not exist.
- * 
+ *
  * @see FileSystem.resolve
  */
 fun SystemPath.resolveToAbsolute() = SystemFileSystem.resolve(path)
@@ -264,6 +264,14 @@ fun SystemPath.copyTo(target: SystemPath) {
         }
     }
 }
+
+object SystemPaths // namespace
+
+/**
+ * 创建一个临时目录, 将会调用 [createDirectories]
+ */
+expect fun SystemPaths.createTempDirectory(prefix: String = "tmp"): SystemPath
+expect fun SystemPaths.createTempFile(prefix: String = "tmp", suffix: String = ""): SystemPath
 
 ///////////////////////////////////////////////////////////////////////////
 // 在 kotlinx-io 实现这些功能之前, 我们使用 okio
