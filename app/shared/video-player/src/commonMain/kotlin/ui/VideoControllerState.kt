@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -9,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Modifier
+import me.him188.ani.app.ui.foundation.interaction.hoverable
 
 
 /**
@@ -16,7 +19,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
  */
 @Composable
 fun rememberVideoControllerState(
-    initialVisibility: ControllerVisibility = ControllerVisibility.Invisible
+    initialVisibility: ControllerVisibility = VideoControllerState.DEFAULT_INITIAL_VISIBILITY
 ): VideoControllerState {
     return remember {
         VideoControllerState(initialVisibility)
@@ -63,8 +66,12 @@ data class ControllerVisibility(
 
 @Stable
 class VideoControllerState(
-    initialVisibility: ControllerVisibility = ControllerVisibility.Visible
+    initialVisibility: ControllerVisibility = DEFAULT_INITIAL_VISIBILITY
 ) {
+    companion object {
+        val DEFAULT_INITIAL_VISIBILITY = ControllerVisibility.Invisible
+    }
+
     private var fullVisible by mutableStateOf(initialVisibility == ControllerVisibility.Visible)
     private val hasProgressBarRequester by derivedStateOf { progressBarRequesters.isNotEmpty() }
 
@@ -96,11 +103,6 @@ class VideoControllerState(
         fullVisible = it
     }
 
-    var danmakuEnabled by mutableStateOf(true)
-    fun toggleDanmakuEnabled() {
-        danmakuEnabled = !danmakuEnabled
-    }
-
     private val alwaysOnRequests = SnapshotStateList<Any>()
 
     /**
@@ -115,6 +117,7 @@ class VideoControllerState(
      */
     fun setRequestAlwaysOn(requester: Any, isAlwaysOn: Boolean) {
         if (isAlwaysOn) {
+            if (requester in alwaysOnRequests) return
             alwaysOnRequests.add(requester)
         } else {
             alwaysOnRequests.remove(requester)
@@ -142,3 +145,47 @@ class VideoControllerState(
         progressBarRequesters.remove(requester)
     }
 }
+
+interface AlwaysOnRequester {
+    fun request()
+    fun cancelRequest()
+}
+
+@Composable
+fun rememberAlwaysOnRequester(
+    controllerState: VideoControllerState,
+    debugName: String
+): AlwaysOnRequester {
+    val requester = remember(controllerState, debugName) {
+        object : AlwaysOnRequester {
+            override fun request() {
+                controllerState.setRequestAlwaysOn(this, true)
+            }
+
+            override fun cancelRequest() {
+                controllerState.setRequestAlwaysOn(this, false)
+            }
+
+            override fun toString(): String {
+                return "AlwaysOnRequester($debugName)"
+            }
+        }
+    }
+    DisposableEffect(requester) {
+        onDispose {
+            requester.cancelRequest()
+        }
+    }
+    return requester
+}
+
+fun Modifier.hoverToRequestAlwaysOn(
+    requester: AlwaysOnRequester
+): Modifier = hoverable(
+    onHover = {
+        requester.request()
+    },
+    onUnhover = {
+        requester.cancelRequest()
+    },
+)

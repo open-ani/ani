@@ -41,6 +41,6 @@ class HttpStreamingVideoData(
         throw UnsupportedOperationException()
     }
 
-    override fun close() {
+    override suspend fun close() {
     }
 }

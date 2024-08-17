@@ -5,6 +5,7 @@ import me.him188.ani.app.platform.FileOpener
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.absolutePath
 import me.him188.ani.utils.io.toFile
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -17,6 +18,8 @@ interface DesktopUpdateInstaller : UpdateInstaller {
     override fun openForManualInstallation(file: SystemPath, context: ContextMP) {
         FileOpener.openInFileBrowser(file)
     }
+    
+    fun deleteOldUpdater()
 
     companion object {
         fun currentOS(): DesktopUpdateInstaller {
@@ -29,6 +32,10 @@ interface DesktopUpdateInstaller : UpdateInstaller {
 }
 
 object MacOSUpdateInstaller : DesktopUpdateInstaller {
+    override fun deleteOldUpdater() {
+        // no-op
+    }
+
     override fun install(file: SystemPath, context: ContextMP): InstallationResult {
         Desktop.getDesktop().open(file.toFile())
         exitProcess(0)
@@ -47,14 +54,31 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
             return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
         }
 
-        val installerScriptFile = appDir.resolve("install.cmd")
-        installerScriptFile.writeText(getInstallerScript(file.toFile()))
-        logger.info { "Installer script written to ${installerScriptFile.absolutePath}" }
+        val resourcesDir = File(System.getProperty("compose.application.resources.dir") ?: throw IllegalStateException("Cannot get resources directory"))
+        val updateExecutable = resourcesDir.resolve("ani_update.exe")
+        if (!updateExecutable.exists()) {
+            logger.info { "'ani_update.exe' not found. Fallback to manual update" }
+            return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
+        }
 
-        val processBuilder = ProcessBuilder("cmd", "/c", "start", "cmd", "/c", installerScriptFile.name)
-        processBuilder.directory(appDir).start()
+        // Copy ani_update.exe to current dir
+        val copiedUpdateExecutable = appDir.resolve("ani_update.exe")
+        updateExecutable.copyTo(copiedUpdateExecutable, true)
+        
+        ProcessBuilder("cmd", "/c", "start", copiedUpdateExecutable.absolutePath, file.absolutePath, appDir.absolutePath)
+            .directory(appDir)
+            .start()
+
         logger.info { "Installer started" }
         exitProcess(0)
+    }
+
+    override fun deleteOldUpdater() {
+        val appDir = File(System.getProperty("user.dir") ?: throw IllegalStateException("Cannot get app directory"))
+        val updateExecutable = appDir.resolve("ani_update.exe")
+        if (updateExecutable.exists()) {
+            updateExecutable.delete()
+        }
     }
 
     @Language("cmd")

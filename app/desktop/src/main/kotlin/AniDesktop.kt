@@ -220,6 +220,13 @@ object AniDesktop {
         }.startCommonKoinModule(coroutineScope)
 
         kotlin.runCatching {
+            val desktopUpdateInstaller = koin.koin.get<UpdateInstaller>() as DesktopUpdateInstaller
+            desktopUpdateInstaller.deleteOldUpdater()
+        }.onFailure {
+            logger.error(it) { "Failed to delete update installer" }
+        }
+
+        kotlin.runCatching {
             koin.koin.get<UpdateManager>().deleteInstalledFiles()
         }.onFailure {
             logger.error(it) { "Failed to delete installed files" }
@@ -249,7 +256,12 @@ object AniDesktop {
                 CompositionLocalProvider(
                     LocalContext provides context,
                     LocalWindowState provides windowState,
-                    LocalPlatformWindow provides remember(window.windowHandle) { PlatformWindow(windowHandle = window.windowHandle) },
+                    LocalPlatformWindow provides remember(window.windowHandle) {
+                        PlatformWindow(
+                            windowHandle = window.windowHandle,
+                            composeWindow = window,
+                        )
+                    },
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true

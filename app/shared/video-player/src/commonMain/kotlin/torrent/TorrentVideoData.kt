@@ -19,12 +19,12 @@ class TorrentVideoData(
     override val downloadSpeed get() = entry.stats.downloadRate.map { it?.bytes ?: FileSize.Unspecified }
     override val uploadRate get() = entry.stats.uploadRate.map { it?.bytes ?: FileSize.Unspecified }
 
-    val pieces get() = handle.entry.pieces ?: emptyList()
+    val pieces get() = handle.entry.pieces
     val isCacheFinished get() = handle.entry.stats.isFinished
 
     override suspend fun createInput(): SeekableInput = entry.createInput()
 
-    override fun close() {
+    override suspend fun close() {
         handle.close()
     }
 

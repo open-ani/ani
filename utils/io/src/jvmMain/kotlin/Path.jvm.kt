@@ -39,3 +39,12 @@ actual fun SystemPath.isRegularFile(): Boolean {
 actual val SystemPath.absolutePath: String
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     get() = path.file.absolutePath
+
+actual fun SystemPaths.createTempDirectory(
+    prefix: String,
+): SystemPath = kotlin.io.path.createTempDirectory(prefix = prefix).toKtPath().inSystem
+
+actual fun SystemPaths.createTempFile(
+    prefix: String,
+    suffix: String
+): SystemPath = kotlin.io.path.createTempFile(prefix = prefix, suffix = suffix).toKtPath().inSystem

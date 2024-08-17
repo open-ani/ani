@@ -21,12 +21,16 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
 import androidx.media3.exoplayer.trackselection.TrackSelection
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -134,7 +138,9 @@ internal class ExoPlayerState @UiThread constructor(
             data,
             releaseResource = {
                 file.close()
-                data.close()
+                backgroundScope.launch(NonCancellable) {
+                    data.close()
+                }
             },
             setMedia = {
                 player.setMediaSource(factory.createMediaSource(MediaItem.fromUri(source.uri)))
@@ -229,7 +235,7 @@ internal class ExoPlayerState @UiThread constructor(
 
                     override fun onPlayerError(error: PlaybackException) {
                         state.value = PlaybackState.ERROR
-                        logger.warn("ExoPlayer error: ${error.errorCodeName}")
+                        logger.warn("ExoPlayer error: ${error.errorCodeName}", error)
                     }
 
                     override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -359,7 +365,7 @@ internal class ExoPlayerState @UiThread constructor(
         TODO("Not yet implemented")
     }
 
-    override val chapters: MutableStateFlow<List<Chapter>> = MutableStateFlow(emptyList())
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(persistentListOf())
 
     override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
     override fun getExactCurrentPositionMillis(): Long = player.currentPosition

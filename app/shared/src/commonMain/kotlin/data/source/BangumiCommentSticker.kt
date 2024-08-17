@@ -133,6 +133,10 @@ object BangumiCommentSticker {
         return STICKER_RES[id]
     }
 
+    fun <R> map(block: (Pair<Int, DrawableResource>) -> R): List<R> {
+        return STICKER_RES.entries.map { (k, v) -> block(k to v) }
+    }
+
     private val STICKER_RES: Map<Int, DrawableResource> = mapOf(
         1 to Res.drawable.bgm_01,
         2 to Res.drawable.bgm_02,

@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -27,92 +25,17 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.app.ui.foundation.richtext.RichText
-import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-
-/**
- * A state which is read by Comment composable
- */
-@Stable
-class CommentState(
-    sourceVersion: State<Any?>,
-    list: State<List<UIComment>>,
-    hasMore: State<Boolean>,
-    private val onReload: suspend () -> Unit,
-    private val onLoadMore: suspend () -> Unit,
-    backgroundScope: CoroutineScope,
-) {
-    val sourceVersion: Any? by sourceVersion
-    val list: List<UIComment> by list
-
-    /**
-     * 至少 [onReload] 了一次
-     */
-    private var loadedOnce by mutableStateOf(false)
-    private var freshLoaded by mutableStateOf(false)
-    val hasMore: Boolean by derivedStateOf {
-        if (!freshLoaded) return@derivedStateOf false
-        hasMore.value
-    }
-
-    val count by derivedStateOf {
-        if (!loadedOnce) null else this.list.size
-    }
-
-    private val reloadTasker = MonoTasker(backgroundScope)
-    val isLoading get() = reloadTasker.isRunning
-
-    /**
-     * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
-     */
-    suspend fun reload() {
-        freshLoaded = false
-        onReload()
-        freshLoaded = true
-        loadedOnce = true
-    }
-
-    fun loadMore() {
-        reloadTasker.launch {
-            onLoadMore()
-        }
-    }
-}
-
-
-@Immutable
-class UIRichText(val elements: List<UIRichElement>)
-
-@Immutable
-class UIComment(
-    val id: Int,
-    val creator: UserInfo,
-    val content: UIRichText,
-    val createdAt: Long, // timestamp millis
-    val reactions: List<UICommentReaction>,
-    val briefReplies: List<UIComment>,
-    val replyCount: Int,
-)
-
-@Immutable
-class UICommentReaction(
-    val id: Int,
-    val count: Int,
-    val selected: Boolean
-)
 
 /**
  * 评论项目
@@ -143,19 +66,20 @@ fun Comment(
         modifier = modifier,
         verticalAlignment = Alignment.Top,
     ) {
-        Box(modifier = Modifier.clip(CircleShape)) {
+        Box(modifier = Modifier.padding(top = 2.dp).clip(CircleShape)) {
             avatar()
         }
         Column(modifier = Modifier.padding(start = 12.dp)) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
-                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyLarge) {
+                    CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyMedium) {
                         primaryTitle()
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     CompositionLocalProvider(
                         LocalTextStyle provides MaterialTheme.typography.labelMedium.copy(
                             color = LocalContentColor.current.slightlyWeaken(),
@@ -166,33 +90,34 @@ fun Comment(
                 }
                 rhsTitle()
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             SelectionContainer(
-                modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 content()
             }
             if (reactionRow != null) {
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 SelectionContainer(
-                    modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     reactionRow()
                 }
             }
-            if (actionRow != null) {
-                Spacer(modifier = Modifier.height(6.dp))
+            if (actionRow != null && isInDebugMode()) {
                 SelectionContainer(
-                    modifier = Modifier.padding(end = 24.dp).fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     actionRow()
                 }
+            } else {
+                Spacer(Modifier.height(8.dp))
             }
             if (reply != null) {
                 Surface(
-                    modifier = Modifier.padding(top = 12.dp),
+                    modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 0.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = MaterialTheme.shapes.small,
                 ) {
                     reply()
                 }
@@ -201,97 +126,85 @@ fun Comment(
     }
 }
 
-object CommentDefaults {
-    @Composable
-    fun Avatar(url: String?) {
-        AvatarImage(
-            url = url,
-            modifier = Modifier.size(36.dp),
-        )
+/**
+ * A state which is read by Comment composable
+ */
+@Stable
+class CommentState(
+    sourceVersion: State<Any?>,
+    list: State<List<UIComment>>,
+    hasMore: State<Boolean>,
+    private val onReload: suspend () -> Unit,
+    private val onLoadMore: suspend () -> Unit,
+    private val onSubmitCommentReaction: suspend (commentId: Int, reactionId: Int) -> Unit,
+    backgroundScope: CoroutineScope,
+) {
+    val sourceVersion: Any? by sourceVersion
+    val list: List<UIComment> by list
+
+    /**
+     * 至少 [onReload] 了一次
+     */
+    private var loadedOnce by mutableStateOf(false)
+    private var freshLoaded by mutableStateOf(false)
+    private val _hasMore by hasMore
+    val hasMore: Boolean by derivedStateOf {
+        if (!freshLoaded) return@derivedStateOf false
+        _hasMore
     }
 
-    @Composable
-    fun ReplyList(
-        replies: List<UIComment>,
-        replyCount: Int = replies.size,
-        onClickUrl: (String) -> Unit = { },
+    val count by derivedStateOf {
+        if (!loadedOnce) null else this.list.size
+    }
 
-        ) {
-        val primaryColor = MaterialTheme.colorScheme.primary
+    private val reloadTasker = MonoTasker(backgroundScope)
+    val isLoading get() = reloadTasker.isRunning
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-        ) {
-            replies.forEach { reply ->
-                val prepended by remember {
-                    derivedStateOf {
-                        reply.content.prependText(
-                            prependix = "${reply.creator.nickname ?: reply.creator.id.toString()}：",
-                            color = primaryColor,
-                        )
-                    }
-                }
-                RichText(
-                    elements = prepended.elements,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    onClickUrl = onClickUrl,
-                )
-            }
-            if (replyCount > 3) {
-                val prepended by remember {
-                    derivedStateOf {
-                        UIRichText(emptyList()).prependText(
-                            prependix = "查看更多 ${replyCount - 3} 条回复>",
-                            color = primaryColor,
-                        )
-                    }
-                }
+    private val reactionSubmitTasker = MonoTasker(backgroundScope)
 
-                RichText(
-                    elements = prepended.elements,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    onClickUrl = { },
-                )
-            }
+    /**
+     * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
+     */
+    suspend fun reload() {
+        freshLoaded = false
+        onReload()
+        freshLoaded = true
+        loadedOnce = true
+    }
+
+    fun loadMore() {
+        reloadTasker.launch {
+            onLoadMore()
         }
     }
 
-    // prepend text
-    private fun UIRichText.prependText(prependix: String, color: Color): UIRichText = run {
-        // 如果 elements 是空的则直接返回一个 annotated text
-        val first = elements.firstOrNull()
-            ?: return@run listOf(
-                UIRichElement.AnnotatedText(
-                    listOf(UIRichElement.Annotated.Text(prependix, RichTextDefaults.FontSize, color)),
-                ),
-            )
-
-        // 如果第一个 element 是 annotated text，则把 prepend 添加到其中
-        if (first is UIRichElement.AnnotatedText) {
-            listOf(
-                first.copy(
-                    slice = listOf(
-                        UIRichElement.Annotated.Text(prependix, RichTextDefaults.FontSize, color),
-                        *first.slice.toTypedArray(),
-                    ),
-                ),
-                *elements.drop(1).toTypedArray(),
-            )
-        } else { // 如果不是就添加一个 annotated text
-            listOf(
-                UIRichElement.AnnotatedText(
-                    listOf(UIRichElement.Annotated.Text(prependix, RichTextDefaults.FontSize, color)),
-                ),
-                *elements.toTypedArray(),
-            )
+    fun submitReaction(commentId: Int, reactionId: Int) {
+        reactionSubmitTasker.launch {
+            onSubmitCommentReaction(commentId, reactionId)
         }
-    }.let {
-        UIRichText(it)
     }
 }
+
+
+@Immutable
+class UIRichText(val elements: List<UIRichElement>)
+
+@Immutable
+class UIComment(
+    val id: Int,
+    val creator: UserInfo?,
+    val content: UIRichText,
+    val createdAt: Long, // timestamp millis
+    val reactions: List<UICommentReaction>,
+    val briefReplies: List<UIComment>,
+    val replyCount: Int,
+    val rating: Int?,
+)
+
+@Immutable
+class UICommentReaction(
+    val id: Int,
+    val count: Int,
+    val selected: Boolean
+)
+
