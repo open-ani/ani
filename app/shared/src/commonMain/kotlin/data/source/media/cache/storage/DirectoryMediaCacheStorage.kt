@@ -1,12 +1,16 @@
 package me.him188.ani.app.data.source.media.cache.storage
 
+import androidx.datastore.core.DataStore
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
@@ -31,6 +35,8 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.matches
+import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.createDirectories
@@ -59,8 +65,18 @@ class DirectoryMediaCacheStorage(
     override val mediaSourceId: String,
     val metadataDir: SystemPath,
     private val engine: MediaCacheEngine,
+    private val dataStore: DataStore<SaveData>,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaCacheStorage {
+    @Serializable
+    data class SaveData(
+        val uploaded: FileSize,
+    ) {
+        companion object {
+            val Initial = SaveData(0.bytes)
+        }
+    }
+
     private companion object {
         private val json = Json {
             ignoreUnknownKeys = true
@@ -69,6 +85,19 @@ class DirectoryMediaCacheStorage(
     }
 
     private val scope: CoroutineScope = parentCoroutineContext.childScope()
+
+    init {
+        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+            var maxUploaded = 0L
+            engine.stats.uploaded.collect { new ->
+                val diff = new.inBytes - maxUploaded
+                if (diff > 0) {
+                    maxUploaded = maxOf(maxUploaded, new.inBytes)
+                    dataStore.updateData { it.copy(uploaded = it.uploaded + diff) }
+                }
+            }
+        }
+    }
 
     @Serializable
     class MediaCacheSave(
@@ -152,7 +181,16 @@ class DirectoryMediaCacheStorage(
     override val cacheMediaSource: MediaSource by lazy {
         MediaCacheStorageSource(this, MediaSourceLocation.Local)
     }
-    override val stats: MediaStats get() = engine.stats
+    override val stats: MediaStats = object : MediaStats {
+        override val uploaded: Flow<FileSize>
+            get() = dataStore.data.map { it.uploaded }
+        override val downloaded: Flow<FileSize>
+            get() = engine.stats.downloaded
+        override val uploadRate: Flow<FileSize>
+            get() = engine.stats.uploadRate
+        override val downloadRate: Flow<FileSize>
+            get() = engine.stats.downloadRate
+    }
 
     /**
      * Locks accesses to [listFlow]
