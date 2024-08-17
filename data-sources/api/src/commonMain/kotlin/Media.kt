@@ -257,7 +257,7 @@ class MediaProperties private constructor(
      *
      * @since 3.7
      */
-    val subtitleKind: SubtitleKind?, // #615
+    val subtitleKind: SubtitleKind? = null, // #615
     @Suppress("unused")
     @Transient private val _primaryConstructorMarker: Unit = Unit,
 ) {

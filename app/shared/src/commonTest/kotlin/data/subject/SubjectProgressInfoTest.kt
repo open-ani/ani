@@ -80,10 +80,8 @@ class SubjectProgressInfoTest {
                 ep(WISH, 2, isKnownCompleted = false),
             ),
         ).run {
-            // TODO: This should be Watched(0, EpisodeSort(1))
-            assertEquals(ContinueWatchingStatus.Continue(1, EpisodeSort(2)), continueWatchingStatus)
-            // TODO: This should be 1
-            assertEquals(2, nextEpisodeIdToPlay)
+            assertEquals(ContinueWatchingStatus.Watched(0, EpisodeSort(1)), continueWatchingStatus)
+            assertEquals(1, nextEpisodeIdToPlay)
         }
     }
 

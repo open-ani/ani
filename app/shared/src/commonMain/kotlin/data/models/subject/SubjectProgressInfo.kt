@@ -58,12 +58,14 @@ data class SubjectProgressInfo(
             val lastWatchedEpIndex = episodes.indexOfLast {
                 it.type == UnifiedCollectionType.DONE || it.type == UnifiedCollectionType.DROPPED
             }
-
             val continueWatchingStatus = kotlin.run {
                 val latestEp = kotlin.run {
                     episodes.lastOrNull { it.isKnownCompleted }
                 }
 
+                // 有剧集 isKnownCompleted == true 时就认为已开播
+                val actualSubjectStarted = latestEp != null || subjectStarted
+                
                 val latestEpIndex: Int? =
                     episodes.indexOfFirst { it == latestEp }
                         .takeIf { it != -1 }
@@ -72,7 +74,7 @@ data class SubjectProgressInfo(
                 when (lastWatchedEpIndex) {
                     // 还没看过
                     -1 -> {
-                        if (subjectStarted) {
+                        if (actualSubjectStarted) {
                             ContinueWatchingStatus.Start
                         } else {
                             ContinueWatchingStatus.NotOnAir
@@ -81,7 +83,7 @@ data class SubjectProgressInfo(
 
                     // 看了第 n 集并且还有第 n+1 集
                     in 0..<episodes.size - 1 -> {
-                        if (latestEpIndex != null && lastWatchedEpIndex < latestEpIndex) {
+                        if (latestEpIndex != null && lastWatchedEpIndex < latestEpIndex && actualSubjectStarted) {
                             // 更新了 n+1 集
                             ContinueWatchingStatus.Continue(
                                 lastWatchedEpIndex + 1,
