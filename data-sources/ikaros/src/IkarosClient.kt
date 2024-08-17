@@ -99,7 +99,6 @@ class IkarosClient(
                 EpisodeType.MAD -> IkarosEpisodeGroup.SMALL_THEATER
                 EpisodeType.OVA -> IkarosEpisodeGroup.ORIGINAL_VIDEO_ANIMATION
                 EpisodeType.OAD -> IkarosEpisodeGroup.ORIGINAL_ANIMATION_DISC
-                EpisodeType.Unknown -> IkarosEpisodeGroup.OTHER
                 else -> IkarosEpisodeGroup.MAIN
             }
         } else {
