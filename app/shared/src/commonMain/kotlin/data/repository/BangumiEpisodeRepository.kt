@@ -16,9 +16,9 @@ import me.him188.ani.datasources.api.EpisodeType.ED
 import me.him188.ani.datasources.api.EpisodeType.MAD
 import me.him188.ani.datasources.api.EpisodeType.MainStory
 import me.him188.ani.datasources.api.EpisodeType.OP
-import me.him188.ani.datasources.api.EpisodeType.OTHER
 import me.him188.ani.datasources.api.EpisodeType.PV
 import me.him188.ani.datasources.api.EpisodeType.SP
+import me.him188.ani.datasources.api.EpisodeType.Unknown
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.processPagedResponse
@@ -177,8 +177,8 @@ private fun getEpisodeTypeByBangumiCode(code: Int): EpisodeType {
         3 -> ED
         4 -> PV
         5 -> MAD
-        6 -> OTHER
-        else -> OTHER
+        6 -> Unknown
+        else -> Unknown
     }
 }
 

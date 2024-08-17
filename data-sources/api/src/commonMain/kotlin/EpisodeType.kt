@@ -10,6 +10,8 @@ enum class EpisodeType(val value: String) {
     ED("ED"),
     PV("PV"),
     MAD("MAD"),
-    OTHER("OTHER");
+    OVA("OVA"),
+    OAD("OAD"),
+    Unknown("Unknown");
 }
 

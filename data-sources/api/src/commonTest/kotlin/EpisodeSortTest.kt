@@ -2,9 +2,11 @@ package me.him188.ani.datasources.api
 
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.EpisodeType.MAD
-import me.him188.ani.datasources.api.EpisodeType.OTHER
+import me.him188.ani.datasources.api.EpisodeType.OAD
+import me.him188.ani.datasources.api.EpisodeType.OVA
 import me.him188.ani.datasources.api.EpisodeType.PV
 import me.him188.ani.datasources.api.EpisodeType.SP
+import me.him188.ani.datasources.api.EpisodeType.Unknown
 import me.him188.ani.test.DynamicTestsResult
 import me.him188.ani.test.TestContainer
 import me.him188.ani.test.TestFactory
@@ -33,13 +35,15 @@ class EpisodeSortTest {
                 "0.5" to normal(0.5f),
                 "05.5" to normal(5.5f),
                 "30.5" to normal(30.5f),
-                "-1" to special(OTHER, -1f),
+                "-1" to special(Unknown, -1f),
                 "1.1" to EpisodeSort.Unknown("1.1"),
                 "SP1" to special(SP, 1f),
                 "SP02" to special(SP, 2f),
                 "SP1.5" to special(SP, 1.5f),
                 "MAD1" to special(MAD, 1f),
                 "MAD02" to special(MAD, 2f),
+                "OVA04" to special(OVA, 4f),
+                "OAD08" to special(OAD, 8f),
                 "S" to EpisodeSort.Unknown("S"),
             ).map {
                 dynamicTest(it.first) {
@@ -67,7 +71,7 @@ class EpisodeSortTest {
                 normal(30.5f) to "30.5",
                 special(SP, -1f) to "SP-1",
                 special(MAD, 1.5f) to "MAD1.5",
-                special(OTHER, -999f) to "OTHER-999",
+                special(Unknown, -999f) to "Unknown-999",
                 EpisodeSort.Unknown("S") to "S",
             ).map {
                 dynamicTest(it.second) {
@@ -133,4 +137,18 @@ class EpisodeSortTest {
             }
         },
     )
+
+    @TestFactory
+    fun toFloats() = runDynamicTests(
+        listOf(
+            2f to "02".toFloat(),
+            2f to "2".toFloat(),
+        ).map {
+            dynamicTest(it.toString()) {
+                val (a, b) = it
+                assertEquals(a, b)
+            }
+        },
+    )
+    
 }
