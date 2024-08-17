@@ -1,14 +1,12 @@
 package me.him188.ani.datasources.mikan
 
 import me.him188.ani.datasources.api.topic.TopicCriteria
-import me.him188.ani.test.IgnoreOnNative
 import me.him188.ani.test.readTestResourceAsString
 import me.him188.ani.utils.xml.Xml
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@IgnoreOnNative
 class MikanSubjectIndexTest {
 
     @Test
