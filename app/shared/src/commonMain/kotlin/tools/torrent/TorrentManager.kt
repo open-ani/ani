@@ -10,7 +10,6 @@ import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.resolve
-import org.koin.core.component.KoinComponent
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -37,7 +36,7 @@ class DefaultTorrentManager(
     private val proxySettingsFlow: Flow<ProxySettings>,
     private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
     val platform: Platform,
-) : TorrentManager, KoinComponent {
+) : TorrentManager {
     private val scope = parentCoroutineContext.childScope()
 
     override val anitorrent: AnitorrentEngine by lazy {
