@@ -78,15 +78,11 @@ class DirectoryMediaCacheStorage(
         val metadata: MediaCacheMetadata,
     )
 
-    init {
-        scope.launch(Dispatchers.IO) {
-            restoreFiles() // 必须要跑这个, 这个会去创建文件夹
-        }
-    }
-
-    private suspend fun DirectoryMediaCacheStorage.restoreFiles() {
-        if (!metadataDir.exists()) {
-            metadataDir.createDirectories()
+    override suspend fun restorePersistedCaches() {
+        withContext(Dispatchers.IO) {
+            if (!metadataDir.exists()) {
+                metadataDir.createDirectories()
+            }
         }
 
         metadataDir.useDirectoryEntries { files ->
@@ -116,15 +112,15 @@ class DirectoryMediaCacheStorage(
     private suspend fun restoreFile(
         file: SystemPath,
         reportRecovered: suspend (MediaCache) -> Unit,
-    ) {
-        if (file.extension != METADATA_FILE_EXTENSION) return
+    ) = withContext(Dispatchers.IO) {
+        if (file.extension != METADATA_FILE_EXTENSION) return@withContext
 
         val save = try {
             json.decodeFromString(MediaCacheSave.serializer(), file.readText())
         } catch (e: Exception) {
             logger.error(e) { "Failed to deserialize metadata file ${file.name}" }
             file.delete()
-            return
+            return@withContext
         }
 
         try {

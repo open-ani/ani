@@ -268,6 +268,13 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
         }
     }
 
+    coroutineScope.launch {
+        val manager = koin.get<MediaCacheManager>()
+        for (storage in manager.storages) {
+            storage.first()?.restorePersistedCaches()
+        }
+    }
+
     return this
 }
 

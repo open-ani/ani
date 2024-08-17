@@ -14,7 +14,7 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.math.absoluteValue
 
 /**
- * 表示一个进行中的资源缓存.
+ * 表示一个进行中的 [Media] 缓存.
  *
  * [MediaCache] 有状态,
  *
@@ -56,6 +56,9 @@ interface MediaCache {
      */
     suspend fun getCachedMedia(): CachedMedia
 
+    /**
+     * 缓存
+     */
     fun isValid(): Boolean
 
     /**

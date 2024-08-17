@@ -28,7 +28,6 @@ import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
@@ -56,7 +55,8 @@ import kotlin.coroutines.CoroutineContext
 //    "torrentCacheFile" // MediaCache 所对应的视频文件. 该文件一定是 [EXTRA_TORRENT_CACHE_DIR] 目录中的文件 (的其中一个)
 
 /**
- * 以 [TorrentDownloader] 实现的 [MediaCacheEngine]. 为每个 [MediaCache] 创建一个 [TorrentDownloadSession].
+ * 以 [TorrentEngine] 实现的 [MediaCacheEngine], 意味着通过 BT 缓存 media.
+ * 为每个 [MediaCache] 创建一个 [TorrentDownloadSession].
  */
 class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
@@ -70,6 +70,9 @@ class TorrentMediaCacheEngine(
         private val logger = logger<TorrentMediaCacheEngine>()
     }
 
+    /**
+     * 仅当 [MediaCache.getCachedMedia] 等操作时才会创建 [TorrentDownloadSession]
+     */
     class LazyFileHandle(
         val scope: CoroutineScope,
         val state: SharedFlow<State?>, // suspend lazy
