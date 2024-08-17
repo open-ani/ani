@@ -38,7 +38,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation()
 
-        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) ?: false)
+        assertEquals(true, mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE))
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
@@ -66,7 +66,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation()
 
-        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) ?: false)
+        assertEquals(true, mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE))
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
@@ -96,7 +96,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
             File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
         )
 
-        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) ?: false)
+        assertEquals(true, mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE))
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
@@ -126,7 +126,7 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
             File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
         )
 
-        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) ?: false)
+        assertEquals(true, mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE))
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
