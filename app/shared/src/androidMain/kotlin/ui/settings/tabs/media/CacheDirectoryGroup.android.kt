@@ -16,11 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionItem
 
@@ -59,7 +62,18 @@ private fun renderMigrationStatus(status: AndroidTorrentCacheViewModel.Migration
 
     is AndroidTorrentCacheViewModel.MigrationStatus.Metadata ->
         if (status.currentMetadata != null) "合并元数据: \n${status.currentMetadata}" else "合并元数据..."
+
+    is AndroidTorrentCacheViewModel.MigrationStatus.Error ->
+        """
+            迁移时发生错误, 错误信息:
+            ${status.exception}
+            
+            迁移错误可能会导致 Ani 后续的闪退等意料之外的问题.
+            请点击下方复制按钮复制完整错误日志，随后前往 GitHub 反馈错误信息.
+        """.trimIndent()
 }
+
+private const val FEEDBACK_URL = "https://github.com/open-ani/ani/issues/new?labels=t%3A+bug%2CM&template=bug.yml"
 
 @Composable
 actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
@@ -130,16 +144,40 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             text = {
                 Column {
                     Text(renderMigrationStatus(status = cacheVm.migrationStatus))
-                    Spacer(modifier = Modifier.height(24.dp))
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text("迁移数据需要一些时间，提前取消可能导致缓存数据损坏。")
-                    Text("迁移完成或取消迁移后请重启 Ani。")
+                    if (!cacheVm.migrationStatus.isError) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text("迁移数据需要一些时间，提前取消可能导致缓存数据损坏。")
+                        Text("迁移完成或取消迁移后请重启 Ani。")
+                    }
                 }
             },
             onDismissRequest = { /* not dismiss-able */ },
+            dismissButton = if (cacheVm.migrationStatus.isError) {
+                {
+                    val toaster = LocalToaster.current
+                    val clipboard = LocalClipboardManager.current
+                    TextButton(
+                        {
+                            cacheVm.copyMigrationError(clipboard)
+                            toaster.toast("已复制错误信息")
+                        },
+                    ) { Text(text = "复制错误信息") }
+                }
+            } else null,
             confirmButton = {
-                TextButton({ cacheVm.cancelCacheMigration() }) { Text("取消") }
+                if (cacheVm.migrationStatus.isError) {
+                    val browserNavigator = LocalBrowserNavigator.current
+                    TextButton(
+                        {
+                            browserNavigator.openBrowser(context, FEEDBACK_URL)
+                            cacheVm.exitApp()
+                        },
+                    ) { Text("提交反馈") }
+                } else {
+                    TextButton({ cacheVm.cancelCacheMigration() }) { Text("取消") }
+                }
             },
         )
     }

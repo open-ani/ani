@@ -5,10 +5,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.serialization.json.Json
@@ -37,7 +40,6 @@ import me.him188.ani.utils.logging.warn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
-import kotlin.coroutines.resume
 import kotlin.system.exitProcess
 
 const val DEFAULT_TORRENT_CACHE_DIR_NAME = "torrent-caches"
@@ -74,6 +76,7 @@ class AndroidTorrentCacheViewModel(
     val showMigrationDialog by derivedStateOf { migrationTasker.isRunning }
     var migrationStatus: MigrationStatus by mutableStateOf(MigrationStatus.Init)
         private set
+    private var lastMigrationError: Throwable? = null
     
     /**
      * 获取 [`内部私有存储`][android.content.Context.getFilesDir] 和 [`外部私有存储`][android.content.Context.getExternalFilesDir]
@@ -179,12 +182,16 @@ class AndroidTorrentCacheViewModel(
         selectExternalSharedStorageRequest?.complete(allow)
     }
 
-    private suspend fun requestMigrateCaches(prevPath: String, newPath: String) {
+    private fun requestMigrateCaches(prevPath: String, newPath: String) {
         migrationTasker.launch {
             logger.info { "[migration] request migrate cache, from: $prevPath, to: $newPath" }
             withContext(Dispatchers.Main) { migrationStatus = MigrationStatus.Init }
 
             cacheManager.closeAllCaches()
+            // 即使 BT 引擎的 onTorrentRemoved 被调用，它仍然可能持有文件句柄
+            // 在此处额外等待一段时间来确保文件已经关闭
+            // 此处人为增加等待是可以的，因为移动 BT 缓存目录是非常不常用的操作
+            delay(10000) 
 
             withContext(Dispatchers.Main) { migrationStatus = MigrationStatus.Cache(null) }
             val prevCachePath = Path(prevPath).inSystem
@@ -192,14 +199,11 @@ class AndroidTorrentCacheViewModel(
                 deleteRecursively() // new path should be empty
             }
 
-            suspendCancellableCoroutine { cont ->
-                logger.info { "[migration] start move from $prevCachePath to $newCachePath" }
-                prevCachePath.moveDirectoryRecursively(newCachePath) {
-                    migrationStatus = MigrationStatus.Cache(it.name)
-                }
-                logger.info { "[migration] move complete." }
-                cont.resume(Unit)
+            logger.info { "[migration] start move from $prevCachePath to $newCachePath" }
+            prevCachePath.moveDirectoryRecursively(newCachePath) {
+                migrationStatus = MigrationStatus.Cache(it.name)
             }
+            logger.info { "[migration] move complete." }
 
             migrationStatus = MigrationStatus.Metadata(null)
             cacheManager.storages.forEach { storage ->
@@ -228,6 +232,9 @@ class AndroidTorrentCacheViewModel(
                                 metadataSave.metadata.extra[TorrentMediaCacheEngine.EXTRA_TORRENT_CACHE_DIR]
                                     ?: return@seq // 只处理 TorrentMediaCacheEngine 创建的 metadata
                             val newTorrentDir = Path(newPath, torrentDir.substringAfter(prevPath)).toString()
+                            logger.info {
+                                "[migration] metadata of torrent cache changed: $torrentDir -> $newTorrentDir"
+                            }
 
                             // write new metadata to original file
                             val migratedMetadata = MediaCacheSave(
@@ -248,17 +255,33 @@ class AndroidTorrentCacheViewModel(
             }
         }.apply {
             invokeOnCompletion { throwable ->
-                if (throwable != null) {
-                    logger.warn(throwable) { "[migration] failed to migrate caches." }
+                if (throwable == null) {
+                    exitApp()
                 }
-                context.findActivity()?.finishAffinity()
-                exitProcess(0)
+                if (throwable !is CancellationException) {
+                    logger.warn(throwable) { "[migration] failed to migrate caches." }
+                    lastMigrationError = throwable
+                    migrationStatus = MigrationStatus.Error(throwable)
+                } else {
+                    exitApp()
+                }
             }
+        }
+    }
+
+    fun copyMigrationError(clipboard: ClipboardManager) {
+        lastMigrationError?.also {
+            clipboard.setText(AnnotatedString("$it\n${it.stackTraceToString()}"))
         }
     }
 
     fun cancelCacheMigration() {
         migrationTasker.cancel()
+    }
+
+    fun exitApp(): Nothing {
+        context.findActivity()?.finishAffinity()
+        exitProcess(0)
     }
 
     /**
@@ -279,8 +302,22 @@ class AndroidTorrentCacheViewModel(
     }
 
     sealed interface MigrationStatus {
-        object Init : MigrationStatus
-        class Cache(val currentFile: String?) : MigrationStatus
-        class Metadata(val currentMetadata: String?) : MigrationStatus
+        val isError: Boolean
+
+        object Init : MigrationStatus {
+            override val isError: Boolean = false
+        }
+
+        class Cache(val currentFile: String?) : MigrationStatus {
+            override val isError: Boolean = false
+        }
+
+        class Metadata(val currentMetadata: String?) : MigrationStatus {
+            override val isError: Boolean = false
+        }
+
+        class Error(val exception: Throwable?) : MigrationStatus {
+            override val isError: Boolean = true
+        }
     }
 }
