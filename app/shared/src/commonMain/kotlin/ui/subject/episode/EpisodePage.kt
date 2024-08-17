@@ -90,8 +90,6 @@ import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
-import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
-import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
@@ -513,8 +511,6 @@ private fun EpisodeVideo(
         }
     }
     val videoDanmakuState = vm.danmaku
-    var isMediaSelectorVisible by remember { mutableStateOf(false) }
-    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
 
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
@@ -610,23 +606,6 @@ private fun EpisodeVideo(
             .fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
-        sideSheets = {
-            if (isMediaSelectorVisible) {
-                EpisodeVideoMediaSelectorSideSheet(
-                    vm.mediaSelectorPresentation,
-                    vm.mediaSourceResultsPresentation,
-                    onDismissRequest = { isMediaSelectorVisible = false },
-                )
-            }
-            if (isEpisodeSelectorVisible) {
-                EpisodeSelectorSideSheet(
-                    vm.episodeSelectorState,
-                    onDismissRequest = { isEpisodeSelectorVisible = false },
-                )
-            }
-        },
-        onShowMediaSelector = { isMediaSelectorVisible = true },
-        onShowSelectEpisode = { isEpisodeSelectorVisible = true },
         onClickScreenshot = {
             val currentPositionMillis = vm.playerState.currentPositionMillis.value
             val min = currentPositionMillis / 60000
@@ -644,6 +623,9 @@ private fun EpisodeVideo(
                 enabled = false,
             )
         },
+        mediaSelectorPresentation = vm.mediaSelectorPresentation,
+        mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
+        episodeSelectorState = vm.episodeSelectorState,
         progressSliderState = progressSliderState,
         leftBottomTips = {
             AnimatedVisibility(

@@ -3,7 +3,6 @@ package me.him188.ani.app.videoplayer.ui
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,17 +15,17 @@ import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
-import me.him188.ani.app.ui.subject.episode.details.EpisodePlayMediaSelector
 import me.him188.ani.app.ui.subject.episode.details.rememberTestMediaSelectorPresentation
-import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSourceResultsPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
-import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Preview("Landscape Fullscreen - Light", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_NO)
 @Preview("Landscape Fullscreen - Dark", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
@@ -56,6 +55,7 @@ private fun PreviewDetachedSlider() {
     PreviewVideoScaffoldImpl(expanded = false, controllerVisibility = ControllerVisibility.DetachedSliderOnly)
 }
 
+@OptIn(TestOnly::class)
 @Composable
 private fun PreviewVideoScaffoldImpl(
     expanded: Boolean,
@@ -69,7 +69,7 @@ private fun PreviewVideoScaffoldImpl(
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
     var danmakuEnabled by remember { mutableStateOf(true) }
-    
+
     val progressSliderState = rememberMediaProgressSliderState(
         playerState,
         onPreview = {
@@ -110,22 +110,6 @@ private fun PreviewVideoScaffoldImpl(
             )
         },
         configProvider = { VideoScaffoldConfig.Default },
-        sideSheets = {
-            if (isMediaSelectorVisible) {
-                EpisodeVideoSettingsSideSheet(
-                    onDismissRequest = { isMediaSelectorVisible = false },
-                ) {
-                    EpisodePlayMediaSelector(
-                        rememberTestMediaSelectorPresentation(),
-                        emptyMediaSourceResultsPresentation(),
-                        onDismissRequest = { },
-                        modifier = Modifier.fillMaxHeight(), // 防止添加筛选后数量变少导致 bottom sheet 高度变化
-                    )
-                }
-            }
-        },
-        onShowMediaSelector = { isMediaSelectorVisible = true },
-        onShowSelectEpisode = { isEpisodeSelectorVisible = true },
         onClickScreenshot = {},
         detachedProgressSlider = {
             PlayerControllerDefaults.MediaProgressSlider(
@@ -135,6 +119,9 @@ private fun PreviewVideoScaffoldImpl(
             )
         },
         progressSliderState = progressSliderState,
+        mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
+        mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
+        episodeSelectorState = rememberTestEpisodeSelectorState(),
         leftBottomTips = {
             PlayerControllerDefaults.LeftBottomTips(onClick = {})
         },

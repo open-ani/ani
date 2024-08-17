@@ -23,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -49,11 +50,16 @@ import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.foundation.effects.CursorVisibilityEffect
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
@@ -73,15 +79,24 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedSwitcher
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
+import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
+import me.him188.ani.utils.platform.annotations.TestOnly
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
 internal const val TAG_EPISODE_VIDEO_TOP_BAR = "EpisodeVideoTopBar"
+
+internal const val TAG_DANMAKU_SETTINGS_SHEET = "DanmakuSettingsSheet"
+internal const val TAG_SHOW_MEDIA_SELECTOR = "ShowMediaSelector"
+internal const val TAG_SHOW_SETTINGS = "ShowSettings"
+
+internal const val TAG_MEDIA_SELECTOR_SHEET = "MediaSelectorSheet"
+internal const val TAG_EPISODE_SELECTOR_SHEET = "EpisodeSelectorSheet"
 
 /**
  * 剧集详情页面顶部的视频控件.
@@ -104,12 +119,12 @@ internal fun EpisodeVideoImpl(
     onExitFullscreen: () -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
     configProvider: () -> VideoScaffoldConfig,
-    sideSheets: @Composable () -> Unit,
-    onShowMediaSelector: () -> Unit,
-    onShowSelectEpisode: () -> Unit,
     onClickScreenshot: () -> Unit,
     detachedProgressSlider: @Composable () -> Unit,
     progressSliderState: MediaProgressSliderState,
+    mediaSelectorPresentation: MediaSelectorPresentation,
+    mediaSourceResultsPresentation: MediaSourceResultsPresentation,
+    episodeSelectorState: EpisodeSelectorState,
     leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
@@ -130,6 +145,11 @@ internal fun EpisodeVideoImpl(
                     || videoControllerState.visibility.detachedSlider)
         }
     }
+
+    var isMediaSelectorVisible by remember { mutableStateOf(false) }
+    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
+
+
     CursorVisibilityEffect(
         key = Unit,
         visible = showCursor,
@@ -151,11 +171,11 @@ internal fun EpisodeVideoImpl(
                 },
                 actions = {
                     if (expanded) {
-                        IconButton(onShowMediaSelector) {
+                        IconButton({ isMediaSelectorVisible = true }, Modifier.testTag(TAG_SHOW_MEDIA_SELECTOR)) {
                             Icon(Icons.Rounded.DisplaySettings, contentDescription = "数据源")
                         }
                     }
-                    IconButton({ showSettings = true }) {
+                    IconButton({ showSettings = true }, Modifier.testTag(TAG_SHOW_SETTINGS)) {
                         Icon(Icons.Rounded.Settings, contentDescription = "设置")
                     }
                 },
@@ -303,7 +323,7 @@ internal fun EpisodeVideoImpl(
                 endActions = {
                     if (expanded) {
                         PlayerControllerDefaults.SelectEpisodeIcon(
-                            onShowSelectEpisode,
+                            onClick = { isEpisodeSelectorVisible = true },
                         )
 
                         if (currentPlatform.isDesktop()) {
@@ -358,9 +378,25 @@ internal fun EpisodeVideoImpl(
             }
         },
         rhsSheet = {
+            val alwaysOnRequester = rememberAlwaysOnRequester(videoControllerState, "sideSheets")
+            val anySideSheetVisible by remember {
+                derivedStateOf {
+                    isMediaSelectorVisible || isEpisodeSelectorVisible || showSettings
+                }
+            }
+            if (anySideSheetVisible) {
+                DisposableEffect(true) {
+                    alwaysOnRequester.request()
+                    onDispose {
+                        alwaysOnRequester.cancelRequest()
+                    }
+                }
+            }
+
             if (showSettings) {
                 EpisodeVideoSettingsSideSheet(
                     onDismissRequest = { showSettings = false },
+                    Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
                     title = { Text(text = "弹幕设置") },
                     closeButton = {
                         IconButton(onClick = { showSettings = false }) {
@@ -373,8 +409,19 @@ internal fun EpisodeVideoImpl(
                     )
                 }
             }
-
-            sideSheets()
+            if (isMediaSelectorVisible) {
+                EpisodeVideoMediaSelectorSideSheet(
+                    mediaSelectorPresentation,
+                    mediaSourceResultsPresentation,
+                    onDismissRequest = { isMediaSelectorVisible = false },
+                )
+            }
+            if (isEpisodeSelectorVisible) {
+                EpisodeSelectorSideSheet(
+                    episodeSelectorState,
+                    onDismissRequest = { isEpisodeSelectorVisible = false },
+                )
+            }
         },
     )
 }
