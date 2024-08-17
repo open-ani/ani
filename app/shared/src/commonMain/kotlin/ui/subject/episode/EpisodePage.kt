@@ -61,6 +61,8 @@ import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -227,7 +229,11 @@ private fun EpisodeSceneTabletVeryWide(
                 TabRow(pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth())
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
-                HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
+                HorizontalPager(
+                    state = pagerState,
+                    Modifier.fillMaxSize(),
+                    userScrollEnabled = currentPlatform.isMobile(),
+                ) { index ->
                     when (index) {
                         0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                             EpisodeDetails(
