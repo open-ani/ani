@@ -125,6 +125,7 @@ class EpisodeVideoControllerTest {
                         enabled = false,
                     )
                 },
+                leftBottomTips = {},
                 progressSliderState = progressSliderState,
                 danmakuFrozen = true,
                 gestureFamily = gestureFamily,

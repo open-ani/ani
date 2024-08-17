@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
@@ -76,6 +77,7 @@ import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
+import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
@@ -171,6 +173,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     val commentEditorState: CommentEditorState
 
+    val playerSkipOpEdState: PlayerSkipOpEdState
+    
     @UiThread
     fun stopPlaying()
 }
@@ -522,6 +526,14 @@ private class EpisodeViewModelImpl(
         onSend = { _, _ -> },
         backgroundScope = backgroundScope,
     )
+    override val playerSkipOpEdState: PlayerSkipOpEdState = PlayerSkipOpEdState(
+        chapters = playerState.chapters.produceState(),
+        onSkip = {
+            playerState.seekTo(it)
+        },
+        videoLength = playerState.videoProperties.mapNotNull { it?.durationMillis?.milliseconds }
+            .produceState(0.milliseconds),
+    )
 
     override fun stopPlaying() {
         playerState.stop()
@@ -629,6 +641,28 @@ private class EpisodeViewModelImpl(
                     }
                 }
         }
+
+        // 跳过 OP 和 ED
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoSkipOpEdExperimental }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    // 设置启用
+                    combine(
+                        playerState.currentPositionMillis.sampleWithInitial(1000),
+                        episodeId,
+                        episodeCollectionsFlow,
+                    ) { pos, id, collections ->
+                        // 不止一集并且当前是第一集时不跳过
+                        if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == id) return@combine
+                        playerSkipOpEdState.update(pos)
+                    }.collect()
+                }
+        }
     }
 
     private fun createDanmakuPresentation(
@@ -639,4 +673,3 @@ private class EpisodeViewModelImpl(
         isSelf = selfId == data.senderId,
     )
 }
-
