@@ -334,12 +334,16 @@ abstract class DanmakuTrackScope {
     )
 }
 
+/**
+ * @param frozen 禁止运动
+ */
 @Composable
 fun FloatingDanmakuTrack(
     trackState: FloatingDanmakuTrackState,
     modifier: Modifier = Modifier,
     config: () -> DanmakuConfig = { DanmakuConfig.Default },
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    frozen: Boolean = false,
     content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
     val configUpdated by remember(config) { derivedStateOf(config) }
@@ -364,30 +368,32 @@ fun FloatingDanmakuTrack(
         DanmakuTrackScopeImpl({ configUpdated }, { baseStyle })
     }
 
-    LaunchedEffect(true) {
-        while (isActive) {
-            trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
-            // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
-            delay(1000 / 30)
+    if (!frozen) {
+        LaunchedEffect(true) {
+            while (isActive) {
+                trackState.checkDanmakuVisibility(layoutDirection, safeSeparation)
+                // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
+                delay(1000 / 30)
+            }
         }
-    }
 
-    LaunchedEffect(true) {
-        while (isActive) {
-            trackState.receiveNewDanmaku()
-            // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
-            delay(1000 / 30)
+        LaunchedEffect(true) {
+            while (isActive) {
+                trackState.receiveNewDanmaku()
+                // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
+                delay(1000 / 30)
+            }
         }
-    }
 
-    LaunchedEffect(
-        trackState.trackSize,
-        speedPxPerSecond,
-        trackState.isPaused,
-    ) {
-        if (trackState.trackSize == IntSize.Zero) return@LaunchedEffect
-        if (trackState.isPaused) return@LaunchedEffect
-        trackState.animateMove(speedPxPerSecond)
+        LaunchedEffect(
+            trackState.trackSize,
+            speedPxPerSecond,
+            trackState.isPaused,
+        ) {
+            if (trackState.trackSize == IntSize.Zero) return@LaunchedEffect
+            if (trackState.isPaused) return@LaunchedEffect
+            trackState.animateMove(speedPxPerSecond)
+        }
     }
 
     BoxWithConstraints(
@@ -417,6 +423,7 @@ fun FixedDanmakuTrack(
     modifier: Modifier = Modifier,
     config: () -> DanmakuConfig = { DanmakuConfig.Default },
     baseStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    frozen: Boolean = false,
     content: @Composable DanmakuTrackScope.() -> Unit, // box scope
 ) {
     val configUpdated by remember(config) { derivedStateOf(config) }
@@ -425,11 +432,13 @@ fun FixedDanmakuTrack(
         DanmakuTrackScopeImpl({ configUpdated }, { baseStyle })
     }
 
-    LaunchedEffect(true) {
-        while (isActive) {
-            trackState.receiveNewDanmaku(currentTimeMillis())
-            // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
-            delay(1000 / 10)
+    if (!frozen) {
+        LaunchedEffect(true) {
+            while (isActive) {
+                trackState.receiveNewDanmaku(currentTimeMillis())
+                // We need this delay to calculate gently, because we need to ensure that the updating of offsets gets completed in every frame.
+                delay(1000 / 10)
+            }
         }
     }
 

@@ -24,13 +24,14 @@ public:
     virtual void on_piece_finished(anilt::handle_id_t handle_id,int32_t piece_index);
     virtual void on_status_update(anilt::handle_id_t handle_id,anilt::torrent_stats_t &stats);
     virtual void on_file_completed(anilt::handle_id_t handle_id,int file_index);
+    virtual void on_torrent_removed(anilt::handle_id_t handle_id,char const *torrent_name);
     virtual void on_session_stats(anilt::handle_id_t handle_id,anilt::session_stats_t &stats);
 public:
     bool swig_overrides(int n) {
-      return (n < 9 ? swig_override[n] : false);
+      return (n < 10 ? swig_override[n] : false);
     }
 protected:
-    Swig::BoolArray<9> swig_override;
+    Swig::BoolArray<10> swig_override;
 };
 
 class SwigDirector_new_event_listener_t : public anilt::new_event_listener_t, public Swig::Director {

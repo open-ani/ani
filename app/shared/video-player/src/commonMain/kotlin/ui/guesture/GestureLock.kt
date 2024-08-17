@@ -19,8 +19,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
@@ -130,9 +132,14 @@ fun LockableVideoGestureHost(
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
+    family: GestureFamily = currentPlatform.mouseFamily,
 ) {
     if (locked) {
-        LockedScreenGestureHost({ controllerState.visibility }, controllerState.setFullVisible, modifier)
+        LockedScreenGestureHost(
+            { controllerState.visibility },
+            controllerState.setFullVisible,
+            modifier.testTag("LockedScreenGestureHost"),
+        )
     } else {
         VideoGestureHost(
             controllerState,
@@ -144,6 +151,7 @@ fun LockableVideoGestureHost(
             onTogglePauseResume = onTogglePauseResume,
             onToggleFullscreen = onToggleFullscreen,
             onExitFullscreen = onExitFullscreen,
+            family = family,
         )
     }
 }

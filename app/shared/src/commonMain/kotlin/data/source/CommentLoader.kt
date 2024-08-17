@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.subject.components.comment
+package me.him188.ani.app.data.source
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeComment
+import me.him188.ani.app.data.models.subject.SubjectComment
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.tools.caching.LazyDataCacheContext
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
@@ -14,6 +15,8 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.toUIBriefText
 import me.him188.ani.app.ui.foundation.richtext.toUIRichElements
+import me.him188.ani.app.ui.subject.components.comment.UIComment
+import me.him188.ani.app.ui.subject.components.comment.UIRichText
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.utils.bbcode.BBCode
 import kotlin.coroutines.CoroutineContext
@@ -49,9 +52,39 @@ class CommentLoader<T>(
 
     companion object {
         /**
+         * create comment loader of subject
+         */
+        fun createForSubject(
+            subjectId: Flow<Int>,
+            coroutineContext: CoroutineContext,
+            subjectCommentSource: suspend LazyDataCacheContext.(Int) -> PagedSource<SubjectComment>
+        ) = CommentLoader(
+            source = subjectId.map { sid ->
+                LazyDataCache(
+                    createSource = { ApiResponse.success(subjectCommentSource(sid)) },
+                    getKey = { it.id },
+                    debugName = "subjectComment-$sid",
+                )
+            },
+            coroutineContext = coroutineContext,
+            uiMapper = { comment ->
+                UIComment(
+                    id = comment.id,
+                    creator = comment.creator,
+                    content = parseBBCode(comment.content),
+                    createdAt = comment.updatedAt * 1000L,
+                    reactions = emptyList(),
+                    briefReplies = emptyList(),
+                    replyCount = 0,
+                    rating = comment.rating,
+                )
+            },
+        )
+
+        /**
          * create comment loader of episode
          */
-        fun episode(
+        fun createForEpisode(
             episodeId: Flow<Int>,
             coroutineContext: CoroutineContext,
             episodeCommentSource: suspend LazyDataCacheContext.(Int) -> PagedSource<EpisodeComment>
@@ -80,9 +113,11 @@ class CommentLoader<T>(
                             reactions = emptyList(),
                             briefReplies = emptyList(),
                             replyCount = 0,
+                            rating = null,
                         )
                     },
                     replyCount = comment.replies.size,
+                    rating = null,
                 )
             },
         )

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -62,6 +63,7 @@ class AniAppViewModel : AbstractViewModel(), KoinComponent {
 @Composable
 fun AniApp(
     modifier: Modifier = Modifier,
+    colorScheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
     val coilContext = LocalPlatformContext.current
@@ -93,7 +95,7 @@ fun AniApp(
                     ThemeKind.DARK -> true
                 }
             }
-            MaterialTheme(aniColorScheme(isDark)) {
+            MaterialTheme(colorScheme ?: aniColorScheme(isDark)) {
                 Box(
                     modifier = modifier
                         .background(AppTheme.colorScheme.background)

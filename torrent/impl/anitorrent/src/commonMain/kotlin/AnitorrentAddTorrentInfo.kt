@@ -3,8 +3,8 @@ package me.him188.ani.app.torrent.anitorrent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.torrent.api.files.AddTorrentInfo
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
-import me.him188.ani.app.torrent.api.files.TorrentInfo
 
 @Serializable
 sealed class AnitorrentTorrentData {
@@ -18,25 +18,22 @@ sealed class AnitorrentTorrentData {
 }
 
 @Serializable
-class AnitorrentTorrentInfo(
+class AnitorrentAddTorrentInfo(
     val data: AnitorrentTorrentData,
     val httpTorrentFilePath: String? = null,
-) : TorrentInfo {
-    @Deprecated("Use data instead", ReplaceWith("data"))
-    override val originalUri: Nothing? get() = null
-
+) : AddTorrentInfo {
     companion object {
         private val json = Json {
             encodeDefaults = true
             ignoreUnknownKeys = true
         }
 
-        fun decodeFrom(encoded: EncodedTorrentInfo): AnitorrentTorrentInfo {
+        fun decodeFrom(encoded: EncodedTorrentInfo): AnitorrentAddTorrentInfo {
             return json.decodeFromString(serializer(), encoded.data.decodeToString())
         }
 
         fun encode(
-            info: AnitorrentTorrentInfo
+            info: AnitorrentAddTorrentInfo
         ): EncodedTorrentInfo = EncodedTorrentInfo.createRaw(
             data = json.encodeToString(serializer(), info).encodeToByteArray(),
         )

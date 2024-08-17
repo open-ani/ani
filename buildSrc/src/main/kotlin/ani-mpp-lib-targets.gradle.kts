@@ -104,10 +104,11 @@ configure<KotlinMultiplatformExtension> {
     }
 
     if (android != null) {
-        listOf(sourceSets.androidInstrumentedTest, sourceSets.androidUnitTest).forEach { sourceSet ->
+        listOf(sourceSets.getByName("androidInstrumentedTest"), sourceSets.getByName("androidUnitTest")).forEach { sourceSet ->
             sourceSet.dependencies {
                 // https://developer.android.com/develop/ui/compose/testing#setup
                 implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
+                implementation("androidx.compose.ui:ui-test-manifest:1.6.8")
             }
         }
 

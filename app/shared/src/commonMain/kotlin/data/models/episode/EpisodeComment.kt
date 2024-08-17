@@ -9,7 +9,7 @@ data class EpisodeComment(
     val content: String,
     val episodeId: Int,
     val state: Int,
-    val creator: UserInfo,
+    val creator: UserInfo?,
     val replies: List<EpisodeComment> = listOf()
 )
 
@@ -23,10 +23,10 @@ fun BangumiNextGetSubjectEpisodeComments200ResponseInner.toEpisodeComment() = Ep
         UserInfo(
             id = u.id,
             nickname = u.nickname,
-            username = u.id.toString(),
+            username = null,
             avatarUrl = u.avatar.medium,
         ) // 没有username
-    } ?: UserInfo.EMPTY,
+    },
     replies = replies.map { r ->
         EpisodeComment(
             id = r.id,
@@ -38,10 +38,10 @@ fun BangumiNextGetSubjectEpisodeComments200ResponseInner.toEpisodeComment() = Ep
                 UserInfo(
                     id = u.id,
                     nickname = u.nickname,
-                    username = u.id.toString(),
+                    username = null,
                     avatarUrl = u.avatar.medium,
                 )
-            } ?: UserInfo.EMPTY,
+            },
         )
     },
 )

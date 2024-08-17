@@ -1,5 +1,8 @@
 package me.him188.ani.app.ui.subject.details
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,7 +18,11 @@ import me.him188.ani.app.data.models.subject.PersonInfo
 import me.him188.ani.app.data.models.subject.PersonType
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
@@ -23,10 +30,13 @@ import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
+import me.him188.ani.app.ui.subject.details.components.SubjectCommentColumn
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
+import me.him188.ani.app.ui.subject.details.components.generateUiComment
+import me.him188.ani.app.ui.subject.details.components.rememberTestCommentState
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.rating.EditableRating
@@ -172,7 +182,21 @@ internal fun PreviewSubjectDetails() {
                     Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                 )
             },
-            commentsTab = {},
+            commentsTab = {
+                val lazyListState = rememberLazyListState()
+
+                SubjectDetailsDefaults.SubjectCommentColumn(
+                    state = rememberTestCommentState(commentList = generateUiComment(10)),
+                    listState = lazyListState,
+                    modifier = Modifier
+                        .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
+                        .ifThen(currentPlatform.isDesktop()) {
+                            nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
+                        }
+                        .nestedScroll(connectedScrollState.nestedScrollConnection),
+                    onClickUrl = { },
+                )
+            },
             discussionsTab = {},
         )
     }

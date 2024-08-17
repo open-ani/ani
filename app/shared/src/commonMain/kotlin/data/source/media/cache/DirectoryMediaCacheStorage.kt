@@ -10,10 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
@@ -35,8 +32,6 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.matches
-import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.createDirectories
 import me.him188.ani.utils.io.delete
@@ -171,14 +166,6 @@ class DirectoryMediaCacheStorage(
 
     override val cacheMediaSource: MediaSource by lazy {
         MediaCacheStorageSource(this, MediaSourceLocation.Local)
-    }
-
-    override val count = listFlow.map { it.size }
-
-    override val totalSize: Flow<FileSize> = listFlow.flatMapLatest { caches ->
-        combine(caches.map { it.totalSize }) { sizes ->
-            sizes.sumOf { it.inBytes }.bytes
-        }
     }
     override val stats: MediaStats get() = engine.stats
 
