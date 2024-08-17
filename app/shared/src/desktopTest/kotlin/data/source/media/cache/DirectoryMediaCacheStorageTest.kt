@@ -2,6 +2,7 @@ package me.him188.ani.app.data.source.media.cache
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -20,11 +21,13 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.unwrapCached
 import me.him188.ani.utils.io.exists
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.resolve
@@ -282,6 +285,90 @@ class DirectoryMediaCacheStorageTest {
         assertEquals(1, storage.listFlow.first().size)
         val cache = storage.listFlow.first().single()
         assertEquals(cacheId, cache.cacheId)
+    }
+
+    /**
+     * 忽略错误文件
+     */
+    @Test
+    fun `restorePersistedCaches - broken metadata file`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cacheId = MediaCache.calculateCacheId(media.mediaId, metadata)
+        val metadataFile = metadataDir.resolve("${cacheId}.metadata")
+        metadataFile.writeText("broken file")
+
+        storage.restorePersistedCaches()
+        assertEquals(0, storage.listFlow.first().size)
+    }
+
+    /**
+     * 只考虑 `*.metadata` 文件
+     */
+    @Test
+    fun `restorePersistedCaches - ignore non-metadata files`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cacheId = MediaCache.calculateCacheId(media.mediaId, metadata)
+        val metadataFile = metadataDir.resolve("${cacheId}.0")
+        metadataFile.writeText(
+            // A valid metadata
+            amendJsonString(
+                """
+                    {"origin":{"type":"me.him188.ani.datasources.api.DefaultMedia","mediaId":"dmhy.2","mediaSourceId":"dmhy","originalUrl":"https://example.com/1","download":{"type":"me.him188.ani.datasources.api.topic.ResourceLocation.MagnetLink","uri":"magnet:?xt=urn:btih:1"},"originalTitle":"夜晚的水母不会游泳 02 测试剧集","publishedTime":1723908945976,"properties":{"subtitleLanguageIds":["CHT"],"resolution":"1080P","alliance":"北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组","size":244318208},"episodeRange":{"type":"me.him188.ani.datasources.api.topic.EpisodeRange.Single","value":{"type":"me.him188.ani.datasources.api.EpisodeSort.Normal","number":2.0}}},"metadata":{"episodeId":"1231231","subjectNames":[],"episodeSort":{"type":"me.him188.ani.datasources.api.EpisodeSort.Normal","number":2.0},"episodeName":"测试剧集","extra":{"torrentData":"7b2264617461223a7b2274797065223a224d61676e6574557269222c22757269223a226d61676e65743a3f78743d75726e3a627469683a31227d2c2268747470546f7272656e7446696c6550617468223a6e756c6c7d",
+                    "torrentCacheDir":""}}}
+                """.trimIndent(),
+            ) {
+                put("torrentCacheDir", dir.resolve("pieces/2071812470").absolutePath)
+            },
+        )
+
+        storage.restorePersistedCaches()
+        assertEquals(0, storage.listFlow.first().size)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // cacheMediaSource
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `query cacheMediaSource`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cache =
+            storage.cache(media, metadata, resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+
+        assertEquals(
+            cache.getCachedMedia().unwrapCached(),
+            storage.cacheMediaSource.fetch(
+                MediaFetchRequest(
+                    subjectNames = metadata.subjectNames,
+                    episodeSort = metadata.episodeSort,
+                    episodeName = metadata.episodeName,
+                ),
+            ).results.toList().single().media.unwrapCached(),
+        )
     }
 
     ///////////////////////////////////////////////////////////////////////////
