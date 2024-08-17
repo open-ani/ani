@@ -32,15 +32,6 @@ enum class TorrentEngineType(
     Anitorrent("anitorrent"),
 }
 
-class TorrentDownloaderInitializationException(
-    message: String? = null,
-    cause: Throwable? = null,
-) : Exception(message, cause)
-
-class TorrentDownloaderManagerError(
-    val exception: Throwable,
-)
-
 class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
     private val saveDir: (type: TorrentEngineType) -> SystemPath,

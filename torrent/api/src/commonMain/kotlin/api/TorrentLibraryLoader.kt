@@ -12,6 +12,9 @@ interface TorrentDownloaderFactory { // SPI
 
     val libraryLoader: TorrentLibraryLoader
 
+    /**
+     * 创建一个 [TorrentDownloader]. 当 [TorrentDownloader] 被关闭时, [httpFileDownloader] 也会被关闭.
+     */
     fun createDownloader(
         rootDataDirectory: SystemPath,
         httpFileDownloader: HttpFileDownloader,

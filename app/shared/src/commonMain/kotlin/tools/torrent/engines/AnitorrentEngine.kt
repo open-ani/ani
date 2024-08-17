@@ -64,7 +64,7 @@ class AnitorrentEngine(
         }
     }
 
-    override suspend fun testConnection(): Boolean = true
+    override suspend fun testConnection(): Boolean = isSupported.first()
 
     override suspend fun newInstance(config: AnitorrentConfig): TorrentDownloader {
         if (!isSupported.first()) {
