@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
@@ -74,6 +75,7 @@ import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 
+internal const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
 
 @Stable
 object PlayerControllerDefaults {
@@ -139,7 +141,7 @@ object PlayerControllerDefaults {
     ) {
         TextButton(
             onClick,
-            modifier,
+            modifier.testTag(TAG_SELECT_EPISODE_ICON_BUTTON),
             colors = ButtonDefaults.textButtonColors(
                 contentColor = LocalContentColor.current,
             ),

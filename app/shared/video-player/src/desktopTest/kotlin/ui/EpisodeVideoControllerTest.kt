@@ -46,7 +46,12 @@ import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
+import me.him188.ani.app.ui.subject.episode.TAG_DANMAKU_SETTINGS_SHEET
+import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_SELECTOR_SHEET
 import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_VIDEO_TOP_BAR
+import me.him188.ani.app.ui.subject.episode.TAG_MEDIA_SELECTOR_SHEET
+import me.him188.ani.app.ui.subject.episode.TAG_SHOW_MEDIA_SELECTOR
+import me.him188.ani.app.ui.subject.episode.TAG_SHOW_SETTINGS
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
@@ -58,6 +63,7 @@ import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
+import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -528,6 +534,79 @@ class EpisodeVideoControllerTest {
             expectAlwaysOn = true,
         )
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // 打开 side sheets 后 request always on, 关闭后取消
+    /////////////////////////////////////////////////////////////////////////// 
+
+    private fun SkikoComposeUiTest.testSideSheetRequestAlwaysOn(
+        openSideSheet: () -> Unit,
+        waitForSideSheetOpen: () -> Unit,
+        waitForSideSheetClose: () -> Unit,
+    ) {
+        testRequestAlwaysOn(
+            performGesture = {
+                openSideSheet()
+                onRoot().performMouseInput {
+                    moveTo(centerRight)
+                }
+                waitForSideSheetOpen()
+                runOnIdle {
+                    assertEquals(true, controllerState.alwaysOn)
+                }
+            },
+            expectAlwaysOn = true,
+        )
+        // 点击外部, 关闭 side sheet
+        mainClock.autoAdvance = false
+        runOnIdle {
+            onRoot().performTouchInput {
+                click(center)
+            }
+        }
+        runOnIdle {
+            waitForSideSheetClose()
+            assertEquals(false, controllerState.alwaysOn)
+        }
+        // 随后应当隐藏控制器
+        runOnIdle {
+            mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
+        }
+        mainClock.autoAdvance = true
+        waitForIdle()
+        assertControllerVisible(false)
+    }
+
+    @Test
+    fun `mouse - hover to always on - danmaku settings sheet`() = runSkikoComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `mouse - hover to always on - media selector sheet`() = runSkikoComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `mouse - hover to always on - episode selector sheet`() = runSkikoComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // MOUSE 模式下单击鼠标
+    ///////////////////////////////////////////////////////////////////////////
 
     /**
      * 手指单击控制器, 不会触发保持显示
