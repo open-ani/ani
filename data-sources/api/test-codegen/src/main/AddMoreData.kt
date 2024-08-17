@@ -10,6 +10,7 @@ import io.ktor.serialization.ContentConverter
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
@@ -76,7 +77,7 @@ class TopicFetcher(
                     ContentType.Text.Html,
                     object : ContentConverter {
                         override suspend fun deserialize(
-                            charset: io.ktor.utils.io.charsets.Charset,
+                            charset: Charset,
                             typeInfo: TypeInfo,
                             content: ByteReadChannel
                         ): Any? {
@@ -87,14 +88,12 @@ class TopicFetcher(
                             return Jsoup.parse(string, charset.name())
                         }
 
-                        override suspend fun serialize(
+                        override suspend fun serializeNullable(
                             contentType: ContentType,
-                            charset: io.ktor.utils.io.charsets.Charset,
+                            charset: Charset,
                             typeInfo: TypeInfo,
                             value: Any?
-                        ): OutgoingContent? {
-                            return null
-                        }
+                        ): OutgoingContent? = null
                     },
                 ) {}
             }
