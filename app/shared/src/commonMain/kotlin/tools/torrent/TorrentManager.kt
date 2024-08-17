@@ -17,8 +17,7 @@ import kotlin.coroutines.CoroutineContext
  * 管理本地 BT 下载器的实现. 根据配置选择不同的下载器.
  *
  * 目前支持的下载实现:
- * - libtorrent4j (内嵌)
- * - qBittorrent (本机局域网).
+ * - anitorrent
  */
 interface TorrentManager {
     val anitorrent: AnitorrentEngine
@@ -37,6 +36,7 @@ class DefaultTorrentManager(
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
     private val proxySettingsFlow: Flow<ProxySettings>,
     private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
+    val platform: Platform,
 ) : TorrentManager, KoinComponent {
     private val scope = parentCoroutineContext.childScope()
 
@@ -56,7 +56,7 @@ class DefaultTorrentManager(
         // 
         // 如果要支持多个, 需要考虑将所有 storage 合并成一个 MediaSource.
 
-        when (Platform.currentPlatform) {
+        when (platform) {
             is Platform.Desktop -> listOf(anitorrent)
             Platform.Android -> listOf(anitorrent)
             Platform.Ios -> listOf() // TODO IOS anitorrent
@@ -68,6 +68,7 @@ class DefaultTorrentManager(
             parentCoroutineContext: CoroutineContext,
             settingsRepository: SettingsRepository,
             baseSaveDir: () -> SystemPath,
+            platform: Platform = Platform.currentPlatform,
         ): DefaultTorrentManager {
             val saveDirLazy by lazy(baseSaveDir)
             return DefaultTorrentManager(
@@ -77,6 +78,7 @@ class DefaultTorrentManager(
                 },
                 settingsRepository.proxySettings.flow,
                 settingsRepository.anitorrentConfig.flow,
+                platform,
             )
         }
     }
