@@ -160,10 +160,11 @@ fun EpisodeSort(int: Int, type: EpisodeType = MainStory): EpisodeSort {
 /**
  * @see EpisodeType
  */
-fun EpisodeSort(int: BigNum, type: EpisodeType = MainStory): EpisodeSort {
+fun EpisodeSort(int: BigNum, type: EpisodeType? = MainStory): EpisodeSort {
     if (int.isNegative()) return EpisodeSort.Unknown(int.toString())
     return when (type) {
         MainStory -> Normal(int.toFloat())
         SP, OP, ED, PV, MAD, OVA, OAD -> Special(type, int.toFloat())
+        null -> EpisodeSort.Unknown(int.toString())
     }
 }

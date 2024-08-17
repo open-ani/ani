@@ -168,7 +168,7 @@ fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     )
 }
 
-private fun getEpisodeTypeByBangumiCode(code: Int): EpisodeType {
+private fun getEpisodeTypeByBangumiCode(code: Int): EpisodeType? {
     return when (code) {
         0 -> MainStory
         1 -> SP
@@ -176,7 +176,7 @@ private fun getEpisodeTypeByBangumiCode(code: Int): EpisodeType {
         3 -> ED
         4 -> PV
         5 -> MAD
-        else -> SP
+        else -> null
     }
 }
 

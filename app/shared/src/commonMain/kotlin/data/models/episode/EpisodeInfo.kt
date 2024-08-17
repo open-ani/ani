@@ -15,7 +15,7 @@ import me.him188.ani.datasources.api.EpisodeType
 data class EpisodeInfo(
     val id: Int,
     /** `0` 本篇，`1` SP，`2` OP，`3` ED */
-    val type: EpisodeType = EpisodeType.MainStory,
+    val type: EpisodeType? = EpisodeType.MainStory,
     val name: String = "",
     val nameCn: String = "",
     /**
