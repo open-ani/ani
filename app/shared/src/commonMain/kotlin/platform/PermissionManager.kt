@@ -4,7 +4,7 @@ interface PermissionManager {
     suspend fun requestNotificationPermission(context: ContextMP): Boolean
 
     /**
-     * Android only. 请求一个完全授予可读写权限的外部共享空间路径
+     * Android only. 请求一个完全授予可读写权限的外部共享空间路径，返回其 URL string
      */
     suspend fun requestExternalDocumentTree(context: ContextMP): String?
 }
