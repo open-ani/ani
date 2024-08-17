@@ -13,21 +13,23 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchState
 import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.cache.TestMediaList
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.EmptyCoroutineContext
 
+@TestOnly
 internal val previewMediaList = TestMediaList.run {
     listOf(
         CachedMedia(
@@ -38,6 +40,7 @@ internal val previewMediaList = TestMediaList.run {
     ) + this
 }
 
+@OptIn(TestOnly::class)
 @PreviewLightDark
 @Composable
 private fun PreviewMediaSelector() {
@@ -75,6 +78,7 @@ private fun PreviewMediaSelector() {
     }
 }
 
+@TestOnly
 @Composable
 internal fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = remember {
     MediaSourceResultsPresentation(

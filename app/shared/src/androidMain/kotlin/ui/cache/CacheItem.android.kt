@@ -14,6 +14,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 // See interactive preview
 @Preview
@@ -39,6 +40,7 @@ private fun PreviewCacheItemUploading() = ProvideCompositionLocalsForPreview {
     CacheItemView(item = media, onDelete = {}, mediaSourceId = { "本地" })
 }
 
+@OptIn(TestOnly::class)
 private fun testData(progress: Float) = TestMediaCache(
     CachedMedia(
         previewMediaList[0],

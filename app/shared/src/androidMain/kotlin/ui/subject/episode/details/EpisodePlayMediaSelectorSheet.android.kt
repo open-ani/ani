@@ -18,6 +18,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.previewMediaList
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Preview(name = "progress = null")
 @Composable
@@ -58,6 +59,7 @@ fun rememberTestMediaSelectorPresentation(): MediaSelectorPresentation {
     return remember(backgroundScope) { createState(backgroundScope.backgroundScope) }
 }
 
+@OptIn(TestOnly::class)
 private fun createState(backgroundScope: CoroutineScope) =
     MediaSelectorPresentation(
         DefaultMediaSelector(

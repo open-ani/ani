@@ -15,12 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.cache.TestMediaList
 import me.him188.ani.app.ui.subject.episode.details.renderProperties
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 fun TestEpisodeWatchStatusButton() {
@@ -32,6 +33,7 @@ fun TestEpisodeWatchStatusButton() {
     )
 }
 
+@OptIn(TestOnly::class)
 @Composable
 private fun PreviewEpisodeItemImpl(
     media: DefaultMedia? = TestMediaList[0],

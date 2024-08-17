@@ -18,6 +18,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 // TIPS: use interactive preview
 @Preview
@@ -47,6 +48,7 @@ fun PreviewCacheManagementPageScroll() {
     }
 }
 
+@OptIn(TestOnly::class)
 private fun createTestVM() = object : CacheManagementPageViewModel {
     override val overallStats: MediaStats get() = emptyMediaStats()
     override val storages: List<MediaCacheStorageState> = listOf(
@@ -62,6 +64,7 @@ private fun createTestVM() = object : CacheManagementPageViewModel {
     }
 }
 
+@TestOnly
 internal val testMediaCache1 = TestMediaCache(
     CachedMedia(
         previewMediaList[0],
@@ -81,6 +84,7 @@ internal val testMediaCache1 = TestMediaCache(
     totalSize = MutableStateFlow(233.megaBytes),
 )
 
+@TestOnly
 internal val testMediaCache2 = TestMediaCache(
     CachedMedia(
         previewMediaList[1],
@@ -100,6 +104,7 @@ internal val testMediaCache2 = TestMediaCache(
     totalSize = MutableStateFlow(233.megaBytes),
 )
 
+@OptIn(TestOnly::class)
 @Preview
 @Composable
 private fun PreviewStorageManagerView() {
