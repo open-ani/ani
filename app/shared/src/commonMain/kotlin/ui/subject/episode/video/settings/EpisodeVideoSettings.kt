@@ -27,8 +27,8 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -400,7 +400,8 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
-            if (isInDebugMode()) {
+            val debugViewModel = rememberDebugSettingsViewModel()
+            if (debugViewModel.isAppInDebugMode) {
                 danmakuRegexFilterGroup()
 
                 SwitchItem(
@@ -412,6 +413,15 @@ fun EpisodeVideoSettings(
                     },
                     title = { Text("弹幕调试模式") },
                     modifier = Modifier.placeholder(isLoadingState),
+                )
+
+                val debugSettings by debugViewModel.debugSettings
+                SwitchItem(
+                    debugSettings.showControllerAlwaysOnRequesters,
+                    onCheckedChange = {
+                        debugViewModel.debugSettings.update(debugSettings.copy(showControllerAlwaysOnRequesters = it))
+                    },
+                    title = { Text("showControllerAlwaysOnRequesters") },
                 )
             }
         }

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +45,9 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.foundation.effects.CursorVisibilityEffect
+import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
@@ -242,6 +245,15 @@ internal fun EpisodeVideoImpl(
                     videoLoadingState(),
                     optimizeForFullscreen = expanded, // TODO: 这对 PC 其实可能不太好
                 )
+                val debugViewModel = rememberDebugSettingsViewModel()
+                @OptIn(TestOnly::class)
+                if (debugViewModel.isAppInDebugMode && debugViewModel.debugSettings.value.showControllerAlwaysOnRequesters) {
+                    TextWithBorder(
+                        "Always on requesters: \n" +
+                                videoControllerState.getAlwaysOnRequesters().joinToString("\n"),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
         },
         rhsButtons = {
