@@ -264,14 +264,14 @@ jobs:
         name: Generate QR code for APK (GitHub)
         uses: snow-actions/qrcode@v1.0.0
         with:
-          text: https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
+          text: https://github.com/Him188/ani/releases/download/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}-universal.apk
           path: apk-qrcode-github.png
 
       - if: ${{ env.uploadApk == 'true' }}
         name: Generate QR code for APK (Cloudflare)
         uses: snow-actions/qrcode@v1.0.0
         with:
-          text: https://d.myani.org/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}.apk
+          text: https://d.myani.org/${{ steps.tag.outputs.tag }}/ani-${{ steps.tag-version.outputs.substring }}-universal.apk
           path: apk-qrcode-cloudflare.png
 
       - if: ${{ env.uploadApk == 'true' }}
