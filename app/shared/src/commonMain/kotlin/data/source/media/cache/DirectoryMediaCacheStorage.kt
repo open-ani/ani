@@ -57,7 +57,7 @@ private const val METADATA_FILE_EXTENSION = "metadata"
  */
 class DirectoryMediaCacheStorage(
     override val mediaSourceId: String,
-    private val metadataDir: SystemPath,
+    val metadataDir: SystemPath,
     private val engine: MediaCacheEngine,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaCacheStorage {
@@ -72,7 +72,7 @@ class DirectoryMediaCacheStorage(
         CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     @Serializable
-    private class MediaCacheSave(
+    class MediaCacheSave(
         val origin: Media,
         val metadata: MediaCacheMetadata,
     )

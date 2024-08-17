@@ -167,6 +167,7 @@ kotlin {
     sourceSets.androidUnitTest.dependencies {
         implementation(libs.mockito)
         implementation(libs.mockito.kotlin)
+        implementation(libs.koin.test)
     }
 
     sourceSets.nativeMain.dependencies {
