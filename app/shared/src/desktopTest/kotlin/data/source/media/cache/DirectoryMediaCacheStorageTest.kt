@@ -50,7 +50,7 @@ class DirectoryMediaCacheStorageTest {
     )
 
     @Test
-    fun `create and fine with resume`() = runTest {
+    fun `create and find with resume`() = runTest {
         val storage =
             DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
 

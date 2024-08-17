@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer.ui
+package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,17 +28,12 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.framework.AniComposeUiTest
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
-import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
-import me.him188.ani.app.ui.subject.episode.TAG_DANMAKU_SETTINGS_SHEET
-import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_SELECTOR_SHEET
-import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_VIDEO_TOP_BAR
-import me.him188.ani.app.ui.subject.episode.TAG_MEDIA_SELECTOR_SHEET
-import me.him188.ani.app.ui.subject.episode.TAG_SHOW_MEDIA_SELECTOR
-import me.him188.ani.app.ui.subject.episode.TAG_SHOW_SETTINGS
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
@@ -308,44 +303,45 @@ class EpisodeVideoControllerTest {
     }
 
     @Test
-    fun `touch - drag when controller is already fully visible and can still play`() = runAniComposeUiTest {
-        setContent {
-            Player(GestureFamily.TOUCH)
-        }
-        waitForIdle()
-        val root = onAllNodes(isRoot()).onFirst()
+    fun `touch - drag when controller is already fully visible and can still play`() =
+        runAniComposeUiTest {
+            setContent {
+                Player(GestureFamily.TOUCH)
+            }
+            waitForIdle()
+            val root = onAllNodes(isRoot()).onFirst()
 
-        root.performClick() // 显示全部控制器
-        runOnIdle {
-            waitUntil { topBar.exists() }
-            detachedProgressSlider.assertDoesNotExist()
-        }
+            root.performClick() // 显示全部控制器
+            runOnIdle {
+                waitUntil { topBar.exists() }
+                detachedProgressSlider.assertDoesNotExist()
+            }
 
-        progressSlider.performTouchInput {
-            down(centerLeft)
-            moveBy(center)
-        }
-        runOnIdle {
-            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
-            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
-        }
+            progressSlider.performTouchInput {
+                down(centerLeft)
+                moveBy(center)
+            }
+            runOnIdle {
+                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
 
-        // 松开手指
-        root.performTouchInput {
-            up()
-        }
-        runOnIdle {
-            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
-            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
-        }
+            // 松开手指
+            root.performTouchInput {
+                up()
+            }
+            runOnIdle {
+                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
 
-        currentPositionMillis += 5000L // 播放 5 秒
+            currentPositionMillis += 5000L // 播放 5 秒
 
-        runOnIdle {
-            waitUntil { onNodeWithText("00:51 / 01:40").exists() }
-            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            runOnIdle {
+                waitUntil { onNodeWithText("00:51 / 01:40").exists() }
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
         }
-    }
 
     /**
      * @see GestureFamily.swipeToSeek
