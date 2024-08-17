@@ -41,10 +41,10 @@ class DefaultTorrentManager(
 
     override val anitorrent: AnitorrentEngine by lazy {
         AnitorrentEngine(
-            scope.childScope(CoroutineName("AnitorrentEngine")),
             anitorrentConfigFlow,
             proxySettingsFlow,
             saveDir(TorrentEngineType.Anitorrent),
+            scope.coroutineContext + CoroutineName("AnitorrentEngine"),
         )
     }
 

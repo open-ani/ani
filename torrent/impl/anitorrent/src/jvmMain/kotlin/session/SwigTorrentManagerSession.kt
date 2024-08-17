@@ -7,9 +7,9 @@ import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.utils.io.toNioPath
 import kotlin.io.path.absolutePathString
 
-internal class SwigTorrentSession(
+internal class SwigTorrentManagerSession(
     internal val native: session_t,
-) : TorrentSession<SwigTorrentHandle, SwigTorrentAddInfo> {
+) : TorrentManagerSession<SwigTorrentHandle, SwigTorrentAddInfo> {
     override fun startDownload(handle: SwigTorrentHandle, addInfo: SwigTorrentAddInfo, saveDir: Path): Boolean =
         native.start_download(handle.native, addInfo.native, saveDir.toNioPath().absolutePathString())
 
@@ -21,14 +21,6 @@ internal class SwigTorrentSession(
     override fun createTorrentAddInfo(): SwigTorrentAddInfo = SwigTorrentAddInfo(torrent_add_info_t())
     override fun resume() {
         native.resume()
-    }
-}
-
-internal class SwigTorrentHandle(
-    val native: torrent_handle_t,
-) : TorrentHandle {
-    override fun addTracker(tracker: String, tier: Short, failLimit: Short) {
-        native.add_tracker(tracker, tier, failLimit)
     }
 }
 

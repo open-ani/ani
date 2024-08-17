@@ -5,6 +5,13 @@ import kotlin.coroutines.CoroutineContext
 
 interface TorrentLibraryLoader {
     fun loadLibraries()
+
+    companion object {
+        val Noop = object : TorrentLibraryLoader {
+            override fun loadLibraries() {
+            }
+        }
+    }
 }
 
 interface TorrentDownloaderFactory { // SPI

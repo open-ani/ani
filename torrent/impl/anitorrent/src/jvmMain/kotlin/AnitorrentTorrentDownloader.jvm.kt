@@ -12,12 +12,10 @@ import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_resume_data_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_state_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
-import me.him188.ani.app.torrent.anitorrent.session.AnitorrentHandle
-import me.him188.ani.app.torrent.anitorrent.session.SwigAnitorrentHandle
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentAddInfo
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentHandle
+import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentManagerSession
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentResumeData
-import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentSession
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentStats
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloader
@@ -58,7 +56,7 @@ internal actual fun createAnitorrentTorrentDownloader(
     AnitorrentTorrentDownloader.logger.info { "AnitorrentTorrentDownloader created" }
     return SwigAnitorrentTorrentDownloader(
         rootDataDirectory = rootDataDirectory,
-        native = SwigTorrentSession(session),
+        native = SwigTorrentManagerSession(session),
         httpFileDownloader = httpFileDownloader,
         parentCoroutineContext = parentCoroutineContext,
     )
@@ -67,7 +65,7 @@ internal actual fun createAnitorrentTorrentDownloader(
 
 internal class SwigAnitorrentTorrentDownloader(
     rootDataDirectory: SystemPath,
-    override val native: SwigTorrentSession,
+    override val native: SwigTorrentManagerSession,
     httpFileDownloader: HttpFileDownloader,
     parentCoroutineContext: CoroutineContext
 ) : AnitorrentTorrentDownloader<SwigTorrentHandle, SwigTorrentAddInfo>(
@@ -160,12 +158,6 @@ internal class SwigAnitorrentTorrentDownloader(
                 native.native.process_events(eventListener) // can block thread
             }
         }
-    }
-
-    override fun createAnitorrentHandle(
-        handle: SwigTorrentHandle
-    ): AnitorrentHandle {
-        return SwigAnitorrentHandle(handle.native)
     }
 
     override fun close() {

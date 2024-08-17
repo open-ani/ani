@@ -27,17 +27,7 @@ interface MediaCache {
      */
     val cacheId: String
         get() {
-            val hash = (origin.mediaId.hashCode() * 31
-                    + metadata.subjectId.hashCode() * 31
-                    + metadata.episodeId.hashCode()).absoluteValue.toString()
-            val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
-            if (subjectName != null) {
-                fun removeSpecials(value: String): String {
-                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
-                }
-                return "${removeSpecials(subjectName).take(8)}-$hash"
-            }
-            return hash
+            return calculateCacheId(origin.mediaId, metadata)
         }
 
     /**
@@ -136,6 +126,22 @@ interface MediaCache {
      * 此函数必须关闭所有使用的资源, 清理潜在的缓存文件, 且不得抛出异常 (除非是 [CancellationException]).
      */
     suspend fun deleteFiles()
+
+    companion object {
+        fun calculateCacheId(originMediaId: String, metadata: MediaCacheMetadata): String {
+            val hash = (originMediaId.hashCode() * 31
+                    + metadata.subjectId.hashCode() * 31
+                    + metadata.episodeId.hashCode()).absoluteValue.toString()
+            val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
+            if (subjectName != null) {
+                fun removeSpecials(value: String): String {
+                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
+                }
+                return "${removeSpecials(subjectName).take(8)}-$hash"
+            }
+            return hash
+        }
+    }
 }
 
 open class TestMediaCache(

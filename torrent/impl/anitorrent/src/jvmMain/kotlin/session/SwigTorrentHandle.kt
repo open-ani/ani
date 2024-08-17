@@ -1,13 +1,14 @@
 package me.him188.ani.app.torrent.anitorrent.session
 
+import me.him188.ani.app.torrent.anitorrent.HandleId
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
 import me.him188.ani.app.torrent.api.files.FilePriority
 
-class SwigAnitorrentHandle(
-    private val native: torrent_handle_t,
-) : AnitorrentHandle {
-    override val id: Any = native.id
+class SwigTorrentHandle(
+    internal val native: torrent_handle_t,
+) : TorrentHandle {
+    override val id: HandleId get() = native.id
     override val isValid: Boolean get() = native.is_valid
 
     override fun postStatusUpdates() {
@@ -43,6 +44,10 @@ class SwigAnitorrentHandle(
 
     override fun clearPieceDeadlines() {
         native.clear_piece_deadlines()
+    }
+
+    override fun addTracker(tracker: String, tier: Short, failLimit: Short) {
+        native.add_tracker(tracker, tier, failLimit)
     }
 }
 

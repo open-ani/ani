@@ -1,6 +1,8 @@
 package me.him188.ani.utils.serialization
 
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlin.jvm.JvmName
@@ -56,5 +58,11 @@ fun List<Boolean>.toJsonArray(): JsonArray {
         for (element in this@toJsonArray) {
             add(JsonPrimitive(element))
         }
+    }
+}
+
+fun JsonObjectBuilder.putAll(jsonObject: JsonObject) {
+    for ((key, value) in jsonObject) {
+        put(key, value)
     }
 }

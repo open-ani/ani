@@ -3,8 +3,6 @@ package me.him188.ani.app.data.source.media.cache.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
@@ -33,6 +31,7 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.matches
+import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.createDirectories
 import me.him188.ani.utils.io.delete
@@ -62,15 +61,14 @@ class DirectoryMediaCacheStorage(
     private val engine: MediaCacheEngine,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaCacheStorage {
-    companion object {
+    private companion object {
         private val json = Json {
             ignoreUnknownKeys = true
         }
         private val logger = logger<DirectoryMediaCacheStorage>()
     }
 
-    private val scope: CoroutineScope =
-        CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+    private val scope: CoroutineScope = parentCoroutineContext.childScope()
 
     @Serializable
     class MediaCacheSave(
@@ -169,7 +167,6 @@ class DirectoryMediaCacheStorage(
             }?.let { return@withLock it }
 
             if (!engine.supports(media)) {
-                // TODO: add more engines 
                 throw UnsupportedOperationException("Engine does not support media: $media")
             }
             val cache = engine.createCache(

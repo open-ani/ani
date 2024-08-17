@@ -4,7 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -21,12 +20,14 @@ import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloaderFactory
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
+import kotlin.coroutines.CoroutineContext
 
 @Serializable
 class AnitorrentConfig(
@@ -37,17 +38,16 @@ class AnitorrentConfig(
     }
 }
 
-private val anitorrentFactory = AnitorrentDownloaderFactory()
-
 class AnitorrentEngine(
-    scope: CoroutineScope,
     config: Flow<AnitorrentConfig>,
     private val proxySettings: Flow<ProxySettings>,
     private val saveDir: SystemPath,
+    parentCoroutineContext: CoroutineContext,
+    private val anitorrentFactory: TorrentDownloaderFactory = AnitorrentDownloaderFactory()
 ) : AbstractTorrentEngine<TorrentDownloader, AnitorrentConfig>(
-    scope = scope,
     type = TorrentEngineType.Anitorrent,
     config = config,
+    parentCoroutineContext = parentCoroutineContext,
 ) {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>
@@ -85,7 +85,6 @@ class AnitorrentEngine(
             TorrentDownloaderConfig(
                 peerFingerprint = computeTorrentFingerprint(),
                 userAgent = computeTorrentUserAgent(),
-                isDebug = currentAniBuildConfig.isDebug,
             ),
             parentCoroutineContext = scope.coroutineContext,
         )
