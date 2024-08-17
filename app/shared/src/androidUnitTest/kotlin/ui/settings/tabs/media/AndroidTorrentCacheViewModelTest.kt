@@ -1,18 +1,11 @@
 package me.him188.ani.app.ui.settings.tabs.media
 
 import android.content.Context
-import androidx.compose.runtime.snapshots.Snapshot
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.yield
-import kotlinx.io.files.Path
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.ui.framework.runComposeStateTest
+import me.him188.ani.app.ui.framework.takeSnapshot
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import org.junit.jupiter.api.Test
 import org.koin.test.KoinTest
@@ -24,7 +17,9 @@ import java.io.File
 import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadOnlyProperty
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private typealias MediaCacheSettingsDelegation =
@@ -43,27 +38,25 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation()
 
-        assertTrue { mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) == true }
+        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) ?: false)
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
-        assertEquals(
-            AndroidTorrentCacheLocation.InternalPrivate(
-                File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
-            ),
-            vm.currentSelection,
-        )
+        val current = vm.currentSelection
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(current)
+        assertEquals(current.path, File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath)
 
         val locationPresentation = vm.torrentLocationPresentation
-        assertEquals(3, locationPresentation.size)
-        assertNotNull(locationPresentation.find { it.value is AndroidTorrentCacheLocation.InternalPrivate })
-        assertNotNull(
-            locationPresentation.find {
-                it.value is AndroidTorrentCacheLocation.ExternalPrivate && it.enabled
-            },
-        )
+        assertEquals(2, locationPresentation.size)
+        val internalPrivate = locationPresentation[0].value
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(internalPrivate)
+        assertEquals(File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, internalPrivate.path)
+        val externalPrivate = locationPresentation[1].value
+        assertIs<AndroidTorrentCacheLocation.ExternalPrivate>(externalPrivate)
+        assertTrue { locationPresentation[1].enabled }
+        assertEquals(File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, externalPrivate.path)
     }
 
     @Test
@@ -72,86 +65,91 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         val permissionManager = createTestPermissionManager(null)
         // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation()
-        assertTrue { mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) == true }
+
+        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(INTERNAL_PRIVATE_BASE) ?: false)
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
-        assertEquals(
-            AndroidTorrentCacheLocation.InternalPrivate(
-                File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
-            ),
-            vm.currentSelection,
-        )
+        val current = vm.currentSelection
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(current)
+        assertEquals(current.path, File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath)
 
         val locationPresentation = vm.torrentLocationPresentation
-        assertEquals(3, locationPresentation.size)
-        assertNotNull(locationPresentation.find { it.value is AndroidTorrentCacheLocation.InternalPrivate })
-        assertNotNull(
-            locationPresentation.find {
-                it.value is AndroidTorrentCacheLocation.ExternalPrivate && !it.enabled
-            },
-        )
+        assertEquals(2, locationPresentation.size)
+        val internalPrivate = locationPresentation[0].value
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(internalPrivate)
+        assertEquals(File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, internalPrivate.path)
+        val externalPrivate = locationPresentation[1].value
+        assertIs<AndroidTorrentCacheLocation.ExternalPrivate>(externalPrivate)
+        assertFalse { locationPresentation[1].enabled }
+        assertNull(externalPrivate.path)
     }
 
     @Test
     fun `test media cache settings is external private`() = runComposeStateTest {
         val context = createMockContext(externalAvailable = true)
         val permissionManager = createTestPermissionManager(null)
+        // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation(
             File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
         )
-        assertTrue { mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) == true }
+
+        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) ?: false)
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
-        assertEquals(
-            AndroidTorrentCacheLocation.ExternalPrivate(
-                File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
-            ),
-            vm.currentSelection,
-        )
+        val current = vm.currentSelection
+        assertIs<AndroidTorrentCacheLocation.ExternalPrivate>(current)
+        assertEquals(current.path, File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath)
 
         val locationPresentation = vm.torrentLocationPresentation
-        assertEquals(3, locationPresentation.size)
-        assertNotNull(locationPresentation.find { it.value is AndroidTorrentCacheLocation.InternalPrivate })
-        assertNotNull(
-            locationPresentation.find {
-                it.value is AndroidTorrentCacheLocation.ExternalPrivate && it.enabled
-            },
-        )
+        assertEquals(2, locationPresentation.size)
+        val internalPrivate = locationPresentation[0].value
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(internalPrivate)
+        assertEquals(File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, internalPrivate.path)
+        val externalPrivate = locationPresentation[1].value
+        assertIs<AndroidTorrentCacheLocation.ExternalPrivate>(externalPrivate)
+        assertTrue { locationPresentation[1].enabled }
+        assertEquals(File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, externalPrivate.path)
     }
 
     @Test
     fun `test media cache settings is external private with external unavailable`() = runComposeStateTest {
         val context = createMockContext(externalAvailable = false)
         val permissionManager = createTestPermissionManager(null)
+        // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation(
             File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath,
         )
-        assertTrue { mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) == true }
+
+        assertTrue(mediaCacheSettings.value.saveDir?.startsWith(EXTERNAL_PRIVATE_BASE) ?: false)
 
         val vm = AndroidTorrentCacheViewModel(context, mediaCacheSettings, permissionManager)
         vm.refreshStorageState()
         takeSnapshot()
 
+        assertNull(vm.currentSelection)
+
         val locationPresentation = vm.torrentLocationPresentation
-        assertEquals(3, locationPresentation.size)
-        assertNotNull(locationPresentation.find { it.value is AndroidTorrentCacheLocation.InternalPrivate })
-        assertNotNull(
-            locationPresentation.find {
-                it.value is AndroidTorrentCacheLocation.ExternalPrivate && !it.enabled
-            },
-        )
+        assertEquals(2, locationPresentation.size)
+        val internalPrivate = locationPresentation[0].value
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(internalPrivate)
+        assertEquals(File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, internalPrivate.path)
+        val externalPrivate = locationPresentation[1].value
+        assertIs<AndroidTorrentCacheLocation.ExternalPrivate>(externalPrivate)
+        assertFalse { locationPresentation[1].enabled }
+        assertNull(externalPrivate.path)
     }
 
     @Test
     fun `test unknown media cache settings`() = runComposeStateTest {
         val context = createMockContext(externalAvailable = true)
         val permissionManager = createTestPermissionManager(null)
+        // 默认情况下，MediaCacheSettings.saveDir 在 App 启动时被赋值为内部私有存储路径
         val mediaCacheSettings by createMockMediaCacheSettingsDelegation(
             File("/system/app/unavailable_path").absolutePath,
         )
@@ -160,26 +158,18 @@ class AndroidTorrentCacheViewModelTest : KoinTest {
         vm.refreshStorageState()
         takeSnapshot()
 
-        // 如果当前 external private 不可用，那就可能是 external shared。并且同样不可用
-        assertEquals(null, vm.currentSelection)
+        assertNull(vm.currentSelection)
 
         val locationPresentation = vm.torrentLocationPresentation
-        assertEquals(3, locationPresentation.size)
-        assertNotNull(locationPresentation.find { it.value is AndroidTorrentCacheLocation.InternalPrivate })
-        assertNotNull(
-            locationPresentation.find {
-                it.value is AndroidTorrentCacheLocation.ExternalPrivate && it.enabled
-            },
-        )
+        assertEquals(2, locationPresentation.size)
+        val internalPrivate = locationPresentation[0].value
+        assertIs<AndroidTorrentCacheLocation.InternalPrivate>(internalPrivate)
+        assertEquals(File(INTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, internalPrivate.path)
+        val externalPrivate = locationPresentation[1].value
+        assertIs<AndroidTorrentCacheLocation.ExternalPrivate>(externalPrivate)
+        assertTrue { locationPresentation[1].enabled }
+        assertEquals(File(EXTERNAL_PRIVATE_BASE, DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath, externalPrivate.path)
     }
-}
-
-private inline fun runComposeStateTest(
-    crossinline block: suspend TestScope.() -> Unit
-) = runTest {
-    @OptIn(ExperimentalStdlibApi::class)
-    Dispatchers.setMain(currentCoroutineContext()[CoroutineDispatcher]!!)
-    block()
 }
 
 private fun createMockContext(externalAvailable: Boolean): Context {
@@ -222,23 +212,8 @@ private fun createTestPermissionManager(
             error("unreachable test")
         }
 
-        override suspend fun requestExternalManageableDocument(context: ContextMP): Path? {
-            requested = true
-            return requestedPath?.let(::Path)
-        }
-
-        override suspend fun getExternalManageableDocumentPermission(context: ContextMP, path: Path): Boolean {
-            return if (requested) true else hasPermission
-        }
-
-        override suspend fun getAccessibleExternalManageableDocumentPath(context: ContextMP): Path? {
-            return (if (requested) requestedPath else getAccessiblePath)?.let(::Path)
+        override suspend fun requestExternalDocumentTree(context: ContextMP): String? {
+            error("unreachable test")
         }
     }
-}
-
-private suspend fun TestScope.takeSnapshot() {
-    yield()
-    testScheduler.runCurrent()
-    Snapshot.sendApplyNotifications()
 }
