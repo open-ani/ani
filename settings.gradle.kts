@@ -111,11 +111,3 @@ includeBuild("app/shared/reorderable") {
         substitute(module("org.burnoutcrew.composereorderable:reorderable")).using(project(":reorderable"))
     }
 }
-
-// TODO Remove this composite build on Ksoup when it is published to Maven Central
-// https://github.com/fleeksoft/ksoup
-includeBuild("utils/xml/ksoup") {
-    dependencySubstitution {
-        substitute(module("com.fleeksoft.ksoup:ksoup")).using(project(":ksoup"))
-    }
-}

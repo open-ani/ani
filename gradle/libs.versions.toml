@@ -4,7 +4,7 @@ jna = "5.13.0"
 kotlin = "2.0.10"
 # kotlinx
 coroutines = "1.8.1"
-ksoup = "0.1.2"
+ksoup = "0.1.4"
 serialization = "1.7.1" # https://github.com/Kotlin/kotlinx.serialization/releases
 datetime = "0.6.0" # https://github.com/Kotlin/kotlinx-datetime/releases
 atomicfu = "0.25.0" # https://github.com/Kotlin/kotlinx-atomicfu/releases
