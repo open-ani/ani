@@ -44,7 +44,7 @@ actual fun SystemPath.isRegularFile(): Boolean {
     return path.file.isFile
 }
 
-actual fun SystemPath.moveDirectoryRecursively(target: SystemPath, visitor: ((SystemPath) -> Unit)?) {
+fun SystemPath.moveDirectoryRecursively(target: SystemPath, visitor: ((SystemPath) -> Unit)?) {
     val sourceDir = toNioPath()
     val targetDir = target.toNioPath()
 
