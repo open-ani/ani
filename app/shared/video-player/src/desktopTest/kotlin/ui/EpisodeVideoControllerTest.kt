@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
-import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
@@ -19,7 +18,6 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipe
 import kotlinx.collections.immutable.persistentListOf
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
@@ -28,6 +26,8 @@ import me.him188.ani.app.ui.exists
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.framework.AniComposeUiTest
+import me.him188.ani.app.ui.framework.runAniComposeUiTest
 import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
 import me.him188.ani.app.ui.subject.episode.TAG_DANMAKU_SETTINGS_SHEET
 import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_SELECTOR_SHEET
@@ -151,7 +151,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.clickToToggleController
      */
     @Test
-    fun `touch - clickToToggleController - show`() = runSkikoComposeUiTest {
+    fun `touch - clickToToggleController - show`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -176,7 +176,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.clickToToggleController
      */
     @Test
-    fun `touch - clickToToggleController - hide`() = runSkikoComposeUiTest {
+    fun `touch - clickToToggleController - hide`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -201,7 +201,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.swipeToSeek
      */
     @Test
-    fun `touch - swipeToSeek shows detached slider`() = runSkikoComposeUiTest {
+    fun `touch - swipeToSeek shows detached slider`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -241,7 +241,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.swipeToSeek
      */
     @Test
-    fun `touch - swipe when controller is already fully visible`() = runSkikoComposeUiTest {
+    fun `touch - swipe when controller is already fully visible`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -275,7 +275,7 @@ class EpisodeVideoControllerTest {
     }
 
     @Test
-    fun `touch - drag when controller is already fully visible`() = runSkikoComposeUiTest {
+    fun `touch - drag when controller is already fully visible`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -308,7 +308,7 @@ class EpisodeVideoControllerTest {
     }
 
     @Test
-    fun `touch - drag when controller is already fully visible and can still play`() = runSkikoComposeUiTest {
+    fun `touch - drag when controller is already fully visible and can still play`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -351,7 +351,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.swipeToSeek
      */
     @Test // https://github.com/open-ani/ani/issues/720
-    fun `touch - swipeToSeek shows detached slider and can still play`() = runSkikoComposeUiTest {
+    fun `touch - swipeToSeek shows detached slider and can still play`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -409,7 +409,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.mouseHoverForController
      */
     @Test
-    fun `mouse - mouseHoverForController - center screen`() = runSkikoComposeUiTest {
+    fun `mouse - mouseHoverForController - center screen`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.MOUSE)
         }
@@ -422,7 +422,7 @@ class EpisodeVideoControllerTest {
         testMoveMouseAndWaitForHide()
     }
 
-    private fun SkikoComposeUiTest.testMoveMouseAndWaitForHide() {
+    private fun AniComposeUiTest.testMoveMouseAndWaitForHide() {
         // 移动鼠标来显示控制器
         runOnIdle {
             mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
@@ -460,7 +460,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.mouseHoverForController
      */
     @Test
-    fun `mouse - mouseHoverForController - center screen twice`() = runSkikoComposeUiTest {
+    fun `mouse - mouseHoverForController - center screen twice`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.MOUSE)
         }
@@ -484,7 +484,7 @@ class EpisodeVideoControllerTest {
      * 鼠标悬浮在控制器上, 会保持显示
      */
     @Test
-    fun `mouse - hover to always on - bottom bar`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - bottom bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 鼠标移动到控制器上
@@ -500,7 +500,7 @@ class EpisodeVideoControllerTest {
      * 鼠标悬浮在控制器上, 会保持显示
      */
     @Test
-    fun `mouse - hover to always on - top bar`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - top bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 鼠标移动到控制器上
@@ -516,7 +516,7 @@ class EpisodeVideoControllerTest {
     // 打开 side sheets 后 request always on, 关闭后取消
     /////////////////////////////////////////////////////////////////////////// 
 
-    private fun SkikoComposeUiTest.testSideSheetRequestAlwaysOn(
+    private fun AniComposeUiTest.testSideSheetRequestAlwaysOn(
         openSideSheet: () -> Unit,
         waitForSideSheetOpen: () -> Unit,
         waitForSideSheetClose: () -> Unit,
@@ -555,7 +555,7 @@ class EpisodeVideoControllerTest {
     }
 
     @Test
-    fun `mouse - hover to always on - danmaku settings sheet`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - danmaku settings sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
             openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
@@ -564,7 +564,7 @@ class EpisodeVideoControllerTest {
     }
 
     @Test
-    fun `mouse - hover to always on - media selector sheet`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - media selector sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
             openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
@@ -573,7 +573,7 @@ class EpisodeVideoControllerTest {
     }
 
     @Test
-    fun `mouse - hover to always on - episode selector sheet`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - episode selector sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
             openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
@@ -589,7 +589,7 @@ class EpisodeVideoControllerTest {
      * 手指单击控制器, 不会触发保持显示
      */
     @Test
-    fun `mouse - clicking does not request always on - bottom bar`() = runSkikoComposeUiTest {
+    fun `mouse - clicking does not request always on - bottom bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 手指单击控制器
@@ -605,7 +605,7 @@ class EpisodeVideoControllerTest {
      * 手指单击控制器, 不会触发保持显示
      */
     @Test
-    fun `mouse - clicking does not request always on - top bar`() = runSkikoComposeUiTest {
+    fun `mouse - clicking does not request always on - top bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 手指单击控制器
@@ -623,7 +623,7 @@ class EpisodeVideoControllerTest {
      * 2. [performGesture]
      * 3. 等待动画后, 根据 [expectAlwaysOn] 检查是否显示控制器
      */
-    private fun SkikoComposeUiTest.testRequestAlwaysOn(
+    private fun AniComposeUiTest.testRequestAlwaysOn(
         performGesture: () -> Unit,
         expectAlwaysOn: Boolean = false,
     ) {
@@ -660,7 +660,7 @@ class EpisodeVideoControllerTest {
         }
     }
 
-    private fun SkikoComposeUiTest.assertControllerVisible(visible: Boolean) = runOnIdle {
+    private fun AniComposeUiTest.assertControllerVisible(visible: Boolean) = runOnIdle {
         if (visible) {
             waitUntil { topBar.exists() }
             assertEquals(
