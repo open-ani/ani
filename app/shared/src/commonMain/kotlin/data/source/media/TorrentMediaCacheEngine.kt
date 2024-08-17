@@ -132,14 +132,14 @@ class TorrentMediaCacheEngine(
         override val downloadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
                 session?.stats?.downloadRate?.map {
-                    it?.bytes ?: FileSize.Unspecified
+                    it.bytes
                 } ?: flowOf(FileSize.Unspecified)
             }
 
         override val uploadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
                 session?.stats?.uploadRate?.map {
-                    it?.bytes ?: FileSize.Unspecified
+                    it.bytes
                 } ?: flowOf(FileSize.Unspecified)
             }
 
@@ -314,13 +314,13 @@ class TorrentMediaCacheEngine(
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun createCache(
         origin: Media,
-        request: MediaCacheMetadata,
+        metadata: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache {
         if (!supports(origin)) throw UnsupportedOperationException("Media is not supported by this engine $this: ${origin.download}")
         val downloader = torrentEngine.getDownloader() ?: error("Engine $torrentEngine is not enabled")
         val data = downloader.fetchTorrent(origin.download.uri)
-        val metadata = request.withExtra(
+        val newMetadata = metadata.withExtra(
             mapOf(
                 EXTRA_TORRENT_DATA to data.data.toHexString(),
                 EXTRA_TORRENT_CACHE_DIR to downloader.getSaveDirForTorrent(data).absolutePath,
@@ -329,8 +329,8 @@ class TorrentMediaCacheEngine(
 
         return TorrentMediaCache(
             origin = origin,
-            metadata = metadata,
-            lazyFileHandle = getLazyFileHandle(data, metadata, parentContext),
+            metadata = newMetadata,
+            lazyFileHandle = getLazyFileHandle(data, newMetadata, parentContext),
         )
     }
 
