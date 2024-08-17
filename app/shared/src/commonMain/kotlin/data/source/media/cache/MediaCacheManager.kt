@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -42,17 +43,10 @@ abstract class MediaCacheManager(
 ) : KoinComponent, HasBackgroundScope { // available via inject
     private val notificationManager: NotifManager by inject()
 
-    val enabledStorages: Flow<List<MediaCacheStorage>> = kotlin.run {
-        combine(storagesIncludingDisabled.map { it.isEnabled.map { enabled -> if (enabled) it else null } }) {
-            it.filterNotNull()
-        }
-    }
-
+    val enabledStorages: Flow<List<MediaCacheStorage>> = flowOf(storagesIncludingDisabled)
     val storages: List<Flow<MediaCacheStorage?>> by lazy {
         storagesIncludingDisabled.map { storage ->
-            storage.isEnabled.map {
-                if (it) storage else null
-            }
+            flowOf(storage)
         }
     }
 

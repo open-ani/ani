@@ -6,10 +6,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -81,17 +79,8 @@ class DirectoryMediaCacheStorage(
     )
 
     init {
-        scope.launch {
-            engine.isEnabled.collectLatest {
-                if (!it) {
-                    listFlow.value = emptyList()
-                    return@collectLatest
-                }
-
-                withContext(Dispatchers.IO) {
-                    restoreFiles() // 必须要跑这个, 这个会去创建文件夹
-                }
-            }
+        scope.launch(Dispatchers.IO) {
+            restoreFiles() // 必须要跑这个, 这个会去创建文件夹
         }
     }
 
@@ -165,7 +154,6 @@ class DirectoryMediaCacheStorage(
     }
 
     override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(emptyList())
-    override val isEnabled: Flow<Boolean> get() = engine.isEnabled
 
     override val cacheMediaSource: MediaSource by lazy {
         MediaCacheStorageSource(this, MediaSourceLocation.Local)

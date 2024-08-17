@@ -115,9 +115,10 @@ fun getAndroidModules(
             dir
         }
 
-        DefaultTorrentManager(
+        DefaultTorrentManager.create(
             coroutineScope.coroutineContext,
-            saveDir = { Path(cacheDir).inSystem },
+            get(),
+            baseSaveDir = { Path(cacheDir).inSystem },
         )
     }
     single<PlayerStateFactory> { ExoPlayerStateFactory() }

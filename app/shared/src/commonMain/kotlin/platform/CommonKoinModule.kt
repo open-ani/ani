@@ -172,7 +172,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         val engines = get<TorrentManager>().engines
         MediaCacheManagerImpl(
             storagesIncludingDisabled = buildList(capacity = engines.size) {
-                if (DummyMediaCacheEngine.isEnabled) {
+                if (currentAniBuildConfig.isDebug) {
                     // 注意, 这个必须要在第一个, 见 [DefaultTorrentManager.engines] 注释
                     add(
                         DirectoryMediaCacheStorage(

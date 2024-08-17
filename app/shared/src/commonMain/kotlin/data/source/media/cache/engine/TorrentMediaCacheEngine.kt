@@ -207,8 +207,6 @@ class TorrentMediaCacheEngine(
         }
     }
 
-    override val isEnabled: Flow<Boolean> get() = torrentEngine.isEnabled
-
     override val stats: MediaStats = object : AbstractMediaStats() {
         override val uploaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }

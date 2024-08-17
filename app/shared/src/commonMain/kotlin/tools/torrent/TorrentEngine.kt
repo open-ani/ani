@@ -35,11 +35,6 @@ interface TorrentEngine {
      */
     val isSupported: Flow<Boolean>
 
-    /**
-     * 根据用户偏好设置, 此实现是否启用.
-     */
-    val isEnabled: Flow<Boolean>
-
     suspend fun testConnection(): Boolean
 
     /**
@@ -47,7 +42,6 @@ interface TorrentEngine {
      *
      * 本函数支持协程取消. 当协程取消时, 创建工作会延迟一段时间后才会停止, 以抵消重复的创建和销毁.
      *
-     * @throws IllegalStateException 当 [isEnabled] 为 `false` 时抛出
      * @throws TorrentDownloaderInitializationException 当创建失败时抛出
      * @throws CancellationException
      */
@@ -110,9 +104,6 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
     }
 
     final override suspend fun getDownloader(): Downloader {
-        if (!isEnabled.first()) {
-            throw IllegalStateException("Implementation is not enabled")
-        }
         return try {
             downloader.first()
         } catch (e: CancellationException) {

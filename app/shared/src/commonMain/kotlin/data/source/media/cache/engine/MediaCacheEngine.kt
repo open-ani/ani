@@ -1,6 +1,5 @@
 package me.him188.ani.app.data.source.media.cache.engine
 
-import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.datasources.api.Media
@@ -27,8 +26,6 @@ import kotlin.coroutines.CoroutineContext
  * [MediaCacheEngine] 决定种子数据的实际存储位置, 但该目录不一定包含视频文件. TODO
  */
 interface MediaCacheEngine {
-    val isEnabled: Flow<Boolean> // todo 这有点奇怪
-
     /**
      * 此引擎的总体传输统计
      */

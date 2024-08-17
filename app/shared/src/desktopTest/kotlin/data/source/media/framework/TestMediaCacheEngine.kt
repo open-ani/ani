@@ -1,7 +1,5 @@
 package me.him188.ani.app.data.source.media.framework
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
@@ -15,7 +13,6 @@ import kotlin.coroutines.CoroutineContext
 class TestMediaCacheEngine(
     private val mediaCacheId: String,
 ) : MediaCacheEngine {
-    override val isEnabled: Flow<Boolean> = flowOf(true)
     override val stats: MediaStats = emptyMediaStats()
     override fun supports(media: Media): Boolean = true
 
