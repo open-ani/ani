@@ -14,6 +14,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
@@ -34,6 +35,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
@@ -93,6 +95,8 @@ class EpisodeVideoControllerTest {
         get() = onNodeWithTag(TAG_EPISODE_VIDEO_TOP_BAR, useUnmergedTree = true)
     private val SemanticsNodeInteractionsProvider.previewPopup
         get() = onNodeWithTag(TAG_PROGRESS_SLIDER_PREVIEW_POPUP, useUnmergedTree = true)
+    private val SemanticsNodeInteractionsProvider.progressSlider
+        get() = onNodeWithTag(TAG_PROGRESS_SLIDER, useUnmergedTree = true)
 
     @Composable
     private fun Player(gestureFamily: GestureFamily) {
@@ -261,6 +265,79 @@ class EpisodeVideoControllerTest {
         }
     }
 
+    @Test
+    fun `touch - drag when controller is already fully visible`() = runSkikoComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        waitForIdle()
+        val root = onAllNodes(isRoot()).onFirst()
+
+        root.performClick() // 显示全部控制器
+        runOnIdle {
+            waitUntil { topBar.exists() }
+            detachedProgressSlider.assertDoesNotExist()
+        }
+
+        progressSlider.performTouchInput {
+            down(centerLeft)
+            moveBy(center)
+        }
+        runOnIdle {
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+
+        // 松开手指
+        root.performTouchInput {
+            up()
+        }
+        runOnIdle {
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+    }
+
+    @Test
+    fun `touch - drag when controller is already fully visible and can still play`() = runSkikoComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        waitForIdle()
+        val root = onAllNodes(isRoot()).onFirst()
+
+        root.performClick() // 显示全部控制器
+        runOnIdle {
+            waitUntil { topBar.exists() }
+            detachedProgressSlider.assertDoesNotExist()
+        }
+
+        progressSlider.performTouchInput {
+            down(centerLeft)
+            moveBy(center)
+        }
+        runOnIdle {
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+
+        // 松开手指
+        root.performTouchInput {
+            up()
+        }
+        runOnIdle {
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+
+        currentPositionMillis += 5000L // 播放 5 秒
+        
+        runOnIdle {
+            waitUntil { onNodeWithText("00:51 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+    }
+    
     /**
      * @see GestureFamily.swipeToSeek
      */
