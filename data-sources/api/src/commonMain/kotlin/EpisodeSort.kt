@@ -11,7 +11,6 @@ import me.him188.ani.datasources.api.EpisodeType.OP
 import me.him188.ani.datasources.api.EpisodeType.OVA
 import me.him188.ani.datasources.api.EpisodeType.PV
 import me.him188.ani.datasources.api.EpisodeType.SP
-import me.him188.ani.datasources.api.EpisodeType.Unknown
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.utils.serialization.BigNum
 
@@ -134,8 +133,8 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
 }
 
 private fun getSpecialByRaw(raw: String): EpisodeSort {
-    val type = EpisodeType.entries.firstOrNull { entry -> raw.startsWith(entry.value) } ?: Unknown
-    if (type == Unknown || raw.length <= type.value.length) return EpisodeSort.Unknown(raw)
+    val type = EpisodeType.entries.firstOrNull { entry -> raw.startsWith(entry.value) }
+    if (type == null || raw.length <= type.value.length) return EpisodeSort.Unknown(raw)
     val numStr = raw.substringAfter(type.value);
     return try {
         Special(type, numStr.toFloat())
@@ -146,7 +145,7 @@ private fun getSpecialByRaw(raw: String): EpisodeSort {
 
 fun EpisodeSort(raw: String): EpisodeSort {
     val float = raw.toFloatOrNull() ?: return getSpecialByRaw(raw)
-    if (float < 0) return Special(Unknown, float)
+    if (float < 0) return EpisodeSort.Unknown(raw)
     return if (float.toInt().toFloat() == float || float % 0.5f == 0f) {
         Normal(float)
     } else {
@@ -162,10 +161,9 @@ fun EpisodeSort(int: Int, type: EpisodeType = MainStory): EpisodeSort {
  * @see EpisodeType
  */
 fun EpisodeSort(int: BigNum, type: EpisodeType = MainStory): EpisodeSort {
-    if (int.isNegative()) return Special(Unknown, int.toFloat())
+    if (int.isNegative()) return EpisodeSort.Unknown(int.toString())
     return when (type) {
         MainStory -> Normal(int.toFloat())
         SP, OP, ED, PV, MAD, OVA, OAD -> Special(type, int.toFloat())
-        Unknown -> EpisodeSort.Unknown(int.toString())
     }
 }

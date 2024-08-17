@@ -6,7 +6,6 @@ import me.him188.ani.datasources.api.EpisodeType.OAD
 import me.him188.ani.datasources.api.EpisodeType.OVA
 import me.him188.ani.datasources.api.EpisodeType.PV
 import me.him188.ani.datasources.api.EpisodeType.SP
-import me.him188.ani.datasources.api.EpisodeType.Unknown
 import me.him188.ani.test.DynamicTestsResult
 import me.him188.ani.test.TestContainer
 import me.him188.ani.test.TestFactory
@@ -35,7 +34,7 @@ class EpisodeSortTest {
                 "0.5" to normal(0.5f),
                 "05.5" to normal(5.5f),
                 "30.5" to normal(30.5f),
-                "-1" to special(Unknown, -1f),
+                "-1" to EpisodeSort.Unknown("-1"),
                 "1.1" to EpisodeSort.Unknown("1.1"),
                 "SP1" to special(SP, 1f),
                 "SP02" to special(SP, 2f),
@@ -71,9 +70,7 @@ class EpisodeSortTest {
                 normal(30.5f) to "30.5",
                 special(SP, -1f) to "SP-1",
                 special(MAD, 1.5f) to "MAD1.5",
-                special(Unknown, -999f) to "Unknown-999",
                 EpisodeSort.Unknown("S") to "S",
-                ep(1, Unknown) to "1",
             ).map {
                 dynamicTest(it.second) {
                     val (raw, expected) = it
@@ -130,7 +127,6 @@ class EpisodeSortTest {
             "sp" to listOf(ep("SP1"), ep("SP2")),
             "int with sp" to listOf(ep(1), ep(3), ep("SP1")),
             "float with sp" to listOf(ep("1.5"), ep(3), ep("SP1")),
-            "unknown" to listOf(ep(1, Unknown), ep(3, Unknown)),
         ).flatMap { (name, sorted) ->
             sorted.permutedSequence().map { unsorted ->
                 dynamicTest("$name: $unsorted => $sorted") {
@@ -152,5 +148,5 @@ class EpisodeSortTest {
             }
         },
     )
-    
+
 }
