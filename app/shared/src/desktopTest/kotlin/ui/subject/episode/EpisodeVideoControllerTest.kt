@@ -285,7 +285,7 @@ class EpisodeVideoControllerTest {
 
         progressSlider.performTouchInput {
             down(centerLeft)
-            moveBy(center)
+            moveBy(Offset(centerX, 0f))
         }
         runOnIdle {
             waitUntil { onNodeWithText("00:46 / 01:40").exists() }
