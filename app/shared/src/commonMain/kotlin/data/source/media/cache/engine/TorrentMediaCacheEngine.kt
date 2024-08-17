@@ -74,11 +74,15 @@ class TorrentMediaCacheEngine(
      * 仅当 [MediaCache.getCachedMedia] 等操作时才会创建 [TorrentDownloadSession]
      */
     class LazyFileHandle(
-        val scope: CoroutineScope,
+        private val scope: CoroutineScope,
         val state: SharedFlow<State?>, // suspend lazy
     ) {
         val handle = state.map { it?.handle } // single emit
         val entry = state.map { it?.entry } // single emit
+
+        suspend fun close() {
+            scope.coroutineContext.job.cancelAndJoin()
+        }
 
         class State(
             val session: TorrentDownloadSession,
@@ -184,11 +188,11 @@ class TorrentMediaCacheEngine(
             val handle = lazyFileHandle.handle.first() ?: kotlin.run {
                 // did not even selected a file
                 logger.info { "Deleting torrent cache: No file selected" }
-                lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
+                lazyFileHandle.close()
                 return
             }
 
-            lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
+            lazyFileHandle.close()
             handle.closeAndDelete()
 
             val file = handle.entry.resolveFileOrNull() ?: return
