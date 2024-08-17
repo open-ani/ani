@@ -211,6 +211,9 @@ class DirectoryMediaCacheStorage(
     private fun getSaveFilename(cache: MediaCache) = "${cache.cacheId}.$METADATA_FILE_EXTENSION"
 
     override fun close() {
+        if (engine is AutoCloseable) {
+            engine.close()
+        }
         scope.cancel()
     }
 }

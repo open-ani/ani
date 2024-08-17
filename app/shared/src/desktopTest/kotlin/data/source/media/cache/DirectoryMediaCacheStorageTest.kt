@@ -102,6 +102,11 @@ class DirectoryMediaCacheStorageTest {
         location = MediaSourceLocation.Online,
     )
 
+    private fun cleanup() {
+        storages.forEach { it.close() }
+        storages.clear()
+    }
+
     private fun runTest(
         context: CoroutineContext = EmptyCoroutineContext,
         timeout: Duration = 5.seconds,
@@ -110,10 +115,7 @@ class DirectoryMediaCacheStorageTest {
         try {
             testBody()
         } finally {
-            storages.forEach { it.close() }
-            if (::torrentEngine.isInitialized) {
-                torrentEngine.close()
-            }
+            cleanup()
         }
     }
 

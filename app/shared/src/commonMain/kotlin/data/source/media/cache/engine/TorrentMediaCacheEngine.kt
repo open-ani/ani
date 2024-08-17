@@ -67,7 +67,7 @@ class TorrentMediaCacheEngine(
     val torrentEngine: TorrentEngine,
     val flowDispatcher: CoroutineContext = Dispatchers.Default,
     private val onDownloadStarted: suspend (session: TorrentDownloadSession) -> Unit = {},
-) : MediaCacheEngine {
+) : MediaCacheEngine, AutoCloseable {
     companion object {
         private const val EXTRA_TORRENT_DATA = "torrentData"
         const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
@@ -363,5 +363,9 @@ class TorrentMediaCacheEngine(
                 }
             }
         }
+    }
+
+    override fun close() {
+        torrentEngine.close()
     }
 }
