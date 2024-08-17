@@ -5,12 +5,21 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchState
@@ -21,8 +30,12 @@ import me.him188.ani.app.data.source.media.fetch.isWorking
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
+import me.him188.ani.datasources.mikan.MikanCNMediaSource
+import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.utils.coroutines.onReplacement
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -125,3 +138,82 @@ private val EmptyMediaSourceResultsPresentation by lazy(LazyThreadSafetyMode.NON
 
 @Stable
 fun emptyMediaSourceResultsPresentation() = EmptyMediaSourceResultsPresentation
+
+
+///////////////////////////////////////////////////////////////////////////
+// Testing
+///////////////////////////////////////////////////////////////////////////
+
+@TestOnly
+@Composable
+fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = remember {
+    MediaSourceResultsPresentation(
+        FilteredMediaSourceResults(
+            results = flowOf(
+                listOf(
+                    TestMediaSourceResult(
+                        MikanMediaSource.ID,
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Working,
+                        results = TestMediaList,
+                    ),
+                    TestMediaSourceResult(
+                        "dmhy",
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Succeed(1),
+                        results = TestMediaList,
+                    ),
+                    TestMediaSourceResult(
+                        "acg.rip",
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Disabled,
+                        results = TestMediaList,
+                    ),
+                    TestMediaSourceResult(
+                        "nyafun",
+                        MediaSourceKind.WEB,
+                        initialState = MediaSourceFetchState.Succeed(1),
+                        results = TestMediaList,
+                    ),
+                    TestMediaSourceResult(
+                        MikanCNMediaSource.ID,
+                        MediaSourceKind.BitTorrent,
+                        initialState = MediaSourceFetchState.Failed(IllegalStateException(), 1),
+                        results = emptyList(),
+                    ),
+                ),
+            ),
+            settings = flowOf(MediaSelectorSettings.Default),
+        ),
+        EmptyCoroutineContext,
+    )
+}
+
+private class TestMediaSourceResult(
+    override val mediaSourceId: String,
+    override val kind: MediaSourceKind,
+    initialState: MediaSourceFetchState,
+    results: List<Media>,
+) : MediaSourceFetchResult {
+    override val state: MutableStateFlow<MediaSourceFetchState> = MutableStateFlow(initialState)
+    override val results: SharedFlow<List<Media>> = MutableStateFlow(results)
+    private val restartCount = atomic(0)
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun restart() {
+        state.value = MediaSourceFetchState.Working
+        GlobalScope.launch {
+            delay(3000)
+            state.value = MediaSourceFetchState.Succeed(restartCount.incrementAndGet())
+        }
+    }
+
+    override fun enable() {
+        if (state.value is MediaSourceFetchState.Disabled) {
+            if (restartCount.compareAndSet(0, 1)) {
+                state.value = MediaSourceFetchState.Idle
+            }
+        }
+    }
+}
+

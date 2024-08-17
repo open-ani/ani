@@ -21,28 +21,11 @@ import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipe
-import kotlinx.atomicfu.atomic
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
-import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.source.media.TestMediaList
-import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
-import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult
-import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchState
-import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
-import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.ui.doesNotExist
 import me.him188.ani.app.ui.exists
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
@@ -52,9 +35,8 @@ import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_VIDEO_TOP_BAR
 import me.him188.ani.app.ui.subject.episode.TAG_MEDIA_SELECTOR_SHEET
 import me.him188.ani.app.ui.subject.episode.TAG_SHOW_MEDIA_SELECTOR
 import me.him188.ani.app.ui.subject.episode.TAG_SHOW_SETTINGS
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
@@ -68,11 +50,6 @@ import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
-import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.MediaSourceKind
-import me.him188.ani.datasources.mikan.MikanCNMediaSource
-import me.him188.ani.datasources.mikan.MikanMediaSource
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
@@ -363,13 +340,13 @@ class EpisodeVideoControllerTest {
         }
 
         currentPositionMillis += 5000L // 播放 5 秒
-        
+
         runOnIdle {
             waitUntil { onNodeWithText("00:51 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
-    
+
     /**
      * @see GestureFamily.swipeToSeek
      */
@@ -699,95 +676,3 @@ class EpisodeVideoControllerTest {
         }
     }
 }
-
-@Composable
-fun rememberTestMediaSelectorPresentation(): MediaSelectorPresentation {
-    val backgroundScope = rememberBackgroundScope()
-    return remember(backgroundScope) { createState(backgroundScope.backgroundScope) }
-}
-
-private fun createState(backgroundScope: CoroutineScope) =
-    MediaSelectorPresentation(
-        DefaultMediaSelector(
-            mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
-            mediaListNotCached = MutableStateFlow(TestMediaList),
-            savedUserPreference = flowOf(MediaPreference.Empty),
-            savedDefaultPreference = flowOf(MediaPreference.Empty),
-            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default),
-        ),
-        backgroundScope.coroutineContext,
-    )
-
-
-@Composable
-fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = remember {
-    MediaSourceResultsPresentation(
-        FilteredMediaSourceResults(
-            results = flowOf(
-                listOf(
-                    TestMediaSourceResult(
-                        MikanMediaSource.ID,
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceFetchState.Working,
-                        results = TestMediaList,
-                    ),
-                    TestMediaSourceResult(
-                        "dmhy",
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceFetchState.Succeed(1),
-                        results = TestMediaList,
-                    ),
-                    TestMediaSourceResult(
-                        "acg.rip",
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceFetchState.Disabled,
-                        results = TestMediaList,
-                    ),
-                    TestMediaSourceResult(
-                        "nyafun",
-                        MediaSourceKind.WEB,
-                        initialState = MediaSourceFetchState.Succeed(1),
-                        results = TestMediaList,
-                    ),
-                    TestMediaSourceResult(
-                        MikanCNMediaSource.ID,
-                        MediaSourceKind.BitTorrent,
-                        initialState = MediaSourceFetchState.Failed(IllegalStateException(), 1),
-                        results = emptyList(),
-                    ),
-                ),
-            ),
-            settings = flowOf(MediaSelectorSettings.Default),
-        ),
-        EmptyCoroutineContext,
-    )
-}
-
-private class TestMediaSourceResult(
-    override val mediaSourceId: String,
-    override val kind: MediaSourceKind,
-    initialState: MediaSourceFetchState,
-    results: List<Media>,
-) : MediaSourceFetchResult {
-    override val state: MutableStateFlow<MediaSourceFetchState> = MutableStateFlow(initialState)
-    override val results: SharedFlow<List<Media>> = MutableStateFlow(results)
-    private val restartCount = atomic(0)
-
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun restart() {
-        state.value = MediaSourceFetchState.Working
-        GlobalScope.launch {
-            delay(3000)
-            state.value = MediaSourceFetchState.Succeed(restartCount.incrementAndGet())
-        }
-    }
-
-    override fun enable() {
-        if (state.value is MediaSourceFetchState.Disabled) {
-            if (restartCount.compareAndSet(0, 1)) {
-                state.value = MediaSourceFetchState.Idle
-            }
-        }
-    }
-}
-
