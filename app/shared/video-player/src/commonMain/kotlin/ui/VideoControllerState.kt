@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.ui.foundation.interaction.hoverable
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 
 /**
@@ -143,6 +144,11 @@ class VideoControllerState(
      */
     fun cancelRequestProgressBarVisible(requester: Any) {
         progressBarRequesters.remove(requester)
+    }
+
+    @TestOnly
+    fun getAlwaysOnRequesters(): List<Any> {
+        return alwaysOnRequests
     }
 }
 

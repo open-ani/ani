@@ -1,14 +1,11 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.cache.engine
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.emptyMediaStats
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -26,11 +23,6 @@ class DummyMediaCacheEngine(
     private val mediaSourceId: String,
     private val location: MediaSourceLocation = MediaSourceLocation.Local,
 ) : MediaCacheEngine {
-    companion object {
-        val isEnabled = currentAniBuildConfig.isDebug && Platform.currentPlatform == Platform.Android
-    }
-
-    override val isEnabled: Flow<Boolean> = flowOf(Companion.isEnabled)
     override val stats: MediaStats = emptyMediaStats()
     override fun supports(media: Media): Boolean = true
 

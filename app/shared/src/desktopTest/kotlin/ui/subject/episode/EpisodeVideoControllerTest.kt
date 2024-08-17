@@ -1,4 +1,4 @@
-package me.him188.ani.app.videoplayer.ui
+package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,16 +9,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
-import androidx.compose.ui.test.SkikoComposeUiTest
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipe
 import kotlinx.collections.immutable.persistentListOf
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
@@ -27,14 +26,21 @@ import me.him188.ani.app.ui.exists
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
-import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
-import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_VIDEO_TOP_BAR
+import me.him188.ani.app.ui.framework.AniComposeUiTest
+import me.him188.ani.app.ui.framework.runAniComposeUiTest
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
+import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -93,6 +99,8 @@ class EpisodeVideoControllerTest {
         get() = onNodeWithTag(TAG_EPISODE_VIDEO_TOP_BAR, useUnmergedTree = true)
     private val SemanticsNodeInteractionsProvider.previewPopup
         get() = onNodeWithTag(TAG_PROGRESS_SLIDER_PREVIEW_POPUP, useUnmergedTree = true)
+    private val SemanticsNodeInteractionsProvider.progressSlider
+        get() = onNodeWithTag(TAG_PROGRESS_SLIDER, useUnmergedTree = true)
 
     @Composable
     private fun Player(gestureFamily: GestureFamily) {
@@ -113,9 +121,6 @@ class EpisodeVideoControllerTest {
                 onExitFullscreen = {},
                 danmakuEditor = {},
                 configProvider = { VideoScaffoldConfig.Default },
-                sideSheets = {},
-                onShowMediaSelector = {},
-                onShowSelectEpisode = {},
                 onClickScreenshot = {},
                 detachedProgressSlider = {
                     PlayerControllerDefaults.MediaProgressSlider(
@@ -125,8 +130,12 @@ class EpisodeVideoControllerTest {
                         enabled = false,
                     )
                 },
+                leftBottomTips = {},
                 progressSliderState = progressSliderState,
                 danmakuFrozen = true,
+                mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
+                mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
+                episodeSelectorState = rememberTestEpisodeSelectorState(),
                 gestureFamily = gestureFamily,
             )
         }
@@ -137,7 +146,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.clickToToggleController
      */
     @Test
-    fun `touch - clickToToggleController - show`() = runSkikoComposeUiTest {
+    fun `touch - clickToToggleController - show`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -162,7 +171,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.clickToToggleController
      */
     @Test
-    fun `touch - clickToToggleController - hide`() = runSkikoComposeUiTest {
+    fun `touch - clickToToggleController - hide`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -187,7 +196,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.swipeToSeek
      */
     @Test
-    fun `touch - swipeToSeek shows detached slider`() = runSkikoComposeUiTest {
+    fun `touch - swipeToSeek shows detached slider`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -227,7 +236,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.swipeToSeek
      */
     @Test
-    fun `touch - swipe when controller is already fully visible`() = runSkikoComposeUiTest {
+    fun `touch - swipe when controller is already fully visible`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -260,11 +269,85 @@ class EpisodeVideoControllerTest {
         }
     }
 
+    @Test
+    fun `touch - drag when controller is already fully visible`() = runAniComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        waitForIdle()
+        val root = onAllNodes(isRoot()).onFirst()
+
+        root.performClick() // 显示全部控制器
+        runOnIdle {
+            waitUntil { topBar.exists() }
+            detachedProgressSlider.assertDoesNotExist()
+        }
+
+        progressSlider.performTouchInput {
+            down(centerLeft)
+            moveBy(center)
+        }
+        runOnIdle {
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+
+        // 松开手指
+        root.performTouchInput {
+            up()
+        }
+        runOnIdle {
+            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+    }
+
+    @Test
+    fun `touch - drag when controller is already fully visible and can still play`() =
+        runAniComposeUiTest {
+            setContent {
+                Player(GestureFamily.TOUCH)
+            }
+            waitForIdle()
+            val root = onAllNodes(isRoot()).onFirst()
+
+            root.performClick() // 显示全部控制器
+            runOnIdle {
+                waitUntil { topBar.exists() }
+                detachedProgressSlider.assertDoesNotExist()
+            }
+
+            progressSlider.performTouchInput {
+                down(centerLeft)
+                moveBy(center)
+            }
+            runOnIdle {
+                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
+
+            // 松开手指
+            root.performTouchInput {
+                up()
+            }
+            runOnIdle {
+                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
+
+            currentPositionMillis += 5000L // 播放 5 秒
+
+            runOnIdle {
+                waitUntil { onNodeWithText("00:51 / 01:40").exists() }
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
+        }
+
     /**
      * @see GestureFamily.swipeToSeek
      */
     @Test // https://github.com/open-ani/ani/issues/720
-    fun `touch - swipeToSeek shows detached slider and can still play`() = runSkikoComposeUiTest {
+    fun `touch - swipeToSeek shows detached slider and can still play`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.TOUCH)
         }
@@ -322,7 +405,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.mouseHoverForController
      */
     @Test
-    fun `mouse - mouseHoverForController - center screen`() = runSkikoComposeUiTest {
+    fun `mouse - mouseHoverForController - center screen`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.MOUSE)
         }
@@ -335,7 +418,7 @@ class EpisodeVideoControllerTest {
         testMoveMouseAndWaitForHide()
     }
 
-    private fun SkikoComposeUiTest.testMoveMouseAndWaitForHide() {
+    private fun AniComposeUiTest.testMoveMouseAndWaitForHide() {
         // 移动鼠标来显示控制器
         runOnIdle {
             mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
@@ -373,7 +456,7 @@ class EpisodeVideoControllerTest {
      * @see GestureFamily.mouseHoverForController
      */
     @Test
-    fun `mouse - mouseHoverForController - center screen twice`() = runSkikoComposeUiTest {
+    fun `mouse - mouseHoverForController - center screen twice`() = runAniComposeUiTest {
         setContent {
             Player(GestureFamily.MOUSE)
         }
@@ -397,7 +480,7 @@ class EpisodeVideoControllerTest {
      * 鼠标悬浮在控制器上, 会保持显示
      */
     @Test
-    fun `mouse - hover to always on - bottom bar`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - bottom bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 鼠标移动到控制器上
@@ -413,7 +496,7 @@ class EpisodeVideoControllerTest {
      * 鼠标悬浮在控制器上, 会保持显示
      */
     @Test
-    fun `mouse - hover to always on - top bar`() = runSkikoComposeUiTest {
+    fun `mouse - hover to always on - top bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 鼠标移动到控制器上
@@ -425,11 +508,84 @@ class EpisodeVideoControllerTest {
         )
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // 打开 side sheets 后 request always on, 关闭后取消
+    /////////////////////////////////////////////////////////////////////////// 
+
+    private fun AniComposeUiTest.testSideSheetRequestAlwaysOn(
+        openSideSheet: () -> Unit,
+        waitForSideSheetOpen: () -> Unit,
+        waitForSideSheetClose: () -> Unit,
+    ) {
+        testRequestAlwaysOn(
+            performGesture = {
+                openSideSheet()
+                onRoot().performMouseInput {
+                    moveTo(centerRight)
+                }
+                waitForSideSheetOpen()
+                runOnIdle {
+                    assertEquals(true, controllerState.alwaysOn)
+                }
+            },
+            expectAlwaysOn = true,
+        )
+        // 点击外部, 关闭 side sheet
+        mainClock.autoAdvance = false
+        runOnIdle {
+            onRoot().performTouchInput {
+                click(center)
+            }
+        }
+        runOnIdle {
+            waitForSideSheetClose()
+            assertEquals(false, controllerState.alwaysOn)
+        }
+        // 随后应当隐藏控制器
+        runOnIdle {
+            mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
+        }
+        mainClock.autoAdvance = true
+        waitForIdle()
+        assertControllerVisible(false)
+    }
+
+    @Test
+    fun `mouse - hover to always on - danmaku settings sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `mouse - hover to always on - media selector sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `mouse - hover to always on - episode selector sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // MOUSE 模式下单击鼠标
+    ///////////////////////////////////////////////////////////////////////////
+
     /**
      * 手指单击控制器, 不会触发保持显示
      */
     @Test
-    fun `mouse - clicking does not request always on - bottom bar`() = runSkikoComposeUiTest {
+    fun `mouse - clicking does not request always on - bottom bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 手指单击控制器
@@ -445,7 +601,7 @@ class EpisodeVideoControllerTest {
      * 手指单击控制器, 不会触发保持显示
      */
     @Test
-    fun `mouse - clicking does not request always on - top bar`() = runSkikoComposeUiTest {
+    fun `mouse - clicking does not request always on - top bar`() = runAniComposeUiTest {
         testRequestAlwaysOn(
             performGesture = {
                 // 手指单击控制器
@@ -457,7 +613,13 @@ class EpisodeVideoControllerTest {
         )
     }
 
-    private fun SkikoComposeUiTest.testRequestAlwaysOn(
+    /**
+     * 流程:
+     * 1. 模拟点击, 显示控制器
+     * 2. [performGesture]
+     * 3. 等待动画后, 根据 [expectAlwaysOn] 检查是否显示控制器
+     */
+    private fun AniComposeUiTest.testRequestAlwaysOn(
         performGesture: () -> Unit,
         expectAlwaysOn: Boolean = false,
     ) {
@@ -488,22 +650,25 @@ class EpisodeVideoControllerTest {
 
         mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
         mainClock.autoAdvance = true
-        // 手指点击不应当显示
         runOnIdle {
             assertEquals(expectAlwaysOn, controllerState.alwaysOn)
-            if (expectAlwaysOn) {
-                waitUntil { topBar.exists() }
-                assertEquals(
-                    NORMAL_VISIBLE,
-                    controllerState.visibility,
-                )
-            } else {
-                waitUntil { topBar.doesNotExist() }
-                assertEquals(
-                    NORMAL_INVISIBLE,
-                    controllerState.visibility,
-                )
-            }
+            assertControllerVisible(expectAlwaysOn)
+        }
+    }
+
+    private fun AniComposeUiTest.assertControllerVisible(visible: Boolean) = runOnIdle {
+        if (visible) {
+            waitUntil { topBar.exists() }
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        } else {
+            waitUntil { topBar.doesNotExist() }
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
         }
     }
 }

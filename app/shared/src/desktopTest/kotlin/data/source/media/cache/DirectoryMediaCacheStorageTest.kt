@@ -2,6 +2,7 @@ package me.him188.ani.app.data.source.media.cache
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
 import me.him188.ani.app.data.source.media.framework.TestMediaCacheEngine
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -50,7 +51,7 @@ class DirectoryMediaCacheStorageTest {
     )
 
     @Test
-    fun `create and fine with resume`() = runTest {
+    fun `create and find with resume`() = runTest {
         val storage =
             DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
 

@@ -1,13 +1,15 @@
-package me.him188.ani.app.data.source.media.cache
+package me.him188.ani.app.data.source.media.cache.storage
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.MediaStats
+import me.him188.ani.app.data.source.media.cache.emptyMediaStats
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
@@ -32,8 +34,6 @@ interface MediaCacheStorage : AutoCloseable {
      * ID of this media source.
      */
     val mediaSourceId: String
-
-    val isEnabled: Flow<Boolean>
 
     /**
      * 此空间的 [MediaSource]. 调用 [MediaSource.fetch] 则可从此空间中查询缓存, 作为 [Media].
@@ -104,7 +104,6 @@ val MediaCacheStorage.anyCaching: Flow<Boolean>
 class TestMediaCacheStorage : MediaCacheStorage {
     override val mediaSourceId: String
         get() = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID
-    override val isEnabled: Flow<Boolean> = flowOf(true)
     override val cacheMediaSource: MediaSource
         get() = throw UnsupportedOperationException()
     override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(listOf())

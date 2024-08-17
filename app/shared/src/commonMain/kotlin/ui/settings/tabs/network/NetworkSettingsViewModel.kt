@@ -18,7 +18,7 @@ import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
-import me.him188.ani.app.data.source.media.MediaSourceManager
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.launchInBackground

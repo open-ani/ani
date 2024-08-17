@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.fetch
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -17,12 +17,7 @@ import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.updateConfig
-import me.him188.ani.app.data.source.media.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
-import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
-import me.him188.ani.app.data.source.media.fetch.MediaFetcher
-import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
-import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
-import me.him188.ani.app.data.source.media.fetch.create
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.platform.ServiceLoader

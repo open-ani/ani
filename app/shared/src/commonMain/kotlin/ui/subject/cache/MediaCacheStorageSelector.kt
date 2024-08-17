@@ -15,7 +15,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 
 @Composable

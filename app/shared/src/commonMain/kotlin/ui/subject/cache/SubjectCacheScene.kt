@@ -30,10 +30,10 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.data.source.media.MediaSourceManager
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequest
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder

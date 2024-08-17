@@ -1,9 +1,8 @@
-package me.him188.ani.app.data.source.media.framework
+package me.him188.ani.app.data.source.media
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
-import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -18,14 +17,17 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
-import me.him188.ani.datasources.dmhy.DmhyMediaSource
+import me.him188.ani.utils.platform.annotations.TestOnly
 
+@TestOnly
+const val SOURCE_DMHY = "dmhy"
 
-const val SOURCE_DMHY = DmhyMediaSource.ID
-const val SOURCE_ACG = AcgRipMediaSource.ID
+@TestOnly
+const val SOURCE_ACG = "acg.rip"
 
 // Used by many test, don't change it. 
 // If you want to change it, copy it instead.
+@TestOnly
 val TestMediaList = listOf(
     DefaultMedia(
         mediaId = "$SOURCE_DMHY.1",
@@ -121,6 +123,7 @@ val TestMediaList = listOf(
     ),
 )
 
+@TestOnly
 val TestMediaCache1 = TestMediaCache(
     CachedMedia(
         TestMediaList[0],

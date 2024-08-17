@@ -8,10 +8,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.preference.ProxySettings
-import me.him188.ani.app.data.source.media.toClientProxyConfig
+import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.versionCode
@@ -31,17 +30,13 @@ import me.him188.ani.utils.logging.info
 
 @Serializable
 class AnitorrentConfig(
-    override val enabled: Boolean
+    override val enabled: Boolean // not used yet
 ) : TorrentEngineConfig {
     companion object {
         val Default = AnitorrentConfig(enabled = true)
     }
 }
 
-// 只有启用构建 (gradle property `ani.enable.anitorrent=true`) 后才会启用 anitorrent 所在目录
-
-//private val anitorrentFactory = java.util.ServiceLoader.load(TorrentDownloaderFactory::class.java)
-//    .firstOrNull { it.name == "Anitorrent" }
 private val anitorrentFactory = AnitorrentDownloaderFactory()
 
 class AnitorrentEngine(
@@ -57,7 +52,6 @@ class AnitorrentEngine(
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>
         get() = flowOf(tryLoadLibraries())
-    override val isEnabled: Flow<Boolean> get() = config.map { it.enabled }
 
     private fun tryLoadLibraries(): Boolean {
         try {
@@ -70,7 +64,7 @@ class AnitorrentEngine(
         }
     }
 
-    override suspend fun testConnection(): Boolean = true
+    override suspend fun testConnection(): Boolean = isSupported.first()
 
     override suspend fun newInstance(config: AnitorrentConfig): TorrentDownloader {
         if (!isSupported.first()) {

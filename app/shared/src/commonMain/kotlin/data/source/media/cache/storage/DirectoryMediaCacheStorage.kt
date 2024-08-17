@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media.cache
+package me.him188.ani.app.data.source.media.cache.storage
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -6,10 +6,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -20,6 +18,9 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.data.source.media.cache.MediaStats
+import me.him188.ani.app.data.source.media.cache.engine.MediaCacheEngine
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -57,7 +58,7 @@ private const val METADATA_FILE_EXTENSION = "metadata"
  */
 class DirectoryMediaCacheStorage(
     override val mediaSourceId: String,
-    private val metadataDir: SystemPath,
+    val metadataDir: SystemPath,
     private val engine: MediaCacheEngine,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : MediaCacheStorage {
@@ -72,23 +73,14 @@ class DirectoryMediaCacheStorage(
         CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
 
     @Serializable
-    private class MediaCacheSave(
+    class MediaCacheSave(
         val origin: Media,
         val metadata: MediaCacheMetadata,
     )
 
     init {
-        scope.launch {
-            engine.isEnabled.collectLatest {
-                if (!it) {
-                    listFlow.value = emptyList()
-                    return@collectLatest
-                }
-
-                withContext(Dispatchers.IO) {
-                    restoreFiles() // 必须要跑这个, 这个会去创建文件夹
-                }
-            }
+        scope.launch(Dispatchers.IO) {
+            restoreFiles() // 必须要跑这个, 这个会去创建文件夹
         }
     }
 
@@ -162,7 +154,6 @@ class DirectoryMediaCacheStorage(
     }
 
     override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(emptyList())
-    override val isEnabled: Flow<Boolean> get() = engine.isEnabled
 
     override val cacheMediaSource: MediaSource by lazy {
         MediaCacheStorageSource(this, MediaSourceLocation.Local)

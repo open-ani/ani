@@ -39,8 +39,8 @@ import me.him188.ani.app.data.repository.toEpisodeInfo
 import me.him188.ani.app.data.repository.toSelfRatingInfo
 import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.username

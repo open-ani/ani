@@ -41,9 +41,9 @@ import me.him188.ani.app.data.repository.BangumiCommentRepositoryImpl
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
+import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
-import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
@@ -66,18 +66,18 @@ import me.him188.ani.app.data.source.AniAuthClient
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
-import me.him188.ani.app.data.source.media.DefaultMediaAutoCacheService
-import me.him188.ani.app.data.source.media.DummyMediaCacheEngine
-import me.him188.ani.app.data.source.media.MediaAutoCacheService
-import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.data.source.media.MediaCacheManagerImpl
-import me.him188.ani.app.data.source.media.MediaSourceManager
-import me.him188.ani.app.data.source.media.MediaSourceManagerImpl
-import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
-import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
-import me.him188.ani.app.data.source.media.createWithKoin
+import me.him188.ani.app.data.source.media.cache.DefaultMediaAutoCacheService
+import me.him188.ani.app.data.source.media.cache.MediaAutoCacheService
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.MediaCacheManagerImpl
+import me.him188.ani.app.data.source.media.cache.createWithKoin
+import me.him188.ani.app.data.source.media.cache.engine.DummyMediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManagerImpl
+import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
-import me.him188.ani.app.data.source.media.toClientProxyConfig
 import me.him188.ani.app.data.source.session.BangumiSessionManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
@@ -172,7 +172,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         val engines = get<TorrentManager>().engines
         MediaCacheManagerImpl(
             storagesIncludingDisabled = buildList(capacity = engines.size) {
-                if (DummyMediaCacheEngine.isEnabled) {
+                if (currentAniBuildConfig.isDebug) {
                     // 注意, 这个必须要在第一个, 见 [DefaultTorrentManager.engines] 注释
                     add(
                         DirectoryMediaCacheStorage(

@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.cache.engine
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.cache.AbstractMediaStats
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
@@ -52,8 +51,7 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import kotlin.coroutines.CoroutineContext
 
-private const val EXTRA_TORRENT_DATA = "torrentData"
-private const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
+
 //private const val EXTRA_TORRENT_CACHE_FILE =
 //    "torrentCacheFile" // MediaCache 所对应的视频文件. 该文件一定是 [EXTRA_TORRENT_CACHE_DIR] 目录中的文件 (的其中一个)
 
@@ -62,11 +60,14 @@ private const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存
  */
 class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
-//    override val mediaCacheEngineId: String,
     val torrentEngine: TorrentEngine,
+    val flowDispatcher: CoroutineContext = Dispatchers.Default,
 ) : MediaCacheEngine {
-    private companion object {
-        val logger = logger<TorrentMediaCacheEngine>()
+    companion object {
+        private const val EXTRA_TORRENT_DATA = "torrentData"
+        const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
+
+        private val logger = logger<TorrentMediaCacheEngine>()
     }
 
     class LazyFileHandle(
@@ -130,14 +131,14 @@ class TorrentMediaCacheEngine(
         override val downloadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
                 session?.stats?.downloadRate?.map {
-                    it?.bytes ?: FileSize.Unspecified
+                    it.bytes
                 } ?: flowOf(FileSize.Unspecified)
             }
 
         override val uploadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
                 session?.stats?.uploadRate?.map {
-                    it?.bytes ?: FileSize.Unspecified
+                    it.bytes
                 } ?: flowOf(FileSize.Unspecified)
             }
 
@@ -206,30 +207,28 @@ class TorrentMediaCacheEngine(
         }
     }
 
-    override val isEnabled: Flow<Boolean> get() = torrentEngine.isEnabled
-
     override val stats: MediaStats = object : AbstractMediaStats() {
         override val uploaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploaded ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
         override val downloaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloaded ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
 
         override val uploadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploadRate ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
         override val downloadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloadRate ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
     }
 
     override fun supports(media: Media): Boolean {
@@ -300,7 +299,7 @@ class TorrentMediaCacheEngine(
         return LazyFileHandle(
             scope,
             state
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
                 .shareIn(
                     scope,
                     SharingStarted.Lazily,
@@ -312,13 +311,13 @@ class TorrentMediaCacheEngine(
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun createCache(
         origin: Media,
-        request: MediaCacheMetadata,
+        metadata: MediaCacheMetadata,
         parentContext: CoroutineContext
     ): MediaCache {
         if (!supports(origin)) throw UnsupportedOperationException("Media is not supported by this engine $this: ${origin.download}")
         val downloader = torrentEngine.getDownloader() ?: error("Engine $torrentEngine is not enabled")
         val data = downloader.fetchTorrent(origin.download.uri)
-        val metadata = request.withExtra(
+        val newMetadata = metadata.withExtra(
             mapOf(
                 EXTRA_TORRENT_DATA to data.data.toHexString(),
                 EXTRA_TORRENT_CACHE_DIR to downloader.getSaveDirForTorrent(data).absolutePath,
@@ -327,8 +326,8 @@ class TorrentMediaCacheEngine(
 
         return TorrentMediaCache(
             origin = origin,
-            metadata = metadata,
-            lazyFileHandle = getLazyFileHandle(data, metadata, parentContext),
+            metadata = newMetadata,
+            lazyFileHandle = getLazyFileHandle(data, newMetadata, parentContext),
         )
     }
 

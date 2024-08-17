@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.cache
 
 import androidx.compose.runtime.Stable
 import me.him188.ani.datasources.api.topic.FileSize

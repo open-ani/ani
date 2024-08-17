@@ -1,16 +1,16 @@
 package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.io.resolve
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -32,28 +32,19 @@ enum class TorrentEngineType(
     Anitorrent("anitorrent"),
 }
 
-class TorrentDownloaderInitializationException(
-    message: String? = null,
-    cause: Throwable? = null,
-) : Exception(message, cause)
-
-class TorrentDownloaderManagerError(
-    val exception: Throwable,
-)
-
 class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
+    private val proxySettingsFlow: Flow<ProxySettings>,
+    private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
 ) : TorrentManager, KoinComponent {
-    private val settingsRepository: SettingsRepository by inject()
-
-    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+    private val scope = parentCoroutineContext.childScope()
 
     override val anitorrent: AnitorrentEngine by lazy {
         AnitorrentEngine(
             scope.childScope(CoroutineName("AnitorrentEngine")),
-            settingsRepository.anitorrentConfig.flow,
-            settingsRepository.proxySettings.flow,
+            anitorrentConfigFlow,
+            proxySettingsFlow,
             saveDir(TorrentEngineType.Anitorrent),
         )
     }
@@ -69,6 +60,24 @@ class DefaultTorrentManager(
             is Platform.Desktop -> listOf(anitorrent)
             Platform.Android -> listOf(anitorrent)
             Platform.Ios -> listOf() // TODO IOS anitorrent
+        }
+    }
+
+    companion object {
+        fun create(
+            parentCoroutineContext: CoroutineContext,
+            settingsRepository: SettingsRepository,
+            baseSaveDir: () -> SystemPath,
+        ): DefaultTorrentManager {
+            val saveDirLazy by lazy(baseSaveDir)
+            return DefaultTorrentManager(
+                parentCoroutineContext,
+                { type ->
+                    saveDirLazy.resolve(type.id)
+                },
+                settingsRepository.proxySettings.flow,
+                settingsRepository.anitorrentConfig.flow,
+            )
         }
     }
 }

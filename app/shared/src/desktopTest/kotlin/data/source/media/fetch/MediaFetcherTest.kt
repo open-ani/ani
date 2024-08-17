@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.data.source.media.framework.TestMediaList
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
 import me.him188.ani.datasources.api.EpisodeSort

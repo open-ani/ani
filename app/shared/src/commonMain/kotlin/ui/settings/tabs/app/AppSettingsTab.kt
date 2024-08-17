@@ -441,6 +441,18 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("自动连播") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
+        if (currentPlatform.isDesktop()) {
+            HorizontalDividerItem()
+            SwitchItem(
+                checked = config.autoSkipOpEdExperimental,
+                onCheckedChange = {
+                    vm.videoScaffoldConfig.update(config.copy(autoSkipOpEdExperimental = it))
+                },
+                title = { Text("自动跳过 OP 和 ED") },
+                Modifier.placeholder(vm.uiSettings.loading),
+                description = { Text("实验性功能") },
+            )
+        }
     }
 }
 

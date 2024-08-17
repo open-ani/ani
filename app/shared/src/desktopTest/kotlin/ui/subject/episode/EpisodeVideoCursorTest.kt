@@ -17,7 +17,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.runSkikoComposeUiTest
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.persistentListOf
@@ -29,7 +28,11 @@ import me.him188.ani.app.ui.foundation.effects.TAG_CURSOR_VISIBILITY_EFFECT_INVI
 import me.him188.ani.app.ui.foundation.effects.TAG_CURSOR_VISIBILITY_EFFECT_VISIBLE
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.framework.runAniComposeUiTest
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
@@ -89,9 +92,6 @@ class EpisodeVideoCursorTest {
                     onExitFullscreen = {},
                     danmakuEditor = {},
                     configProvider = { VideoScaffoldConfig.Default },
-                    sideSheets = {},
-                    onShowMediaSelector = {},
-                    onShowSelectEpisode = {},
                     onClickScreenshot = {},
                     detachedProgressSlider = {
                         PlayerControllerDefaults.MediaProgressSlider(
@@ -100,9 +100,13 @@ class EpisodeVideoCursorTest {
                             enabled = false,
                         )
                     },
+                    leftBottomTips = {},
                     progressSliderState = progressSliderState,
                     danmakuFrozen = true,
                     gestureFamily = gestureFamily,
+                    mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
+                    mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
+                    episodeSelectorState = rememberTestEpisodeSelectorState(),
                     modifier = Modifier.weight(1f),
                 )
 
@@ -117,7 +121,7 @@ class EpisodeVideoCursorTest {
      * 初始 controller visible, 会显示指针
      */
     @Test
-    fun `initial controller visible`() = runSkikoComposeUiTest {
+    fun `initial controller visible`() = runAniComposeUiTest {
         controllerState.toggleFullVisible(true)
         setContent {
             Player()
@@ -131,7 +135,7 @@ class EpisodeVideoCursorTest {
      * 初始 controller invisible, 但因为鼠标没有 hover 到视频, 也会显示指针
      */
     @Test
-    fun `initial controller invisible`() = runSkikoComposeUiTest {
+    fun `initial controller invisible`() = runAniComposeUiTest {
         controllerState.toggleFullVisible(false)
         setContent {
             Player()
@@ -146,7 +150,7 @@ class EpisodeVideoCursorTest {
      * 当鼠标滑入视频 (并且 controller 也显示几秒隐藏后), 会显示指针
      */
     @Test
-    fun `initial controller invisible and hover`() = runSkikoComposeUiTest {
+    fun `initial controller invisible and hover`() = runAniComposeUiTest {
         controllerState.toggleFullVisible(false)
         setContent {
             Player()
@@ -168,7 +172,7 @@ class EpisodeVideoCursorTest {
      * 滑出视频区域后显示指针
      */
     @Test
-    fun `show cursor when outside of video`() = runSkikoComposeUiTest {
+    fun `show cursor when outside of video`() = runAniComposeUiTest {
         controllerState.toggleFullVisible(false)
         setContent {
             Player()
@@ -199,7 +203,7 @@ class EpisodeVideoCursorTest {
      * 在 controller visible 时鼠标滑入播放器, 等待几秒后隐藏 controller, 同时隐藏 cursor
      */
     @Test
-    fun `hide cursor after some seconds`() = runSkikoComposeUiTest {
+    fun `hide cursor after some seconds`() = runAniComposeUiTest {
         controllerState.toggleFullVisible(true)
         setContent {
             Player(gestureFamily = GestureFamily.MOUSE)

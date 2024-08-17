@@ -44,11 +44,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.emptyMediaStats
+import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.data.source.media.cache.sum
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost

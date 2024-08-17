@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.platform
 
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -28,6 +29,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Stable
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import kotlinx.atomicfu.AtomicRef
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,30 +38,55 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentLinkedQueue
 
+
 abstract class BaseComponentActivity : ComponentActivity() {
     @Stable
     val snackbarHostState = SnackbarHostState()
 
-    private val requestPermissionResultHandlers: MutableCollection<(Boolean) -> Unit> = ConcurrentLinkedQueue()
-    private val registerForActivityResult =
+    private val requestPermissionHandlers: MutableCollection<(Boolean) -> Unit> = ConcurrentLinkedQueue()
+    private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            requestPermissionResultHandlers.forEach {
-                it.invoke(granted)
-            }
+            requestPermissionHandlers.forEach { it.invoke(granted) }
         }
     private val requestPermissionLock = Mutex()
+
+    private val requestExternalDocumentTreeHandler: AtomicRef<((Uri?) -> Unit)?> = atomic(null)
+    private val requestExternalDocumentTreeLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+            val handler by requestExternalDocumentTreeHandler
+            handler?.invoke(uri)
+        }
 
     suspend fun requestPermission(permission: String): Boolean {
         val res = CompletableDeferred<Boolean>()
         return requestPermissionLock.withLock {
             val handler: (Boolean) -> Unit = { res.complete(it) }
-            requestPermissionResultHandlers.add(handler)
+            requestPermissionHandlers.add(handler)
             try {
-                registerForActivityResult.launch(permission)
+                requestPermissionLauncher.launch(permission)
                 res.await()
             } finally {
-                requestPermissionResultHandlers.remove(handler)
+                requestPermissionHandlers.remove(handler)
             }
+        }
+    }
+
+    /**
+     * Get a document tree with rw permission via DocumentUI.
+     */
+    suspend fun requestExternalDocumentTree(): String? {
+        val res = CompletableDeferred<String?>()
+        val handler: (Uri?) -> Unit = { uri: Uri? -> res.complete(uri?.toString()) }
+
+        if (!requestExternalDocumentTreeHandler.compareAndSet(null, handler)) {
+            return null
+        }
+
+        return try {
+            requestExternalDocumentTreeLauncher.launch(null)
+            res.await()
+        } finally {
+            requestExternalDocumentTreeHandler.compareAndSet(handler, null)
         }
     }
 

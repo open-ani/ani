@@ -483,12 +483,16 @@ fun VideoGestureHost(
                         onPointerEventMultiplatform(PointerEventType.Move) { _ ->
                             controllerState.toggleFullVisible(true)
                             keyboardFocus.requestFocus()
-                            if (!controllerState.alwaysOn) {
-                                scope.launch {
-                                    delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
-                                    if (controllerState.alwaysOn) return@launch
-                                    controllerState.toggleFullVisible(false)
-                                }
+                            scope.launch {
+                                delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
+                                controllerState.toggleFullVisible(false)
+                            }
+                        }.onPointerEventMultiplatform(PointerEventType.Enter) { _ ->
+                            // 展示 side sheet 时会 requestAlwaysOn, 当点击外面关闭 side sheet 后, 不会有 Move 事件, 也就不会自动隐藏. 
+                            // 因此需要用 Enter 来延迟几秒后隐藏. 
+                            scope.launch {
+                                delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
+                                controllerState.toggleFullVisible(false)
                             }
                         }
                     }

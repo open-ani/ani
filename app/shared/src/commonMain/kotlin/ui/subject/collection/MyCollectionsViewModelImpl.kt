@@ -16,8 +16,8 @@ import me.him188.ani.app.data.models.preference.MyCollectionsSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.SessionEvent
 import me.him188.ani.app.data.source.session.SessionManager

@@ -13,9 +13,9 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 
-private class DebugSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
+class DebugSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
-    private val debugSettings by settings(
+    val debugSettings by settings(
         settingsRepository.debugSettings,
         placeholder = DebugSettings(_placeHolder = -1),
     )
@@ -31,6 +31,10 @@ private class DebugSettingsViewModel : AbstractSettingsViewModel(), KoinComponen
 
 @Composable
 fun isInDebugMode(): Boolean {
-    val vm = rememberViewModel<DebugSettingsViewModel> { DebugSettingsViewModel() }
+    val vm = rememberDebugSettingsViewModel()
     return vm.isAppInDebugMode
 }
+
+@Composable
+fun rememberDebugSettingsViewModel(): DebugSettingsViewModel =
+    rememberViewModel<DebugSettingsViewModel> { DebugSettingsViewModel() }

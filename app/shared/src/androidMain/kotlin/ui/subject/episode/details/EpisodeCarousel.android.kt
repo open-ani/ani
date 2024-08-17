@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
