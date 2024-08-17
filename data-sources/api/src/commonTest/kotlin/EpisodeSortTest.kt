@@ -73,6 +73,7 @@ class EpisodeSortTest {
                 special(MAD, 1.5f) to "MAD1.5",
                 special(Unknown, -999f) to "Unknown-999",
                 EpisodeSort.Unknown("S") to "S",
+                ep(1, Unknown) to "1",
             ).map {
                 dynamicTest(it.second) {
                     val (raw, expected) = it
@@ -129,6 +130,7 @@ class EpisodeSortTest {
             "sp" to listOf(ep("SP1"), ep("SP2")),
             "int with sp" to listOf(ep(1), ep(3), ep("SP1")),
             "float with sp" to listOf(ep("1.5"), ep(3), ep("SP1")),
+            "unknown" to listOf(ep(1, Unknown), ep(3, Unknown)),
         ).flatMap { (name, sorted) ->
             sorted.permutedSequence().map { unsorted ->
                 dynamicTest("$name: $unsorted => $sorted") {
