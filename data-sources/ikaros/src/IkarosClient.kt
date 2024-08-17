@@ -80,7 +80,7 @@ class IkarosClient(
         return baseUrl + url
     }
 
-    suspend fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Int): SizedSource<MediaMatch> {
+    suspend fun subjectDetails2SizedSource(subjectDetails: IkarosSubjectDetails, seq: Float): SizedSource<MediaMatch> {
         val episodes = subjectDetails.episodes
         val mediaMatchs = mutableListOf<MediaMatch>()
         val episode = episodes.find { ep -> ep.sequence == seq && "MAIN" == ep.group }

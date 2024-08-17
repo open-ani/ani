@@ -69,6 +69,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 internal const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
+internal const val TAG_PROGRESS_SLIDER = "ProgressSlider"
 
 /**
  * 播放器进度滑块的状态.
@@ -194,7 +195,8 @@ fun MediaProgressSlider(
 ) {
     Box(
         modifier.fillMaxWidth()
-            .height(24.dp),
+            .height(24.dp)
+            .testTag(TAG_PROGRESS_SLIDER),
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {

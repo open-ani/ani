@@ -80,6 +80,7 @@ fun VideoScaffold(
     detachedProgressSlider: @Composable () -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
+    leftBottomTips: @Composable () -> Unit = {},
 ) {
     val gestureLockedState by derivedStateOf(gestureLocked) // delayed access to minimize recomposition
 
@@ -158,44 +159,47 @@ fun VideoScaffold(
 
                     Box(Modifier.weight(1f, fill = true).fillMaxWidth())
 
-                    // 底部控制栏: 播放/暂停, 进度条, 切换全屏
-                    AnimatedVisibility(
-                        visible = controllerState.visibility.bottomBar && !gestureLockedState,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "bottomBar")
-                        Column(
-                            Modifier
-                                .hoverToRequestAlwaysOn(alwaysOnRequester)
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.verticalGradient(
-                                        0f to Color.Transparent,
-                                        1 - 0.32f to Color.Transparent.copy(0.45f),
-                                        1f to Color.Transparent.copy(0.72f),
-                                    ),
-                                ),
+                    Column { 
+                        leftBottomTips()
+                        // 底部控制栏: 播放/暂停, 进度条, 切换全屏
+                        AnimatedVisibility(
+                            visible = controllerState.visibility.bottomBar && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
                         ) {
-                            Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
+                            val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "bottomBar")
+                            Column(
+                                Modifier
+                                    .hoverToRequestAlwaysOn(alwaysOnRequester)
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0f to Color.Transparent,
+                                            1 - 0.32f to Color.Transparent.copy(0.45f),
+                                            1f to Color.Transparent.copy(0.72f),
+                                        ),
+                                    ),
                             ) {
-                                CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                    bottomBar()
+                                Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    CompositionLocalProvider(LocalContentColor provides Color.White) {
+                                        bottomBar()
+                                    }
                                 }
                             }
-                        }
 
-                    }
-                    AnimatedVisibility(
-                        visible = controllerState.visibility.detachedSlider && !gestureLockedState,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
-                            detachedProgressSlider()
+                        }
+                        AnimatedVisibility(
+                            visible = controllerState.visibility.detachedSlider && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
+                                detachedProgressSlider()
+                            }
                         }
                     }
                 }

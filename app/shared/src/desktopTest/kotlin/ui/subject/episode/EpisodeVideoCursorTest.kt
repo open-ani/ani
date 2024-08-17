@@ -100,6 +100,7 @@ class EpisodeVideoCursorTest {
                             enabled = false,
                         )
                     },
+                    leftBottomTips = {},
                     progressSliderState = progressSliderState,
                     danmakuFrozen = true,
                     gestureFamily = gestureFamily,
