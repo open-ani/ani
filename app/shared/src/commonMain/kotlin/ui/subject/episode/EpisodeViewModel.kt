@@ -43,13 +43,13 @@ import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.data.source.CommentLoader
 import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.data.source.media.MediaSourceManager
-import me.him188.ani.app.data.source.media.createFetchFetchSessionFlow
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.fetch.create
+import me.him188.ani.app.data.source.media.fetch.createFetchFetchSessionFlow
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorAutoSelect

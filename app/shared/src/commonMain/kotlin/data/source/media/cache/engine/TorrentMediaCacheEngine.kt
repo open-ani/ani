@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.cache.engine
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.cache.AbstractMediaStats
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
@@ -61,8 +60,8 @@ import kotlin.coroutines.CoroutineContext
  */
 class TorrentMediaCacheEngine(
     private val mediaSourceId: String,
-//    override val mediaCacheEngineId: String,
     val torrentEngine: TorrentEngine,
+    val flowDispatcher: CoroutineContext = Dispatchers.Default,
 ) : MediaCacheEngine {
     companion object {
         private const val EXTRA_TORRENT_DATA = "torrentData"
@@ -215,23 +214,23 @@ class TorrentMediaCacheEngine(
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploaded ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
         override val downloaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloaded ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
 
         override val uploadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalUploadRate ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
         override val downloadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
                 .flatMapLatest { it?.totalDownloadRate ?: flowOf(0L) }
                 .map { it.bytes }
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
     }
 
     override fun supports(media: Media): Boolean {
@@ -302,7 +301,7 @@ class TorrentMediaCacheEngine(
         return LazyFileHandle(
             scope,
             state
-                .flowOn(Dispatchers.Default)
+                .flowOn(flowDispatcher)
                 .shareIn(
                     scope,
                     SharingStarted.Lazily,

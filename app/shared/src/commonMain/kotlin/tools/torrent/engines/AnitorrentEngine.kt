@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.preference.ProxySettings
-import me.him188.ani.app.data.source.media.toClientProxyConfig
+import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.platform.versionCode

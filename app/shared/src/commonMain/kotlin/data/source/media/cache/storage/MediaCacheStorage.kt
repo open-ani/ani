@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media.cache
+package me.him188.ani.app.data.source.media.cache.storage
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7,7 +7,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.MediaStats
+import me.him188.ani.app.data.source.media.cache.emptyMediaStats
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media

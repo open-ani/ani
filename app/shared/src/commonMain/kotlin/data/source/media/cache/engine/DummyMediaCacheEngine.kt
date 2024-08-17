@@ -1,10 +1,9 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.cache.engine
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.emptyMediaStats
 import me.him188.ani.app.platform.Platform

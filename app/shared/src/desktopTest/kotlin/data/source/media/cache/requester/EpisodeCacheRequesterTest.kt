@@ -11,7 +11,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.media.SOURCE_DMHY
 import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
-import me.him188.ani.app.data.source.media.cache.TestMediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.storage.TestMediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.fetch.awaitCompletion

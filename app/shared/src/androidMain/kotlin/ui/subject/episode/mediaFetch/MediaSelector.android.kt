@@ -5,8 +5,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
-import me.him188.ani.app.data.source.media.MediaCacheManager
 import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview

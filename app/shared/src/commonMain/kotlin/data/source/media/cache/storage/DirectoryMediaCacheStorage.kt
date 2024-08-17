@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media.cache
+package me.him188.ani.app.data.source.media.cache.storage
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +20,9 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.data.source.media.cache.MediaStats
+import me.him188.ani.app.data.source.media.cache.engine.MediaCacheEngine
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata

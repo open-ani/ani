@@ -7,7 +7,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.subjectCompletedFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.MediaSourceManager
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory.Companion.withRepositories
 import me.him188.ani.datasources.api.Media
 import org.koin.core.Koin

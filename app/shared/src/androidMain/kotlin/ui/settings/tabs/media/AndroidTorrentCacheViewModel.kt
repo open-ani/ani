@@ -16,10 +16,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
-import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.data.source.media.TorrentMediaCacheEngine
-import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage
-import me.him188.ani.app.data.source.media.cache.DirectoryMediaCacheStorage.MediaCacheSave
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage.MediaCacheSave
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.findActivity

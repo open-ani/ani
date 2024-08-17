@@ -15,12 +15,12 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.TestMediaList
-import me.him188.ani.app.data.source.media.cache.TestMediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequest
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.cache.requester.trySelectSingle
+import me.him188.ani.app.data.source.media.cache.storage.TestMediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.framework.TestMediaSelector

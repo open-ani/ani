@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.source.media
+package me.him188.ani.app.data.source.media.cache
 
 import androidx.compose.runtime.Stable
 import io.ktor.util.collections.ConcurrentMap
@@ -25,9 +25,7 @@ import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
-import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
-import me.him188.ani.app.data.source.media.cache.sum
+import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.platform.notification.Notif
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.notification.NotifPriority
