@@ -82,6 +82,7 @@ includeProject(":data-sources:nyafun", "data-sources/web/nyafun") // https://nya
 includeProject(":data-sources:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
 includeProject(":data-sources:ntdm", "data-sources/web/ntdm") // https://ntdm.tv/
 includeProject(":data-sources:gugufan", "data-sources/web/gugufan")
+includeProject(":data-sources:xfdm", "data-sources/web/xfdm")
 includeProject(":data-sources:jellyfin", "data-sources/jellyfin")
 includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
