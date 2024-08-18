@@ -254,7 +254,7 @@ class EpisodeVideoControllerTest {
             moveBy(Offset(width / 2f, 0f))
         }
         runOnIdle {
-            waitUntil { previewPopup.doesNotExist() } // TODO: 当滑动进度条时会显示 popup 后, 修改这里 
+            waitUntil { previewPopup.exists() } 
             detachedProgressSlider.assertDoesNotExist()
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
