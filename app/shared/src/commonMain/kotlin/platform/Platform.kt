@@ -100,12 +100,12 @@ enum class Arch(
     AARCH64("aarch64", ArchFamily.AARCH, 64),
 
     /**
-     * 32bit AArch. For very old or low-end Android
+     * AArch32 的一个细分 ABI. 只有很久的手机或电视才会用.
      */
     ARMV7A("armeabi-v7a", ArchFamily.AARCH, 32),
 
     /**
-     * AArch64. Popular Android.
+     * AArch64 的一个细分 ABI. 目前绝大多数手机都是这个.
      */
     ARMV8A("arm64-v8a", ArchFamily.AARCH, 64),
 }

@@ -60,7 +60,7 @@ value class MediaSelectorSubtitlePreferences(
                     }
                 }
 
-                Platform.Android -> ImmutableEnumMap<SubtitleKind, _> {
+                is Platform.Android -> ImmutableEnumMap<SubtitleKind, _> {
                     when (it) {
                         SubtitleKind.EMBEDDED -> NORMAL
                         SubtitleKind.CLOSED -> LOW_PRIORITY

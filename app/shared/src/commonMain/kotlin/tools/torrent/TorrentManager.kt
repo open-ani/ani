@@ -57,7 +57,7 @@ class DefaultTorrentManager(
 
         when (platform) {
             is Platform.Desktop -> listOf(anitorrent)
-            Platform.Android -> listOf(anitorrent)
+            is Platform.Android -> listOf(anitorrent)
             Platform.Ios -> listOf() // TODO IOS anitorrent
         }
     }
