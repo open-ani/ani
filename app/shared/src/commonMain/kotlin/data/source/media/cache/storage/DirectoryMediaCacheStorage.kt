@@ -53,6 +53,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -88,12 +89,21 @@ class DirectoryMediaCacheStorage(
 
     init {
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
-            var maxUploaded = 0L
+            val maxUploaded = object {
+                @Volatile
+                var value: Long = 0L
+            }
             engine.stats.uploaded.collect { new ->
-                val diff = new.inBytes - maxUploaded
-                if (diff > 0) {
-                    maxUploaded = maxOf(maxUploaded, new.inBytes)
-                    dataStore.updateData { it.copy(uploaded = it.uploaded + diff) }
+                val diff = (new.inBytes - maxUploaded.value).bytes
+                if (diff.inBytes > 0) {
+                    maxUploaded.value = maxOf(maxUploaded.value, new.inBytes)
+
+                    if (diff.inMegaBytes < 100) {
+                        dataStore.updateData { it.copy(uploaded = it.uploaded + diff) }
+                    } else {
+                        // 有时候启动时上传量会突增到几百 GB, 不知道是什么原因, 就先直接过滤掉超大的 diff 了
+                        // 不太可能有人能 100MB/s 上传
+                    }
                 }
             }
         }
