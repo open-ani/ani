@@ -190,6 +190,10 @@ class EpisodeSortTest {
             "sp" to listOf(ep("SP1"), ep("SP2")),
             "int with sp" to listOf(ep(1), ep(3), ep("SP1")),
             "float with sp" to listOf(ep("1.5"), ep(3), ep("SP1")),
+            "Normal lt Special" to listOf(ep(3), ep("SP2"), ep("SP3")),
+            "Special with same type" to listOf(ep("SP1"), ep("SP1.5"), ep("SP3")),
+            "Special with different type" to listOf(ep("OP5"), ep("ED2"), ep("PV3")),
+            "Special lt Unknown" to listOf(ep("SP2"), ep("SP3"), ep("1.2")),
         ).flatMap { (name, sorted) ->
             sorted.permutedSequence().map { unsorted ->
                 dynamicTest("$name: $unsorted => $sorted") {
@@ -211,5 +215,53 @@ class EpisodeSortTest {
             }
         },
     )
+
+    @TestFactory
+    fun testCompareTo() = runDynamicTests(
+        listOf(
+            // Actual to Expected
+
+            // Normal and Normal
+            Pair(ep("1"), ep("2")) to -1, // lt
+            Pair(ep("1"), ep("1")) to 0, // eq
+            Pair(ep("2"), ep("1")) to 1, // gt
+            // Normal and Special
+            Pair(ep("2"), ep("SP1")) to -1, // lt
+            // Normal and Unknown
+            Pair(ep("3"), ep("1.1")) to -1, // lt
+
+            // Special and Normal
+            Pair(ep("SP1"), ep("2")) to 1, // gt
+            // Special and Special
+            Pair(ep("SP1"), ep("SP2")) to -1, // lt
+            Pair(ep("SP1"), ep(BigNum("1"), SP)) to 0, // eq
+            Pair(ep("SP2"), ep("SP1")) to 1, // gt
+            Pair(ep(BigNum(1), SP), ep(BigNum(1), OP)) to -1, // lt
+            Pair(ep(BigNum(1), OP), ep(BigNum(1), ED)) to -1, // lt
+            Pair(ep(BigNum(1), ED), ep(BigNum(1), PV)) to -1, // lt
+            Pair(ep(BigNum(1), OAD), ep(BigNum(1), OVA)) to 1, // gt
+            Pair(ep(BigNum(1), OVA), ep(BigNum(1), MAD)) to 1, // gt
+            Pair(ep(BigNum(1), MAD), ep(BigNum(1), PV)) to 1, // gt
+            Pair(ep(BigNum(1), MAD), ep(BigNum(2), MAD)) to -1, // lt
+            Pair(ep(BigNum(1), MAD), ep(BigNum(1), MAD)) to 0, // eq
+            Pair(ep(BigNum(2), MAD), ep(BigNum(1), MAD)) to 1, // gt
+            // Special and Unknown
+            Pair(ep("SP3"), ep("1.1")) to -1, // lt
+
+            // Unknown and Normal
+            Pair(ep("1.1"), ep("3")) to 1, // gt
+            // Unknown and Special
+            Pair(ep("1.1"), ep("SP3")) to 1, // gt
+            // Unknown and Unknown
+            Pair(ep("1.1"), ep("SP3.2")) to "1.1".compareTo("SP3.2"), // raw compare to
+
+        ).map {
+            dynamicTest(it.toString()) {
+                val (a, b) = it
+                assertEquals(b, a.first.compareTo(a.second))
+            }
+        },
+    )
+
 
 }

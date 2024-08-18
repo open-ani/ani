@@ -116,11 +116,28 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
     final override fun compareTo(other: EpisodeSort): Int {
         if (this is Normal) {
             if (other is Normal) return number.compareTo(other.number) // Normal and Normal
-            return -1 // Normal < Special
+            if (other is Special) return -1 // Normal < Special
+            return -1 // Normal < Unknown
         }
-        if (other is Normal) return 1 // Special > Normal
+        if (this is Special) {
+            if (other is Normal) return 1 // Normal < Special
+            if (other is Special) { // Special and Special
+                val typeCom = type.compareTo(other.type) // Compare by type
+                if (typeCom != 0) return typeCom
+                if (number == null) return -1 // null < not null
+                if (other.number == null) return 0 // null == null
+                val numCom = number!!.compareTo(other.number!!) // Compare by num
+                if (numCom != 0) return numCom
+                return raw.compareTo(other.raw) // Compare by raw when type is eq
+            }
+            return -1 // Special < Unknown
+        }
 
-        // Special and Special
+
+        if (other is Normal) return 1 // Normal < Unknown
+        if (other is Special) return 1 // Special < Unknown
+
+        // Unknown and Unknown
         return raw.compareTo(other.raw)
     }
 
