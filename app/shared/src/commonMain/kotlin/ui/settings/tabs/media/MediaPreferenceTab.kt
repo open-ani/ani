@@ -15,6 +15,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -37,6 +38,11 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     val mediaSelectorSettings by settings(
         settingsRepository.mediaSelectorSettings,
         MediaSelectorSettings.Default.copy(_placeholder = -1),
+    )
+
+    val torrentSettings by settings(
+        settingsRepository.anitorrentConfig,
+        AnitorrentConfig.Default.copy(_placeholder = -1),
     )
 
     val defaultMediaPreference by settingsRepository.defaultMediaPreference.flow

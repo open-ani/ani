@@ -35,10 +35,11 @@ internal actual fun createAnitorrentTorrentDownloader(
 
     val session = session_t()
     val settings = session_settings_t().apply {
-        // TODO: support more torrent settings (e.g. download speed limit)
         user_agent = torrentDownloaderConfig.userAgent
         peer_fingerprint = torrentDownloaderConfig.peerFingerprint
         handshake_client_version = torrentDownloaderConfig.handshakeClientVersion
+        download_rate_limit = torrentDownloaderConfig.downloadRateLimitBytes
+        upload_rate_limit = torrentDownloaderConfig.uploadRateLimitBytes
         listOf(
             "router.utorrent.com:6881",
             "router.bittorrent.com:6881",
