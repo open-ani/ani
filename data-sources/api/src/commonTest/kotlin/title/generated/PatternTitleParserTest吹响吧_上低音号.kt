@@ -1235,7 +1235,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `659668_Hibike_21_Euphonium_Special_Episode_of_Ensemble_Contest_1080p`() {
     val r =
         parse("[云光字幕组]特别篇 吹响吧！上低音号~合奏比赛~Hibike! Euphonium Special ~Episode of Ensemble Contest~ [简体双语][1080p]招募翻译")
-    assertEquals("Special..Special", r.episodeRange.toString())
+    assertEquals("SP..SP", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
