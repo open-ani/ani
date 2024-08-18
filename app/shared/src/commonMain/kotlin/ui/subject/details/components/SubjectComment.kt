@@ -121,7 +121,6 @@ fun SubjectComment(
     modifier: Modifier = Modifier,
 ) {
     Comment(
-        modifier = modifier,
         avatar = { CommentDefaults.Avatar(comment.creator?.avatarUrl) },
         primaryTitle = {
             Text(
@@ -130,11 +129,6 @@ fun SubjectComment(
             )
         },
         secondaryTitle = { Text(formatDateTime(comment.createdAt)) },
-        rhsTitle = {
-            if (comment.rating != null && comment.rating > 0) {
-                FiveRatingStars(comment.rating)
-            }
-        },
         content = {
             RichText(
                 elements = comment.content.elements,
@@ -143,13 +137,17 @@ fun SubjectComment(
                 onClickImage = onClickImage,
             )
         },
-        reactionRow = if (comment.reactions.isNotEmpty()) {
-            {
-                CommentDefaults.ReactionRow(
-                    comment.reactions,
-                    onClickItem = { onClickReaction(comment.id, it) },
-                )
+        modifier = modifier,
+        rhsTitle = {
+            if (comment.rating != null && comment.rating > 0) {
+                FiveRatingStars(comment.rating)
             }
-        } else null,
+        },
+        reactionRow = {
+            CommentDefaults.ReactionRow(
+                comment.reactions,
+                onClickItem = { onClickReaction(comment.id, it) },
+            )
+        },
     )
 }

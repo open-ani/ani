@@ -10,15 +10,13 @@ import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.resolve
-import org.koin.core.component.KoinComponent
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 管理本地 BT 下载器的实现. 根据配置选择不同的下载器.
  *
  * 目前支持的下载实现:
- * - libtorrent4j (内嵌)
- * - qBittorrent (本机局域网).
+ * - anitorrent
  */
 interface TorrentManager {
     val anitorrent: AnitorrentEngine
@@ -37,15 +35,16 @@ class DefaultTorrentManager(
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
     private val proxySettingsFlow: Flow<ProxySettings>,
     private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
-) : TorrentManager, KoinComponent {
+    val platform: Platform,
+) : TorrentManager {
     private val scope = parentCoroutineContext.childScope()
 
     override val anitorrent: AnitorrentEngine by lazy {
         AnitorrentEngine(
-            scope.childScope(CoroutineName("AnitorrentEngine")),
             anitorrentConfigFlow,
             proxySettingsFlow,
             saveDir(TorrentEngineType.Anitorrent),
+            scope.coroutineContext + CoroutineName("AnitorrentEngine"),
         )
     }
 
@@ -56,9 +55,9 @@ class DefaultTorrentManager(
         // 
         // 如果要支持多个, 需要考虑将所有 storage 合并成一个 MediaSource.
 
-        when (Platform.currentPlatform) {
+        when (platform) {
             is Platform.Desktop -> listOf(anitorrent)
-            Platform.Android -> listOf(anitorrent)
+            is Platform.Android -> listOf(anitorrent)
             Platform.Ios -> listOf() // TODO IOS anitorrent
         }
     }
@@ -68,6 +67,7 @@ class DefaultTorrentManager(
             parentCoroutineContext: CoroutineContext,
             settingsRepository: SettingsRepository,
             baseSaveDir: () -> SystemPath,
+            platform: Platform = Platform.currentPlatform,
         ): DefaultTorrentManager {
             val saveDirLazy by lazy(baseSaveDir)
             return DefaultTorrentManager(
@@ -77,6 +77,7 @@ class DefaultTorrentManager(
                 },
                 settingsRepository.proxySettings.flow,
                 settingsRepository.anitorrentConfig.flow,
+                platform,
             )
         }
     }

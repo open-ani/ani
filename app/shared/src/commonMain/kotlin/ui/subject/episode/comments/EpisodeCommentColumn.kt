@@ -155,7 +155,6 @@ fun EpisodeComment(
     modifier: Modifier = Modifier
 ) {
     Comment(
-        modifier = modifier,
         avatar = { CommentDefaults.Avatar(comment.creator?.avatarUrl) },
         primaryTitle = {
             Text(
@@ -172,14 +171,13 @@ fun EpisodeComment(
                 onClickImage = onClickImage,
             )
         },
-        reactionRow = if (comment.reactions.isNotEmpty()) {
-            {
-                CommentDefaults.ReactionRow(
-                    comment.reactions,
-                    onClickItem = { },
-                )
-            }
-        } else null,
+        modifier = modifier,
+        reactionRow = {
+            CommentDefaults.ReactionRow(
+                comment.reactions,
+                onClickItem = { },
+            )
+        },
         actionRow = {
             CommentDefaults.ActionRow(
                 onClickReply = onActionReply,

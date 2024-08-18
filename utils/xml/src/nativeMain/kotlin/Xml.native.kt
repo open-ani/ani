@@ -1,8 +1,8 @@
 package me.him188.ani.utils.xml
 
 import com.fleeksoft.ksoup.Ksoup
-import com.fleeksoft.ksoup.ported.BufferReader
 import kotlinx.io.Source
+import kotlinx.io.readString
 
 actual object Xml {
     actual fun parse(string: String, baseUrl: String): Document {
@@ -10,7 +10,8 @@ actual object Xml {
     }
 
     actual fun parse(source: Source, baseUrl: String): Document {
-        return Ksoup.parse(BufferReader(source), baseUrl, null)
+        // TODO: Optimize Xml performance on iOS 
+        return Ksoup.parse(source.readString(), baseUri = baseUrl)
     }
 
     actual fun parse(string: String): Document {
@@ -18,6 +19,7 @@ actual object Xml {
     }
 
     actual fun parse(source: Source): Document {
-        return Ksoup.parse(BufferReader(source), "", null)
+        // TODO: Optimize Xml performance on iOS 
+        return Ksoup.parse(source.readString(), baseUri = "")
     }
 }

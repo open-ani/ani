@@ -348,7 +348,7 @@ fun GestureIndicator(
 val Platform.mouseFamily: GestureFamily
     get() = when (this) {
         is Platform.Desktop -> GestureFamily.MOUSE
-        Platform.Android, Platform.Ios -> GestureFamily.TOUCH
+        is Platform.Android, is Platform.Ios -> GestureFamily.TOUCH
     }
 
 @Immutable

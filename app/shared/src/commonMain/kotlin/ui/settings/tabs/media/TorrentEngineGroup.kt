@@ -1,126 +1,146 @@
 package me.him188.ani.app.ui.settings.tabs.media
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.files
-import me.him188.ani.app.platform.isAndroid
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.settings.framework.components.SliderItem
+import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
+import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
+import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
+import me.him188.ani.utils.platform.format1f
 
 @Composable
 internal fun SettingsScope.TorrentEngineGroup(vm: MediaSettingsViewModel) {
-    if (Platform.currentPlatform.isAndroid()) {
-        return // 安卓不需要设置, 安卓必须启用 libtorrent, 而 qBit 目前只支持本地, 安卓手机即使连接到 PC 的 qBit 也没用
-    }
-}
+    Group({ Text("BT 设置") }) {
+        val torrentSettings by vm.torrentSettings
 
-@Composable
-internal fun AniQBHelpLayout(
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    RichDialogLayout(
-        title = { Text("Ani 会如何使用我的 qBittorrent？") },
-        buttons = {
-            Button(onClick = onDismissRequest) {
-                Text("关闭")
-            }
-        },
-        modifier,
-    ) {
-        val context = LocalContext.current
-        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-            Text(
-                """
-                Ani 会在播放或缓存视频时，创建一个 qBittorrent 任务。该任务会在 "Ani" 分类中，可单独管理。
-                资源的下载目录为 Ani 的缓存目录，即：
-                ${context.files.cacheDir}
-                
-                在删除缓存时，Ani 会删除该任务，以及任务对应的文件。
-                在线播放的视频数据不会立即删除，会在每次启动 Ani 时统一删除。
-                
-                Ani 不会操作你自己在 qBittorrent 创建的其他任务。
-                
-                如有其他疑问，请加群询问或在 GitHub 创建一个 issue。
-                """.trimIndent(),
+        RateSliderItem(
+            torrentSettings.downloadRateLimit,
+            onValueChangeFinished = {
+                vm.torrentSettings.update(torrentSettings.copy(downloadRateLimit = it))
+            },
+            title = { Text("下载速度限制") },
+        )
+
+        Group(
+            title = { Text("分享设置") },
+            useThinHeader = true,
+            description = { Text("BT 网络依赖用户间分享，你所看的视频均来自其他用户的分享。允许上传，共同维护健康的 BT 分享环境。") },
+        ) {
+//            val allowUpload by remember {
+//                derivedStateOf {
+//                    torrentSettings.uploadRateLimit != FileSize.Zero
+//                }
+//            }
+//            SwitchItem(
+//                checked = allowUpload,
+//                onCheckedChange = {
+//                    vm.torrentSettings.update(
+//                        torrentSettings.copy(
+//                            uploadRateLimit = if (it) 1.megaBytes else FileSize.Zero,
+//                        ),
+//                    )
+//                },
+//                title = { Text("允许上传") },
+//                description = if (!allowUpload) {
+//                    {
+//                        Text(
+//                            "BT 网络依赖用户间分享，你所看的视频均来自其他用户的分享。" +
+//                                    "除特殊情况外，建议允许上传，共同维护健康的 BT 分享环境。" +
+//                                    "禁用上传会导致许多用户不再分享视频给你。",
+//                            color = MaterialTheme.colorScheme.error,
+//                        )
+//                    }
+//                } else null,
+//            )
+//
+//            AnimatedVisibility(allowUpload) {
+//            RateTextFieldItem(
+//                torrentSettings.uploadRateLimit,
+//                title = { Text("上传速度限制") },
+//                onValueChangeCompleted = { vm.torrentSettings.update(torrentSettings.copy(uploadRateLimit = it)) },
+//            )
+
+            RateSliderItem(
+                torrentSettings.uploadRateLimit,
+                onValueChangeFinished = {
+                    vm.torrentSettings.update(torrentSettings.copy(uploadRateLimit = it))
+                },
+                title = { Text("上传速度限制") },
             )
         }
     }
 }
 
 @Composable
-internal fun WebUIHelpLayout(
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
+private fun SettingsScope.RateSliderItem(
+    value: FileSize,
+    onValueChangeFinished: (value: FileSize) -> Unit,
+    title: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    RichDialogLayout(
-        title = { Text("如何开启 Web UI") },
-        buttons = {
-            Button(onClick = onDismissRequest) {
-                Text("关闭")
-            }
-        },
-        modifier,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("1. 打开 qBittorrent 或 qBittorrent Enhanced 设置")
-            Text("2. 在左侧选择 Web UI")
-            Text("3. 勾选 \"Web 用户界面 (远程控制)\"")
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("4. 设置一个 \"IP 地址\"，可以使用默认的 ")
-                InlineCodeText {
-                    Text("*")
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("5. 设置一个 \"端口\"，可以使用默认的 ")
-                InlineCodeText {
-                    Text("8080")
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("6. 设置一个用户名和密码")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("7. 点击右下角 \"确定\"")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("8. 关闭本页面，正确填写连接地址、用户名和密码")
-            }
-        }
+    var editingValue by remember(value) {
+        mutableFloatStateOf(if (value == Unspecified) 10f else value.inMegaBytesDouble.toFloat())
     }
+    SliderItem(
+        if (editingValue == -1f) 10f else editingValue,
+        onValueChange = { editingValue = it },
+        title = title,
+        valueRange = 1f..10f,
+        steps = 0,
+        onValueChangeFinished = {
+            onValueChangeFinished(
+                if (editingValue == 10f) Unspecified
+                else editingValue.toDouble().megaBytes,
+            )
+        },
+        modifier = modifier,
+        valueLabel = {
+            Text(
+                if (editingValue == 10f) "无限制"
+                else "${String.format1f(editingValue)} MB/s",
+            )
+        },
+    )
 }
 
+//@Composable
+//private fun SettingsScope.RateTextFieldItem(
+//    value: FileSize,
+//    title: @Composable () -> Unit,
+//    onValueChangeCompleted: (value: FileSize) -> Unit,
+//    minValue: FileSize = FileSize.Zero,
+//) {
+//    TextFieldItem(
+//        value.inKiloBytes.toString(),
+//        title = title,
+//        onValueChangeCompleted = { onValueChangeCompleted(it.toDoubleOrNull()?.kiloBytes ?: Unspecified) },
+//        isErrorProvider = {
+//            val double = it.toDoubleOrNull()
+//            double == null || double.kiloBytes.inBytes < minValue.inBytes
+//        },
+//        sanitizeValue = { it.trim() },
+//        textFieldDescription = { Text("单位为 KB/s，最低 1024 KB/s，-1 表示无限制\n\n当前设置: ${renderRateValue(it)}") },
+//        exposedItem = { text ->
+//            Text(renderRateValue(text))
+//        },
+//    )
+//}
+
 @Composable
-private fun InlineCodeText(
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
-) {
-    Surface(
-        modifier,
-        color = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
-        shape = MaterialTheme.shapes.small,
-    ) {
-        Row(
-            Modifier.padding(vertical = 0.dp, horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            content()
-        }
+private fun renderRateValue(text: String): String {
+    val toLongOrNull = text.toLongOrNull()
+    val size = toLongOrNull?.kiloBytes ?: Unspecified
+    return if (toLongOrNull == -1L || size == Unspecified) {
+        "无限制"
+    } else {
+        "$size/s"
     }
 }

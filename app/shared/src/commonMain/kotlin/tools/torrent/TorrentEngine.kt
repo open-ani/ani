@@ -1,7 +1,7 @@
 package me.him188.ani.app.tools.torrent
 
 import androidx.annotation.CallSuper
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
@@ -12,9 +12,11 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
 
@@ -23,7 +25,7 @@ import kotlin.coroutines.cancellation.CancellationException
  *
  * 要实现 [TorrentEngine], 推荐继承 [AbstractTorrentEngine].
  */
-interface TorrentEngine {
+interface TorrentEngine : AutoCloseable {
     /**
      * 该引擎的类别
      */
@@ -58,7 +60,7 @@ interface TorrentEngine {
         TorrentDownloaderInitializationException::class,
         CancellationException::class,
     )
-    suspend fun getDownloader(): TorrentDownloader?
+    suspend fun getDownloader(): TorrentDownloader
 }
 
 class TorrentDownloaderInitializationException(
@@ -70,11 +72,12 @@ class TorrentDownloaderInitializationException(
  * [TorrentEngine] 的默认实现
  */
 abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : TorrentEngineConfig>(
-    protected val scope: CoroutineScope,
     final override val type: TorrentEngineType,
     protected val config: Flow<Config>,
+    parentCoroutineContext: CoroutineContext,
 ) : TorrentEngine {
     protected val logger = logger(this::class)
+    protected val scope = parentCoroutineContext.childScope()
 
     private val downloader = config
         .run {
@@ -111,6 +114,11 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
     @CallSuper
     protected open fun closeInstance(downloader: Downloader) {
         downloader.close()
+    }
+
+    @CallSuper
+    override fun close() {
+        this.scope.cancel()
     }
 
     final override suspend fun getDownloader(): Downloader {

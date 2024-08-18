@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.take
+import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.isKnownCompleted
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.subject.SubjectManager
@@ -103,7 +104,7 @@ class SubjectCacheViewModelImpl(
                         EpisodeCacheInfo(
                             sort = episode.sort,
                             ep = episode.ep,
-                            title = episode.nameCn,
+                            title = episode.displayName,
                             watchStatus = episodeCollection.collectionType,
                             hasPublished = episode.isKnownCompleted,
                         ),

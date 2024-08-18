@@ -107,7 +107,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_bool(settings_pack::enable_lsd, true);
 
     s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
-    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
+    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit);
 
     s.set_int(settings_pack::active_downloads, 8);
     s.set_int(settings_pack::active_seeds, settings.active_seeds);

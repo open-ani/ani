@@ -28,7 +28,6 @@ import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
@@ -49,6 +48,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
 
 
@@ -56,13 +56,18 @@ import kotlin.coroutines.CoroutineContext
 //    "torrentCacheFile" // MediaCache 所对应的视频文件. 该文件一定是 [EXTRA_TORRENT_CACHE_DIR] 目录中的文件 (的其中一个)
 
 /**
- * 以 [TorrentDownloader] 实现的 [MediaCacheEngine]. 为每个 [MediaCache] 创建一个 [TorrentDownloadSession].
+ * 以 [TorrentEngine] 实现的 [MediaCacheEngine], 意味着通过 BT 缓存 media.
+ * 为每个 [MediaCache] 创建一个 [TorrentDownloadSession].
  */
 class TorrentMediaCacheEngine(
+    /**
+     * 创建的 [CachedMedia] 将会使用此 [mediaSourceId]
+     */
     private val mediaSourceId: String,
     val torrentEngine: TorrentEngine,
     val flowDispatcher: CoroutineContext = Dispatchers.Default,
-) : MediaCacheEngine {
+    private val onDownloadStarted: suspend (session: TorrentDownloadSession) -> Unit = {},
+) : MediaCacheEngine, AutoCloseable {
     companion object {
         private const val EXTRA_TORRENT_DATA = "torrentData"
         const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
@@ -70,12 +75,23 @@ class TorrentMediaCacheEngine(
         private val logger = logger<TorrentMediaCacheEngine>()
     }
 
+    /**
+     * 仅当 [MediaCache.getCachedMedia] 等操作时才会创建 [TorrentDownloadSession]
+     */
     class LazyFileHandle(
         val scope: CoroutineScope,
         val state: SharedFlow<State?>, // suspend lazy
     ) {
         val handle = state.map { it?.handle } // single emit
         val entry = state.map { it?.entry } // single emit
+
+        @TestOnly
+        val session get() = state.map { it?.session }
+
+        suspend fun close() {
+            handle.first()?.close()
+            scope.coroutineContext.job.cancelAndJoin()
+        }
 
         class State(
             val session: TorrentDownloadSession,
@@ -84,7 +100,7 @@ class TorrentMediaCacheEngine(
         )
     }
 
-    private inner class TorrentMediaCache(
+    inner class TorrentMediaCache(
         override val origin: Media,
         /**
          * Required:
@@ -133,7 +149,7 @@ class TorrentMediaCacheEngine(
                 session?.stats?.downloadRate?.map {
                     it.bytes
                 } ?: flowOf(FileSize.Unspecified)
-            }
+            }.shareIn(lazyFileHandle.scope, SharingStarted.Lazily, replay = 1)
 
         override val uploadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
@@ -160,7 +176,7 @@ class TorrentMediaCacheEngine(
 
         override suspend fun close() {
             if (isDeleted.value) return
-            lazyFileHandle.handle.first()?.close()
+            lazyFileHandle.close()
         }
 
         override suspend fun resume() {
@@ -172,7 +188,7 @@ class TorrentMediaCacheEngine(
 
         override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-        override suspend fun deleteFiles() {
+        override suspend fun closeAndDeleteFiles() {
             if (isDeleted.value) return
             synchronized(this) {
                 if (isDeleted.value) return
@@ -181,11 +197,11 @@ class TorrentMediaCacheEngine(
             val handle = lazyFileHandle.handle.first() ?: kotlin.run {
                 // did not even selected a file
                 logger.info { "Deleting torrent cache: No file selected" }
-                lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
+                close()
                 return
             }
 
-            lazyFileHandle.scope.coroutineContext.job.cancelAndJoin()
+            close()
             handle.closeAndDelete()
 
             val file = handle.entry.resolveFileOrNull() ?: return
@@ -210,23 +226,23 @@ class TorrentMediaCacheEngine(
     override val stats: MediaStats = object : AbstractMediaStats() {
         override val uploaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
-                .flatMapLatest { it?.totalUploaded ?: flowOf(0L) }
+                .flatMapLatest { it.totalUploaded }
                 .map { it.bytes }
                 .flowOn(flowDispatcher)
         override val downloaded: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
-                .flatMapLatest { it?.totalDownloaded ?: flowOf(0L) }
+                .flatMapLatest { it.totalDownloaded }
                 .map { it.bytes }
                 .flowOn(flowDispatcher)
 
         override val uploadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
-                .flatMapLatest { it?.totalUploadRate ?: flowOf(0L) }
+                .flatMapLatest { it.totalUploadRate }
                 .map { it.bytes }
                 .flowOn(flowDispatcher)
         override val downloadRate: Flow<FileSize> =
             flow { emit(torrentEngine.getDownloader()) }
-                .flatMapLatest { it?.totalDownloadRate ?: flowOf(0L) }
+                .flatMapLatest { it.totalDownloadRate }
                 .map { it.bytes }
                 .flowOn(flowDispatcher)
     }
@@ -261,14 +277,10 @@ class TorrentMediaCacheEngine(
         // lazy
         val state = flow {
             val downloader = torrentEngine.getDownloader()
-            if (downloader == null) {
-                logger.warn { "$mediaSourceId: failed to create a TorrentDownloader" }
-                emit(null)
-                return@flow
-            }
             val res = kotlinx.coroutines.withTimeoutOrNull(30_000) {
                 val session = downloader.startDownload(encoded, parentContext)
                 logger.info { "$mediaSourceId: waiting for files" }
+                onDownloadStarted(session)
 
                 val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
                     session.getFiles(),
@@ -278,9 +290,6 @@ class TorrentMediaCacheEngine(
                     episodeEp = metadata.episodeEp,
                 )
 
-                if (selectedFile == null) {
-                    logger.warn { "$mediaSourceId: No file selected for ${metadata.episodeName}" }
-                }
                 logger.info { "$mediaSourceId: Selected file to download: $selectedFile" }
 
                 val handle = selectedFile?.createHandle()
@@ -299,7 +308,6 @@ class TorrentMediaCacheEngine(
         return LazyFileHandle(
             scope,
             state
-                .flowOn(flowDispatcher)
                 .shareIn(
                     scope,
                     SharingStarted.Lazily,
@@ -315,7 +323,7 @@ class TorrentMediaCacheEngine(
         parentContext: CoroutineContext
     ): MediaCache {
         if (!supports(origin)) throw UnsupportedOperationException("Media is not supported by this engine $this: ${origin.download}")
-        val downloader = torrentEngine.getDownloader() ?: error("Engine $torrentEngine is not enabled")
+        val downloader = torrentEngine.getDownloader()
         val data = downloader.fetchTorrent(origin.download.uri)
         val newMetadata = metadata.withExtra(
             mapOf(
@@ -333,7 +341,7 @@ class TorrentMediaCacheEngine(
 
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun deleteUnusedCaches(all: List<MediaCache>) {
-        val downloader = torrentEngine.getDownloader() ?: return
+        val downloader = torrentEngine.getDownloader()
         val allowedAbsolute = buildSet(capacity = all.size) {
             for (mediaCache in all) {
                 add(mediaCache.metadata.extra[EXTRA_TORRENT_CACHE_DIR]) // 上次记录的位置
@@ -356,5 +364,9 @@ class TorrentMediaCacheEngine(
                 }
             }
         }
+    }
+
+    override fun close() {
+        torrentEngine.close()
     }
 }

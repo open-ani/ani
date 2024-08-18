@@ -20,6 +20,9 @@ data class ProxySettings(
     companion object {
         @Stable
         val Default = ProxySettings()
+
+        @Stable
+        val Disabled = ProxySettings(default = MediaSourceProxySettings(enabled = false))
     }
 }
 

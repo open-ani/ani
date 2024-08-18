@@ -34,6 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.isInDebugMode
+import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 
@@ -55,12 +56,11 @@ fun Comment(
     primaryTitle: @Composable ColumnScope.() -> Unit,
     secondaryTitle: @Composable ColumnScope.() -> Unit,
     content: @Composable ColumnScope.() -> Unit,
+    modifier: Modifier = Modifier,
     rhsTitle: @Composable RowScope.() -> Unit = { },
-    reactionRow: (@Composable ColumnScope.() -> Unit)? = null,
+    reactionRow: @Composable ColumnScope.() -> Unit = {},
     actionRow: (@Composable ColumnScope.() -> Unit)? = null,
     reply: (@Composable () -> Unit)? = null,
-
-    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier,
@@ -69,9 +69,10 @@ fun Comment(
         Box(modifier = Modifier.padding(top = 2.dp).clip(CircleShape)) {
             avatar()
         }
-        Column(modifier = Modifier.padding(start = 12.dp)) {
+        val horizontalPadding = 12.dp
+        Column {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.padding(horizontal = horizontalPadding).fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -92,21 +93,22 @@ fun Comment(
             }
             Spacer(modifier = Modifier.height(8.dp))
             SelectionContainer(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.padding(horizontal = horizontalPadding).fillMaxWidth(),
             ) {
                 content()
             }
-            if (reactionRow != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                SelectionContainer(
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    reactionRow()
-                }
+
+            SelectionContainer(
+                modifier = Modifier
+                    .paddingIfNotEmpty(top = 8.dp)
+                    .padding(horizontal = horizontalPadding).fillMaxWidth(),
+            ) {
+                reactionRow()
             }
+
             if (actionRow != null && isInDebugMode()) {
                 SelectionContainer(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.padding(horizontal = horizontalPadding - 8.dp).fillMaxWidth(),
                 ) {
                     actionRow()
                 }
@@ -115,7 +117,8 @@ fun Comment(
             }
             if (reply != null) {
                 Surface(
-                    modifier = Modifier.padding(top = if (actionRow == null) 12.dp else 0.dp),
+                    modifier = Modifier.padding(horizontal = horizontalPadding)
+                        .padding(top = if (actionRow == null) 12.dp else 0.dp),
                     color = MaterialTheme.colorScheme.surface,
                     shape = MaterialTheme.shapes.small,
                 ) {

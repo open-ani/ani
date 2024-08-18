@@ -81,12 +81,12 @@ class ArtifactNamer {
     }
 
     // fullVersion example: 2.0.0-beta03
-    fun androidApp(fullVersion: String): String {
-        return "$APP_NAME-$fullVersion.apk"
+    fun androidApp(fullVersion: String, arch: String): String {
+        return "$APP_NAME-$fullVersion-$arch.apk"
     }
 
-    fun androidAppQR(fullVersion: String, server: String): String {
-        return "${androidApp(fullVersion)}.$server.qrcode.png"
+    fun androidAppQR(fullVersion: String, arch: String, server: String): String {
+        return "${androidApp(fullVersion, arch)}.$server.qrcode.png"
     }
 
     // Ani-2.0.0-beta03-macos-amd64.dmg
@@ -109,15 +109,23 @@ class ArtifactNamer {
 }
 
 tasks.register("uploadAndroidApk") {
+    val buildDirectory = project(":app:android").layout.buildDirectory
     doLast {
         ReleaseEnvironment().run {
-            uploadReleaseAsset(
-                name = namer.androidApp(fullVersion),
-                contentType = "application/vnd.android.package-archive",
-                file = project(":app:android").layout.buildDirectory.file("outputs/apk/release")
-                    .get().asFile.walk()
-                    .single { it.extension == "apk" && it.name.contains("release") },
-            )
+            val files = buildDirectory.file("outputs/apk/release")
+                .get().asFile.walk()
+                .filter { it.extension == "apk" && it.name.contains("release") }
+
+            for (file in files) {
+                // android-arm64-v8a-release.apk
+                val arch = file.name.substringAfter("android-")
+                    .substringBefore("-release.apk")
+                uploadReleaseAsset(
+                    name = namer.androidApp(fullVersion, arch),
+                    contentType = "application/vnd.android.package-archive",
+                    file = file,
+                )
+            }
         }
     }
 }
@@ -126,12 +134,12 @@ tasks.register("uploadAndroidApkQR") {
     doLast {
         ReleaseEnvironment().run {
             uploadReleaseAsset(
-                name = namer.androidAppQR(fullVersion, "github"),
+                name = namer.androidAppQR(fullVersion, "universal", "github"),
                 contentType = "image/png",
                 file = rootProject.file("apk-qrcode-github.png"),
             )
             uploadReleaseAsset(
-                name = namer.androidAppQR(fullVersion, "cloudflare"),
+                name = namer.androidAppQR(fullVersion, "universal", "cloudflare"),
                 contentType = "image/png",
                 file = rootProject.file("apk-qrcode-cloudflare.png"),
             )

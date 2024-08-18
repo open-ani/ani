@@ -53,6 +53,13 @@ interface MediaCacheStorage : AutoCloseable {
     val listFlow: Flow<List<MediaCache>>
 
     /**
+     * 重新加载那些上次 APP 运行时保存在本地的缓存.
+     *
+     * 通常在 APP 启动时调用.
+     */
+    suspend fun restorePersistedCaches()
+
+    /**
      * Finds the existing cache for the media or adds the media to the cache (queue).
      *
      * When this function returns, A new [MediaSource] can then be listed by [listFlow].
@@ -107,6 +114,9 @@ class TestMediaCacheStorage : MediaCacheStorage {
     override val cacheMediaSource: MediaSource
         get() = throw UnsupportedOperationException()
     override val listFlow: MutableStateFlow<List<MediaCache>> = MutableStateFlow(listOf())
+    override suspend fun restorePersistedCaches() {
+    }
+
     override val stats: MediaStats = emptyMediaStats()
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {

@@ -14,7 +14,7 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.math.absoluteValue
 
 /**
- * 表示一个进行中的资源缓存.
+ * 表示一个进行中的 [Media] 缓存.
  *
  * [MediaCache] 有状态,
  *
@@ -27,17 +27,7 @@ interface MediaCache {
      */
     val cacheId: String
         get() {
-            val hash = (origin.mediaId.hashCode() * 31
-                    + metadata.subjectId.hashCode() * 31
-                    + metadata.episodeId.hashCode()).absoluteValue.toString()
-            val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
-            if (subjectName != null) {
-                fun removeSpecials(value: String): String {
-                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
-                }
-                return "${removeSpecials(subjectName).take(8)}-$hash"
-            }
-            return hash
+            return calculateCacheId(origin.mediaId, metadata)
         }
 
     /**
@@ -56,6 +46,9 @@ interface MediaCache {
      */
     suspend fun getCachedMedia(): CachedMedia
 
+    /**
+     * 缓存
+     */
     fun isValid(): Boolean
 
     /**
@@ -132,7 +125,23 @@ interface MediaCache {
      *
      * 此函数必须关闭所有使用的资源, 清理潜在的缓存文件, 且不得抛出异常 (除非是 [CancellationException]).
      */
-    suspend fun deleteFiles()
+    suspend fun closeAndDeleteFiles()
+
+    companion object {
+        fun calculateCacheId(originMediaId: String, metadata: MediaCacheMetadata): String {
+            val hash = (originMediaId.hashCode() * 31
+                    + metadata.subjectId.hashCode() * 31
+                    + metadata.episodeId.hashCode()).absoluteValue.toString()
+            val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
+            if (subjectName != null) {
+                fun removeSpecials(value: String): String {
+                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
+                }
+                return "${removeSpecials(subjectName).take(8)}-$hash"
+            }
+            return hash
+        }
+    }
 }
 
 open class TestMediaCache(
@@ -169,7 +178,7 @@ open class TestMediaCache(
 
     override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override suspend fun deleteFiles() {
+    override suspend fun closeAndDeleteFiles() {
         println("delete called")
         isDeleted.value = true
     }

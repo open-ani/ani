@@ -4,11 +4,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -21,33 +21,46 @@ import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloaderFactory
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
+import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.datasources.api.source.MediaSourceLocation
+import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
+import kotlin.coroutines.CoroutineContext
 
 @Serializable
-class AnitorrentConfig(
-    override val enabled: Boolean // not used yet
+data class AnitorrentConfig(
+    /**
+     * 设置为 [FileSize.Unspecified] 表示无限
+     */
+    val downloadRateLimit: FileSize = FileSize.Unspecified,
+    /**
+     * 设置为 [FileSize.Unspecified] 表示无限, [FileSize.Zero] 表示不允许上传
+     */
+    val uploadRateLimit: FileSize = DEFAULT_UPLOAD_RATE_LIMIT,
+    @Transient private val _placeholder: Int = 0,
 ) : TorrentEngineConfig {
     companion object {
-        val Default = AnitorrentConfig(enabled = true)
+        val DEFAULT_UPLOAD_RATE_LIMIT = 2.megaBytes
+
+        val Default = AnitorrentConfig()
     }
 }
 
-private val anitorrentFactory = AnitorrentDownloaderFactory()
-
 class AnitorrentEngine(
-    scope: CoroutineScope,
     config: Flow<AnitorrentConfig>,
     private val proxySettings: Flow<ProxySettings>,
     private val saveDir: SystemPath,
+    parentCoroutineContext: CoroutineContext,
+    private val anitorrentFactory: TorrentDownloaderFactory = AnitorrentDownloaderFactory()
 ) : AbstractTorrentEngine<TorrentDownloader, AnitorrentConfig>(
-    scope = scope,
     type = TorrentEngineType.Anitorrent,
     config = config,
+    parentCoroutineContext = parentCoroutineContext,
 ) {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>
@@ -85,11 +98,18 @@ class AnitorrentEngine(
             TorrentDownloaderConfig(
                 peerFingerprint = computeTorrentFingerprint(),
                 userAgent = computeTorrentUserAgent(),
-                isDebug = currentAniBuildConfig.isDebug,
+                downloadRateLimitBytes = config.downloadRateLimit.toLibtorrentRate(),
+                uploadRateLimitBytes = config.uploadRateLimit.toLibtorrentRate(),
             ),
             parentCoroutineContext = scope.coroutineContext,
         )
     }
+}
+
+private fun FileSize.toLibtorrentRate(): Int = when (this) {
+    FileSize.Unspecified -> 0
+    FileSize.Zero -> 1024 // libtorrent 没法禁用, 那就限速到 1KB/s
+    else -> inBytes.toInt()
 }
 
 private fun computeTorrentFingerprint(
