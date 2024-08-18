@@ -79,7 +79,7 @@ class TorrentMediaCacheEngine(
      * 仅当 [MediaCache.getCachedMedia] 等操作时才会创建 [TorrentDownloadSession]
      */
     class LazyFileHandle(
-        private val scope: CoroutineScope,
+        val scope: CoroutineScope,
         val state: SharedFlow<State?>, // suspend lazy
     ) {
         val handle = state.map { it?.handle } // single emit
@@ -148,7 +148,7 @@ class TorrentMediaCacheEngine(
                 session?.stats?.downloadRate?.map {
                     it.bytes
                 } ?: flowOf(FileSize.Unspecified)
-            }
+            }.shareIn(lazyFileHandle.scope, SharingStarted.Lazily, replay = 1)
 
         override val uploadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
