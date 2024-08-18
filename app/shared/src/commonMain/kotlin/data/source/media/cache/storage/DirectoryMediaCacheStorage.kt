@@ -241,7 +241,7 @@ class DirectoryMediaCacheStorage(
             withContext(Dispatchers.IO) {
                 metadataDir.resolve(getSaveFilename(cache)).delete()
             }
-            cache.deleteFiles()
+            cache.closeAndDeleteFiles()
             return true
         }
     }

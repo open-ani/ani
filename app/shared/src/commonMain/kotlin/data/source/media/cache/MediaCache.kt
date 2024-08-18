@@ -125,7 +125,7 @@ interface MediaCache {
      *
      * 此函数必须关闭所有使用的资源, 清理潜在的缓存文件, 且不得抛出异常 (除非是 [CancellationException]).
      */
-    suspend fun deleteFiles()
+    suspend fun closeAndDeleteFiles()
 
     companion object {
         fun calculateCacheId(originMediaId: String, metadata: MediaCacheMetadata): String {
@@ -178,7 +178,7 @@ open class TestMediaCache(
 
     override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override suspend fun deleteFiles() {
+    override suspend fun closeAndDeleteFiles() {
         println("delete called")
         isDeleted.value = true
     }

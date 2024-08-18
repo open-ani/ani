@@ -75,7 +75,7 @@ class DummyMediaCache(
 
     override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override suspend fun deleteFiles() {
+    override suspend fun closeAndDeleteFiles() {
         isDeleted.value = true
     }
 }

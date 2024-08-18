@@ -89,6 +89,7 @@ class TorrentMediaCacheEngine(
         val session get() = state.map { it?.session }
 
         suspend fun close() {
+            handle.first()?.close()
             scope.coroutineContext.job.cancelAndJoin()
         }
 
@@ -175,7 +176,7 @@ class TorrentMediaCacheEngine(
 
         override suspend fun close() {
             if (isDeleted.value) return
-            lazyFileHandle.handle.first()?.close()
+            lazyFileHandle.close()
         }
 
         override suspend fun resume() {
@@ -187,7 +188,7 @@ class TorrentMediaCacheEngine(
 
         override val isDeleted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-        override suspend fun deleteFiles() {
+        override suspend fun closeAndDeleteFiles() {
             if (isDeleted.value) return
             synchronized(this) {
                 if (isDeleted.value) return
@@ -196,11 +197,11 @@ class TorrentMediaCacheEngine(
             val handle = lazyFileHandle.handle.first() ?: kotlin.run {
                 // did not even selected a file
                 logger.info { "Deleting torrent cache: No file selected" }
-                lazyFileHandle.close()
+                close()
                 return
             }
 
-            lazyFileHandle.close()
+            close()
             handle.closeAndDelete()
 
             val file = handle.entry.resolveFileOrNull() ?: return
