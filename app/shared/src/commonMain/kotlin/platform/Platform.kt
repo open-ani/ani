@@ -18,9 +18,10 @@ sealed class Platform {
 
     sealed class Mobile : Platform()
 
-    data object Android : Mobile() {
+    data class Android(
+        override val arch: Arch,
+    ) : Mobile() {
         override val name: String get() = "Android"
-        override val arch: Arch get() = Arch.AARCH64
     }
 
     data object Ios : Platform() {
@@ -76,18 +77,47 @@ val currentPlatformDesktop: Platform.Desktop
     }
 
 @Immutable
+enum class ArchFamily {
+    X86,
+    AARCH,
+}
+
+// It's actually ABI
+@Immutable
 enum class Arch(
     val displayName: String, // Don't change, used by the server
+    val family: ArchFamily,
+    val addressSizeBits: Int,
 ) {
-    X86_64("x86_64"),
-    AARCH64("aarch64"),
+    /**
+     * macOS, Windows, Android
+     */
+    X86_64("x86_64", ArchFamily.X86, 32),
+
+    /**
+     * macOS
+     */
+    AARCH64("aarch64", ArchFamily.AARCH, 64),
+
+    /**
+     * 32bit AArch. For very old or low-end Android
+     */
+    ARMV7A("armeabi-v7a", ArchFamily.AARCH, 32),
+
+    /**
+     * AArch64. Popular Android.
+     */
+    ARMV8A("arm64-v8a", ArchFamily.AARCH, 64),
 }
 
 @Stable
 expect fun Platform.Companion.currentPlatformImpl(): Platform
 
 @Stable
-fun Platform.isAarch64(): Boolean = this.arch == Arch.AARCH64
+fun Platform.isAArch(): Boolean = this.arch.family == ArchFamily.AARCH
+
+@Stable
+fun Platform.is64bit(): Boolean = this.arch.addressSizeBits == 64
 
 @Stable
 fun Platform.isDesktop(): Boolean {
