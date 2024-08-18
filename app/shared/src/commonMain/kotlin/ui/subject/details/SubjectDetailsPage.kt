@@ -149,6 +149,7 @@ fun SubjectDetailsScene(
                 info = vm.subjectDetailsState.info,
                 staff = vm.subjectDetailsState.persons,
                 characters = vm.subjectDetailsState.characters,
+                relatedSubjects = vm.subjectDetailsState.relatedSubjects,
                 Modifier
                     .ifThen(currentPlatform.isDesktop()) {
                         nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)

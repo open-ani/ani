@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.subject.PersonInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
@@ -57,6 +59,7 @@ fun SubjectDetailsDefaults.DetailsTab(
     info: SubjectInfo,
     staff: List<RelatedPersonInfo>,
     characters: List<RelatedCharacterInfo>,
+    relatedSubjects: List<RelatedSubjectInfo>,
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
     horizontalPadding: Dp = 16.dp,
@@ -133,6 +136,27 @@ fun SubjectDetailsDefaults.DetailsTab(
                 exposedValues = { it.take(6) },
                 itemContent = { PersonCard(it) },
             )
+        }
+
+        if (relatedSubjects.isNotEmpty()) {
+            item("related subjects title") {
+                Text(
+                    "关联条目",
+                    Modifier.padding(horizontal = horizontalPadding),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
+            item("related subjects") {
+                val navigator = LocalNavigator.current
+                RelatedSubjectsRow(
+                    relatedSubjects,
+                    onClick = { navigator.navigateSubjectDetails(it.subjectId) },
+                    Modifier.padding(horizontal = horizontalPadding),
+                    horizontalSpacing = horizontalPadding,
+                    verticalSpacing = horizontalPadding,
+                )
+            }
         }
 
         item("spacer footer") {
