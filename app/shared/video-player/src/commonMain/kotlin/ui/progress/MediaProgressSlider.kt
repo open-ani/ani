@@ -51,11 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.collections.immutable.ImmutableList
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.PlatformPopupProperties
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
-import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
@@ -368,15 +365,6 @@ fun MediaProgressSlider(
                 .hoverable(interactionSource = hoverInteraction)
                 .onPointerEventMultiplatform(PointerEventType.Move) {
                     mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
-                }
-                // for android
-                .ifThen(Platform.currentPlatform.isMobile()) {
-                    onPointerEventMultiplatform(PointerEventType.Press) {
-                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
-                        mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
-                    }.onPointerEventMultiplatform(PointerEventType.Release) {
-                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
-                    }
                 },
         )
     }
