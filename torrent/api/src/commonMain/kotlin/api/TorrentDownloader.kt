@@ -79,8 +79,14 @@ class TorrentDownloaderConfig(
     val peerFingerprint: String = "-aniLT3000-",
     val userAgent: String = "ani_libtorrent/3.0.0", // "libtorrent/2.1.0.0", "ani_libtorrent/3.0.0"
     val handshakeClientVersion: String? = "3.0.0",
-    @Deprecated("to be removed by 3.5.0")
-    val isDebug: Boolean = false,
+    /**
+     * 0 means unlimited
+     */
+    val downloadRateLimitBytes: Int = 0,
+    /**
+     * 0 means unlimited
+     */
+    val uploadRateLimitBytes: Int = 0,
 ) {
     companion object {
         val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()

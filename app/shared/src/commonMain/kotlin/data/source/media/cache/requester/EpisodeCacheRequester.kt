@@ -11,9 +11,9 @@ import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
-import me.him188.ani.app.data.source.media.cache.contains
 import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage.MediaSelected
+import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.storage.contains
 import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult

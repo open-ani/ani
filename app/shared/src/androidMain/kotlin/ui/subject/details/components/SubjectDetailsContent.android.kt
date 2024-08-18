@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.details.TestRelatedSubjects
 import me.him188.ani.app.ui.subject.details.TestSubjectCharacterList
 import me.him188.ani.app.ui.subject.details.TestSubjectStaffInfo
 
@@ -18,6 +19,7 @@ private fun PreviewDetailsTab() {
                 TestSubjectInfo,
                 TestSubjectStaffInfo,
                 TestSubjectCharacterList,
+                TestRelatedSubjects,
                 Modifier.padding(it),
             )
         }

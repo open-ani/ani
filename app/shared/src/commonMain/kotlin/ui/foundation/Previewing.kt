@@ -103,7 +103,11 @@ fun ProvideCompositionLocalsForPreview(
                         )
                     }
                     single<TorrentManager> {
-                        DefaultTorrentManager(globalScope.coroutineContext) { Path("preview-cache").inSystem }
+                        DefaultTorrentManager.create(
+                            globalScope.coroutineContext,
+                            get(),
+                            baseSaveDir = { Path("preview-cache").inSystem },
+                        )
                     }
                     single<PermissionManager> { GrantedPermissionManager }
                     single<NotifManager> { NoopNotifManager }

@@ -45,7 +45,7 @@ import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 
 class AnitorrentDownloadSession(
-    private val handle: AnitorrentHandle,
+    private val handle: TorrentHandle,
     private val saveDirectory: SystemPath,
     private val fastResumeFile: SystemPath,
     private val onClose: (AnitorrentDownloadSession) -> Unit,
@@ -55,7 +55,7 @@ class AnitorrentDownloadSession(
     dispatcher: CoroutineContext = Dispatchers.IO,
 ) : TorrentDownloadSession, SynchronizedObject() {
     val logger = logger(this::class)
-    val handleId = handle.id // 内存地址, 不可持久
+    val handleId get() = handle.id // 内存地址, 不可持久
 
     private val scope = CoroutineScope(
         parentCoroutineContext + dispatcher + SupervisorJob(parentCoroutineContext[Job]),

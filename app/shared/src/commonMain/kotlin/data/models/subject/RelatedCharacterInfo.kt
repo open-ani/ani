@@ -14,6 +14,8 @@ class RelatedCharacterInfo(
 ) {
     val displayName get() = chineseName.takeIf { it.isNotBlank() } ?: originalName
 
+    fun isMainCharacter() = relation == "主角"
+
     companion object {
         fun sortList(characterList: List<RelatedCharacterInfo>): List<RelatedCharacterInfo> {
             return characterList.sortedByDescending {

@@ -13,6 +13,10 @@ actual fun SystemPath.isDirectory(): Boolean = SystemFileSystem.metadataOrNull(p
 
 actual fun SystemPath.isRegularFile(): Boolean = SystemFileSystem.metadataOrNull(path)?.isRegularFile ?: false
 
+// actual fun SystemPath.moveDirectoryRecursively(target: SystemPath, visitor: ((SystemPath) -> Unit)?) {
+//     // TODO: move directory recursively for native target
+// }
+
 actual inline fun <T> SystemPath.useDirectoryEntries(block: (Sequence<SystemPath>) -> T): T {
     return block(SystemFileSystem.list(path).asSequence().map { SystemPath(it) })
 }

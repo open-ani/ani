@@ -4,7 +4,7 @@ jna = "5.13.0"
 kotlin = "2.0.10"
 # kotlinx
 coroutines = "1.8.1"
-ksoup = "0.1.2"
+ksoup = "0.1.4"
 serialization = "1.7.1" # https://github.com/Kotlin/kotlinx.serialization/releases
 datetime = "0.6.0" # https://github.com/Kotlin/kotlinx-datetime/releases
 atomicfu = "0.25.0" # https://github.com/Kotlin/kotlinx-atomicfu/releases
@@ -19,7 +19,7 @@ okio = "3.9.0"
 korlibs = "6.0.0"
 playwright = "1.44.0"
 reorderable = "0.9.6"
-ktor = "3.0.0-beta-2" # Ksoup 用 3.0 所以我们不得不用 3.0
+ktor = "2.3.12"
 koin = "4.0.0-RC1" # https://github.com/InsertKoinIO/koin/releases
 slf4j = "2.0.12"
 jsoup = "1.15.4"

@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import me.him188.ani.datasources.bangumi.processing.fixToString
+import kotlin.math.roundToLong
 
 /**
  * "88:88:88 / 88:88:88"
@@ -26,7 +27,13 @@ fun MediaProgressIndicatorText(
 ) {
     val text by remember(state) {
         derivedStateOf {
-            renderSeconds(state.currentPositionMillis / 1000, state.totalDurationMillis / 1000)
+            val currentPositionMillis = if (state.isPreviewing) {
+                state.displayPositionRatio.times(state.totalDurationMillis).roundToLong()
+            } else {
+                state.currentPositionMillis
+            }
+
+            renderSeconds(currentPositionMillis / 1000, state.totalDurationMillis / 1000)
         }
     }
     val reserve by remember(state) {

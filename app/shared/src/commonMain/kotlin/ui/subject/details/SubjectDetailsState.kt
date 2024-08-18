@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -21,6 +22,7 @@ class SubjectDetailsState(
     airingInfo: Flow<SubjectAiringInfo>,
     persons: Flow<List<RelatedPersonInfo>>,
     characters: Flow<List<RelatedCharacterInfo>>,
+    relatedSubjects: Flow<List<RelatedSubjectInfo>>,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     val info by subjectInfo.produceState<SubjectInfo>(SubjectInfo.Empty)
@@ -42,6 +44,9 @@ class SubjectDetailsState(
     private val personsOrNull by persons.produceState(null)
     val persons by derivedStateOf { personsOrNull ?: emptyList() }
 
+    private val relatedSubjectsOrNull by relatedSubjects.produceState(null)
+    val relatedSubjects by derivedStateOf { relatedSubjectsOrNull ?: emptyList() }
+
     /**
      * 有任何一个数据为空
      */
@@ -49,5 +54,6 @@ class SubjectDetailsState(
         selfCollectionTypeOrNull == null
                 || charactersOrNull == null || info === SubjectInfo.Empty
                 || personsOrNull == null || airingInfoOrNull == null
+                || relatedSubjectsOrNull == null
     }
 }

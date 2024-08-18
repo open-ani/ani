@@ -100,6 +100,7 @@ class SeleniumWebViewVideoExtractor(
             System.setProperty("webdriver.chrome.silentOutput", "true")
             java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF)
             java.util.logging.Logger.getLogger("org.apache.hc.client5.http.wire").setLevel(Level.OFF)
+            java.util.logging.Logger.getLogger("org.openqa.selenium.devtools.Connection").setLevel(Level.OFF)
         }
     }
 
@@ -193,6 +194,15 @@ class SeleniumWebViewVideoExtractor(
                     args: Array<out Any>?
                 ) {
                     logger.info { "Navigating to $pageUrl" }
+                }
+
+                override fun afterAnyNavigationCall(
+                    navigation: WebDriver.Navigation?,
+                    method: Method?,
+                    args: Array<out Any>?,
+                    result: Any?
+                ) {
+                    logger.info { "Navigated to $pageUrl" }
                 }
 
                 override fun beforeGet(driver: WebDriver?, url: String?) {

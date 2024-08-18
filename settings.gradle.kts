@@ -82,6 +82,7 @@ includeProject(":data-sources:nyafun", "data-sources/web/nyafun") // https://nya
 includeProject(":data-sources:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
 includeProject(":data-sources:ntdm", "data-sources/web/ntdm") // https://ntdm.tv/
 includeProject(":data-sources:gugufan", "data-sources/web/gugufan")
+includeProject(":data-sources:xfdm", "data-sources/web/xfdm")
 includeProject(":data-sources:jellyfin", "data-sources/jellyfin")
 includeProject(":data-sources:ikaros", "data-sources/ikaros") // https://ikaros.run/
 
@@ -109,13 +110,5 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 includeBuild("app/shared/reorderable") {
     dependencySubstitution {
         substitute(module("org.burnoutcrew.composereorderable:reorderable")).using(project(":reorderable"))
-    }
-}
-
-// TODO Remove this composite build on Ksoup when it is published to Maven Central
-// https://github.com/fleeksoft/ksoup
-includeBuild("utils/xml/ksoup") {
-    dependencySubstitution {
-        substitute(module("com.fleeksoft.ksoup:ksoup")).using(project(":ksoup"))
     }
 }

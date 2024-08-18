@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.subject.components.comment.Comment
@@ -127,15 +128,17 @@ fun EpisodeCommentColumn(
                 }
             }
         }
-        EditCommentBottomStubPanel(
-            text = editCommentStubText,
-            hint = "发送评论",
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .onSizeChanged { stubPanelHeight = it.height },
-            onClickEmoji = onClickEditCommentStubEmoji,
-            onClickEditText = onClickEditCommentStub,
-        )
+        if (isInDebugMode()) {
+            EditCommentBottomStubPanel(
+                text = editCommentStubText,
+                hint = "发送评论",
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .onSizeChanged { stubPanelHeight = it.height },
+                onClickEmoji = onClickEditCommentStubEmoji,
+                onClickEditText = onClickEditCommentStub,
+            )
+        }
     }
 
 }
@@ -152,7 +155,6 @@ fun EpisodeComment(
     modifier: Modifier = Modifier
 ) {
     Comment(
-        modifier = modifier,
         avatar = { CommentDefaults.Avatar(comment.creator?.avatarUrl) },
         primaryTitle = {
             Text(
@@ -169,14 +171,13 @@ fun EpisodeComment(
                 onClickImage = onClickImage,
             )
         },
-        reactionRow = if (comment.reactions.isNotEmpty()) {
-            {
-                CommentDefaults.ReactionRow(
-                    comment.reactions,
-                    onClickItem = { },
-                )
-            }
-        } else null,
+        modifier = modifier,
+        reactionRow = {
+            CommentDefaults.ReactionRow(
+                comment.reactions,
+                onClickItem = { },
+            )
+        },
         actionRow = {
             CommentDefaults.ActionRow(
                 onClickReply = onActionReply,

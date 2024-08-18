@@ -14,17 +14,18 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.SessionStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
-import me.him188.ani.app.ui.subject.cache.TestMediaList
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.DanmakuLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
@@ -34,6 +35,7 @@ import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 
 @Composable
@@ -160,6 +162,7 @@ private fun rememberTestEpisodeDetailsState(
     )
 }
 
+@OptIn(TestOnly::class)
 @Composable
 private fun PreviewEpisodeDetailsImpl(
     state: EpisodeDetailsState,

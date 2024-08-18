@@ -8,14 +8,21 @@ import androidx.compose.runtime.remember
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaPreferenceItem
 import me.him188.ani.app.data.source.media.selector.MediaSelector
+import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
 
 fun MediaSelectorPresentation(
@@ -141,3 +148,29 @@ internal class MediaSelectorPresentationImpl(
         backgroundScope.cancel()
     }
 }
+
+
+///////////////////////////////////////////////////////////////////////////
+// Testing
+///////////////////////////////////////////////////////////////////////////
+
+@Composable
+@TestOnly
+fun rememberTestMediaSelectorPresentation(): MediaSelectorPresentation {
+    val backgroundScope = rememberBackgroundScope()
+    return remember(backgroundScope) { createState(backgroundScope.backgroundScope) }
+}
+
+@OptIn(TestOnly::class)
+private fun createState(backgroundScope: CoroutineScope) =
+    MediaSelectorPresentation(
+        DefaultMediaSelector(
+            mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
+            mediaListNotCached = MutableStateFlow(TestMediaList),
+            savedUserPreference = flowOf(MediaPreference.Empty),
+            savedDefaultPreference = flowOf(MediaPreference.Empty),
+            mediaSelectorSettings = flowOf(MediaSelectorSettings.Default),
+        ),
+        backgroundScope.coroutineContext,
+    )
+

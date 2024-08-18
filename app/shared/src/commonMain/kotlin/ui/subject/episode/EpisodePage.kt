@@ -1,5 +1,8 @@
 package me.him188.ani.app.ui.subject.episode
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -58,6 +61,8 @@ import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -87,8 +92,6 @@ import me.him188.ani.app.ui.subject.episode.danmaku.DummyDanmakuEditor
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetails
 import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
-import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
-import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
@@ -226,7 +229,11 @@ private fun EpisodeSceneTabletVeryWide(
                 TabRow(pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth())
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
-                HorizontalPager(state = pagerState, Modifier.fillMaxSize()) { index ->
+                HorizontalPager(
+                    state = pagerState,
+                    Modifier.fillMaxSize(),
+                    userScrollEnabled = currentPlatform.isMobile(),
+                ) { index ->
                     when (index) {
                         0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                             EpisodeDetails(
@@ -510,8 +517,6 @@ private fun EpisodeVideo(
         }
     }
     val videoDanmakuState = vm.danmaku
-    var isMediaSelectorVisible by remember { mutableStateOf(false) }
-    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
 
     // Refresh every time on configuration change (i.e. switching theme, entering fullscreen)
@@ -607,23 +612,6 @@ private fun EpisodeVideo(
             .fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
-        sideSheets = {
-            if (isMediaSelectorVisible) {
-                EpisodeVideoMediaSelectorSideSheet(
-                    vm.mediaSelectorPresentation,
-                    vm.mediaSourceResultsPresentation,
-                    onDismissRequest = { isMediaSelectorVisible = false },
-                )
-            }
-            if (isEpisodeSelectorVisible) {
-                EpisodeSelectorSideSheet(
-                    vm.episodeSelectorState,
-                    onDismissRequest = { isEpisodeSelectorVisible = false },
-                )
-            }
-        },
-        onShowMediaSelector = { isMediaSelectorVisible = true },
-        onShowSelectEpisode = { isEpisodeSelectorVisible = true },
         onClickScreenshot = {
             val currentPositionMillis = vm.playerState.currentPositionMillis.value
             val min = currentPositionMillis / 60000
@@ -641,11 +629,27 @@ private fun EpisodeVideo(
                 enabled = false,
             )
         },
+        mediaSelectorPresentation = vm.mediaSelectorPresentation,
+        mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
+        episodeSelectorState = vm.episodeSelectorState,
         progressSliderState = progressSliderState,
         danmakuRegexFilterList = vm.danmakuRegexFilterList,
         onAddDanmakuRegexFilter = {vm.addDanmakuRegexFilter(it)},
         onRemoveDanmakuRegexFilter = {vm.removeDanmakuRegexFilter(it)},
         onSwitchDanmakuRegexFilter =  {vm.switchDanmakuRegexFilter(it)},
+        leftBottomTips = {
+            AnimatedVisibility(
+                visible = vm.playerSkipOpEdState.showSkipTips,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                PlayerControllerDefaults.LeftBottomTips(
+                    onClick = {
+                        vm.playerSkipOpEdState.cancelSkipOpEd()
+                    },
+                )
+            }
+        },
     )
 }
 

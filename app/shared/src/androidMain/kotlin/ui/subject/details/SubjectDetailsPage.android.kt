@@ -18,6 +18,8 @@ import me.him188.ani.app.data.models.subject.PersonInfo
 import me.him188.ani.app.data.models.subject.PersonType
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
+import me.him188.ani.app.data.models.subject.SubjectRelation
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -114,6 +116,21 @@ internal val TestSubjectCharacterList = listOf(
     testRelatedCharacterInfo("後藤美智代", "末柄里恵"),
 )
 
+internal fun testRelatedSubjectInfo(
+    nameCn: String,
+    relation: SubjectRelation?,
+    id: Int = Random.nextInt(),
+    name: String? = null,
+    image: String? = null,
+) = RelatedSubjectInfo(id, relation, name, nameCn, image)
+
+internal val TestRelatedSubjects = listOf(
+    testRelatedSubjectInfo("孤独摇滚 第二季", SubjectRelation.SEQUEL),
+    testRelatedSubjectInfo("孤独摇滚 第零季", SubjectRelation.PREQUEL),
+    testRelatedSubjectInfo("孤独摇滚 外传", SubjectRelation.DERIVED),
+    testRelatedSubjectInfo("孤独摇滚 OAD", SubjectRelation.SPECIAL),
+)
+
 @Composable
 fun rememberTestEditableRatingState(): EditableRatingState {
     val backgroundScope = rememberBackgroundScope()
@@ -134,9 +151,7 @@ fun rememberTestEditableRatingState(): EditableRatingState {
 @Composable
 internal fun PreviewSubjectDetails() {
     ProvideCompositionLocalsForPreview {
-        val vm = remember {
-            SubjectDetailsViewModel(400602)
-        }
+        val backgroundScope = rememberBackgroundScope()
         val state = remember {
             SubjectDetailsState(
                 subjectInfo = MutableStateFlow(TestSubjectInfo),
@@ -145,7 +160,8 @@ internal fun PreviewSubjectDetails() {
                 airingInfo = MutableStateFlow(TestSubjectAiringInfo),
                 characters = MutableStateFlow(TestSubjectCharacterList),
                 persons = MutableStateFlow(emptyList()),
-                parentCoroutineContext = vm.backgroundScope.coroutineContext,
+                relatedSubjects = MutableStateFlow(TestRelatedSubjects),
+                parentCoroutineContext = backgroundScope.backgroundScope.coroutineContext,
             )
         }
         val connectedScrollState = rememberConnectedScrollState()
@@ -154,7 +170,7 @@ internal fun PreviewSubjectDetails() {
             onClickOpenExternal = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
-                    collectionStats = vm.subjectDetailsState.info.collection,
+                    collectionStats = state.info.collection,
                 )
             },
             collectionActions = {
@@ -179,6 +195,7 @@ internal fun PreviewSubjectDetails() {
                     info = TestSubjectInfo,
                     staff = TestSubjectStaffInfo,
                     characters = TestSubjectCharacterList,
+                    relatedSubjects = TestRelatedSubjects,
                     Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                 )
             },

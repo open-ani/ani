@@ -7,6 +7,7 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.serialization.ContentConverter
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.streams.asInput
@@ -30,9 +31,9 @@ private object XmlConverter : ContentConverter {
         return Jsoup.parse(string, charset.name())
     }
 
-    override suspend fun serialize(
+    override suspend fun serializeNullable(
         contentType: ContentType,
-        charset: io.ktor.utils.io.charsets.Charset,
+        charset: Charset,
         typeInfo: TypeInfo,
         value: Any?
     ): OutgoingContent? {

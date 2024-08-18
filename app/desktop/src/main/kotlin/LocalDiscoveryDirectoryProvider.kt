@@ -17,9 +17,12 @@ class TestDiscoveryDirectoryProvider : DiscoveryDirectoryProvider {
             is Platform.Windows -> "windows"
         }
 
-        val arch = when (Platform.currentPlatform.arch) {
+        val arch = when (currentPlatformDesktop.arch) {
             Arch.X86_64 -> "x64"
             Arch.AARCH64 -> "arm64"
+
+            Arch.ARMV7A, Arch.ARMV8A ->
+                throw UnsupportedOperationException("Unsupported architecture: ${currentPlatformDesktop.arch}")
         }
 
         val libs = File(System.getProperty("user.dir")).resolve("../appResources/${os}-${arch}/lib")

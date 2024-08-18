@@ -97,7 +97,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
 import me.him188.ani.desktop.generated.resources.a_round
 import me.him188.ani.utils.io.inSystem
-import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -114,9 +113,9 @@ private inline val toplevelLogger get() = logger
 
 object AniDesktop {
 //    init {
-        // 如果要在视频上面显示弹幕或者播放按钮需要在启动的时候设置 system's blending 并且使用1.6.1之后的 Compose 版本
-        // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
-        // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
+    // 如果要在视频上面显示弹幕或者播放按钮需要在启动的时候设置 system's blending 并且使用1.6.1之后的 Compose 版本
+    // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
+    // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
 //        System.setProperty("compose.interop.blending", "true")
 //    }
 
@@ -185,15 +184,16 @@ object AniDesktop {
 //                single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
 //                single<BrowserNavigator> { AndroidBrowserNavigator() }
                     single<TorrentManager> {
-                        DefaultTorrentManager(
+                        DefaultTorrentManager.create(
                             coroutineScope.coroutineContext,
-                            saveDir = {
+                            get(),
+                            baseSaveDir = {
                                 val saveDir = runBlocking {
                                     get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir
                                         ?.let(::Path)
                                 } ?: projectDirectories.torrentCacheDir.toKtPath()
                                 toplevelLogger.info { "TorrentManager saveDir: $saveDir" }
-                                saveDir.inSystem.resolve(it.id)
+                                saveDir.inSystem
                             },
                         )
                     }

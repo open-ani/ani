@@ -1,25 +1,58 @@
 package me.him188.ani.app.data.source.media.cache
 
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.data.source.media.framework.TestMediaCacheEngine
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import me.him188.ani.app.data.models.preference.ProxySettings
+import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
+import me.him188.ani.app.tools.caching.MemoryDataStore
+import me.him188.ani.app.tools.torrent.TorrentEngine
+import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
+import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
+import me.him188.ani.app.torrent.anitorrent.session.AnitorrentDownloadSession
+import me.him188.ani.app.torrent.anitorrent.test.TestAnitorrentTorrentDownloader
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.unwrapCached
+import me.him188.ani.utils.io.exists
 import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.io.toKtPath
+import me.him188.ani.utils.io.writeText
+import me.him188.ani.utils.serialization.putAll
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertSame
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
+/**
+ * @see DirectoryMediaCacheStorage
+ */
 class DirectoryMediaCacheStorageTest {
     companion object {
         private const val CACHE_MEDIA_SOURCE_ID = "local-test"
@@ -27,8 +60,31 @@ class DirectoryMediaCacheStorageTest {
 
     @TempDir
     private lateinit var dir: File
+    private val metadataDir by lazy { dir.toKtPath().inSystem }
+    private val storages = mutableListOf<DirectoryMediaCacheStorage>()
+    private lateinit var cacheEngine: TorrentMediaCacheEngine
+    private lateinit var torrentEngine: TorrentEngine
+    private suspend fun torrentDownloader(): TestAnitorrentTorrentDownloader =
+        torrentEngine.getDownloader() as TestAnitorrentTorrentDownloader
 
-    private val engine = TestMediaCacheEngine(CACHE_MEDIA_SOURCE_ID)
+    private val json = Json
+
+    private fun TestScope.createEngine(
+        onDownloadStarted: suspend (session: AnitorrentDownloadSession) -> Unit = {},
+    ): TorrentMediaCacheEngine {
+        return TorrentMediaCacheEngine(
+            CACHE_MEDIA_SOURCE_ID,
+            AnitorrentEngine(
+                config = flowOf(AnitorrentConfig()),
+                proxySettings = flowOf(ProxySettings.Disabled),
+                saveDir = dir.toKtPath().inSystem,
+                parentCoroutineContext = coroutineContext,
+                anitorrentFactory = TestAnitorrentTorrentDownloader.Factory,
+            ).also { torrentEngine = it },
+            flowDispatcher = coroutineContext[ContinuationInterceptor]!!,
+            onDownloadStarted = { onDownloadStarted(it as AnitorrentDownloadSession) },
+        )
+    }
 
     private val media = DefaultMedia(
         mediaId = "dmhy.2",
@@ -49,109 +105,355 @@ class DirectoryMediaCacheStorageTest {
         location = MediaSourceLocation.Online,
     )
 
+    private fun cleanup() {
+        storages.forEach { it.close() }
+        storages.clear()
+    }
+
+    private fun runTest(
+        context: CoroutineContext = EmptyCoroutineContext,
+        timeout: Duration = 5.seconds,
+        testBody: suspend TestScope.() -> Unit
+    ) = kotlinx.coroutines.test.runTest(context, timeout) {
+        try {
+            testBody()
+        } finally {
+            cleanup()
+        }
+    }
+
+    private val dataStore = MemoryDataStore(DirectoryMediaCacheStorage.SaveData.Initial)
+
+    private fun TestScope.createStorage(engine: TorrentMediaCacheEngine = createEngine()): DirectoryMediaCacheStorage {
+        return DirectoryMediaCacheStorage(
+            CACHE_MEDIA_SOURCE_ID,
+            metadataDir,
+            engine.also { cacheEngine = it },
+            dataStore = dataStore,
+            this.coroutineContext,
+        ).also {
+            storages.add(it)
+        }
+    }
+
+    private suspend fun TorrentMediaCacheEngine.TorrentMediaCache.getSession() =
+        lazyFileHandle.state.first()!!.session as AnitorrentDownloadSession
+
+    private fun amendJsonString(@Language("json") string: String, block: JsonObjectBuilder.() -> Unit): String {
+        json.decodeFromString(JsonObject.serializer(), string).let {
+            return json.encodeToString(
+                JsonObject.serializer(),
+                buildJsonObject {
+                    putAll(it)
+                    block()
+                },
+            )
+        }
+    }
+
+
+    private fun mediaCacheMetadata() = MediaCacheMetadata(
+        episodeId = "1231231",
+        subjectNames = emptySet(),
+        episodeSort = EpisodeSort("02"),
+        episodeEp = EpisodeSort("02"),
+        episodeName = "测试剧集",
+    )
+
+    ///////////////////////////////////////////////////////////////////////////
+    // simple create, restore, find
+    ///////////////////////////////////////////////////////////////////////////
+
     @Test
-    fun `create and fine with resume`() = runTest {
-        val storage =
-            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
-
-        val cache = storage.cache(
-            media,
-            MediaCacheMetadata(
-                episodeId = "1231231",
-                subjectNames = emptySet(),
-                episodeSort = EpisodeSort("02"),
-                episodeEp = EpisodeSort("02"),
-                episodeName = "测试剧集",
+    fun `create cache then get from listFlow`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
             ),
-            resume = true,
-        ) as TestMediaCache
-        assertEquals(1, cache.getResumeCalled())
-
-        assertSame(
-            cache,
-            storage.listFlow.first().single(),
         )
-        assertEquals(1, cache.getResumeCalled())
 
-        storage.close()
+        val cache =
+            storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+        assertSame(cache, storage.listFlow.first().single())
     }
 
     @Test
-    fun `create and find without resume`() = runTest {
-        val storage =
-            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
-
-        val cache = storage.cache(
-            media,
-            MediaCacheMetadata(
-                episodeId = "1231231",
-                subjectNames = emptySet(),
-                episodeSort = EpisodeSort("02"),
-                episodeEp = EpisodeSort("02"),
-                episodeName = "测试剧集",
+    fun `create cache saves metadata`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
             ),
-            resume = false,
-        ) as TestMediaCache
-        assertEquals(0, cache.getResumeCalled())
-
-        assertSame(
-            cache,
-            storage.listFlow.first().single(),
         )
-        assertEquals(0, cache.getResumeCalled())
 
-        storage.close()
+        val cache =
+            storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+
+        metadataDir.resolve("${cache.cacheId}.metadata").run {
+            assertEquals(true, exists())
+        }
+
+        assertSame(cache, storage.listFlow.first().single())
     }
 
     @Test
-    fun `can delete while not using`() = runTest {
-        val storage =
-            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
-
-        val cache = storage.cache(
-            media,
-            MediaCacheMetadata(
-                episodeId = "1231231",
-                subjectNames = emptySet(),
-                episodeSort = EpisodeSort("02"),
-                episodeEp = EpisodeSort("02"),
-                episodeName = "测试剧集",
+    fun `create same cache twice`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
             ),
-            resume = false,
-        ) as TestMediaCache
+        )
 
-        assertEquals(0, cache.getResumeCalled())
+        val cache =
+            storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+        assertSame(cache, storage.listFlow.first().single())
+        assertSame(cache, storage.cache(media, mediaCacheMetadata(), resume = false))
+        assertSame(cache, storage.listFlow.first().single())
+    }
+
+    @Test
+    fun `create and delete`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val cache =
+            storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+        val metadataFile = metadataDir.resolve("${cache.cacheId}.metadata")
+        metadataFile.run {
+            assertEquals(true, exists())
+        }
+
+        assertNotNull(cache.lazyFileHandle.state.first()).run {
+            assertNotNull(handle)
+            assertNotNull(entry)
+        }
 
         assertEquals(cache, storage.listFlow.first().single())
         assertEquals(true, storage.delete(cache))
+        metadataFile.run {
+            assertEquals(false, exists())
+        }
         assertEquals(null, storage.listFlow.first().firstOrNull())
-
-        assertEquals(0, cache.getResumeCalled())
-
-        storage.close()
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // restore
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `restorePersistedCaches - nothing`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+        storage.restorePersistedCaches()
+        assertEquals(0, storage.listFlow.first().size)
+    }
+
+    /**
+     * 读取 3.7.0 版本的缓存数据
+     */
+    @Test
+    fun `restorePersistedCaches - v3_7`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cacheId = MediaCache.calculateCacheId(media.mediaId, metadata)
+        val metadataFile = metadataDir.resolve("${cacheId}.metadata")
+        metadataFile.writeText(
+            amendJsonString(
+                """
+                    {"origin":{"type":"me.him188.ani.datasources.api.DefaultMedia","mediaId":"dmhy.2","mediaSourceId":"dmhy","originalUrl":"https://example.com/1","download":{"type":"me.him188.ani.datasources.api.topic.ResourceLocation.MagnetLink","uri":"magnet:?xt=urn:btih:1"},"originalTitle":"夜晚的水母不会游泳 02 测试剧集","publishedTime":1723908945976,"properties":{"subtitleLanguageIds":["CHT"],"resolution":"1080P","alliance":"北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组","size":244318208},"episodeRange":{"type":"me.him188.ani.datasources.api.topic.EpisodeRange.Single","value":{"type":"me.him188.ani.datasources.api.EpisodeSort.Normal","number":2.0}}},"metadata":{"episodeId":"1231231","subjectNames":[],"episodeSort":{"type":"me.him188.ani.datasources.api.EpisodeSort.Normal","number":2.0},"episodeName":"测试剧集","extra":{"torrentData":"7b2264617461223a7b2274797065223a224d61676e6574557269222c22757269223a226d61676e65743a3f78743d75726e3a627469683a31227d2c2268747470546f7272656e7446696c6550617468223a6e756c6c7d",
+                    "torrentCacheDir":""}}}
+                """.trimIndent(),
+            ) {
+                put("torrentCacheDir", dir.resolve("pieces/2071812470").absolutePath)
+            },
+        )
+
+        storage.restorePersistedCaches()
+        assertEquals(1, storage.listFlow.first().size)
+        val cache = storage.listFlow.first().single()
+        assertEquals(cacheId, cache.cacheId)
+    }
+
+    /**
+     * 忽略错误文件
+     */
+    @Test
+    fun `restorePersistedCaches - broken metadata file`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cacheId = MediaCache.calculateCacheId(media.mediaId, metadata)
+        val metadataFile = metadataDir.resolve("${cacheId}.metadata")
+        metadataFile.writeText("broken file")
+
+        storage.restorePersistedCaches()
+        assertEquals(0, storage.listFlow.first().size)
+    }
+
+    /**
+     * 只考虑 `*.metadata` 文件
+     */
+    @Test
+    fun `restorePersistedCaches - ignore non-metadata files`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cacheId = MediaCache.calculateCacheId(media.mediaId, metadata)
+        val metadataFile = metadataDir.resolve("${cacheId}.0")
+        metadataFile.writeText(
+            // A valid metadata
+            amendJsonString(
+                """
+                    {"origin":{"type":"me.him188.ani.datasources.api.DefaultMedia","mediaId":"dmhy.2","mediaSourceId":"dmhy","originalUrl":"https://example.com/1","download":{"type":"me.him188.ani.datasources.api.topic.ResourceLocation.MagnetLink","uri":"magnet:?xt=urn:btih:1"},"originalTitle":"夜晚的水母不会游泳 02 测试剧集","publishedTime":1723908945976,"properties":{"subtitleLanguageIds":["CHT"],"resolution":"1080P","alliance":"北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组","size":244318208},"episodeRange":{"type":"me.him188.ani.datasources.api.topic.EpisodeRange.Single","value":{"type":"me.him188.ani.datasources.api.EpisodeSort.Normal","number":2.0}}},"metadata":{"episodeId":"1231231","subjectNames":[],"episodeSort":{"type":"me.him188.ani.datasources.api.EpisodeSort.Normal","number":2.0},"episodeName":"测试剧集","extra":{"torrentData":"7b2264617461223a7b2274797065223a224d61676e6574557269222c22757269223a226d61676e65743a3f78743d75726e3a627469683a31227d2c2268747470546f7272656e7446696c6550617468223a6e756c6c7d",
+                    "torrentCacheDir":""}}}
+                """.trimIndent(),
+            ) {
+                put("torrentCacheDir", dir.resolve("pieces/2071812470").absolutePath)
+            },
+        )
+
+        storage.restorePersistedCaches()
+        assertEquals(0, storage.listFlow.first().size)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // cacheMediaSource
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `query cacheMediaSource`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cache =
+            storage.cache(media, metadata, resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+
+        assertEquals(
+            cache.getCachedMedia().unwrapCached(),
+            storage.cacheMediaSource.fetch(
+                MediaFetchRequest(
+                    subjectNames = metadata.subjectNames,
+                    episodeSort = metadata.episodeSort,
+                    episodeName = metadata.episodeName,
+                ),
+            ).results.toList().single().media.unwrapCached(),
+        )
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // metadata
+    ///////////////////////////////////////////////////////////////////////////
 
     @Test
     fun `cached media id`() = runTest {
-        val storage =
-            DirectoryMediaCacheStorage(CACHE_MEDIA_SOURCE_ID, dir.toKtPath().inSystem, engine, this.coroutineContext)
-
-        val cache = storage.cache(
-            media,
-            MediaCacheMetadata(
-                episodeId = "1231231",
-                subjectNames = emptySet(),
-                episodeSort = EpisodeSort("02"),
-                episodeEp = EpisodeSort("02"),
-                episodeName = "测试剧集",
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
             ),
-            resume = false,
-        ) as TestMediaCache
+        )
 
-        assertEquals("$CACHE_MEDIA_SOURCE_ID:${media.mediaId}", cache.media.mediaId)
-        assertEquals(CACHE_MEDIA_SOURCE_ID, cache.media.mediaSourceId)
-        assertEquals(media, cache.media.origin)
+        val cache =
+            storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
 
-        storage.close()
+        assertNotNull(cache.lazyFileHandle.state.first()).run {
+            assertNotNull(handle)
+        }
+
+        val cachedMedia = cache.getCachedMedia()
+        assertEquals("$CACHE_MEDIA_SOURCE_ID:${media.mediaId}", cachedMedia.mediaId)
+        assertEquals(CACHE_MEDIA_SOURCE_ID, cachedMedia.mediaSourceId)
+        assertEquals(media, cachedMedia.origin)
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // others
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * 持久化总上传量
+     */
+    @Test
+    fun `persist total uploaded`() = runTest {
+        var storage = createStorage(
+            createEngine(onDownloadStarted = { it.onTorrentChecked() }),
+        )
+
+        kotlin.run {
+            val cache =
+                storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+
+            cache.getSession().overallStats.uploadedBytes.emit(100)
+            runCurrent()
+
+            assertEquals(100.bytes, dataStore.data.first().uploaded)
+            assertEquals(100.bytes, storage.stats.uploaded.first())
+
+            cache.getSession().overallStats.uploadedBytes.emit(200)
+            runCurrent()
+
+            assertEquals(200.bytes, dataStore.data.first().uploaded)
+            assertEquals(200.bytes, storage.stats.uploaded.first())
+        }
+        cleanup()
+
+        storage = createStorage(
+            createEngine(onDownloadStarted = { it.onTorrentChecked() }),
+        )
+
+        assertEquals(200.bytes, dataStore.data.first().uploaded)
+        assertEquals(200.bytes, storage.stats.uploaded.first())
+        kotlin.run {
+            val cache =
+                storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
+
+            cache.getSession().overallStats.uploadedBytes.emit(150)
+            runCurrent()
+
+            assertEquals(350.bytes, dataStore.data.first().uploaded)
+            assertEquals(350.bytes, storage.stats.uploaded.first())
+        }
+        cleanup()
     }
 }

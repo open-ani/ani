@@ -51,11 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.collections.immutable.ImmutableList
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.PlatformPopupProperties
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
-import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
@@ -69,6 +66,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 internal const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
+internal const val TAG_PROGRESS_SLIDER = "ProgressSlider"
 
 /**
  * 播放器进度滑块的状态.
@@ -194,7 +192,8 @@ fun MediaProgressSlider(
 ) {
     Box(
         modifier.fillMaxWidth()
-            .height(24.dp),
+            .height(24.dp)
+            .testTag(TAG_PROGRESS_SLIDER),
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {
@@ -366,15 +365,6 @@ fun MediaProgressSlider(
                 .hoverable(interactionSource = hoverInteraction)
                 .onPointerEventMultiplatform(PointerEventType.Move) {
                     mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
-                }
-                // for android
-                .ifThen(Platform.currentPlatform.isMobile()) {
-                    onPointerEventMultiplatform(PointerEventType.Press) {
-                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
-                        mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
-                    }.onPointerEventMultiplatform(PointerEventType.Release) {
-                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
-                    }
                 },
         )
     }

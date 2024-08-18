@@ -17,10 +17,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import me.him188.ani.app.torrent.anitorrent.session.AnitorrentDownloadSession
-import me.him188.ani.app.torrent.anitorrent.session.AnitorrentHandle
 import me.him188.ani.app.torrent.anitorrent.session.TorrentAddInfo
 import me.him188.ani.app.torrent.anitorrent.session.TorrentHandle
-import me.him188.ani.app.torrent.anitorrent.session.TorrentSession
+import me.him188.ani.app.torrent.anitorrent.session.TorrentManagerSession
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
@@ -74,7 +73,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
     private val httpFileDownloader: HttpFileDownloader,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader, SynchronizedObject() {
-    protected abstract val native: TorrentSession<THandle, TAddInfo> // must hold reference. 
+    protected abstract val native: TorrentManagerSession<THandle, TAddInfo> // must hold reference. 
 
     companion object {
         private const val FAST_RESUME_FILENAME = "fastresume"
@@ -226,8 +225,6 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
                 .getOrThrow() // rethrow exception
         }
 
-    protected abstract fun createAnitorrentHandle(handle: THandle): AnitorrentHandle
-
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
@@ -273,7 +270,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
         }
 
         return@withHandleTaskQueue AnitorrentDownloadSession(
-            createAnitorrentHandle(handle),
+            handle,
             saveDir,
             fastResumeFile = fastResumeFile,
             onClose = { native.releaseHandle(handle) },

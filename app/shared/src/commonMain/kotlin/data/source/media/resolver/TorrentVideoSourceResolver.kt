@@ -29,7 +29,7 @@ class TorrentVideoSourceResolver(
     private val engine: TorrentEngine,
 ) : VideoSourceResolver {
     override suspend fun supports(media: Media): Boolean {
-        if (!engine.isEnabled.first()) return false
+        if (!engine.isSupported.first()) return false
         return media.download is ResourceLocation.HttpTorrentFile || media.download is ResourceLocation.MagnetLink
     }
 

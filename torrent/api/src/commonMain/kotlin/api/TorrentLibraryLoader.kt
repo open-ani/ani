@@ -5,6 +5,13 @@ import kotlin.coroutines.CoroutineContext
 
 interface TorrentLibraryLoader {
     fun loadLibraries()
+
+    companion object {
+        val Noop = object : TorrentLibraryLoader {
+            override fun loadLibraries() {
+            }
+        }
+    }
 }
 
 interface TorrentDownloaderFactory { // SPI
@@ -12,6 +19,9 @@ interface TorrentDownloaderFactory { // SPI
 
     val libraryLoader: TorrentLibraryLoader
 
+    /**
+     * 创建一个 [TorrentDownloader]. 当 [TorrentDownloader] 被关闭时, [httpFileDownloader] 也会被关闭.
+     */
     fun createDownloader(
         rootDataDirectory: SystemPath,
         httpFileDownloader: HttpFileDownloader,

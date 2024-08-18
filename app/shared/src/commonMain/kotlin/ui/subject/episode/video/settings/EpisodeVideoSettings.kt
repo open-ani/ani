@@ -29,6 +29,8 @@ import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.isInDebugMode
+import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -373,8 +375,6 @@ fun EpisodeVideoSettings(
                 },
                 modifier = Modifier.placeholder(isLoadingState),
             )
-
-            danmakuRegexFilterGroup()
             
             TextItem (
                 onClick = {onOverlayContentShow()},
@@ -382,8 +382,11 @@ fun EpisodeVideoSettings(
             ) {
                 Text("管理正则弹幕过滤器")
             }
+            
+            val debugViewModel = rememberDebugSettingsViewModel()
+            if (debugViewModel.isAppInDebugMode) {
+                danmakuRegexFilterGroup()
 
-            if (isInDebugMode()) {
                 SwitchItem(
                     danmakuConfig.isDebug,
                     onCheckedChange = {
@@ -393,6 +396,15 @@ fun EpisodeVideoSettings(
                     },
                     title = { Text("弹幕调试模式") },
                     modifier = Modifier.placeholder(isLoadingState),
+                )
+
+                val debugSettings by debugViewModel.debugSettings
+                SwitchItem(
+                    debugSettings.showControllerAlwaysOnRequesters,
+                    onCheckedChange = {
+                        debugViewModel.debugSettings.update(debugSettings.copy(showControllerAlwaysOnRequesters = it))
+                    },
+                    title = { Text("showControllerAlwaysOnRequesters") },
                 )
             }
         }

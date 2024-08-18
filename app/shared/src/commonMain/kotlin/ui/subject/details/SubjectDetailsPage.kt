@@ -149,6 +149,7 @@ fun SubjectDetailsScene(
                 info = vm.subjectDetailsState.info,
                 staff = vm.subjectDetailsState.persons,
                 characters = vm.subjectDetailsState.characters,
+                relatedSubjects = vm.subjectDetailsState.relatedSubjects,
                 Modifier
                     .ifThen(currentPlatform.isDesktop()) {
                         nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
@@ -379,7 +380,7 @@ fun SubjectDetailsPage(
 private fun renderSubjectDetailsTab(tab: SubjectDetailsTab): String {
     return when (tab) {
         SubjectDetailsTab.DETAILS -> "详情"
-        SubjectDetailsTab.COMMENTS -> "短评"
+        SubjectDetailsTab.COMMENTS -> "评论"
         SubjectDetailsTab.DISCUSSIONS -> "讨论"
     }
 }
