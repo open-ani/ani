@@ -75,7 +75,7 @@ class DirectoryMediaCacheStorageTest {
         return TorrentMediaCacheEngine(
             CACHE_MEDIA_SOURCE_ID,
             AnitorrentEngine(
-                config = flowOf(AnitorrentConfig(true)),
+                config = flowOf(AnitorrentConfig()),
                 proxySettings = flowOf(ProxySettings.Disabled),
                 saveDir = dir.toKtPath().inSystem,
                 parentCoroutineContext = coroutineContext,
