@@ -1,8 +1,10 @@
 package me.him188.ani.datasources.api
 
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType.ED
 import me.him188.ani.datasources.api.EpisodeType.MAD
 import me.him188.ani.datasources.api.EpisodeType.OAD
+import me.him188.ani.datasources.api.EpisodeType.OP
 import me.him188.ani.datasources.api.EpisodeType.OVA
 import me.him188.ani.datasources.api.EpisodeType.PV
 import me.him188.ani.datasources.api.EpisodeType.SP
@@ -12,6 +14,7 @@ import me.him188.ani.test.TestFactory
 import me.him188.ani.test.dynamicTest
 import me.him188.ani.test.permutedSequence
 import me.him188.ani.test.runDynamicTests
+import me.him188.ani.utils.serialization.BigNum
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import me.him188.ani.datasources.api.EpisodeSort as ep
@@ -46,11 +49,67 @@ class EpisodeSortTest {
                 "OAD" to special(OAD, null),
                 "OVA" to special(OVA, null),
                 "SP" to special(SP, null),
+                "SP0" to special(SP, 0f),
                 "S" to EpisodeSort.Unknown("S"),
+                "SP-1" to EpisodeSort.Unknown("SP-1"),
+                "SP1.1" to EpisodeSort.Unknown("SP1.1"),
+                "SPAB" to EpisodeSort.Unknown("SPAB"),
+                "SPSP" to EpisodeSort.Unknown("SPSP"),
+                "SPAB" to EpisodeSort.Unknown("SPAB"),
             ).map {
                 dynamicTest(it.first) {
                     val (raw, expected) = it
                     val actual = ep(raw)
+                    assertEquals(expected, actual)
+                    assertEquals(expected.hashCode(), actual.hashCode())
+                }
+            },
+        )
+    }
+
+
+    @TestFactory
+    fun `parse BigNum and EpisodeType`(): DynamicTestsResult {
+        return runDynamicTests(
+            listOf(
+                // Actual to Expected
+                Pair<BigNum, EpisodeType?>(BigNum("-1"), SP) to EpisodeSort.Unknown("-1"),
+                Pair<BigNum, EpisodeType?>(BigNum("1"), SP) to special(SP, 1f),
+                Pair<BigNum, EpisodeType?>(BigNum("2"), OP) to special(OP, 2f),
+                Pair<BigNum, EpisodeType?>(BigNum("3"), ED) to special(ED, 3f),
+                Pair<BigNum, EpisodeType?>(BigNum("4"), PV) to special(PV, 4f),
+                Pair<BigNum, EpisodeType?>(BigNum("5"), MAD) to special(MAD, 5f),
+                Pair<BigNum, EpisodeType?>(BigNum("6"), OVA) to special(OVA, 6f),
+                Pair<BigNum, EpisodeType?>(BigNum("7"), OAD) to special(OAD, 7f),
+                Pair<BigNum, EpisodeType?>(BigNum("7.5"), SP) to special(SP, 7.5f),
+                Pair<BigNum, EpisodeType?>(BigNum("3"), SP) to special(SP, 3f),
+                Pair<BigNum, EpisodeType?>(BigNum("1.1"), SP) to EpisodeSort.Unknown("1.1"),
+                Pair<BigNum, EpisodeType?>(BigNum("8"), null) to EpisodeSort.Unknown("8"),
+            ).map {
+                dynamicTest(it.first.toString()) {
+                    val (raw, expected) = it
+                    val actual = ep(raw.first, raw.second)
+                    assertEquals(expected, actual)
+                    assertEquals(expected.hashCode(), actual.hashCode())
+                }
+            },
+        )
+    }
+
+    @TestFactory
+    fun `parse BigNum`(): DynamicTestsResult {
+        return runDynamicTests(
+            listOf(
+                // Actual to Expected
+                "-1" to EpisodeSort.Unknown("-1"),
+                "1" to normal(1f),
+                "1.1" to EpisodeSort.Unknown("1.1"),
+                "2.5" to normal(2.5f),
+                "3" to normal(3f),
+            ).map {
+                dynamicTest(it.first) {
+                    val (raw, expected) = it
+                    val actual = ep(BigNum(raw))
                     assertEquals(expected, actual)
                     assertEquals(expected.hashCode(), actual.hashCode())
                 }

@@ -133,9 +133,15 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
 
 private fun getSpecialByRaw(raw: String): EpisodeSort {
     val type = EpisodeType.entries.firstOrNull { entry -> raw.startsWith(entry.value, ignoreCase = true) }
-    if (type == null || raw.length < type.value.length) return EpisodeSort.Unknown(raw)
-    val numStr = raw.substringAfter(type.value);
-    return Special(type, numStr.toFloatOrNull())
+    if (type == null) return EpisodeSort.Unknown(raw)
+    val numStr = raw.substringAfter(type.value)
+    val num = numStr.toFloatOrNull()
+    if (num == null || num < 0) return EpisodeSort.Unknown(raw)
+    return if (num.toInt().toFloat() == num || num % 0.5f == 0f) {
+        Special(type, num)
+    } else {
+        EpisodeSort.Unknown(raw)
+    }
 }
 
 fun EpisodeSort(raw: String): EpisodeSort {
@@ -157,6 +163,9 @@ fun EpisodeSort(int: Int, type: EpisodeType = MainStory): EpisodeSort {
  */
 fun EpisodeSort(int: BigNum, type: EpisodeType? = MainStory): EpisodeSort {
     if (int.isNegative()) return EpisodeSort.Unknown(int.toString())
+    if (int.toFloat().toInt().toFloat() != int.toFloat()
+        && int.toFloat() % 0.5f != 0f
+    ) return EpisodeSort.Unknown(int.toString())
     return when (type) {
         MainStory -> Normal(int.toFloat())
         SP, OP, ED, PV, MAD, OVA, OAD -> Special(type, int.toFloat())
