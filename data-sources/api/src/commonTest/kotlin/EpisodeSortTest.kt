@@ -43,6 +43,9 @@ class EpisodeSortTest {
                 "MAD02" to special(MAD, 2f),
                 "OVA04" to special(OVA, 4f),
                 "OAD08" to special(OAD, 8f),
+                "OAD" to special(OAD, null),
+                "OVA" to special(OVA, null),
+                "SP" to special(SP, null),
                 "S" to EpisodeSort.Unknown("S"),
             ).map {
                 dynamicTest(it.first) {
@@ -107,6 +110,7 @@ class EpisodeSortTest {
             normal(1f) to special(SP, 1f),
             special(PV, 1.5f) to special(PV, 1f),
             special(MAD, 1.0f) to special(PV, 1f),
+            special(MAD, 1.0f) to EpisodeSort.Unknown("1"),
             EpisodeSort.Unknown("1 ") to EpisodeSort.Unknown("1"),
         ).map {
             dynamicTest(it.toString()) {

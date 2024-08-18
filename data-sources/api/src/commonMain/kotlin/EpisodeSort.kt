@@ -93,7 +93,7 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
     class Unknown internal constructor(
         override val raw: String
     ) : EpisodeSort() {
-        override val number: Float? = null
+        override val number: Float? get() = null
         override fun toString(): String = raw
     }
 
@@ -103,9 +103,8 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
         if (other !is EpisodeSort) return false
 
         val otherFloat = other.number
-        val thisFloat = number
-        if (otherFloat != null && thisFloat != null && other.raw == raw) return otherFloat == thisFloat
-        if (otherFloat != null || thisFloat != null) return false // one Normal one Special
+        val thisFloat = number // one Normal one Special
+        if (otherFloat != thisFloat) return false
         return other.raw == raw
     }
 
@@ -133,14 +132,10 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
 }
 
 private fun getSpecialByRaw(raw: String): EpisodeSort {
-    val type = EpisodeType.entries.firstOrNull { entry -> raw.startsWith(entry.value) }
-    if (type == null || raw.length <= type.value.length) return EpisodeSort.Unknown(raw)
+    val type = EpisodeType.entries.firstOrNull { entry -> raw.startsWith(entry.value, ignoreCase = true) }
+    if (type == null || raw.length < type.value.length) return EpisodeSort.Unknown(raw)
     val numStr = raw.substringAfter(type.value);
-    return try {
-        Special(type, numStr.toFloat())
-    } catch (e: NumberFormatException) {
-        EpisodeSort.Unknown(raw)
-    }
+    return Special(type, numStr.toFloatOrNull())
 }
 
 fun EpisodeSort(raw: String): EpisodeSort {
