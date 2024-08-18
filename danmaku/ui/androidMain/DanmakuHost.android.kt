@@ -186,10 +186,5 @@ class TestEpisodeVideoSettingsViewModel() : EpisodeVideoSettingsViewModel {
         //Do nothing in preview
 
     }
-
-    override fun onOverlayContentShow() {
-        //Do nothing in preview
-        
-    }
 }
 

@@ -51,19 +51,15 @@ interface EpisodeVideoSettingsViewModel {
     val danmakuFilterConfig: DanmakuFilterConfig
 
     fun setDanmakuConfig(config: DanmakuConfig)
-    
-    fun onOverlayContentShow()
 
     // 关闭/开启所有正则过滤器
     fun switchDanmakuRegexFilterCompletely()
 }
 
 fun EpisodeVideoSettingsViewModel(
-    onOverlayContentShow: () -> Unit = { },
-): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl(onOverlayContentShowCallback = onOverlayContentShow)
+): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
 
 private class EpisodeVideoSettingsViewModelImpl(
-    val onOverlayContentShowCallback: () -> Unit,
 ) : EpisodeVideoSettingsViewModel, AbstractSettingsViewModel(),
     KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
@@ -92,16 +88,13 @@ private class EpisodeVideoSettingsViewModelImpl(
             danmakuFilterConfig.copy(danmakuRegexFilterEnabled = !danmakuFilterConfig.danmakuRegexFilterEnabled),
         )
     }
-
-    override fun onOverlayContentShow() {
-        onOverlayContentShowCallback()
-    }
 }
 
 @Composable
 fun EpisodeVideoSettings(
     vm: EpisodeVideoSettingsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOverlayContentShow: () -> Unit = { }
 ) {
     return EpisodeVideoSettings(
         danmakuConfig = vm.danmakuConfig,
@@ -122,7 +115,7 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(vm.isLoading),
             )
         },
-        onOverlayContentShow = { vm.onOverlayContentShow() },
+        onOverlayContentShow = { onOverlayContentShow() },
     )
 }
 

@@ -146,7 +146,7 @@ internal fun EpisodeVideoImpl(
     // auto hide cursor
     val videoInteractionSource = remember { MutableInteractionSource() }
     val isVideoHovered by videoInteractionSource.collectIsHoveredAsState()
-    val showCursor by remember(videoControllerState, showEditDanmakuRegexFilterSideSheet, showSettings) {
+    val showCursor by remember(videoControllerState, showSettings) {
         derivedStateOf {
             !isVideoHovered || (videoControllerState.visibility.bottomBar
                     || videoControllerState.visibility.detachedSlider
@@ -402,21 +402,6 @@ internal fun EpisodeVideoImpl(
                     }
                 }
             }
-            if (showSettings) {
-                EpisodeVideoSettingsSideSheet(
-                    onDismissRequest = { showSettings = false },
-                    title = { Text(text = "弹幕设置") },
-                    closeButton = {
-                        IconButton(onClick = { showSettings = false }) {
-                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
-                        }
-                    },
-                ) {
-                    EpisodeVideoSettings(
-                        rememberViewModel { EpisodeVideoSettingsViewModel() },
-                    )
-                }
-            }
 
             if (showEditDanmakuRegexFilterSideSheet) {
                 showSettings = false
@@ -443,12 +428,11 @@ internal fun EpisodeVideoImpl(
                         },
                     ) {
                         EpisodeVideoSettings(
-                            rememberViewModel { EpisodeVideoSettingsViewModel(
-                                onOverlayContentShow = {
-                                    showEditDanmakuRegexFilterSideSheet = true
-                                    println("Pressed $showEditDanmakuRegexFilterSideSheet")
-                                },
-                            ) },
+                            rememberViewModel { EpisodeVideoSettingsViewModel() },
+                            onOverlayContentShow = {
+                                showEditDanmakuRegexFilterSideSheet = true
+//                                    println("Pressed $showEditDanmakuRegexFilterSideSheet")
+                            },
                         )
                     }
                 }
