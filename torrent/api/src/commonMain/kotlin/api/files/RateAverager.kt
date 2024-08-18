@@ -40,7 +40,7 @@ class RateAverager(
 
                 val current = window[currentIndex]
                 if (counted == 1u) {
-                    return@onReceive current
+                    return@onReceive 0
                 }
 
                 val toCompare = window[

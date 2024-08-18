@@ -42,7 +42,7 @@ class RateAveragerTest {
     @Test
     fun `first value tick`() = runTest {
         emitAndRunPass(100)
-        assertEquals(100, tickAndRunPass())
+        assertEquals(0, tickAndRunPass())
     }
 
     @Test
