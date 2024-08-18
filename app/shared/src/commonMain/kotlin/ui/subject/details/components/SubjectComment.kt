@@ -77,14 +77,10 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
             state = listState,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            item { }
             itemsIndexed(state.list, key = { _, item -> item.id }) { index, item ->
                 SubjectComment(
                     comment = item,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 12.dp, bottom = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
                     onClickImage = { imageViewer.viewImage(it) },
                     onClickUrl = onClickUrl,
                     onClickReaction = { commentId, reactionId ->
