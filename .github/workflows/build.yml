@@ -172,12 +172,32 @@ jobs:
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
       - if: ${{ matrix.uploadApk }}
-        name: Upload Android Release APK
+        name: Upload Android Release APK arm64-v8a
         uses: actions/upload-artifact@v4
         with:
-          name: ani-android-release
-          path: app/android/build/outputs/apk/release/android-release.apk
+          name: ani-android-arm64-v8a-release
+          path: app/android/build/outputs/apk/release/android-arm64-v8a-release.apk
 
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Release APK armeabi-v7a
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android-armeabi-v7a-release
+          path: app/android/build/outputs/apk/release/android-armeabi-v7a-release.apk
+
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Release APK x86_64
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android-x86_64-release
+          path: app/android/build/outputs/apk/release/android-x86_64-release.apk
+
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Release APK universal
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android-universal-release
+          path: app/android/build/outputs/apk/release/android-universal-release.apk
 
       - name: Check
         if: ${{ matrix.run_tests }}

@@ -124,7 +124,7 @@ sealed class DefaultMediaSelectorSubtitleKindPlatformTest(
     }
 
     class Windows : DefaultMediaSelectorSubtitleKindPlatformTest(Platform.Windows(Arch.X86_64))
-    class Android : DefaultMediaSelectorSubtitleKindPlatformTest(Platform.Android) {
+    class Android : DefaultMediaSelectorSubtitleKindPlatformTest(Platform.Android(Arch.ARMV8A)) {
         @Test
         fun `CLOSED is low priority`() = runTest {
             val target: DefaultMedia
