@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.subject.episode.video.sidesheet
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -44,6 +47,7 @@ fun EditDanmakuRegexFilterSideSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
     EpisodeVideoSettingsSideSheet(
         onDismissRequest = onDismissRequest,
         title = { Text(text = "正则弹幕过滤管理") },
@@ -52,7 +56,8 @@ fun EditDanmakuRegexFilterSideSheet(
                 Icon(Icons.Rounded.Close, contentDescription = "关闭")
             }
         },
-        modifier = modifier.testTag(TAG_EPISODE_SELECTOR_SHEET),
+        modifier = modifier.testTag(TAG_EPISODE_SELECTOR_SHEET)
+            .clickable(onClick = { focusManager.clearFocus() }),
     ) {
         var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
         var regexTextFieldOutlineTitleText by rememberSaveable { mutableStateOf("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") }
@@ -68,58 +73,65 @@ fun EditDanmakuRegexFilterSideSheet(
                     ),
                 )
                 regexTextFieldValue = "" // Clear the text field after adding
+                focusManager.clearFocus()
             } else {
                 regexTextFieldOutlineTitleText = "正则输入法不能为空"
             }
         }
 
-        Surface {
-            Column(
-                modifier.padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                // 输入框
-                Column(Modifier.padding(0.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedTextField(
-                        value = regexTextFieldValue,
-                        onValueChange = {
-                            regexTextFieldValue = it
-                            regexTextFieldOutlineTitleText =
-                                "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
-                        },
-                        label = {
-                            Text(
-                                text = regexTextFieldOutlineTitleText,
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { handleAdd() }
-                        ),
-                    )
-
-                    // 提交按钮
-                    TextButton(
-                        onClick = { handleAdd() },
-                    ) {
-                        Text(color = MaterialTheme.colorScheme.primary, text = "添加")
-                    }
-                }
-
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { focusManager.clearFocus() }
+        ) {
+            Surface {
+                Column(
+                    modifier.padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .verticalScroll(rememberScrollState()),
                 ) {
-                    danmakuRegexFilterList.forEachIndexed { index, item ->
-                        RegexFilterItem(
-                            item,
-                            onDelete = { onRemove(item) },
-                            onDisable = { onSwitch(item) },
+                    // 输入框
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = regexTextFieldValue,
+                            onValueChange = {
+                                regexTextFieldValue = it
+                                regexTextFieldOutlineTitleText =
+                                    "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+                            },
+                            label = {
+                                Text(
+                                    text = regexTextFieldOutlineTitleText,
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = { handleAdd() }
+                            ),
                         )
+    
+                        // 提交按钮
+                        TextButton(
+                            onClick = { handleAdd() },
+                        ) {
+                            Text(color = MaterialTheme.colorScheme.primary, text = "添加")
+                        }
+                    }
+    
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        danmakuRegexFilterList.forEachIndexed { index, item ->
+                            RegexFilterItem(
+                                item,
+                                onDelete = { onRemove(item) },
+                                onDisable = { onSwitch(item) },
+                            )
+                        }
                     }
                 }
             }
