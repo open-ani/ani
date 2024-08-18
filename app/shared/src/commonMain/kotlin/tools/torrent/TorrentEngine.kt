@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.job
+import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.coroutines.childScope
@@ -74,6 +75,7 @@ class TorrentDownloaderInitializationException(
 abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : TorrentEngineConfig>(
     final override val type: TorrentEngineType,
     protected val config: Flow<Config>,
+    protected val proxySettings: Flow<MediaSourceProxySettings>,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentEngine {
     protected val logger = logger(this::class)
@@ -90,7 +92,10 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
             }
         }
         .map { config ->
-            newInstance(config).also { downloader ->
+            // TODO: 这里不能 combine proxySettings, 因为这会导致更换设置时重新创建 downloader, 而 #775.
+            //  而且在播放视频时, 关闭 downloader, 视频仍然会持有旧的 torrent session, 而旧的已经被关闭了, 视频就会一直显示缓冲中.
+            //  目前没有必要在 proxySettings 变更时重新创建 downloader, 因为 downloader 不会使用代理.
+            newInstance(config, proxySettings.first()).also { downloader ->
                 scope.coroutineContext.job.invokeOnCompletion {
                     downloader.close()
                 }
@@ -109,7 +114,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
         }
         .shareIn(scope, SharingStarted.Lazily, 1)
 
-    protected abstract suspend fun newInstance(config: Config): Downloader
+    protected abstract suspend fun newInstance(config: Config, proxySettings: MediaSourceProxySettings): Downloader
 
     @CallSuper
     protected open fun closeInstance(downloader: Downloader) {
