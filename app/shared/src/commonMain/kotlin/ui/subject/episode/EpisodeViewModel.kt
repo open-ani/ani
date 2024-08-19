@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.annotation.UiThread
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -124,6 +125,8 @@ interface EpisodeViewModel : HasBackgroundScope {
 
     var isFullscreen: Boolean
 
+    val commentLazyListState: LazyListState
+
     /**
      * 播放器内切换剧集
      */
@@ -174,7 +177,7 @@ interface EpisodeViewModel : HasBackgroundScope {
     val commentEditorState: CommentEditorState
 
     val playerSkipOpEdState: PlayerSkipOpEdState
-    
+
     @UiThread
     fun stopPlaying()
 }
@@ -430,6 +433,7 @@ private class EpisodeViewModelImpl(
         )
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
+    override val commentLazyListState: LazyListState = LazyListState()
 
     fun switchEpisode(episodeId: Int) {
         episodeDetailsState.showEpisodes = false // 选择后关闭弹窗

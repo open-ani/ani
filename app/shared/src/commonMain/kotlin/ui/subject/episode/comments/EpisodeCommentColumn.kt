@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -58,6 +60,7 @@ fun EpisodeCommentColumn(
     onClickEditCommentStubEmoji: () -> Unit,
     onClickUrl: (url: String) -> Unit,
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     val imageViewer = LocalImageViewerHandler.current
@@ -89,6 +92,7 @@ fun EpisodeCommentColumn(
 
     Box(modifier = modifier.clipToBounds()) {
         LazyColumn(
+            state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
                 .nestedScroll(pullToRefreshState.nestedScrollConnection),

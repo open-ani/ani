@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -255,6 +257,7 @@ private fun EpisodeSceneTabletVeryWide(
                             episodeId = vm.episodePresentation.episodeId,
                             setShowEditCommentSheet = { showEditCommentSheet = it },
                             pauseOnPlaying = pauseOnPlaying,
+                            lazyListState = vm.commentLazyListState,
                         )
                     }
                 }
@@ -656,7 +659,9 @@ private fun EpisodeCommentColumn(
     subjectId: Int,
     episodeId: Int,
     setShowEditCommentSheet: (Boolean) -> Unit,
-    pauseOnPlaying: () -> Unit
+    pauseOnPlaying: () -> Unit,
+    modifier: Modifier = Modifier,
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
@@ -665,7 +670,8 @@ private fun EpisodeCommentColumn(
     EpisodeCommentColumn(
         state = commentState,
         editCommentStubText = commentEditorState.content,
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
+        lazyListState = lazyListState,
         onClickReply = {
             setShowEditCommentSheet(true)
             commentEditorState.startEdit(CommentContext.Reply(it))
