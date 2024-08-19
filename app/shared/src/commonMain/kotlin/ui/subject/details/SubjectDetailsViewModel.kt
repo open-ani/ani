@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.onCompletion
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
@@ -81,6 +82,9 @@ class SubjectDetailsViewModel(
             }.onCompletion { if (it != null) emit(emptyList()) },
             characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
                 RelatedCharacterInfo.sortList(it)
+            },
+            relatedSubjects = bangumiRelatedCharactersRepository.relatedSubjectsFlow(subjectId).map {
+                RelatedSubjectInfo.sortList(it)
             },
             parentCoroutineContext = backgroundScope.coroutineContext,
         )

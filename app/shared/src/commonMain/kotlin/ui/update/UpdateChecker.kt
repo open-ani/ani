@@ -143,7 +143,7 @@ class UpdateChecker {
     private fun getDistributionSuffix(): String = when (val platform = Platform.currentPlatform) {
         is Platform.MacOS -> "macos-${platform.arch.displayName}.dmg"
         is Platform.Windows -> "windows-${platform.arch.displayName}.zip"
-        is Platform.Android -> "apk"
+        is Platform.Android -> "-universal.apk"
         is Platform.Ios -> "ipa"
     }
 

@@ -74,7 +74,9 @@ fun SystemPath.moveDirectoryRecursively(target: SystemPath, visitor: ((SystemPat
                 if (!Files.exists(targetSubDir)) {
                     Files.copy(dir, targetSubDir, StandardCopyOption.REPLACE_EXISTING)
                 }
-                Files.delete(dir)
+                if (Files.exists(dir)) {
+                    Files.delete(dir)
+                }
                 return FileVisitResult.CONTINUE
             }
         },

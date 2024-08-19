@@ -371,7 +371,7 @@ private fun TabContent(
                                 },
                                 enabled = !editableSubjectCollectionTypeState.isSetSelfCollectionTypeWorking,
                             ) {
-                                Text("移至\"看过\"")
+                                Text("移至\"看过\"", softWrap = false)
                             }
                         } else {
                             PlaySubjectButton(

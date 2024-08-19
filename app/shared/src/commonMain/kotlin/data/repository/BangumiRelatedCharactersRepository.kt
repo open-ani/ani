@@ -17,6 +17,8 @@ import me.him188.ani.app.data.models.subject.PersonInfo
 import me.him188.ani.app.data.models.subject.PersonType
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
+import me.him188.ani.app.data.models.subject.SubjectRelation
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.models.BangumiCharacterType
 import me.him188.ani.datasources.bangumi.models.BangumiPerson
@@ -25,6 +27,8 @@ import me.him188.ani.datasources.bangumi.models.BangumiPersonImages
 import me.him188.ani.datasources.bangumi.models.BangumiPersonType
 import me.him188.ani.datasources.bangumi.models.BangumiRelatedCharacter
 import me.him188.ani.datasources.bangumi.models.BangumiRelatedPerson
+import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
+import me.him188.ani.datasources.bangumi.models.BangumiV0SubjectRelation
 import me.him188.ani.utils.coroutines.flows.runOrEmitEmptyList
 
 @Serializable
@@ -171,6 +175,30 @@ class BangumiRelatedCharactersRepository(
             )
         }
     }
+
+    fun relatedSubjectsFlow(subjectId: Int): Flow<List<RelatedSubjectInfo>> {
+        return flow {
+            val subjects = runOrEmitEmptyList {
+                withContext(Dispatchers.IO) {
+                    client.getApi().getRelatedSubjectsBySubjectId(subjectId).body()
+                }
+            }
+            emit(subjects.mapNotNull { it.toRelatedSubjectInfo() })
+        }
+    }
+}
+
+private fun BangumiV0SubjectRelation.toRelatedSubjectInfo(): RelatedSubjectInfo? {
+    if (type != BangumiSubjectType.Anime.value) return null
+    return RelatedSubjectInfo(id, convertBangumiSubjectRelation(relation), name, nameCn, images?.large)
+}
+
+private fun convertBangumiSubjectRelation(relation: String): SubjectRelation? = when (relation) {
+    "续集" -> SubjectRelation.SEQUEL
+    "前传" -> SubjectRelation.PREQUEL
+    "衍生" -> SubjectRelation.DERIVED
+    "番外篇" -> SubjectRelation.SPECIAL
+    else -> null
 }
 
 private fun BangumiRelatedPerson.toRelatedPersonInfo(chineseName: String): RelatedPersonInfo {

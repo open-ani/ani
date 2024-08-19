@@ -131,6 +131,7 @@ kotlin {
         api(projects.dataSources.mxdongman)
         api(projects.dataSources.ntdm)
         api(projects.dataSources.gugufan)
+        api(projects.dataSources.xfdm)
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
