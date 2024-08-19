@@ -224,8 +224,6 @@ class DefaultMediaSelector(
         context: MediaSelectorContext,
         list: List<Media>
     ): List<Media> {
-        val needFilter = !preference.showWithoutSubtitle || settings.hideSingleEpisodeForCompleted
-        if (!needFilter) return list // no copy
         return list.fastFilter filter@{ media ->
             if (isLocalCache(media)) return@filter true // 本地缓存总是要显示
 

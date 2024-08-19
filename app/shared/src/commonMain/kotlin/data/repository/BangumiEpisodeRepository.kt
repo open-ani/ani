@@ -9,9 +9,15 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.episode.EpisodeInfo
-import me.him188.ani.app.data.models.episode.EpisodeType
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType
+import me.him188.ani.datasources.api.EpisodeType.ED
+import me.him188.ani.datasources.api.EpisodeType.MAD
+import me.him188.ani.datasources.api.EpisodeType.MainStory
+import me.him188.ani.datasources.api.EpisodeType.OP
+import me.him188.ani.datasources.api.EpisodeType.PV
+import me.him188.ani.datasources.api.EpisodeType.SP
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.processPagedResponse
@@ -37,12 +43,12 @@ interface BangumiEpisodeRepository : Repository {
     /**
      * 获取条目下的所有剧集.
      */
-    suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode>
+    suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType?): Flow<BangumiEpisode>
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态. 当用户没有收藏此条目时返回 `null`
      */
-    suspend fun getSubjectEpisodeCollections(subjectId: Int, type: BangumiEpType): Flow<BangumiUserEpisodeCollection>?
+    suspend fun getSubjectEpisodeCollections(subjectId: Int, type: BangumiEpType?): Flow<BangumiUserEpisodeCollection>?
 
     /**
      * 获取用户在这个条目下的所有剧集的收藏状态.
@@ -67,7 +73,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
         }
     }
 
-    override suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType): Flow<BangumiEpisode> {
+    override suspend fun getEpisodesBySubjectId(subjectId: Int, type: BangumiEpType?): Flow<BangumiEpisode> {
         val episodes = PageBasedPagedSource { page ->
             runCatching {
                 withContext(Dispatchers.IO) {
@@ -82,7 +88,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 
     override suspend fun getSubjectEpisodeCollections(
         subjectId: Int,
-        type: BangumiEpType
+        type: BangumiEpType?
     ): Flow<BangumiUserEpisodeCollection>? {
         val firstPage = try {
             client.getApi().getUserSubjectEpisodeCollection(
@@ -148,7 +154,7 @@ internal class EpisodeRepositoryImpl : BangumiEpisodeRepository, KoinComponent {
 fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = this.id,
-        type = EpisodeType(this.type),
+        type = getEpisodeTypeByBangumiCode(this.type),
         name = this.name,
         nameCn = this.nameCn,
         airDate = PackedDate.parseFromDate(this.airdate),
@@ -162,13 +168,25 @@ fun BangumiEpisode.toEpisodeInfo(): EpisodeInfo {
     )
 }
 
+private fun getEpisodeTypeByBangumiCode(code: Int): EpisodeType? {
+    return when (code) {
+        0 -> MainStory
+        1 -> SP
+        2 -> OP
+        3 -> ED
+        4 -> PV
+        5 -> MAD
+        else -> null
+    }
+}
+
 fun BangumiEpisodeDetail.toEpisodeInfo(): EpisodeInfo {
     return EpisodeInfo(
         id = id,
-        type = EpisodeType(this.type),
+        type = getEpisodeTypeByBangumiCode(this.type),
         name = name,
         nameCn = nameCn,
-        sort = EpisodeSort(this.sort),
+        sort = EpisodeSort(this.sort, getEpisodeTypeByBangumiCode(this.type)),
         airDate = PackedDate.parseFromDate(this.airdate),
         comment = comment,
         duration = duration,

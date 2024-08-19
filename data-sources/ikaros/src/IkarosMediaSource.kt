@@ -68,7 +68,7 @@ class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
 
     override suspend fun fetch(query: MediaFetchRequest): SizedSource<MediaMatch> {
         val subjectId = checkNotNull(query.subjectId)
-        val episodeSort = checkNotNull(query.episodeSort.number)
+        val episodeSort = checkNotNull(query.episodeSort)
         val ikarosSubjectDetails = checkNotNull(client.postSubjectSyncBgmTv(subjectId))
         return client.subjectDetails2SizedSource(ikarosSubjectDetails, episodeSort)
     }

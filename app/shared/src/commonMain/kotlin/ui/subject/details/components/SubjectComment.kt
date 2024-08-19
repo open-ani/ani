@@ -70,10 +70,6 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
         modifier = Modifier.fillMaxSize().clipToBounds(),
         contentAlignment = Alignment.TopCenter,
     ) {
-        PullToRefreshContainer(
-            state = pullToRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-        )
         LazyColumn(
             modifier = modifier,
             state = listState,
@@ -107,6 +103,10 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
                 }
             }
         }
+        PullToRefreshContainer(
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+        )
     }
 
 }

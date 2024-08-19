@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -144,7 +143,6 @@ fun SubjectDetailsScene(
         },
         connectedScrollState = connectedScrollState,
         detailsTab = {
-            val lazyListState = rememberLazyListState()
             SubjectDetailsDefaults.DetailsTab(
                 info = vm.subjectDetailsState.info,
                 staff = vm.subjectDetailsState.persons,
@@ -152,23 +150,24 @@ fun SubjectDetailsScene(
                 relatedSubjects = vm.subjectDetailsState.relatedSubjects,
                 Modifier
                     .ifThen(currentPlatform.isDesktop()) {
-                        nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
+                        nestedScrollWorkaround(vm.detailsTabLazyListState, connectedScrollState.nestedScrollConnection)
                     }
                     .nestedScroll(connectedScrollState.nestedScrollConnection),
-                lazyListState,
+                vm.detailsTabLazyListState,
             )
         },
         commentsTab = {
-            val lazyListState = rememberLazyListState()
-
             CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
                 SubjectDetailsDefaults.SubjectCommentColumn(
                     state = vm.subjectCommentState,
-                    listState = lazyListState,
+                    listState = vm.commentTabLazyListState,
                     modifier = Modifier
                         .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
                         .ifThen(currentPlatform.isDesktop()) {
-                            nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
+                            nestedScrollWorkaround(
+                                vm.commentTabLazyListState,
+                                connectedScrollState.nestedScrollConnection,
+                            )
                         }
                         .nestedScroll(connectedScrollState.nestedScrollConnection),
                     onClickUrl = {
@@ -359,6 +358,7 @@ fun SubjectDetailsPage(
                             state = pagerState,
                             Modifier.fillMaxHeight(),
                             userScrollEnabled = Platform.currentPlatform.isMobile(),
+                            verticalAlignment = Alignment.Top,
                         ) { index ->
                             val type = SubjectDetailsTab.entries[index]
                             Column(Modifier.padding()) {

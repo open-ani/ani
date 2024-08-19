@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.details
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.flowOf
@@ -137,6 +138,9 @@ class SubjectDetailsViewModel(
         },
         backgroundScope,
     )
+
+    val detailsTabLazyListState = LazyListState()
+    val commentTabLazyListState = LazyListState()
 
     private val subjectCommentLoader = CommentLoader.createForSubject(
         subjectId = flowOf(subjectId),
