@@ -88,10 +88,6 @@ fun EpisodeCommentColumn(
 
 
     Box(modifier = modifier.clipToBounds()) {
-        PullToRefreshContainer(
-            state = pullToRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,6 +135,10 @@ fun EpisodeCommentColumn(
                 onClickEditText = onClickEditCommentStub,
             )
         }
+        PullToRefreshContainer(
+            state = pullToRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+        )
     }
 
 }
