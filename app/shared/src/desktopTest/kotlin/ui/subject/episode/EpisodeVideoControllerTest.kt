@@ -254,7 +254,7 @@ class EpisodeVideoControllerTest {
             moveBy(Offset(width / 2f, 0f))
         }
         runOnIdle {
-            waitUntil { previewPopup.exists() } 
+            waitUntil { previewPopup.exists() }
             detachedProgressSlider.assertDoesNotExist()
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
@@ -317,9 +317,12 @@ class EpisodeVideoControllerTest {
                 detachedProgressSlider.assertDoesNotExist()
             }
 
-            progressSlider.performTouchInput {
-                down(centerLeft)
-                moveBy(Offset(centerX, 0f))
+            mainClock.autoAdvance = false
+            runOnUiThread {
+                progressSlider.performTouchInput {
+                    down(centerLeft)
+                    moveBy(Offset(centerX, 0f))
+                }
             }
             runOnIdle {
                 waitUntil { onNodeWithText("00:46 / 01:40").exists() }
@@ -327,9 +330,14 @@ class EpisodeVideoControllerTest {
             }
 
             // 松开手指
-            root.performTouchInput {
-                up()
+            runOnUiThread {
+                root.performTouchInput {
+                    up()
+                }
             }
+            mainClock.autoAdvance = true
+            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+            
             runOnIdle {
                 waitUntil { onNodeWithText("00:46 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
