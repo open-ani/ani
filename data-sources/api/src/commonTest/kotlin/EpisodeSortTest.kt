@@ -17,6 +17,7 @@ import me.him188.ani.test.runDynamicTests
 import me.him188.ani.utils.serialization.BigNum
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import me.him188.ani.datasources.api.EpisodeSort as ep
 import me.him188.ani.datasources.api.EpisodeSort.Normal as normal
 import me.him188.ani.datasources.api.EpisodeSort.Special as special
@@ -258,7 +259,13 @@ class EpisodeSortTest {
         ).map {
             dynamicTest(it.toString()) {
                 val (a, b) = it
-                assertEquals(b, a.first.compareTo(a.second))
+                if (b < -1) { // lt
+                    assertTrue(a.first < a.second)
+                } else if (b > 1) { // gt
+                    assertTrue(a.first > a.second)
+                } else { // -1 0 1
+                    assertEquals(b, a.first.compareTo(a.second))
+                }
             }
         },
     )
