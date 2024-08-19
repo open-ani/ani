@@ -32,6 +32,7 @@ import me.him188.ani.app.data.models.unauthorized
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repository.toEpisodeCollection
 import me.him188.ani.app.data.repository.toEpisodeInfo
@@ -241,9 +242,12 @@ class SubjectManagerImpl(
 ) : KoinComponent, SubjectManager() {
     private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
     private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
 
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
+
+    private val showAllEpisodes: Flow<Boolean> = settingsRepository.debugSettings.flow.map { it.showAllEpisodes }
 
     override val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollection>> =
         UnifiedCollectionType.entries.associateWith { type ->
@@ -276,6 +280,7 @@ class SubjectManagerImpl(
                 ),
             )
         }
+
 
     override fun subjectCollectionFlow(subjectId: Int, contentPolicy: ContentPolicy): Flow<SubjectCollection?> {
         return flow {
@@ -549,11 +554,12 @@ class SubjectManagerImpl(
     }
 
     private suspend fun fetchEpisodeCollections(subjectId: Int): List<EpisodeCollection> {
+        val type: BangumiEpType? = if (showAllEpisodes.first()) null else BangumiEpType.MainStory
         // 查收藏状态, 没收藏就查剧集, 认为所有剧集都没有收藏
-        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, BangumiEpType.MainStory)
+        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, type)
             .let { collections ->
                 collections?.toList()?.map { it.toEpisodeCollection() }
-                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, BangumiEpType.MainStory)
+                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, type)
                         .toList()
                         .map {
                             EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)

@@ -3,6 +3,14 @@ package me.him188.ani.datasources.api
 import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.EpisodeSort.Normal
 import me.him188.ani.datasources.api.EpisodeSort.Special
+import me.him188.ani.datasources.api.EpisodeType.ED
+import me.him188.ani.datasources.api.EpisodeType.MAD
+import me.him188.ani.datasources.api.EpisodeType.MainStory
+import me.him188.ani.datasources.api.EpisodeType.OAD
+import me.him188.ani.datasources.api.EpisodeType.OP
+import me.him188.ani.datasources.api.EpisodeType.OVA
+import me.him188.ani.datasources.api.EpisodeType.PV
+import me.him188.ani.datasources.api.EpisodeType.SP
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.utils.serialization.BigNum
 
@@ -41,6 +49,19 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
      */
     abstract override fun toString(): String
 
+    protected fun getNumberStr(number: Float?): String {
+        if (number == null) {
+            return ""
+        }
+        if (number.toInt().toFloat() == number) {
+            if (number < 10 && number >= 0) {
+                return "0${number.toInt()}"
+            }
+            return number.toInt().toString()
+        }
+        return number.toString()
+    }
+
     /**
      * An integer or a `.5` float.
      */
@@ -56,20 +77,21 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
 
         val isPartial: Boolean get() = number % 1f == 0.5f
 
-        override fun toString(): String {
-            if (number.toInt().toFloat() == number) {
-                if (number < 10) {
-                    return "0${number.toInt()}"
-                }
-                return number.toInt().toString()
-            }
-            return number.toString()
-        }
+        override fun toString(): String = getNumberStr(number)
     }
 
     @Serializable
     class Special internal constructor(
-        override val raw: String,
+        val type: EpisodeType,
+        override val number: Float?,
+    ) : EpisodeSort() {
+        override val raw: String get() = "${type.value}${getNumberStr(number)}" // "SP01"
+        override fun toString(): String = raw
+    }
+
+    @Serializable
+    class Unknown internal constructor(
+        override val raw: String
     ) : EpisodeSort() {
         override val number: Float? get() = null
         override fun toString(): String = raw
@@ -81,25 +103,41 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
         if (other !is EpisodeSort) return false
 
         val otherFloat = other.number
-        val thisFloat = number
-        if (otherFloat != null && thisFloat != null) return otherFloat == thisFloat
-        if (otherFloat != null || thisFloat != null) return false // one Normal one Special
+        val thisFloat = number // one Normal one Special
+        if (otherFloat != thisFloat) return false
         return other.raw == raw
     }
 
     final override fun hashCode(): Int {
-        if (number != null) return number.hashCode()
+        if (number != null) return number.hashCode() + raw.hashCode()
         return raw.hashCode()
     }
 
     final override fun compareTo(other: EpisodeSort): Int {
         if (this is Normal) {
             if (other is Normal) return number.compareTo(other.number) // Normal and Normal
-            return -1 // Normal < Special
+            if (other is Special) return -1 // Normal < Special
+            return -1 // Normal < Unknown
         }
-        if (other is Normal) return 1 // Special > Normal
+        if (this is Special) {
+            if (other is Normal) return 1 // Normal < Special
+            if (other is Special) { // Special and Special
+                val typeCom = type.compareTo(other.type) // Compare by type
+                if (typeCom != 0) return typeCom
+                if (number == null) return -1 // null < not null
+                if (other.number == null) return 0 // null == null
+                val numCom = number!!.compareTo(other.number!!) // Compare by num
+                if (numCom != 0) return numCom
+                return raw.compareTo(other.raw) // Compare by raw when type is eq
+            }
+            return -1 // Special < Unknown
+        }
 
-        // Special and Special
+
+        if (other is Normal) return 1 // Normal < Unknown
+        if (other is Special) return 1 // Special < Unknown
+
+        // Unknown and Unknown
         return raw.compareTo(other.raw)
     }
 
@@ -110,22 +148,44 @@ sealed class EpisodeSort : Comparable<EpisodeSort> {
     }
 }
 
-fun EpisodeSort(raw: String): EpisodeSort {
-    val float = raw.toFloatOrNull() ?: return Special(raw)
-    if (float < 0) return Special(raw)
-    return if (float.toInt().toFloat() == float || float % 0.5f == 0f) {
-        Normal(float)
+private fun getSpecialByRaw(raw: String): EpisodeSort {
+    val type = EpisodeType.entries.firstOrNull { entry -> raw.startsWith(entry.value, ignoreCase = true) }
+    if (type == null) return EpisodeSort.Unknown(raw)
+    val numStr = raw.substringAfter(type.value)
+    val num = numStr.toFloatOrNull()
+    if (num == null || num < 0) return EpisodeSort.Unknown(raw)
+    return if (num.toInt().toFloat() == num || num % 0.5f == 0f) {
+        Special(type, num)
     } else {
-        Special(raw)
+        EpisodeSort.Unknown(raw)
     }
 }
 
-fun EpisodeSort(int: Int): EpisodeSort {
-    if (int < 0) return Special(int.toString())
-    return Normal(int.toFloat())
+fun EpisodeSort(raw: String): EpisodeSort {
+    val float = raw.toFloatOrNull() ?: return getSpecialByRaw(raw)
+    if (float < 0) return EpisodeSort.Unknown(raw)
+    return if (float.toInt().toFloat() == float || float % 0.5f == 0f) {
+        Normal(float)
+    } else {
+        EpisodeSort.Unknown(raw)
+    }
 }
 
-fun EpisodeSort(int: BigNum): EpisodeSort {
-    if (int.isNegative()) return Special(int.toString())
-    return EpisodeSort(int.toString())
+fun EpisodeSort(int: Int, type: EpisodeType = MainStory): EpisodeSort {
+    return EpisodeSort(BigNum(int), type)
+}
+
+/**
+ * @see EpisodeType
+ */
+fun EpisodeSort(int: BigNum, type: EpisodeType? = MainStory): EpisodeSort {
+    if (int.isNegative()) return EpisodeSort.Unknown(int.toString())
+    if (int.toFloat().toInt().toFloat() != int.toFloat()
+        && int.toFloat() % 0.5f != 0f
+    ) return EpisodeSort.Unknown(int.toString())
+    return when (type) {
+        MainStory -> Normal(int.toFloat())
+        SP, OP, ED, PV, MAD, OVA, OAD -> Special(type, int.toFloat())
+        null -> EpisodeSort.Unknown(int.toString())
+    }
 }

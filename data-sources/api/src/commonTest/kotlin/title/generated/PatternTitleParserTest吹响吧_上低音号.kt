@@ -1630,7 +1630,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `463600_2_SP7_1080P_MP4`() {
     val r = parse("【悠风社】吹响吧！上低音号 2 SP7 [简][1080P][MP4]")
-    assertEquals("SP7..SP7", r.episodeRange.toString())
+    assertEquals("SP07..SP07", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
@@ -1650,7 +1650,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `461023_2_SP6_1080P_MP4`() {
     val r = parse("【悠风社】吹响吧！上低音号 2 SP6 [简][1080P][MP4]")
-    assertEquals("SP6..SP6", r.episodeRange.toString())
+    assertEquals("SP06..SP06", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
@@ -1659,7 +1659,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `458613_2_SP5_1080P_MP4`() {
     val r = parse("【悠风社】吹响吧！上低音号 2 SP5 [简][1080P][MP4]")
-    assertEquals("SP5..SP5", r.episodeRange.toString())
+    assertEquals("SP05..SP05", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
@@ -1668,7 +1668,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   @Test
   public fun `456299_2_SP1_4_720P_MP4`() {
     val r = parse("【悠风社】吹响吧！上低音号 2 SP1~4 [简][720P][MP4]")
-    assertEquals("SP1..SP4", r.episodeRange.toString())
+    assertEquals("SP01..SP04", r.episodeRange.toString())
     assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("720P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)

@@ -5,7 +5,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.datasources.api.EpisodeSort
-import kotlin.jvm.JvmInline
+import me.him188.ani.datasources.api.EpisodeType
 
 /**
  * 与数据源无关的条目信息.
@@ -15,7 +15,7 @@ import kotlin.jvm.JvmInline
 data class EpisodeInfo(
     val id: Int,
     /** `0` 本篇，`1` SP，`2` OP，`3` ED */
-    val type: EpisodeType = EpisodeType.MainStory,
+    val type: EpisodeType? = EpisodeType.MainStory,
     val name: String = "",
     val nameCn: String = "",
     /**
@@ -55,35 +55,4 @@ val EpisodeInfo.isKnownOnAir
     get() = airDate.isValid && airDate > PackedDate.now() // TODO: consider time 
 
 @Stable
-fun EpisodeInfo.renderEpisodeEp() = when (type) {
-    EpisodeType.MainStory -> { // 本篇
-        sort.toString()
-    } // "01", "12", "26", "120"
-
-    EpisodeType.SP -> { // SP
-        "SP$sort"
-    } // "SP", "SP1", "SP10"
-
-    else -> {
-        "PV$sort"
-    } // "PV", "PV1", "PV10"
-}
-
-@JvmInline
-@Serializable
-@Immutable
-value class EpisodeType(val value: Int) {
-    companion object {
-        @Stable
-        val MainStory = EpisodeType(0)
-
-        @Stable
-        val SP = EpisodeType(1)
-
-        @Stable
-        val OP = EpisodeType(2)
-
-        @Stable
-        val ED = EpisodeType(3)
-    }
-}
+fun EpisodeInfo.renderEpisodeEp() = sort.toString()
