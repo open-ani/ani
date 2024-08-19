@@ -359,6 +359,7 @@ fun SubjectDetailsPage(
                             state = pagerState,
                             Modifier.fillMaxHeight(),
                             userScrollEnabled = Platform.currentPlatform.isMobile(),
+                            verticalAlignment = Alignment.Top,
                         ) { index ->
                             val type = SubjectDetailsTab.entries[index]
                             Column(Modifier.padding()) {
