@@ -9,7 +9,7 @@ import kotlinx.serialization.encoding.Encoder
  * 尽量防止丢精度的数字类型
  * @see BigNumAsDoubleStringSerializer
  */
-sealed class BigNum : Number() {
+abstract class BigNum : Number() {
     abstract override fun toString(): String
     abstract fun isNegative(): Boolean
 
