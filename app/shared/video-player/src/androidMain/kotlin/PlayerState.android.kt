@@ -52,6 +52,11 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
+import org.videolan.libvlc.LibVLC
+import org.videolan.libvlc.Media
+import org.videolan.libvlc.MediaPlayer
+import org.videolan.libvlc.interfaces.IMedia
+import org.videolan.libvlc.interfaces.IMedia.Meta
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
@@ -415,4 +420,176 @@ internal class ExoPlayerState @UiThread constructor(
     override fun setPlaybackSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
     }
+}
+
+class LibVlcAndroidPlayerFactory : PlayerStateFactory {
+    @OptIn(UnstableApi::class)
+    override fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState =
+        LibVlcAndroidPlayerState(context, parentCoroutineContext)
+
+}
+
+@OptIn(UnstableApi::class)
+internal class LibVlcAndroidPlayerState @UiThread constructor(
+    context: Context,
+    parentCoroutineContext: CoroutineContext
+) : AbstractPlayerState<LibVlcAndroidPlayerState.LibVlcAndroidPlayerData>(parentCoroutineContext),
+    AutoCloseable {
+
+    class LibVlcAndroidPlayerData(
+        videoSource: VideoSource<*>,
+        videoData: VideoData,
+        releaseResource: () -> Unit,
+        val setMedia: () -> Unit,
+    ) : Data(videoSource, videoData, releaseResource)
+
+    private val listener: MediaPlayer.EventListener = MediaPlayer.EventListener { event ->
+        if (MediaPlayer.Event.MediaChanged.equals(event)) {
+            audioTracks.candidates.value =
+                player.audioTracks.asSequence()
+                    .mapNotNull { AudioTrack(it.id.toString(), it.id.toString(), it.name, mutableListOf()) }
+                    .toList()
+            subtitleTracks.candidates.value =
+                player.spuTracks.asSequence()
+                    .mapNotNull { SubtitleTrack(it.id.toString(), it.id.toString(), it.name, mutableListOf()) }
+                    .toList()
+            videoProperties.value = VideoProperties(
+                title = player.media?.getMeta(Meta.Title) ?: "",
+                heightPx = player.currentVideoTrack.height,
+                widthPx = player.currentVideoTrack.width,
+                videoBitrate = player.currentVideoTrack.bitrate,
+                audioBitrate = (player.audioTracks[player.audioTrack] as IMedia.AudioTrack).bitrate,
+                frameRate = player.currentVideoTrack.frameRateNum.toFloat(),
+                durationMillis = player.media?.duration ?: 0,
+                fileLengthBytes = player.length,
+                fileHash = "",
+                filename = player.media?.getMeta(Meta.Title) ?: "",
+            )
+
+
+        }
+    }
+
+    private val libVlc = LibVLC(context, mutableListOf("-vvv"))
+    val player = kotlin.run {
+        MediaPlayer(libVlc)
+            .apply {
+                setEventListener(listener)
+            }
+    }
+
+    override val videoProperties = MutableStateFlow<VideoProperties?>(null)
+    override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
+    override val bufferedPercentage = MutableStateFlow(0)
+    override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1f)
+    override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
+    override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(persistentListOf())
+
+    override fun getExactCurrentPositionMillis(): Long = player.position.toLong()
+
+    init {
+        backgroundScope.launch(Dispatchers.Main) {
+            while (currentCoroutineContext().isActive) {
+                currentPositionMillis.value = player.position.toLong()
+                // bufferedPercentage.value = player
+                delay(0.1.seconds) // 10 fps
+            }
+        }
+        backgroundScope.launch(Dispatchers.Main) {
+            subtitleTracks.current.collect {
+//                player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().apply {
+//                    setPreferredTextLanguage(it?.internalId) // dummy value to trigger a select, we have custom selector
+//                }.build()
+            }
+        }
+    }
+
+    override fun stopImpl() {
+        player.stop()
+    }
+
+    override suspend fun cleanupPlayer() {
+        withContext(Dispatchers.Main.immediate) {
+            player.stop()
+        }
+    }
+
+    override suspend fun openSource(source: VideoSource<*>): LibVlcAndroidPlayerData {
+        if (source is HttpStreamingVideoSource) {
+            return LibVlcAndroidPlayerData(
+                source,
+                emptyVideoData(),
+                releaseResource = {},
+                setMedia = {
+                    player.setMedia(Media(libVlc, Uri.parse(source.uri)))
+                },
+            )
+        }
+        val data = source.open()
+        val file = withContext(Dispatchers.IO) {
+            data.createInput()
+        }
+        return LibVlcAndroidPlayerData(
+            source,
+            data,
+            releaseResource = {
+                file.close()
+                backgroundScope.launch(NonCancellable) {
+                    data.close()
+                }
+            },
+            setMedia = {
+                player.setMedia(Media(libVlc, source.uri))
+            },
+        )
+    }
+
+    override fun closeImpl() {
+        @kotlin.OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                player.stop()
+                player.detachViews();
+                player.release()
+                logger.info("LibVlcAndroidPlayer $player released")
+            } catch (e: Throwable) {
+                logger.error(e) { "Failed to release LibVlcAndroidPlayer $player, ignoring" }
+            }
+        }
+    }
+
+    override suspend fun startPlayer(data: LibVlcAndroidPlayerData) {
+        withContext(Dispatchers.Main.immediate) {
+            data.setMedia()
+            player.play()
+        }
+    }
+
+
+    override fun pause() {
+        player.pause()
+    }
+
+    override fun resume() {
+        player.play()
+    }
+
+
+    override fun setPlaybackSpeed(speed: Float) {
+        player.rate = speed
+    }
+
+    override fun seekTo(positionMillis: Long) {
+        if (player.isSeekable) {
+            player.position = positionMillis.toFloat()
+        }
+    }
+
+
+    override fun saveScreenshotFile(filename: String) {
+        TODO("Not yet implemented")
+    }
+
+
 }
