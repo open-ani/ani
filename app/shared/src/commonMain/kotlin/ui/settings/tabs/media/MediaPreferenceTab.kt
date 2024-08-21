@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.models.preference.VideoPlayerSelectionSettings
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.navigation.LocalNavigator
@@ -107,6 +108,11 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         settingsRepository.videoResolverSettings,
         VideoResolverSettings.Default.copy(_placeholder = -1),
     )
+
+    val videoPlayerSelectionSettings by settings(
+        settingsRepository.videoPlayerSelectionSettings,
+        VideoPlayerSelectionSettings.Default.copy(_placeholder = -1),
+    )
 }
 
 @Composable
@@ -117,6 +123,7 @@ fun MediaPreferenceTab(
     val navigator by rememberUpdatedState(LocalNavigator.current)
     SettingsTab(modifier) {
         VideoResolverGroup(vm)
+        VideoPlayerSelectionGroup(vm)
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
         CacheDirectoryGroup(vm)
