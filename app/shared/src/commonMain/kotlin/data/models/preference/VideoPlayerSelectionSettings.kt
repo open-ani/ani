@@ -7,7 +7,7 @@ import kotlinx.serialization.Transient
 @Serializable
 @Immutable
 data class VideoPlayerSelectionSettings(
-    val core: VideoPlayerCore = VideoPlayerCore.VLC_ANDROID,
+    val core: VideoPlayerCore = VideoPlayerCore.EXO_PLAYER,
 
     @Suppress("PropertyName")
     @Transient val _placeholder: Int = 0,
@@ -19,7 +19,7 @@ data class VideoPlayerSelectionSettings(
 
 @Serializable
 enum class VideoPlayerCore {
-    EXO,
+    EXO_PLAYER,
     VLC_ANDROID;
 
     override fun toString(): String {

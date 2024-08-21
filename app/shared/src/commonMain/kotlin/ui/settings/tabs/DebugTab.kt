@@ -5,12 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.preference.DebugSettings
+import me.him188.ani.app.data.models.preference.VideoPlayerSelectionSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.tabs.debug.VideoPlayerSelectionGroup
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -20,6 +22,11 @@ class DebugViewModel : AbstractSettingsViewModel(), KoinComponent {
     val debugSettings by settings(
         settingsRepository.debugSettings,
         placeholder = DebugSettings(_placeHolder = -1),
+    )
+
+    val videoPlayerSelectionSettings by settings(
+        settingsRepository.videoPlayerSelectionSettings,
+        VideoPlayerSelectionSettings.Default.copy(_placeholder = -1),
     )
 }
 
@@ -61,5 +68,6 @@ fun DebugTab(
                 description = { Text("显示所有剧集，包括SP、OP、ED等，目前仅部分在线源支持，请谨慎启用") },
             )
         }
+        VideoPlayerSelectionGroup(vm)
     }
 }
