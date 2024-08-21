@@ -236,7 +236,9 @@ class DefaultMediaSelector(
                 if (range.isSingleEpisode()) return@filter false
             }
 
-            if (!preference.showWithoutSubtitle && media.properties.subtitleLanguageIds.isEmpty()) {
+            if (!preference.showWithoutSubtitle &&
+                (media.properties.subtitleLanguageIds.isEmpty() && media.extraFiles.subtitles.isEmpty())
+            ) {
                 // 不显示无字幕的
                 return@filter false
             }
