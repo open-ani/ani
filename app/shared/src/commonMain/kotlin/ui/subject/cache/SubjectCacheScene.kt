@@ -17,31 +17,42 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.isKnownCompleted
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
+import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequest
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
+import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequesterImpl
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
+import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.utils.coroutines.flows.combine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -73,47 +84,51 @@ class SubjectCacheViewModelImpl(
     private val settingsRepository: SettingsRepository by inject()
     private val cacheManager: MediaCacheManager by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
+    private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
 
     private val subjectInfoFlow = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     override val subjectTitle by subjectInfoFlow.map { it.nameCnOrName }.produceState(null)
     override val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings> get() = settingsRepository.mediaSelectorSettings.flow
 
-    private val episodeCollectionsFlowNotCached = subjectManager.episodeCollectionsFlow(subjectId).retry()
+    private val episodeCollectionsFlow = subjectManager.episodeCollectionsFlow(subjectId).retry()
+        .shareInBackground()
+
+    private val episodesFlow = episodeCollectionsFlow.take(1).mapLatest { episodes ->
+        // 每个 episode 都为一个 flow, 然后合并
+        episodes.map { episodeCollection ->
+            val episode = episodeCollection.episodeInfo
+
+            val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
+
+            EpisodeCacheState(
+                episodeId = episode.id,
+                cacheRequesterLazy = {
+                    EpisodeCacheRequester(
+                        mediaSourceManager.mediaFetcher,
+                        MediaSelectorFactory.withKoin(),
+                        storagesLazy = cacheManager.enabledStorages,
+                    )
+                },
+                info = MutableStateFlow(
+                    EpisodeCacheInfo(
+                        sort = episode.sort,
+                        ep = episode.ep,
+                        title = episode.displayName,
+                        watchStatus = episodeCollection.collectionType,
+                        hasPublished = episode.isKnownCompleted,
+                    ),
+                ),
+                cacheStatusFlow = cacheStatusFlow,
+                parentCoroutineContext = backgroundScope.coroutineContext,
+            )
+        }
+    }.shareInBackground()
 
     /**
      * 单个条目的缓存管理页面的状态
      */
     override val cacheListState: EpisodeCacheListState = EpisodeCacheListStateImpl(
-        episodesLazy = episodeCollectionsFlowNotCached.take(1).mapLatest { episodes ->
-            // 每个 episode 都为一个 flow, 然后合并
-            episodes.map { episodeCollection ->
-                val episode = episodeCollection.episodeInfo
-
-                val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
-
-                EpisodeCacheState(
-                    episodeId = episode.id,
-                    cacheRequesterLazy = {
-                        EpisodeCacheRequester(
-                            mediaSourceManager.mediaFetcher,
-                            MediaSelectorFactory.withKoin(),
-                            storagesLazy = cacheManager.enabledStorages,
-                        )
-                    },
-                    info = MutableStateFlow(
-                        EpisodeCacheInfo(
-                            sort = episode.sort,
-                            ep = episode.ep,
-                            title = episode.displayName,
-                            watchStatus = episodeCollection.collectionType,
-                            hasPublished = episode.isKnownCompleted,
-                        ),
-                    ),
-                    cacheStatusFlow = cacheStatusFlow,
-                    parentCoroutineContext = backgroundScope.coroutineContext,
-                )
-            }
-        },
+        episodes = episodesFlow.produceState(emptyList()),
         onRequestCache = { episode, autoSelectByCached ->
             episode.cacheRequester.request(
                 EpisodeCacheRequest(
@@ -139,6 +154,50 @@ class SubjectCacheViewModelImpl(
         },
         backgroundScope.coroutineContext,
     )
+
+    init {
+        launchInBackground {
+            val firstWorkingEpisode = episodesFlow
+                .flatMapLatest { list ->
+                    list.map { state -> state.cacheRequester.stage.map { state to it } }
+                        .combine {
+                            it.firstNotNullOfOrNull { (state, stage) ->
+                                if (stage is CacheRequestStage.Working || stage is CacheRequestStage.Done) {
+                                    state
+                                } else null
+                            }
+                        }
+                }
+
+            firstWorkingEpisode
+                .mapLatest { episodeCacheState ->
+                    episodeCacheState ?: return@mapLatest
+
+                    // 请求缓存下一集时会 cancel 这个 scope
+                    coroutineScope {
+                        var job: Job? = null
+                        episodeCacheState.cacheRequester.stage.collect { stage ->
+                            when (stage) {
+                                is EpisodeCacheRequesterImpl.SelectMedia -> {
+                                    job?.cancel()
+                                    job = null
+                                    job = launch {
+                                        stage.mediaSelector.eventHandling.savePreferenceOnSelect {
+                                            episodePreferencesRepository.setMediaPreference(subjectId, it)
+                                        }
+                                    }
+                                }
+
+                                is EpisodeCacheRequesterImpl.SelectStorage -> {}
+                                is CacheRequestStage.Done -> {} // SelectMedia 之后可能会立即到 Done, 还没来得及保存, 所以不能 cancel job
+                                CacheRequestStage.Idle -> {
+                                }
+                            }
+                        }
+                    }
+                }.collect()
+        }
+    }
 }
 
 @Composable

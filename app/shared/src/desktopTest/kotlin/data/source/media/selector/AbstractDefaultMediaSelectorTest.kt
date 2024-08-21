@@ -5,6 +5,7 @@ import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.source.MediaSourceKind
@@ -107,6 +108,7 @@ sealed class AbstractDefaultMediaSelectorTest {
         kind: MediaSourceKind = MediaSourceKind.BitTorrent,
         episodeRange: EpisodeRange = EpisodeRange.single(EpisodeSort(1)),
         subtitleKind: SubtitleKind? = null,
+        extraFiles: MediaExtraFiles = MediaExtraFiles.Empty,
     ): DefaultMedia {
         val id = mediaId++
         return DefaultMedia(
@@ -126,6 +128,7 @@ sealed class AbstractDefaultMediaSelectorTest {
             ),
             location = location,
             kind = kind,
+            extraFiles = extraFiles,
         )
     }
 }

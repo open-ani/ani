@@ -8,6 +8,8 @@ import kotlinx.coroutines.yield
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
+import me.him188.ani.datasources.api.MediaExtraFiles
+import me.him188.ani.datasources.api.Subtitle
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
@@ -411,6 +413,34 @@ class DefaultMediaSelectorTest : AbstractDefaultMediaSelectorTest() {
         )
         selector.unselect()
         assertEquals(null, selector.trySelectDefault())
+    }
+
+    // 当 Media 有 extraFiles.subtitles 时不隐藏
+    @Test
+    fun `do not hide media with extraFiles`() = runTest {
+        val target: DefaultMedia
+        savedDefaultPreference.value = MediaPreference.Empty.copy(
+            alliance = "字幕组2",
+            showWithoutSubtitle = true,
+        )
+        addMedia(
+            media(alliance = "字幕组1", subtitleLanguages = listOf("CHS")),
+            media(
+                alliance = "字幕组2", resolution = "Special",
+                subtitleLanguages = listOf(),
+                extraFiles = MediaExtraFiles(listOf(Subtitle("dummy"))),
+            ).also { target = it },
+            media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
+            media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
+        )
+        assertEquals(target, selector.trySelectDefault())
+        savedDefaultPreference.value = MediaPreference.Empty.copy(
+            alliance = "字幕组2",
+            showWithoutSubtitle = false,
+        )
+        selector.unselect()
+        assertEquals(target, selector.trySelectDefault())
     }
 
     @Test

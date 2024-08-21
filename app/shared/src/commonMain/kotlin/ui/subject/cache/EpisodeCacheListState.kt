@@ -1,10 +1,10 @@
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.source.media.cache.engine.MediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
@@ -87,23 +87,23 @@ interface EpisodeCacheListState {
  */ // See 连续缓存季度全集剧集 #376
 @Stable
 class EpisodeCacheListStateImpl(
-    episodesLazy: Flow<List<EpisodeCacheState>>,
+    episodes: State<List<EpisodeCacheState>>,
     private val onRequestCache: suspend (episode: EpisodeCacheState, autoSelectByCached: Boolean) -> CacheRequestStage?,
     private val onRequestCacheComplete: suspend (episode: EpisodeCacheTargetInfo) -> Unit,
     private val onDeleteCache: suspend (episode: EpisodeCacheState) -> Unit,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), EpisodeCacheListState {
-    override val episodes: List<EpisodeCacheState> by episodesLazy.produceState(emptyList())
+    override val episodes: List<EpisodeCacheState> by episodes
 
     override val anyEpisodeActionRunning: Boolean by derivedStateOf {
-        episodes.any { it.actionTasker.isRunning }
+        this.episodes.any { it.actionTasker.isRunning }
     }
 
     override val currentEpisode: EpisodeCacheState? by derivedStateOf {
-        episodes.firstOrNull { it.currentSelectMediaTask != null || it.currentSelectStorageTask != null }
+        this.episodes.firstOrNull { it.currentSelectMediaTask != null || it.currentSelectStorageTask != null }
     }
     override val currentSelectMediaTask: SelectMediaTask? by derivedStateOf {
-        episodes.firstNotNullOfOrNull { it.currentSelectMediaTask }
+        this.episodes.firstNotNullOfOrNull { it.currentSelectMediaTask }
     }
 
     override fun selectMedia(media: Media) {
@@ -125,7 +125,7 @@ class EpisodeCacheListStateImpl(
     }
 
     override val currentSelectStorageTask: SelectStorageTask? by derivedStateOf {
-        episodes.firstNotNullOfOrNull { it.currentSelectStorageTask }
+        this.episodes.firstNotNullOfOrNull { it.currentSelectStorageTask }
     }
 
     override fun selectStorage(storage: MediaCacheStorage) {
