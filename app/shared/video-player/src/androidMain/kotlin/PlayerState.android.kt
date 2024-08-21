@@ -450,6 +450,7 @@ internal class LibVlcAndroidPlayerState @UiThread constructor(
     ) : Data(videoSource, videoData, releaseResource)
 
     private fun reloadAudioTracks() {
+        if (player.audioTrack < 0 || player.audioTracks == null) return
         audioTracks.candidates.value =
             player.audioTracks.asSequence()
                 .filterNot { it.id == -1 } // "Disable"
