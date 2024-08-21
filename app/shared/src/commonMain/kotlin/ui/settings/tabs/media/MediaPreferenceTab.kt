@@ -123,7 +123,7 @@ fun MediaPreferenceTab(
     val navigator by rememberUpdatedState(LocalNavigator.current)
     SettingsTab(modifier) {
         VideoResolverGroup(vm)
-        VideoPlayerSelectionGroup(vm)
+        // VideoPlayerSelectionGroup(vm)
         AutoCacheGroup(vm, navigator)
         TorrentEngineGroup(vm)
         CacheDirectoryGroup(vm)
