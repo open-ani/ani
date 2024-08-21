@@ -82,6 +82,7 @@ import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -162,13 +163,8 @@ interface EpisodeViewModel : HasBackgroundScope {
     val videoControllerState: VideoControllerState
     val videoScaffoldConfig: VideoScaffoldConfig
     
-    // DanmakuRegexFilterList
-    val danmakuRegexFilterList: List<DanmakuRegexFilter>
-
-    fun addDanmakuRegexFilter(filter: DanmakuRegexFilter)
-    fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter)
-    fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter)
-    fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter)
+    // DanmakuRegexFilterState
+    val danmakuRegexFilterState: DanmakuRegexFilterState
     
 
     /**
@@ -345,29 +341,33 @@ private class EpisodeViewModelImpl(
     override val videoScaffoldConfig: VideoScaffoldConfig by settingsRepository.videoScaffoldConfig
         .flow.produceState(VideoScaffoldConfig.Default)
 
-    override val danmakuRegexFilterList: List<DanmakuRegexFilter> by danmakuRegexFilterRepository.flow.produceState(
-        initialValue = emptyList(),
-    )
-
-    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+    fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
         launchInBackground { danmakuRegexFilterRepository.add(filter) }
     }
 
-    override fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter) {
+    fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter) {
         launchInBackground { danmakuRegexFilterRepository.update(id, new) }
     }
 
-    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+    fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
         launchInBackground {
             danmakuRegexFilterRepository.remove(filter)
         }
     }
 
-    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+    fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
         launchInBackground {
             danmakuRegexFilterRepository.update(filter.id, filter.copy(enabled = !filter.enabled))
         }
     }
+    
+    override val danmakuRegexFilterState = DanmakuRegexFilterState(
+        danmakuRegexFilterList = danmakuRegexFilterRepository.flow.produceState(emptyList()),
+        addDanmakuRegexFilter = ::addDanmakuRegexFilter,
+        editDanmakuRegexFilter = ::editDanmakuRegexFilter,
+        removeDanmakuRegexFilter = ::removeDanmakuRegexFilter,
+        switchDanmakuRegexFilter = ::switchDanmakuRegexFilter,
+    )
 
     override val subjectPresentation: SubjectPresentation by subjectInfo
         .map {

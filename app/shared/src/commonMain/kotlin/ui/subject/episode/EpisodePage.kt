@@ -636,10 +636,7 @@ private fun EpisodeVideo(
         mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
         episodeSelectorState = vm.episodeSelectorState,
         progressSliderState = progressSliderState,
-        danmakuRegexFilterList = vm.danmakuRegexFilterList,
-        onAddDanmakuRegexFilter = {vm.addDanmakuRegexFilter(it)},
-        onRemoveDanmakuRegexFilter = {vm.removeDanmakuRegexFilter(it)},
-        onSwitchDanmakuRegexFilter =  {vm.switchDanmakuRegexFilter(it)},
+        danmakuRegexFilterState = vm.danmakuRegexFilterState,
         leftBottomTips = {
             AnimatedVisibility(
                 visible = vm.playerSkipOpEdState.showSkipTips,

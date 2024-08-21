@@ -23,17 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.isInDebugMode
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
-import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
@@ -105,17 +101,9 @@ fun EpisodeVideoSettings(
             { vm.isLoading }
         },
         modifier = modifier,
-        danmakuRegexFilterGroup = {
-            SwitchItem(
-                vm.danmakuFilterConfig.danmakuRegexFilterEnabled,
-                onCheckedChange = {
-                    vm.switchDanmakuRegexFilterCompletely()
-                },
-                title = { Text("弹幕正则过滤") },
-                modifier = Modifier.placeholder(vm.isLoading),
-            )
-        },
         onOverlayContentShow = { onOverlayContentShow() },
+        danmakuRegexFilterEnabled = vm.danmakuFilterConfig.danmakuRegexFilterEnabled,
+        switchDanmakuRegexFilterCompletely = vm::switchDanmakuRegexFilterCompletely,
     )
 }
 
@@ -128,8 +116,9 @@ fun EpisodeVideoSettings(
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
     isLoading: () -> Boolean = LOADING_FALSE,
     modifier: Modifier = Modifier,
-    danmakuRegexFilterGroup: @Composable SettingsScope.() -> Unit,
     onOverlayContentShow: () -> Unit,
+    danmakuRegexFilterEnabled: Boolean,
+    switchDanmakuRegexFilterCompletely: () -> Unit,
 ) {
     val isLoadingState by remember(isLoading) {
         derivedStateOf(isLoading)
@@ -368,6 +357,15 @@ fun EpisodeVideoSettings(
                 },
                 modifier = Modifier.placeholder(isLoadingState),
             )
+
+            SwitchItem(
+                danmakuRegexFilterEnabled,
+                onCheckedChange = {
+                    switchDanmakuRegexFilterCompletely()
+                },
+                title = { Text("正则弹幕过滤器开启") },
+                modifier = Modifier.placeholder(isLoadingState),
+            )
             
             TextItem (
                 onClick = {onOverlayContentShow()},
@@ -378,7 +376,6 @@ fun EpisodeVideoSettings(
             
             val debugViewModel = rememberDebugSettingsViewModel()
             if (debugViewModel.isAppInDebugMode) {
-                danmakuRegexFilterGroup()
 
                 SwitchItem(
                     danmakuConfig.isDebug,

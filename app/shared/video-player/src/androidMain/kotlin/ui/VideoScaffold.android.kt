@@ -18,6 +18,7 @@ import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
@@ -125,10 +126,13 @@ private fun PreviewVideoScaffoldImpl(
         leftBottomTips = {
             PlayerControllerDefaults.LeftBottomTips(onClick = {})
         },
-        danmakuRegexFilterList = emptyList(),
-        onAddDanmakuRegexFilter = {},
-        onRemoveDanmakuRegexFilter = {},
-        onSwitchDanmakuRegexFilter = {},
+        danmakuRegexFilterState = DanmakuRegexFilterState(
+            mutableStateOf(emptyList()),
+            { },
+            { _, _ -> },
+            { },
+            { },
+        ),
     )
 
 //    VideoScaffold(

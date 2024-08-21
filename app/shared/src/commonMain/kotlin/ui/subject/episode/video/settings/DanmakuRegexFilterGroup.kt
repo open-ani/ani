@@ -53,11 +53,7 @@ internal fun isValidRegex(pattern: String): Boolean {
 
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
-    danmakuRegexFilterList: List<DanmakuRegexFilter>,
-    onAdd: (filter: DanmakuRegexFilter) -> Unit,
-    onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
-    onRemove: (filter: DanmakuRegexFilter) -> Unit,
-    onSwitch: (fiter: DanmakuRegexFilter) -> Unit,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
     isLoadingState: Boolean
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
@@ -73,7 +69,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                     if (!isValidRegex(regex)) {
                         errorMessage = "正则输入法不正确"
                     } else {
-                        onAdd(
+                        danmakuRegexFilterState.addDanmakuRegexFilter(
                             DanmakuRegexFilter(
                                 id = Uuid.randomString(),
                                 name = name,
@@ -88,8 +84,8 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             description = {
                 Text("请正确添加正则表达式，例如：第一个字符为数字：'^[1-9]{1}\$'.\n匹配该正则表达式的弹幕将不会显示")
             },
-            
-        )
+
+            )
     }
 
     if (errorMessage.isNotBlank()) {
@@ -104,28 +100,30 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             text = { Text(errorMessage) },
         )
     }
-    
+
     Group(
-        title = { Text("正则过滤器管理") },
+        title = { Text("正则弹幕过滤器管理", color = MaterialTheme.colorScheme.onSurface) },
         actions = {
             Row {
-                IconButton({
-                    showAdd = true
-                }) {
+                IconButton(
+                    {
+                        showAdd = true
+                    },
+                ) {
                     Icon(Icons.Rounded.Add, contentDescription = "添加正则")
                 }
             }
-        }
+        },
     ) {
-        FlowRow (
+        FlowRow(
             Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            danmakuRegexFilterList.forEachIndexed { index, item ->
+            danmakuRegexFilterState.danmakuRegexFilterList.forEachIndexed { index, item ->
                 RegexFilterItem(
                     item,
-                    onDelete = { onRemove(item) },
-                    onDisable = { onSwitch(item) },
+                    onDelete = { danmakuRegexFilterState.removeDanmakuRegexFilter(item) },
+                    onDisable = { danmakuRegexFilterState.switchDanmakuRegexFilter(item) },
                 )
             }
         }
@@ -172,7 +170,7 @@ internal fun RegexFilterItem(
                 TextButton({ onDelete(); showConfirmDelete = false }) {
                     Text(
                         "删除",
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             },
@@ -202,7 +200,7 @@ fun AddRegexFilterDialog(
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Start,
                 ) {
                     ProvideTextStyle(MaterialTheme.typography.titleMedium) {
                         title()
@@ -211,7 +209,7 @@ fun AddRegexFilterDialog(
 
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Start,
                 ) {
                     OutlinedTextField(
                         value = regexTextFieldValue,
@@ -224,11 +222,11 @@ fun AddRegexFilterDialog(
                 description?.let {
                     ProvideTextStyleContentColor(
                         MaterialTheme.typography.labelMedium,
-                        LocalContentColor.current.copy(0.8f)
+                        LocalContentColor.current.copy(0.8f),
                     ) {
                         Row(
                             Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                            horizontalArrangement = Arrangement.Start
+                            horizontalArrangement = Arrangement.Start,
                         ) {
                             it()
                         }
@@ -238,14 +236,19 @@ fun AddRegexFilterDialog(
                 Row(
                     Modifier.fillMaxWidth().align(Alignment.End),
                     horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(onClick = onDismissRequest) {
                         Text("取消")
                     }
 
                     Button(
-                        onClick = { onConfirm(nameTextFieldValue, regexTextFieldValue) }, // Pass the text field value to onConfirm
+                        onClick = {
+                            onConfirm(
+                                nameTextFieldValue,
+                                regexTextFieldValue,
+                            )
+                        }, // Pass the text field value to onConfirm
                         enabled = confirmEnabled,
                     ) {
                         Text("确认")

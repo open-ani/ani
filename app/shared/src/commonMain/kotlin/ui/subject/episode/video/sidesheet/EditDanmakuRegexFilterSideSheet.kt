@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_SELECTOR_SHEET
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.RegexFilterItem
 import me.him188.ani.utils.platform.Uuid
@@ -40,10 +41,7 @@ import me.him188.ani.utils.platform.Uuid
 
 @Composable
 fun EditDanmakuRegexFilterSideSheet(
-    danmakuRegexFilterList: List<DanmakuRegexFilter>,
-    onRemove: (DanmakuRegexFilter) -> Unit,
-    onSwitch: (DanmakuRegexFilter) -> Unit,
-    onAdd: (filter: DanmakuRegexFilter) -> Unit,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,7 +62,7 @@ fun EditDanmakuRegexFilterSideSheet(
 
         fun handleAdd() {
             if (regexTextFieldValue.isNotBlank()) {
-                onAdd(
+                danmakuRegexFilterState.addDanmakuRegexFilter(
                     DanmakuRegexFilter(
                         id = Uuid.randomString(),
                         name = "",
@@ -125,11 +123,11 @@ fun EditDanmakuRegexFilterSideSheet(
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        danmakuRegexFilterList.forEachIndexed { index, item ->
+                        danmakuRegexFilterState.danmakuRegexFilterList.forEachIndexed { index, item ->
                             RegexFilterItem(
                                 item,
-                                onDelete = { onRemove(item) },
-                                onDisable = { onSwitch(item) },
+                                onDelete = { danmakuRegexFilterState.removeDanmakuRegexFilter(item) },
+                                onDisable = { danmakuRegexFilterState.switchDanmakuRegexFilter(item) },
                             )
                         }
                     }

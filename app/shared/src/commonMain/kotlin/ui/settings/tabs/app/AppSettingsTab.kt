@@ -13,6 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,11 +21,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -37,6 +41,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.isInDebugMode
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -48,6 +53,8 @@ import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterGroup
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.NewVersion
@@ -71,6 +78,7 @@ sealed class CheckVersionResult {
 @Stable
 class AppSettingsViewModel : AbstractSettingsViewModel() {
     private val settingsRepository: SettingsRepository by inject()
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
 
     val uiSettings by settings(
         settingsRepository.uiSettings,
@@ -83,6 +91,50 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
     val videoScaffoldConfig by settings(
         settingsRepository.videoScaffoldConfig,
         VideoScaffoldConfig(_placeholder = -1),
+    )
+
+    fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        launchInBackground { danmakuRegexFilterRepository.add(filter) }
+    }
+
+    fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter) {
+        launchInBackground { danmakuRegexFilterRepository.update(id, new) }
+    }
+
+    fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        launchInBackground {
+            danmakuRegexFilterRepository.remove(filter)
+        }
+    }
+
+    fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        launchInBackground {
+            danmakuRegexFilterRepository.update(filter.id, filter.copy(enabled = !filter.enabled))
+        }
+    }
+    
+    
+    val danmakuRegexFilter: State<DanmakuFilterConfig> = settingsRepository.danmakuFilterConfig.flow.produceState(
+        DanmakuFilterConfig.Default,
+    )
+    
+    val danmakuRegexEnabled: Boolean
+        get() = danmakuRegexFilter.value.danmakuRegexFilterEnabled
+    
+    fun switchAllDanmakuRegexFilter() {
+        launchInBackground {
+            settingsRepository.danmakuFilterConfig.update {
+                copy(danmakuRegexFilterEnabled = !danmakuRegexFilterEnabled)
+            }
+        }
+    }
+
+    val danmakuRegexFilterState = DanmakuRegexFilterState(
+        danmakuRegexFilterList = danmakuRegexFilterRepository.flow.produceState(emptyList()),
+        addDanmakuRegexFilter = ::addDanmakuRegexFilter,
+        editDanmakuRegexFilter = ::editDanmakuRegexFilter,
+        removeDanmakuRegexFilter = ::removeDanmakuRegexFilter,
+        switchDanmakuRegexFilter = ::switchDanmakuRegexFilter,
     )
 
     /**
@@ -393,6 +445,20 @@ private fun SettingsScope.PlayerGroup(
             Modifier.placeholder(vm.uiSettings.loading),
             title = { Text("竖屏模式下显示全屏按钮") },
             description = { Text("总是显示播放器右下角的切换全屏按钮，方便切换") },
+        )
+        HorizontalDividerItem()
+        SwitchItem(
+            vm.danmakuRegexEnabled,
+            onCheckedChange = {
+                vm.switchAllDanmakuRegexFilter()
+            },
+            title = { Text("正则弹幕过滤器开启") },
+            modifier = Modifier.placeholder(vm.uiSettings.loading),
+        )
+        HorizontalDividerItem()
+        DanmakuRegexFilterGroup(
+            danmakuRegexFilterState = vm.danmakuRegexFilterState,
+            isLoadingState = vm.uiSettings.loading,
         )
         HorizontalDividerItem()
         SwitchItem(

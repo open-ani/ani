@@ -39,7 +39,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.platform.currentPlatform
@@ -55,6 +54,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
@@ -130,10 +130,7 @@ internal fun EpisodeVideoImpl(
     leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    danmakuRegexFilterList: List<DanmakuRegexFilter>,
-    onAddDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
-    onSwitchDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
-    onRemoveDanmakuRegexFilter: (DanmakuRegexFilter) -> Unit,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
     danmakuFrozen: Boolean = false,
     gestureFamily: GestureFamily = currentPlatform.mouseFamily,
 ) {
@@ -406,10 +403,7 @@ internal fun EpisodeVideoImpl(
             if (showEditDanmakuRegexFilterSideSheet) {
                 showSettings = false
                 EditDanmakuRegexFilterSideSheet(
-                    danmakuRegexFilterList = danmakuRegexFilterList,
-                    onRemove = onRemoveDanmakuRegexFilter,
-                    onSwitch = onSwitchDanmakuRegexFilter,
-                    onAdd = onAddDanmakuRegexFilter,
+                    danmakuRegexFilterState = danmakuRegexFilterState,
                     onDismissRequest = {
                         showEditDanmakuRegexFilterSideSheet = false
                         showSettings = true
