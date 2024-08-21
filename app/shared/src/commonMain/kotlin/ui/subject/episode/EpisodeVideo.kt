@@ -326,9 +326,7 @@ internal fun EpisodeVideoImpl(
                             onClick = { isEpisodeSelectorVisible = true },
                         )
 
-                        if (currentPlatform.isDesktop()) {
-                            PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
-                        }
+                        PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
 
                         PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
 
