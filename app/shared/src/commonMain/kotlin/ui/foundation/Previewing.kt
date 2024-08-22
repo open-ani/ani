@@ -20,7 +20,6 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -80,7 +79,7 @@ fun ProvideCompositionLocalsForPreview(
         DummyPlayerState()
     },
     module: Module.() -> Unit = {},
-    colorScheme: ColorScheme = MaterialTheme.colorScheme,
+    colorScheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
     PlatformPreviewCompositionLocalProvider {
