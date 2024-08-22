@@ -11,6 +11,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.ui.cache.CacheManagementPage
+import me.him188.ani.app.ui.cache.CacheManagementPageViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
 import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
@@ -96,7 +97,11 @@ fun AniAppContentPortrait(
                 )
             }
             scene("/caches") {
-                CacheManagementPage(Modifier.desktopTitleBarPadding().fillMaxSize(), showBack = true)
+                CacheManagementPage(
+                    rememberViewModel { CacheManagementPageViewModel(aniNavigator) },
+                    Modifier.desktopTitleBarPadding().fillMaxSize(),
+                    showBack = true,
+                )
             }
             scene("/subjects/{subjectId}/caches") { backStackEntry ->
                 val subjectId = backStackEntry.path<Int>("subjectId") ?: run {

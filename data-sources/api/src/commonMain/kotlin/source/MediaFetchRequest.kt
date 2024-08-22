@@ -16,12 +16,12 @@ class MediaFetchRequest(
      * 条目服务 (Bangumi) 提供的条目 ID. 若数据源支持, 可以用此信息做精确匹配.
      * 可能为 `null`, 表示未知.
      */
-    val subjectId: String? = null,
+    val subjectId: String,
     /**
      * 条目服务 (Bangumi) 提供的剧集 ID. 若数据源支持, 可以用此信息做精确匹配.
      * 可能为 `null`, 表示未知.
      */
-    val episodeId: String? = null,
+    val episodeId: String,
     /**
      * 条目的主简体中文名称.
      * 建议使用 [subjectNames] 用所有已知名称去匹配.

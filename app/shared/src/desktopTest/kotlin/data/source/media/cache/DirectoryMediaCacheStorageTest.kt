@@ -372,6 +372,8 @@ class DirectoryMediaCacheStorageTest {
             cache.getCachedMedia().unwrapCached(),
             storage.cacheMediaSource.fetch(
                 MediaFetchRequest(
+                    subjectId = "1",
+                    episodeId = "1",
                     subjectNames = metadata.subjectNames,
                     episodeSort = metadata.episodeSort,
                     episodeName = metadata.episodeName,

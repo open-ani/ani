@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.data.source.media.cache.MediaCacheState
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.emptyMediaStats
 import me.him188.ani.datasources.api.CachedMedia
@@ -51,6 +52,7 @@ class DummyMediaCache(
     private val cachedMedia by lazy {
         CachedMedia(origin, mediaSourceId, origin.download, location)
     }
+    override val state: MutableStateFlow<MediaCacheState> = MutableStateFlow(MediaCacheState.IN_PROGRESS)
 
     override suspend fun getCachedMedia(): CachedMedia = cachedMedia
 
@@ -59,7 +61,7 @@ class DummyMediaCache(
     override fun isValid(): Boolean = isValid
 
     override val downloadSpeed: Flow<FileSize> = flowOf(100.kiloBytes)
-    override val uploadSpeed: Flow<FileSize> = flowOf(0.kiloBytes)
+    override val sessionUploadSpeed: Flow<FileSize> = flowOf(0.kiloBytes)
     override val progress: Flow<Float> = flowOf(0.3f)
     override val finished: Flow<Boolean> = flowOf(false)
     override val totalSize: Flow<FileSize> = flowOf(100.megaBytes)

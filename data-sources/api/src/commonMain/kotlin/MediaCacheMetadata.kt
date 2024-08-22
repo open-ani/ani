@@ -23,11 +23,11 @@ constructor(
     /**
      * @see MediaFetchRequest.subjectId
      */
-    val subjectId: String? = null,
+    val subjectId: String,
     /**
      * @see MediaFetchRequest.episodeId
      */
-    val episodeId: String? = null,
+    val episodeId: String,
     /**
      * @see MediaFetchRequest.subjectNames
      */
@@ -59,11 +59,11 @@ constructor(
         /**
          * @see MediaFetchRequest.subjectId
          */
-        subjectId: String? = null,
+        subjectId: String,
         /**
          * @see MediaFetchRequest.episodeId
          */
-        episodeId: String? = null,
+        episodeId: String,
         subjectNames: Set<String>,
         episodeSort: EpisodeSort,
         episodeEp: EpisodeSort?,
@@ -90,6 +90,11 @@ constructor(
     }
 }
 
+val MediaCacheMetadata.subjectIdInt: Int
+    get() = subjectId.toIntOrNull() ?: error("subjectId is not int: $subjectId")
+
+val MediaCacheMetadata.episodeIdInt: Int
+    get() = episodeId.toIntOrNull() ?: error("episodeId is not int: $episodeId")
 
 fun MediaCacheMetadata(
     request: MediaFetchRequest,
