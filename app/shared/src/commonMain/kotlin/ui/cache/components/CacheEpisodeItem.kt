@@ -320,13 +320,19 @@ private fun Dropdown(
                 DropdownMenuItem(
                     text = { Text("继续下载") },
                     leadingIcon = { Icon(Icons.Rounded.Restore, null) },
-                    onClick = { state.resume() },
+                    onClick = {
+                        state.resume()
+                        onDismissRequest()
+                    },
                 )
             } else {
                 DropdownMenuItem(
                     text = { Text("暂停下载") },
                     leadingIcon = { Icon(Icons.Rounded.Pause, null) },
-                    onClick = { state.pause() },
+                    onClick = {
+                        state.pause()
+                        onDismissRequest()
+                    },
                 )
             }
         }
@@ -339,13 +345,19 @@ private fun Dropdown(
                     Icon(Icons.Rounded.PlayArrow, null, Modifier.requiredSize(28.dp))
                 }
             },
-            onClick = { state.play() },
+            onClick = {
+                state.play()
+                onDismissRequest()
+            },
         )
         ProvideContentColor(MaterialTheme.colorScheme.error) {
             DropdownMenuItem(
                 text = { Text("删除", color = MaterialTheme.colorScheme.error) },
                 leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                onClick = { state.delete() },
+                onClick = {
+                    state.delete()
+                    onDismissRequest()
+                },
             )
         }
     }
