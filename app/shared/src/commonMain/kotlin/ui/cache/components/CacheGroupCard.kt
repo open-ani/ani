@@ -59,7 +59,7 @@ class CacheGroupState(
      */
     val media: Media,
     commonInfo: State<CacheGroupCommonInfo?>, // null means loading
-    val episodes: List<CacheEpisodeState>,
+    episodes: List<CacheEpisodeState>,
     /**
      * 下载速度, 每秒. 对于不支持下载的缓存, 该值为 [FileSize.Zero].
      *
@@ -76,6 +76,8 @@ class CacheGroupState(
      */
     uploadSpeed: State<FileSize>,
 ) {
+    val episodes = episodes.sortedBy { it.sort }
+
     val downloadSpeedText by derivedStateOf {
         computeSpeedText(speed = downloadSpeed.value, size = downloadedSize.value)
     }
@@ -102,7 +104,7 @@ class CacheGroupState(
                 media.originalTitle
             }
         } else {
-            EpisodeRange.range(episodes.map { it.sort }).toString()
+            EpisodeRange.range(this.episodes.map { it.sort }).toString()
         }
     }
 
