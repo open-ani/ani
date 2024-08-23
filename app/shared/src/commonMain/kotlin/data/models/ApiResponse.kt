@@ -32,7 +32,7 @@ value class ApiResponse<out T> private constructor(
 
     fun failureOrNull(): ApiFailure? = value as? ApiFailure
 
-    fun <T> getOrThrow(): T {
+    fun getOrThrow(): T {
         val value = value
         @Suppress("UNCHECKED_CAST")
         return if (isSuccess) value as T else {
