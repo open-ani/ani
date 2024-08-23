@@ -30,6 +30,10 @@ constructor(
      */
     private val _episodeId: String? = null,
     /**
+     * 在创建缓存时的条目名称, 仅应当在无法获取最新的名称时, 才使用这个
+     */
+    val subjectNameCN: String? = null,
+    /**
      * @see MediaFetchRequest.subjectNames
      */
     val subjectNames: Set<String>,
@@ -68,13 +72,14 @@ constructor(
          * @see MediaFetchRequest.episodeId
          */
         episodeId: String,
+        subjectNameCN: String?,
         subjectNames: Set<String>,
         episodeSort: EpisodeSort,
         episodeEp: EpisodeSort?,
         episodeName: String,
         extra: Map<String, String> = emptyMap(),
     ) : this(
-        subjectId, episodeId, subjectNames, episodeSort, episodeEp, episodeName, extra,
+        subjectId, episodeId, subjectNameCN, subjectNames, episodeSort, episodeEp, episodeName, extra,
         _primaryConstructorMarker = 0,
     )
 
@@ -85,6 +90,7 @@ constructor(
         return MediaCacheMetadata(
             subjectId = subjectId,
             episodeId = episodeId,
+            subjectNameCN = subjectNameCN,
             subjectNames = subjectNames,
             episodeSort = episodeSort,
             episodeEp = episodeEp,
@@ -107,6 +113,7 @@ fun MediaCacheMetadata(
     return MediaCacheMetadata(
         subjectId = request.subjectId,
         episodeId = request.episodeId,
+        subjectNameCN = request.subjectNameCN,
         subjectNames = request.subjectNames,
         episodeSort = request.episodeSort,
         episodeEp = request.episodeEp,

@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
@@ -35,7 +36,6 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
-import me.him188.ani.app.data.repository.EpisodeScreenshotRepository
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.MediaCacheState
@@ -73,7 +73,6 @@ class CacheManagementPageViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val cacheManager: MediaCacheManager by inject()
     private val subjectManager: SubjectManager by inject()
-    private val episodeScreenshotRepository: EpisodeScreenshotRepository by inject()
 
     val overallStats: MediaStats by cacheManager.enabledStorages.map { list ->
         list.map { it.stats }.sum()
@@ -99,10 +98,19 @@ class CacheManagementPageViewModel(
             val firstCache = episodes.first()
             CacheGroupState(
                 media = firstCache.origin.unwrapCached(),
-                commonInfo = subjectManager.subjectInfoFlow(firstCache.metadata.subjectIdInt)
+                commonInfo = subjectManager.subjectInfoFlow(firstCache.metadata.subjectIdInt) // 既会查缓存, 也会查网络, 基本上不会有查不到的情况
                     .map {
                         CacheGroupCommonInfo(it.displayName)
-                    }.produceState(null, this),
+                    }
+                    .catch {
+                        emit(
+                            CacheGroupCommonInfo(
+                                firstCache.metadata.subjectNameCN ?: firstCache.metadata.subjectNames.firstOrNull()
+                                ?: firstCache.origin.originalTitle,
+                            ),
+                        )
+                    }
+                    .produceState(null, this),
                 episodes = episodes.map { mediaCache ->
                     createCacheEpisode(mediaCache)
                 },
@@ -151,6 +159,9 @@ class CacheManagementPageViewModel(
         )
 }
 
+/**
+ * 全局缓存管理页面状态
+ */
 @Stable
 class CacheManagementState(
     groups: State<List<CacheGroupState>>,
@@ -158,6 +169,9 @@ class CacheManagementState(
     val groups by groups
 }
 
+/**
+ * 全局缓存管理页面
+ */
 @Composable
 fun CacheManagementPage(
     vm: CacheManagementPageViewModel,

@@ -1,6 +1,8 @@
 package me.him188.ani.app.ui.cache.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -46,6 +48,10 @@ class CacheGroupCommonInfo(
     val subjectDisplayName: String,
 )
 
+/**
+ * 表示一个合并的缓存组.
+ * @see CacheGroupCommonInfo
+ */
 @Stable
 class CacheGroupState(
     /**
@@ -81,8 +87,11 @@ class CacheGroupState(
     private val commonInfo by commonInfo
     var expanded: Boolean by mutableStateOf(true)
 
+    /**
+     * null means loading
+     */
     val cardTitle by derivedStateOf {
-        this.commonInfo?.subjectDisplayName ?: media.originalTitle
+        this.commonInfo?.subjectDisplayName
     }
 
     val cardSubtitle by derivedStateOf {
@@ -133,7 +142,9 @@ fun CacheGroupCard(
             Column(Modifier.padding(vertical = 20.dp)) {
                 Row(Modifier.padding(horizontal = horizontalPadding)) {
                     ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
-                        Text(state.cardTitle)
+                        Crossfade(state.cardTitle, Modifier.animateContentSize()) {
+                            Text(it ?: "")
+                        }
                     }
                 }
 
