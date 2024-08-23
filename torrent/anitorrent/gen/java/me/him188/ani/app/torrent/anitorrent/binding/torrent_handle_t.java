@@ -114,6 +114,10 @@ public class torrent_handle_t {
     anitorrentJNI.torrent_handle_t_set_file_priority(swigCPtr, this, index, priority);
   }
 
+  public String make_magnet_uri() {
+    return anitorrentJNI.torrent_handle_t_make_magnet_uri(swigCPtr, this);
+  }
+
   public torrent_handle_t() {
     this(anitorrentJNI.new_torrent_handle_t(), true);
   }

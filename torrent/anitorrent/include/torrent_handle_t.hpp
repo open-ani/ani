@@ -47,6 +47,8 @@ class torrent_handle_t final {
 
     void set_file_priority(int index, uint8_t priority) const;
 
+    // Return empty string if handle is not valid
+    std::string make_magnet_uri();
 
   private:
     friend class session_t;

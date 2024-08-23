@@ -161,6 +161,8 @@ open class TestTorrentHandle(
 
     override fun addTracker(tracker: String, tier: Short, failLimit: Short) {
     }
+
+    override fun getMagnetUri(): String? = null
 }
 
 @TestOnly

@@ -37,6 +37,8 @@ interface TorrentHandle {
     fun clearPieceDeadlines()
 
     fun addTracker(tracker: String, tier: Short = 0, failLimit: Short = 0)
+
+    fun getMagnetUri(): String?
 }
 
 interface TorrentAddInfo {

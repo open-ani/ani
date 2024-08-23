@@ -68,6 +68,7 @@ public class anitorrentJNI {
   public final static native void torrent_handle_t_resume(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_ignore_all_files(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_set_file_priority(long jarg1, torrent_handle_t jarg1_, int jarg2, short jarg3);
+  public final static native String torrent_handle_t_make_magnet_uri(long jarg1, torrent_handle_t jarg1_);
   public final static native long new_torrent_handle_t();
   public final static native void delete_torrent_handle_t(long jarg1);
   public final static native void torrent_stats_t_download_payload_rate_set(long jarg1, torrent_stats_t jarg1_, int jarg2);

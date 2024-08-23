@@ -2687,6 +2687,21 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT jstring JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1handle_1t_1make_1magnet_1uri(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  anilt::torrent_handle_t *arg1 = (anilt::torrent_handle_t *) 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_handle_t **)&jarg1; 
+  result = (arg1)->make_magnet_uri();
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
 SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1torrent_1handle_1t(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   anilt::torrent_handle_t *result = 0 ;
