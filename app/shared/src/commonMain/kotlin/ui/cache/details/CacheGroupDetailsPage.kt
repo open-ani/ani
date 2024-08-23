@@ -96,7 +96,7 @@ fun MediaCacheDetailsPage(
                     .padding(paddingValues)
                     .widthIn(max = BottomSheetDefaults.SheetMaxWidth),
             ) {
-                Surface {
+                Surface(Modifier.fillMaxHeight()) {
                     AnimatedVisibility(
                         visible = media != null,
                         enter = fadeIn(tween(500)) + slideInVertically(
