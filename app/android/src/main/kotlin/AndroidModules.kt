@@ -26,10 +26,15 @@ import me.him188.ani.app.tools.update.AndroidUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.deleteRecursively
+import me.him188.ani.utils.io.exists
 import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.isDirectory
+import me.him188.ani.utils.io.resolve
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import java.io.File
+import kotlin.concurrent.thread
 
 fun getAndroidModules(
     defaultTorrentCacheDir: File,
@@ -113,6 +118,12 @@ fun getAndroidModules(
 
             // 外部私有目录可用
             dir
+        }
+        
+        val oldCacheDir = Path(cacheDir).resolve("api").inSystem
+        if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
+            Toast.makeText(context, "旧 BT 引擎的缓存已不被支持，请重新缓存", Toast.LENGTH_LONG).show()
+            thread(name = "DeleteOldCaches") { oldCacheDir.deleteRecursively() }
         }
 
         DefaultTorrentManager.create(
