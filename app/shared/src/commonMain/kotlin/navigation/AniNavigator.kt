@@ -91,6 +91,10 @@ interface AniNavigator {
     fun navigateCaches() {
         navigator.navigate("/caches")
     }
+
+    fun navigateCacheDetails(cacheId: String) {
+        navigator.navigate("/caches/$cacheId")
+    }
 }
 
 fun AniNavigator(): AniNavigator = AniNavigatorImpl()

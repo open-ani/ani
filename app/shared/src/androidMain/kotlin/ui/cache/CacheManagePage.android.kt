@@ -72,6 +72,7 @@ internal fun createTestCacheEpisode(
     return CacheEpisodeState(
         subjectId = subjectId,
         episodeId = episodeId,
+        cacheId = "1",
         sort = EpisodeSort(sort),
         displayName = displayName,
         screenShots = stateOf(emptyList()),
@@ -91,7 +92,14 @@ internal fun createTestCacheEpisode(
 internal val TestCacheGroupSates = listOf(
     CacheGroupState(
         media = TestMediaList[0],
-        commonInfo = stateOf(CacheGroupCommonInfo("孤独摇滚")),
+        commonInfo = stateOf(
+            CacheGroupCommonInfo(
+                subjectId = 1,
+                "孤独摇滚",
+                mediaSourceId = "mikan-mikanime-tv",
+                allianceName = "某某字幕组",
+            ),
+        ),
         episodes = TestCacheEpisodes,
         downloadSpeed = stateOf(233.megaBytes),
         downloadedSize = stateOf(233.megaBytes),

@@ -61,6 +61,7 @@ class CacheEpisodeStateTest {
         return CacheEpisodeState(
             subjectId = subjectId,
             episodeId = episodeId,
+            cacheId = "1",
             sort = EpisodeSort(sort),
             displayName = displayName,
             screenShots = stateOf(emptyList()),

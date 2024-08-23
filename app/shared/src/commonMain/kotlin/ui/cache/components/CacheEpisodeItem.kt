@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.cache.components
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.foundation.interaction.clickableAndMouseRightClick
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.datasources.api.EpisodeSort
@@ -55,6 +55,7 @@ import me.him188.ani.utils.platform.format1f
 class CacheEpisodeState(
     val subjectId: Int,
     val episodeId: Int,
+    val cacheId: String,
     val sort: EpisodeSort,
     val displayName: String,
     screenShots: State<List<String>>, // url
@@ -92,10 +93,10 @@ class CacheEpisodeState(
 
     val progressText by derivedStateOf {
         val value = progress.value
-        if (value == null) {
+        if (value == null || this.isFinished) {
             null
         } else {
-            "${String.format1f(value)}%"
+            "${String.format1f(value * 100)}%"
         }
     }
 
@@ -183,10 +184,9 @@ fun CacheEpisodeItem(
         var showDropdown by remember { mutableStateOf(false) }
         ListItem(
             headlineContent = {
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         "${state.sort}  ",
-                        Modifier.align(Alignment.CenterVertically),
                         softWrap = false,
                     )
 
@@ -196,16 +196,16 @@ fun CacheEpisodeItem(
                     )
                 }
             },
-            modifier.clickable { showDropdown = true },
-            overlineContent = if (state.screenShots.isEmpty()) null else {
+            modifier.clickableAndMouseRightClick { showDropdown = true },
+            leadingContent = if (state.screenShots.isEmpty()) null else {
                 {
                     AsyncImage(state.screenShots.first(), "封面")
                 }
             },
             supportingContent = {
                 Column(
-                    Modifier.padding(top = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    Modifier.padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge) {
                         FlowRow(
@@ -264,13 +264,17 @@ fun CacheEpisodeItem(
             },
             trailingContent = {
                 if (state.isActionInProgress) {
-                    IconButton({ }) {
+                    IconButton(
+                        onClick = {
+                            // no-op
+                        },
+                    ) {
                         CircularProgressIndicator(Modifier.size(24.dp))
                     }
                 } else {
                     when {
                         state.isFinished -> {
-                            IconButton({ state.play() }) {
+                            IconButton({ showDropdown = true }) {
                                 Icon(Icons.Rounded.Check, "下载完成")
                             }
                         }
@@ -293,7 +297,6 @@ fun CacheEpisodeItem(
         Dropdown(
             showDropdown, { showDropdown = false },
             state,
-            isPaused = state.isPaused,
         )
     }
 }
@@ -303,26 +306,27 @@ private fun Dropdown(
     showDropdown: Boolean,
     onDismissRequest: () -> Unit,
     state: CacheEpisodeState,
-    isPaused: Boolean,
     modifier: Modifier = Modifier,
 ) {
     DropdownMenu(showDropdown, onDismissRequest, modifier) {
-        if (isPaused) {
-            DropdownMenuItem(
-                text = { Text("继续下载") },
-                leadingIcon = { Icon(Icons.Rounded.Restore, null) },
-                onClick = { state.resume() },
-            )
-        } else {
-            DropdownMenuItem(
-                text = { Text("暂停下载") },
-                leadingIcon = { Icon(Icons.Rounded.Pause, null) },
-                onClick = { state.pause() },
-            )
+        if (!state.isFinished) {
+            if (state.isPaused) {
+                DropdownMenuItem(
+                    text = { Text("继续下载") },
+                    leadingIcon = { Icon(Icons.Rounded.Restore, null) },
+                    onClick = { state.resume() },
+                )
+            } else {
+                DropdownMenuItem(
+                    text = { Text("暂停下载") },
+                    leadingIcon = { Icon(Icons.Rounded.Pause, null) },
+                    onClick = { state.pause() },
+                )
+            }
         }
         DropdownMenuItem(
             text = { Text("播放") },
-            leadingIcon = { Icon(Icons.Rounded.PlayArrow, null, Modifier.size(24.dp)) },
+            leadingIcon = { Icon(Icons.Rounded.PlayArrow, null, Modifier.size(28.dp)) },
             onClick = { state.play() },
         )
         ProvideContentColor(MaterialTheme.colorScheme.error) {

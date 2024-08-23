@@ -47,6 +47,8 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.cache.components.CacheEpisodePaused
 import me.him188.ani.app.ui.cache.components.CacheEpisodeState
 import me.him188.ani.app.ui.cache.components.CacheGroupCard
+import me.him188.ani.app.ui.cache.components.CacheGroupCardDefaults
+import me.him188.ani.app.ui.cache.components.CacheGroupCardLayoutProperties
 import me.him188.ani.app.ui.cache.components.CacheGroupCommonInfo
 import me.him188.ani.app.ui.cache.components.CacheGroupState
 import me.him188.ani.app.ui.cache.components.CacheManagementOverallStats
@@ -100,13 +102,22 @@ class CacheManagementPageViewModel(
                 media = firstCache.origin.unwrapCached(),
                 commonInfo = subjectManager.subjectInfoFlow(firstCache.metadata.subjectIdInt) // 既会查缓存, 也会查网络, 基本上不会有查不到的情况
                     .map {
-                        CacheGroupCommonInfo(it.displayName)
+                        createGroupCommonInfo(
+                            subjectId = it.id,
+                            firstCache = firstCache,
+                            subjectDisplayName = it.displayName,
+                            imageUrl = it.imageLarge,
+                        )
                     }
                     .catch {
                         emit(
-                            CacheGroupCommonInfo(
-                                firstCache.metadata.subjectNameCN ?: firstCache.metadata.subjectNames.firstOrNull()
-                                ?: firstCache.origin.originalTitle,
+                            createGroupCommonInfo(
+                                subjectId = firstCache.metadata.subjectIdInt,
+                                firstCache = firstCache,
+                                subjectDisplayName = firstCache.metadata.subjectNameCN
+                                    ?: firstCache.metadata.subjectNames.firstOrNull()
+                                    ?: firstCache.origin.originalTitle,
+                                imageUrl = null,
                             ),
                         )
                     }
@@ -123,10 +134,24 @@ class CacheManagementPageViewModel(
             )
         }
 
+    private fun createGroupCommonInfo(
+        subjectId: Int,
+        firstCache: MediaCache,
+        subjectDisplayName: String,
+        imageUrl: String?,
+    ) = CacheGroupCommonInfo(
+        subjectId = subjectId,
+        subjectDisplayName,
+        mediaSourceId = firstCache.origin.unwrapCached().mediaSourceId,
+        allianceName = firstCache.origin.unwrapCached().properties.alliance,
+        imageUrl = imageUrl,
+    )
+
     private fun CoroutineScope.createCacheEpisode(mediaCache: MediaCache) =
         CacheEpisodeState(
             subjectId = mediaCache.metadata.subjectIdInt,
             episodeId = mediaCache.metadata.episodeIdInt,
+            cacheId = mediaCache.cacheId,
             sort = mediaCache.metadata.episodeSort,
             displayName = mediaCache.metadata.episodeName,
 //            screenShots = flow {
@@ -228,7 +253,7 @@ fun CacheManagementPage(
             CacheGroupColumn(
                 state,
                 lazyGridState = lazyGridState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 24.dp),
             )
         }
     }
@@ -239,10 +264,11 @@ fun CacheGroupColumn(
     state: CacheManagementState,
     modifier: Modifier = Modifier,
     lazyGridState: CacheGroupGridLayoutState = rememberLazyStaggeredGridState(),
+    layoutProperties: CacheGroupCardLayoutProperties = CacheGroupCardDefaults.LayoutProperties,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     LazyVerticalStaggeredGrid(
-        StaggeredGridCells.Adaptive(360.dp),
+        StaggeredGridCells.Adaptive(300.dp),
         modifier,
         state = lazyGridState,
         verticalItemSpacing = 24.dp,
@@ -250,7 +276,7 @@ fun CacheGroupColumn(
         contentPadding = contentPadding,
     ) {
         items(state.groups, key = { it.media.mediaId }) { group ->
-            CacheGroupCard(group)
+            CacheGroupCard(group, Modifier.animateItemPlacement(), layoutProperties)
         }
     }
 }
