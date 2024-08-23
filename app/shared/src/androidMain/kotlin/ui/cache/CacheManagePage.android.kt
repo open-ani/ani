@@ -3,7 +3,7 @@ package me.him188.ani.app.ui.cache
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +29,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @OptIn(TestOnly::class)
-@Preview
+@PreviewLightDark
 @Composable
 fun PreviewCacheManagementPage() {
     ProvideCompositionLocalsForPreview {
