@@ -65,9 +65,6 @@ class session_t final {
 
     void resume() const;
 
-    [[deprecated]] [[nodiscard]] std::string fetch_magnet(const std::string &uri, int timeout_seconds,
-                                                          const std::string &save_path) const;
-
     /**
      * @param handle [out]
      * @param info torrent to downlad

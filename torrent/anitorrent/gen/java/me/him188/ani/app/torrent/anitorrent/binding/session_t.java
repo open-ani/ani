@@ -57,10 +57,6 @@ public class session_t {
     anitorrentJNI.session_t_resume(swigCPtr, this);
   }
 
-  public String fetch_magnet(String uri, int timeout_seconds, String save_path) {
-    return anitorrentJNI.session_t_fetch_magnet(swigCPtr, this, uri, timeout_seconds, save_path);
-  }
-
   public boolean start_download(torrent_handle_t handle, torrent_add_info_t info, String save_path) {
     return anitorrentJNI.session_t_start_download(swigCPtr, this, torrent_handle_t.getCPtr(handle), handle, torrent_add_info_t.getCPtr(info), info, save_path);
   }

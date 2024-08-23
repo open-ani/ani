@@ -154,7 +154,6 @@ public class anitorrentJNI {
   public final static native void new_event_listener_t_change_ownership(new_event_listener_t obj, long cptr, boolean take_or_release);
   public final static native void session_t_start(long jarg1, session_t jarg1_, long jarg2, session_settings_t jarg2_);
   public final static native void session_t_resume(long jarg1, session_t jarg1_);
-  public final static native String session_t_fetch_magnet(long jarg1, session_t jarg1_, String jarg2, int jarg3, String jarg4);
   public final static native boolean session_t_start_download(long jarg1, session_t jarg1_, long jarg2, torrent_handle_t jarg2_, long jarg3, torrent_add_info_t jarg3_, String jarg4);
   public final static native void session_t_release_handle(long jarg1, session_t jarg1_, long jarg2, torrent_handle_t jarg2_);
   public final static native boolean session_t_set_new_event_listener(long jarg1, session_t jarg1_, long jarg2, new_event_listener_t jarg2_);
