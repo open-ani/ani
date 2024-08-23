@@ -385,11 +385,12 @@ class SubjectManagerImpl(
     }
 
     override suspend fun getSubjectInfo(subjectId: Int): SubjectInfo {
+        require(subjectId != 0) { "Attempting to getSubjectInfo with subjectId=0, this is likely to be an error" }
         findCachedSubjectCollection(subjectId)?.info?.let { return it }
-        return runUntilSuccess {
-            // TODO: we should unify how to compute display name from subject 
-            bangumiSubjectRepository.getSubject(subjectId)?.toSubjectInfo() ?: error("Failed to get subject")
-        }
+
+        return bangumiSubjectRepository.getSubject(subjectId)
+            .getOrThrow()
+            .toSubjectInfo()
     }
 
     override suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo {
@@ -569,11 +570,9 @@ class SubjectManagerImpl(
 
     private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection = coroutineScope {
         val subject = async {
-            runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
+            bangumiSubjectRepository.getSubject(subjectId).getOrThrow()
         }
-        val eps = runUntilSuccess {
-            fetchEpisodeCollections(subjectId)
-        }.toList()
+        val eps = fetchEpisodeCollections(subjectId).toList()
 
         toSubjectCollectionItem(subject.await(), eps)
     }

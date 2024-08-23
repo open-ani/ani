@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.RatingCounts
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
@@ -45,7 +47,7 @@ import org.koin.core.component.inject
  * Use [SubjectManager] instead.
  */
 interface BangumiSubjectRepository : Repository {
-    suspend fun getSubject(id: Int): BangumiSubject?
+    suspend fun getSubject(id: Int): ApiResponse<BangumiSubject>
 
     fun getSubjectCollections(
         username: String,
@@ -80,10 +82,8 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val logger = logger(this::class)
 
-    override suspend fun getSubject(id: Int): BangumiSubject? {
-        return runCatching {
-            client.getApi().getSubjectById(id).body()
-        }.getOrNull()
+    override suspend fun getSubject(id: Int): ApiResponse<BangumiSubject> = runApiRequest {
+        client.getApi().getSubjectById(id).body()
     }
 
     override suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload) {
