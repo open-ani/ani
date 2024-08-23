@@ -142,13 +142,10 @@ interface MediaCache {
                     + metadata.subjectId.hashCode() * 31
                     + metadata.episodeId.hashCode()).absoluteValue.toString()
             val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
-            if (subjectName != null) {
-                fun removeSpecials(value: String): String {
-                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
-                }
-                return "${removeSpecials(subjectName).take(8)}-$hash"
+            fun removeSpecials(value: String): String {
+                return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
             }
-            return hash
+            return "${removeSpecials(subjectName).take(8)}-$hash"
         }
     }
 }
