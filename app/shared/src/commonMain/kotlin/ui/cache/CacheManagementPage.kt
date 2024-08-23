@@ -59,8 +59,10 @@ import me.him188.ani.datasources.api.episodeIdInt
 import me.him188.ani.datasources.api.subjectIdInt
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.unwrapCached
+import me.him188.ani.utils.coroutines.debounceWithInitial
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.time.Duration.Companion.seconds
 
 // 为了未来万一要改, 方便
 typealias CacheGroupGridLayoutState = LazyStaggeredGridState
@@ -91,7 +93,7 @@ class CacheManagementPageViewModel(
     )
 
     private fun CoroutineScope.createCacheGroupStates(allCaches: List<MediaCache>) =
-        allCaches.groupBy { it.origin.unwrapCached().mediaId }.map { (media, episodes) ->
+        allCaches.groupBy { it.origin.unwrapCached().mediaId }.map { (_, episodes) ->
             check(episodes.isNotEmpty())
 
             val firstCache = episodes.first()
@@ -104,9 +106,12 @@ class CacheManagementPageViewModel(
                 episodes = episodes.map { mediaCache ->
                     createCacheEpisode(mediaCache)
                 },
-                downloadSpeed = firstCache.sessionDownloadSpeed.produceState(FileSize.Unspecified, this),
-                downloadedSize = firstCache.downloadedSize.produceState(FileSize.Unspecified, this),
-                uploadSpeed = firstCache.sessionUploadSpeed.produceState(FileSize.Unspecified, this),
+                downloadSpeed = firstCache.sessionDownloadSpeed.debounceWithInitial(1.seconds)
+                    .produceState(FileSize.Unspecified, this),
+                downloadedSize = firstCache.downloadedSize.debounceWithInitial(1.seconds)
+                    .produceState(FileSize.Unspecified, this),
+                uploadSpeed = firstCache.sessionUploadSpeed.debounceWithInitial(1.seconds)
+                    .produceState(FileSize.Unspecified, this),
             )
         }
 
@@ -123,8 +128,10 @@ class CacheManagementPageViewModel(
 //                    episodeScreenshotRepository.getScreenshots(mediaCache.metadata.)
 //            }.produceState(emptyList(), this),
             screenShots = stateOf(emptyList()),
-            downloadSpeed = mediaCache.downloadSpeed.produceState(FileSize.Unspecified, this),
-            progress = mediaCache.progress.produceState(null, this),
+            downloadSpeed = mediaCache.downloadSpeed.debounceWithInitial(1.seconds)
+                .produceState(FileSize.Unspecified, this),
+            progress = mediaCache.progress.debounceWithInitial(1.seconds)
+                .produceState(null, this),
             state = mediaCache.state.map {
                 when (it) {
                     MediaCacheState.IN_PROGRESS -> CacheEpisodePaused.IN_PROGRESS
@@ -212,7 +219,6 @@ fun CacheManagementPage(
     }
 }
 
-// Management for a single storage
 @Composable
 fun CacheGroupColumn(
     state: CacheManagementState,
