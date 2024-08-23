@@ -6,6 +6,9 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.concurrent.Volatile
 import kotlin.math.min
 
+/**
+ * 实现双向缓冲和复用算法
+ */
 abstract class BufferedInput(
     bufferSize: Int,
 ) : SeekableInput {
@@ -42,7 +45,7 @@ abstract class BufferedInput(
     /**
      * 双向缓冲区, 读取一次后, seek 回去也能很快
      */
-    protected var buf: ByteArray = ByteArray(bufferSize * 2)
+    protected val buf: ByteArray = ByteArray(bufferSize * 2)
 
     /**
      * 当前 user 读到的位置
