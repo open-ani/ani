@@ -30,7 +30,10 @@ import me.him188.ani.utils.io.deleteRecursively
 import me.him188.ani.utils.io.exists
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.isDirectory
+import me.him188.ani.utils.io.list
 import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import java.io.File
@@ -122,8 +125,17 @@ fun getAndroidModules(
         
         val oldCacheDir = Path(cacheDir).resolve("api").inSystem
         if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
-            Toast.makeText(context, "旧 BT 引擎的缓存已不被支持，请重新缓存", Toast.LENGTH_LONG).show()
-            thread(name = "DeleteOldCaches") { oldCacheDir.deleteRecursively() }
+            val piecesDir = oldCacheDir.resolve("pieces")
+            if (piecesDir.exists() && piecesDir.isDirectory() && piecesDir.list().isNotEmpty()) {
+                Toast.makeText(context, "旧 BT 引擎的缓存已不被支持，请重新缓存", Toast.LENGTH_LONG).show()
+            }
+            thread(name = "DeleteOldCaches") { 
+                try { 
+                    oldCacheDir.deleteRecursively() 
+                } catch (ex: Exception) { 
+                    logger<TorrentManager>().warn(ex) { "Failed to delete old caches in $oldCacheDir" }
+                }
+            }
         }
 
         DefaultTorrentManager.create(
