@@ -3,6 +3,7 @@ package me.him188.ani.utils.coroutines
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlin.concurrent.Volatile
+import kotlin.jvm.JvmName
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -12,6 +13,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * 适用于 StateFlow 情况. 这可以让 collector StateFlow 的丢一个
  */
 @OverloadResolutionByLambdaReturnType
+@JvmName("debounceWithInitialDuration")
 fun <T> Flow<T>.debounceWithInitial(
     timeout: () -> Duration,
 ): Flow<T> {

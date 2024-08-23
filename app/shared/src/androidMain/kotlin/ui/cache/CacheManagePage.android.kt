@@ -7,6 +7,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
@@ -22,6 +23,7 @@ import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -45,22 +47,26 @@ fun rememberTestMediaStats(): MediaStats {
 
 @TestOnly
 internal val TestCacheEpisodes = listOf(
-    cacheEpisode(1, 2, 1, "翻转孤独"),
-    cacheEpisode(1, 3, 2, "明天见"),
-    cacheEpisode(1, 4, 3, "火速增员"),
+    createTestCacheEpisode(1, "翻转孤独", 1),
+    createTestCacheEpisode(2, "明天见", 1),
+    createTestCacheEpisode(3, "火速增员", 1),
 )
 
 @OptIn(DelicateCoroutinesApi::class)
 @Suppress("SameParameterValue")
-private fun cacheEpisode(
-    subjectId: Int,
-    episodeId: Int,
+@TestOnly
+internal fun createTestCacheEpisode(
     sort: Int,
-    displayName: String,
+    displayName: String = "第 $sort 话",
+    subjectId: Int = 1,
+    episodeId: Int = sort,
     initialState: CacheEpisodePaused = when (sort % 2) {
         0 -> CacheEpisodePaused.PAUSED
         else -> CacheEpisodePaused.IN_PROGRESS
     },
+    downloadSpeed: FileSize = 233.megaBytes,
+    progress: Float? = 0.3f,
+    totalSize: FileSize = 888.megaBytes,
 ): CacheEpisodeState {
     val state = mutableStateOf(initialState)
     return CacheEpisodeState(
@@ -69,8 +75,9 @@ private fun cacheEpisode(
         sort = EpisodeSort(sort),
         displayName = displayName,
         screenShots = stateOf(emptyList()),
-        downloadSpeed = stateOf(233.megaBytes),
-        progress = stateOf(0.9999f),
+        downloadSpeed = stateOf(downloadSpeed),
+        progress = stateOf(progress),
+        totalSize = stateOf(totalSize),
         state = state,
         onPause = { state.value = CacheEpisodePaused.PAUSED },
         onResume = { state.value = CacheEpisodePaused.IN_PROGRESS },
@@ -83,7 +90,7 @@ private fun cacheEpisode(
 @TestOnly
 internal val TestCacheGroupSates = listOf(
     CacheGroupState(
-        media = previewMediaList[0],
+        media = TestMediaList[0],
         commonInfo = stateOf(CacheGroupCommonInfo("孤独摇滚")),
         episodes = TestCacheEpisodes,
         downloadSpeed = stateOf(233.megaBytes),

@@ -2,8 +2,12 @@ package me.him188.ani.app.ui.cache.components
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +49,7 @@ import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.utils.platform.format1f
 
 @Stable
 class CacheEpisodeState(
@@ -54,6 +60,7 @@ class CacheEpisodeState(
     screenShots: State<List<String>>, // url
     downloadSpeed: State<FileSize>,
     progress: State<Float?>,
+    totalSize: State<FileSize>,
     state: State<CacheEpisodePaused>,
     private val onPause: suspend () -> Unit, // background scope
     private val onResume: suspend () -> Unit, // background scope
@@ -63,17 +70,48 @@ class CacheEpisodeState(
 ) {
     val screenShots by screenShots
 
-    //    val combinedId: Long = (subjectId.toLong() shl 32) or episodeId.toLong()
     val isPaused by derivedStateOf { state.value == CacheEpisodePaused.PAUSED }
     val isFinished by derivedStateOf { (progress.value ?: 0f) >= 1f }
-    val downloadSpeedText by derivedStateOf {
-        if (!this.isFinished && downloadSpeed.value != FileSize.Unspecified) {
-            "${downloadSpeed.value}/s"
-        } else {
+
+    val totalSize: FileSize by totalSize
+
+    val sizeText by derivedStateOf {
+        // 原本打算展示 "888.88 MB / 888.88 MB" 的格式, 感觉比较啰嗦, 还是省略了
+        // 这个函数有正确的 testing, 应该切换就能用
+//        calculateSizeText(totalSize.value, progress.value)
+
+        val value = totalSize.value
+        if (value == FileSize.Unspecified) {
             null
+        } else {
+            "$value"
         }
     }
+
     val progress by derivedStateOf { progress.value ?: 0f }
+
+    val progressText by derivedStateOf {
+        val value = progress.value
+        if (value == null) {
+            null
+        } else {
+            "${String.format1f(value)}%"
+        }
+    }
+
+    val speedText by derivedStateOf {
+        val progressValue = progress.value
+        val speed = downloadSpeed.value
+        if (progressValue != null) {
+            val isFinished = progressValue >= 1f
+            val showSpeed = !isFinished && speed != FileSize.Unspecified
+            if (showSpeed) {
+                return@derivedStateOf "${speed}/s"
+            }
+        }
+        null
+    }
+
     val isProgressUnspecified by derivedStateOf { progress.value == null }
 
     private val actionTasker = MonoTasker(backgroundScope)
@@ -101,6 +139,33 @@ class CacheEpisodeState(
     fun play() {
         onPlay()
     }
+
+    companion object {
+        /**
+         * @sample me.him188.ani.app.ui.cache.components.CacheEpisodeStateTest.CalculateSizeTextTest
+         */
+        fun calculateSizeText(
+            totalSize: FileSize,
+            progress: Float?,
+        ): String? {
+            if (progress == null && totalSize == FileSize.Unspecified) {
+                return null
+            }
+            return when {
+                progress == null -> {
+                    if (totalSize != FileSize.Unspecified) {
+                        "$totalSize"
+                    } else null
+                }
+
+                totalSize == FileSize.Unspecified -> null
+
+                else -> {
+                    "${totalSize * progress} / $totalSize"
+                }
+            }
+        }
+    }
 }
 
 @Immutable
@@ -127,18 +192,8 @@ fun CacheEpisodeItem(
 
                     Text(
                         state.displayName,
-                        Modifier.weight(1f),
+                        Modifier.basicMarquee(),
                     )
-
-                    ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge) {
-                        state.downloadSpeedText?.let {
-                            Text(
-                                it,
-                                Modifier.padding(start = 16.dp).align(Alignment.Bottom),
-                                softWrap = false,
-                            )
-                        }
-                    }
                 }
             },
             modifier.clickable { showDropdown = true },
@@ -147,23 +202,62 @@ fun CacheEpisodeItem(
                     AsyncImage(state.screenShots.first(), "封面")
                 }
             },
-            supportingContent = if (state.isFinished) null else {
-                {
-                    Crossfade(state.isProgressUnspecified, Modifier.padding(top = 12.dp)) {
-                        if (it) {
-                            LinearProgressIndicator(
-                                Modifier.fillMaxWidth(),
-                                trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
-                                strokeCap = StrokeCap.Round,
-                            )
-                        } else {
-                            val progress by animateFloatAsState(state.progress)
-                            LinearProgressIndicator(
-                                { progress },
-                                Modifier.fillMaxWidth(),
-                                trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
-                                strokeCap = StrokeCap.Round,
-                            )
+            supportingContent = {
+                Column(
+                    Modifier.padding(top = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge) {
+                        FlowRow(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
+                        ) {
+                            Box(Modifier.padding(end = 16.dp)) {
+                                state.sizeText?.let {
+                                    Text(it, softWrap = false)
+                                }
+                            }
+
+                            Box(Modifier, contentAlignment = Alignment.BottomEnd) {
+                                Row(
+                                    Modifier.basicMarquee(),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.End),
+                                ) {
+                                    Box(Modifier.align(Alignment.Bottom)) {
+                                        state.speedText?.let {
+                                            Text(it, softWrap = false)
+                                        }
+                                    }
+
+                                    Box(contentAlignment = Alignment.CenterEnd) {
+                                        Text("100.0%", Modifier.alpha(0f), softWrap = false)
+                                        state.progressText?.let {
+                                            Text(it, softWrap = false)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!state.isFinished) {
+                        Crossfade(state.isProgressUnspecified) {
+                            if (it) {
+                                LinearProgressIndicator(
+                                    Modifier.fillMaxWidth(),
+                                    trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                                    strokeCap = StrokeCap.Round,
+                                )
+                            } else {
+                                val progress by animateFloatAsState(state.progress)
+                                LinearProgressIndicator(
+                                    { progress },
+                                    Modifier.fillMaxWidth(),
+                                    trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                                    strokeCap = StrokeCap.Round,
+                                )
+                            }
                         }
                     }
                 }
@@ -194,7 +288,6 @@ fun CacheEpisodeItem(
                         }
                     }
                 }
-
             },
         )
         Dropdown(

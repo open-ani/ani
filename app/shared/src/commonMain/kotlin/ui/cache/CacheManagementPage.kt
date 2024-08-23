@@ -140,6 +140,7 @@ class CacheManagementPageViewModel(
                 .produceState(FileSize.Unspecified, this),
             progress = mediaCache.progress.debounceWithInitial(1.seconds)
                 .produceState(null, this),
+            totalSize = mediaCache.totalSize.produceState(FileSize.Unspecified, this),
             state = mediaCache.state.map {
                 when (it) {
                     MediaCacheState.IN_PROGRESS -> CacheEpisodePaused.IN_PROGRESS

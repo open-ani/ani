@@ -4,12 +4,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
@@ -30,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
@@ -122,7 +122,7 @@ class CacheGroupState(
 fun CacheGroupCard(
     state: CacheGroupState,
     modifier: Modifier = Modifier,
-    horizontalPadding: Dp = 24.dp,
+    horizontalPadding: Dp = 16.dp, // at least 16
     shape: Shape = MaterialTheme.shapes.large,
 ) {
     Card(
@@ -139,7 +139,7 @@ fun CacheGroupCard(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
         ) {
-            Column(Modifier.padding(vertical = 20.dp)) {
+            Column(Modifier.padding(vertical = 16.dp)) {
                 Row(Modifier.padding(horizontal = horizontalPadding)) {
                     ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
                         Crossfade(state.cardTitle, Modifier.animateContentSize()) {
@@ -159,24 +159,34 @@ fun CacheGroupCard(
 //                    }
 //                }
 
-                Spacer(Modifier.height(20.dp))
-
                 FlowRow(
-                    Modifier.padding(horizontal = horizontalPadding),
-                    horizontalArrangement = Arrangement.spacedBy(20.dp, alignment = Alignment.Start),
+                    Modifier.padding(top = 16.dp).fillMaxWidth().padding(horizontal = horizontalPadding),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.Start),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            Modifier,
+                            horizontalArrangement = Arrangement.spacedBy(
+                                8.dp,
+                                alignment = Alignment.Start,
+                            ),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(Icons.Rounded.Download, null)
-                            Text(state.downloadSpeedText, softWrap = false)
+                            Box {
+                                // 占用足够大的位置, 防止下载速度更新时导致上传速度的位置变了
+                                Text("888.88 MB (888.88 MB/s)", Modifier.alpha(0f), softWrap = false)
+                                Text(state.downloadSpeedText, softWrap = false)
+                            }
                         }
 
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            Modifier,
+                            horizontalArrangement = Arrangement.spacedBy(
+                                8.dp,
+                                alignment = Alignment.Start,
+                            ),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(Icons.Rounded.Upload, null)
@@ -189,7 +199,7 @@ fun CacheGroupCard(
 
         AnimatedVisibility(state.expanded) {
             Column(
-                Modifier.padding(top = 8.dp, bottom = 16.dp)
+                Modifier.padding(top = 4.dp, bottom = 16.dp)
                     .padding(horizontal = (horizontalPadding - 16.dp).coerceAtLeast(0.dp)),
             ) {
                 for (episode in state.episodes) {
