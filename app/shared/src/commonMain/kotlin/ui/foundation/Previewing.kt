@@ -57,6 +57,8 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -130,6 +132,12 @@ fun ProvideCompositionLocalsForPreview(
                 LocalNavigator provides aniNavigator,
                 LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
                 LocalImageViewerHandler provides rememberImageViewerHandler(),
+                LocalToaster provides remember {
+                    object : Toaster {
+                        override fun toast(text: String) {
+                        }
+                    }
+                },
             ) {
                 AniApp(colorScheme = colorScheme) {
                     content()
