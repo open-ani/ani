@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -59,9 +60,7 @@ class CacheEpisodeState(
     val sort: EpisodeSort,
     val displayName: String,
     screenShots: State<List<String>>, // url
-    downloadSpeed: State<FileSize>,
-    progress: State<Float?>,
-    totalSize: State<FileSize>,
+    stats: State<Stats>,
     state: State<CacheEpisodePaused>,
     private val onPause: suspend () -> Unit, // background scope
     private val onResume: suspend () -> Unit, // background scope
@@ -69,19 +68,28 @@ class CacheEpisodeState(
     private val onPlay: () -> Unit, // ui scope
     backgroundScope: CoroutineScope,
 ) {
+    @Immutable
+    data class Stats(
+        val downloadSpeed: FileSize,
+        val progress: Float?,
+        val totalSize: FileSize,
+    )
+
+    val progress by derivedStateOf { stats.value.progress ?: 0f }
+
     val screenShots by screenShots
 
     val isPaused by derivedStateOf { state.value == CacheEpisodePaused.PAUSED }
-    val isFinished by derivedStateOf { (progress.value ?: 0f) >= 1f }
+    val isFinished by derivedStateOf { this.progress >= 1f }
 
-    val totalSize: FileSize by totalSize
+    val totalSize: FileSize by derivedStateOf { stats.value.totalSize }
 
     val sizeText by derivedStateOf {
         // 原本打算展示 "888.88 MB / 888.88 MB" 的格式, 感觉比较啰嗦, 还是省略了
         // 这个函数有正确的 testing, 应该切换就能用
 //        calculateSizeText(totalSize.value, progress.value)
 
-        val value = totalSize.value
+        val value = this.totalSize
         if (value == FileSize.Unspecified) {
             null
         } else {
@@ -89,10 +97,8 @@ class CacheEpisodeState(
         }
     }
 
-    val progress by derivedStateOf { progress.value ?: 0f }
-
     val progressText by derivedStateOf {
-        val value = progress.value
+        val value = stats.value.progress
         if (value == null || this.isFinished) {
             null
         } else {
@@ -101,8 +107,8 @@ class CacheEpisodeState(
     }
 
     val speedText by derivedStateOf {
-        val progressValue = progress.value
-        val speed = downloadSpeed.value
+        val progressValue = stats.value.progress
+        val speed = stats.value.downloadSpeed
         if (progressValue != null) {
             val isFinished = progressValue >= 1f
             val showSpeed = !isFinished && speed != FileSize.Unspecified
@@ -113,7 +119,7 @@ class CacheEpisodeState(
         null
     }
 
-    val isProgressUnspecified by derivedStateOf { progress.value == null }
+    val isProgressUnspecified by derivedStateOf { stats.value.progress == null }
 
     private val actionTasker = MonoTasker(backgroundScope)
 
@@ -180,89 +186,89 @@ fun CacheEpisodeItem(
     state: CacheEpisodeState,
     modifier: Modifier = Modifier
 ) {
-    Box {
-        var showDropdown by remember { mutableStateOf(false) }
-        ListItem(
-            headlineContent = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "${state.sort}  ",
-                        softWrap = false,
-                    )
+    var showDropdown by remember { mutableStateOf(false) }
+    ListItem(
+        headlineContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "${state.sort}  ",
+                    softWrap = false,
+                )
 
-                    Text(
-                        state.displayName,
-                        Modifier.basicMarquee(),
-                    )
-                }
-            },
-            modifier.clickableAndMouseRightClick { showDropdown = true },
-            leadingContent = if (state.screenShots.isEmpty()) null else {
-                {
-                    AsyncImage(state.screenShots.first(), "封面")
-                }
-            },
-            supportingContent = {
-                Column(
-                    Modifier.padding(top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge) {
-                        FlowRow(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
-                        ) {
-                            Box(Modifier.padding(end = 16.dp)) {
-                                state.sizeText?.let {
-                                    Text(it, softWrap = false)
-                                }
+                Text(
+                    state.displayName,
+                    Modifier.basicMarquee(),
+                )
+            }
+        },
+        modifier.clickableAndMouseRightClick { showDropdown = true },
+        leadingContent = if (state.screenShots.isEmpty()) null else {
+            {
+                AsyncImage(state.screenShots.first(), "封面")
+            }
+        },
+        supportingContent = {
+            Column(
+                Modifier.padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ProvideTextStyleContentColor(MaterialTheme.typography.labelLarge) {
+                    FlowRow(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
+                    ) {
+                        Box(Modifier.padding(end = 16.dp)) {
+                            state.sizeText?.let {
+                                Text(it, softWrap = false)
                             }
+                        }
 
-                            Box(Modifier, contentAlignment = Alignment.BottomEnd) {
-                                Row(
-                                    Modifier.basicMarquee(),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.End),
-                                ) {
-                                    Box(Modifier.align(Alignment.Bottom)) {
-                                        state.speedText?.let {
-                                            Text(it, softWrap = false)
-                                        }
+                        Box(Modifier, contentAlignment = Alignment.BottomEnd) {
+                            Row(
+                                Modifier.basicMarquee(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp, alignment = Alignment.End),
+                            ) {
+                                Box(Modifier.align(Alignment.Bottom)) {
+                                    state.speedText?.let {
+                                        Text(it, softWrap = false)
                                     }
+                                }
 
-                                    Box(contentAlignment = Alignment.CenterEnd) {
-                                        Text("100.0%", Modifier.alpha(0f), softWrap = false)
-                                        state.progressText?.let {
-                                            Text(it, softWrap = false)
-                                        }
+                                Box(contentAlignment = Alignment.CenterEnd) {
+                                    Text("100.0%", Modifier.alpha(0f), softWrap = false)
+                                    state.progressText?.let {
+                                        Text(it, softWrap = false)
                                     }
                                 }
                             }
                         }
                     }
+                }
 
-                    if (!state.isFinished) {
-                        Crossfade(state.isProgressUnspecified) {
-                            if (it) {
-                                LinearProgressIndicator(
-                                    Modifier.fillMaxWidth(),
-                                    trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
-                                    strokeCap = StrokeCap.Round,
-                                )
-                            } else {
-                                val progress by animateFloatAsState(state.progress)
-                                LinearProgressIndicator(
-                                    { progress },
-                                    Modifier.fillMaxWidth(),
-                                    trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
-                                    strokeCap = StrokeCap.Round,
-                                )
-                            }
+                if (!state.isFinished) {
+                    Crossfade(state.isProgressUnspecified) {
+                        if (it) {
+                            LinearProgressIndicator(
+                                Modifier.fillMaxWidth(),
+                                trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                                strokeCap = StrokeCap.Round,
+                            )
+                        } else {
+                            val progress by animateFloatAsState(state.progress)
+                            LinearProgressIndicator(
+                                { progress },
+                                Modifier.fillMaxWidth(),
+                                trackColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                                strokeCap = StrokeCap.Round,
+                            )
                         }
                     }
                 }
-            },
-            trailingContent = {
+            }
+        },
+        trailingContent = {
+            Box {
                 if (state.isActionInProgress) {
                     IconButton(
                         onClick = {
@@ -292,13 +298,13 @@ fun CacheEpisodeItem(
                         }
                     }
                 }
-            },
-        )
-        Dropdown(
-            showDropdown, { showDropdown = false },
-            state,
-        )
-    }
+                Dropdown(
+                    showDropdown, { showDropdown = false },
+                    state,
+                )
+            }
+        },
+    )
 }
 
 @Composable
@@ -326,13 +332,19 @@ private fun Dropdown(
         }
         DropdownMenuItem(
             text = { Text("播放") },
-            leadingIcon = { Icon(Icons.Rounded.PlayArrow, null, Modifier.size(28.dp)) },
+            leadingIcon = {
+                // 这个内容如果太大会导致影响 text
+                Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                    // 这个图标比其他图标小
+                    Icon(Icons.Rounded.PlayArrow, null, Modifier.requiredSize(28.dp))
+                }
+            },
             onClick = { state.play() },
         )
         ProvideContentColor(MaterialTheme.colorScheme.error) {
             DropdownMenuItem(
-                text = { Text("删除") },
-                leadingIcon = { Icon(Icons.Rounded.Delete, null) },
+                text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                 onClick = { state.delete() },
             )
         }

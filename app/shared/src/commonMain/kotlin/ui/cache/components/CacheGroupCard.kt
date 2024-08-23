@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowOutward
 import androidx.compose.material.icons.outlined.Info
@@ -212,7 +213,7 @@ fun CacheGroupCard(
                                     .minimumInteractiveComponentSize()
                                     .animateContentSize(),
                             ) {
-                                Text(it ?: "")
+                                SelectionContainer { Text(it ?: "") }
                             }
                         }
                     }

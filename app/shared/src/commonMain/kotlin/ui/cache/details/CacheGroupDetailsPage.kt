@@ -7,9 +7,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -106,8 +109,10 @@ fun MediaCacheDetailsPage(
                             MediaDetailsColumn(
                                 it,
                                 Modifier
-                                    .padding(horizontal = 24.dp)
-                                    .padding(vertical = 24.dp),
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(horizontal = 16.dp)
+                                    .padding(vertical = 16.dp)
+                                    .fillMaxHeight(),
                             )
                         }
                     }

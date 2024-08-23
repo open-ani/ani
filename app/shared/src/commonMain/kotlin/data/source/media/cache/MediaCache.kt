@@ -12,6 +12,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.platform.annotations.TestOnly
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.absoluteValue
 
 /**
@@ -131,6 +132,8 @@ interface MediaCache {
 
     /**
      * 尝试删除此 [MediaCache] 所涉及的文件.
+     *
+     * 注意! 你很可能需要使用 [MediaCacheManager.deleteCache]. 因为单独 [MediaCache.closeAndDeleteFiles] 并不会从 storage 中删除.
      *
      * 此函数必须关闭所有使用的资源, 清理潜在的缓存文件, 且不得抛出异常 (除非是 [CancellationException]).
      */

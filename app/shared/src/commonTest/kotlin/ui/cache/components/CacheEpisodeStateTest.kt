@@ -65,9 +65,13 @@ class CacheEpisodeStateTest {
             sort = EpisodeSort(sort),
             displayName = displayName,
             screenShots = stateOf(emptyList()),
-            downloadSpeed = stateOf(downloadSpeed),
-            progress = stateOf(progress),
-            totalSize = stateOf(totalSize),
+            stats = stateOf(
+                CacheEpisodeState.Stats(
+                    downloadSpeed = downloadSpeed,
+                    progress = progress,
+                    totalSize = totalSize,
+                ),
+            ),
             state = state,
             onPause = { state.value = CacheEpisodePaused.PAUSED },
             onResume = { state.value = CacheEpisodePaused.IN_PROGRESS },
