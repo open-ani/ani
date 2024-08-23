@@ -3,6 +3,7 @@ package me.him188.ani.datasources.api
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.utils.platform.annotations.SerializationOnly
 
 /**
  * 一个 `MediaCache` 的元数据, 包含来源的条目和剧集信息, 以及 `MediaCacheEngine` 自行添加的额外信息 [extra].
@@ -18,16 +19,16 @@ data class MediaCacheMetadata
 /**
  * This constructor is only for serialization
  */
-@Deprecated("This constructor is only for serialization. Use the other one instead", level = DeprecationLevel.ERROR)
+@SerializationOnly
 constructor(
     /**
      * @see MediaFetchRequest.subjectId
      */
-    val subjectId: String,
+    private val _subjectId: String? = null,
     /**
      * @see MediaFetchRequest.episodeId
      */
-    val episodeId: String,
+    private val _episodeId: String? = null,
     /**
      * @see MediaFetchRequest.subjectNames
      */
@@ -50,7 +51,10 @@ constructor(
     val extra: Map<String, String> = emptyMap(),
     @Transient @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
 ) {
-    @Suppress("DEPRECATION_ERROR")
+    val subjectId get() = _subjectId ?: "0" // 为了兼容旧版 (< 3.8) 的缓存, 但实际上这些缓存也并不会是 null
+    val episodeId get() = _episodeId ?: "0"
+
+    @OptIn(SerializationOnly::class)
     constructor(
 //    /**
 //     * Id of the [MediaSource] that cached this media.

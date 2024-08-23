@@ -298,6 +298,8 @@ class EpisodeCacheRequesterTest {
                 MediaSourceKind.LocalCache,
             ),
             MediaCacheMetadata(
+                subjectId = "1",
+                episodeId = "1",
                 subjectNames = setOf("孤独摇滚"),
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
@@ -344,6 +346,8 @@ class EpisodeCacheRequesterTest {
                 MediaSourceKind.LocalCache,
             ),
             MediaCacheMetadata(
+                subjectId = "1",
+                episodeId = "1",
                 subjectNames = setOf("孤独摇滚"),
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
@@ -397,6 +401,8 @@ class EpisodeCacheRequesterTest {
             MediaSourceKind.LocalCache,
         ),
         MediaCacheMetadata(
+            subjectId = "1",
+            episodeId = "1",
             subjectNames = setOf("孤独摇滚"),
             episodeSort = episodeSort,
             episodeEp = episodeEp,

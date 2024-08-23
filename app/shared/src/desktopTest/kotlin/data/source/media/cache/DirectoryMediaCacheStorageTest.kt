@@ -153,7 +153,8 @@ class DirectoryMediaCacheStorageTest {
 
 
     private fun mediaCacheMetadata() = MediaCacheMetadata(
-        episodeId = "1231231",
+        subjectId = "1",
+        episodeId = "1",
         subjectNames = emptySet(),
         episodeSort = EpisodeSort("02"),
         episodeEp = EpisodeSort("02"),
@@ -293,7 +294,7 @@ class DirectoryMediaCacheStorageTest {
         storage.restorePersistedCaches()
         assertEquals(1, storage.listFlow.first().size)
         val cache = storage.listFlow.first().single()
-        assertEquals(cacheId, cache.cacheId)
+        assertEquals("0-1776330530", cache.cacheId)
     }
 
     /**
