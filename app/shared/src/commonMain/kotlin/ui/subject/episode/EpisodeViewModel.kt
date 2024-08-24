@@ -32,9 +32,9 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.CommentRepository
@@ -66,6 +66,7 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
@@ -398,9 +399,10 @@ private class EpisodeViewModelImpl(
         EpisodeDetailsState(
             episodePresentation = episodePresentationFlow.filterNotNull().produceState(EpisodePresentation.Placeholder),
             subjectInfo = subjectInfo.produceState(SubjectInfo.Empty),
-            airingInfo = subjectInfo.map {
-                SubjectAiringInfo.computeFromSubjectInfo(it)
-            }.produceState(SubjectAiringInfo.EmptyCompleted),
+            airingLabelState = AiringLabelState(
+                subjectCollection.map { it.airingInfo }.produceState(null),
+                subjectCollection.map { SubjectProgressInfo.calculate(it) }.produceState(null),
+            ),
         )
     }
 

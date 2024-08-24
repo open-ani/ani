@@ -2687,6 +2687,21 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT jstring JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1handle_1t_1make_1magnet_1uri(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jstring jresult = 0 ;
+  anilt::torrent_handle_t *arg1 = (anilt::torrent_handle_t *) 0 ;
+  std::string result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_handle_t **)&jarg1; 
+  result = (arg1)->make_magnet_uri();
+  jresult = jenv->NewStringUTF((&result)->c_str()); 
+  return jresult;
+}
+
+
 SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1torrent_1handle_1t(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   anilt::torrent_handle_t *result = 0 ;
@@ -3919,43 +3934,6 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
   (void)jarg1_;
   arg1 = *(anilt::session_t **)&jarg1; 
   ((anilt::session_t const *)arg1)->resume();
-}
-
-
-SWIGEXPORT jstring JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1t_1fetch_1magnet(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jint jarg3, jstring jarg4) {
-  jstring jresult = 0 ;
-  anilt::session_t *arg1 = (anilt::session_t *) 0 ;
-  std::string *arg2 = 0 ;
-  int arg3 ;
-  std::string *arg4 = 0 ;
-  std::string result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  arg1 = *(anilt::session_t **)&jarg1; 
-  if(!jarg2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
-    return 0;
-  }
-  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
-  if (!arg2_pstr) return 0;
-  std::string arg2_str(arg2_pstr);
-  arg2 = &arg2_str;
-  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
-  arg3 = (int)jarg3; 
-  if(!jarg4) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
-    return 0;
-  }
-  const char *arg4_pstr = (const char *)jenv->GetStringUTFChars(jarg4, 0); 
-  if (!arg4_pstr) return 0;
-  std::string arg4_str(arg4_pstr);
-  arg4 = &arg4_str;
-  jenv->ReleaseStringUTFChars(jarg4, arg4_pstr); 
-  result = ((anilt::session_t const *)arg1)->fetch_magnet((std::string const &)*arg2,arg3,(std::string const &)*arg4);
-  jresult = jenv->NewStringUTF((&result)->c_str()); 
-  return jresult;
 }
 
 

@@ -306,7 +306,7 @@ fun SubjectDetailsPage(
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
-                                airingInfo = state.airingInfo,
+                                airingLabelState = state.airingLabelState,
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
                                 selectEpisodeButton = selectEpisodeButton,

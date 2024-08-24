@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.torrent.anitorrent.DisposableTaskQueue
 import me.him188.ani.app.torrent.api.TorrentDownloadSession
@@ -32,7 +33,6 @@ import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
 import me.him188.ani.app.torrent.io.TorrentInput
-import me.him188.ani.utils.coroutines.runInterruptible
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
@@ -145,11 +145,11 @@ class AnitorrentDownloadSession(
         }
 
         override suspend fun createInput(): SeekableInput {
-            val input = resolveFileOrNull() ?: resolveDownloadingFile()
-            return runInterruptible(Dispatchers.IO) {
+            val input = resolveDownloadingFile()
+            return withContext(Dispatchers.IO) {
                 TorrentInput(
                     input,
-                    this.pieces,
+                    pieces,
                     logicalStartOffset = offset,
                     onWait = { piece ->
                         updatePieceDeadlinesForSeek(piece)

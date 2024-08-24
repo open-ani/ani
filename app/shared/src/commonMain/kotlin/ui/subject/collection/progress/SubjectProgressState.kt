@@ -10,10 +10,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
+import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectProgressInfo
+import me.him188.ani.app.data.models.toLocalDateOrNull
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.tools.WeekFormatter
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.stateOf
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
@@ -64,12 +67,13 @@ fun SubjectProgressStateFactory.rememberSubjectProgressState(
 /**
  * 条目的观看进度, 用于例如 "看到 12" 的按钮
  */
-@Stable
+@Stable // Test: AiringProgressTests
 class SubjectProgressState(
     subjectId: State<Int>,
-    info: State<SubjectProgressInfo>,
+    info: State<SubjectProgressInfo?>,
     episodeProgressInfos: State<List<EpisodeProgressInfo>>,
     private val onPlay: (subjectId: Int, episodeId: Int) -> Unit,
+    private val weekFormatter: WeekFormatter = WeekFormatter.System,
 ) {
     private val episodeProgressInfos by episodeProgressInfos
     private val subjectId by subjectId
@@ -83,11 +87,67 @@ class SubjectProgressState(
         onPlay(subjectId, episodeId)
     }
 
-    val continueWatchingStatus by derivedStateOf {
-        info.value.continueWatchingStatus
+    private val continueWatchingStatus by derivedStateOf {
+        info.value?.continueWatchingStatus
+    }
+
+    /**
+     * 是否拥有至少一话, 并且已经观看了这一话, 并且没有更新的了.
+     */
+    val isLatestEpisodeWatched by derivedStateOf {
+        continueWatchingStatus is ContinueWatchingStatus.Watched
+    }
+
+    /**
+     * 已经完结并且看完了
+     */
+    val isDone by derivedStateOf {
+        continueWatchingStatus == ContinueWatchingStatus.Done
     }
 
     val episodeIdToPlay: Int? by derivedStateOf {
-        info.value.nextEpisodeIdToPlay
+        info.value?.nextEpisodeIdToPlay
+    }
+
+    val buttonText by derivedStateOf {
+        when (val s = continueWatchingStatus) {
+            is ContinueWatchingStatus.Continue -> "继续观看 ${s.episodeSort}"
+            ContinueWatchingStatus.Done -> "已看完"
+            is ContinueWatchingStatus.NotOnAir -> {
+                val date = s.airDate.toLocalDateOrNull()
+                if (date != null) {
+                    val week = weekFormatter.format(date)
+                    "${week}开播"
+                } else {
+                    "还未开播"
+                }
+            }
+
+            ContinueWatchingStatus.Start -> "开始观看"
+            is ContinueWatchingStatus.Watched -> {
+                val date = s.nextEpisodeAirDate.toLocalDateOrNull()
+                if (date != null) {
+                    val week = weekFormatter.format(date)
+                    "${week}更新"
+                } else {
+                    "看过 ${s.episodeSort}"
+                }
+            }
+
+            null -> "未知"
+        }
+    }
+
+    val buttonIsPrimary by derivedStateOf {
+        when (continueWatchingStatus) {
+            is ContinueWatchingStatus.Start,
+            is ContinueWatchingStatus.Continue -> true
+
+            else -> false
+        }
+    }
+
+    fun onClickButton() {
+        episodeIdToPlay?.let { play(it) }
     }
 }

@@ -24,6 +24,9 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import io.ktor.client.engine.okhttp.OkHttp
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.media.cache.MediaCacheNotificationTask
 import me.him188.ani.app.platform.AndroidLoggingConfigurator
 import me.him188.ani.app.platform.AndroidLoggingConfigurator.getLogsDir
 import me.him188.ani.app.platform.createAppRootCoroutineScope
@@ -112,6 +115,10 @@ class AniApplication : Application() {
             modules(getAndroidModules(defaultTorrentCacheDir, scope))
         }.startCommonKoinModule(scope)
 
-        getKoin().get<TorrentManager>() // start sharing, connect to DHT now
+        val koin = getKoin()
+        koin.get<TorrentManager>() // start sharing, connect to DHT now
+        scope.launch(CoroutineName("MediaCacheNotificationTask")) {
+            MediaCacheNotificationTask(koin.get(), koin.get()).run()
+        }
     }
 }

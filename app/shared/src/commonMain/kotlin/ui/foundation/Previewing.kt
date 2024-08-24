@@ -20,7 +20,6 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -58,6 +57,8 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -80,7 +81,7 @@ fun ProvideCompositionLocalsForPreview(
         DummyPlayerState()
     },
     module: Module.() -> Unit = {},
-    colorScheme: ColorScheme = MaterialTheme.colorScheme,
+    colorScheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
     PlatformPreviewCompositionLocalProvider {
@@ -131,6 +132,12 @@ fun ProvideCompositionLocalsForPreview(
                 LocalNavigator provides aniNavigator,
                 LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
                 LocalImageViewerHandler provides rememberImageViewerHandler(),
+                LocalToaster provides remember {
+                    object : Toaster {
+                        override fun toast(text: String) {
+                        }
+                    }
+                },
             ) {
                 AniApp(colorScheme = colorScheme) {
                     content()

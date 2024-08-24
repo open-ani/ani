@@ -39,14 +39,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.models.seasonMonth
-import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.theme.weaken
-import me.him188.ani.app.ui.subject.collection.AiringLabel
+import me.him188.ani.app.ui.subject.collection.components.AiringLabel
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -55,7 +55,7 @@ const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 internal fun SubjectDetailsHeader(
     info: SubjectInfo,
     coverImageUrl: String?,
-    airingInfo: SubjectAiringInfo,
+    airingLabelState: AiringLabelState,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
     selectEpisodeButton: @Composable BoxScope.() -> Unit,
@@ -74,10 +74,10 @@ internal fun SubjectDetailsHeader(
             seasonTags = {
                 OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
                 AiringLabel(
-                    airingInfo,
+                    airingLabelState,
                     Modifier.align(Alignment.CenterVertically),
                     style = LocalTextStyle.current,
-                    statusColor = LocalContentColor.current,
+                    progressColor = LocalContentColor.current,
                 )
             },
             collectionData = collectionData,
@@ -98,10 +98,10 @@ internal fun SubjectDetailsHeader(
             seasonTags = {
                 OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
                 AiringLabel(
-                    airingInfo,
+                    airingLabelState,
                     Modifier.align(Alignment.CenterVertically),
                     style = LocalTextStyle.current,
-                    statusColor = LocalContentColor.current,
+                    progressColor = LocalContentColor.current,
                 )
             },
             collectionData = collectionData,

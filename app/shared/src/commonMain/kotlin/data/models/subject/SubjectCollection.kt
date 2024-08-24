@@ -35,6 +35,9 @@ data class SubjectCollection(
         airDate = info.airDate,
     )
 
+    @Transient
+    val progressInfo: SubjectProgressInfo = SubjectProgressInfo.calculate(this)
+
     companion object {
         val Empty = SubjectCollection(
             SubjectInfo.Empty,

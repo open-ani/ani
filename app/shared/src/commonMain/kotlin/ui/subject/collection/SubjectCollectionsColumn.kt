@@ -28,10 +28,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,26 +41,22 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
-import me.him188.ani.app.data.models.subject.SubjectAiringInfo
-import me.him188.ani.app.data.models.subject.SubjectAiringKind
 import me.him188.ani.app.data.models.subject.SubjectCollection
-import me.him188.ani.app.data.models.subject.isOnAir
-import me.him188.ani.app.data.models.toStringExcludingSameYear
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.subject.collection.components.AiringLabel
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
-import me.him188.ani.app.ui.subject.details.components.OutlinedTag
 
 private inline val spacedBy get() = 16.dp
 
@@ -246,18 +239,13 @@ private fun SubjectCollectionItemContent(
             Modifier.padding(top = 0.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                // 2023 年 10 月
-                item.date.let {
-                    OutlinedTag { Text(it) }
-                }
-
-                // 连载至第 28 话 · 全 34 话
-                AiringLabel(
-                    item.airingInfo, Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            }
+            // 连载至第 28 话 · 全 34 话
+            AiringLabel(
+                remember(item) {
+                    AiringLabelState(stateOf(item.airingInfo), stateOf(item.progressInfo))
+                },
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
 
         Spacer(Modifier.weight(1f))
@@ -280,68 +268,3 @@ private fun SubjectCollectionItemContent(
 }
 
 
-/**
- * ```
- * 已完结 · 全 28 话
- * ```
- *
- * ```
- * 连载至第 28 话 · 全 34 话
- * ```
- *
- * @sample
- */
-@Composable
-fun AiringLabel(
-    info: SubjectAiringInfo,
-    modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-    statusColor: Color = if (info.isOnAir) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-) {
-    ProvideTextStyle(style) {
-        Row(modifier.width(IntrinsicSize.Max).height(IntrinsicSize.Min)) {
-            Text(
-                remember(info) {
-                    when (info.kind) {
-                        SubjectAiringKind.UPCOMING -> {
-                            if (info.airDate.isInvalid) {
-                                "未开播"
-                            } else {
-                                info.airDate.toStringExcludingSameYear() + " 开播"
-                            }
-                        }
-
-                        SubjectAiringKind.ON_AIR -> {
-                            if (info.latestSort == null) {
-                                "连载中"
-                            } else {
-                                "连载至第 ${info.latestSort} 话"
-                            }
-                        }
-
-                        SubjectAiringKind.COMPLETED -> "已完结"
-                    }
-                },
-                color = statusColor,
-                maxLines = 1,
-            )
-            if (info.kind == SubjectAiringKind.UPCOMING && info.episodeCount == 0) {
-                // 剧集还未知
-            } else {
-                Text(
-                    " · ",
-                    maxLines = 1,
-                )
-                Text(
-                    when (info.kind) {
-                        SubjectAiringKind.ON_AIR,
-                        SubjectAiringKind.COMPLETED -> "全 ${info.episodeCount} 话"
-
-                        SubjectAiringKind.UPCOMING -> "预定全 ${info.episodeCount} 话"
-                    },
-                    maxLines = 1,
-                )
-            }
-        }
-    }
-}

@@ -21,12 +21,14 @@ package me.him188.ani.app.ui.subject.collection
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -71,7 +73,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.Platform
@@ -86,7 +87,7 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
-import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
 import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.rememberSubjectProgressState
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
@@ -364,17 +365,17 @@ private fun TabContent(
                 },
                 playButton = {
                     if (type != UnifiedCollectionType.DONE) {
-                        if (subjectProgressState.continueWatchingStatus == ContinueWatchingStatus.Done) {
+                        if (subjectProgressState.isDone) {
                             FilledTonalButton(
                                 {
                                     editableSubjectCollectionTypeState.setSelfCollectionType(UnifiedCollectionType.DONE)
                                 },
                                 enabled = !editableSubjectCollectionTypeState.isSetSelfCollectionTypeWorking,
                             ) {
-                                Text("移至\"看过\"", softWrap = false)
+                                Text("移至\"看过\"", Modifier.requiredWidth(IntrinsicSize.Max), softWrap = false)
                             }
                         } else {
-                            PlaySubjectButton(
+                            SubjectProgressButton(
                                 subjectProgressState,
                             )
                         }

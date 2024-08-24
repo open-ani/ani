@@ -34,6 +34,8 @@ actual fun TorrentInput(
  * and awaits [Piece]s to be finished when they are sought and read.
  *
  * 即使 [pieces] 的起始不为 0, [SeekableInput.position] 也是从 0 开始.
+ *
+ * [file] 的长度必须至少包含所有 [pieces] 的字节.
  */
 // tests: me.him188.ani.app.torrent.io.OffsetTorrentInputTest and me.him188.ani.app.torrent.io.TorrentInputTest
 class TorrentInput(
@@ -54,6 +56,12 @@ class TorrentInput(
      */
     private val logicalStartOffset: Long = pieces.minOf { it.offset }, // 默认为第一个 piece 开头
     private val onWait: suspend (Piece) -> Unit = { },
+    /**
+     * 每个方向 (前/后) 的最大的 buffer 大小.
+     *
+     * 每次读取时会等待当前的 piece 完成后读取, 还会同时检查前后相邻 piece 是否也完成了, 如果完成就会把它们也读进来, 减少 IO 次数.
+     * 因此 [bufferSize] 指定的是最大大小. 不会因为过大的 [bufferSize] 而导致等待更多 piece 完成.
+     */
     private val bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
     override val size: Long = file.length()
 ) : BufferedInput(bufferSize) {
@@ -73,8 +81,10 @@ class TorrentInput(
         check(findPieceIndex(0) != -1) {
             "logicalStartOffset $logicalStartOffset is not in any piece"
         }
-        check(findPieceIndex(file.length() - 1) != -1) {
-            "last file pos is not in any piece, maybe because pieces range is too small than file length"
+        val fileLength = file.length()
+        check(fileLength == 0L || findPieceIndex(fileLength - 1) != -1) {
+            "last file pos is not in any piece, maybe because pieces range is too small than file length. " +
+                    "fileLength=$fileLength, piece last index=${pieces.lastOrNull()?.lastIndex}, logicalStartOffset=$logicalStartOffset"
         }
     }
 
@@ -93,6 +103,8 @@ class TorrentInput(
             }
         }
 
+        // 当前 piece 已经完成, 可以读取
+        // 检查一下前后相邻 piece 是不是也已经完成了, 如果完成了就顺便读进来, 减少 IO 次数
         val maxBackward = computeMaxBufferSizeBackward(pos, bufferSize.toLong(), piece = piece)
         val maxForward = computeMaxBufferSizeForward(pos, bufferSize.toLong(), piece = piece)
 

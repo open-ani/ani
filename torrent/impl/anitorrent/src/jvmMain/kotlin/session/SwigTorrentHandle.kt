@@ -49,6 +49,8 @@ class SwigTorrentHandle(
     override fun addTracker(tracker: String, tier: Short, failLimit: Short) {
         native.add_tracker(tracker, tier, failLimit)
     }
+
+    override fun getMagnetUri(): String? = native.make_magnet_uri().takeIf { it.isNotBlank() }
 }
 
 class SwigTorrentDescriptor(

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import kotlinx.datetime.Instant
 
 
 /**
@@ -22,19 +23,18 @@ fun formatDateTime(
         if (timestamp == 0L) ""
         else formatter.format(timestamp, showTime)
     }
-//    val formatter = remember(format) { DateTimeFormatter.ofPattern(format) }
-//    return remember(timestamp) {
-//        formatter.format(java.time.Instant.ofEpochMilli(timestamp))
-//    }
 }
 
-
-//@Composable
-//fun formatDateTime(
-//    timestamp: OffsetDateTime, // millis
-//    format: String = "yyyy-MM-dd HH:mm:ss",
-//): String {
-//    val formatter = DateTimeFormatter.ofPattern(format)
-//    timestamp.atZoneSameInstant(java.time.ZoneId.systemDefault())
-//    return formatter.format(java.time.Instant.ofEpochMilli(timestamp))
-//}
+/**
+ * @see WeekFormatter
+ */
+@Composable
+fun formatDateAsWeek(
+    timestamp: Long, // millis
+    showTime: Boolean = true,
+): String {
+    return remember(timestamp, showTime) {
+        if (timestamp == 0L) ""
+        else WeekFormatter.System.format(Instant.fromEpochMilliseconds(timestamp))
+    }
+}

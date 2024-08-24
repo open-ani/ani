@@ -2,6 +2,7 @@
 #include "torrent_handle_t.hpp"
 
 #include "global_lock.h"
+#include "libtorrent/magnet_uri.hpp"
 
 namespace anilt {
 torrent_handle_t::reload_file_result_t torrent_handle_t::reload_file() {
@@ -135,4 +136,11 @@ void torrent_handle_t::set_file_priority(const int index, const uint8_t priority
                               static_cast<libtorrent::download_priority_t>(priority));
     }
 }
+
+    std::string torrent_handle_t::make_magnet_uri() {
+        if (const auto handle = handle_; handle && handle->is_valid()) {
+            return libtorrent::make_magnet_uri(*handle);
+        }
+        return "";
+    }
 } // namespace anilt

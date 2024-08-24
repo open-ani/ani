@@ -7,22 +7,23 @@ import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
-import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import kotlin.coroutines.CoroutineContext
 
 @Stable
 class SubjectDetailsState(
+    // TODO: maybe refactor 
     subjectInfo: Flow<SubjectInfo>,
     coverImageUrl: Flow<String>,
     selfCollectionType: Flow<UnifiedCollectionType>,
-    airingInfo: Flow<SubjectAiringInfo>,
     persons: Flow<List<RelatedPersonInfo>>,
     characters: Flow<List<RelatedCharacterInfo>>,
     relatedSubjects: Flow<List<RelatedSubjectInfo>>,
+    val airingLabelState: AiringLabelState,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     val info by subjectInfo.produceState<SubjectInfo>(SubjectInfo.Empty)
@@ -32,9 +33,6 @@ class SubjectDetailsState(
 
     private val selfCollectionTypeOrNull by selfCollectionType.produceState(null)
     val selfCollectionType by derivedStateOf { selfCollectionTypeOrNull ?: UnifiedCollectionType.WISH }
-
-    private val airingInfoOrNull by airingInfo.produceState(null)
-    val airingInfo by derivedStateOf { airingInfoOrNull ?: SubjectAiringInfo.EmptyCompleted }
 
     val selfCollected by derivedStateOf { this.selfCollectionType != UnifiedCollectionType.NOT_COLLECTED }
 
@@ -53,7 +51,8 @@ class SubjectDetailsState(
     val isLoading: Boolean by derivedStateOf {
         selfCollectionTypeOrNull == null
                 || charactersOrNull == null || info === SubjectInfo.Empty
-                || personsOrNull == null || airingInfoOrNull == null
+                || personsOrNull == null
                 || relatedSubjectsOrNull == null
+                || airingLabelState.isLoading
     }
 }

@@ -48,6 +48,7 @@ import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
+import me.him188.ani.app.data.repository.EpisodeScreenshotRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepositoryImpl
 import me.him188.ani.app.data.repository.MediaSourceSaves
@@ -63,6 +64,7 @@ import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
+import me.him188.ani.app.data.repository.WhatslinkEpisodeScreenshotRepository
 import me.him188.ani.app.data.source.AniAuthClient
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
@@ -130,6 +132,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SubjectProvider> { BangumiSubjectProvider(get<BangumiClient>()) }
     single<BangumiSubjectRepository> { RemoteBangumiSubjectRepository() }
     single<BangumiRelatedCharactersRepository> { BangumiRelatedCharactersRepository(get()) }
+    single<EpisodeScreenshotRepository> { WhatslinkEpisodeScreenshotRepository() }
     single<SubjectManager> { SubjectManagerImpl(getContext()) }
     single<UserRepository> { UserRepositoryImpl() }
     single<CommentRepository> { BangumiCommentRepositoryImpl(get()) }
