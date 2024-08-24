@@ -14,7 +14,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.selects.select
 import kotlin.jvm.JvmField
+import kotlin.time.Duration
 
+
+fun <T> Flow<T>.sampleWithInitial(period: Duration): Flow<T> = sampleWithInitial(period.inWholeMilliseconds)
 
 /**
  * @see sample

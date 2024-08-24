@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.cache.AbstractMediaStats
 import me.him188.ani.app.data.source.media.cache.MediaCache
+import me.him188.ani.app.data.source.media.cache.MediaCacheState
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.tools.torrent.TorrentEngine
@@ -110,6 +111,8 @@ class TorrentMediaCacheEngine(
         override val metadata: MediaCacheMetadata, // 注意, 我们不能写 check 检查这些属性, 因为可能会有旧版本的数据
         val lazyFileHandle: LazyFileHandle
     ) : MediaCache, SynchronizedObject() {
+        override val state: MutableStateFlow<MediaCacheState> = MutableStateFlow(MediaCacheState.IN_PROGRESS)
+
         override suspend fun getCachedMedia(): CachedMedia {
             logger.info { "getCachedMedia: start" }
             val file = lazyFileHandle.handle.first()
@@ -151,7 +154,14 @@ class TorrentMediaCacheEngine(
                 } ?: flowOf(FileSize.Unspecified)
             }.shareIn(lazyFileHandle.scope, SharingStarted.Lazily, replay = 1)
 
-        override val uploadSpeed: Flow<FileSize>
+        override val sessionDownloadSpeed: Flow<FileSize>
+            get() = entry.flatMapLatest { session ->
+                session?.stats?.downloadRate?.map {
+                    it.bytes
+                } ?: flowOf(FileSize.Unspecified)
+            }
+
+        override val sessionUploadSpeed: Flow<FileSize>
             get() = entry.flatMapLatest { session ->
                 session?.stats?.uploadRate?.map {
                     it.bytes
@@ -172,6 +182,7 @@ class TorrentMediaCacheEngine(
         override suspend fun pause() {
             if (isDeleted.value) return
             lazyFileHandle.handle.first()?.pause()
+            state.value = MediaCacheState.PAUSED
         }
 
         override suspend fun close() {
@@ -182,6 +193,7 @@ class TorrentMediaCacheEngine(
         override suspend fun resume() {
             if (isDeleted.value) return
             val file = lazyFileHandle.handle.first()
+            state.value = MediaCacheState.IN_PROGRESS
             logger.info { "Resuming file: $file" }
             file?.resume(FilePriority.NORMAL)
         }

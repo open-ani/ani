@@ -29,5 +29,13 @@ enum class OpenFailures {
 
 class VideoSourceOpenException(
     val reason: OpenFailures,
+    message: String? = null,
     override val cause: Throwable? = null,
-) : Exception("Failed to open video source: $reason", cause)
+) : Exception(
+    if (message == null) {
+        "Failed to open video source: $reason"
+    } else {
+        "Failed to open video source: $reason. $message"
+    },
+    cause,
+)

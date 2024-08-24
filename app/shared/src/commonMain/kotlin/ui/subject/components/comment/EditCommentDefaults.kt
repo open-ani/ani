@@ -88,6 +88,11 @@ object EditCommentDefaults {
     }
 
     @Composable
+    fun CommentTextFieldPlaceholder(modifier: Modifier = Modifier) {
+        Text(text = "发送评论", modifier, softWrap = false)
+    }
+
+    @Composable
     fun CommentTextField(
         value: TextFieldValue,
         onValueChange: (TextFieldValue) -> Unit,

@@ -4,6 +4,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
@@ -11,6 +12,7 @@ import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.utils.platform.annotations.TestOnly
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.absoluteValue
 
 /**
@@ -40,6 +42,8 @@ interface MediaCache {
      */
     val metadata: MediaCacheMetadata
 
+    val state: StateFlow<MediaCacheState>
+
     /**
      * Returns the [CachedMedia] instance for this cache.
      * The instance is cached so this function will immediately return the cached instance after the first successful call.
@@ -54,18 +58,24 @@ interface MediaCache {
     /**
      * 下载速度, 每秒. 对于不支持下载的缓存, 该值为 [FileSize.Zero].
      *
+     * 为单个文件的下载速度.
+     *
      * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
      * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
      */
     val downloadSpeed: Flow<FileSize>
 
+    val sessionDownloadSpeed: Flow<FileSize> get() = downloadSpeed
+
     /**
      * 上传速度, 每秒. 对于不支持上传的缓存, 该值为 [FileSize.Zero].
+     *
+     * 注意, 这实际上是整个 media 的下载速度.
      *
      * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
      * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
      */
-    val uploadSpeed: Flow<FileSize>
+    val sessionUploadSpeed: Flow<FileSize> // todo this is shit
 
     /**
      * 下载进度, 范围为 `0.0f..1.0f`.
@@ -123,6 +133,8 @@ interface MediaCache {
     /**
      * 尝试删除此 [MediaCache] 所涉及的文件.
      *
+     * 注意! 你很可能需要使用 [MediaCacheManager.deleteCache]. 因为单独 [MediaCache.closeAndDeleteFiles] 并不会从 storage 中删除.
+     *
      * 此函数必须关闭所有使用的资源, 清理潜在的缓存文件, 且不得抛出异常 (除非是 [CancellationException]).
      */
     suspend fun closeAndDeleteFiles()
@@ -133,15 +145,26 @@ interface MediaCache {
                     + metadata.subjectId.hashCode() * 31
                     + metadata.episodeId.hashCode()).absoluteValue.toString()
             val subjectName = metadata.subjectNames.firstOrNull() ?: metadata.subjectId
-            if (subjectName != null) {
-                fun removeSpecials(value: String): String {
-                    return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
-                }
-                return "${removeSpecials(subjectName).take(8)}-$hash"
+            fun removeSpecials(value: String): String {
+                return value.replace(Regex("""[-\\|/.,;'\[\]{}()=_ ~!@#$%^&*]"""), "")
             }
-            return hash
+            return "${removeSpecials(subjectName).take(8)}-$hash"
         }
     }
+}
+
+val MediaCache.downloadedSize
+    get() = this.totalSize.combine(this.progress) { totalSize, progress ->
+        if (totalSize == FileSize.Unspecified) {
+            FileSize.Unspecified
+        } else {
+            totalSize * progress
+        }
+    }
+
+enum class MediaCacheState {
+    IN_PROGRESS,
+    PAUSED,
 }
 
 open class TestMediaCache(
@@ -151,11 +174,13 @@ open class TestMediaCache(
     override val totalSize: Flow<FileSize> = MutableStateFlow(0.bytes),
 ) : MediaCache {
     override val origin: Media get() = media.origin
+    override val state: MutableStateFlow<MediaCacheState> = MutableStateFlow(MediaCacheState.IN_PROGRESS)
+
     override suspend fun getCachedMedia(): CachedMedia = media
     override fun isValid(): Boolean = true
 
     override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
-    override val uploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
+    override val sessionUploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
     override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
 
     private val resumeCalled = atomic(0)

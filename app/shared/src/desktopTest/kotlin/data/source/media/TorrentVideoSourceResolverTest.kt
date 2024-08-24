@@ -28,6 +28,25 @@ class SelectVideoFileAnitorrentEntryTest {
     }
 
     @Test
+    fun `case from #813`() {
+        val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
+            listOf("[MingY] Senpai wa Otokonoko [06][1080p][CHS&JPN].mp4"),
+            { this },
+            episodeTitles = """
+                - 前辈是男孩子
+                - 先輩はおとこのこ
+                - 学姐是男孩
+                - 前辈是伪娘
+                - Senpai wa Otokonoko
+                - Senpai Is an Otokonoko
+            """.trimIndent().split("\n").map { it.trim().removePrefix("- ") },
+            episodeSort = EpisodeSort(6),
+            episodeEp = EpisodeSort(6),
+        )
+        assertNotNull(selected)
+    }
+
+    @Test
     fun `can select from multiple by episodeSort`() {
         val selected = TorrentVideoSourceResolver.selectVideoFileEntry(
             json.decodeFromString(

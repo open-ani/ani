@@ -2,9 +2,10 @@ package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -21,18 +22,11 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +36,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
@@ -66,12 +61,6 @@ fun EpisodeCommentColumn(
     val imageViewer = LocalImageViewerHandler.current
     val density = LocalDensity.current
 
-    val navigationBars = WindowInsets.navigationBars
-    var stubPanelHeight by rememberSaveable { mutableStateOf(0) }
-    val listBottomPadding by remember {
-        derivedStateOf { navigationBars.getBottom(density) + stubPanelHeight }
-    }
-
     LaunchedEffect(true) {
         launch {
             snapshotFlow { state.sourceVersion }
@@ -91,53 +80,53 @@ fun EpisodeCommentColumn(
 
 
     Box(modifier = modifier.clipToBounds()) {
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(pullToRefreshState.nestedScrollConnection),
-            contentPadding = PaddingValues(bottom = with(density) { listBottomPadding.toDp() }),
-        ) {
-            item { }
-            itemsIndexed(state.list, key = { _, item -> item.id }) { index, item ->
-                EpisodeComment(
-                    comment = item,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp)
-                        // 如果没有回复则 ActionBar 就是最后一个元素，减小一下 bottom padding 以看起来舒服
-                        .padding(top = 12.dp, bottom = if (item.replyCount != 0) 12.dp else 4.dp),
-                    onClickImage = { imageViewer.viewImage(it) },
-                    onActionReply = { onClickReply(item.id) },
-                    onClickUrl = onClickUrl,
-                )
-                if (index != state.list.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = DividerDefaults.color.stronglyWeaken(),
-                    )
-                }
-            }
-            if (state.hasMore) {
-                item("dummy loader") {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        CircularProgressIndicator()
-                    }
-
-                    LaunchedEffect(true) { state.loadMore() }
-                }
-            }
-        }
-        if (isInDebugMode()) {
-            EditCommentBottomStubPanel(
-                text = editCommentStubText,
-                hint = "发送评论",
+        Column {
+            LazyColumn(
+                state = lazyListState,
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .onSizeChanged { stubPanelHeight = it.height },
-                onClickEmoji = onClickEditCommentStubEmoji,
-                onClickEditText = onClickEditCommentStub,
-            )
+                    .weight(1f)
+                    .fillMaxSize()
+                    .nestedScroll(pullToRefreshState.nestedScrollConnection),
+                contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+            ) {
+                item { }
+                itemsIndexed(state.list, key = { _, item -> item.id }) { index, item ->
+                    EpisodeComment(
+                        comment = item,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp)
+                            // 如果没有回复则 ActionBar 就是最后一个元素，减小一下 bottom padding 以看起来舒服
+                            .padding(top = 12.dp, bottom = if (item.replyCount != 0) 12.dp else 4.dp),
+                        onClickImage = { imageViewer.viewImage(it) },
+                        onActionReply = { onClickReply(item.id) },
+                        onClickUrl = onClickUrl,
+                    )
+                    if (index != state.list.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = DividerDefaults.color.stronglyWeaken(),
+                        )
+                    }
+                }
+                if (state.hasMore) {
+                    item("dummy loader") {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            CircularProgressIndicator()
+                        }
+
+                        LaunchedEffect(true) { state.loadMore() }
+                    }
+                }
+            }
+            if (isInDebugMode() || LocalIsPreviewing.current) {
+                HorizontalDivider()
+                EditCommentBottomStubPanel(
+                    text = editCommentStubText,
+                    onClickEditText = onClickEditCommentStub,
+                    onClickEmoji = onClickEditCommentStubEmoji,
+                )
+            }
         }
         PullToRefreshContainer(
             state = pullToRefreshState,
