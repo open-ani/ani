@@ -75,3 +75,19 @@ fun runDynamicTests(vararg dynamicTests: DynamicTest): DynamicTestsResult = runD
  * The returned value must be returned from the function annotated with [TestFactory], otherwise the tests won't be executed on some platforms.
  */
 fun runDynamicTests(dynamicTests: Sequence<DynamicTest>): DynamicTestsResult = runDynamicTests(dynamicTests.toList())
+
+class DynamicTestsBuilder {
+    private val list = mutableListOf<DynamicTest>()
+    fun add(displayName: String, action: () -> Unit) {
+        list.add(dynamicTest(displayName, action))
+    }
+
+    internal fun build() = list
+}
+
+/**
+ * The returned value must be returned from the function annotated with [TestFactory], otherwise the tests won't be executed on some platforms.
+ */
+fun runDynamicTests(action: DynamicTestsBuilder.() -> Unit): DynamicTestsResult =
+    runDynamicTests(dynamicTests = DynamicTestsBuilder().apply(action).build())
+
