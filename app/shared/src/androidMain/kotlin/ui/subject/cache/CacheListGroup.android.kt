@@ -17,16 +17,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import kotlin.coroutines.EmptyCoroutineContext
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 @Preview
@@ -121,6 +124,7 @@ private fun PreviewEpisodeCacheActionIconHasActionRunningChange() {
     }
 }
 
+@OptIn(TestOnly::class)
 @Preview
 @Composable
 private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
@@ -129,23 +133,15 @@ private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
         listOf(true, false).forEach { hasPublished ->
             UnifiedCollectionType.entries.forEach { watchStatus ->
                 EpisodeCacheItem(
-                    episode = remember {
-                        EpisodeCacheState(
-                            0,
-                            { EpisodeCacheRequester(flowOf(), MediaSelectorFactory.withKoin(), flowOf()) },
-                            infoState = MutableStateFlow(
-                                EpisodeCacheInfo(
-                                    sort = EpisodeSort(++id),
-                                    ep = null,
-                                    title = "$watchStatus - ${if (hasPublished) "已开播" else "未开播"}",
-                                    watchStatus = watchStatus,
-                                    hasPublished = true,
-                                ),
-                            ),
-                            cacheStatusState = MutableStateFlow(EpisodeCacheStatus.NotCached),
-                            EmptyCoroutineContext,
-                        )
-                    },
+                    episode = rememberTestEpisodeCacheState(
+                        info = EpisodeCacheInfo(
+                            sort = EpisodeSort(++id),
+                            ep = null,
+                            title = "$watchStatus - ${if (hasPublished) "已开播" else "未开播"}",
+                            watchStatus = watchStatus,
+                            hasPublished = true,
+                        ),
+                    ),
                     onClick = {},
                     isRequestHidden = false,
                     dropdown = { },
@@ -155,31 +151,42 @@ private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
     }
 }
 
+@OptIn(TestOnly::class)
 @Preview
 @Composable
 private fun PreviewEpisodeItemVeryLong() = ProvideCompositionLocalsForPreview {
     SettingsTab {
         EpisodeCacheItem(
-            remember {
-                EpisodeCacheState(
-                    0,
-                    { EpisodeCacheRequester(flowOf(), MediaSelectorFactory.withKoin(), flowOf()) },
-                    infoState = MutableStateFlow(
-                        EpisodeCacheInfo(
-                            sort = EpisodeSort(1),
-                            ep = null,
-                            title = "测试标题".repeat(10),
-                            watchStatus = UnifiedCollectionType.WISH,
-                            hasPublished = true,
-                        ),
-                    ),
-                    cacheStatusState = MutableStateFlow(EpisodeCacheStatus.NotCached),
-                    EmptyCoroutineContext,
-                )
-            },
+            rememberTestEpisodeCacheState(
+                EpisodeCacheInfo(
+                    sort = EpisodeSort(1),
+                    ep = null,
+                    title = "测试标题".repeat(10),
+                    watchStatus = UnifiedCollectionType.WISH,
+                    hasPublished = true,
+                ),
+                EpisodeCacheStatus.NotCached,
+            ),
             onClick = {},
             isRequestHidden = false,
             dropdown = { },
         )
     }
+}
+
+@Composable
+@OptIn(DelicateCoroutinesApi::class)
+@TestOnly
+fun rememberTestEpisodeCacheState(
+    info: EpisodeCacheInfo,
+    cacheStatus: EpisodeCacheStatus = EpisodeCacheStatus.NotCached,
+) = remember {
+    EpisodeCacheState(
+        0,
+        EpisodeCacheRequester(flowOf(), MediaSelectorFactory.withKoin(), flowOf()),
+        currentStageState = stateOf(CacheRequestStage.Idle),
+        infoState = stateOf(info),
+        cacheStatusState = stateOf(cacheStatus),
+        GlobalScope,
+    )
 }
