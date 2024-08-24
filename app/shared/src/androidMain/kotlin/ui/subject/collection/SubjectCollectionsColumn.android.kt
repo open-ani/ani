@@ -14,13 +14,14 @@ import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
 import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.episode.details.PreviewScope
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 
 val TestSubjectCollections = buildList {
@@ -56,7 +57,6 @@ val TestSubjectCollections = buildList {
         ),
 
         )
-    val latestEp = eps[1]
     add(
         testSubjectCollection(++id, eps, UnifiedCollectionType.DOING),
     )
@@ -169,6 +169,7 @@ private fun PreviewSubjectCollectionsColumnEmpty() {
     }
 }
 
+@OptIn(TestOnly::class)
 @Composable
 private fun TestSubjectCollectionItem(it: SubjectCollection) {
     SubjectCollectionItem(
@@ -177,7 +178,7 @@ private fun TestSubjectCollectionItem(it: SubjectCollection) {
         onClick = { },
         onShowEpisodeList = { },
         playButton = {
-            PlaySubjectButton(
+            SubjectProgressButton(
                 state = rememberTestSubjectProgressState(
                     when (it.subjectId % 4) {
                         0 -> TestSubjectProgressInfos.NotOnAir

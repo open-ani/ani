@@ -12,6 +12,11 @@ import me.him188.ani.datasources.api.EpisodeSort
 import kotlin.time.Duration.Companion.days
 import kotlin.time.times
 
+/**
+ * 一个条目自身连载进度, 与用户是否观看无关
+ *
+ * @see SubjectProgressInfo
+ */
 @Immutable
 data class SubjectAiringInfo(
     val kind: SubjectAiringKind,

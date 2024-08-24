@@ -34,9 +34,9 @@ import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
 import me.him188.ani.app.ui.subject.details.components.SubjectCommentColumn
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
-import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
+import me.him188.ani.app.ui.subject.details.components.createTestAiringLabelState
 import me.him188.ani.app.ui.subject.details.components.generateUiComment
 import me.him188.ani.app.ui.subject.details.components.rememberTestCommentState
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
@@ -44,6 +44,7 @@ import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgre
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.random.Random
 
 internal fun testPersonInfo(
@@ -146,6 +147,7 @@ fun rememberTestEditableRatingState(): EditableRatingState {
     }
 }
 
+@OptIn(TestOnly::class)
 @Preview
 @Preview(device = Devices.TABLET)
 @Composable
@@ -157,7 +159,7 @@ internal fun PreviewSubjectDetails() {
                 subjectInfo = MutableStateFlow(TestSubjectInfo),
                 coverImageUrl = MutableStateFlow("https://ui-avatars.com/api/?name=John+Doe"),
                 selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
-                airingInfo = MutableStateFlow(TestSubjectAiringInfo),
+                airingLabelState = createTestAiringLabelState(),
                 characters = MutableStateFlow(TestSubjectCharacterList),
                 persons = MutableStateFlow(emptyList()),
                 relatedSubjects = MutableStateFlow(TestRelatedSubjects),

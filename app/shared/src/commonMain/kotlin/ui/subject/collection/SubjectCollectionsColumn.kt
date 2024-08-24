@@ -54,7 +54,9 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
 import me.him188.ani.app.ui.subject.details.components.OutlinedTag
 
@@ -247,7 +249,10 @@ private fun SubjectCollectionItemContent(
 
                 // 连载至第 28 话 · 全 34 话
                 AiringLabel(
-                    item.airingInfo, Modifier.padding(start = 8.dp),
+                    remember(item) {
+                        AiringLabelState(stateOf(item.airingInfo), stateOf(item.progressInfo))
+                    },
+                    Modifier.padding(start = 8.dp),
                     style = MaterialTheme.typography.labelMedium,
                 )
             }

@@ -100,6 +100,11 @@ fun PackedDate.toStringExcludingSameYear(): String = when {
     else -> toString()
 }
 
+fun PackedDate.toLocalDateOrNull(): LocalDate? {
+    if (isInvalid) return null
+    return LocalDate(year, month, day)
+}
+
 fun PackedDate?.isNullOrInvalid(): Boolean = this == null || this.isInvalid
 
 inline fun PackedDate.ifInvalid(block: () -> PackedDate): PackedDate {

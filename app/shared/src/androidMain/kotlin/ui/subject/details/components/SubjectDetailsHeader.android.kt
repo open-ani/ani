@@ -5,20 +5,26 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import me.him188.ani.app.data.models.PackedDate
+import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringKind
 import me.him188.ani.app.data.models.subject.SubjectCollectionStats
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.details.rememberTestEditableRatingState
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.TestRatingInfo
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 internal val TestCollectionStats = SubjectCollectionStats(
     wish = 100,
@@ -75,6 +81,10 @@ fun rememberTestEditableSubjectCollectionTypeState(type: UnifiedCollectionType =
 fun PreviewSubjectDetailsHeaderCompleted() {
     PreviewSubjectDetailsHeader(
         airingInfo = TestSubjectAiringInfo,
+        progressInfo = SubjectProgressInfo(
+            continueWatchingStatus = ContinueWatchingStatus.Done,
+            nextEpisodeIdToPlay = null,
+        ),
         subjectInfo = TestSubjectInfo,
     )
 }
@@ -84,6 +94,10 @@ fun PreviewSubjectDetailsHeaderCompleted() {
 fun PreviewSubjectDetailsHeaderCompletedLong() {
     PreviewSubjectDetailsHeader(
         airingInfo = TestSubjectAiringInfo,
+        progressInfo = SubjectProgressInfo(
+            continueWatchingStatus = ContinueWatchingStatus.Done,
+            nextEpisodeIdToPlay = null,
+        ),
         subjectInfo = TestSubjectInfo.copy(
             nameCn = "孤独摇滚".repeat(20),
         ),
@@ -93,27 +107,51 @@ fun PreviewSubjectDetailsHeaderCompletedLong() {
 @Composable
 @Preview
 @Preview(device = Devices.TABLET)
-fun PreviewSubjectDetailsHeaderOnAir() {
+fun PreviewSubjectDetailsHeaderOnAirWatched() {
     PreviewSubjectDetailsHeader(
         airingInfo = TestSubjectAiringInfo.copy(
             kind = SubjectAiringKind.ON_AIR,
             episodeCount = 24,
             latestSort = EpisodeSort(20),
         ),
+        progressInfo = SubjectProgressInfo(
+            continueWatchingStatus = ContinueWatchingStatus.Watched(0, EpisodeSort(20), PackedDate.Invalid),
+            nextEpisodeIdToPlay = null,
+        ),
     )
 }
 
 @Composable
+@Preview
+@Preview(device = Devices.TABLET)
+fun PreviewSubjectDetailsHeaderOnAirContinue() {
+    PreviewSubjectDetailsHeader(
+        airingInfo = TestSubjectAiringInfo.copy(
+            kind = SubjectAiringKind.ON_AIR,
+            episodeCount = 24,
+            latestSort = EpisodeSort(20),
+        ),
+        progressInfo = SubjectProgressInfo(
+            continueWatchingStatus = ContinueWatchingStatus.Continue(0, EpisodeSort(20), EpisodeSort(19)),
+            nextEpisodeIdToPlay = null,
+        ),
+    )
+}
+
+@OptIn(TestOnly::class)
+@Composable
 fun PreviewSubjectDetailsHeader(
     airingInfo: SubjectAiringInfo,
+    progressInfo: SubjectProgressInfo,
     subjectInfo: SubjectInfo = TestSubjectInfo,
 ) {
     ProvideCompositionLocalsForPreview {
-        val backgroundScope = rememberBackgroundScope()
         SubjectDetailsHeader(
             subjectInfo,
             TestCoverImage,
-            airingInfo = airingInfo,
+            airingLabelState = remember {
+                AiringLabelState(stateOf(airingInfo), stateOf(progressInfo))
+            },
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
                     collectionStats = subjectInfo.collection,
@@ -136,37 +174,8 @@ fun PreviewSubjectDetailsHeader(
     }
 }
 
-
-//@Composable
-//@Preview(device = Devices.TABLET)
-//private fun PreviewHeaderScaffoldWide() {
-//    ProvideCompositionLocalsForPreview {
-//        val info = TestSubjectInfo
-//        SubjectDetailsHeaderWide(
-//            coverImageUrl = null,
-//            ratingInfo = info.ratingInfo,
-//            selfRatingScore = 7,
-//            onClickRating = {},
-//            title = { Text(text = info.displayName) },
-//            subtitle = { Text(text = info.name) },
-//            seasonTags = {
-//                OutlinedTag {
-//                    Text(renderSubjectSeason(info.publishDate))
-//                }
-//            },
-//            collectionData = {
-//                SubjectDetailsDefaults.CollectionData(info)
-//            },
-//            collectionAction = {
-//                SubjectDetailsDefaults.CollectionAction(
-//                    UnifiedCollectionType.WISH,
-//                    onSetCollectionType = { },
-//                )
-//            },
-//            selectEpisodeButton = {
-//                SubjectDetailsDefaults.SelectEpisodeButton({})
-//            },
-//        )
-//    }
-//}
-//
+@TestOnly
+internal fun createTestAiringLabelState(
+    airingInfo: SubjectAiringInfo = TestSubjectAiringInfo,
+    progressInfo: SubjectProgressInfo = TestSubjectProgressInfos.ContinueWatching2,
+): AiringLabelState = AiringLabelState(stateOf(airingInfo), stateOf(progressInfo))

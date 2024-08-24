@@ -26,6 +26,7 @@ import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListStateFactory
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
@@ -55,6 +56,9 @@ class SubjectDetailsViewModel(
 
     val authState = AuthState()
 
+    private val subjectProgressInfoState = subjectCollectionFlow.map { SubjectProgressInfo.calculate(it) }
+        .produceState(null)
+
     val subjectProgressState = kotlin.run {
         SubjectProgressStateFactory(
             subjectManager,
@@ -64,8 +68,7 @@ class SubjectDetailsViewModel(
         ).run {
             SubjectProgressState(
                 stateOf(subjectId),
-                subjectCollectionFlow.map { SubjectProgressInfo.calculate(it) }
-                    .produceState(SubjectProgressInfo.Empty),
+                subjectProgressInfoState,
                 episodeProgressInfoList(subjectId).produceState(emptyList()),
                 onPlay,
             )
@@ -77,7 +80,10 @@ class SubjectDetailsViewModel(
             subjectInfo = subjectInfo,
             coverImageUrl = subjectInfo.map { it.imageLarge },
             selfCollectionType = subjectCollectionFlow.map { it.collectionType },
-            airingInfo = subjectCollectionFlow.map { it.airingInfo },
+            airingLabelState = AiringLabelState(
+                subjectCollectionFlow.map { it.airingInfo }.produceState(null),
+                subjectProgressInfoState,
+            ),
             persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
             }.onCompletion { if (it != null) emit(emptyList()) },
