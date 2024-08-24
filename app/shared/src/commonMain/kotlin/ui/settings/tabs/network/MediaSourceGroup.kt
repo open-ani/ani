@@ -59,7 +59,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -93,8 +92,6 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
             onDismissRequest = { showAdd = false },
         )
     }
-
-    ErrorDialogHost(vm.savingError)
 
     vm.editMediaSourceState?.let {
         // 准备添加这个数据源, 需要配置

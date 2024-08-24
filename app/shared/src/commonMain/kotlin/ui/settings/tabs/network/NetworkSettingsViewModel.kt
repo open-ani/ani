@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -20,7 +19,6 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
-import me.him188.ani.app.ui.foundation.feedback.ErrorMessage
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
@@ -186,41 +184,25 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         )
     }
 
-    var savingError = MutableStateFlow<ErrorMessage?>(null)
-
     fun confirmEdit(state: EditMediaSourceState) {
         when (state.editType) {
             EditType.Add -> {
-                savingError.value = ErrorMessage.processing("正在添加")
                 launchInBackground {
-                    try {
-                        mediaSourceManager.addInstance(
-                            state.info.mediaSourceId,
-                            state.createConfig(),
-                        )
-                        savingError.value = null
-                        withContext(Dispatchers.Main) { cancelEdit() }
-                    } catch (e: Throwable) {
-                        savingError.value = ErrorMessage.simple("添加失败", cause = e)
-                        return@launchInBackground
-                    }
+                    mediaSourceManager.addInstance(
+                        state.info.mediaSourceId,
+                        state.createConfig(),
+                    )
+                    withContext(Dispatchers.Main) { cancelEdit() }
                 }
             }
 
             is EditType.Edit -> {
-                savingError.value = ErrorMessage.processing("正在保存")
                 launchInBackground {
-                    try {
-                        mediaSourceManager.updateConfig(
-                            state.editType.instanceId,
-                            state.createConfig(),
-                        )
-                        savingError.value = null
-                        withContext(Dispatchers.Main) { cancelEdit() }
-                    } catch (e: Throwable) {
-                        savingError.value = ErrorMessage.simple("保存失败", cause = e)
-                        return@launchInBackground
-                    }
+                    mediaSourceManager.updateConfig(
+                        state.editType.instanceId,
+                        state.createConfig(),
+                    )
+                    withContext(Dispatchers.Main) { cancelEdit() }
                 }
             }
         }
