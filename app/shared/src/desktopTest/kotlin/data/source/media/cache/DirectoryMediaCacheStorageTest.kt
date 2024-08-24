@@ -68,7 +68,9 @@ class DirectoryMediaCacheStorageTest {
     private suspend fun torrentDownloader(): TestAnitorrentTorrentDownloader =
         torrentEngine.getDownloader() as TestAnitorrentTorrentDownloader
 
-    private val json = Json
+    private val json = Json {
+        prettyPrint = true
+    }
 
     private fun TestScope.createEngine(
         onDownloadStarted: suspend (session: AnitorrentDownloadSession) -> Unit = {},
@@ -140,13 +142,16 @@ class DirectoryMediaCacheStorageTest {
     private suspend fun TorrentMediaCacheEngine.TorrentMediaCache.getSession() =
         lazyFileHandle.state.first()!!.session as AnitorrentDownloadSession
 
-    private fun amendJsonString(@Language("json") string: String, block: JsonObjectBuilder.() -> Unit): String {
+    private fun amendJsonString(
+        @Language("json") string: String,
+        block: JsonObjectBuilder.(origin: JsonObject) -> Unit
+    ): String {
         json.decodeFromString(JsonObject.serializer(), string).let {
             return json.encodeToString(
                 JsonObject.serializer(),
                 buildJsonObject {
                     putAll(it)
-                    block()
+                    block(it)
                 },
             )
         }
@@ -299,10 +304,6 @@ class DirectoryMediaCacheStorageTest {
         assertEquals("0-500562845", cache.cacheId)
     }
 
-    private val jsonPrettyPrint = Json {
-        prettyPrint = true
-    }
-
     /**
      * 检查序列化后的结果
      */
@@ -363,12 +364,12 @@ class DirectoryMediaCacheStorageTest {
                         "episodeName": "测试剧集",
                         "extra": {
                             "torrentData": "7b2264617461223a7b2274797065223a224d61676e6574557269222c22757269223a226d61676e65743a3f78743d75726e3a627469683a31227d2c2268747470546f7272656e7446696c6550617468223a6e756c6c7d",
-                            "torrentCacheDir": "$dir/pieces/2071812470"
+                            "torrentCacheDir": "${dir.resolve("pieces/2071812470").absolutePath.replace("\\", "\\\\")}"
                         }
                     }
                 }
             """.trimIndent(),
-            jsonPrettyPrint.encodeToString(
+            json.encodeToString(
                 JsonObject.serializer(),
                 Json.decodeFromString(
                     JsonObject.serializer(),
