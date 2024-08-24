@@ -417,9 +417,9 @@ private fun EpisodeSceneContentPhone(
                 focusRequester,
                 Modifier.imePadding(),
             )
-        }
-        LaunchedEffect(true) {
-            focusRequester.requestFocus()
+            LaunchedEffect(true) {
+                focusRequester.requestFocus()
+            }
         }
     }
 
