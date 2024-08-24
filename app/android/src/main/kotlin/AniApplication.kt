@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.media.cache.MediaCacheNotificationTask
 import me.him188.ani.app.platform.AndroidLoggingConfigurator
 import me.him188.ani.app.platform.AndroidLoggingConfigurator.getLogsDir
+import me.him188.ani.app.platform.JvmLogHelper
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
@@ -37,6 +38,7 @@ import me.him188.ani.app.ui.settings.tabs.media.DEFAULT_TORRENT_CACHE_DIR_NAME
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import java.nio.file.Paths
 
 class AniApplication : Application() {
     companion object {
@@ -90,7 +92,13 @@ class AniApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        AndroidLoggingConfigurator.configure(applicationContext.getLogsDir().absolutePath)
+        val logsDir = applicationContext.getLogsDir().absolutePath
+        AndroidLoggingConfigurator.configure(logsDir)
+        runCatching {
+            JvmLogHelper.deleteOldLogs(Paths.get(logsDir))
+        }.onFailure {
+            Log.e("AniApplication", "Failed to delete old logs", it)
+        }
 
         instance = Instance(this)
 

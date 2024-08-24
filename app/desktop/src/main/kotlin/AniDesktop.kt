@@ -63,6 +63,7 @@ import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.GrantedPermissionManager
+import me.him188.ani.app.platform.JvmLogHelper
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.Platform
@@ -139,6 +140,11 @@ object AniDesktop {
         println("logsDir: file://${logsDir.absolutePath.replace(" ", "%20")}")
 
         Log4j2Config.configureLogging(logsDir)
+        kotlin.runCatching {
+            JvmLogHelper.deleteOldLogs(logsDir.toPath())
+        }.onFailure {
+            logger.error(it) { "Failed to delete old logs" }
+        }
 
         if (AniBuildConfigDesktop.isDebug) {
             logger.info { "Debug mode enabled" }
