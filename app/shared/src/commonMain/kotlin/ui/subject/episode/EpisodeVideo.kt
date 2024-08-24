@@ -58,10 +58,10 @@ import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterSta
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EditDanmakuRegexFilterSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
-import me.him188.ani.app.ui.subject.episode.video.sidesheet.EditDanmakuRegexFilterSideSheet
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
@@ -406,8 +406,8 @@ internal fun EpisodeVideoImpl(
                     danmakuRegexFilterState = danmakuRegexFilterState,
                     onDismissRequest = {
                         showEditDanmakuRegexFilterSideSheet = false
-                        showSettings = true
                     },
+                    expanded = expanded,
                 )
             } else {
                 if (showSettings) {

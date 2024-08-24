@@ -22,6 +22,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,8 +45,38 @@ fun EditDanmakuRegexFilterSideSheet(
     danmakuRegexFilterState: DanmakuRegexFilterState,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    expanded: Boolean = true,  // Use the expanded parameter
 ) {
     val focusManager = LocalFocusManager.current
+    var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
+    var regexTextFieldOutlineTitleText by rememberSaveable { mutableStateOf("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") }
+
+    // Monitor the expanded state and update the title text accordingly
+    LaunchedEffect(expanded) {
+        regexTextFieldOutlineTitleText = if (expanded) {
+            "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+        } else {
+            "竖屏状态下无法编辑"
+        }
+    }
+
+    fun handleAdd() {
+        if (regexTextFieldValue.isNotBlank()) {
+            danmakuRegexFilterState.addDanmakuRegexFilter(
+                DanmakuRegexFilter(
+                    id = Uuid.randomString(),
+                    name = "",
+                    regex = regexTextFieldValue,
+                    enabled = true,
+                ),
+            )
+            regexTextFieldValue = "" // Clear the text field after adding
+            focusManager.clearFocus()
+        } else {
+            regexTextFieldOutlineTitleText = "正则输入法不能为空"
+        }
+    }
+
     EpisodeVideoSettingsSideSheet(
         onDismissRequest = onDismissRequest,
         title = { Text(text = "正则弹幕过滤管理") },
@@ -57,26 +88,6 @@ fun EditDanmakuRegexFilterSideSheet(
         modifier = modifier.testTag(TAG_EPISODE_SELECTOR_SHEET)
             .clickable(onClick = { focusManager.clearFocus() }),
     ) {
-        var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
-        var regexTextFieldOutlineTitleText by rememberSaveable { mutableStateOf("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") }
-
-        fun handleAdd() {
-            if (regexTextFieldValue.isNotBlank()) {
-                danmakuRegexFilterState.addDanmakuRegexFilter(
-                    DanmakuRegexFilter(
-                        id = Uuid.randomString(),
-                        name = "",
-                        regex = regexTextFieldValue,
-                        enabled = true,
-                    ),
-                )
-                regexTextFieldValue = "" // Clear the text field after adding
-                focusManager.clearFocus()
-            } else {
-                regexTextFieldOutlineTitleText = "正则输入法不能为空"
-            }
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -95,8 +106,10 @@ fun EditDanmakuRegexFilterSideSheet(
                             value = regexTextFieldValue,
                             onValueChange = {
                                 regexTextFieldValue = it
-                                regexTextFieldOutlineTitleText =
-                                    "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+                                if (expanded) {
+                                    regexTextFieldOutlineTitleText =
+                                        "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+                                }
                             },
                             label = {
                                 Text(
@@ -104,6 +117,7 @@ fun EditDanmakuRegexFilterSideSheet(
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
+                            enabled = expanded,  // Disable the text field if expanded is false
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Done,
                             ),
@@ -115,6 +129,7 @@ fun EditDanmakuRegexFilterSideSheet(
                         // 提交按钮
                         TextButton(
                             onClick = { handleAdd() },
+                            enabled = expanded,  // Disable the button if expanded is false
                         ) {
                             Text(color = MaterialTheme.colorScheme.primary, text = "添加")
                         }
