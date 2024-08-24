@@ -75,7 +75,7 @@ fun MediaFetchRequest.toStringMultiline() = buildString {
  * 尝试匹配
  */
 infix fun MediaFetchRequest.matches(cache: MediaCacheMetadata): MatchKind? {
-    if (episodeId != null && cache.episodeId != null) {
+    if (episodeId != "" && cache.episodeId != "") {
         // Both query and cache have episodeId, perform exact match.
         if (cache.episodeId == episodeId) {
             return MatchKind.EXACT
