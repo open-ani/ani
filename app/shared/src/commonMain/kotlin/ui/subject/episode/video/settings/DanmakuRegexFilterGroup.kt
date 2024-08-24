@@ -12,8 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
@@ -136,7 +134,7 @@ internal fun RegexFilterItem(
     onDisable: () -> Unit,
     onDelete: () -> Unit
 ) {
-    var showConfirmDelete by rememberSaveable { mutableStateOf(false) }
+//    var showConfirmDelete by rememberSaveable { mutableStateOf(false) }
     ElevatedFilterChip(
         selected = item.enabled,
         onClick = onDisable,
@@ -152,37 +150,37 @@ internal fun RegexFilterItem(
             Icon(
                 Icons.Rounded.Close,
                 contentDescription = null,
-                Modifier.clickable(onClick = { showConfirmDelete = true }),
+                Modifier.clickable(onClick = onDelete),
             )
         },
     )
 
-    if (showConfirmDelete) {
-        AlertDialog(
-            onDismissRequest = { showConfirmDelete = false },
-            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("删除正则") },
-            text = { Text("确认删除 \"${item.regex}\"？") },
-            confirmButton = {
-                TextButton({ onDelete(); showConfirmDelete = false }) {
-                    Text(
-                        "删除",
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
-            modifier = Modifier.fillMaxWidth()
-                .onKeyEvent { event: KeyEvent ->
-                    if (event.key == Key.Enter) {
-                        onDelete()
-                        true // Consume the event
-                    } else {
-                        false // Pass the event to other handlers
-                    }
-                },
-        )
-    }
+//    if (showConfirmDelete) {
+//        AlertDialog(
+//            onDismissRequest = { showConfirmDelete = false },
+//            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+//            title = { Text("删除正则") },
+//            text = { Text("确认删除 \"${item.regex}\"？") },
+//            confirmButton = {
+//                TextButton({ onDelete(); showConfirmDelete = false }) {
+//                    Text(
+//                        "删除",
+//                        color = MaterialTheme.colorScheme.error,
+//                    )
+//                }
+//            },
+//            dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
+//            modifier = Modifier.fillMaxWidth()
+//                .onKeyEvent { event: KeyEvent ->
+//                    if (event.key == Key.Enter) {
+//                        onDelete()
+//                        true // Consume the event
+//                    } else {
+//                        false // Pass the event to other handlers
+//                    }
+//                },
+//        )
+//    }
 }
 
 
