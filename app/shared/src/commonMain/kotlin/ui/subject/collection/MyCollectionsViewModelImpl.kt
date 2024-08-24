@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.preference.MyCollectionsSettings
@@ -90,10 +90,10 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         // 必须不能有后台持续任务
         EditableSubjectCollectionTypeState(
             selfCollectionType = stateOf(subjectCollection.collectionType),
-            hasAnyUnwatched = {
-                subjectManager.episodeCollectionsFlow(subjectCollection.subjectId).first().any {
-                    !it.type.isDoneOrDropped()
-                }
+            hasAnyUnwatched = hasAnyUnwatched@{
+                val collections = subjectManager.episodeCollectionsFlow(subjectCollection.subjectId)
+                    .firstOrNull() ?: return@hasAnyUnwatched true
+                collections.any { !it.type.isDoneOrDropped() }
             },
             onSetSelfCollectionType = {
                 subjectManager.setSubjectCollectionType(subjectCollection.subjectId, it)

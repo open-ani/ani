@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -31,6 +32,7 @@ import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
@@ -96,6 +98,7 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.coroutines.sampleWithInitial
@@ -458,8 +461,8 @@ private class EpisodeViewModelImpl(
                 .produceState(UnifiedCollectionType.NOT_COLLECTED),
             hasAnyUnwatched = {
                 val collections =
-                    episodeCollectionsFlow.replayCache.firstOrNull() ?: return@EditableSubjectCollectionTypeState false
-                collections.any { it.collectionType == UnifiedCollectionType.NOT_COLLECTED }
+                    episodeCollectionsFlow.firstOrNull() ?: return@EditableSubjectCollectionTypeState true
+                collections.any { !it.type.isDoneOrDropped() }
             },
             onSetSelfCollectionType = { subjectManager.setSubjectCollectionType(subjectId, it) },
             onSetAllEpisodesWatched = {
