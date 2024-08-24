@@ -178,6 +178,7 @@ val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
         )
         models.resolve("BangumiEpisodeCollectionType.kt").delete()
         models.resolve("BangumiSubjectCollectionType.kt").delete()
+        models.resolve("BangumiSubjectType.kt").delete()
     }
 }
 
