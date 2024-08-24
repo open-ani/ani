@@ -29,7 +29,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,7 +57,6 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
-import me.him188.ani.app.ui.subject.details.components.OutlinedTag
 
 private inline val spacedBy get() = 16.dp
 
@@ -241,21 +239,13 @@ private fun SubjectCollectionItemContent(
             Modifier.padding(top = 0.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                // 2023 年 10 月
-                item.date.let {
-                    OutlinedTag { Text(it) }
-                }
-
-                // 连载至第 28 话 · 全 34 话
-                AiringLabel(
-                    remember(item) {
-                        AiringLabelState(stateOf(item.airingInfo), stateOf(item.progressInfo))
-                    },
-                    Modifier.padding(start = 8.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            }
+            // 连载至第 28 话 · 全 34 话
+            AiringLabel(
+                remember(item) {
+                    AiringLabelState(stateOf(item.airingInfo), stateOf(item.progressInfo))
+                },
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
 
         Spacer(Modifier.weight(1f))

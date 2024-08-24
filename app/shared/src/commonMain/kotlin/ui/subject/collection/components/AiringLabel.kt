@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.collection.components
 
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringKind
@@ -61,7 +63,8 @@ class AiringLabelState(
 
                     is ContinueWatchingStatus.Continue,
                     is ContinueWatchingStatus.NotOnAir,
-                    is ContinueWatchingStatus.Start ->
+                    is ContinueWatchingStatus.Start,
+                        ->
                         if (airingInfo.latestSort == null) {
                             "连载中"
                         } else {
@@ -78,7 +81,8 @@ class AiringLabelState(
                     is ContinueWatchingStatus.Continue -> "看过 ${s.watchedEpisodeSort}"
 
                     is ContinueWatchingStatus.NotOnAir,
-                    ContinueWatchingStatus.Start -> "已完结"
+                    ContinueWatchingStatus.Start,
+                        -> "已完结"
                 }
             }
         }
@@ -95,7 +99,8 @@ class AiringLabelState(
                     ContinueWatchingStatus.Done,
                     is ContinueWatchingStatus.NotOnAir,
                     is ContinueWatchingStatus.Watched,
-                    null -> false
+                    null,
+                        -> false
                 }
     }
 
@@ -112,7 +117,8 @@ class AiringLabelState(
                 SubjectAiringKind.COMPLETED -> "全 ${airingInfo.episodeCount} 话"
 
                 SubjectAiringKind.ON_AIR,
-                SubjectAiringKind.UPCOMING -> "预定全 ${airingInfo.episodeCount} 话"
+                SubjectAiringKind.UPCOMING,
+                    -> "预定全 ${airingInfo.episodeCount} 话"
             }
         }
     }
@@ -137,9 +143,9 @@ fun AiringLabel(
     progressColor: Color = if (state.highlightProgress) MaterialTheme.colorScheme.primary else Color.Unspecified,
 ) {
     ProvideTextStyle(style) {
-        Row(
+        FlowRow(
             modifier,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         ) {
             state.progressText?.let {
                 Text(
