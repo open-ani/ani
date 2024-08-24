@@ -12,7 +12,7 @@ import me.him188.ani.utils.platform.Uuid
 
 @Composable
 @Preview(device = Devices.TABLET)
-fun PreviewAddDanmakuRegexFilterSideSheet() {
+fun PreviewEditDanmakuRegexFilterSideSheet() {
     ProvideCompositionLocalsForPreview {
         EditDanmakuRegexFilterSideSheet(
             danmakuRegexFilterState = DanmakuRegexFilterState(
@@ -21,21 +21,21 @@ fun PreviewAddDanmakuRegexFilterSideSheet() {
                         DanmakuRegexFilter(
                             id = Uuid.randomString(),
                             name = "测试",
-                            regex = "测试"
+                            regex = "测试",
                         ),
                         DanmakuRegexFilter(
                             id = Uuid.randomString(),
                             name = "测试2",
-                            regex = "测试2"
+                            regex = "测试2",
                         ),
-                    )
+                    ),
                 ),
                 addDanmakuRegexFilter = { },
                 editDanmakuRegexFilter = { _, _ -> },
                 removeDanmakuRegexFilter = { },
-                switchDanmakuRegexFilter = { }
+                switchDanmakuRegexFilter = { },
             ),
-            onDismissRequest = { }
+            onDismissRequest = { },
         )
     }
 }

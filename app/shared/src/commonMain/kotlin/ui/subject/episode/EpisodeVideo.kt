@@ -143,7 +143,7 @@ internal fun EpisodeVideoImpl(
     // auto hide cursor
     val videoInteractionSource = remember { MutableInteractionSource() }
     val isVideoHovered by videoInteractionSource.collectIsHoveredAsState()
-    val showCursor by remember(videoControllerState, showSettings) {
+    val showCursor by remember(videoControllerState) {
         derivedStateOf {
             !isVideoHovered || (videoControllerState.visibility.bottomBar
                     || videoControllerState.visibility.detachedSlider
@@ -409,28 +409,27 @@ internal fun EpisodeVideoImpl(
                     },
                     expanded = expanded,
                 )
-            } else {
-                if (showSettings) {
-                    EpisodeVideoSettingsSideSheet(
-                        onDismissRequest = { showSettings = false },
-                        Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
-                        title = { Text(text = "弹幕设置") },
-                        closeButton = {
-                            IconButton(onClick = { showSettings = false }) {
-                                Icon(Icons.Rounded.Close, contentDescription = "关闭")
-                            }
-                        },
-                    ) {
-                        EpisodeVideoSettings(
-                            rememberViewModel { EpisodeVideoSettingsViewModel() },
-                            onOverlayContentShow = {
-                                showEditDanmakuRegexFilterSideSheet = true
+            } else if (showSettings) {
+                EpisodeVideoSettingsSideSheet(
+                    onDismissRequest = { showSettings = false },
+                    Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
+                    title = { Text(text = "弹幕设置") },
+                    closeButton = {
+                        IconButton(onClick = { showSettings = false }) {
+                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
+                        }
+                    },
+                ) {
+                    EpisodeVideoSettings(
+                        rememberViewModel { EpisodeVideoSettingsViewModel() },
+                        onOverlayContentShow = {
+                            showEditDanmakuRegexFilterSideSheet = true
 //                                    println("Pressed $showEditDanmakuRegexFilterSideSheet")
-                            },
-                        )
-                    }
+                        },
+                    )
                 }
             }
+            
             if (isMediaSelectorVisible) {
                 EpisodeVideoMediaSelectorSideSheet(
                     mediaSelectorPresentation,
