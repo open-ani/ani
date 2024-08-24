@@ -42,6 +42,7 @@ import me.him188.ani.app.data.source.media.cache.MediaCacheState
 import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.downloadedSize
 import me.him188.ani.app.data.source.media.cache.emptyMediaStats
+import me.him188.ani.app.data.source.media.cache.sampled
 import me.him188.ani.app.data.source.media.cache.sum
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.ui.cache.components.CacheEpisodePaused
@@ -79,8 +80,10 @@ class CacheManagementViewModel(
 
     val overallStats: MediaStats by cacheManager.enabledStorages.map { list ->
         list.map { it.stats }.sum()
+    }.map {
+        it.sampled()
     }.produceState(emptyMediaStats())
-
+    
     val lazyGridState: CacheGroupGridLayoutState = LazyStaggeredGridState()
 
     val state: CacheManagementState = CacheManagementState(
