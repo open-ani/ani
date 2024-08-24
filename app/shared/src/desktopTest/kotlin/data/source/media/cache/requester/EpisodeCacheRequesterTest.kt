@@ -209,6 +209,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "12",
                 episodeId = "0",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("ひ", "孤独摇滚"),
                 episodeSort = EpisodeSort(2), // using new
                 episodeEp = null,
@@ -300,6 +301,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "1",
                 episodeId = "1",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("孤独摇滚"),
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
@@ -348,6 +350,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "1",
                 episodeId = "1",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("孤独摇滚"),
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
@@ -403,6 +406,7 @@ class EpisodeCacheRequesterTest {
         MediaCacheMetadata(
             subjectId = "1",
             episodeId = "1",
+            subjectNameCN = "孤独摇滚",
             subjectNames = setOf("孤独摇滚"),
             episodeSort = episodeSort,
             episodeEp = episodeEp,
@@ -438,6 +442,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "12",
                 episodeId = "0",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("ひ", "孤独摇滚"),
                 episodeSort = EpisodeSort(2), // using new
                 episodeEp = null,
@@ -474,6 +479,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "12",
                 episodeId = "0",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("ひ", "孤独摇滚"),
                 episodeSort = EpisodeSort(2), // using new
                 episodeEp = null,

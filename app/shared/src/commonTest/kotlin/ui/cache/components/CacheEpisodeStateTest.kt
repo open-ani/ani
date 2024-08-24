@@ -91,7 +91,7 @@ class CacheEpisodeStateTest {
             assertEquals(false, isPaused)
             assertEquals(false, isFinished)
             assertEquals("200 MB", sizeText)
-            assertEquals("99%", progressText)
+            assertEquals(null, progressText)
             assertEquals(0f, progress)
             assertEquals(true, isProgressUnspecified)
         }
@@ -106,8 +106,8 @@ class CacheEpisodeStateTest {
         ).run {
             assertEquals(false, isPaused)
             assertEquals(false, isFinished)
-            assertEquals(null, sizeText)
-            assertEquals("100 MB/s", progressText)
+            assertEquals("200 MB", sizeText)
+            assertEquals("10.0%", progressText)
             assertEquals(0.1f, progress)
             assertEquals(false, isProgressUnspecified)
         }
@@ -122,7 +122,7 @@ class CacheEpisodeStateTest {
         ).run {
             assertEquals(false, isPaused)
             assertEquals(true, isFinished)
-            assertEquals(null, sizeText)
+            assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
             assertEquals(1f, progress)
             assertEquals(false, isProgressUnspecified)
@@ -136,16 +136,18 @@ class CacheEpisodeStateTest {
             downloadSpeed = 100.megaBytes,
             progress = 0.1f,
         ).run {
-            assertEquals(null, sizeText)
-            assertEquals("100 MB/s", progressText)
+            assertEquals("200 MB", sizeText)
+            assertEquals("10.0%", progressText)
+            assertEquals("100 MB/s", speedText)
         }
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
             progress = 0.1f,
         ).run {
-            assertEquals(null, sizeText)
-            assertEquals("100 MB/s", progressText)
+            assertEquals("200 MB", sizeText)
+            assertEquals("10.0%", progressText)
+            assertEquals("100 MB/s", speedText)
         }
     }
 
@@ -156,24 +158,27 @@ class CacheEpisodeStateTest {
             downloadSpeed = 100.megaBytes,
             progress = 1f,
         ).run {
-            assertEquals(null, sizeText)
+            assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
+            assertEquals(null, speedText)
         }
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
             progress = 1f,
         ).run {
-            assertEquals(null, sizeText)
+            assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
+            assertEquals(null, speedText)
         }
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
             progress = 2f,
         ).run {
-            assertEquals(null, sizeText)
+            assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
+            assertEquals(null, speedText)
         }
     }
 }
