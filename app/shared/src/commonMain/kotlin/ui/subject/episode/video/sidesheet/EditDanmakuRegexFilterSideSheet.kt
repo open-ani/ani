@@ -28,6 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
@@ -128,7 +132,15 @@ fun EditDanmakuRegexFilterSideSheet(
                                     text = regexTextFieldOutlineTitleText,
                                 )
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth()
+                                .onKeyEvent { event: KeyEvent ->
+                                    if (event.key == Key.Enter) {
+                                        handleAdd()
+                                        true // Consume the event
+                                    } else {
+                                        false // Pass the event to other handlers
+                                    }
+                                },
                             enabled = expanded,  // Disable the text field if expanded is false
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Done,

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
@@ -16,7 +18,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
@@ -31,6 +32,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
@@ -38,7 +44,6 @@ import androidx.compose.ui.window.Dialog
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.utils.platform.Uuid
 
@@ -58,16 +63,22 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
     var errorMessage by rememberSaveable { mutableStateOf("") }
+    var isError by rememberSaveable { mutableStateOf(false) }
 
     if (showAdd) {
         AddRegexFilterDialog(
-            onDismissRequest = { showAdd = false },
+            onDismissRequest = {
+                showAdd = false
+                isError = false
+            },
             onConfirm = { name, regex ->
                 if (regex.isBlank()) {
-                    showAdd = false
+                    errorMessage = "正则不能为空"
+                    isError = true
                 } else {
                     if (!isValidRegex(regex)) {
                         errorMessage = "正则输入法不正确"
+                        isError = true
                     } else {
                         danmakuRegexFilterState.addDanmakuRegexFilter(
                             DanmakuRegexFilter(
@@ -77,27 +88,13 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                             ),
                         )
                         showAdd = false
+                        isError = false
                     }
                 }
             },
             title = { Text("添加正则过滤器") },
-            description = {
-                Text("请正确添加正则表达式，例如：第一个字符为数字：'^[1-9]{1}\$'.\n匹配该正则表达式的弹幕将不会显示")
-            },
-
-            )
-    }
-
-    if (errorMessage.isNotBlank()) {
-        AlertDialog(
-            onDismissRequest = { errorMessage = "" },
-            confirmButton = {
-                TextButton(onClick = { errorMessage = "" }) {
-                    Text("确认")
-                }
-            },
-            title = { Text("错误") },
-            text = { Text(errorMessage) },
+            isError = isError,
+            errorMessage = errorMessage,
         )
     }
 
@@ -175,6 +172,15 @@ internal fun RegexFilterItem(
                 }
             },
             dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
+            modifier = Modifier.fillMaxWidth()
+                .onKeyEvent { event: KeyEvent ->
+                    if (event.key == Key.Enter) {
+                        onDelete()
+                        true // Consume the event
+                    } else {
+                        false // Pass the event to other handlers
+                    }
+                },
         )
     }
 }
@@ -186,7 +192,8 @@ fun AddRegexFilterDialog(
     onConfirm: (name: String, regex: String) -> Unit, // onConfirm now accepts the text field value
     title: @Composable () -> Unit,
     confirmEnabled: Boolean = true,
-    description: @Composable (() -> Unit)? = null
+    isError: Boolean = false,
+    errorMessage: String = "",
 ) {
     var nameTextFieldValue by rememberSaveable { mutableStateOf("") }
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
@@ -214,23 +221,32 @@ fun AddRegexFilterDialog(
                     OutlinedTextField(
                         value = regexTextFieldValue,
                         onValueChange = { regexTextFieldValue = it },
-                        label = { Text("正则表达式") },
-                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") },
+                        modifier = Modifier.fillMaxWidth()
+                            .onKeyEvent { event: KeyEvent ->
+                                if (event.key == Key.Enter) {
+                                    onConfirm(nameTextFieldValue, regexTextFieldValue)
+                                    true // Consume the event
+                                } else {
+                                    false // Pass the event to other handlers
+                                }
+                            },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { onConfirm(nameTextFieldValue, regexTextFieldValue) },
+                        ),
+                        supportingText = {
+                            if (isError) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = errorMessage,
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        },
                     )
-                }
-
-                description?.let {
-                    ProvideTextStyleContentColor(
-                        MaterialTheme.typography.labelMedium,
-                        LocalContentColor.current.copy(0.8f),
-                    ) {
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                            horizontalArrangement = Arrangement.Start,
-                        ) {
-                            it()
-                        }
-                    }
                 }
 
                 Row(
