@@ -48,7 +48,7 @@ class TorrentVideoSourceResolver(
         return when (val location = media.download) {
             is ResourceLocation.HttpTorrentFile,
             is ResourceLocation.MagnetLink
-            -> {
+                -> {
                 try {
                     TorrentVideoSource(
                         engine,
@@ -183,7 +183,7 @@ class TorrentVideoSource(
         logger.info {
             "TorrentVideoSource '${episodeMetadata.title}' opening a VideoData"
         }
-        val downloader = engine.getDownloader() ?: throw VideoSourceOpenException(OpenFailures.ENGINE_DISABLED)
+        val downloader = engine.getDownloader()
         return TorrentVideoData(
             withContext(Dispatchers.IO) {
                 logger.info {
@@ -204,7 +204,13 @@ class TorrentVideoSource(
                     }
                 }?.createHandle()?.also {
                     it.resume(FilePriority.HIGH)
-                } ?: throw VideoSourceOpenException(OpenFailures.NO_MATCHING_FILE)
+                } ?: throw VideoSourceOpenException(
+                    OpenFailures.NO_MATCHING_FILE,
+                    """
+                    Torrent files: ${files.joinToString { it.pathInTorrent }}
+                    Episode metadata: $episodeMetadata
+                """.trimIndent(),
+                )
             },
         )
     }
