@@ -119,12 +119,12 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
     )
 
     val danmakuRegexEnabled: Boolean
-        get() = danmakuRegexFilter.value.danmakuRegexFilterEnabled
+        get() = danmakuRegexFilter.value.enableRegexFilter
 
     fun switchAllDanmakuRegexFilter() {
         launchInBackground {
             settingsRepository.danmakuFilterConfig.update {
-                copy(danmakuRegexFilterEnabled = !danmakuRegexFilterEnabled)
+                copy(enableRegexFilter = !enableRegexFilter)
             }
         }
     }

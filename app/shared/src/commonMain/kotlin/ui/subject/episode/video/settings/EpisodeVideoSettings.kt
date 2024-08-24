@@ -79,7 +79,7 @@ private class EpisodeVideoSettingsViewModelImpl(
 
     override fun switchDanmakuRegexFilterCompletely() {
         danmakuFilterConfigSetting.update(
-            danmakuFilterConfig.copy(danmakuRegexFilterEnabled = !danmakuFilterConfig.danmakuRegexFilterEnabled),
+            danmakuFilterConfig.copy(enableRegexFilter = !danmakuFilterConfig.enableRegexFilter),
         )
     }
 }
@@ -100,7 +100,7 @@ fun EpisodeVideoSettings(
         },
         modifier = modifier,
         onClickManage = onOverlayContentShow,
-        danmakuRegexFilterEnabled = vm.danmakuFilterConfig.danmakuRegexFilterEnabled,
+        enableRegexFilter = vm.danmakuFilterConfig.enableRegexFilter,
         switchDanmakuRegexFilterCompletely = vm::switchDanmakuRegexFilterCompletely,
     )
 }
@@ -115,7 +115,7 @@ fun EpisodeVideoSettings(
     isLoading: () -> Boolean = LOADING_FALSE,
     modifier: Modifier = Modifier,
     onClickManage: () -> Unit,
-    danmakuRegexFilterEnabled: Boolean,
+    enableRegexFilter: Boolean,
     switchDanmakuRegexFilterCompletely: () -> Unit,
 ) {
     val isLoadingState by remember(isLoading) {
@@ -357,7 +357,7 @@ fun EpisodeVideoSettings(
             )
 
             SwitchItem(
-                danmakuRegexFilterEnabled,
+                enableRegexFilter,
                 onCheckedChange = {
                     switchDanmakuRegexFilterCompletely()
                 },

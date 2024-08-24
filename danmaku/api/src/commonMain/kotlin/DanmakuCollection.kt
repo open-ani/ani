@@ -93,9 +93,9 @@ class TimeBasedDanmakuSession private constructor(
         fun filterList(
             list: List<Danmaku>,
             danmakuRegexFilterList: List<DanmakuRegexFilter>,
-            danmakuRegexFilterEnabled: Boolean
+            enableRegexFilter: Boolean
         ): List<Danmaku> {
-            if (!danmakuRegexFilterEnabled) {
+            if (!enableRegexFilter) {
                 return list
             }
 
@@ -139,7 +139,7 @@ class TimeBasedDanmakuSession private constructor(
                             filterConfig to config
                         }
                     combinedFlow.distinctUntilChanged().collect { (filterList, config) ->
-                        val filteredList = filterList(list, filterList, config.danmakuRegexFilterEnabled)
+                        val filteredList = filterList(list, filterList, config.enableRegexFilter)
                         state.updateList(filteredList)
                         state.requestRepopulate()
                     }

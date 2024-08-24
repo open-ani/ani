@@ -65,7 +65,7 @@ fun EditDanmakuRegexFilterSideSheet(
         }
     }
 
-    fun handleAdd() {
+    fun handleAdd(): Unit {
         if (regexTextFieldValue.isNotBlank()) {
             danmakuRegexFilterState.addDanmakuRegexFilter(
                 DanmakuRegexFilter(
@@ -107,7 +107,7 @@ fun EditDanmakuRegexFilterSideSheet(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     // 输入框
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextField(
                             value = regexTextFieldValue,
                             onValueChange = {
@@ -152,17 +152,18 @@ fun EditDanmakuRegexFilterSideSheet(
 
                         // 提交按钮
                         TextButton(
-                            onClick = { handleAdd() },
+                            onClick = ::handleAdd,
                             enabled = expanded,  // Disable the button if expanded is false
                         ) {
-                            Text(color = MaterialTheme.colorScheme.primary, text = "添加")
+                            Text(text = "添加")
                         }
                     }
 
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        danmakuRegexFilterState.danmakuRegexFilterList.forEachIndexed { index, item ->
+                        danmakuRegexFilterState.danmakuRegexFilterList.forEach { item ->
                             RegexFilterItem(
                                 item,
                                 onDelete = { danmakuRegexFilterState.removeDanmakuRegexFilter(item) },
