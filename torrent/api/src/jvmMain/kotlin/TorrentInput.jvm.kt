@@ -79,8 +79,10 @@ class TorrentInput(
         check(findPieceIndex(0) != -1) {
             "logicalStartOffset $logicalStartOffset is not in any piece"
         }
-        check(findPieceIndex(file.length() - 1) != -1) {
-            "last file pos is not in any piece, maybe because pieces range is too small than file length"
+        val fileLength = file.length()
+        check(fileLength == 0L || findPieceIndex(fileLength - 1) != -1) {
+            "last file pos is not in any piece, maybe because pieces range is too small than file length. " +
+                    "fileLength=$fileLength, piece last index=${pieces.lastOrNull()?.lastIndex}, logicalStartOffset=$logicalStartOffset"
         }
     }
 
