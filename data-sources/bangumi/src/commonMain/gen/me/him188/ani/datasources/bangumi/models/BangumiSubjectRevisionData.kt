@@ -16,12 +16,12 @@
 package me.him188.ani.datasources.bangumi.models
 
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param fieldEps
  * @param fieldInfobox
@@ -32,7 +32,7 @@ import kotlinx.serialization.encoding.*
  * @param subjectId
  * @param type
  * @param typeId
- * @param voteField
+ * @param voteField 
  */
 @Serializable
 

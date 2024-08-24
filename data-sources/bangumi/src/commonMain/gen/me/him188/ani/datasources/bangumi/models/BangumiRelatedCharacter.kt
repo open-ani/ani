@@ -15,21 +15,17 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiCharacterType
-import me.him188.ani.datasources.bangumi.models.BangumiPerson
-import me.him188.ani.datasources.bangumi.models.BangumiPersonImages
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param id
- * @param name
+ * @param name 
  * @param type 角色，机体，舰船，组织...
- * @param relation
+ * @param relation 
  * @param images object with some size of images, this object maybe `null`
  * @param actors 演员列表
  */

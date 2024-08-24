@@ -21,15 +21,22 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param text 
+ *
+ * @param cfTurnstileResponse
+ * @param content
+ * @param replyTo 被回复的 topic ID, `0` 代表回复楼主
  */
 @Serializable
 
-data class BangumiNextEditSubjectPostRequest(
+data class BangumiNextCreateSubjectReplyRequest(
 
-    @SerialName(value = "text") @Required val text: kotlin.String
+    @SerialName(value = "cf-turnstile-response") @Required val cfTurnstileResponse: kotlin.String,
+
+    @SerialName(value = "content") @Required val content: kotlin.String,
+
+    /* 被回复的 topic ID, `0` 代表回复楼主 */
+    @SerialName(value = "replyTo") val replyTo: kotlin.Int? = 0
 
 )
 

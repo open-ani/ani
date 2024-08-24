@@ -20,39 +20,27 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param content
+ *
  * @param createdAt
- * @param creatorID
- * @param epID
+ * @param creator
  * @param id
- * @param relatedID
  * @param state
- * @param user 
- * @param replies 
+ * @param text
  */
 @Serializable
 
-data class BangumiNextGetSubjectEpisodeComments200ResponseInner(
-
-    @SerialName(value = "content") @Required val content: kotlin.String,
+data class BangumiNextBasicReply(
 
     @SerialName(value = "createdAt") @Required val createdAt: kotlin.Int,
 
-    @SerialName(value = "creatorID") @Required val creatorID: kotlin.Int,
-
-    @SerialName(value = "epID") @Required val epID: kotlin.Int,
+    @SerialName(value = "creator") @Required val creator: BangumiNextUser,
 
     @SerialName(value = "id") @Required val id: kotlin.Int,
 
-    @SerialName(value = "relatedID") @Required val relatedID: kotlin.Int,
-
     @SerialName(value = "state") @Required val state: kotlin.Int,
 
-    @SerialName(value = "user") @Required val user: BangumiNextGetSubjectEpisodeComments200ResponseInnerAllOfUser?,
-
-    @SerialName(value = "replies") @Required val replies: kotlin.collections.List<BangumiNextBaseEpisodeComment>
+    @SerialName(value = "text") @Required val text: kotlin.String
 
 )
 

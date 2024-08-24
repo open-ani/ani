@@ -15,13 +15,9 @@
 
 package me.him188.ani.datasources.bangumi.next.models
 
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextReaction
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextSubReply
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextUser
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -32,7 +28,7 @@ import kotlinx.serialization.encoding.*
  * @param isFriend
  * @param reactions
  * @param replies
- * @param state
+ * @param state 
  * @param text 
  */
 @Serializable

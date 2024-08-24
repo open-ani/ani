@@ -138,6 +138,7 @@ private fun stripP1Api(path: String): File {
         "Reaction",
         "Reply",
         "SubReply",
+        "BasicReply",
     )
     val schemas = components["schemas"].cast<Map<String, *>>().toMutableMap()
     val keepSchemas = schemas.filter { (component, _) -> component in keepSchemaKeys }

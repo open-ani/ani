@@ -16,16 +16,16 @@
 package me.him188.ani.datasources.bangumi.next.models
 
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * default error response type
  *
  * @param code
  * @param error
- * @param message
+ * @param message 
  * @param statusCode 
  */
 @Serializable

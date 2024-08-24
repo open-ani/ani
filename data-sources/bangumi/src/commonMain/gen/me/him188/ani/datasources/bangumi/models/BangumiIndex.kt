@@ -15,25 +15,22 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiCreator
-import me.him188.ani.datasources.bangumi.models.BangumiStat
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param id
  * @param title
- * @param desc
+ * @param desc 
  * @param stat 目录评论及收藏数
  * @param createdAt
  * @param updatedAt
- * @param creator
+ * @param creator 
  * @param ban deprecated, always false.
- * @param nsfw
+ * @param nsfw 
  * @param total 收录条目总数
  */
 @Serializable

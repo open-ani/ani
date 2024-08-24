@@ -16,12 +16,11 @@
 package me.him188.ani.datasources.bangumi.models
 
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param _1
  * @param _2
@@ -32,7 +31,7 @@ import kotlinx.serialization.encoding.*
  * @param _7
  * @param _8
  * @param _9
- * @param _10
+ * @param _10 
  */
 @Serializable
 

@@ -25,14 +25,14 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param id
- * @param name
+ * @param name 
  * @param type 角色，机体，舰船，组织...
  * @param summary
  * @param locked
- * @param stat
+ * @param stat 
  * @param images object with some size of images, this object maybe `null`
  * @param infobox server parsed infobox, a map from key to string or tuple null if server infobox is not valid
  * @param gender parsed from wiki, maybe null
