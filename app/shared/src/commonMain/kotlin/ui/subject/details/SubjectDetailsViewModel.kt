@@ -2,10 +2,14 @@ package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
@@ -36,6 +40,7 @@ import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.ui.subject.rating.RateRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -117,7 +122,11 @@ class SubjectDetailsViewModel(
         selfCollectionType = subjectCollectionFlow
             .map { it.collectionType }
             .produceState(UnifiedCollectionType.NOT_COLLECTED),
-        hasAnyUnwatched = { episodeListState.hasAnyUnwatched },
+        hasAnyUnwatched = hasAnyUnwatched@{
+            val collections = subjectManager.episodeCollectionsFlow(subjectId)
+                .flowOn(Dispatchers.Default).firstOrNull() ?: return@hasAnyUnwatched true
+            collections.any { !it.type.isDoneOrDropped() }
+        },
         onSetSelfCollectionType = { subjectManager.setSubjectCollectionType(subjectId, it) },
         onSetAllEpisodesWatched = {
             subjectManager.setAllEpisodesWatched(subjectId)
