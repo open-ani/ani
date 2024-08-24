@@ -266,18 +266,19 @@ suspend inline fun <T> dataTransaction(
     vararg caches: LazyDataCache<T>,
     crossinline action: suspend (data: List<LazyDataCacheMutator<T>>) -> Unit,
 ) {
+    val locker = Any()
     val lockedLocks = mutableListOf<Mutex>()
     try {
-        caches.sortedBy { it.hashCode() } // prevent deadlocks
+        caches.distinct().sortedBy { it.hashCode() } // prevent deadlocks
             .forEach {
-                it.lock.lock(lockedLocks)
+                it.lock.lock(locker)
                 lockedLocks.add(it.lock)
             }
 
         action(caches.map { it.mutator })
     } finally {
         for (lockedLock in lockedLocks) {
-            lockedLock.unlock(lockedLocks)
+            lockedLock.unlock(locker)
         }
     }
 }
