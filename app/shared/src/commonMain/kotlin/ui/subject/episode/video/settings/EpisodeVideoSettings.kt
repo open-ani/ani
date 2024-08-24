@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.episode.video.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -100,7 +99,7 @@ fun EpisodeVideoSettings(
             { vm.isLoading }
         },
         modifier = modifier,
-        onOverlayContentShow = { onOverlayContentShow() },
+        onClickManage = onOverlayContentShow,
         danmakuRegexFilterEnabled = vm.danmakuFilterConfig.danmakuRegexFilterEnabled,
         switchDanmakuRegexFilterCompletely = vm::switchDanmakuRegexFilterCompletely,
     )
@@ -115,7 +114,7 @@ fun EpisodeVideoSettings(
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
     isLoading: () -> Boolean = LOADING_FALSE,
     modifier: Modifier = Modifier,
-    onOverlayContentShow: () -> Unit,
+    onClickManage: () -> Unit,
     danmakuRegexFilterEnabled: Boolean,
     switchDanmakuRegexFilterCompletely: () -> Unit,
 ) {
@@ -367,9 +366,8 @@ fun EpisodeVideoSettings(
             )
 
             TextItem(
-                onClick = { onOverlayContentShow() },
-                modifier = Modifier.placeholder(isLoadingState).clickable { onOverlayContentShow() }
-                    .padding(bottom = 8.dp, top = 8.dp),
+                onClick = { onClickManage() },
+                modifier = Modifier.placeholder(isLoadingState).padding(bottom = 8.dp, top = 8.dp),
             ) {
                 Text("管理正则弹幕过滤器")
             }

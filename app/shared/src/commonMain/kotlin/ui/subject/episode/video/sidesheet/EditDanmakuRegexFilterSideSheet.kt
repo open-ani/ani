@@ -50,6 +50,7 @@ fun EditDanmakuRegexFilterSideSheet(
     val focusManager = LocalFocusManager.current
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
     var regexTextFieldOutlineTitleText by rememberSaveable { mutableStateOf("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") }
+    var isError by rememberSaveable { mutableStateOf(false) }
 
     // Monitor the expanded state and update the title text accordingly
     LaunchedEffect(expanded) {
@@ -72,8 +73,9 @@ fun EditDanmakuRegexFilterSideSheet(
             )
             regexTextFieldValue = "" // Clear the text field after adding
             focusManager.clearFocus()
+            isError = false
         } else {
-            regexTextFieldOutlineTitleText = "正则输入法不能为空"
+            isError = true
         }
     }
 
@@ -109,6 +111,16 @@ fun EditDanmakuRegexFilterSideSheet(
                                 if (expanded) {
                                     regexTextFieldOutlineTitleText =
                                         "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+                                }
+                            },
+                            isError = isError,
+                            supportingText = {
+                                if (isError) {
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = "正则表达式不能为空",
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
                                 }
                             },
                             label = {

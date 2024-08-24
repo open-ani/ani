@@ -136,8 +136,9 @@ internal fun EpisodeVideoImpl(
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
-    var showSettings by remember { mutableStateOf(false) }
-    var showEditDanmakuRegexFilterSideSheet by remember { mutableStateOf(false) }
+    var sideSheetState by remember { mutableStateOf(SideSheetState.NONE) }
+    var isMediaSelectorVisible by remember { mutableStateOf(false) }
+    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
     // auto hide cursor
@@ -147,14 +148,10 @@ internal fun EpisodeVideoImpl(
         derivedStateOf {
             !isVideoHovered || (videoControllerState.visibility.bottomBar
                     || videoControllerState.visibility.detachedSlider
-                    || showEditDanmakuRegexFilterSideSheet
-                    || showSettings)
+                    || sideSheetState != SideSheetState.NONE)
         }
     }
 
-
-    var isMediaSelectorVisible by remember { mutableStateOf(false) }
-    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
 
     CursorVisibilityEffect(
@@ -182,7 +179,7 @@ internal fun EpisodeVideoImpl(
                             Icon(Icons.Rounded.DisplaySettings, contentDescription = "数据源")
                         }
                     }
-                    IconButton({ showSettings = true }, Modifier.testTag(TAG_SHOW_SETTINGS)) {
+                    IconButton({ sideSheetState = SideSheetState.SETTINGS }, Modifier.testTag(TAG_SHOW_SETTINGS)) {
                         Icon(Icons.Rounded.Settings, contentDescription = "设置")
                     }
                 },
@@ -388,7 +385,7 @@ internal fun EpisodeVideoImpl(
             val alwaysOnRequester = rememberAlwaysOnRequester(videoControllerState, "sideSheets")
             val anySideSheetVisible by remember {
                 derivedStateOf {
-                    isMediaSelectorVisible || isEpisodeSelectorVisible || showSettings
+                    sideSheetState != SideSheetState.NONE || isMediaSelectorVisible || isEpisodeSelectorVisible
                 }
             }
             if (anySideSheetVisible) {
@@ -400,36 +397,40 @@ internal fun EpisodeVideoImpl(
                 }
             }
 
-            if (showEditDanmakuRegexFilterSideSheet) {
-                showSettings = false
-                EditDanmakuRegexFilterSideSheet(
-                    danmakuRegexFilterState = danmakuRegexFilterState,
-                    onDismissRequest = {
-                        showEditDanmakuRegexFilterSideSheet = false
-                    },
-                    expanded = expanded,
-                )
-            } else if (showSettings) {
-                EpisodeVideoSettingsSideSheet(
-                    onDismissRequest = { showSettings = false },
-                    Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
-                    title = { Text(text = "弹幕设置") },
-                    closeButton = {
-                        IconButton(onClick = { showSettings = false }) {
-                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
-                        }
-                    },
-                ) {
-                    EpisodeVideoSettings(
-                        rememberViewModel { EpisodeVideoSettingsViewModel() },
-                        onOverlayContentShow = {
-                            showEditDanmakuRegexFilterSideSheet = true
-//                                    println("Pressed $showEditDanmakuRegexFilterSideSheet")
+            when (sideSheetState) {
+                SideSheetState.EDIT_DANMAKU_REGEX_FILTER -> {
+                    EditDanmakuRegexFilterSideSheet(
+                        danmakuRegexFilterState = danmakuRegexFilterState,
+                        onDismissRequest = {
+                            sideSheetState = SideSheetState.NONE
                         },
+                        expanded = expanded,
                     )
                 }
+
+                SideSheetState.SETTINGS -> {
+                    EpisodeVideoSettingsSideSheet(
+                        onDismissRequest = { sideSheetState = SideSheetState.NONE },
+                        Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
+                        title = { Text(text = "弹幕设置") },
+                        closeButton = {
+                            IconButton(onClick = { sideSheetState = SideSheetState.NONE }) {
+                                Icon(Icons.Rounded.Close, contentDescription = "关闭")
+                            }
+                        },
+                    ) {
+                        EpisodeVideoSettings(
+                            rememberViewModel { EpisodeVideoSettingsViewModel() },
+                            onOverlayContentShow = {
+                                sideSheetState = SideSheetState.EDIT_DANMAKU_REGEX_FILTER
+                            },
+                        )
+                    }
+                }
+
+                SideSheetState.NONE -> Unit // No sheet is displayed
             }
-            
+
             if (isMediaSelectorVisible) {
                 EpisodeVideoMediaSelectorSideSheet(
                     mediaSelectorPresentation,
@@ -445,4 +446,11 @@ internal fun EpisodeVideoImpl(
             }
         },
     )
+}
+
+
+enum class SideSheetState {
+    NONE,
+    SETTINGS,
+    EDIT_DANMAKU_REGEX_FILTER
 }
