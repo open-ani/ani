@@ -25,6 +25,7 @@ abstract class DownloadStats {
             downloadedBytes.sampleWithInitial(1000),
         )
 
+    // 对 file handle 来说, 这实际上是整个 torrent session 的速度 (包含其他文件)
     abstract val uploadRate: Flow<Long>
 
     /**

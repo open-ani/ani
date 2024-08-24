@@ -30,11 +30,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.utils.logging.error
@@ -214,11 +212,6 @@ interface HasBackgroundScope {
         }
         return flow
     }
-
-    fun <T, R> Flow<T>.mapLatestSupervised(transform: suspend CoroutineScope.(value: T) -> R): Flow<R> =
-        mapLatest {
-            supervisorScope { transform(it) }
-        }
 
     fun <T> Flow<T>.localCachedSharedFlow(
         started: SharingStarted = SharingStarted.WhileSubscribed(5.seconds),

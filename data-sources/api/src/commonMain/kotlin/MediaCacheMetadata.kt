@@ -1,8 +1,10 @@
 package me.him188.ani.datasources.api
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
+import me.him188.ani.utils.platform.annotations.SerializationOnly
 
 /**
  * 一个 `MediaCache` 的元数据, 包含来源的条目和剧集信息, 以及 `MediaCacheEngine` 自行添加的额外信息 [extra].
@@ -18,16 +20,22 @@ data class MediaCacheMetadata
 /**
  * This constructor is only for serialization
  */
-@Deprecated("This constructor is only for serialization. Use the other one instead", level = DeprecationLevel.ERROR)
+@SerializationOnly
 constructor(
     /**
      * @see MediaFetchRequest.subjectId
      */
-    val subjectId: String? = null,
+    @SerialName("subjectId")
+    private val _subjectId: String? = null,
     /**
      * @see MediaFetchRequest.episodeId
      */
-    val episodeId: String? = null,
+    @SerialName("episodeId")
+    private val _episodeId: String? = null,
+    /**
+     * 在创建缓存时的条目名称, 仅应当在无法获取最新的名称时, 才使用这个
+     */
+    val subjectNameCN: String? = null,
     /**
      * @see MediaFetchRequest.subjectNames
      */
@@ -50,7 +58,10 @@ constructor(
     val extra: Map<String, String> = emptyMap(),
     @Transient @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
 ) {
-    @Suppress("DEPRECATION_ERROR")
+    val subjectId get() = _subjectId ?: "0" // 为了兼容旧版 (< 3.8) 的缓存, 但实际上这些缓存也并不会是 null
+    val episodeId get() = _episodeId ?: "0"
+
+    @OptIn(SerializationOnly::class)
     constructor(
 //    /**
 //     * Id of the [MediaSource] that cached this media.
@@ -59,18 +70,19 @@ constructor(
         /**
          * @see MediaFetchRequest.subjectId
          */
-        subjectId: String? = null,
+        subjectId: String,
         /**
          * @see MediaFetchRequest.episodeId
          */
-        episodeId: String? = null,
+        episodeId: String,
+        subjectNameCN: String?,
         subjectNames: Set<String>,
         episodeSort: EpisodeSort,
         episodeEp: EpisodeSort?,
         episodeName: String,
         extra: Map<String, String> = emptyMap(),
     ) : this(
-        subjectId, episodeId, subjectNames, episodeSort, episodeEp, episodeName, extra,
+        subjectId, episodeId, subjectNameCN, subjectNames, episodeSort, episodeEp, episodeName, extra,
         _primaryConstructorMarker = 0,
     )
 
@@ -81,6 +93,7 @@ constructor(
         return MediaCacheMetadata(
             subjectId = subjectId,
             episodeId = episodeId,
+            subjectNameCN = subjectNameCN,
             subjectNames = subjectNames,
             episodeSort = episodeSort,
             episodeEp = episodeEp,
@@ -90,6 +103,11 @@ constructor(
     }
 }
 
+val MediaCacheMetadata.subjectIdInt: Int
+    get() = subjectId.toIntOrNull() ?: error("subjectId is not int: $subjectId")
+
+val MediaCacheMetadata.episodeIdInt: Int
+    get() = episodeId.toIntOrNull() ?: error("episodeId is not int: $episodeId")
 
 fun MediaCacheMetadata(
     request: MediaFetchRequest,
@@ -98,6 +116,7 @@ fun MediaCacheMetadata(
     return MediaCacheMetadata(
         subjectId = request.subjectId,
         episodeId = request.episodeId,
+        subjectNameCN = request.subjectNameCN,
         subjectNames = request.subjectNames,
         episodeSort = request.episodeSort,
         episodeEp = request.episodeEp,

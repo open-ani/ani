@@ -4,8 +4,12 @@ import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.sum
+import me.him188.ani.utils.coroutines.sampleWithInitial
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 传输速度信息.
@@ -79,4 +83,37 @@ fun Iterable<MediaStats>.sum(): MediaStats = object : AbstractMediaStats() {
     override val downloaded: Flow<FileSize> = combine(map { it.downloaded }) { list -> list.sum() }
     override val uploadRate: Flow<FileSize> = combine(map { it.uploadRate }) { list -> list.sum() }
     override val downloadRate: Flow<FileSize> = combine(map { it.downloadRate }) { list -> list.sum() }
+}
+
+fun MediaStats.sampled(period: Duration = 1.seconds): MediaStats {
+    class Data(
+        val uploaded: FileSize,
+        val downloaded: FileSize,
+        val uploadRate: FileSize,
+        val downloadRate: FileSize,
+    )
+
+    return object : MediaStats {
+        private val dataFlow = combine(
+            this@sampled.uploaded,
+            this@sampled.downloaded,
+            this@sampled.uploadRate,
+            this@sampled.downloadRate,
+        ) { uploaded, downloaded, uploadRate, downloadRate ->
+            Data(
+                uploaded = uploaded,
+                downloaded = downloaded,
+                uploadRate = uploadRate,
+                downloadRate = downloadRate,
+            )
+        }.sampleWithInitial(period)
+
+        override val uploaded: Flow<FileSize> = dataFlow.map { it.uploaded }
+        override val downloaded: Flow<FileSize> = dataFlow.map { it.downloaded }
+        override val uploadRate: Flow<FileSize> = dataFlow.map { it.uploadRate }
+        override val downloadRate: Flow<FileSize> = dataFlow.map { it.downloadRate }
+        override fun toString(): String {
+            return "SampledMediaStats(period=$period, original=${this@sampled})"
+        }
+    }
 }

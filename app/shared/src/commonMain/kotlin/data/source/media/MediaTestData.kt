@@ -7,7 +7,10 @@ import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
+import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.Subtitle
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -42,10 +45,19 @@ val TestMediaList = listOf(
             resolution = "1080P",
             alliance = "桜都字幕组",
             size = 122.megaBytes,
-            subtitleKind = null,
+            subtitleKind = SubtitleKind.CLOSED,
         ),
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,
+        extraFiles = MediaExtraFiles(
+            listOf(
+                Subtitle(
+                    uri = "https://example.com/1",
+                    mimeType = "text/x-ass",
+                    language = "简体中文",
+                ),
+            ),
+        ),
     ),
     // exactly same properties as the first one, except for the ids.
     DefaultMedia(
