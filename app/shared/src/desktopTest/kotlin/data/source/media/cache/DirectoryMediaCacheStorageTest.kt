@@ -33,6 +33,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.unwrapCached
 import me.him188.ani.utils.io.exists
 import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.readText
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.io.writeText
@@ -92,7 +93,7 @@ class DirectoryMediaCacheStorageTest {
         originalTitle = "夜晚的水母不会游泳 02 测试剧集",
         download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
         originalUrl = "https://example.com/1",
-        publishedTime = System.currentTimeMillis(),
+        publishedTime = 1724493292758,
         episodeRange = EpisodeRange.single(EpisodeSort(2)),
         properties = MediaProperties(
             subtitleLanguageIds = listOf("CHT"),
@@ -295,7 +296,86 @@ class DirectoryMediaCacheStorageTest {
         storage.restorePersistedCaches()
         assertEquals(1, storage.listFlow.first().size)
         val cache = storage.listFlow.first().single()
-        assertEquals("0-1776330530", cache.cacheId)
+        assertEquals("0-500562845", cache.cacheId)
+    }
+
+    private val jsonPrettyPrint = Json {
+        prettyPrint = true
+    }
+
+    /**
+     * 检查序列化后的结果
+     */
+    @Test
+    fun `serialize - latest`() = runTest {
+        val storage = createStorage(
+            createEngine(
+                onDownloadStarted = {
+                    it.onTorrentChecked()
+                },
+            ),
+        )
+
+        val metadata = mediaCacheMetadata()
+        val cacheId = MediaCache.calculateCacheId(media.mediaId, metadata)
+        val metadataFile = metadataDir.resolve("${cacheId}.metadata")
+        storage.cache(media, metadata, resume = false)
+
+        assertEquals(
+            """
+                {
+                    "origin": {
+                        "type": "me.him188.ani.datasources.api.DefaultMedia",
+                        "mediaId": "dmhy.2",
+                        "mediaSourceId": "dmhy",
+                        "originalUrl": "https://example.com/1",
+                        "download": {
+                            "type": "me.him188.ani.datasources.api.topic.ResourceLocation.MagnetLink",
+                            "uri": "magnet:?xt=urn:btih:1"
+                        },
+                        "originalTitle": "夜晚的水母不会游泳 02 测试剧集",
+                        "publishedTime": 1724493292758,
+                        "properties": {
+                            "subtitleLanguageIds": [
+                                "CHT"
+                            ],
+                            "resolution": "1080P",
+                            "alliance": "北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组北宇治字幕组",
+                            "size": 244318208
+                        },
+                        "episodeRange": {
+                            "type": "me.him188.ani.datasources.api.topic.EpisodeRange.Single",
+                            "value": {
+                                "type": "me.him188.ani.datasources.api.EpisodeSort.Normal",
+                                "number": 2.0
+                            }
+                        }
+                    },
+                    "metadata": {
+                        "subjectId": "1",
+                        "episodeId": "1",
+                        "subjectNameCN": "1",
+                        "subjectNames": [],
+                        "episodeSort": {
+                            "type": "me.him188.ani.datasources.api.EpisodeSort.Normal",
+                            "number": 2.0
+                        },
+                        "episodeName": "测试剧集",
+                        "extra": {
+                            "torrentData": "7b2264617461223a7b2274797065223a224d61676e6574557269222c22757269223a226d61676e65743a3f78743d75726e3a627469683a31227d2c2268747470546f7272656e7446696c6550617468223a6e756c6c7d",
+                            "torrentCacheDir": "$dir/pieces/2071812470"
+                        }
+                    }
+                }
+            """.trimIndent(),
+            jsonPrettyPrint.encodeToString(
+                JsonObject.serializer(),
+                Json.decodeFromString(
+                    JsonObject.serializer(),
+                    metadataFile.readText(),
+                ),
+            ),
+        )
     }
 
     /**
