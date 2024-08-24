@@ -1,5 +1,6 @@
 package me.him188.ani.datasources.api
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -24,10 +25,12 @@ constructor(
     /**
      * @see MediaFetchRequest.subjectId
      */
+    @SerialName("subjectId")
     private val _subjectId: String? = null,
     /**
      * @see MediaFetchRequest.episodeId
      */
+    @SerialName("episodeId")
     private val _episodeId: String? = null,
     /**
      * 在创建缓存时的条目名称, 仅应当在无法获取最新的名称时, 才使用这个

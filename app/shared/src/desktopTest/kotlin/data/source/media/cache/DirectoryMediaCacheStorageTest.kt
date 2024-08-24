@@ -155,6 +155,7 @@ class DirectoryMediaCacheStorageTest {
     private fun mediaCacheMetadata() = MediaCacheMetadata(
         subjectId = "1",
         episodeId = "1",
+        subjectNameCN = "1",
         subjectNames = emptySet(),
         episodeSort = EpisodeSort("02"),
         episodeEp = EpisodeSort("02"),
