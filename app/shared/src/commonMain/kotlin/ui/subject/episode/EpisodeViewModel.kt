@@ -66,6 +66,7 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
+import me.him188.ani.app.ui.subject.components.comment.CommentContext
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
@@ -529,7 +530,17 @@ private class EpisodeViewModelImpl(
                 with(CommentMapperContext) { parseBBCode(text) }
             }
         },
-        onSend = { _, _ -> },
+        onSend = { context, content ->
+            when (context) {
+                is CommentContext.Episode ->
+                    commentRepository.postEpisodeComment(episodeId.value, content)
+
+                is CommentContext.Reply ->
+                    commentRepository.postEpisodeComment(episodeId.value, content, context.commentId)
+
+                is CommentContext.Subject -> {} // TODO: send subject comment
+            }
+        },
         backgroundScope = backgroundScope,
     )
     override val playerSkipOpEdState: PlayerSkipOpEdState = PlayerSkipOpEdState(
