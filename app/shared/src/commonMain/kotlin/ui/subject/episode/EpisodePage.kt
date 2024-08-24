@@ -33,6 +33,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
@@ -281,6 +282,7 @@ private fun TabRow(
     scope: CoroutineScope,
     commentCount: () -> Int?,
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     SecondaryScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
@@ -290,7 +292,7 @@ private fun TabRow(
                 Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = containerColor,
         edgePadding = 0.dp,
         divider = {},
     ) {
@@ -474,15 +476,17 @@ fun EpisodeSceneContentPhoneScaffold(
         val scope = rememberCoroutineScope()
 
         Column(Modifier.fillMaxSize()) {
-            Row {
-                TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
-                Box(
-                    modifier = Modifier.weight(0.618f) // width
-                        .height(48.dp)
-                        .padding(vertical = 4.dp, horizontal = 16.dp),
-                ) {
-                    Row(Modifier.align(Alignment.CenterEnd)) {
-                        tabRowContent()
+            Surface {
+                Row {
+                    TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
+                    Box(
+                        modifier = Modifier.weight(0.618f) // width
+                            .height(48.dp)
+                            .padding(vertical = 4.dp, horizontal = 16.dp),
+                    ) {
+                        Row(Modifier.align(Alignment.CenterEnd)) {
+                            tabRowContent()
+                        }
                     }
                 }
             }
