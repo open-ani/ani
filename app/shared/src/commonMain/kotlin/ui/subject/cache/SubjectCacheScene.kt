@@ -20,15 +20,17 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.isKnownCompleted
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
@@ -49,6 +51,8 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.produceState
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -69,13 +73,6 @@ interface SubjectCacheViewModel {
     val cacheListState: EpisodeCacheListState
 }
 
-open class TestSubjectCacheViewModel(
-    override val subjectId: Int,
-    override val subjectTitle: String?,
-    override val cacheListState: EpisodeCacheListState,
-    override val mediaSelectorSettingsFlow: Flow<MediaSelectorSettings>
-) : SubjectCacheViewModel
-
 @Stable
 class SubjectCacheViewModelImpl(
     override val subjectId: Int,
@@ -93,33 +90,37 @@ class SubjectCacheViewModelImpl(
     private val episodeCollectionsFlow = subjectManager.episodeCollectionsFlow(subjectId).retry()
         .shareInBackground()
 
-    private val episodesFlow = episodeCollectionsFlow.take(1).mapLatest { episodes ->
-        // 每个 episode 都为一个 flow, 然后合并
-        episodes.map { episodeCollection ->
-            val episode = episodeCollection.episodeInfo
+    private val episodesFlow = episodeCollectionsFlow.take(1).transformLatest { episodes ->
+        supervisorScope {
+            // 每个 episode 都为一个 flow, 然后合并
+            emit(
+                episodes.map { episodeCollection ->
+                    val episode = episodeCollection.episodeInfo
 
-            val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
+                    val cacheStatusFlow = cacheManager.cacheStatusForEpisode(subjectId, episode.id)
 
-            EpisodeCacheState(
-                episodeId = episode.id,
-                cacheRequesterLazy = {
-                    EpisodeCacheRequester(
+                    val cacheRequester = EpisodeCacheRequester(
                         mediaSourceManager.mediaFetcher,
                         MediaSelectorFactory.withKoin(),
                         storagesLazy = cacheManager.enabledStorages,
                     )
+                    EpisodeCacheState(
+                        episodeId = episode.id,
+                        cacheRequester = cacheRequester,
+                        currentStageState = cacheRequester.stage.produceState(scope = this),
+                        infoState = stateOf(
+                            EpisodeCacheInfo(
+                                sort = episode.sort,
+                                ep = episode.ep,
+                                title = episode.displayName,
+                                watchStatus = episodeCollection.collectionType,
+                                hasPublished = episode.isKnownCompleted,
+                            ),
+                        ),
+                        cacheStatusState = cacheStatusFlow.produceState(null, this),
+                        backgroundScope = this,
+                    )
                 },
-                info = MutableStateFlow(
-                    EpisodeCacheInfo(
-                        sort = episode.sort,
-                        ep = episode.ep,
-                        title = episode.displayName,
-                        watchStatus = episodeCollection.collectionType,
-                        hasPublished = episode.isKnownCompleted,
-                    ),
-                ),
-                cacheStatusFlow = cacheStatusFlow,
-                parentCoroutineContext = backgroundScope.coroutineContext,
             )
         }
     }.shareInBackground()
@@ -129,6 +130,17 @@ class SubjectCacheViewModelImpl(
      */
     override val cacheListState: EpisodeCacheListState = EpisodeCacheListStateImpl(
         episodes = episodesFlow.produceState(emptyList()),
+        currentEpisode = episodesFlow.flatMapLatest { episodes ->
+            combine(
+                episodes.map { episodeCacheState ->
+                    episodeCacheState.cacheRequester.stage.map { episodeCacheState to it }
+                },
+            ) { results ->
+                results.firstOrNull { (_, stage) ->
+                    stage is CacheRequestStage.Working
+                }?.first
+            }
+        }.produceState(null),
         onRequestCache = { episode, autoSelectByCached ->
             episode.cacheRequester.request(
                 EpisodeCacheRequest(
@@ -152,7 +164,6 @@ class SubjectCacheViewModelImpl(
                 it.metadata.episodeId == episodeId
             }
         },
-        backgroundScope.coroutineContext,
     )
 
     init {

@@ -133,7 +133,7 @@ private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
                         EpisodeCacheState(
                             0,
                             { EpisodeCacheRequester(flowOf(), MediaSelectorFactory.withKoin(), flowOf()) },
-                            info = MutableStateFlow(
+                            infoState = MutableStateFlow(
                                 EpisodeCacheInfo(
                                     sort = EpisodeSort(++id),
                                     ep = null,
@@ -142,7 +142,7 @@ private fun PreviewEpisodeItem() = ProvideCompositionLocalsForPreview {
                                     hasPublished = true,
                                 ),
                             ),
-                            cacheStatusFlow = MutableStateFlow(EpisodeCacheStatus.NotCached),
+                            cacheStatusState = MutableStateFlow(EpisodeCacheStatus.NotCached),
                             EmptyCoroutineContext,
                         )
                     },
@@ -164,7 +164,7 @@ private fun PreviewEpisodeItemVeryLong() = ProvideCompositionLocalsForPreview {
                 EpisodeCacheState(
                     0,
                     { EpisodeCacheRequester(flowOf(), MediaSelectorFactory.withKoin(), flowOf()) },
-                    info = MutableStateFlow(
+                    infoState = MutableStateFlow(
                         EpisodeCacheInfo(
                             sort = EpisodeSort(1),
                             ep = null,
@@ -173,7 +173,7 @@ private fun PreviewEpisodeItemVeryLong() = ProvideCompositionLocalsForPreview {
                             hasPublished = true,
                         ),
                     ),
-                    cacheStatusFlow = MutableStateFlow(EpisodeCacheStatus.NotCached),
+                    cacheStatusState = MutableStateFlow(EpisodeCacheStatus.NotCached),
                     EmptyCoroutineContext,
                 )
             },

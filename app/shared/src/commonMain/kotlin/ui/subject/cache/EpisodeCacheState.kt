@@ -3,10 +3,10 @@
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.engine.MediaCacheEngine
@@ -18,33 +18,29 @@ import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.foundation.BackgroundScope
-import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
-import kotlin.coroutines.CoroutineContext
 
 
 /**
  * 一个条目的一个剧集的缓存状态
  */
 @Stable
-open class EpisodeCacheState(
+class EpisodeCacheState(
     val episodeId: Int,
-    cacheRequesterLazy: () -> EpisodeCacheRequester,
-    info: Flow<EpisodeCacheInfo>,
-    cacheStatusFlow: Flow<EpisodeCacheStatus>,
-    parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
-    internal val cacheRequester by lazy(cacheRequesterLazy)
-
+    val cacheRequester: EpisodeCacheRequester,
+    currentStageState: State<CacheRequestStage>,
+    infoState: State<EpisodeCacheInfo>,
+    cacheStatusState: State<EpisodeCacheStatus?>,
+    backgroundScope: CoroutineScope,
+) {
     /**
      * [episodeId] 对应的剧集信息, 初始值为 [EpisodeCacheInfo.Placeholder], 表示正在加载.
      * @see isInfoLoading
      */
-    val info: EpisodeCacheInfo by info.produceState(EpisodeCacheInfo.Placeholder)
+    val info: EpisodeCacheInfo by infoState
 
     /**
      * [info] 是否仍然在加载中
@@ -53,40 +49,12 @@ open class EpisodeCacheState(
         this.info === EpisodeCacheInfo.Placeholder
     }
 
-    private val currentStage: CacheRequestStage by cacheRequester.stage.produceState()
-
-    /**
-     * 当前需要展示给用户选择的 [MediaSelector]
-     */
-    val currentSelectMediaTask by derivedStateOf {
-        (currentStage as? CacheRequestStage.Working)?.let {
-            SelectMediaTask(
-                episode = this,
-                fetchSession = it.fetchSession,
-                mediaSelector = it.mediaSelector,
-                attemptedTrySelect = it.attemptedTrySelect,
-            )
-        }
-    }
-
-    /**
-     * 当前需要展示给用户选择的存储位置列表
-     */
-    val currentSelectStorageTask by derivedStateOf {
-        (currentStage as? CacheRequestStage.SelectStorage)?.let {
-            SelectStorageTask(
-                episode = this,
-                options = it.storages,
-                attemptedTrySelect = it.attemptedTrySelect,
-            )
-        }
-    }
-
+    val currentStage by currentStageState
 
     /**
      * 该剧集当前的缓存状态. `null` 表示还在加载中
      */
-    val cacheStatus: EpisodeCacheStatus? by cacheStatusFlow.produceState(null)
+    val cacheStatus: EpisodeCacheStatus? by cacheStatusState
 
     /**
      * 是否允许缓存该剧集
@@ -102,7 +70,7 @@ open class EpisodeCacheState(
     val actionTasker = MonoTasker(backgroundScope)
 
     val showProgressIndicator by derivedStateOf {
-        actionTasker.isRunning || currentStage is CacheRequestStage.Working
+        actionTasker.isRunning || currentStageState.value is CacheRequestStage.Working
     }
 }
 
@@ -111,7 +79,7 @@ sealed class AbstractTask {
 }
 
 /**
- * @see EpisodeCacheState.currentSelectMediaTask
+ * @see EpisodeCacheState.currentStage
  */
 @Stable
 class SelectMediaTask(
@@ -147,22 +115,3 @@ data class EpisodeCacheTargetInfo(
     val metadata: MediaCacheMetadata,
 )
 
-
-///////////////////////////////////////////////////////////////////////////
-// Testing
-///////////////////////////////////////////////////////////////////////////
-
-@Stable
-class TestEpisodeCacheState(
-    episodeId: Int,
-    cacheRequesterLazy: () -> EpisodeCacheRequester,
-    val infoFlow: MutableStateFlow<EpisodeCacheInfo>,
-    val cacheStatusFlow: MutableStateFlow<EpisodeCacheStatus>,
-    parentCoroutineContext: CoroutineContext,
-) : EpisodeCacheState(
-    episodeId,
-    cacheRequesterLazy,
-    infoFlow,
-    cacheStatusFlow,
-    parentCoroutineContext,
-)

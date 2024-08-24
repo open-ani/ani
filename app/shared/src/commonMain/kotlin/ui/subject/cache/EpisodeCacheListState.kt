@@ -11,10 +11,7 @@ import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.cache.requester.trySelectSingle
 import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.data.source.media.selector.MediaSelector
-import me.him188.ani.app.ui.foundation.BackgroundScope
-import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.Media
-import kotlin.coroutines.CoroutineContext
 
 @Stable
 interface EpisodeCacheListState {
@@ -88,22 +85,30 @@ interface EpisodeCacheListState {
 @Stable
 class EpisodeCacheListStateImpl(
     episodes: State<List<EpisodeCacheState>>,
+    currentEpisode: State<EpisodeCacheState?>,
+    // background scope
     private val onRequestCache: suspend (episode: EpisodeCacheState, autoSelectByCached: Boolean) -> CacheRequestStage?,
     private val onRequestCacheComplete: suspend (episode: EpisodeCacheTargetInfo) -> Unit,
     private val onDeleteCache: suspend (episode: EpisodeCacheState) -> Unit,
-    parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), EpisodeCacheListState {
+) : EpisodeCacheListState {
     override val episodes: List<EpisodeCacheState> by episodes
 
     override val anyEpisodeActionRunning: Boolean by derivedStateOf {
         this.episodes.any { it.actionTasker.isRunning }
     }
 
-    override val currentEpisode: EpisodeCacheState? by derivedStateOf {
-        this.episodes.firstOrNull { it.currentSelectMediaTask != null || it.currentSelectStorageTask != null }
-    }
+    override val currentEpisode: EpisodeCacheState? by currentEpisode
     override val currentSelectMediaTask: SelectMediaTask? by derivedStateOf {
-        this.episodes.firstNotNullOfOrNull { it.currentSelectMediaTask }
+        val current = this.currentEpisode
+        val stage = current?.currentStage
+        // 只要是 working 就要有这个, 否则选 storage 的时候 media 的 sheet 就被关闭了
+        if (stage !is CacheRequestStage.Working) return@derivedStateOf null
+        SelectMediaTask(
+            episode = current,
+            fetchSession = stage.fetchSession,
+            mediaSelector = stage.mediaSelector,
+            attemptedTrySelect = stage.attemptedTrySelect,
+        )
     }
 
     override fun selectMedia(media: Media) {
@@ -125,7 +130,14 @@ class EpisodeCacheListStateImpl(
     }
 
     override val currentSelectStorageTask: SelectStorageTask? by derivedStateOf {
-        this.episodes.firstNotNullOfOrNull { it.currentSelectStorageTask }
+        val current = this.currentEpisode
+        val stage = current?.currentStage
+        if (stage !is CacheRequestStage.SelectStorage) return@derivedStateOf null
+        SelectStorageTask(
+            episode = current,
+            options = stage.storages,
+            attemptedTrySelect = stage.attemptedTrySelect,
+        )
     }
 
     override fun selectStorage(storage: MediaCacheStorage) {
@@ -161,7 +173,6 @@ class EpisodeCacheListStateImpl(
         episode.actionTasker.launch {
             // TODO: 处理错误 
             onRequestCache(episode, autoSelectCached)?.let {
-                episode.currentSelectStorageTask
                 if (it is CacheRequestStage.Done) {
                     callComplete(episode, it)
                 }
