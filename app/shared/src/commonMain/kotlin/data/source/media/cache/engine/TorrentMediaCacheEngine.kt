@@ -204,8 +204,8 @@ class TorrentMediaCacheEngine(
             close()
             handle.closeAndDelete()
 
-            val file = handle.entry.resolveFileOrNull() ?: return
             withContext(Dispatchers.IO) {
+                val file = handle.entry.resolveFileMaybeEmptyOrNull() ?: return@withContext
                 if (file.exists()) {
                     logger.info { "Deleting torrent cache: $file" }
                     file.delete()

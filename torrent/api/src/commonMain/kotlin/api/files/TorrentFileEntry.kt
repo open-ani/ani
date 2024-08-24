@@ -22,6 +22,7 @@ import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
 import me.him188.ani.utils.io.bufferedSource
 import me.him188.ani.utils.io.isRegularFile
+import me.him188.ani.utils.io.length
 import me.him188.ani.utils.io.readAndDigest
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.info
@@ -89,7 +90,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     suspend fun resolveFile(): SystemPath
 
     @Throws(IOException::class)
-    fun resolveFileOrNull(): SystemPath?
+    fun resolveFileMaybeEmptyOrNull(): SystemPath?
 
     /**
      * Opens the downloaded file as a [SeekableInput].
@@ -205,7 +206,7 @@ abstract class AbstractTorrentFileEntry(
                     closeException = Exception("Stacktrace for close()")
                 }
             }
-            
+
             closeImpl()
         }
 
@@ -287,8 +288,13 @@ abstract class AbstractTorrentFileEntry(
 
     protected suspend fun resolveDownloadingFile(): SystemPath {
         while (true) {
-            val file = withContext(Dispatchers.IO) { resolveFileOrNull() }
+            val file = withContext(Dispatchers.IO) { resolveFileMaybeEmptyOrNull() }
             if (file != null) {
+                if (withContext(Dispatchers.IO) { file.length() == 0L }) {
+                    logger.info { "$torrentId: Got file, but it's length is zero. Waiting..." }
+                    delay(1.seconds)
+                    continue
+                }
                 logger.info { "$torrentId: Get file: ${file.absolutePath}" }
                 return file
             }
@@ -300,7 +306,7 @@ abstract class AbstractTorrentFileEntry(
     }
 
     @Throws(IOException::class)
-    override fun resolveFileOrNull(): SystemPath? =
+    override fun resolveFileMaybeEmptyOrNull(): SystemPath? =
         saveDirectory.resolve(relativePath).takeIf { it.isRegularFile() }
 
     override fun toString(): String {

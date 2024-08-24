@@ -34,6 +34,8 @@ actual fun TorrentInput(
  * and awaits [Piece]s to be finished when they are sought and read.
  *
  * 即使 [pieces] 的起始不为 0, [SeekableInput.position] 也是从 0 开始.
+ *
+ * [file] 的长度必须至少包含所有 [pieces] 的字节.
  */
 // tests: me.him188.ani.app.torrent.io.OffsetTorrentInputTest and me.him188.ani.app.torrent.io.TorrentInputTest
 class TorrentInput(
