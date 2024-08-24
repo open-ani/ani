@@ -71,7 +71,7 @@ import kotlin.time.Duration.Companion.seconds
 typealias CacheGroupGridLayoutState = LazyStaggeredGridState
 
 @Stable
-class CacheManagementPageViewModel(
+class CacheManagementViewModel(
     private val navigator: AniNavigator,
 ) : AbstractViewModel(), KoinComponent {
     private val cacheManager: MediaCacheManager by inject()
@@ -208,7 +208,7 @@ class CacheManagementState(
  */
 @Composable
 fun CacheManagementPage(
-    vm: CacheManagementPageViewModel,
+    vm: CacheManagementViewModel,
     modifier: Modifier = Modifier,
     showBack: Boolean = !isShowLandscapeUI(),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,

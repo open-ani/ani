@@ -62,7 +62,7 @@ import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.platform.window.plus
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
-import me.him188.ani.app.ui.cache.CacheManagementPageViewModel
+import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
@@ -279,7 +279,7 @@ private fun HomeSceneLandscape(
                         )
 
                         2 -> CacheManagementPage(
-                            rememberViewModel { CacheManagementPageViewModel(navigator) },
+                            rememberViewModel { CacheManagementViewModel(navigator) },
                             Modifier.fillMaxSize(),
                             contentWindowInsets = insets,
                         )

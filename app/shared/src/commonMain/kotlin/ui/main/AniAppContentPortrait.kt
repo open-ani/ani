@@ -11,7 +11,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.ui.cache.CacheManagementPage
-import me.him188.ani.app.ui.cache.CacheManagementPageViewModel
+import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
@@ -100,7 +100,7 @@ fun AniAppContentPortrait(
             }
             scene("/caches") {
                 CacheManagementPage(
-                    rememberViewModel { CacheManagementPageViewModel(aniNavigator) },
+                    rememberViewModel { CacheManagementViewModel(aniNavigator) },
                     Modifier.desktopTitleBarPadding().fillMaxSize(),
                     showBack = true,
                 )
