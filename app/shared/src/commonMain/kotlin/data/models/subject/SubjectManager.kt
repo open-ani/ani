@@ -300,21 +300,24 @@ class SubjectManagerImpl(
             // TODO: this is shit 
             if (cached == null) {
                 // 缓存没有, 去服务器查有没有收藏
-                kotlin.runCatching {
+                val resFromServer = kotlin.runCatching {
                     bangumiSubjectRepository.subjectCollectionById(subjectId).first()
                         ?.fetchToSubjectCollection()
-                }.getOrNull()?.let { emit(it) }
+                }.getOrNull()
 
-                // 服务器也没有, 尝试根据 [SubjectInfo] 创建一个
-
-                emit(
-                    SubjectCollection(
-                        getSubjectInfo(subjectId),
-                        episodeCollectionsFlow(subjectId).first(),
-                        UnifiedCollectionType.NOT_COLLECTED,
-                        SelfRatingInfo.Empty,
-                    ),
-                )
+                if (resFromServer != null) {
+                    emit(resFromServer) // TODO: 需要处理网络错误
+                } else {
+                    // 服务器也没有, 尝试根据 [SubjectInfo] 创建一个
+                    emit(
+                        SubjectCollection(
+                            getSubjectInfo(subjectId),
+                            episodeCollectionsFlow(subjectId).first(),
+                            UnifiedCollectionType.NOT_COLLECTED,
+                            SelfRatingInfo.Empty,
+                        ),
+                    )
+                }
             }
             emitAll(
                 cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)
