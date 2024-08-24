@@ -112,15 +112,15 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
             danmakuRegexFilterRepository.update(filter.id, filter.copy(enabled = !filter.enabled))
         }
     }
-    
-    
+
+
     val danmakuRegexFilter: State<DanmakuFilterConfig> = settingsRepository.danmakuFilterConfig.flow.produceState(
         DanmakuFilterConfig.Default,
     )
-    
+
     val danmakuRegexEnabled: Boolean
         get() = danmakuRegexFilter.value.danmakuRegexFilterEnabled
-    
+
     fun switchAllDanmakuRegexFilter() {
         launchInBackground {
             settingsRepository.danmakuFilterConfig.update {

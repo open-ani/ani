@@ -16,11 +16,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,7 +80,7 @@ fun EditDanmakuRegexFilterSideSheet(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { focusManager.clearFocus() }
+                .clickable { focusManager.clearFocus() },
         ) {
             Surface {
                 Column(
@@ -105,13 +105,13 @@ fun EditDanmakuRegexFilterSideSheet(
                             },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Done
+                                imeAction = ImeAction.Done,
                             ),
                             keyboardActions = KeyboardActions(
-                                onDone = { handleAdd() }
+                                onDone = { handleAdd() },
                             ),
                         )
-    
+
                         // 提交按钮
                         TextButton(
                             onClick = { handleAdd() },
@@ -119,7 +119,7 @@ fun EditDanmakuRegexFilterSideSheet(
                             Text(color = MaterialTheme.colorScheme.primary, text = "添加")
                         }
                     }
-    
+
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {

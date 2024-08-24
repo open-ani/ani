@@ -365,14 +365,15 @@ fun EpisodeVideoSettings(
                 title = { Text("正则弹幕过滤器开启") },
                 modifier = Modifier.placeholder(isLoadingState),
             )
-            
-            TextItem (
-                onClick = {onOverlayContentShow()},
-                modifier = Modifier.placeholder(isLoadingState).clickable{onOverlayContentShow()}.padding(bottom = 8.dp,top = 8.dp)
+
+            TextItem(
+                onClick = { onOverlayContentShow() },
+                modifier = Modifier.placeholder(isLoadingState).clickable { onOverlayContentShow() }
+                    .padding(bottom = 8.dp, top = 8.dp),
             ) {
                 Text("管理正则弹幕过滤器")
             }
-            
+
             val debugViewModel = rememberDebugSettingsViewModel()
             if (debugViewModel.isAppInDebugMode) {
 
