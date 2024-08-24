@@ -105,9 +105,13 @@ internal val TestCacheGroupSates = listOf(
             ),
         ),
         episodes = TestCacheEpisodes,
-        downloadSpeed = stateOf(233.megaBytes),
-        downloadedSize = stateOf(233.megaBytes),
-        uploadSpeed = stateOf(233.megaBytes),
+        stats = stateOf(
+            CacheGroupState.Stats(
+                downloadSpeed = 233.megaBytes,
+                downloadedSize = 233.megaBytes,
+                uploadSpeed = 233.megaBytes,
+            ),
+        ),
     ),
 )
 

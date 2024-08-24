@@ -71,16 +71,21 @@ class CacheGroupState(
     val media: Media,
     commonInfo: State<CacheGroupCommonInfo?>, // null means loading
     episodes: List<CacheEpisodeState>,
-    downloadSpeed: State<FileSize>,
-    downloadedSize: State<FileSize>,
-    /**
-     * 上传速度, 每秒. 对于不支持上传的缓存, 该值为 [FileSize.Zero].
-     *
-     * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
-     * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
-     */
-    uploadSpeed: State<FileSize>,
+    stats: State<Stats>,
 ) {
+    @Immutable
+    data class Stats(
+        val downloadSpeed: FileSize,
+        val downloadedSize: FileSize,
+        /**
+         * 上传速度, 每秒. 对于不支持上传的缓存, 该值为 [FileSize.Zero].
+         *
+         * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
+         * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
+         */
+        val uploadSpeed: FileSize,
+    )
+
     val episodes = episodes.sortedBy { it.sort }
     val cacheId = episodes.firstOrNull()?.cacheId
 
@@ -89,14 +94,14 @@ class CacheGroupState(
     }
     val downloadSpeedText by derivedStateOf {
         computeSpeedText(
-            speed = if (allEpisodesFinished) FileSize.Unspecified else downloadSpeed.value,
-            size = downloadedSize.value,
+            speed = if (allEpisodesFinished) FileSize.Unspecified else stats.value.downloadSpeed,
+            size = stats.value.downloadedSize,
         )
     }
 
     val uploadSpeedText by derivedStateOf {
         computeSpeedText(
-            speed = uploadSpeed.value,
+            speed = stats.value.uploadSpeed,
             size = FileSize.Unspecified,
         )
     }

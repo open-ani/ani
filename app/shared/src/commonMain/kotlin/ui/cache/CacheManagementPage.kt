@@ -126,12 +126,21 @@ class CacheManagementViewModel(
                 episodes = episodes.map { mediaCache ->
                     createCacheEpisode(mediaCache)
                 },
-                downloadSpeed = firstCache.sessionDownloadSpeed.sampleWithInitial(1.seconds)
-                    .produceState(FileSize.Unspecified, this),
-                downloadedSize = firstCache.downloadedSize.sampleWithInitial(1.seconds)
-                    .produceState(FileSize.Unspecified, this),
-                uploadSpeed = firstCache.sessionUploadSpeed.sampleWithInitial(1.seconds)
-                    .produceState(FileSize.Unspecified, this),
+                stats = combine(
+                    firstCache.sessionDownloadSpeed,
+                    firstCache.downloadedSize,
+                    firstCache.sessionUploadSpeed,
+                ) { downloadSpeed, downloadedSize, uploadSpeed ->
+                    CacheGroupState.Stats(
+                        downloadSpeed = downloadSpeed,
+                        downloadedSize = downloadedSize,
+                        uploadSpeed = uploadSpeed,
+                    )
+                }.sampleWithInitial(1.seconds)
+                    .produceState(
+                        CacheGroupState.Stats(FileSize.Unspecified, FileSize.Unspecified, FileSize.Unspecified),
+                        this,
+                    ),
             )
         }
 
