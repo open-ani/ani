@@ -51,6 +51,10 @@ abstract class BufferedInput(
      * 当前 user 读到的位置
      */
     final override var position: Long = 0
+        protected set(value) {
+            require(value >= 0) { "position must be non-negative, but was $value" }
+            field = value
+        }
 
     final override val bytesRemaining: Long get() = (this.size - position).coerceAtLeast(0)
 
