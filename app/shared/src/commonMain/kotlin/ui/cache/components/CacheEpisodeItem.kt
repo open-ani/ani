@@ -75,6 +75,8 @@ class CacheEpisodeState(
         val totalSize: FileSize,
     )
 
+    val hasValidSubjectAndEpisodeId get() = subjectId != 0 && episodeId != 0
+
     val progress by derivedStateOf { stats.value.progress ?: 0f }
 
     val screenShots by screenShots
@@ -336,20 +338,22 @@ private fun Dropdown(
                 )
             }
         }
-        DropdownMenuItem(
-            text = { Text("播放") },
-            leadingIcon = {
-                // 这个内容如果太大会导致影响 text
-                Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                    // 这个图标比其他图标小
-                    Icon(Icons.Rounded.PlayArrow, null, Modifier.requiredSize(28.dp))
-                }
-            },
-            onClick = {
-                state.play()
-                onDismissRequest()
-            },
-        )
+        if (state.hasValidSubjectAndEpisodeId) {
+            DropdownMenuItem(
+                text = { Text("播放") },
+                leadingIcon = {
+                    // 这个内容如果太大会导致影响 text
+                    Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                        // 这个图标比其他图标小
+                        Icon(Icons.Rounded.PlayArrow, null, Modifier.requiredSize(28.dp))
+                    }
+                },
+                onClick = {
+                    state.play()
+                    onDismissRequest()
+                },
+            )
+        }
         ProvideContentColor(MaterialTheme.colorScheme.error) {
             DropdownMenuItem(
                 text = { Text("删除", color = MaterialTheme.colorScheme.error) },
