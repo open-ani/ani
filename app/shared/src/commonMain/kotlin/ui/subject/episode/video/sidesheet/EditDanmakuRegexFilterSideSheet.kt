@@ -107,7 +107,10 @@ fun EditDanmakuRegexFilterSideSheet(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     // 输入框
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(
+                        modifier = Modifier.padding(top = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
                         OutlinedTextField(
                             value = regexTextFieldValue,
                             onValueChange = {
