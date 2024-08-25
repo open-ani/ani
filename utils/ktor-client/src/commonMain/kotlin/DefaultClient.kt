@@ -2,7 +2,6 @@ package me.him188.ani.utils.ktor
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.BrowserUserAgent
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpSend
@@ -10,12 +9,12 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.plugin
-import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import me.him188.ani.utils.ktor.HttpLogger.logHttp
 import me.him188.ani.utils.logging.Logger
@@ -23,6 +22,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
@@ -61,7 +61,7 @@ fun HttpClient.registerLogging(
             method = request.method,
             url = request.url.toString(),
             isAuthorized = request.headers.contains(HttpHeaders.Authorization),
-            responseStatus = result.getOrNull()?.response?.status,
+            responseStatus = result.map { it.response.status },
             duration = duration,
         )
         result.getOrThrow()
@@ -73,26 +73,26 @@ object HttpLogger {
         method: HttpMethod,
         url: String,
         isAuthorized: Boolean,
-        responseStatus: HttpStatusCode?, // null means failed
+        responseStatus: Result<HttpStatusCode>,
         duration: Duration,
     ) {
         when {
             // 刻意没记录 exception, 因为外面应该会处理
-            responseStatus == null ->
-                error { buildHttpRequestLog(method, url, isAuthorized, null, duration) }
+            responseStatus.isFailure ->
+                error { buildHttpRequestLog(method, url, isAuthorized, responseStatus, duration) }
 
-            responseStatus.isSuccess() ->
+            responseStatus.getOrNull()?.isSuccess() == true ->
                 info { buildHttpRequestLog(method, url, isAuthorized, responseStatus, duration) }
 
             else -> warn { buildHttpRequestLog(method, url, isAuthorized, responseStatus, duration) }
         }
     }
 
-    fun buildHttpRequestLog(
+    private fun buildHttpRequestLog(
         method: HttpMethod,
         url: String,
         isAuthorized: Boolean,
-        responseStatus: HttpStatusCode?, // null means failed
+        responseStatus: Result<HttpStatusCode>,
         duration: Duration,
     ): String {
         val methodStr = method.value.padStart(5, ' ')
@@ -107,26 +107,21 @@ object HttpLogger {
 
             append(": ")
 
-            if (responseStatus != null) {
-                append(responseStatus.toString()) // 404 Not Found
-            } else {
-                append("FAILED")
-            }
+            responseStatus.fold(
+                onSuccess = {
+                    append(it.toString()) // "404 Not Found"
+                },
+                onFailure = {
+                    when (it) {
+                        is CancellationException -> append("CANCELLED")
+                        is IOException -> append("IO_EXCEPTION")
+                        else -> append("FAILED")
+                    }
+                },
+            )
 
             append(" in ")
             append(duration.toString())
         }
     }
 }
-
-fun HttpLogger.buildHttpRequestLog(
-    request: HttpRequestBuilder,
-    call: HttpClientCall?,
-    duration: Duration,
-): String = buildHttpRequestLog(
-    method = request.method,
-    url = request.url.toString(),
-    isAuthorized = request.headers.contains(HttpHeaders.Authorization),
-    responseStatus = call?.response?.status,
-    duration = duration,
-)
