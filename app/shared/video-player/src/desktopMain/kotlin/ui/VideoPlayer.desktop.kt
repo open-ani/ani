@@ -56,6 +56,9 @@ import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
 import java.io.IOException
 import java.nio.file.Path
 import java.util.Locale
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createDirectories
 import kotlin.time.Duration.Companion.seconds
@@ -65,21 +68,16 @@ import kotlin.time.Duration.Companion.seconds
 class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
     AbstractPlayerState<VlcjData>(parentCoroutineContext) {
     companion object {
+        private val createPlayerLock = ReentrantLock() // 如果同时加载可能会 SIGSEGV
         fun prepareLibraries() {
-            NativeDiscovery().discover()
-            CallbackMediaPlayerComponent().release()
+            createPlayerLock.withLock {
+                NativeDiscovery().discover()
+                CallbackMediaPlayerComponent().release()
+            }
         }
     }
 
-    val component = run {
-        object : ComposeMediaPlayerComponent("-v") { //"-vv", "--avcodec-hw", "none"
-//            override fun mouseClicked(e: MouseEvent?) {
-//                super.mouseClicked(e)
-//                parent.dispatchEvent(e)
-//            }
-        }
-    }
-    var bitmap: ImageBitmap by component::composeImage
+    val component: ComposeMediaPlayerComponent
 
     //    val mediaPlayerFactory = MediaPlayerFactory(
 //        "--video-title=vlcj video output",
@@ -87,48 +85,19 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 //        "--intf=dummy",
 //        "-v"
 //    )
-    val player: EmbeddedMediaPlayer = component.mediaPlayer()
-//        mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer()
+    val player: EmbeddedMediaPlayer
 
-//    val surface = SkiaVideoSurface(
-//        renderCallback = {
-//            bitmap = it
-//        },
-//        videoSurfaceAdapter = null
-//    ).apply {
-//        attach(player)
-//    }
+    init {
+        createPlayerLock.withLock {
+            component = run {
+                object : ComposeMediaPlayerComponent("-v") { //"-vv", "--avcodec-hw", "none"
+                }
+            }
+            player = component.mediaPlayer()
+        }
+    }
 
-//    val surface = mediaPlayerFactory.videoSurfaces().newVideoSurface(
-//        object : BufferFormatCallback {
-//            override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
-//                return BufferFormat(
-//                    "RV32",
-//                    sourceWidth,
-//                    sourceHeight,
-//                    intArrayOf(sourceWidth * 4),
-//                    intArrayOf(sourceHeight)
-//                )
-//            }
-//
-//            override fun allocatedBuffers(buffers: Array<out ByteBuffer>) {
-//
-//            }
-//        },
-//        { mediaPlayer, nativeBuffers, bufferFormat ->
-//            val buffer = nativeBuffers[0]
-//            val out = ByteArray(buffer.capacity())
-//            buffer.get(out)
-//            val bitmap = Bitmap().apply {
-//                this.allocPixels()
-//                this.installPixels(out)
-//            }
-//            this.bitmap = bitmap
-//        },
-//        false,
-//    ).apply {
-//        attach(player)
-//    }
+    var bitmap: ImageBitmap by component::composeImage
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override fun stopImpl() {
@@ -589,4 +558,15 @@ private fun isMacOS(): Boolean {
         .getProperty("os.name", "generic")
         .lowercase(Locale.ENGLISH)
     return "mac" in os || "darwin" in os
+}
+
+// add contract
+private inline fun <T> ReentrantLock.withLock(block: () -> T): T {
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    lock()
+    try {
+        return block()
+    } finally {
+        unlock()
+    }
 }
