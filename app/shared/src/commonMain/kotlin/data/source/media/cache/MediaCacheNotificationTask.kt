@@ -78,8 +78,7 @@ class MediaCacheNotificationTask(
                                                     priority = NotifPriority.MIN
                                                 }
                                             }.run {
-                                                val download = cache.downloadSpeed.first()
-                                                contentText = "$download/s"
+                                                contentText = ""
                                                 setProgress(100, progress.toPercentageOrZero().toInt())
                                                 show()
                                             }

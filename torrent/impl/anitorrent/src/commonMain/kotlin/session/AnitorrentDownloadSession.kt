@@ -15,6 +15,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -39,12 +40,13 @@ import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
 import me.him188.ani.utils.io.deleteRecursively
 import me.him188.ani.utils.logging.debug
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.roundToLong
+import kotlin.time.Duration.Companion.seconds
 
 private val PROGRESS_RANGE = 0f..1f
 
@@ -75,12 +77,26 @@ class AnitorrentDownloadSession(
                 delay(1000)
             }
         }
-    }
 
-    /**
-     * null means unknown
-     */
-    private val totalSizeFlow: MutableStateFlow<Long?> = MutableStateFlow(null)
+        scope.launch {
+            var lastUploaded = 0L
+            while (isActive) {
+                if (!handle.isValid) {
+                    return@launch
+                }
+                val uploaded = sessionStats.first()
+                if (uploaded != null && uploaded.uploadedBytes != lastUploaded) {
+                    lastUploaded = uploaded.uploadedBytes
+                    try {
+                        handle.postSaveResume()
+                    } catch (e: Throwable) {
+                        logger.error(e) { "Failed to save resume data" }
+                    }
+                }
+                delay(60.seconds)
+            }
+        }
+    }
 
     override val sessionStats: MutableSharedFlow<TorrentSession.Stats?> =
         MutableSharedFlow<TorrentSession.Stats?>(
@@ -106,7 +122,12 @@ class AnitorrentDownloadSession(
         parentCoroutineContext,
     ) {
         override val supportsStreaming: Boolean get() = true
-        val pieceRange = if (pieces.isEmpty()) LongRange.EMPTY else pieces.first().startIndex..pieces.last().lastIndex
+
+        /**
+         * 是 [Piece.pieceIndex], 不是 file offset
+         */
+        val pieceIndexRange =
+            if (pieces.isEmpty()) IntRange.EMPTY else pieces.first().pieceIndex..pieces.last().pieceIndex
 
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
@@ -300,7 +321,6 @@ class AnitorrentDownloadSession(
             entries,
         )
         logger.info { "[$handleId] Got torrent info: $value" }
-        totalSizeFlow.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
         this.actualTorrentInfo.complete(value)
     }
@@ -343,13 +363,13 @@ class AnitorrentDownloadSession(
     ) {
         info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
         for (file in openFiles) {
-            if (pieceIndex in file.entry.pieceRange) {
+            if (pieceIndex in file.entry.pieceIndexRange) {
                 file.entry.controller.onPieceDownloaded(pieceIndex)
             }
         }
         // TODO: Anitorrent 计算 file 完成度的算法需要优化性能, 这有 n^2 复杂度
         for (entry in info.entries) {
-            if (pieceIndex !in entry.pieceRange) continue
+            if (pieceIndex !in entry.pieceIndexRange) continue
 
             val downloadedBytes = entry.downloadedBytes.value
             if (downloadedBytes == entry.length) {
@@ -373,14 +393,13 @@ class AnitorrentDownloadSession(
     }
 
     fun onStatsUpdate(stats: TorrentStats) {
-        val totalSize = this.totalSizeFlow.value ?: return
         this.sessionStats.tryEmit(
             TorrentSession.Stats(
-                totalSize = totalSize,
-                downloadedBytes = (totalSize * stats.progress).roundToLong().coerceIn(0, totalSize),
-                downloadSpeed = stats.downloadPayloadRate.toUInt().toLong(),
-                uploadedBytes = stats.totalPayloadUpload,
-                uploadSpeed = stats.uploadPayloadRate.toUInt().toLong(),
+                totalSizeRequested = stats.total,
+                downloadedBytes = stats.totalDone,
+                downloadSpeed = stats.downloadPayloadRate,
+                uploadedBytes = stats.allTimeUpload,
+                uploadSpeed = stats.uploadPayloadRate,
                 downloadProgress = stats.progress,
             ),
         )

@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
 import me.him188.ani.app.tools.Progress
 import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.torrent.api.TorrentSession
@@ -60,6 +61,7 @@ interface MediaCache {
 
     /**
      * @see TorrentFileEntry.Stats
+     * @see TorrentMediaCacheEngine.TorrentMediaCache.fileStats
      */
     data class FileStats(
         val totalSize: FileSize,
@@ -67,6 +69,7 @@ interface MediaCache {
          * 已经下载成功的字节数.
          *
          * @return `0L`..[TorrentFileEntry.length]
+         * @see TorrentFileEntry.Stats.downloadedBytes
          */
         val downloadedBytes: FileSize,
         /**
@@ -104,7 +107,6 @@ interface MediaCache {
      * 当前文件的下载状态.
      */
     val fileStats: Flow<FileStats>
-    val downloadSpeed: Flow<FileSize>
 
     /**
      * 所属的 [Media] 的下载状态, 也就是会包含其他剧集的下载状态.
@@ -113,8 +115,12 @@ interface MediaCache {
      *
      * @see sessionStats
      * @see TorrentSession.Stats
+     * @see TorrentMediaCacheEngine.TorrentMediaCache.sessionStats
      */
     data class SessionStats(
+        /**
+         * 所有请求了的文件的大小
+         */
         val totalSize: FileSize,
         /**
          * 已经下载成功的字节数.
@@ -241,8 +247,6 @@ open class TestMediaCache(
 
     override suspend fun getCachedMedia(): CachedMedia = media
     override fun isValid(): Boolean = true
-
-    override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
 
     private val resumeCalled = atomic(0)
 

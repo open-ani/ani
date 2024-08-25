@@ -10,7 +10,11 @@ import me.him188.ani.app.torrent.api.files.TorrentFileEntry
  */
 interface TorrentSession {
     data class Stats(
-        val totalSize: Long,
+        /**
+         * 所有已请求的文件的总大小.
+         * 例如, 一个季度全集资源, 只请求下载前两集, 则该值为前两集的大小之和.
+         */
+        val totalSizeRequested: Long,
         /**
          * 已经下载成功的字节数.
          *
@@ -18,15 +22,18 @@ interface TorrentSession {
          */
         val downloadedBytes: Long,
         /**
-         * Bytes per second.
+         * 当前下载速度, 字节每秒.
          */
         val downloadSpeed: Long,
         /**
-         * 已经上传成功的字节数.
+         * 已经上传成功的字节数. 为持久化到 resume data 的值.
          *
          * @return `0L`..INF
          */
         val uploadedBytes: Long,
+        /**
+         * 当前上传速度, 字节每秒.
+         */
         val uploadSpeed: Long,
         /**
          * Bytes per second.

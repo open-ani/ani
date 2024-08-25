@@ -93,22 +93,22 @@ class DirectoryMediaCacheStorage(
                 @Volatile
                 var value: Long = 0L
             }
-            engine.stats.collect { stats ->
-                val new = stats.uploaded
-                if (new.isUnspecified) return@collect
-
-                val diff = (new.inBytes - maxUploaded.value).bytes
-                if (diff.inBytes > 0) {
-                    maxUploaded.value = maxOf(maxUploaded.value, new.inBytes)
-
-                    if (diff.inMegaBytes < 100) {
-                        dataStore.updateData { it.copy(uploaded = it.uploaded + diff) }
-                    } else {
-                        // 有时候启动时上传量会突增到几百 GB, 不知道是什么原因, 就先直接过滤掉超大的 diff 了
-                        // 不太可能有人能 100MB/s 上传
-                    }
-                }
-            }
+//            engine.stats.collect { stats ->
+//                val new = stats.uploaded
+//                if (new.isUnspecified) return@collect
+//
+//                val diff = (new.inBytes - maxUploaded.value).bytes
+//                if (diff.inBytes > 0) {
+//                    maxUploaded.value = maxOf(maxUploaded.value, new.inBytes)
+//
+//                    if (diff.inMegaBytes < 100) {
+//                        dataStore.updateData { it.copy(uploaded = it.uploaded + diff) }
+//                    } else {
+//                        // 有时候启动时上传量会突增到几百 GB, 不知道是什么原因, 就先直接过滤掉超大的 diff 了
+//                        // 不太可能有人能 100MB/s 上传
+//                    }
+//                }
+//            }
         }
     }
 
@@ -196,7 +196,7 @@ class DirectoryMediaCacheStorage(
     }
     override val stats: Flow<MediaStats> = dataStore.data.combine(engine.stats) { save, stats ->
         MediaStats(
-            uploaded = save.uploaded,
+            uploaded = stats.uploaded,
             downloaded = stats.downloaded,
             uploadSpeed = stats.uploadSpeed,
             downloadSpeed = stats.downloadSpeed,

@@ -101,7 +101,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
         }
 
         combine(statsFlows) { sessions ->
-            val totalSize = sessions.sumOf { it?.totalSize ?: 0L }
+            val totalSize = sessions.sumOf { it?.totalSizeRequested ?: 0L }
             val downloadedBytes = sessions.sumOf { it?.downloadedBytes ?: 0L }
             TorrentDownloader.Stats(
                 totalSize = totalSize,

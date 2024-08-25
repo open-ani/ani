@@ -25,12 +25,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.supervisorScope
@@ -154,22 +156,24 @@ class CacheManagementViewModel(
         imageUrl = imageUrl,
     )
 
-    private fun CoroutineScope.createCacheEpisode(mediaCache: MediaCache) =
-        CacheEpisodeState(
+    private fun CoroutineScope.createCacheEpisode(mediaCache: MediaCache): CacheEpisodeState {
+        val fileStats = mediaCache.fileStats
+            .shareIn(this, started = SharingStarted.Eagerly, replay = 1)
+        return CacheEpisodeState(
             subjectId = mediaCache.metadata.subjectIdInt,
             episodeId = mediaCache.metadata.episodeIdInt,
             cacheId = mediaCache.cacheId,
             sort = mediaCache.metadata.episodeSort,
             displayName = mediaCache.metadata.episodeName,
-//            screenShots = flow {
-//                if (mediaCache is TorrentMediaCacheEngine.TorrentMediaCache) {
-//                    mediaCache.lazyFileHandle
-//                }
-//                    episodeScreenshotRepository.getScreenshots(mediaCache.metadata.)
-//            }.produceState(emptyList(), this),
+            //            screenShots = flow {
+            //                if (mediaCache is TorrentMediaCacheEngine.TorrentMediaCache) {
+            //                    mediaCache.lazyFileHandle
+            //                }
+            //                    episodeScreenshotRepository.getScreenshots(mediaCache.metadata.)
+            //            }.produceState(emptyList(), this),
             screenShots = stateOf(emptyList()),
-            stats = mediaCache.fileStats.combine(
-                mediaCache.downloadSpeed.map { it.inBytes }.averageRate(),
+            stats = fileStats.combine(
+                fileStats.map { it.downloadedBytes.inBytes }.averageRate(),
             ) { stats, downloadSpeed ->
                 CacheEpisodeState.Stats(
                     downloadSpeed = downloadSpeed.bytes,
@@ -195,6 +199,7 @@ class CacheManagementViewModel(
             },
             backgroundScope = this + CoroutineName("CacheEpisode-${mediaCache.metadata.episodeIdInt}"),
         )
+    }
 }
 
 /**
