@@ -61,14 +61,22 @@ abstract class MediaCacheManager(
 
             for (mediaCache in list) {
                 if (mediaCache.metadata.subjectId == subjectIdString && mediaCache.metadata.episodeId == episodeIdString) {
-                    hasAnyCached = mediaCache
-                    if (!mediaCache.isFinished()) {
-                        hasAnyCaching = mediaCache
+                    hasAnyCaching = mediaCache
+                    if (mediaCache.isFinished()) {
+                        hasAnyCached = mediaCache
                     }
                 }
             }
 
             when {
+                hasAnyCached != null -> {
+                    emitAll(
+                        hasAnyCached.fileStats.map {
+                            EpisodeCacheStatus.Cached(totalSize = it.totalSize)
+                        },
+                    )
+                }
+
                 hasAnyCaching != null -> {
                     emitAll(
                         hasAnyCaching.fileStats.map {
@@ -81,14 +89,6 @@ abstract class MediaCacheManager(
                                     totalSize = it.totalSize,
                                 )
                             }
-                        },
-                    )
-                }
-
-                hasAnyCached != null -> {
-                    emitAll(
-                        hasAnyCached.fileStats.map {
-                            EpisodeCacheStatus.Cached(totalSize = it.totalSize)
                         },
                     )
                 }
