@@ -9,8 +9,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
@@ -21,8 +21,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.app.data.source.media.cache.engine.MediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.engine.MediaStats
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -93,7 +93,10 @@ class DirectoryMediaCacheStorage(
                 @Volatile
                 var value: Long = 0L
             }
-            engine.stats.uploaded.collect { new ->
+            engine.stats.collect { stats ->
+                val new = stats.uploaded
+                if (new.isUnspecified) return@collect
+
                 val diff = (new.inBytes - maxUploaded.value).bytes
                 if (diff.inBytes > 0) {
                     maxUploaded.value = maxOf(maxUploaded.value, new.inBytes)
@@ -191,15 +194,13 @@ class DirectoryMediaCacheStorage(
     override val cacheMediaSource: MediaSource by lazy {
         MediaCacheStorageSource(this, MediaSourceLocation.Local)
     }
-    override val stats: MediaStats = object : MediaStats {
-        override val uploaded: Flow<FileSize>
-            get() = dataStore.data.map { it.uploaded }
-        override val downloaded: Flow<FileSize>
-            get() = engine.stats.downloaded
-        override val uploadRate: Flow<FileSize>
-            get() = engine.stats.uploadRate
-        override val downloadRate: Flow<FileSize>
-            get() = engine.stats.downloadRate
+    override val stats: Flow<MediaStats> = dataStore.data.combine(engine.stats) { save, stats ->
+        MediaStats(
+            uploaded = save.uploaded,
+            downloaded = stats.downloaded,
+            uploadSpeed = stats.uploadSpeed,
+            downloadSpeed = stats.downloadSpeed,
+        )
     }
 
     /**

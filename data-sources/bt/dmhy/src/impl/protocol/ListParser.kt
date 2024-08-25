@@ -106,10 +106,10 @@ internal object ListParser {
         private fun createFileSize(size: String): FileSize {
             // 430.1 MB
             return when {
-                size.endsWith("GB") -> size.removeSuffix("GB").toDouble().gigaBytes
-                size.endsWith("MB") -> size.removeSuffix("MB").toDouble().megaBytes
-                size.endsWith("KB") -> size.removeSuffix("KB").toDouble().kiloBytes
-                size.endsWith("B") -> size.removeSuffix("B").toDouble().bytes
+                size.endsWith("GB") -> size.removeSuffix("GB").toFloat().gigaBytes
+                size.endsWith("MB") -> size.removeSuffix("MB").toFloat().megaBytes
+                size.endsWith("KB") -> size.removeSuffix("KB").toFloat().kiloBytes
+                size.endsWith("B") -> size.removeSuffix("B").toFloat().bytes
                 else -> throw IllegalArgumentException("Unrecognized size pattern: $size")
             }
         }

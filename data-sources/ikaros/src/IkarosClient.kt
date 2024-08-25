@@ -21,7 +21,7 @@ import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
-import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
@@ -125,7 +125,7 @@ class IkarosClient(
                             subtitleLanguageIds = parseResult.subtitleLanguages.map { it.id },
                             resolution = parseResult.resolution?.displayName ?: "480P",
                             alliance = IkarosMediaSource.ID,
-                            size = FileSize(attachment?.size ?: 0),
+                            size = (attachment?.size ?: 0).bytes,
                             subtitleKind = SubtitleKind.EXTERNAL_PROVIDED,
                         ),
                         episodeRange = parseResult.episodeRange,
@@ -149,7 +149,7 @@ class IkarosClient(
     }
 
     private suspend fun fetchVideoAttSubtitles2ExtraFiles(attachmentId: Long): MediaExtraFiles {
-        if (attachmentId <= 0) return MediaExtraFiles();
+        if (attachmentId <= 0) return MediaExtraFiles()
         val attVideoSubtitleList = getAttachmentVideoSubtitlesById(attachmentId)
         val subtitles: MutableList<Subtitle> = mutableListOf();
         if (!attVideoSubtitleList.isNullOrEmpty()) {

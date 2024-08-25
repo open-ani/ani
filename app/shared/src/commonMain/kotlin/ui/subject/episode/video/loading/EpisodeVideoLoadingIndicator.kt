@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
@@ -34,7 +35,9 @@ fun EpisodeVideoLoadingIndicator(
     val state by playerState.state.collectAsStateWithLifecycle()
 
     val speed by remember(playerState) {
-        playerState.videoData.filterNotNull().flatMapLatest { it.downloadSpeed }
+        playerState.videoData.filterNotNull().flatMapLatest { video ->
+            video.networkStats.map { it.downloadSpeed }
+        }
     }.collectAsStateWithLifecycle(FileSize.Unspecified)
 
     if (isBuffering ||

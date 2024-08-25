@@ -10,12 +10,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import me.him188.ani.app.data.source.media.cache.engine.sum
 import me.him188.ani.app.platform.notification.Notif
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.notification.NotifPriority
+import me.him188.ani.app.tools.toPercentageOrZero
 import me.him188.ani.datasources.api.topic.sum
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import me.him188.ani.utils.platform.currentTimeMillis
@@ -57,8 +60,8 @@ class MediaCacheNotificationTask(
                             try {
                                 while (currentCoroutineContext().isActive) {
                                     for (cache in caches) {
-                                        val progress = cache.progress.first()
-                                        if (progress >= 1f) {
+                                        val progress = cache.fileStats.map { it.downloadProgress }.first()
+                                        if (progress.isFinished) {
                                             caches = caches.remove(cache)
                                             visibleNotifications.remove(cache.cacheId)?.let {
                                                 visibleCount.decrementAndGet()
@@ -77,7 +80,7 @@ class MediaCacheNotificationTask(
                                             }.run {
                                                 val download = cache.downloadSpeed.first()
                                                 contentText = "$download/s"
-                                                setProgress(100, (progress * 100).toInt())
+                                                setProgress(100, progress.toPercentageOrZero().toInt())
                                                 show()
                                             }
                                         }
@@ -107,11 +110,7 @@ class MediaCacheNotificationTask(
                         delay(5000)
                     }
 
-                    //                    val anyCachingFlow = combine(list.map { storage -> storage.anyCaching }) { array ->
-                    //                        array.any { it }
-                    //                    }.sampleWithInitial(1000)
-                    combine(stats.downloadRate.sampleWithInitial(3000)) { downloadRate ->
-                        //                        if (anyCaching) {
+                    combine(stats.map { it.downloadSpeed }.sampleWithInitial(3000)) { downloadRate ->
                         if (visibleCount.value == 0) {
                             summaryNotif.cancel()
                         } else {
@@ -120,9 +119,6 @@ class MediaCacheNotificationTask(
                                 show()
                             }
                         }
-                        //                        } else {
-                        //                            summaryNotif.cancel()
-                        //                        }
                     }.collect()
                 }
             }

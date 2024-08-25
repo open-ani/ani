@@ -24,10 +24,13 @@ import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
+import me.him188.ani.app.tools.Progress
+import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.utils.platform.annotations.TestOnly
 
@@ -68,8 +71,8 @@ private fun PreviewEpisodeCacheActionIcon() {
                     isLoadingIndefinitely = false,
                     hasActionRunning = true,
                     cacheStatus = EpisodeCacheStatus.Caching(
-                        null,
-                        me.him188.ani.datasources.api.topic.FileSize.Unspecified,
+                        Progress.Unspecified,
+                        FileSize.Unspecified,
                     ),
                     canCache = true,
                     onClick = {},
@@ -84,8 +87,8 @@ private fun PreviewEpisodeCacheActionIcon() {
                     isLoadingIndefinitely = false,
                     hasActionRunning = true,
                     cacheStatus = EpisodeCacheStatus.Caching(
-                        0.3f,
-                        me.him188.ani.datasources.api.topic.FileSize.Unspecified,
+                        0.3f.toProgress(),
+                        FileSize.Unspecified,
                     ),
                     canCache = true,
                     onClick = {},

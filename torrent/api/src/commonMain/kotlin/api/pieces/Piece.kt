@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.takeWhile
-import me.him188.ani.app.torrent.api.files.PieceState
 
 class Piece(
     /**
@@ -74,4 +73,12 @@ suspend inline fun Piece.awaitFinished() {
     if (piece.state.value != PieceState.FINISHED) {
         piece.state.takeWhile { it != PieceState.FINISHED }.collect()
     }
+}
+
+enum class PieceState {
+    READY,
+    DOWNLOADING,
+    FINISHED,
+    NOT_AVAILABLE,
+    ;
 }

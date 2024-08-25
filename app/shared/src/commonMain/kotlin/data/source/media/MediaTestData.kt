@@ -1,17 +1,11 @@
 package me.him188.ani.app.data.source.media
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.media.cache.TestMediaCache
-import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
-import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.Subtitle
 import me.him188.ani.datasources.api.SubtitleKind
-import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
@@ -133,24 +127,4 @@ val TestMediaList = listOf(
         kind = MediaSourceKind.BitTorrent,
         location = MediaSourceLocation.Online,
     ),
-)
-
-@TestOnly
-val TestMediaCache1 = TestMediaCache(
-    CachedMedia(
-        TestMediaList[0],
-        MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID,
-        ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
-    ),
-    MediaCacheMetadata(
-        MediaFetchRequest(
-            subjectId = "123123",
-            episodeId = "1231231",
-            subjectNames = setOf("孤独摇滚"),
-            episodeSort = EpisodeSort("01"),
-            episodeName = "测试剧集",
-        ),
-    ),
-    progress = MutableStateFlow(0.9999f),
-    totalSize = MutableStateFlow(233.megaBytes),
 )

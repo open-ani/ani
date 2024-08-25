@@ -8,22 +8,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
-import me.him188.ani.app.torrent.api.TorrentDownloadSession
+import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.app.torrent.api.pieces.Piece
-import me.him188.ani.app.torrent.api.pieces.lastIndex
-import me.him188.ani.app.torrent.api.pieces.startIndex
-import me.him188.ani.utils.io.DigestAlgorithm
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
-import me.him188.ani.utils.io.bufferedSource
 import me.him188.ani.utils.io.isRegularFile
 import me.him188.ani.utils.io.length
-import me.him188.ani.utils.io.readAndDigest
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -32,16 +30,43 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * 表示 BT 资源中的一个文件.
+ * 表示 [BT 资源][TorrentSession] 中的一个文件.
  *
  * 所有文件默认都没有开始下载, 需调用 [createHandle] 创建一个句柄, 并使用 [TorrentFileHandle.resume] 才会开始下载.
  * 当句柄被关闭后, 该文件的下载也会被停止.
  */
 interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
-     * 该文件的下载数据
+     * @see fileStats
      */
-    val stats: DownloadStats
+    data class Stats(
+        /**
+         * 已经下载成功的字节数.
+         *
+         * @return `0L`..[TorrentFileEntry.length]
+         */
+        val downloadedBytes: Long,
+        /**
+         * 已完成比例.
+         *
+         * @return `0f`..`1f`, 在未开始下载时, 该值为 `0f`.
+         */
+        val downloadProgress: Float, // 0f..1f
+        // 没有上传信息
+    ) {
+        init {
+            require(downloadProgress in 0f..1f) { "Progress must be in range 0f..1f, but was $downloadProgress" }
+        }
+
+        val isDownloadFinished: Boolean get() = downloadProgress >= 1f
+    }
+
+    /**
+     * 该文件的下载数据.
+     *
+     * 有关返回的 flow 的性质, 参考 [TorrentSession.sessionStats].
+     */
+    val fileStats: Flow<Stats> // shared
 
     /**
      * 文件数据长度. 注意, 这不是文件在硬盘上的大小. 在硬盘上可能会略有差别.
@@ -75,16 +100,6 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     fun createHandle(): TorrentFileHandle
 
     /**
-     * Awaits until the hash is available
-     */
-    suspend fun computeFileHash(): String
-
-    /**
-     * Returns the hash if available, otherwise `null`
-     */
-    fun computeFileHashOrNull(): String?
-
-    /**
      * 绝对路径. 挂起直到文件路径可用 (即有任意一个 piece 下载完成时)
      */
     suspend fun resolveFile(): SystemPath
@@ -99,80 +114,23 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
 }
 
 /**
- * [TorrentFileEntry] 的下载控制器.
+ * 挂起协程, 直到 [TorrentFileEntry] 下载完成, 即 [TorrentFileEntry.Stats.isDownloadFinished] 为 `true`.
  *
- * 每个 [TorrentFileEntry] 可以有多个 [TorrentFileHandle], 仅当所有 [TorrentFileHandle] 都被关闭或 [pause] 后, 文件的下载才会被停止.
+ * 注意, 如果 [TorrentFileEntry] 未开始下载, 或所属 [TorrentSession] 已经被关闭, 则此函数会一直挂起.
+ *
+ * 支持 cancellation.
  */
-interface TorrentFileHandle {
-    val entry: TorrentFileEntry
-
-    /**
-     * 恢复下载并设置优先级
-     *
-     * 注意, 设置低于 [FilePriority.NORMAL] 可能会导致下载速度缓慢
-     *
-     * @throws IllegalStateException 当已经 [close] 时抛出
-     */
-    fun resume(priority: FilePriority = FilePriority.NORMAL)
-
-    /**
-     * 暂停下载
-     * @throws IllegalStateException 当已经 [close] 时抛出
-     */
-    fun pause()
-
-    /**
-     * 停止下载并关闭此 [TorrentFileHandle]. 后续将不能再 [resume] 或 [pause] 等.
-     *
-     * 若此 torrent 文件是其背后 [TorrentDownloadSession] 最后一个要关闭的 torrent 文件，则该函数会挂起，
-     * 直到 [TorrentDownloadSession] 完全关闭
-     *
-     */
-    suspend fun close()
-
-    suspend fun closeAndDelete()
+suspend inline fun TorrentFileEntry.awaitFinished() {
+    fileStats.takeWhile { it.isDownloadFinished }.collect()
 }
 
-// TorrentFilePieceMatcherTest
-object TorrentFilePieceMatcher {
-    /**
-     * @param allPieces all pieces in the torrent
-     * @param offset of the file to match
-     * @param length of the file to match
-     * @return minimum number of pieces that cover the file offset and length,
-     * guaranteed to be continuous and sorted
-     */
-    fun matchPiecesForFile(allPieces: List<Piece>, offset: Long, length: Long): List<Piece> {
-        return allPieces.filter { piece ->
-            piece.offset >= offset && piece.offset < offset + length
-                    || (piece.offset < offset && piece.lastIndex >= offset)
-        }.sortedBy { it.offset }.also { pieces ->
-            // 检验 pieces 的大小等于文件大小
-            if (pieces.isEmpty()) {
-                if (length == 0L) {
-                    return@also
-                }
-                throw IllegalStateException("No pieces found for file offset $offset and length $length")
-            }
+/**
+ * 判断此时 [TorrentFileEntry] 是否已经下载完成.
+ *
+ * 注意, 本函数会挂起, 直到能够判断该状态. 挂起通常只会在 [TorrentFileEntry] 刚刚创建时发生.
+ */
+suspend inline fun TorrentFileEntry.isFinished(): Boolean = fileStats.first().isDownloadFinished
 
-            // Check continuous
-            pieces.forEachIndexed { index, piece ->
-                if (index == 0) {
-                    return@forEachIndexed
-                }
-                if (piece.offset != pieces[index - 1].lastIndex + 1) {
-                    throw IllegalStateException("Pieces offset is not continuous: lastOffset ${pieces[index - 1].lastIndex + 1} -> currently visiting ${piece.offset}")
-                }
-            }
-
-            check(pieces.last().lastIndex - pieces.first().startIndex + 1 >= length) {
-                "Pieces size is less than file size: ${pieces.last().lastIndex - pieces.first().startIndex + 1} < $length"
-            }
-
-            check(pieces is RandomAccess)
-        }
-    }
-}
 
 abstract class AbstractTorrentFileEntry(
     val index: Int,
@@ -268,23 +226,6 @@ abstract class AbstractTorrentFileEntry(
     protected abstract fun updatePriority()
 
     override suspend fun resolveFile(): SystemPath = resolveDownloadingFile()
-
-    private val hashMd5 by lazy {
-        scope.async {
-            stats.awaitFinished()
-            withContext(Dispatchers.IO) {
-                resolveDownloadingFile().bufferedSource().use {
-                    it.readAndDigest(DigestAlgorithm.MD5).toHexString()
-                }
-            }
-        }
-    }
-
-    override suspend fun computeFileHash(): String = hashMd5.await()
-
-    override fun computeFileHashOrNull(): String? = if (hashMd5.isCompleted) {
-        hashMd5.getCompleted()
-    } else null
 
     protected suspend fun resolveDownloadingFile(): SystemPath {
         while (true) {
