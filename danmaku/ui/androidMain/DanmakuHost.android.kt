@@ -2,13 +2,15 @@ package me.him188.ani.danmaku.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -19,10 +21,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
@@ -106,7 +110,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     HorizontalDivider()
                     state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track floating$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
+                            "track floating$index: offset=${danmakuTrackState.trackOffsetX.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
                                     "starting=${danmakuTrackState.startingDanmaku.size}",
                         )
@@ -141,7 +145,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     Text("Emitted: $emitted")
                     state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
+                            "track$index: offset=${danmakuTrackState.trackOffsetX.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
                                     "starting=${danmakuTrackState.startingDanmaku.size}",
                         )
@@ -165,11 +169,22 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
 @Preview("Dark", showBackground = true, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
 private fun PreviewDanmakuText() {
     ProvideCompositionLocalsForPreview {
-        Surface(color = Color.White) {
-            DanmakuText(
-                DummyDanmakuState,
-                style = DanmakuStyle(),
-            )
+        val measurer = rememberTextMeasurer()
+        val baseStyle = MaterialTheme.typography.bodyMedium
+        val density = LocalDensity.current
+        val iter = (0..360 step 36).map { with(density) { it.dp.toPx() } }
+        Canvas(modifier = Modifier.size(width = 450.dp, height = 360.dp)) {
+            iter.forEach { off ->
+                drawDanmakuText(
+                    DummyDanmakuState,
+                    style = DanmakuStyle(),
+                    borderTextMeasurer = measurer,
+                    solidTextMeasurer = measurer,
+                    baseStyle = baseStyle,
+                    offsetX = Random.nextFloat() * 100,
+                    offsetY = off
+                )
+            }
         }
     }
 }
