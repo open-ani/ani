@@ -41,10 +41,10 @@ fun CacheManagementOverallStats(
                 Text("总上传", style = MaterialTheme.typography.titleMedium)
             },
             speedText = {
-                Text(renderSpeed(remember { derivedStateOf { stats().uploadSpeed } }.value))
+                Text(renderSpeed(remember(stats) { derivedStateOf { stats().uploadSpeed } }.value))
             },
             totalText = {
-                Text(renderFileSize(remember { derivedStateOf { stats().uploaded } }.value))
+                Text(renderFileSize(remember(stats) { derivedStateOf { stats().uploaded } }.value))
             },
         )
 
@@ -54,10 +54,10 @@ fun CacheManagementOverallStats(
                 Text("总下载", style = MaterialTheme.typography.titleMedium)
             },
             speedText = {
-                Text(renderSpeed(remember { derivedStateOf { stats().downloadSpeed } }.value))
+                Text(renderSpeed(remember(stats) { derivedStateOf { stats().downloadSpeed } }.value))
             },
             totalText = {
-                Text(renderFileSize(remember { derivedStateOf { stats().downloaded } }.value))
+                Text(renderFileSize(remember(stats) { derivedStateOf { stats().downloaded } }.value))
             },
         )
     }
