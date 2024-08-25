@@ -15,6 +15,7 @@ import com.sun.jna.ptr.PointerByReference
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -225,6 +227,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
 
     override suspend fun cleanupPlayer() {
         player.controls().stop()
+        withContext(Dispatchers.Main) {
+            bitmap = ImageBitmap(1, 1) // 0, 0 会导致异常
+        }
     }
 
     override val videoProperties: MutableStateFlow<VideoProperties?> = MutableStateFlow(null)
