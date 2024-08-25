@@ -29,6 +29,7 @@ import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
@@ -88,7 +89,10 @@ class PlayerLauncher(
                         ),
                     ),
                 )
-                videoLoadingStateFlow.compareAndSet(VideoLoadingState.ResolvingSource, VideoLoadingState.DecodingData)
+                videoLoadingStateFlow.compareAndSet(
+                    VideoLoadingState.ResolvingSource,
+                    VideoLoadingState.DecodingData(isBt = media.kind == MediaSourceKind.BitTorrent),
+                )
             } catch (e: UnsupportedMediaException) {
                 logger.error { IllegalStateException("Failed to resolve video source, unsupported media", e) }
                 videoLoadingStateFlow.value = VideoLoadingState.UnsupportedMedia

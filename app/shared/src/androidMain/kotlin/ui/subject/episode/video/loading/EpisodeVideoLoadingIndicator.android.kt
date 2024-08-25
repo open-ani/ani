@@ -48,7 +48,7 @@ private fun PreviewEpisodeVideoLoadingIndicator2() {
 private fun PreviewEpisodeVideoLoadingIndicator5() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoLoadingIndicator(
-            VideoLoadingState.DecodingData,
+            VideoLoadingState.DecodingData(true),
             speedProvider = { 0.3.bytes },
             optimizeForFullscreen = false,
         )

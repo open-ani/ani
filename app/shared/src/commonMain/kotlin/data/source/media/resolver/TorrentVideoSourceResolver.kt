@@ -43,8 +43,6 @@ class TorrentVideoSourceResolver(
             throw VideoSourceResolutionException(ResolutionFailures.ENGINE_ERROR, e)
         }
 
-        downloader ?: throw UnsupportedMediaException(media)
-
         return when (val location = media.download) {
             is ResourceLocation.HttpTorrentFile,
             is ResourceLocation.MagnetLink
