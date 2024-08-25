@@ -104,6 +104,7 @@ class RateAveragerTest {
         tickAndRunPass()
         emitAndRunPass(200)
         assertEquals((200 - 100) / 2, tickAndRunPass())
+        assertEquals((200 - 100) / 2, tickAndRunPass())
         assertEquals((200 - 100) / 3, tickAndRunPass())
     }
 
@@ -150,6 +151,7 @@ class RateAveragerTest {
         tickAndRunPass()
         emitAndRunPass(500)
         assertEquals((500 - 100) / 5, tickAndRunPass())
+        assertEquals((500 - 100) / 5, tickAndRunPass())
         assertEquals((500 - 200) / 5, tickAndRunPass())
     }
 
@@ -166,6 +168,7 @@ class RateAveragerTest {
         emitAndRunPass(500)
         tickAndRunPass()
         emitAndRunPass(600)
+        assertEquals((600 - 200) / 5, tickAndRunPass())
         assertEquals((600 - 200) / 5, tickAndRunPass())
         assertEquals((600 - 300) / 5, tickAndRunPass())
     }

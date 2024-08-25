@@ -62,6 +62,12 @@ class RateAverager(
     var latestValue = -1L
 
     /**
+     * 连续多少次没有收到 [bytes] 的值. 用于判断是否需要忘掉最久远的值.
+     */
+    @Volatile
+    var missingValuePassCount = 0
+
+    /**
      * 执行一轮计算. 每接收 [bytes] 和收到 [ticker] 都算作一轮.
      *
      * 函数将会一直挂起, 直到有 [bytes] 或 [ticker] 推送.
@@ -73,6 +79,7 @@ class RateAverager(
     suspend fun runPass(): Long? = select {
         bytes.onReceive {
             latestValue = it
+            missingValuePassCount = 0
             null
         }
         // 每秒计算平均变化速度
@@ -89,7 +96,11 @@ class RateAverager(
                 }
 
                 // 如果没有, 就把窗口内 (历史) 最新的值推入, 这样就能"忘掉"最久远的那个值
-                pushValueToWindow(window[currentIndex].value)
+                missingValuePassCount += 1
+                if (missingValuePassCount >= 2) {
+                    // 仅在连续两次都没有收到新值时才推送, 因为 bytes 也有可能是每秒才更新一次
+                    pushValueToWindow(window[currentIndex].value)
+                }
             }
             check(currentIndex != -1)
 
