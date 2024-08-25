@@ -77,7 +77,11 @@ interface MediaCache {
         val downloadProgress: Progress = if (totalSize.isUnspecified || downloadedBytes.isUnspecified) {
             Progress.Unspecified
         } else {
-            (downloadedBytes.inBytes.toFloat() / totalSize.inBytes).toProgress()
+            if (totalSize.inBytes == 0L) {
+                0f.toProgress()
+            } else {
+                (downloadedBytes.inBytes.toFloat() / totalSize.inBytes).toProgress()
+            }
         },
 
         // 没有上传信息
