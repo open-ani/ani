@@ -45,16 +45,16 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.type
-import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.rememberViewModel
-import me.him188.ani.app.ui.subject.collection.AiringLabel
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeDialogsHost
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
+import me.him188.ani.app.ui.subject.collection.components.AiringLabel
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
@@ -69,7 +69,6 @@ import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRo
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
-import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -83,11 +82,10 @@ import me.him188.ani.datasources.api.unwrapCached
 class EpisodeDetailsState(
     episodePresentation: State<EpisodePresentation>,
     subjectInfo: State<SubjectInfo>,
-    airingInfo: State<SubjectAiringInfo>,
+    val airingLabelState: AiringLabelState
 ) {
     private val episode by episodePresentation
     private val subject by subjectInfo
-    val airingInfo by airingInfo
 
     val subjectId by derivedStateOf { subject.id }
     val episodeTitle by derivedStateOf { episode.title }
@@ -106,7 +104,6 @@ class EpisodeDetailsState(
 fun EpisodeDetails(
     state: EpisodeDetailsState,
     episodeCarouselState: EpisodeCarouselState,
-    editableRatingState: EditableRatingState,
     editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState,
     danmakuStatistics: DanmakuStatistics,
     videoStatistics: VideoStatistics,
@@ -151,12 +148,11 @@ fun EpisodeDetails(
     EpisodeDetailsScaffold(
         subjectTitle = { Text(state.subjectTitle) },
         airingStatus = {
-//            OutlinedTag { Text(renderSubjectSeason(state.airingInfo.airDate)) }
             AiringLabel(
-                state.airingInfo,
+                state.airingLabelState,
                 Modifier.align(Alignment.CenterVertically),
                 style = LocalTextStyle.current,
-                statusColor = LocalContentColor.current,
+                progressColor = LocalContentColor.current,
             )
         },
         subjectSuggestions = {
@@ -317,8 +313,8 @@ private fun SectionTitle(
 @Composable
 fun EpisodeDetailsScaffold(
     subjectTitle: @Composable () -> Unit,
-    airingStatus: @Composable() (FlowRowScope.() -> Unit),
-    subjectSuggestions: @Composable() (FlowRowScope.() -> Unit),
+    airingStatus: @Composable (FlowRowScope.() -> Unit),
+    subjectSuggestions: @Composable (FlowRowScope.() -> Unit),
     exposedEpisodeItem: @Composable (contentPadding: PaddingValues) -> Unit,
     danmakuStatisticsSummary: @Composable () -> Unit,
     danmakuStatistics: @Composable (contentPadding: PaddingValues) -> Unit,

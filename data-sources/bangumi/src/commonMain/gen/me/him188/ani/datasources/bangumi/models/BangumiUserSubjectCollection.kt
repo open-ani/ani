@@ -15,16 +15,12 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiSlimSubject
-import me.him188.ani.datasources.bangumi.models.BangumiSubjectCollectionType
-import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param subjectId
  * @param subjectType
@@ -32,11 +28,11 @@ import kotlinx.serialization.encoding.*
  * @param type
  * @param tags
  * @param epStatus
- * @param volStatus
+ * @param volStatus 
  * @param updatedAt 本时间并不代表条目的收藏时间。修改评分，评价，章节观看状态等收藏信息时未更新此时间是一个 bug。请不要依赖此特性
  * @param `private`
  * @param comment
- * @param subject
+ * @param subject 
  */
 @Serializable
 

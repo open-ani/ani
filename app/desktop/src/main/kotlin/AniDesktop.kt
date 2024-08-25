@@ -33,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -60,9 +59,11 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.AniBuildConfigDesktop
+import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.GrantedPermissionManager
+import me.him188.ani.app.platform.JvmLogHelper
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.Platform
@@ -97,7 +98,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.desktop.generated.resources.Res
 import me.him188.ani.desktop.generated.resources.a_round
 import me.him188.ani.utils.io.inSystem
-import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -106,8 +106,6 @@ import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
-import java.awt.GraphicsEnvironment
-import java.awt.Toolkit
 import java.io.File
 
 
@@ -115,34 +113,23 @@ private val logger by lazy { logger("Ani") }
 private inline val toplevelLogger get() = logger
 
 object AniDesktop {
-    init {
-        // 如果要在视频上面显示弹幕或者播放按钮需要在启动的时候设置 system's blending 并且使用1.6.1之后的 Compose 版本
-        // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
-        // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
+//    init {
+    // 如果要在视频上面显示弹幕或者播放按钮需要在启动的时候设置 system's blending 并且使用1.6.1之后的 Compose 版本
+    // system's blending 在windows 上还是有问题，使用 EmbeddedMediaPlayerComponent 还是不会显示视频，但是在Windows 系统上使用 CallbackMediaPlayerComponent 就没问题。
+    // See https://github.com/open-ani/ani/issues/115#issuecomment-2092567727
 //        System.setProperty("compose.interop.blending", "true")
-    }
+//    }
 
-    private fun calculateWindowSize(desiredWidth: Dp, desiredHeight: Dp): DpSize {
-        // Get screen dimensions
-        val screenSize = Toolkit.getDefaultToolkit().screenSize
-        val screenWidth = screenSize.width
-        val screenHeight = screenSize.height
 
-        // Convert screen dimensions to dp
-        // See ui-desktop-1.6.10-sources.jar!/desktopMain/androidx/compose/ui/window/LayoutConfiguration.desktop.kt:45
-        val density = Density(
-            GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .defaultScreenDevice.defaultConfiguration.defaultTransform.scaleX.toFloat(),
-            fontScale = 1f,
+    private fun calculateWindowSize(
+        desiredWidth: Dp,
+        desiredHeight: Dp,
+        screenSize: DpSize = ScreenUtils.getScreenSize()
+    ): DpSize {
+        return DpSize(
+            width = if (desiredWidth > screenSize.width) screenSize.width else desiredWidth,
+            height = if (desiredHeight > screenSize.height) screenSize.height else desiredHeight,
         )
-        val screenWidthDp = density.run { screenWidth.toDp() }
-        val screenHeightDp = density.run { screenHeight.toDp() }
-
-        // Calculate the final window size
-        val windowWidth = if (desiredWidth > screenWidthDp) screenWidthDp else desiredWidth
-        val windowHeight = if (desiredHeight > screenHeightDp) screenHeightDp else desiredHeight
-
-        return DpSize(windowWidth, windowHeight)
     }
 
     @JvmStatic
@@ -153,6 +140,11 @@ object AniDesktop {
         println("logsDir: file://${logsDir.absolutePath.replace(" ", "%20")}")
 
         Log4j2Config.configureLogging(logsDir)
+        kotlin.runCatching {
+            JvmLogHelper.deleteOldLogs(logsDir.toPath())
+        }.onFailure {
+            logger.error(it) { "Failed to delete old logs" }
+        }
 
         if (AniBuildConfigDesktop.isDebug) {
             logger.info { "Debug mode enabled" }
@@ -198,15 +190,16 @@ object AniDesktop {
 //                single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
 //                single<BrowserNavigator> { AndroidBrowserNavigator() }
                     single<TorrentManager> {
-                        DefaultTorrentManager(
+                        DefaultTorrentManager.create(
                             coroutineScope.coroutineContext,
-                            saveDir = {
+                            get(),
+                            baseSaveDir = {
                                 val saveDir = runBlocking {
                                     get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir
                                         ?.let(::Path)
                                 } ?: projectDirectories.torrentCacheDir.toKtPath()
                                 toplevelLogger.info { "TorrentManager saveDir: $saveDir" }
-                                saveDir.inSystem.resolve(it.id)
+                                saveDir.inSystem
                             },
                         )
                     }
@@ -248,11 +241,9 @@ object AniDesktop {
         val navigator = AniNavigator()
 
         coroutineScope.launch {
-            val sessionManager by koin.koin.inject<SessionManager>()
-            logger.info { "[AutoLogin] Waiting for awaitNavigator" }
             navigator.awaitNavigator()
-            logger.info { "[AutoLogin] Got navigator, start requireOnline" }
-            sessionManager.requireAuthorize(navigator, navigateToWelcome = true)
+            val sessionManager by koin.koin.inject<SessionManager>()
+            AppStartupTasks.verifySession(sessionManager, navigator)
         }
 
         application {
@@ -271,7 +262,12 @@ object AniDesktop {
                 CompositionLocalProvider(
                     LocalContext provides context,
                     LocalWindowState provides windowState,
-                    LocalPlatformWindow provides remember(window.windowHandle) { PlatformWindow(windowHandle = window.windowHandle) },
+                    LocalPlatformWindow provides remember(window.windowHandle) {
+                        PlatformWindow(
+                            windowHandle = window.windowHandle,
+                            composeWindow = window,
+                        )
+                    },
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true

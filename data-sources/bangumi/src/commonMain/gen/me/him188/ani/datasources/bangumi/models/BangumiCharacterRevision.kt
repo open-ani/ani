@@ -23,14 +23,14 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param id
  * @param type
  * @param summary
  * @param createdAt
  * @param creator
- * @param `data`
+ * @param `data` 
  */
 @Serializable
 

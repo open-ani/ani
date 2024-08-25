@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
@@ -96,6 +97,7 @@ abstract class BaseJellyfinMediaSource(config: MediaSourceConfig) : HttpMediaSou
                                 resolution = "1080P",
                                 alliance = mediaSourceId,
                                 size = FileSize.Unspecified,
+                                subtitleKind = SubtitleKind.EXTERNAL_PROVIDED,
                             ),
                             episodeRange = episodeRange,
                             location = MediaSourceLocation.Lan,

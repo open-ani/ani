@@ -42,7 +42,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.indication.HorizontalIndicator

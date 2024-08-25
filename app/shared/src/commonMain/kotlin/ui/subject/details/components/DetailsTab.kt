@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.subject.PersonInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
@@ -57,6 +59,7 @@ fun SubjectDetailsDefaults.DetailsTab(
     info: SubjectInfo,
     staff: List<RelatedPersonInfo>,
     characters: List<RelatedCharacterInfo>,
+    relatedSubjects: List<RelatedSubjectInfo>,
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
     horizontalPadding: Dp = 16.dp,
@@ -100,6 +103,19 @@ fun SubjectDetailsDefaults.DetailsTab(
                 values = characters,
                 sheetTitle = { Text("角色 ${characters.size}") },
                 modifier = Modifier.padding(horizontal = horizontalPadding),
+                exposedValues = { list ->
+                    // 显示前六个主角, 否则显示前六个
+                    if (list.any { it.isMainCharacter() }) {
+                        val res = list.asSequence().filter { it.isMainCharacter() }.take(6).toList()
+                        if (res.size >= 4 || list.size < 4) {
+                            res // 有至少四个主角
+                        } else {
+                            list.take(4) // 主角不足四个, 就显示前四个包含非主角的
+                        }
+                    } else {
+                        list.take(6) // 没有主角
+                    }
+                },
                 itemContent = { PersonCard(it) },
             )
         }
@@ -117,8 +133,30 @@ fun SubjectDetailsDefaults.DetailsTab(
                 values = staff,
                 sheetTitle = { Text("制作人员 ${staff.size}") },
                 modifier = Modifier.padding(horizontal = horizontalPadding),
+                exposedValues = { it.take(6) },
                 itemContent = { PersonCard(it) },
             )
+        }
+
+        if (relatedSubjects.isNotEmpty()) {
+            item("related subjects title") {
+                Text(
+                    "关联条目",
+                    Modifier.padding(horizontal = horizontalPadding),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
+            item("related subjects") {
+                val navigator = LocalNavigator.current
+                RelatedSubjectsRow(
+                    relatedSubjects,
+                    onClick = { navigator.navigateSubjectDetails(it.subjectId) },
+                    Modifier.padding(horizontal = horizontalPadding),
+                    horizontalSpacing = horizontalPadding,
+                    verticalSpacing = horizontalPadding,
+                )
+            }
         }
 
         item("spacer footer") {
@@ -215,16 +253,15 @@ private fun <T> PersonCardList(
     values: List<T>,
     sheetTitle: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
-    exposedItems: Int = 6,
+    exposedValues: (List<T>) -> List<T>,
     maxItemsInEachRow: Int = 2,
     itemSpacing: Dp = 12.dp,
     itemContent: @Composable (T) -> Unit,
 ) {
     Column(modifier) {
         val valuesUpdated by rememberUpdatedState(values)
-        val exposedItemsUpdated by rememberUpdatedState(exposedItems)
-        val showStaff by remember { derivedStateOf { valuesUpdated.take(exposedItemsUpdated) } }
-        val hasMore by remember { derivedStateOf { valuesUpdated.size > exposedItemsUpdated } }
+        val showStaff by remember { derivedStateOf { valuesUpdated.let(exposedValues) } }
+        val hasMore by remember { derivedStateOf { valuesUpdated.size > showStaff.size } }
 
         var showSheet by rememberSaveable { mutableStateOf(false) }
         FlowRow(

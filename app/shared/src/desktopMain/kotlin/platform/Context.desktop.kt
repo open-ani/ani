@@ -57,6 +57,9 @@ class DesktopContext(
     val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
         dataStoreDir.resolve("tokens.preferences_pb")
     }
+    val danmakuFilterStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
+        dataStoreDir.resolve("danmakuFilter.preferences_pb")
+    }
 
     val settingStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
         dataStoreDir.resolve("settings.preferences_pb")

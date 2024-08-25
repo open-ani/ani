@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.torrent.api.FetchTorrentTimeoutException
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
@@ -28,7 +29,7 @@ class TorrentVideoSourceResolver(
     private val engine: TorrentEngine,
 ) : VideoSourceResolver {
     override suspend fun supports(media: Media): Boolean {
-        if (!engine.isEnabled.first()) return false
+        if (!engine.isSupported.first()) return false
         return media.download is ResourceLocation.HttpTorrentFile || media.download is ResourceLocation.MagnetLink
     }
 
@@ -47,7 +48,7 @@ class TorrentVideoSourceResolver(
         return when (val location = media.download) {
             is ResourceLocation.HttpTorrentFile,
             is ResourceLocation.MagnetLink
-            -> {
+                -> {
                 try {
                     TorrentVideoSource(
                         engine,
@@ -59,6 +60,8 @@ class TorrentVideoSourceResolver(
                     throw VideoSourceResolutionException(ResolutionFailures.FETCH_TIMEOUT)
                 } catch (e: CancellationException) {
                     throw e
+                } catch (e: IOException) {
+                    throw VideoSourceResolutionException(ResolutionFailures.NETWORK_ERROR, e)
                 } catch (e: Exception) {
                     throw VideoSourceResolutionException(ResolutionFailures.ENGINE_ERROR, e)
                 }
@@ -180,7 +183,7 @@ class TorrentVideoSource(
         logger.info {
             "TorrentVideoSource '${episodeMetadata.title}' opening a VideoData"
         }
-        val downloader = engine.getDownloader() ?: throw VideoSourceOpenException(OpenFailures.ENGINE_DISABLED)
+        val downloader = engine.getDownloader()
         return TorrentVideoData(
             withContext(Dispatchers.IO) {
                 logger.info {
@@ -201,7 +204,13 @@ class TorrentVideoSource(
                     }
                 }?.createHandle()?.also {
                     it.resume(FilePriority.HIGH)
-                } ?: throw VideoSourceOpenException(OpenFailures.NO_MATCHING_FILE)
+                } ?: throw VideoSourceOpenException(
+                    OpenFailures.NO_MATCHING_FILE,
+                    """
+                    Torrent files: ${files.joinToString { it.pathInTorrent }}
+                    Episode metadata: $episodeMetadata
+                """.trimIndent(),
+                )
             },
         )
     }

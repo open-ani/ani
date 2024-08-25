@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.RatingCounts
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
@@ -18,6 +20,7 @@ import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.data.models.subject.toInfoboxItem
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.username
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
@@ -44,7 +47,7 @@ import org.koin.core.component.inject
  * Use [SubjectManager] instead.
  */
 interface BangumiSubjectRepository : Repository {
-    suspend fun getSubject(id: Int): BangumiSubject?
+    suspend fun getSubject(id: Int): ApiResponse<BangumiSubject>
 
     fun getSubjectCollections(
         username: String,
@@ -79,10 +82,8 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
     private val sessionManager: SessionManager by inject()
     private val logger = logger(this::class)
 
-    override suspend fun getSubject(id: Int): BangumiSubject? {
-        return runCatching {
-            client.getApi().getSubjectById(id).body()
-        }.getOrNull()
+    override suspend fun getSubject(id: Int): ApiResponse<BangumiSubject> = runApiRequest {
+        client.getApi().getSubjectById(id).body()
     }
 
     override suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload) {
@@ -123,6 +124,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         return flow {
             emit(
                 try {
+                    @OptIn(OpaqueSession::class)
                     client.getApi().getUserCollection(sessionManager.username.first() ?: "-", subjectId).body()
                 } catch (e: ResponseException) {
                     if (e.response.status == HttpStatusCode.NotFound) {
@@ -139,6 +141,7 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
         return flow {
             emit(
                 try {
+                    @OptIn(OpaqueSession::class)
                     val username = sessionManager.username.first() ?: "-"
                     client.getApi().getUserCollection(username, subjectId).body().type.toCollectionType()
                 } catch (e: ResponseException) {

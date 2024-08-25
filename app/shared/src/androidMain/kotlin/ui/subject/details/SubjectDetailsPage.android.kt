@@ -1,5 +1,8 @@
 package me.him188.ani.app.ui.subject.details
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,7 +18,13 @@ import me.him188.ani.app.data.models.subject.PersonInfo
 import me.him188.ani.app.data.models.subject.PersonType
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
+import me.him188.ani.app.data.models.subject.SubjectRelation
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
@@ -23,15 +32,19 @@ import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
 import me.him188.ani.app.ui.subject.details.components.CollectionData
 import me.him188.ani.app.ui.subject.details.components.DetailsTab
 import me.him188.ani.app.ui.subject.details.components.SelectEpisodeButtons
+import me.him188.ani.app.ui.subject.details.components.SubjectCommentColumn
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
-import me.him188.ani.app.ui.subject.details.components.TestSubjectAiringInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
 import me.him188.ani.app.ui.subject.details.components.TestSubjectProgressInfos
+import me.him188.ani.app.ui.subject.details.components.createTestAiringLabelState
+import me.him188.ani.app.ui.subject.details.components.generateUiComment
+import me.him188.ani.app.ui.subject.details.components.rememberTestCommentState
 import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.rememberTestSubjectProgressState
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.random.Random
 
 internal fun testPersonInfo(
@@ -104,6 +117,21 @@ internal val TestSubjectCharacterList = listOf(
     testRelatedCharacterInfo("後藤美智代", "末柄里恵"),
 )
 
+internal fun testRelatedSubjectInfo(
+    nameCn: String,
+    relation: SubjectRelation?,
+    id: Int = Random.nextInt(),
+    name: String? = null,
+    image: String? = null,
+) = RelatedSubjectInfo(id, relation, name, nameCn, image)
+
+internal val TestRelatedSubjects = listOf(
+    testRelatedSubjectInfo("孤独摇滚 第二季", SubjectRelation.SEQUEL),
+    testRelatedSubjectInfo("孤独摇滚 第零季", SubjectRelation.PREQUEL),
+    testRelatedSubjectInfo("孤独摇滚 外传", SubjectRelation.DERIVED),
+    testRelatedSubjectInfo("孤独摇滚 OAD", SubjectRelation.SPECIAL),
+)
+
 @Composable
 fun rememberTestEditableRatingState(): EditableRatingState {
     val backgroundScope = rememberBackgroundScope()
@@ -119,23 +147,23 @@ fun rememberTestEditableRatingState(): EditableRatingState {
     }
 }
 
+@OptIn(TestOnly::class)
 @Preview
 @Preview(device = Devices.TABLET)
 @Composable
 internal fun PreviewSubjectDetails() {
     ProvideCompositionLocalsForPreview {
-        val vm = remember {
-            SubjectDetailsViewModel(400602)
-        }
+        val backgroundScope = rememberBackgroundScope()
         val state = remember {
             SubjectDetailsState(
                 subjectInfo = MutableStateFlow(TestSubjectInfo),
                 coverImageUrl = MutableStateFlow("https://ui-avatars.com/api/?name=John+Doe"),
                 selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
-                airingInfo = MutableStateFlow(TestSubjectAiringInfo),
+                airingLabelState = createTestAiringLabelState(),
                 characters = MutableStateFlow(TestSubjectCharacterList),
                 persons = MutableStateFlow(emptyList()),
-                parentCoroutineContext = vm.backgroundScope.coroutineContext,
+                relatedSubjects = MutableStateFlow(TestRelatedSubjects),
+                parentCoroutineContext = backgroundScope.backgroundScope.coroutineContext,
             )
         }
         val connectedScrollState = rememberConnectedScrollState()
@@ -144,7 +172,7 @@ internal fun PreviewSubjectDetails() {
             onClickOpenExternal = {},
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(
-                    collectionStats = vm.subjectDetailsState.info.collection,
+                    collectionStats = state.info.collection,
                 )
             },
             collectionActions = {
@@ -169,10 +197,25 @@ internal fun PreviewSubjectDetails() {
                     info = TestSubjectInfo,
                     staff = TestSubjectStaffInfo,
                     characters = TestSubjectCharacterList,
+                    relatedSubjects = TestRelatedSubjects,
                     Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                 )
             },
-            commentsTab = {},
+            commentsTab = {
+                val lazyListState = rememberLazyListState()
+
+                SubjectDetailsDefaults.SubjectCommentColumn(
+                    state = rememberTestCommentState(commentList = generateUiComment(10)),
+                    listState = lazyListState,
+                    modifier = Modifier
+                        .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
+                        .ifThen(currentPlatform.isDesktop()) {
+                            nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
+                        }
+                        .nestedScroll(connectedScrollState.nestedScrollConnection),
+                    onClickUrl = { },
+                )
+            },
             discussionsTab = {},
         )
     }

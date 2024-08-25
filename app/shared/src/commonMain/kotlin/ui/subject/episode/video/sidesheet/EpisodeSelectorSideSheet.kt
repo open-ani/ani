@@ -20,11 +20,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import me.him188.ani.app.ui.foundation.BackgroundScope
@@ -32,8 +35,12 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.icons.PlayingIcon
 import me.him188.ani.app.ui.subject.cache.contentColorForWatchStatus
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
+import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_SELECTOR_SHEET
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 private typealias Item = EpisodePresentation
 
@@ -104,7 +111,7 @@ fun EpisodeSelectorSideSheet(
                 Icon(Icons.Rounded.Close, contentDescription = "关闭")
             }
         },
-        modifier = modifier,
+        modifier = modifier.testTag(TAG_EPISODE_SELECTOR_SHEET),
     ) {
         val lazyListState = rememberLazyListState()
         // 自动滚动到当前选中的剧集
@@ -157,3 +164,44 @@ fun EpisodeSelectorSideSheet(
     }
 }
 
+
+@Composable
+@TestOnly
+fun rememberTestEpisodeSelectorState() = remember {
+    EpisodeSelectorState(
+        MutableStateFlow(
+            listOf(
+                EpisodePresentation(
+                    episodeId = -1,
+                    title = "placeholder",
+                    ep = "placeholder",
+                    sort = "01",
+                    collectionType = UnifiedCollectionType.WISH,
+                    isKnownBroadcast = true,
+                    isPlaceholder = true,
+                ),
+                EpisodePresentation(
+                    episodeId = 1,
+                    title = "placeholder",
+                    ep = "placeholder",
+                    sort = "02",
+                    collectionType = UnifiedCollectionType.WISH,
+                    isKnownBroadcast = true,
+                    isPlaceholder = true,
+                ),
+                EpisodePresentation(
+                    episodeId = 2,
+                    title = "placeholder",
+                    ep = "placeholder",
+                    sort = "03",
+                    collectionType = UnifiedCollectionType.WISH,
+                    isKnownBroadcast = false,
+                    isPlaceholder = true,
+                ),
+            ),
+        ),
+        MutableStateFlow(1),
+        {},
+        EmptyCoroutineContext,
+    )
+}

@@ -23,6 +23,8 @@ public class anitorrentJNI {
   public final static native long new_torrent_file_t();
   public final static native void delete_torrent_file_t(long jarg1);
   public final static native long new_torrent_info_t();
+  public final static native void torrent_info_t_name_set(long jarg1, torrent_info_t jarg1_, String jarg2);
+  public final static native String torrent_info_t_name_get(long jarg1, torrent_info_t jarg1_);
   public final static native void torrent_info_t_total_size_set(long jarg1, torrent_info_t jarg1_, long jarg2);
   public final static native long torrent_info_t_total_size_get(long jarg1, torrent_info_t jarg1_);
   public final static native void torrent_info_t_num_pieces_set(long jarg1, torrent_info_t jarg1_, int jarg2);
@@ -66,6 +68,7 @@ public class anitorrentJNI {
   public final static native void torrent_handle_t_resume(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_ignore_all_files(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_set_file_priority(long jarg1, torrent_handle_t jarg1_, int jarg2, short jarg3);
+  public final static native String torrent_handle_t_make_magnet_uri(long jarg1, torrent_handle_t jarg1_);
   public final static native long new_torrent_handle_t();
   public final static native void delete_torrent_handle_t(long jarg1);
   public final static native void torrent_stats_t_download_payload_rate_set(long jarg1, torrent_stats_t jarg1_, int jarg2);
@@ -111,6 +114,8 @@ public class anitorrentJNI {
   public final static native void event_listener_t_on_status_updateSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2, long jarg3, torrent_stats_t jarg3_);
   public final static native void event_listener_t_on_file_completed(long jarg1, event_listener_t jarg1_, long jarg2, int jarg3);
   public final static native void event_listener_t_on_file_completedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2, int jarg3);
+  public final static native void event_listener_t_on_torrent_removed(long jarg1, event_listener_t jarg1_, long jarg2, String jarg3);
+  public final static native void event_listener_t_on_torrent_removedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2, String jarg3);
   public final static native void event_listener_t_on_session_stats(long jarg1, event_listener_t jarg1_, long jarg2, long jarg3, session_stats_t jarg3_);
   public final static native void event_listener_t_on_session_statsSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2, long jarg3, session_stats_t jarg3_);
   public final static native long new_event_listener_t();
@@ -149,7 +154,6 @@ public class anitorrentJNI {
   public final static native void new_event_listener_t_change_ownership(new_event_listener_t obj, long cptr, boolean take_or_release);
   public final static native void session_t_start(long jarg1, session_t jarg1_, long jarg2, session_settings_t jarg2_);
   public final static native void session_t_resume(long jarg1, session_t jarg1_);
-  public final static native String session_t_fetch_magnet(long jarg1, session_t jarg1_, String jarg2, int jarg3, String jarg4);
   public final static native boolean session_t_start_download(long jarg1, session_t jarg1_, long jarg2, torrent_handle_t jarg2_, long jarg3, torrent_add_info_t jarg3_, String jarg4);
   public final static native void session_t_release_handle(long jarg1, session_t jarg1_, long jarg2, torrent_handle_t jarg2_);
   public final static native boolean session_t_set_new_event_listener(long jarg1, session_t jarg1_, long jarg2, new_event_listener_t jarg2_);
@@ -185,6 +189,9 @@ public class anitorrentJNI {
   }
   public static void SwigDirector_event_listener_t_on_file_completed(event_listener_t jself, long handle_id, int file_index) {
     jself.on_file_completed(handle_id, file_index);
+  }
+  public static void SwigDirector_event_listener_t_on_torrent_removed(event_listener_t jself, long handle_id, String torrent_name) {
+    jself.on_torrent_removed(handle_id, torrent_name);
   }
   public static void SwigDirector_event_listener_t_on_session_stats(event_listener_t jself, long handle_id, long stats) {
     jself.on_session_stats(handle_id, new session_stats_t(stats, false));

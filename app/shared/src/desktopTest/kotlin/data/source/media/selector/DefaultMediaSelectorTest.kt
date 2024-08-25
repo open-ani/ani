@@ -1,7 +1,6 @@
 package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -9,17 +8,10 @@ import kotlinx.coroutines.yield
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
-import me.him188.ani.datasources.api.EpisodeSort
-import me.him188.ani.datasources.api.MediaProperties
+import me.him188.ani.datasources.api.MediaExtraFiles
+import me.him188.ani.datasources.api.Subtitle
 import me.him188.ani.datasources.api.source.MediaSourceKind
-import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
-import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
-import me.him188.ani.datasources.api.topic.Resolution
-import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
-import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import kotlin.test.Test
@@ -27,56 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class DefaultMediaSelectorTest {
-    private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(mutableListOf())
-    private fun addMedia(vararg media: DefaultMedia) {
-        mediaList.value.addAll(media)
-    }
-
-    private val savedUserPreference = MutableStateFlow(DEFAULT_PREFERENCE)
-    private val savedDefaultPreference = MutableStateFlow(DEFAULT_PREFERENCE)
-    private val mediaSelectorSettings = MutableStateFlow(MediaSelectorSettings.Default)
-    private val mediaSelectorContext = MutableStateFlow(
-        MediaSelectorContext(
-            subjectFinished = false,
-            mediaSourcePrecedence = emptyList(),
-        ),
-    )
-
-    private val selector = DefaultMediaSelector(
-        mediaSelectorContextNotCached = mediaSelectorContext,
-        mediaListNotCached = mediaList,
-        savedUserPreference = savedUserPreference,
-        savedDefaultPreference = savedDefaultPreference,
-        enableCaching = false,
-        mediaSelectorSettings = mediaSelectorSettings,
-    )
-
-    companion object {
-        private val DEFAULT_PREFERENCE = MediaPreference.Empty.copy(
-            fallbackResolutions = listOf(
-                Resolution.R2160P,
-                Resolution.R1440P,
-                Resolution.R1080P,
-                Resolution.R720P,
-            ).map { it.id },
-            fallbackSubtitleLanguageIds = listOf(
-                ChineseSimplified,
-                ChineseTraditional,
-            ).map { it.id },
-        )
-    }
-
-    @Suppress("SameParameterValue")
-    private fun createMediaSelectorContextFromEmpty(
-        subjectCompleted: Boolean = false,
-        mediaSourcePrecedence: List<String> = emptyList()
-    ) =
-        MediaSelectorContext(
-            subjectFinished = subjectCompleted,
-            mediaSourcePrecedence = mediaSourcePrecedence,
-        )
-
+class DefaultMediaSelectorTest : AbstractDefaultMediaSelectorTest() {
     ///////////////////////////////////////////////////////////////////////////
     // Select contract
     ///////////////////////////////////////////////////////////////////////////
@@ -472,6 +415,34 @@ class DefaultMediaSelectorTest {
         assertEquals(null, selector.trySelectDefault())
     }
 
+    // 当 Media 有 extraFiles.subtitles 时不隐藏
+    @Test
+    fun `do not hide media with extraFiles`() = runTest {
+        val target: DefaultMedia
+        savedDefaultPreference.value = MediaPreference.Empty.copy(
+            alliance = "字幕组2",
+            showWithoutSubtitle = true,
+        )
+        addMedia(
+            media(alliance = "字幕组1", subtitleLanguages = listOf("CHS")),
+            media(
+                alliance = "字幕组2", resolution = "Special",
+                subtitleLanguages = listOf(),
+                extraFiles = MediaExtraFiles(listOf(Subtitle("dummy"))),
+            ).also { target = it },
+            media(alliance = "字幕组3", subtitleLanguages = listOf("CHS", "CHT")),
+            media(alliance = "字幕组4", subtitleLanguages = listOf("CHS", "CHT", "R")),
+            media(alliance = "字幕组5", subtitleLanguages = listOf("CHS")),
+        )
+        assertEquals(target, selector.trySelectDefault())
+        savedDefaultPreference.value = MediaPreference.Empty.copy(
+            alliance = "字幕组2",
+            showWithoutSubtitle = false,
+        )
+        selector.unselect()
+        assertEquals(target, selector.trySelectDefault())
+    }
+
     @Test
     fun `can select cached raw`() = runTest {
         val target: DefaultMedia
@@ -680,6 +651,22 @@ class DefaultMediaSelectorTest {
     }
 
     ///////////////////////////////////////////////////////////////////////////
+    // sort
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Test
+    fun `sort by date`() = runTest {
+        // https://github.com/open-ani/ani/issues/445
+        val m1 = media(alliance = "字幕组1", publishedTime = 1)
+        val m4 = media(alliance = "字幕组2", publishedTime = 4)
+        val m3 = media(alliance = "字幕组6", publishedTime = 3)
+        val m2 = media(alliance = "字幕组5", publishedTime = 2)
+        addMedia(m1, m4, m3, m2)
+        assertEquals(listOf(m4, m3, m2, m1), selector.mediaList.first())
+        assertEquals(listOf(m4, m3, m2, m1), selector.filteredCandidates.first())
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
     // Events
     ///////////////////////////////////////////////////////////////////////////
 
@@ -778,39 +765,4 @@ class DefaultMediaSelectorTest {
             }
         }
     }
-}
-
-private const val SOURCE_DMHY = "dmhy"
-private const val SOURCE_MIKAN = "mikan"
-
-internal var mediaId: Int = 0
-private fun media(
-    sourceId: String = SOURCE_DMHY,
-    resolution: String = "1080P",
-    alliance: String = "字幕组",
-    size: FileSize = 1.megaBytes,
-    publishedTime: Long = System.currentTimeMillis(),
-    subtitleLanguages: List<String> = listOf(ChineseSimplified, ChineseTraditional).map { it.id },
-    location: MediaSourceLocation = MediaSourceLocation.Online,
-    kind: MediaSourceKind = MediaSourceKind.BitTorrent,
-    episodeRange: EpisodeRange = EpisodeRange.single(EpisodeSort(1))
-): DefaultMedia {
-    val id = mediaId++
-    return DefaultMedia(
-        mediaId = "$sourceId.$id",
-        mediaSourceId = sourceId,
-        originalTitle = "[字幕组] 孤独摇滚 $id",
-        download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:$id"),
-        originalUrl = "https://example.com/$id",
-        publishedTime = publishedTime,
-        episodeRange = episodeRange,
-        properties = MediaProperties(
-            subtitleLanguageIds = subtitleLanguages,
-            resolution = resolution,
-            alliance = alliance,
-            size = size,
-        ),
-        location = location,
-        kind = kind,
-    )
 }

@@ -1,32 +1,31 @@
-@file:OptIn(ExperimentalStdlibApi::class)
-
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.cache.TestMediaCacheStorage
+import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequest
 import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
 import me.him188.ani.app.data.source.media.cache.requester.trySelectSingle
+import me.him188.ani.app.data.source.media.cache.storage.TestMediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
-import me.him188.ani.app.data.source.media.framework.TestMediaList
 import me.him188.ani.app.data.source.media.framework.TestMediaSelector
 import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
+import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.framework.takeSnapshot
 import me.him188.ani.datasources.api.EpisodeSort
@@ -62,14 +61,18 @@ class EpisodeCacheStateTest {
         EpisodeCacheStatus.Cached(300.megaBytes),
     )
 
-    private suspend fun TestScope.createEpisodeCacheState() = TestEpisodeCacheState(
-        1,
-        cacheRequesterLazy = { createTestEpisodeCacheRequester() },
-        infoFlow = infoFlow,
-        cacheStatusFlow = cacheStatusFlow,
-        parentCoroutineContext = currentCoroutineContext(),
-    ).apply {
-        testScheduler.runCurrent() // start `launch` and `produceState`
+    private fun TestScope.createEpisodeCacheState(): EpisodeCacheState {
+        val cacheRequester = createTestEpisodeCacheRequester()
+        return EpisodeCacheState(
+            1,
+            cacheRequester = cacheRequester,
+            currentStageState = cacheRequester.stage.produceState(scope = backgroundScope),
+            infoState = infoFlow.produceState(scope = backgroundScope),
+            cacheStatusState = cacheStatusFlow.produceState(scope = backgroundScope),
+            backgroundScope = backgroundScope,
+        ).apply {
+            testScheduler.runCurrent() // start `launch` and `produceState`
+        }
     }
 
     private fun createTestEpisodeCacheRequester(): EpisodeCacheRequester {
@@ -110,14 +113,11 @@ class EpisodeCacheStateTest {
 
         assertEquals(infoFlow.value, state.info)
         assertEquals(false, state.isInfoLoading)
-        assertEquals(null, state.currentSelectMediaTask)
-        assertEquals(null, state.currentSelectStorageTask)
+        assertEquals(CacheRequestStage.Idle, state.currentStage)
         assertIs<EpisodeCacheStatus.Cached>(state.cacheStatus)
         assertEquals(true, state.canCache)
         assertEquals(false, state.actionTasker.isRunning)
         assertEquals(false, state.showProgressIndicator)
-
-        state.backgroundScope.cancel()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -129,7 +129,6 @@ class EpisodeCacheStateTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.WISH)
         val state = createEpisodeCacheState()
         assertEquals(true, state.canCache)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -137,7 +136,6 @@ class EpisodeCacheStateTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.DOING)
         val state = createEpisodeCacheState()
         assertEquals(true, state.canCache)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -145,7 +143,6 @@ class EpisodeCacheStateTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.ON_HOLD)
         val state = createEpisodeCacheState()
         assertEquals(true, state.canCache)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -153,7 +150,6 @@ class EpisodeCacheStateTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.NOT_COLLECTED)
         val state = createEpisodeCacheState()
         assertEquals(true, state.canCache)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -161,7 +157,6 @@ class EpisodeCacheStateTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.DONE)
         val state = createEpisodeCacheState()
         assertEquals(false, state.canCache)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -169,7 +164,6 @@ class EpisodeCacheStateTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.DROPPED)
         val state = createEpisodeCacheState()
         assertEquals(false, state.canCache)
-        state.backgroundScope.cancel()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -180,7 +174,6 @@ class EpisodeCacheStateTest {
     fun `showProgressIndicator is initially false`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         assertEquals(false, state.showProgressIndicator)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -198,7 +191,6 @@ class EpisodeCacheStateTest {
 
         takeSnapshot()
         assertEquals(false, state.showProgressIndicator)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -209,7 +201,6 @@ class EpisodeCacheStateTest {
 
         takeSnapshot()
         assertEquals(true, state.showProgressIndicator)
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -221,7 +212,6 @@ class EpisodeCacheStateTest {
 
         takeSnapshot()
 
-        state.backgroundScope.cancel()
     }
 
     @Test
@@ -235,7 +225,6 @@ class EpisodeCacheStateTest {
         takeSnapshot()
 
         assertEquals(false, state.showProgressIndicator)
-        state.backgroundScope.cancel()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -245,8 +234,7 @@ class EpisodeCacheStateTest {
     @Test
     fun `currentSelectMediaTask is null when no task`() = runComposeStateTest {
         val state = createEpisodeCacheState()
-        assertEquals(null, state.currentSelectMediaTask)
-        state.backgroundScope.cancel()
+        assertEquals(CacheRequestStage.Idle, state.currentStage)
     }
 
     @Test
@@ -257,25 +245,11 @@ class EpisodeCacheStateTest {
 
         takeSnapshot()
 
-        assertEquals(true, state.currentSelectMediaTask != null)
-        state.backgroundScope.cancel()
+        assertIs<CacheRequestStage.SelectMedia>(state.currentStage)
     }
 
     @Test
-    fun `currentSelectMediaTask is not null when SelectStorage`() = runComposeStateTest {
-        val state = createEpisodeCacheState()
-        state.cacheRequester
-            .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
-            .select(TestMediaList[0])
-
-        takeSnapshot()
-
-        assertEquals(true, state.currentSelectMediaTask != null)
-        state.backgroundScope.cancel()
-    }
-
-    @Test
-    fun `currentSelectMediaTask is null when Done`() = runComposeStateTest {
+    fun `currentStage is Done when Done`() = runComposeStateTest {
         val state = createEpisodeCacheState()
         state.cacheRequester
             .request(EpisodeCacheRequest(SubjectInfo.Empty, EpisodeInfo(1)))
@@ -283,8 +257,8 @@ class EpisodeCacheStateTest {
             .trySelectSingle()
 
         takeSnapshot()
+        runCurrent()
 
-        assertEquals(null, state.currentSelectMediaTask)
-        state.backgroundScope.cancel()
+        assertIs<CacheRequestStage.Done>(state.currentStage)
     }
 }

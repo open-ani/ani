@@ -1,10 +1,12 @@
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.annotation.UiThread
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,32 +20,39 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.episode.renderEpisodeEp
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.models.subject.RatingInfo
-import me.him188.ani.app.data.models.subject.SelfRatingInfo
-import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
+import me.him188.ani.app.data.repository.CommentRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
-import me.him188.ani.app.data.repository.EpisodeRevisionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.BangumiCommentSticker
+import me.him188.ani.app.data.source.CommentLoader
+import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.MediaCacheManager
-import me.him188.ani.app.data.source.media.MediaSourceManager
-import me.him188.ani.app.data.source.media.createFetchFetchSessionFlow
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
 import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.fetch.create
+import me.him188.ani.app.data.source.media.fetch.createFetchFetchSessionFlow
 import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorAutoSelect
@@ -51,7 +60,6 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
 import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.data.source.session.AuthState
-import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -59,9 +67,11 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
+import me.him188.ani.app.ui.subject.components.comment.CommentContext
+import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.details.updateRating
+import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
@@ -72,11 +82,13 @@ import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
+import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
-import me.him188.ani.app.ui.subject.rating.EditableRatingState
+import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.danmaku.api.Danmaku
@@ -85,6 +97,7 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.coroutines.runUntilSuccess
 import me.him188.ani.utils.coroutines.sampleWithInitial
@@ -113,14 +126,11 @@ interface EpisodeViewModel : HasBackgroundScope {
      */
     val episodeCarouselState: EpisodeCarouselState
 
-    /**
-     * 编辑自己的评分
-     */
-    val editableRatingState: EditableRatingState
-
     val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState
 
     var isFullscreen: Boolean
+
+    val commentLazyListState: LazyListState
 
     /**
      * 播放器内切换剧集
@@ -153,6 +163,7 @@ interface EpisodeViewModel : HasBackgroundScope {
 
 
     // Video
+    val videoControllerState: VideoControllerState
     val videoScaffoldConfig: VideoScaffoldConfig
 
     /**
@@ -167,6 +178,10 @@ interface EpisodeViewModel : HasBackgroundScope {
     val danmakuStatistics: DanmakuStatistics
 
     val episodeCommentState: CommentState
+
+    val commentEditorState: CommentEditorState
+
+    val playerSkipOpEdState: PlayerSkipOpEdState
 
     @UiThread
     fun stopPlaying()
@@ -188,16 +203,16 @@ private class EpisodeViewModelImpl(
     context: Context,
 ) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialDanmakuId)
-    private val browserNavigator: BrowserNavigator by inject()
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()
     private val mediaCacheManager: MediaCacheManager by inject()
     private val danmakuManager: DanmakuManager by inject()
     override val videoSourceResolver: VideoSourceResolver by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
-    private val episodeRevisionRepository: EpisodeRevisionRepository by inject()
+    private val commentRepository: CommentRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -221,7 +236,7 @@ private class EpisodeViewModelImpl(
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
-    private val videoControllerState = VideoControllerState(false)
+    override val videoControllerState = VideoControllerState(ControllerVisibility.Invisible)
 
     /**
      * 更换 EP 是否已经完成了.
@@ -354,9 +369,10 @@ private class EpisodeViewModelImpl(
         EpisodeDetailsState(
             episodePresentation = episodePresentationFlow.filterNotNull().produceState(EpisodePresentation.Placeholder),
             subjectInfo = subjectInfo.produceState(SubjectInfo.Empty),
-            airingInfo = subjectInfo.map {
-                SubjectAiringInfo.computeFromSubjectInfo(it)
-            }.produceState(SubjectAiringInfo.EmptyCompleted),
+            airingLabelState = AiringLabelState(
+                subjectCollection.map { it.airingInfo }.produceState(null),
+                subjectCollection.map { SubjectProgressInfo.calculate(it) }.produceState(null),
+            ),
         )
     }
 
@@ -405,34 +421,15 @@ private class EpisodeViewModelImpl(
         )
     }
 
-    override val editableRatingState: EditableRatingState = EditableRatingState(
-        ratingInfo = subjectInfo.map { it.ratingInfo }
-            .produceState(RatingInfo.Empty),
-        selfRatingInfo = subjectCollection.map { it?.selfRatingInfo ?: SelfRatingInfo.Empty }
-            .produceState(SelfRatingInfo.Empty),
-        enableEdit = flow {
-            emit(false) // 在加载的时候不允许编辑
-            emitAll(subjectCollection.map { true }) // 加载完成后允许编辑, 如果编辑时没有收藏, EditableRatingState 会弹框
-        }.produceState(false),
-        isCollected = {
-            val collection = subjectCollection.replayCache.firstOrNull() ?: return@EditableRatingState false
-            collection.collectionType != UnifiedCollectionType.NOT_COLLECTED
-        },
-        onRate = { request ->
-            subjectManager.updateRating(subjectId, request)
-        },
-        backgroundScope,
-    )
-
     override val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState =
         EditableSubjectCollectionTypeState(
             selfCollectionType = subjectCollection
-                .map { it?.collectionType ?: UnifiedCollectionType.NOT_COLLECTED }
+                .map { it.collectionType }
                 .produceState(UnifiedCollectionType.NOT_COLLECTED),
             hasAnyUnwatched = {
                 val collections =
-                    episodeCollectionsFlow.replayCache.firstOrNull() ?: return@EditableSubjectCollectionTypeState false
-                collections.any { it.collectionType == UnifiedCollectionType.NOT_COLLECTED }
+                    episodeCollectionsFlow.firstOrNull() ?: return@EditableSubjectCollectionTypeState true
+                collections.any { !it.type.isDoneOrDropped() }
             },
             onSetSelfCollectionType = { subjectManager.setSubjectCollectionType(subjectId, it) },
             onSetAllEpisodesWatched = {
@@ -442,6 +439,7 @@ private class EpisodeViewModelImpl(
         )
 
     override var isFullscreen: Boolean by mutableStateOf(initialIsFullscreen)
+    override val commentLazyListState: LazyListState = LazyListState()
 
     fun switchEpisode(episodeId: Int) {
         episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
@@ -479,6 +477,8 @@ private class EpisodeViewModelImpl(
             )
         },
         currentPosition = playerState.currentPositionMillis.map { it.milliseconds },
+        danmakuFilterConfig = settingsRepository.danmakuFilterConfig.flow,
+        danmakuRegexFilterList = danmakuRegexFilterRepository.flow,
         onFetch = {
             danmakuManager.fetch(it)
         },
@@ -499,24 +499,60 @@ private class EpisodeViewModelImpl(
             settingsRepository.danmakuEnabled.set(it)
         },
         onHideController = {
-            videoControllerState.setVisible(false)
+            videoControllerState.toggleFullVisible(false)
         },
         backgroundScope,
     )
 
-    private val episodeCommentLoader = CommentLoader.episode(
+    private val episodeCommentLoader = CommentLoader.createForEpisode(
         episodeId = episodeId,
         coroutineContext = backgroundScope.coroutineContext,
-        episodeCommentSource = { episodeRevisionRepository.getSubjectEpisodeComments(it) },
+        episodeCommentSource = { commentRepository.getSubjectEpisodeComments(it) },
     )
 
     override val episodeCommentState: CommentState = CommentState(
         sourceVersion = episodeCommentLoader.sourceVersion.produceState(null),
         list = episodeCommentLoader.list.produceState(emptyList()),
-        hasMore = episodeCommentLoader.hasFinished.produceState(false),
+        hasMore = episodeCommentLoader.hasFinished.map { !it }.produceState(true),
         onReload = { episodeCommentLoader.reload() },
         onLoadMore = { episodeCommentLoader.loadMore() },
+        onSubmitCommentReaction = { _, _ -> },
         backgroundScope = backgroundScope,
+    )
+
+    override val commentEditorState: CommentEditorState = CommentEditorState(
+        showExpandEditCommentButton = true,
+        initialEditExpanded = false,
+        panelTitle = subjectInfo
+            .combine(episodeInfo) { sub, epi -> "${sub.displayName} ${epi?.renderEpisodeEp()}" }
+            .produceState(null),
+        stickers = flowOf(BangumiCommentSticker.map { EditCommentSticker(it.first, it.second) })
+            .produceState(emptyList()),
+        richTextRenderer = { text ->
+            withContext(Dispatchers.Default) {
+                with(CommentMapperContext) { parseBBCode(text) }
+            }
+        },
+        onSend = { context, content ->
+            when (context) {
+                is CommentContext.Episode ->
+                    commentRepository.postEpisodeComment(episodeId.value, content)
+
+                is CommentContext.Reply ->
+                    commentRepository.postEpisodeComment(episodeId.value, content, context.commentId)
+
+                is CommentContext.Subject -> {} // TODO: send subject comment
+            }
+        },
+        backgroundScope = backgroundScope,
+    )
+    override val playerSkipOpEdState: PlayerSkipOpEdState = PlayerSkipOpEdState(
+        chapters = playerState.chapters.produceState(),
+        onSkip = {
+            playerState.seekTo(it)
+        },
+        videoLength = playerState.videoProperties.mapNotNull { it?.durationMillis?.milliseconds }
+            .produceState(0.milliseconds),
     )
 
     override fun stopPlaying() {
@@ -586,8 +622,9 @@ private class EpisodeViewModelImpl(
                             combine(
                                 playerState.currentPositionMillis.sampleWithInitial(5000),
                                 playerState.videoProperties.map { it?.durationMillis }.debounce(5000),
-                            ) { pos, max ->
-                                if (max == null) return@combine
+                                playerState.state,
+                            ) { pos, max, playback ->
+                                if (max == null || !playback.isPlaying) return@combine
                                 if (episodePresentationFlow.first().collectionType == UnifiedCollectionType.DONE) {
                                     cancelScope() // 已经看过了
                                 }
@@ -607,6 +644,45 @@ private class EpisodeViewModelImpl(
                     }
                 }
         }
+
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoPlayNext }
+                .distinctUntilChanged()
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    playerState.state.collect { playback ->
+                        if (playback != PlaybackState.FINISHED) return@collect
+                        launchInMain {// state changes must be in main thread
+                            logger.info("播放完毕，切换下一集")
+                            episodeSelectorState.takeIf { it.hasNextEpisode }?.selectNext()
+                        }
+                    }
+                }
+        }
+
+        // 跳过 OP 和 ED
+        launchInBackground {
+            settingsRepository.videoScaffoldConfig.flow
+                .map { it.autoSkipOpEdExperimental }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { enabled ->
+                    if (!enabled) return@collectLatest
+
+                    // 设置启用
+                    combine(
+                        playerState.currentPositionMillis.sampleWithInitial(1000),
+                        episodeId,
+                        episodeCollectionsFlow,
+                    ) { pos, id, collections ->
+                        // 不止一集并且当前是第一集时不跳过
+                        if (collections.size > 1 && collections.getOrNull(0)?.episode?.id == id) return@combine
+                        playerSkipOpEdState.update(pos)
+                    }.collect()
+                }
+        }
     }
 
     private fun createDanmakuPresentation(
@@ -617,4 +693,3 @@ private class EpisodeViewModelImpl(
         isSelf = selfId == data.senderId,
     )
 }
-

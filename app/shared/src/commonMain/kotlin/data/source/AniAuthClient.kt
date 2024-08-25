@@ -1,21 +1,23 @@
 package me.him188.ani.app.data.source
 
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.reflect.typeInfo
-import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.client.apis.BangumiOAuthAniApi
 import me.him188.ani.client.models.AniBangumiUserToken
+import me.him188.ani.client.models.AniRefreshBangumiTokenRequest
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 
@@ -52,22 +54,27 @@ class AniAuthClient : AutoCloseable {
 
     private val client = BangumiOAuthAniApi(
         baseUrl = currentAniBuildConfig.aniAuthServerUrl,
+        httpClient,
     )
 
-    suspend fun getResultOrNull(requestId: String): AniBangumiUserToken? {
-        return try {
-            client.v1LoginBangumiOauthTokenGet(requestId)
-                .typedBody(typeInfo<AniBangumiUserToken>())
-        } catch (e: ResponseException) {
-            null
-        } catch (e: CancellationException) {
+    suspend fun getResult(requestId: String) = runApiRequest {
+        try {
+            client.getBangumiToken(requestId)
+                .typedBody<AniBangumiUserToken>(typeInfo<AniBangumiUserToken>())
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.NotFound) {
+                return@runApiRequest null
+            }
             throw e
-        } catch (e: Exception) {
-            null
         }
+    }
+
+    suspend fun refreshAccessToken(refreshToken: String) = runApiRequest {
+        client.refreshBangumiToken(AniRefreshBangumiTokenRequest(refreshToken)).body()
     }
 
     override fun close() {
         httpClient.close()
     }
+
 }

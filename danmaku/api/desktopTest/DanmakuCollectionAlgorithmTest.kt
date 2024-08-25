@@ -10,18 +10,20 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 internal class DanmakuCollectionAlgorithmTest {
+
     private fun create(
         sequence: Sequence<Danmaku>,
         repopulateThreshold: Duration = 3.seconds,
-        repopulateDistance: Duration = 2.seconds,
-    ): DanmakuSessionAlgorithm =
-        DanmakuSessionAlgorithm(
+        repopulateDistance: Duration = 2.seconds
+    ): DanmakuSessionAlgorithm {
+        return DanmakuSessionAlgorithm(
             DanmakuSessionFlowState(
                 sequence.toList(),
                 repopulateThreshold = repopulateThreshold,
                 repopulateDistance = { repopulateDistance },
             ),
         )
+    }
 
     private fun DanmakuSessionAlgorithm.at(time: Duration): DanmakuSessionAlgorithm {
         this.state.curTimeShared = time

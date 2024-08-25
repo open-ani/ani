@@ -5,7 +5,7 @@ package me.him188.ani.app.data.models
  */
 data class UserInfo(
     val id: Int,
-    val username: String,
+    val username: String?,
     val nickname: String? = null,
     val avatarUrl: String? = null,
     val sign: String? = null

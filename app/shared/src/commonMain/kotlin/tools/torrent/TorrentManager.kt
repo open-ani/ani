@@ -1,24 +1,22 @@
 package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
+import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import me.him188.ani.utils.io.resolve
 import kotlin.coroutines.CoroutineContext
 
 /**
  * 管理本地 BT 下载器的实现. 根据配置选择不同的下载器.
  *
  * 目前支持的下载实现:
- * - libtorrent4j (内嵌)
- * - qBittorrent (本机局域网).
+ * - anitorrent
  */
 interface TorrentManager {
     val anitorrent: AnitorrentEngine
@@ -32,29 +30,21 @@ enum class TorrentEngineType(
     Anitorrent("anitorrent"),
 }
 
-class TorrentDownloaderInitializationException(
-    message: String? = null,
-    cause: Throwable? = null,
-) : Exception(message, cause)
-
-class TorrentDownloaderManagerError(
-    val exception: Throwable,
-)
-
 class DefaultTorrentManager(
     parentCoroutineContext: CoroutineContext,
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
-) : TorrentManager, KoinComponent {
-    private val settingsRepository: SettingsRepository by inject()
-
-    private val scope = CoroutineScope(parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job]))
+    private val proxySettingsFlow: Flow<ProxySettings>,
+    private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
+    val platform: Platform,
+) : TorrentManager {
+    private val scope = parentCoroutineContext.childScope()
 
     override val anitorrent: AnitorrentEngine by lazy {
         AnitorrentEngine(
-            scope.childScope(CoroutineName("AnitorrentEngine")),
-            settingsRepository.anitorrentConfig.flow,
-            settingsRepository.proxySettings.flow,
+            anitorrentConfigFlow,
+            proxySettingsFlow,
             saveDir(TorrentEngineType.Anitorrent),
+            scope.coroutineContext + CoroutineName("AnitorrentEngine"),
         )
     }
 
@@ -65,10 +55,30 @@ class DefaultTorrentManager(
         // 
         // 如果要支持多个, 需要考虑将所有 storage 合并成一个 MediaSource.
 
-        when (Platform.currentPlatform) {
+        when (platform) {
             is Platform.Desktop -> listOf(anitorrent)
-            Platform.Android -> listOf(anitorrent)
+            is Platform.Android -> listOf(anitorrent)
             Platform.Ios -> listOf() // TODO IOS anitorrent
+        }
+    }
+
+    companion object {
+        fun create(
+            parentCoroutineContext: CoroutineContext,
+            settingsRepository: SettingsRepository,
+            baseSaveDir: () -> SystemPath,
+            platform: Platform = Platform.currentPlatform,
+        ): DefaultTorrentManager {
+            val saveDirLazy by lazy(baseSaveDir)
+            return DefaultTorrentManager(
+                parentCoroutineContext,
+                { type ->
+                    saveDirLazy.resolve(type.id)
+                },
+                settingsRepository.proxySettings.flow,
+                settingsRepository.anitorrentConfig.flow,
+                platform,
+            )
         }
     }
 }

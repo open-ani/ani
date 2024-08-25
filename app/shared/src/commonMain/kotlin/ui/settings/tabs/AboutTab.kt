@@ -25,24 +25,33 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.media.MediaAutoCacheService
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.source.media.cache.MediaAutoCacheService
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.isSessionVerified
-import me.him188.ani.app.data.source.session.unverifiedAccessToken
+import me.him188.ani.app.data.source.session.unverifiedAccessTokenOrNull
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.profile.AniHelpSection
 import me.him188.ani.app.ui.profile.DebugInfo
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.utils.platform.annotations.TestOnly
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -51,25 +60,42 @@ import org.koin.mp.KoinPlatform
 class AboutTabViewModel : AbstractViewModel(), KoinComponent {
     val browserNavigator: BrowserNavigator by inject()
     private val sessionManager: SessionManager by inject()
+    private val cacheManager: MediaCacheManager by inject()
 
+    private val validMediaCacheTasks = kotlin.run {
+        val mediaCacheListFromStorages = cacheManager.storages.map { storageFlow ->
+            storageFlow.flatMapLatest { storage ->
+                if (storage == null) {
+                    return@flatMapLatest emptyFlow()
+                }
+                storage.listFlow
+            }.onStart { emit(emptyList()) }
+        }
+        combine(mediaCacheListFromStorages) { lists ->
+            lists.asSequence().flatten().count { it.isValid() }
+        }
+    }
 
     val debugInfo = debugInfoFlow().shareInBackground(started = SharingStarted.Eagerly)
 
+    @OptIn(OpaqueSession::class)
     private fun debugInfoFlow() = combine(
         sessionManager.state,
         sessionManager.processingRequest.flatMapLatest { it?.state ?: flowOf(null) },
         sessionManager.isSessionVerified,
-    ) { session, processingRequest, isSessionValid ->
+        validMediaCacheTasks,
+    ) { session, processingRequest, isSessionValid, activeTasks ->
         DebugInfo(
             properties = buildMap {
                 val buildConfig = currentAniBuildConfig
                 put("isDebug", buildConfig.isDebug.toString())
                 if (buildConfig.isDebug) {
-                    put("accessToken", session.unverifiedAccessToken)
+                    put("accessToken", session.unverifiedAccessTokenOrNull)
                     put("data/source/session", session.toString())
                 }
                 put("processingRequest.state", processingRequest.toString())
                 put("sessionManager.isSessionValid", isSessionValid.toString())
+                put("mediaCacheManager.validTasks", activeTasks.toString())
             },
         )
     }
@@ -93,7 +119,7 @@ private const val ACG_RIP = "https://acg.rip/"
 @Stable
 private const val MIKAN = "https://mikanime.tv/"
 
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, TestOnly::class)
 @Composable
 fun AboutTab(
     vm: AboutTabViewModel = rememberViewModel { AboutTabViewModel() },
@@ -101,6 +127,7 @@ fun AboutTab(
     onTriggerDebugMode: () -> Unit = { },
 ) {
     val context by rememberUpdatedState(LocalContext.current)
+    val toaster = LocalToaster.current
 
     SettingsTab(modifier) {
         Group(
@@ -204,7 +231,7 @@ fun AboutTab(
             description = { Text("在反馈问题时附上日志可能有用") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (currentAniBuildConfig.isDebug) {
+                if (isInDebugMode()) {
                     val debugInfo by vm.debugInfo.collectAsStateWithLifecycle(null)
                     val clipboard = LocalClipboardManager.current
                     for ((name, value) in debugInfo?.properties.orEmpty()) {
@@ -226,12 +253,43 @@ fun AboutTab(
                     ) {
                         Text("执行自动缓存")
                     }
+
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch {
+                                KoinPlatform.getKoin().get<MediaCacheManager>().closeAllCaches()
+                                withContext(Dispatchers.Main) {
+                                    toaster.toast("已关闭所有缓存任务")
+                                }
+                            }
+                        },
+                    ) {
+                        Text("关闭所有缓存任务")
+                    }
+
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch {
+                                KoinPlatform.getKoin().get<SessionManager>().clearSession()
+                            }
+                        },
+                    ) {
+                        Text("清除游客模式记录")
+                    }
+
+                    FilledTonalButton(
+                        {
+                            GlobalScope.launch { KoinPlatform.getKoin().get<SessionManager>().invalidateSession() }
+                        },
+                    ) {
+                        Text("Invalidate Session")
+                    }
                 }
 
                 FilledTonalButton(
                     {
                         GlobalScope.launch {
-                            KoinPlatform.getKoin().get<SessionManager>().logout()
+                            KoinPlatform.getKoin().get<SessionManager>().clearSession()
                         }
                     },
                 ) {

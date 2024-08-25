@@ -36,6 +36,7 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -420,7 +421,7 @@ private fun SettingsScope.PlayerGroup(
             title = { Text("选择数据源后自动关闭弹窗") },
             Modifier.placeholder(vm.uiSettings.loading),
         )
-        if (currentPlatform.isMobile()) {
+        if (currentPlatform.isMobile() && isInDebugMode()) {
             HorizontalDividerItem()
             SwitchItem(
                 checked = config.autoFullscreenOnLandscapeMode,
@@ -429,6 +430,27 @@ private fun SettingsScope.PlayerGroup(
                 },
                 title = { Text("重力感应旋屏") },
                 Modifier.placeholder(vm.uiSettings.loading),
+            )
+        }
+        HorizontalDividerItem()
+        SwitchItem(
+            checked = config.autoPlayNext,
+            onCheckedChange = {
+                vm.videoScaffoldConfig.update(config.copy(autoPlayNext = it))
+            },
+            title = { Text("自动连播") },
+            Modifier.placeholder(vm.uiSettings.loading),
+        )
+        if (currentPlatform.isDesktop()) {
+            HorizontalDividerItem()
+            SwitchItem(
+                checked = config.autoSkipOpEdExperimental,
+                onCheckedChange = {
+                    vm.videoScaffoldConfig.update(config.copy(autoSkipOpEdExperimental = it))
+                },
+                title = { Text("自动跳过 OP 和 ED") },
+                Modifier.placeholder(vm.uiSettings.loading),
+                description = { Text("实验性功能") },
             )
         }
     }

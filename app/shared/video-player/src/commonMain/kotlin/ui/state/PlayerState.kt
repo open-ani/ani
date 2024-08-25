@@ -1,12 +1,16 @@
 package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -155,7 +159,16 @@ interface PlayerState {
     val audioTracks: TrackGroup<AudioTrack>
 
     fun saveScreenshotFile(filename: String)
+
+    val chapters: StateFlow<ImmutableList<Chapter>>
 }
+
+@Immutable
+data class Chapter(
+    val name: String,
+    val durationMillis: Long,
+    val offsetMillis: Long
+)
 
 fun PlayerState.togglePause() {
     if (state.value.isPlaying) {
@@ -373,7 +386,7 @@ fun interface PlayerStateFactory {
  * For previewing
  */
 class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
-    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+    override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PLAYING)
     override fun stopImpl() {
 
     }
@@ -388,7 +401,9 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
             source,
             data,
             releaseResource = {
-                data.close()
+                backgroundScope.launch(NonCancellable) {
+                    data.close()
+                }
             },
         )
     }
@@ -446,4 +461,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override fun saveScreenshotFile(filename: String) {
     }
+
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(
+        persistentListOf(
+            Chapter("chapter1", durationMillis = 90_000L, 0L),
+            Chapter("chapter2", durationMillis = 5_000L, 90_000L),
+        ),
+    )
 }

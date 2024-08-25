@@ -10,7 +10,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.subject.episode.TAG_MEDIA_SELECTOR_SHEET
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
@@ -26,6 +28,7 @@ fun EpisodeVideoMediaSelectorSideSheet(
 ) {
     EpisodeVideoSettingsSideSheet(
         onDismissRequest = onDismissRequest,
+        Modifier.testTag(TAG_MEDIA_SELECTOR_SHEET),
         title = { Text(text = "选择数据源") },
         closeButton = {
             IconButton(onClick = onDismissRequest) {

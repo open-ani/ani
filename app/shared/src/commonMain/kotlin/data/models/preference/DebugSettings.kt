@@ -9,6 +9,8 @@ import kotlinx.serialization.Transient
 @Immutable
 data class DebugSettings(
     val enabled: Boolean = false,
+    val showAllEpisodes: Boolean = false,
+    val showControllerAlwaysOnRequesters: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeHolder: Int = 0,
 ) {
     companion object {

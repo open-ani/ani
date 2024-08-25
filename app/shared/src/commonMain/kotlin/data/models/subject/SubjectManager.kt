@@ -22,22 +22,26 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeCollections
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
 import me.him188.ani.app.data.models.episode.episode
+import me.him188.ani.app.data.models.unauthorized
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.setSubjectCollectionTypeOrDelete
 import me.him188.ani.app.data.repository.toEpisodeCollection
 import me.him188.ani.app.data.repository.toEpisodeInfo
 import me.him188.ani.app.data.repository.toSelfRatingInfo
 import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.username
 import me.him188.ani.app.platform.Context
@@ -55,7 +59,6 @@ import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.tools.caching.removeFirstOrNull
 import me.him188.ani.app.tools.caching.setEach
 import me.him188.ani.app.ui.subject.episode.list.EpisodeProgressItem
-import me.him188.ani.datasources.api.paging.emptyPagedSource
 import me.him188.ani.datasources.api.paging.mapNotNull
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiEpType
@@ -239,22 +242,29 @@ class SubjectManagerImpl(
 ) : KoinComponent, SubjectManager() {
     private val bangumiSubjectRepository: BangumiSubjectRepository by inject()
     private val bangumiEpisodeRepository: BangumiEpisodeRepository by inject()
+    private val settingsRepository: SettingsRepository by inject()
 
     private val sessionManager: SessionManager by inject()
     private val cacheManager: MediaCacheManager by inject()
+
+    private val showAllEpisodes: Flow<Boolean> = settingsRepository.debugSettings.flow.map { it.showAllEpisodes }
 
     override val collectionsByType: Map<UnifiedCollectionType, LazyDataCache<SubjectCollection>> =
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
-                    sessionManager.state
-                    val username = sessionManager.username.firstOrNull() ?: return@LazyDataCache emptyPagedSource()
+                    @OptIn(OpaqueSession::class)
+                    val username =
+                        sessionManager.username.filterNotNull().firstOrNull()
+                            ?: return@LazyDataCache ApiResponse.unauthorized()
                     bangumiSubjectRepository.getSubjectCollections(
                         username,
                         subjectType = BangumiSubjectType.Anime,
                         subjectCollectionType = type.toSubjectCollectionType(),
                     ).mapNotNull {
                         it.fetchToSubjectCollection()
+                    }.let {
+                        ApiResponse.success(it)
                     }
                 },
                 getKey = { it.subjectId },
@@ -270,6 +280,7 @@ class SubjectManagerImpl(
                 ),
             )
         }
+
 
     override fun subjectCollectionFlow(subjectId: Int, contentPolicy: ContentPolicy): Flow<SubjectCollection?> {
         return flow {
@@ -289,21 +300,24 @@ class SubjectManagerImpl(
             // TODO: this is shit 
             if (cached == null) {
                 // 缓存没有, 去服务器查有没有收藏
-                kotlin.runCatching {
+                val resFromServer = kotlin.runCatching {
                     bangumiSubjectRepository.subjectCollectionById(subjectId).first()
                         ?.fetchToSubjectCollection()
-                }.getOrNull()?.let { emit(it) }
+                }.getOrNull()
 
-                // 服务器也没有, 尝试根据 [SubjectInfo] 创建一个
-
-                emit(
-                    SubjectCollection(
-                        getSubjectInfo(subjectId),
-                        episodeCollectionsFlow(subjectId).first(),
-                        UnifiedCollectionType.NOT_COLLECTED,
-                        SelfRatingInfo.Empty,
-                    ),
-                )
+                if (resFromServer != null) {
+                    emit(resFromServer) // TODO: 需要处理网络错误
+                } else {
+                    // 服务器也没有, 尝试根据 [SubjectInfo] 创建一个
+                    emit(
+                        SubjectCollection(
+                            getSubjectInfo(subjectId),
+                            episodeCollectionsFlow(subjectId).first(),
+                            UnifiedCollectionType.NOT_COLLECTED,
+                            SelfRatingInfo.Empty,
+                        ),
+                    )
+                }
             }
             emitAll(
                 cachedSubjectCollectionFlow(subjectId, ContentPolicy.CACHE_ONLY)
@@ -374,11 +388,12 @@ class SubjectManagerImpl(
     }
 
     override suspend fun getSubjectInfo(subjectId: Int): SubjectInfo {
+        require(subjectId != 0) { "Attempting to getSubjectInfo with subjectId=0, this is likely to be an error" }
         findCachedSubjectCollection(subjectId)?.info?.let { return it }
-        return runUntilSuccess {
-            // TODO: we should unify how to compute display name from subject 
-            bangumiSubjectRepository.getSubject(subjectId)?.toSubjectInfo() ?: error("Failed to get subject")
-        }
+
+        return bangumiSubjectRepository.getSubject(subjectId)
+            .getOrThrow()
+            .toSubjectInfo()
     }
 
     override suspend fun getEpisodeInfo(episodeId: Int): EpisodeInfo {
@@ -543,11 +558,12 @@ class SubjectManagerImpl(
     }
 
     private suspend fun fetchEpisodeCollections(subjectId: Int): List<EpisodeCollection> {
+        val type: BangumiEpType? = if (showAllEpisodes.first()) null else BangumiEpType.MainStory
         // 查收藏状态, 没收藏就查剧集, 认为所有剧集都没有收藏
-        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, BangumiEpType.MainStory)
+        return bangumiEpisodeRepository.getSubjectEpisodeCollections(subjectId, type)
             .let { collections ->
                 collections?.toList()?.map { it.toEpisodeCollection() }
-                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, BangumiEpType.MainStory)
+                    ?: bangumiEpisodeRepository.getEpisodesBySubjectId(subjectId, type)
                         .toList()
                         .map {
                             EpisodeCollection(it.toEpisodeInfo(), UnifiedCollectionType.NOT_COLLECTED)
@@ -557,11 +573,9 @@ class SubjectManagerImpl(
 
     private suspend fun BangumiUserSubjectCollection.fetchToSubjectCollection(): SubjectCollection = coroutineScope {
         val subject = async {
-            runUntilSuccess { bangumiSubjectRepository.getSubject(subjectId) ?: error("Failed to get subject") }
+            bangumiSubjectRepository.getSubject(subjectId).getOrThrow()
         }
-        val eps = runUntilSuccess {
-            fetchEpisodeCollections(subjectId)
-        }.toList()
+        val eps = fetchEpisodeCollections(subjectId).toList()
 
         toSubjectCollectionItem(subject.await(), eps)
     }

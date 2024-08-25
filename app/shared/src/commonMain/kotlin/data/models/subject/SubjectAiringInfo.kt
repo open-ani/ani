@@ -12,6 +12,11 @@ import me.him188.ani.datasources.api.EpisodeSort
 import kotlin.time.Duration.Companion.days
 import kotlin.time.times
 
+/**
+ * 一个条目自身连载进度, 与用户是否观看无关
+ *
+ * @see SubjectProgressInfo
+ */
 @Immutable
 data class SubjectAiringInfo(
     val kind: SubjectAiringKind,
@@ -106,17 +111,26 @@ data class SubjectAiringInfo(
     }
 }
 
+/**
+ * 正在播出 (第一集还未开播, 将在未来开播)
+ */
 @Stable
 val SubjectAiringInfo.isOnAir: Boolean
     get() = kind == SubjectAiringKind.ON_AIR
 
-@Stable
-val SubjectAiringInfo.isCompleted: Boolean
-    get() = kind == SubjectAiringKind.COMPLETED
-
+/**
+ * 即将开播 (已经播出了第一集, 但还未播出最后一集)
+ */
 @Stable
 val SubjectAiringInfo.isUpcoming: Boolean
     get() = kind == SubjectAiringKind.UPCOMING
+
+/**
+ * 已完结 (最后一集已经播出)
+ */
+@Stable
+val SubjectAiringInfo.isCompleted: Boolean
+    get() = kind == SubjectAiringKind.COMPLETED
 
 @Immutable
 enum class SubjectAiringKind {

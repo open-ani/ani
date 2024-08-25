@@ -7,15 +7,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 
 @Composable
@@ -40,7 +40,7 @@ fun SelectMediaStorageDialog(
                 for (storage in options) {
                     Column(Modifier.padding()) {
                         // TODO: 很丑, 但反正只在 debug 用
-                        Card(
+                        OutlinedButton(
                             { onSelect(storage) },
                             shape = MaterialTheme.shapes.small,
                         ) {

@@ -15,27 +15,21 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiBloodType
-import me.him188.ani.datasources.bangumi.models.BangumiPersonCareer
-import me.him188.ani.datasources.bangumi.models.BangumiPersonImages
-import me.him188.ani.datasources.bangumi.models.BangumiPersonType
-import me.him188.ani.datasources.bangumi.models.BangumiStat
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param id
- * @param name
+ * @param name 
  * @param type `1`, `2`, `3` 表示 `个人`, `公司`, `组合`
  * @param career
  * @param summary
- * @param locked
+ * @param locked 
  * @param lastModified currently it's latest user comment time, it will be replaced by wiki modified date in the future
- * @param stat
+ * @param stat 
  * @param images object with some size of images, this object maybe `null`
  * @param infobox server parsed infobox, a map from key to string or tuple null if server infobox is not valid
  * @param gender parsed from wiki, maybe null

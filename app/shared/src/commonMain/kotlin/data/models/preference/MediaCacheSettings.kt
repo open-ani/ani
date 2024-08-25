@@ -18,7 +18,7 @@ data class MediaCacheSettings(
      * Use system default if `null`.
      * @since 3.4.0
      */
-    val saveDir: String? = null, // 只有 PC 支持修改, 安卓不需要支持
+    val saveDir: String? = null,
 ) {
     companion object {
         val Default = MediaCacheSettings()

@@ -38,3 +38,9 @@ actual fun Modifier.onClickEx(
     onLongClick = onLongClick,
     onDoubleClick = onDoubleClick,
 )
+
+actual fun Modifier.onRightClickIfSupported(
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean,
+    onClick: () -> Unit
+): Modifier = this // not supported

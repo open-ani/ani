@@ -20,13 +20,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
@@ -40,8 +45,19 @@ import kotlin.time.Duration.Companion.milliseconds
 interface EpisodeVideoSettingsViewModel {
     val danmakuConfig: DanmakuConfig
     val isLoading: Boolean
+    val danmakuFilterConfig: DanmakuFilterConfig
+    val danmakuRegexFilterList: List<DanmakuRegexFilter>
 
     fun setDanmakuConfig(config: DanmakuConfig)
+    fun addDanmakuRegexFilter(filter: DanmakuRegexFilter)
+    fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter)
+    fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter)
+
+    // 关闭/开启所有正则过滤器
+    fun switchDanmakuRegexFilterCompletely()
+
+    // 关闭/开启一个正则过滤器
+    fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter)
 }
 
 fun EpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
@@ -49,24 +65,61 @@ fun EpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVide
 private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel, AbstractSettingsViewModel(),
     KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
+    private val danmakuRegexFilterRepository by inject<DanmakuRegexFilterRepository>()
 
     val danmakuConfigSettings by settings(
         settingsRepository.danmakuConfig,
         DanmakuConfig(_placeholder = -1),
     )
 
+    val danmakuFilterConfigSetting by settings(
+        settingsRepository.danmakuFilterConfig,
+        DanmakuFilterConfig.Default.copy(_placeholder = -1),
+    )
+
     override val danmakuConfig: DanmakuConfig by danmakuConfigSettings
+    override val danmakuRegexFilterList: List<DanmakuRegexFilter> by danmakuRegexFilterRepository.flow.produceState(
+        initialValue = emptyList(),
+    )
+    override val danmakuFilterConfig: DanmakuFilterConfig by danmakuFilterConfigSetting
     override val isLoading: Boolean get() = danmakuConfigSettings.loading
 
     override fun setDanmakuConfig(config: DanmakuConfig) {
         danmakuConfigSettings.updateDebounced(config, 100.milliseconds)
+    }
+
+    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        launchInBackground { danmakuRegexFilterRepository.add(filter) }
+    }
+
+    override fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter) {
+        launchInBackground { danmakuRegexFilterRepository.update(id, new) }
+    }
+
+    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        launchInBackground {
+            danmakuRegexFilterRepository.remove(filter)
+        }
+    }
+
+    override fun switchDanmakuRegexFilterCompletely() {
+        danmakuFilterConfigSetting.update(
+            danmakuFilterConfig.copy(danmakuRegexFilterEnabled = !danmakuFilterConfig.danmakuRegexFilterEnabled),
+        )
+    }
+
+    // turn off a particular filter
+    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        launchInBackground {
+            danmakuRegexFilterRepository.update(filter.id, filter.copy(enabled = !filter.enabled))
+        }
     }
 }
 
 @Composable
 fun EpisodeVideoSettings(
     vm: EpisodeVideoSettingsViewModel,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     return EpisodeVideoSettings(
         danmakuConfig = vm.danmakuConfig,
@@ -77,6 +130,24 @@ fun EpisodeVideoSettings(
             { vm.isLoading }
         },
         modifier = modifier,
+        danmakuRegexFilterGroup = {
+            SwitchItem(
+                vm.danmakuFilterConfig.danmakuRegexFilterEnabled,
+                onCheckedChange = {
+                    vm.switchDanmakuRegexFilterCompletely()
+                },
+                title = { Text("弹幕正则过滤") },
+                modifier = Modifier.placeholder(vm.isLoading),
+            )
+            DanmakuRegexFilterGroup(
+                vm.danmakuRegexFilterList,
+                onAdd = vm::addDanmakuRegexFilter,
+                onEdit = vm::editDanmakuRegexFilter,
+                onRemove = vm::removeDanmakuRegexFilter,
+                onSwitch = vm::switchDanmakuRegexFilter,
+                vm.isLoading,
+            )
+        },
     )
 }
 
@@ -89,10 +160,12 @@ fun EpisodeVideoSettings(
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
     isLoading: () -> Boolean = LOADING_FALSE,
     modifier: Modifier = Modifier,
+    danmakuRegexFilterGroup: @Composable SettingsScope.() -> Unit,
 ) {
     val isLoadingState by remember(isLoading) {
         derivedStateOf(isLoading)
     }
+
     SettingsTab(modifier) {
         Column {
             FlowRow(
@@ -327,7 +400,10 @@ fun EpisodeVideoSettings(
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
-            if (currentAniBuildConfig.isDebug) {
+            val debugViewModel = rememberDebugSettingsViewModel()
+            if (debugViewModel.isAppInDebugMode) {
+                danmakuRegexFilterGroup()
+
                 SwitchItem(
                     danmakuConfig.isDebug,
                     onCheckedChange = {
@@ -337,6 +413,15 @@ fun EpisodeVideoSettings(
                     },
                     title = { Text("弹幕调试模式") },
                     modifier = Modifier.placeholder(isLoadingState),
+                )
+
+                val debugSettings by debugViewModel.debugSettings
+                SwitchItem(
+                    debugSettings.showControllerAlwaysOnRequesters,
+                    onCheckedChange = {
+                        debugViewModel.debugSettings.update(debugSettings.copy(showControllerAlwaysOnRequesters = it))
+                    },
+                    title = { Text("showControllerAlwaysOnRequesters") },
                 )
             }
         }

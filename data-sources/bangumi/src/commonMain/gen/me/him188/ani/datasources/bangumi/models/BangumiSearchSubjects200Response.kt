@@ -15,11 +15,8 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjects200ResponseDataInner
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 用户信息
@@ -27,7 +24,7 @@ import kotlinx.serialization.encoding.*
  * @param total 搜索结果数量
  * @param limit 当前分页参数
  * @param offset 当前分页参数
- * @param `data`
+ * @param `data` 
  */
 @Serializable
 

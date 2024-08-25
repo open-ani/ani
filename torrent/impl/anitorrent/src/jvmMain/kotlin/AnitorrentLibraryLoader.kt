@@ -44,6 +44,7 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
         val arch = when (platform.arch) {
             Arch.X86_64 -> "x64"
             Arch.AARCH64 -> "arm64"
+            Arch.ARMV7A, Arch.ARMV8A -> throw UnsatisfiedLinkError("Unsupported architecture: ${platform.arch}")
         }
 
         val triple = when (platform) {

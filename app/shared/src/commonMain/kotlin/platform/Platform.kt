@@ -18,9 +18,10 @@ sealed class Platform {
 
     sealed class Mobile : Platform()
 
-    data object Android : Mobile() {
+    data class Android(
+        override val arch: Arch,
+    ) : Mobile() {
         override val name: String get() = "Android"
-        override val arch: Arch get() = Arch.AARCH64
     }
 
     data object Ios : Platform() {
@@ -47,11 +48,22 @@ sealed class Platform {
 
     @Stable
     companion object {
+        private val _currentPlatform =
+            kotlin.runCatching { currentPlatformImpl() } // throw only on get
+
+        /**
+         * Note: this is soft deprecated. Use [me.him188.ani.app.platform.currentPlatform] and [currentPlatformDesktop] instead.
+         */
         @Stable
-        val currentPlatform: Platform = currentPlatformImpl()
+        val currentPlatform: Platform get() = _currentPlatform.getOrThrow()
     }
 }
 
+/**
+ * 获取当前的平台. 在 Linux 上使用时会抛出 [UnsupportedOperationException].
+ *
+ * CI 会跑 Ubuntu test (比较快), 所以在 test 环境需要谨慎使用此 API.
+ */
 @Stable
 val currentPlatform: Platform
     get() = Platform.currentPlatform
@@ -59,23 +71,53 @@ val currentPlatform: Platform
 @Stable
 val currentPlatformDesktop: Platform.Desktop
     get() {
-        check(Platform.currentPlatform is Platform.Desktop)
-        return Platform.currentPlatform
+        val platform = Platform.currentPlatform
+        check(platform is Platform.Desktop)
+        return platform
     }
 
 @Immutable
+enum class ArchFamily {
+    X86,
+    AARCH,
+}
+
+// It's actually ABI
+@Immutable
 enum class Arch(
     val displayName: String, // Don't change, used by the server
+    val family: ArchFamily,
+    val addressSizeBits: Int,
 ) {
-    X86_64("x86_64"),
-    AARCH64("aarch64"),
+    /**
+     * macOS, Windows, Android
+     */
+    X86_64("x86_64", ArchFamily.X86, 32),
+
+    /**
+     * macOS
+     */
+    AARCH64("aarch64", ArchFamily.AARCH, 64),
+
+    /**
+     * AArch32 的一个细分 ABI. 只有很久的手机或电视才会用.
+     */
+    ARMV7A("armeabi-v7a", ArchFamily.AARCH, 32),
+
+    /**
+     * AArch64 的一个细分 ABI. 目前绝大多数手机都是这个.
+     */
+    ARMV8A("arm64-v8a", ArchFamily.AARCH, 64),
 }
 
 @Stable
 expect fun Platform.Companion.currentPlatformImpl(): Platform
 
 @Stable
-fun Platform.isAarch64(): Boolean = this.arch == Arch.AARCH64
+fun Platform.isAArch(): Boolean = this.arch.family == ArchFamily.AARCH
+
+@Stable
+fun Platform.is64bit(): Boolean = this.arch.addressSizeBits == 64
 
 @Stable
 fun Platform.isDesktop(): Boolean {

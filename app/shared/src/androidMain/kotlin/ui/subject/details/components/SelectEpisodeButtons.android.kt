@@ -6,43 +6,47 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import me.him188.ani.app.data.models.PackedDate
+import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
-import me.him188.ani.app.ui.subject.collection.progress.ContinueWatchingStatus
-import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressInfo
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Stable
+@TestOnly
 object TestSubjectProgressInfos {
     @Stable
     val NotOnAir = SubjectProgressInfo(
-        continueWatchingStatus = ContinueWatchingStatus.NotOnAir,
-        nextEpisodeToPlay = null,
+        continueWatchingStatus = ContinueWatchingStatus.NotOnAir(PackedDate.Invalid),
+        nextEpisodeIdToPlay = null,
     )
 
     @Stable
     val ContinueWatching2 = SubjectProgressInfo(
-        continueWatchingStatus = ContinueWatchingStatus.Continue(1, EpisodeSort(2)),
-        nextEpisodeToPlay = null,
+        continueWatchingStatus = ContinueWatchingStatus.Continue(1, EpisodeSort(2), EpisodeSort(1)),
+        nextEpisodeIdToPlay = null,
     )
 
     @Stable
     val Watched2 = SubjectProgressInfo(
-        continueWatchingStatus = ContinueWatchingStatus.Watched(1, EpisodeSort(2)),
-        nextEpisodeToPlay = null,
+        continueWatchingStatus = ContinueWatchingStatus.Watched(1, EpisodeSort(2), PackedDate.Invalid),
+        nextEpisodeIdToPlay = null,
     )
 
     @Stable
     val Done = SubjectProgressInfo(
         continueWatchingStatus = ContinueWatchingStatus.Done,
-        nextEpisodeToPlay = null,
+        nextEpisodeIdToPlay = null,
     )
 }
 
 @Composable
+@TestOnly
 fun rememberTestSubjectProgressState(
-    info: SubjectProgressInfo = SubjectProgressInfo.Empty,
+    info: SubjectProgressInfo = SubjectProgressInfo.Done,
 ): SubjectProgressState {
     return remember {
         SubjectProgressState(
@@ -54,6 +58,7 @@ fun rememberTestSubjectProgressState(
     }
 }
 
+@OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
 private fun PreviewSelectEpisodeButtonsDone() {
@@ -69,6 +74,7 @@ private fun PreviewSelectEpisodeButtonsDone() {
     }
 }
 
+@OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
 private fun PreviewSelectEpisodeButtonsContinue() {
@@ -84,6 +90,7 @@ private fun PreviewSelectEpisodeButtonsContinue() {
     }
 }
 
+@OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
 private fun PreviewSelectEpisodeButtonsWatched() {
@@ -99,6 +106,7 @@ private fun PreviewSelectEpisodeButtonsWatched() {
     }
 }
 
+@OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
 private fun PreviewSelectEpisodeButtonsNotOnAir() {

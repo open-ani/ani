@@ -98,7 +98,7 @@ kotlin {
         api(libs.coil.core)
         api(libs.coil.svg)
         api(libs.coil.compose.core)
-        api(libs.coil.network.ktor3)
+        api(libs.coil.network.ktor2)
         api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
         api(libs.precompose) // Navigator
@@ -131,6 +131,7 @@ kotlin {
         api(projects.dataSources.mxdongman)
         api(projects.dataSources.ntdm)
         api(projects.dataSources.gugufan)
+        api(projects.dataSources.xfdm)
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
@@ -162,6 +163,12 @@ kotlin {
         implementation(libs.androidx.media3.exoplayer)
 
         api(libs.logback.android)
+    }
+
+    sourceSets.androidUnitTest.dependencies {
+        implementation(libs.mockito)
+        implementation(libs.mockito.kotlin)
+        implementation(libs.koin.test)
     }
 
     sourceSets.nativeMain.dependencies {
@@ -256,6 +263,7 @@ kotlin {
             } else {
                 sourceSets.all {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
+                    resources.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/resources"))
                 }
             }
         }

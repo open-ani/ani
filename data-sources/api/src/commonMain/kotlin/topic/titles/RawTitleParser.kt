@@ -18,6 +18,7 @@
 
 package me.him188.ani.datasources.api.topic.titles
 
+import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FrameRate
 import me.him188.ani.datasources.api.topic.MediaOrigin
@@ -59,6 +60,7 @@ data class ParsedTopicTitle(
     val frameRate: FrameRate? = null,
     val mediaOrigin: MediaOrigin? = null,
     val subtitleLanguages: List<SubtitleLanguage> = listOf(),
+    val subtitleKind: SubtitleKind? = null,
 ) {
     class Builder {
         var tags = mutableSetOf<String>()
@@ -69,6 +71,7 @@ data class ParsedTopicTitle(
         var frameRate: FrameRate? = null
         var mediaOrigin: MediaOrigin? = null
         var subtitleLanguages = mutableSetOf<SubtitleLanguage>()
+        var subtitleKind: SubtitleKind? = null
 
         fun build(): ParsedTopicTitle {
             return ParsedTopicTitle(
@@ -80,6 +83,7 @@ data class ParsedTopicTitle(
                 frameRate = frameRate,
                 mediaOrigin = mediaOrigin,
                 subtitleLanguages = subtitleLanguages.toList(),
+                subtitleKind = subtitleKind,
             )
         }
     }
@@ -102,5 +106,6 @@ fun ParsedTopicTitle.toTopicDetails(): TopicDetails {
         frameRate = frameRate,
         mediaOrigin = mediaOrigin,
         subtitleLanguages = subtitleLanguages,
+        subtitleKind = subtitleKind,
     )
 }

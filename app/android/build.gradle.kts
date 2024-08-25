@@ -62,16 +62,15 @@ android {
         ndk {
             // Specifies the ABI configurations of your native
             // libraries Gradle should build and package with your app.
-            abiFilters.clear() // no x86
-            //noinspection ChromeOsAbiSupport
-            abiFilters += listOf("arm64-v8a") // TODO: add "armeabi-v7a"
+            abiFilters.clear()
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
         }
     }
     splits {
         abi {
+            isEnable = true
             reset()
-            //noinspection ChromeOsAbiSupport
-            include("arm64-v8a")
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true // 额外构建一个
         }
     }

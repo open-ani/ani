@@ -50,7 +50,6 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
  * - 视频: [video]
  * - 右侧侧边栏: [rhsSheet]
  *
- * @param controllersVisible 是否展示 [topBar], [rhsBar] 和 [bottomBar]
  * @param topBar [PlayerTopBar]
  * @param video [VideoPlayer]. video 不会接受到点击事件.
  * @param danmakuHost 为 `DanmakuHost` 留的区域
@@ -65,7 +64,7 @@ fun VideoScaffold(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    controllersVisible: () -> Boolean = { true },
+    controllerState: VideoControllerState,
     gestureLocked: () -> Boolean = { false },
     topBar: @Composable RowScope.() -> Unit = {},
     /**
@@ -78,10 +77,11 @@ fun VideoScaffold(
     rhsButtons: @Composable ColumnScope.() -> Unit = {},
     gestureLock: @Composable ColumnScope.() -> Unit = {},
     bottomBar: @Composable RowScope.() -> Unit = {},
+    detachedProgressSlider: @Composable () -> Unit = {},
     floatingBottomEnd: @Composable RowScope.() -> Unit = {},
     rhsSheet: @Composable () -> Unit = {},
+    leftBottomTips: @Composable () -> Unit = {},
 ) {
-    val controllersVisibleState by derivedStateOf(controllersVisible)
     val gestureLockedState by derivedStateOf(gestureLocked) // delayed access to minimize recomposition
 
     BoxWithConstraints(
@@ -123,7 +123,7 @@ fun VideoScaffold(
                 Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                     // 顶部控制栏: 返回键, 标题, 设置
                     AnimatedVisibility(
-                        visible = controllersVisibleState && !gestureLockedState,
+                        visible = controllerState.visibility.topBar && !gestureLockedState,
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
@@ -139,8 +139,10 @@ fun VideoScaffold(
                                         ),
                                     ),
                             )
+                            val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "topBar")
                             Column(
                                 Modifier
+                                    .hoverToRequestAlwaysOn(alwaysOnRequester)
                                     .fillMaxWidth()
                                     .statusBarsPadding(),
                             ) {
@@ -157,37 +159,52 @@ fun VideoScaffold(
 
                     Box(Modifier.weight(1f, fill = true).fillMaxWidth())
 
-                    // 底部控制栏: 播放/暂停, 进度条, 切换全屏
-                    AnimatedVisibility(
-                        visible = controllersVisibleState && !gestureLockedState,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.verticalGradient(
-                                        0f to Color.Transparent,
-                                        1 - 0.32f to Color.Transparent.copy(0.45f),
-                                        1f to Color.Transparent.copy(0.72f),
-                                    ),
-                                ),
+                    Column { 
+                        leftBottomTips()
+                        // 底部控制栏: 播放/暂停, 进度条, 切换全屏
+                        AnimatedVisibility(
+                            visible = controllerState.visibility.bottomBar && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
                         ) {
-                            Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
+                            val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "bottomBar")
+                            Column(
+                                Modifier
+                                    .hoverToRequestAlwaysOn(alwaysOnRequester)
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0f to Color.Transparent,
+                                            1 - 0.32f to Color.Transparent.copy(0.45f),
+                                            1f to Color.Transparent.copy(0.72f),
+                                        ),
+                                    ),
                             ) {
-                                CompositionLocalProvider(LocalContentColor provides Color.White) {
-                                    bottomBar()
+                                Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    CompositionLocalProvider(LocalContentColor provides Color.White) {
+                                        bottomBar()
+                                    }
                                 }
+                            }
+
+                        }
+                        AnimatedVisibility(
+                            visible = controllerState.visibility.detachedSlider && !gestureLockedState,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
+                                detachedProgressSlider()
                             }
                         }
                     }
                 }
                 AnimatedVisibility(
-                    !controllersVisibleState && !expanded,
+                    controllerState.visibility.floatingBottomEnd && !expanded,
                     Modifier.align(Alignment.BottomEnd),
                     enter = fadeIn(),
                     exit = fadeOut(),
@@ -212,7 +229,7 @@ fun VideoScaffold(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         AnimatedVisibility(
-                            visible = controllersVisibleState && !gestureLockedState,
+                            visible = controllerState.visibility.rhsBar && !gestureLockedState,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
@@ -221,7 +238,7 @@ fun VideoScaffold(
 
                         // Separate from controllers, to fix position when controllers are/aren't hidden
                         AnimatedVisibility(
-                            visible = controllersVisibleState,
+                            visible = controllerState.visibility.rhsBar,
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {

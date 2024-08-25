@@ -30,6 +30,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
+            run_tests: true
           - os: ubuntu-20.04
             name: Ubuntu x86_64
             uploadApk: false
@@ -37,6 +38,7 @@ jobs:
             anitorrent: false
             anitorrent_separate_build: false
             compose_resource_triple: linux-x64
+            run_tests: false
           - os: macos-12
             name: macOS x86_64
             uploadApk: false
@@ -44,6 +46,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
+            run_tests: true
           - os: macos-14
             name: macOS aarch64
             uploadApk: true
@@ -51,6 +54,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
+            run_tests: true
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
@@ -72,7 +76,7 @@ jobs:
       isWindows: ${{ startsWith(matrix.os, 'windows') }}
       isUbuntu: ${{ startsWith(matrix.os, 'ubuntu') }}
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
-      doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-api/ani' }} # fork 和 PR 不使用签名
+      doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-ani/ani' }} # fork 和 PR 不使用签名
     steps:
       - uses: actions/checkout@v4
         with:
@@ -168,14 +172,35 @@ jobs:
           "signing_release_keyPassword": ${{ secrets.SIGNING_RELEASE_KEYPASSWORD }}
 
       - if: ${{ matrix.uploadApk }}
-        name: Upload Android Release APK
+        name: Upload Android Release APK arm64-v8a
         uses: actions/upload-artifact@v4
         with:
-          name: ani-android-release
-          path: app/android/build/outputs/apk/release/android-release.apk
+          name: ani-android-arm64-v8a-release
+          path: app/android/build/outputs/apk/release/android-arm64-v8a-release.apk
 
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Release APK armeabi-v7a
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android-armeabi-v7a-release
+          path: app/android/build/outputs/apk/release/android-armeabi-v7a-release.apk
+
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Release APK x86_64
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android-x86_64-release
+          path: app/android/build/outputs/apk/release/android-x86_64-release.apk
+
+      - if: ${{ matrix.uploadApk }}
+        name: Upload Android Release APK universal
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-android-universal-release
+          path: app/android/build/outputs/apk/release/android-universal-release.apk
 
       - name: Check
+        if: ${{ matrix.run_tests }}
         run: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package Desktop

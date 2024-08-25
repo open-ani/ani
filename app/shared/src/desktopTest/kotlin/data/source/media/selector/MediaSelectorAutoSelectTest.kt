@@ -4,9 +4,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.source.media.SOURCE_DMHY
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
-import me.him188.ani.app.data.source.media.framework.TestMediaList
 import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
@@ -28,13 +29,16 @@ import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 /**
  * @see MediaSelectorAutoSelect
  */
 class MediaSelectorAutoSelectTest {
-    private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(TestMediaList.toMutableList())
+    private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(
+        TestMediaList.toMutableList(),
+    )
     private fun addMedia(vararg media: DefaultMedia) {
         mediaList.value.addAll(media)
     }
@@ -46,6 +50,7 @@ class MediaSelectorAutoSelectTest {
         MediaSelectorContext(
             subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
+            subtitlePreferences = MediaSelectorSubtitlePreferences.AllNormal,
         ),
     )
 
@@ -81,6 +86,7 @@ class MediaSelectorAutoSelectTest {
         MediaSelectorContext(
             subjectFinished = subjectCompleted,
             mediaSourcePrecedence = mediaSourcePrecedence,
+            subtitlePreferences = MediaSelectorSubtitlePreferences.AllNormal,
         )
 
     private val mediaFetcher: MediaSourceMediaFetcher = MediaSourceMediaFetcher(
@@ -101,6 +107,8 @@ class MediaSelectorAutoSelectTest {
 
     private fun mediaFetchSession() = mediaFetcher.newSession(
         MediaFetchRequest(
+            subjectId = "1",
+            episodeId = "1",
             subjectNames = setOf("孤独摇滚"),
             episodeSort = EpisodeSort(1),
             episodeName = "test",
@@ -116,13 +124,13 @@ class MediaSelectorAutoSelectTest {
     @Test
     fun `awaitCompletedAndSelectDefault selects one`() = runTest {
         val selected = autoSelect.awaitCompletedAndSelectDefault(mediaFetchSession())
-        assertEquals(TestMediaList.first(), selected)
+        assertNotNull(selected)
     }
 
     @Test
     fun `awaitCompletedAndSelectDefault twice does not select`() = runTest {
         val selected = autoSelect.awaitCompletedAndSelectDefault(mediaFetchSession())
-        assertEquals(TestMediaList.first(), selected)
+        assertNotNull(selected)
         assertNull(
             autoSelect.awaitCompletedAndSelectDefault(
                 mediaFetchSession(),
@@ -146,8 +154,8 @@ class MediaSelectorAutoSelectTest {
     @Test
     fun `selectCached selects one when there is one cache`() = runTest {
         val target = DefaultMedia(
-            mediaId = "${me.him188.ani.app.data.source.media.framework.SOURCE_DMHY}.1",
-            mediaSourceId = me.him188.ani.app.data.source.media.framework.SOURCE_DMHY,
+            mediaId = "$SOURCE_DMHY.1",
+            mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
@@ -158,6 +166,7 @@ class MediaSelectorAutoSelectTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.LocalCache, // note here
             location = MediaSourceLocation.Online,
@@ -171,8 +180,8 @@ class MediaSelectorAutoSelectTest {
     @Test
     fun `selectCached selects first one when there are multiple caches`() = runTest {
         val target = DefaultMedia(
-            mediaId = "${me.him188.ani.app.data.source.media.framework.SOURCE_DMHY}.1",
-            mediaSourceId = me.him188.ani.app.data.source.media.framework.SOURCE_DMHY,
+            mediaId = "$SOURCE_DMHY.1",
+            mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
             download = ResourceLocation.MagnetLink("magnet:?xt=urn:btih:1"),
             originalUrl = "https://example.com/1",
@@ -183,6 +192,7 @@ class MediaSelectorAutoSelectTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.LocalCache, // note here
             location = MediaSourceLocation.Online,

@@ -50,14 +50,15 @@ fun SettingsScope.TextFieldItem(
     value: String,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    description: @Composable (() -> Unit)? = null,
+    description: @Composable ((value: String) -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     onValueChangeCompleted: (value: String) -> Unit = {},
     inverseTitleDescription: Boolean = false,
     isErrorProvider: (value: String) -> Boolean = { false }, // calculated in a derivedState
     sanitizeValue: (value: String) -> String = { it },
-    textFieldDescription: @Composable (() -> Unit)? = description,
+    textFieldDescription: @Composable ((value: String) -> Unit)? = description,
+    exposedItem: @Composable (value: String) -> Unit = { Text(it) },
     extra: @Composable ColumnScope.(editingValue: MutableState<String>) -> Unit = {}
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
@@ -74,7 +75,7 @@ fun SettingsScope.TextFieldItem(
                 if (placeholder != null && value.isEmpty()) {
                     placeholder()
                 } else {
-                    Text(value)
+                    exposedItem(value)
                 }
             }
             ItemHeader(
@@ -123,7 +124,7 @@ fun SettingsScope.TextFieldItem(
                     onConfirm = onConfirm,
                     title = title,
                     confirmEnabled = !error,
-                    description = textFieldDescription,
+                    description = { textFieldDescription?.invoke(editingValue) },
                     extra = { extra(editingValueState) },
                 ) {
                     OutlinedTextField(

@@ -2,8 +2,8 @@ package me.him188.ani.app.data.source.media.cache.requester
 
 import kotlinx.coroutines.flow.StateFlow
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheEngine
-import me.him188.ani.app.data.source.media.cache.MediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.engine.MediaCacheEngine
+import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult
 import me.him188.ani.app.data.source.media.selector.MediaSelector

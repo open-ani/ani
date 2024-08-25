@@ -1,18 +1,28 @@
 package me.him188.ani.app.ui.subject.details
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Stable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
+import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
+import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.models.subject.SubjectProgressInfo
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
+import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.CommentLoader
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -20,15 +30,17 @@ import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListStateFactory
-import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressInfo
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressStateFactory
+import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 import me.him188.ani.app.ui.subject.rating.EditableRatingState
 import me.him188.ani.app.ui.subject.rating.RateRequest
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -40,6 +52,7 @@ class SubjectDetailsViewModel(
     private val browserNavigator: BrowserNavigator by inject()
     private val bangumiRelatedCharactersRepository: BangumiRelatedCharactersRepository by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val commentRepository: CommentRepository by inject()
 
     private val subjectInfo: SharedFlow<SubjectInfo> = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val subjectCollectionFlow = subjectManager.subjectCollectionFlow(subjectId).shareInBackground()
@@ -47,6 +60,9 @@ class SubjectDetailsViewModel(
     lateinit var navigator: AniNavigator
 
     val authState = AuthState()
+
+    private val subjectProgressInfoState = subjectCollectionFlow.map { SubjectProgressInfo.calculate(it) }
+        .produceState(null)
 
     val subjectProgressState = kotlin.run {
         SubjectProgressStateFactory(
@@ -57,8 +73,7 @@ class SubjectDetailsViewModel(
         ).run {
             SubjectProgressState(
                 stateOf(subjectId),
-                subjectCollectionFlow.map { SubjectProgressInfo.calculate(it) }
-                    .produceState(SubjectProgressInfo.Empty),
+                subjectProgressInfoState,
                 episodeProgressInfoList(subjectId).produceState(emptyList()),
                 onPlay,
             )
@@ -70,12 +85,18 @@ class SubjectDetailsViewModel(
             subjectInfo = subjectInfo,
             coverImageUrl = subjectInfo.map { it.imageLarge },
             selfCollectionType = subjectCollectionFlow.map { it.collectionType },
-            airingInfo = subjectCollectionFlow.map { it.airingInfo },
+            airingLabelState = AiringLabelState(
+                subjectCollectionFlow.map { it.airingInfo }.produceState(null),
+                subjectProgressInfoState,
+            ),
             persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
             }.onCompletion { if (it != null) emit(emptyList()) },
             characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
                 RelatedCharacterInfo.sortList(it)
+            },
+            relatedSubjects = bangumiRelatedCharactersRepository.relatedSubjectsFlow(subjectId).map {
+                RelatedSubjectInfo.sortList(it)
             },
             parentCoroutineContext = backgroundScope.coroutineContext,
         )
@@ -101,7 +122,11 @@ class SubjectDetailsViewModel(
         selfCollectionType = subjectCollectionFlow
             .map { it.collectionType }
             .produceState(UnifiedCollectionType.NOT_COLLECTED),
-        hasAnyUnwatched = { episodeListState.hasAnyUnwatched },
+        hasAnyUnwatched = hasAnyUnwatched@{
+            val collections = subjectManager.episodeCollectionsFlow(subjectId)
+                .flowOn(Dispatchers.Default).firstOrNull() ?: return@hasAnyUnwatched true
+            collections.any { !it.type.isDoneOrDropped() }
+        },
         onSetSelfCollectionType = { subjectManager.setSubjectCollectionType(subjectId, it) },
         onSetAllEpisodesWatched = {
             subjectManager.setAllEpisodesWatched(subjectId)
@@ -127,6 +152,25 @@ class SubjectDetailsViewModel(
             )
         },
         backgroundScope,
+    )
+
+    val detailsTabLazyListState = LazyListState()
+    val commentTabLazyListState = LazyListState()
+
+    private val subjectCommentLoader = CommentLoader.createForSubject(
+        subjectId = flowOf(subjectId),
+        coroutineContext = backgroundScope.coroutineContext,
+        subjectCommentSource = { commentRepository.getSubjectComments(it) },
+    )
+
+    val subjectCommentState: CommentState = CommentState(
+        sourceVersion = subjectCommentLoader.sourceVersion.produceState(null),
+        list = subjectCommentLoader.list.produceState(emptyList()),
+        hasMore = subjectCommentLoader.hasFinished.map { !it }.produceState(true),
+        onReload = { subjectCommentLoader.reload() },
+        onLoadMore = { subjectCommentLoader.loadMore() },
+        onSubmitCommentReaction = { _, _ -> },
+        backgroundScope = backgroundScope,
     )
 
     fun browseSubjectBangumi(context: ContextMP) {

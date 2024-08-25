@@ -49,7 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.session.launchAuthorize
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
@@ -63,6 +62,7 @@ import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.platform.window.plus
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
+import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
@@ -74,6 +74,7 @@ import me.him188.ani.app.ui.profile.ProfilePage
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.collection.CollectionPage
+import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.FailedToInstallDialog
@@ -175,17 +176,21 @@ private fun HomeSceneLandscape(
                         Modifier.desktopTitleBarPadding().padding(top = 16.dp).weight(1f),
                         header = {
                             val vm = rememberViewModel { AccountViewModel() }
-                            val user = vm.selfInfo
-                            if (vm.authState.isKnownLoggedOut) {
-                                val navigator = LocalNavigator.current
-                                TextButton({ vm.launchAuthorize(navigator = navigator) }) {
-                                    Text("登录")
-                                }
-                            } else {
+                            if (vm.authState.isLoading || vm.authState.isKnownLoggedIn) {
+                                // 加载中时展示 placeholder
                                 AvatarImage(
-                                    url = user?.avatarUrl,
-                                    Modifier.size(48.dp).clip(CircleShape).placeholder(user == null),
+                                    url = vm.selfInfo?.avatarUrl,
+                                    Modifier.size(48.dp).clip(CircleShape).placeholder(vm.selfInfo == null),
                                 )
+                            } else {
+                                if (vm.authState.isKnownGuest) {
+                                    val navigator = LocalNavigator.current
+                                    TextButton({ vm.authState.launchAuthorize(navigator) }) {
+                                        Text("登录")
+                                    }
+                                } else {
+                                    SessionTipsIcon(vm.authState, showLabel = false)
+                                }
                             }
                         },
                     ) {
@@ -274,6 +279,7 @@ private fun HomeSceneLandscape(
                         )
 
                         2 -> CacheManagementPage(
+                            rememberViewModel { CacheManagementViewModel(navigator) },
                             Modifier.fillMaxSize(),
                             contentWindowInsets = insets,
                         )

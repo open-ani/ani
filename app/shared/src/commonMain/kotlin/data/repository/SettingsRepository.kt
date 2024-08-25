@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.DanmakuSettings
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
@@ -37,6 +38,7 @@ import me.him188.ani.utils.logging.logger
 interface SettingsRepository {
     val danmakuEnabled: Settings<Boolean>
     val danmakuConfig: Settings<DanmakuConfig>
+    val danmakuFilterConfig: Settings<DanmakuFilterConfig>
 
     val mediaSelectorSettings: Settings<MediaSelectorSettings>
 
@@ -141,6 +143,12 @@ class PreferencesRepositoryImpl(
     override val danmakuEnabled: Settings<Boolean> = BooleanPreference("danmaku_enabled", default = true)
     override val danmakuConfig: Settings<DanmakuConfig> =
         SerializablePreference("danmaku_config", DanmakuConfigSerializer, default = { DanmakuConfig.Default })
+    override val danmakuFilterConfig: Settings<DanmakuFilterConfig> =
+        SerializablePreference(
+            "danmaku_filter_config",
+            DanmakuFilterConfig.serializer(),
+            default = { DanmakuFilterConfig.Default },
+        )
     override val mediaSelectorSettings: Settings<MediaSelectorSettings> = SerializablePreference(
         "mediaSelectorSettings",
         MediaSelectorSettings.serializer(),

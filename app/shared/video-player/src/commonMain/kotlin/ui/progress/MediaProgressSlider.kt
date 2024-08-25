@@ -1,5 +1,6 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
@@ -18,6 +19,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -37,7 +39,10 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -45,17 +50,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
-import me.him188.ani.app.platform.Platform
+import kotlinx.collections.immutable.ImmutableList
 import me.him188.ani.app.platform.PlatformPopupProperties
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
-import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
+import me.him188.ani.app.videoplayer.ui.state.Chapter
 import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
@@ -63,6 +64,9 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+
+internal const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
+internal const val TAG_PROGRESS_SLIDER = "ProgressSlider"
 
 /**
  * 播放器进度滑块的状态.
@@ -76,6 +80,7 @@ import kotlin.math.roundToLong
 class MediaProgressSliderState(
     currentPositionMillis: () -> Long,
     totalDurationMillis: () -> Long,
+    chapters: State<ImmutableList<Chapter>>,
     /**
      * 当用户正在拖动进度条时触发. 每有一个 change 都会调用.
      */
@@ -87,8 +92,13 @@ class MediaProgressSliderState(
 ) {
     val currentPositionMillis: Long by derivedStateOf(currentPositionMillis)
     val totalDurationMillis: Long by derivedStateOf(totalDurationMillis)
+    val chapters by chapters
 
     private var previewPositionRatio: Float by mutableFloatStateOf(Float.NaN)
+
+    val isPreviewing: Boolean by derivedStateOf {
+        !previewPositionRatio.isNaN()
+    }
 
     /**
      * Sets the slider to move to the given position.
@@ -133,16 +143,21 @@ fun rememberMediaProgressSliderState(
     onPreviewFinished: (positionMillis: Long) -> Unit,
 ): MediaProgressSliderState {
     val currentPosition by playerState.currentPositionMillis.collectAsStateWithLifecycle()
-    val totalDuration by remember(playerState) {
-        playerState.videoProperties.filterNotNull().map { it.durationMillis }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(0L)
+    val videoProperties by playerState.videoProperties.collectAsStateWithLifecycle()
+    val totalDuration by remember {
+        derivedStateOf {
+            videoProperties?.durationMillis ?: 0L
+        }
+    }
 
     val onPreviewUpdated by rememberUpdatedState(onPreview)
     val onPreviewFinishedUpdated by rememberUpdatedState(onPreviewFinished)
+    val chapters = playerState.chapters.collectAsStateWithLifecycle()
     return remember {
         MediaProgressSliderState(
             { currentPosition },
             { totalDuration },
+            chapters,
             onPreviewUpdated,
             onPreviewFinishedUpdated,
         )
@@ -162,9 +177,11 @@ fun MediaProgressSlider(
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
     downloadingColor: Color = Color.Yellow,
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
-    stopColor: Color = aniDarkColorTheme().primary,
+    chapterColor: Color = aniDarkColorTheme().onSurface,
     previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
     previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
+    enabled: Boolean = true,
+    showPreviewTimeTextOnThumb: Boolean = true,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
 //        drawCircle(
 //            MaterialTheme.colorScheme.primary,
@@ -175,7 +192,8 @@ fun MediaProgressSlider(
 ) {
     Box(
         modifier.fillMaxWidth()
-            .height(24.dp),
+            .height(24.dp)
+            .testTag(TAG_PROGRESS_SLIDER),
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {
@@ -227,19 +245,37 @@ fun MediaProgressSlider(
                 )
             }
 
-            Canvas(Modifier.align(Alignment.CenterEnd).padding(end = 4.dp)) {
-                // draw stop
-                drawCircle(
-                    stopColor,
-                    radius = 2.dp.toPx(),
-                    blendMode = BlendMode.Src, // override background
-                )
+            Canvas(Modifier.matchParentSize()) {
+                if (state.totalDurationMillis == 0L) return@Canvas
+                state.chapters.forEach {
+                    val percent = it.offsetMillis.toFloat().div(state.totalDurationMillis)
+                    drawCircle(
+                        color = chapterColor,
+                        radius = 2.dp.toPx(),
+                        center = Offset(size.width * percent, this.center.y),
+                        blendMode = BlendMode.Src, // override background
+                    )
+                }
             }
         }
 
         var mousePosX by rememberSaveable { mutableStateOf(0f) }
         var thumbWidth by rememberSaveable { mutableIntStateOf(0) }
         var sliderWidth by rememberSaveable { mutableIntStateOf(0) }
+
+        fun renderPreviewTime(previewTimeMillis: Long): String {
+            state.chapters.find {
+                previewTimeMillis in it.offsetMillis..<it.offsetMillis + it.durationMillis
+            }?.let {
+                val chapterName = if (it.name.isBlank()) "" else it.name + "\n"
+                return chapterName + renderSeconds(
+                    previewTimeMillis / 1000,
+                    state.totalDurationMillis / 1000,
+                ).substringBefore(" ")
+            }
+
+            return renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+        }
 
         val previewTimeText by remember {
             derivedStateOf {
@@ -250,8 +286,16 @@ fun MediaProgressSlider(
                     val percent = mousePosX.minus(thumbWidth / 2).div(containerWidth)
                         .coerceIn(0f, 1f)
                     val previewTimeMillis = state.totalDurationMillis.times(percent).toLong()
-                    renderSeconds(previewTimeMillis / 1000, state.totalDurationMillis / 1000).substringBefore(" ")
+
+                    renderPreviewTime(previewTimeMillis)
                 }
+            }
+        }
+        val previewTimeOnThumb by remember(state) {
+            derivedStateOf {
+                val previewTimeMillis = state.totalDurationMillis.times(state.displayPositionRatio).toLong()
+
+                renderPreviewTime(previewTimeMillis)
             }
         }
         val hoverInteraction = remember { MutableInteractionSource() }
@@ -262,68 +306,12 @@ fun MediaProgressSlider(
                 isHovered || isPressed
             }
         }
-        val popupPositionProviderState = remember {
-            object : PopupPositionProvider {
-                override fun calculatePosition(
-                    anchorBounds: IntRect,
-                    windowSize: IntSize,
-                    layoutDirection: LayoutDirection,
-                    popupContentSize: IntSize
-                ): IntOffset {
-                    val anchor = IntRect(
-                        offset = IntOffset(
-                            mousePosX.roundToInt(),
-                            -popupContentSize.height,
-                        ) + anchorBounds.topLeft,
-                        size = IntSize.Zero,
-                    )
-                    val tooltipArea = IntRect(
-                        IntOffset(
-                            anchor.left - popupContentSize.width,
-                            anchor.top - popupContentSize.height,
-                        ),
-                        IntSize(
-                            popupContentSize.width * 2,
-                            popupContentSize.height * 2,
-                        ),
-                    )
-                    val position = Alignment.Center.align(popupContentSize, tooltipArea.size, layoutDirection)
-
-                    return IntOffset(
-                        x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
-                        y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
-                    )
-                }
-            }
-        }
         if (showPreviewTime) {
-            Popup(
-                properties = PlatformPopupProperties(usePlatformInsets = false),
-                popupPositionProvider = popupPositionProviderState,
+            ProgressSliderPreviewPopup(
+                offsetX = { mousePosX.roundToInt() },
+                previewTimeBackgroundColor = previewTimeBackgroundColor,
             ) {
-                Box(
-                    modifier = Modifier
-                        .clip(shape = CircleShape)
-                        .background(previewTimeBackgroundColor),
-                ) {
-                    Box(
-                        Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                            Text(
-                                // 占位置
-                                text = previewTimeText,
-                                Modifier.alpha(0f),
-                                fontFamily = FontFamily.Monospace,
-                            )
-                            Text(
-                                text = previewTimeText,
-                                color = previewTimeTextColor,
-                            )
-                        }
-                    }
-                }
+                PreviewTimeText(previewTimeText, previewTimeTextColor)
             }
         }
         // draw thumb
@@ -344,6 +332,16 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
+                
+                // 仅在 detached slider 上显示
+                if (state.isPreviewing && showPreviewTimeTextOnThumb) {
+                    ProgressSliderPreviewPopup(
+                        offsetX = { thumbWidth / 2 },
+                        previewTimeBackgroundColor = previewTimeBackgroundColor,
+                    ) {
+                        PreviewTimeText(previewTimeOnThumb, previewTimeTextColor)
+                    }
+                }
             },
             track = {
                 SliderDefaults.Track(
@@ -359,6 +357,7 @@ fun MediaProgressSlider(
             onValueChangeFinished = {
                 state.finishPreview()
             },
+            enabled = enabled,
             modifier = Modifier.fillMaxWidth().height(24.dp)
                 .onSizeChanged {
                     sliderWidth = it.width
@@ -366,16 +365,90 @@ fun MediaProgressSlider(
                 .hoverable(interactionSource = hoverInteraction)
                 .onPointerEventMultiplatform(PointerEventType.Move) {
                     mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
-                }
-                // for android
-                .ifThen(Platform.currentPlatform.isMobile()) {
-                    onPointerEventMultiplatform(PointerEventType.Press) {
-                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
-                        mousePosX = it.changes.firstOrNull()?.position?.x ?: return@onPointerEventMultiplatform
-                    }.onPointerEventMultiplatform(PointerEventType.Release) {
-                        isPressed = it.changes.firstOrNull()?.pressed ?: return@onPointerEventMultiplatform
-                    }
                 },
+        )
+    }
+}
+
+@Composable
+fun ProgressSliderPreviewPopup(
+    offsetX: () -> Int,
+    previewTimeBackgroundColor: Color,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    val popupPositionProviderState = remember {
+        object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect,
+                windowSize: IntSize,
+                layoutDirection: LayoutDirection,
+                popupContentSize: IntSize
+            ): IntOffset {
+                val anchor = IntRect(
+                    offset = IntOffset(
+                        offsetX(),
+                        with(density) { -8.dp.toPx().toInt() },
+                    ) + anchorBounds.topLeft,
+                    size = IntSize.Zero,
+                )
+                val tooltipArea = IntRect(
+                    IntOffset(
+                        anchor.left - popupContentSize.width,
+                        anchor.top - popupContentSize.height,
+                    ),
+                    IntSize(
+                        popupContentSize.width * 2,
+                        popupContentSize.height * 2,
+                    ),
+                )
+                val position = Alignment.TopCenter.align(popupContentSize, tooltipArea.size, layoutDirection)
+
+                return IntOffset(
+                    x = (tooltipArea.left + position.x).coerceIn(0, windowSize.width - popupContentSize.width),
+                    y = (tooltipArea.top + position.y).coerceIn(0, windowSize.height - popupContentSize.height),
+                )
+            }
+        }
+    }
+    Popup(
+        properties = PlatformPopupProperties(usePlatformInsets = false),
+        popupPositionProvider = popupPositionProviderState,
+    ) {
+        Box(
+            modifier = modifier
+                .testTag(TAG_PROGRESS_SLIDER_PREVIEW_POPUP)
+                .clip(shape = CircleShape)
+                .background(previewTimeBackgroundColor)
+                .animateContentSize(),
+        ) {
+            Box(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun PreviewTimeText(
+    text: String,
+    previewTimeTextColor: Color,
+) {
+    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+        Text(
+            // 占位置
+            text = text,
+            Modifier.alpha(0f),
+            fontFamily = FontFamily.Monospace,
+        )
+        Text(
+            text = text,
+            color = previewTimeTextColor,
+            textAlign = TextAlign.Center,
         )
     }
 }

@@ -11,7 +11,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.subject.collection.progress.PlaySubjectButton
+import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
 
 @Suppress("UnusedReceiverParameter")
@@ -27,7 +27,7 @@ fun SubjectDetailsDefaults.SelectEpisodeButtons(
         }
 
         Box(Modifier.weight(1f)) {
-            PlaySubjectButton(state, Modifier.fillMaxWidth())
+            SubjectProgressButton(state, Modifier.fillMaxWidth())
         }
     }
 }

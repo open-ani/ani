@@ -6,17 +6,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.preference.MyCollectionsSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.MediaCacheManager
+import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.SessionEvent
 import me.him188.ani.app.data.source.session.SessionManager
@@ -89,10 +90,10 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         // 必须不能有后台持续任务
         EditableSubjectCollectionTypeState(
             selfCollectionType = stateOf(subjectCollection.collectionType),
-            hasAnyUnwatched = {
-                subjectManager.episodeCollectionsFlow(subjectCollection.subjectId).first().any {
-                    !it.type.isDoneOrDropped()
-                }
+            hasAnyUnwatched = hasAnyUnwatched@{
+                val collections = subjectManager.episodeCollectionsFlow(subjectCollection.subjectId)
+                    .firstOrNull() ?: return@hasAnyUnwatched true
+                collections.any { !it.type.isDoneOrDropped() }
             },
             onSetSelfCollectionType = {
                 subjectManager.setSubjectCollectionType(subjectCollection.subjectId, it)
@@ -155,7 +156,14 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         }
 
         launchInBackground {
-            sessionManager.events.filterIsInstance<SessionEvent.UserActionEvent>().collect {
+            sessionManager.events.filter {
+                when (it) {
+                    SessionEvent.SwitchToGuest -> false
+                    SessionEvent.TokenRefreshed -> false
+                    SessionEvent.Login -> true
+                    SessionEvent.Logout -> true
+                }
+            }.collectLatest {
                 logger.info { "登录信息变更, 清空缓存" }
                 // 如果有变更登录, 清空缓存
                 for (collections in collectionsByType) {

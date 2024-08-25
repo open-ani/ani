@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.api.files
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -11,6 +12,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
+import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
@@ -20,6 +22,7 @@ import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
 import me.him188.ani.utils.io.bufferedSource
 import me.him188.ani.utils.io.isRegularFile
+import me.him188.ani.utils.io.length
 import me.him188.ani.utils.io.readAndDigest
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.info
@@ -59,7 +62,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
      * @return 一定是 [RandomAccess] List
      */
-    val pieces: List<Piece>? // TODO: remove nullable
+    val pieces: List<Piece>
 
     /**
      * 是否支持边下边播
@@ -87,7 +90,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     suspend fun resolveFile(): SystemPath
 
     @Throws(IOException::class)
-    fun resolveFileOrNull(): SystemPath?
+    fun resolveFileMaybeEmptyOrNull(): SystemPath?
 
     /**
      * Opens the downloaded file as a [SeekableInput].
@@ -100,7 +103,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
  *
  * 每个 [TorrentFileEntry] 可以有多个 [TorrentFileHandle], 仅当所有 [TorrentFileHandle] 都被关闭或 [pause] 后, 文件的下载才会被停止.
  */
-interface TorrentFileHandle : AutoCloseable {
+interface TorrentFileHandle {
     val entry: TorrentFileEntry
 
     /**
@@ -120,10 +123,14 @@ interface TorrentFileHandle : AutoCloseable {
 
     /**
      * 停止下载并关闭此 [TorrentFileHandle]. 后续将不能再 [resume] 或 [pause] 等.
+     *
+     * 若此 torrent 文件是其背后 [TorrentDownloadSession] 最后一个要关闭的 torrent 文件，则该函数会挂起，
+     * 直到 [TorrentDownloadSession] 完全关闭
+     *
      */
-    override fun close()
+    suspend fun close()
 
-    fun closeAndDelete()
+    suspend fun closeAndDelete()
 }
 
 // TorrentFilePieceMatcherTest
@@ -183,22 +190,27 @@ abstract class AbstractTorrentFileEntry(
         @Volatile
         private var closed = false
         private var closeException: Throwable? = null
+        private val closingDeferred by lazy { CompletableDeferred<Unit>() }
 
-        final override fun close(): Unit = synchronized(this) {
+        final override suspend fun close() {
             if (closed) return
-            closed = true
 
-            logger.info { "[$torrentId] Close handle $pathInTorrent, remove priority request" }
-            removePriority()
+            synchronized(this) {
+                if (closed) return
+                closed = true
 
-            if (isDebug) {
-                closeException = Exception("Stacktrace for close()")
+                logger.info { "[$torrentId] Close handle $pathInTorrent, remove priority request" }
+                removePriority()
+
+                if (isDebug) {
+                    closeException = Exception("Stacktrace for close()")
+                }
             }
 
             closeImpl()
         }
 
-        protected abstract fun closeImpl()
+        protected abstract suspend fun closeImpl()
 
         final override fun pause() {
             checkClosed()
@@ -276,8 +288,13 @@ abstract class AbstractTorrentFileEntry(
 
     protected suspend fun resolveDownloadingFile(): SystemPath {
         while (true) {
-            val file = withContext(Dispatchers.IO) { resolveFileOrNull() }
+            val file = withContext(Dispatchers.IO) { resolveFileMaybeEmptyOrNull() }
             if (file != null) {
+                if (withContext(Dispatchers.IO) { file.length() == 0L }) {
+                    logger.info { "$torrentId: Got file, but it's length is zero. Waiting..." }
+                    delay(1.seconds)
+                    continue
+                }
                 logger.info { "$torrentId: Get file: ${file.absolutePath}" }
                 return file
             }
@@ -289,7 +306,7 @@ abstract class AbstractTorrentFileEntry(
     }
 
     @Throws(IOException::class)
-    override fun resolveFileOrNull(): SystemPath? =
+    override fun resolveFileMaybeEmptyOrNull(): SystemPath? =
         saveDirectory.resolve(relativePath).takeIf { it.isRegularFile() }
 
     override fun toString(): String {
@@ -298,7 +315,7 @@ abstract class AbstractTorrentFileEntry(
 }
 
 fun TorrentFileEntry.findPieceByPieceIndex(pieceIndex: Int): Piece? {
-    val pieces = pieces ?: return null
+    val pieces = pieces
     val first = pieces.firstOrNull() ?: return null
     // Random-access get
     return pieces.getOrNull(pieceIndex - first.pieceIndex)?.also {

@@ -1,17 +1,11 @@
 package me.him188.ani.app.torrent.api.files
 
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.produceIn
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.selects.selectUnbiased
 import me.him188.ani.utils.coroutines.sampleWithInitial
 
 abstract class DownloadStats {
@@ -27,44 +21,11 @@ abstract class DownloadStats {
      * Bytes per second. `null` if not available, i.e. just started
      */
     open val downloadRate: Flow<Long>
-        get() = flow {
-            coroutineScope {
-                val window = arrayOf(0L, 0L, 0L, 0L, 0L)
-                var index = 0
-                var counted = 0
-                // 每秒记录一个值
-                val bytes = downloadedBytes
-                    .sampleWithInitial(1000)
-                    .produceIn(this)
-                val ticker = flow {
-                    while (true) {
-                        delay(1000)
-                        emit(Unit)
-                    }
-                }.produceIn(this)
+        get() = RateAverager.create(
+            downloadedBytes.sampleWithInitial(1000),
+        )
 
-                while (isActive) {
-                    selectUnbiased {
-                        bytes.onReceive {
-                            index = (index + 1) % window.size
-                            window[index] = it
-                            counted++
-                        }
-                        // 每秒计算平均变化速度
-                        ticker.onReceive {
-                            val current = window[index]
-                            val last = window[(index + 1) % window.size] // 下一个 index 也就是距今最远的一个
-                            if (counted == 0) {
-                                emit(0)
-                            } else {
-                                emit((current - last).coerceAtLeast(0) / counted.coerceAtMost(window.size))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+    // 对 file handle 来说, 这实际上是整个 torrent session 的速度 (包含其他文件)
     abstract val uploadRate: Flow<Long>
 
     /**

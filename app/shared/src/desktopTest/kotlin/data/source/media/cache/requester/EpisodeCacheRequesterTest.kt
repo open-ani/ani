@@ -8,18 +8,19 @@ import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.source.media.SOURCE_DMHY
+import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
-import me.him188.ani.app.data.source.media.cache.TestMediaCacheStorage
+import me.him188.ani.app.data.source.media.cache.storage.TestMediaCacheStorage
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.fetch.awaitCompletion
-import me.him188.ani.app.data.source.media.framework.SOURCE_DMHY
-import me.him188.ani.app.data.source.media.framework.TestMediaList
 import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
 import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
 import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
+import me.him188.ani.app.data.source.media.selector.MediaSelectorSubtitlePreferences
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.DefaultMedia
@@ -66,7 +67,9 @@ class EpisodeCacheRequesterTest {
         )
     }
 
-    private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(TestMediaList.toMutableList())
+    private val mediaList: MutableStateFlow<MutableList<DefaultMedia>> = MutableStateFlow(
+        TestMediaList.toMutableList(),
+    )
     private fun addMedia(vararg media: DefaultMedia) {
         mediaList.value.addAll(media)
     }
@@ -78,6 +81,7 @@ class EpisodeCacheRequesterTest {
         MediaSelectorContext(
             subjectFinished = false,
             mediaSourcePrecedence = emptyList(),
+            subtitlePreferences = MediaSelectorSubtitlePreferences.AllNormal,
         ),
     )
     private val storage = TestMediaCacheStorage()
@@ -205,6 +209,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "12",
                 episodeId = "0",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("ひ", "孤独摇滚"),
                 episodeSort = EpisodeSort(2), // using new
                 episodeEp = null,
@@ -281,6 +286,7 @@ class EpisodeCacheRequesterTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,
@@ -293,6 +299,9 @@ class EpisodeCacheRequesterTest {
                 MediaSourceKind.LocalCache,
             ),
             MediaCacheMetadata(
+                subjectId = "1",
+                episodeId = "1",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("孤独摇滚"),
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
@@ -326,6 +335,7 @@ class EpisodeCacheRequesterTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,
@@ -338,6 +348,9 @@ class EpisodeCacheRequesterTest {
                 MediaSourceKind.LocalCache,
             ),
             MediaCacheMetadata(
+                subjectId = "1",
+                episodeId = "1",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("孤独摇滚"),
                 episodeSort = EpisodeSort(1),
                 episodeEp = EpisodeSort(1),
@@ -371,6 +384,7 @@ class EpisodeCacheRequesterTest {
                 resolution = "1080P",
                 alliance = "桜都字幕组",
                 size = 122.megaBytes,
+                subtitleKind = null,
             ),
             kind = MediaSourceKind.BitTorrent,
             location = MediaSourceLocation.Online,
@@ -390,6 +404,9 @@ class EpisodeCacheRequesterTest {
             MediaSourceKind.LocalCache,
         ),
         MediaCacheMetadata(
+            subjectId = "1",
+            episodeId = "1",
+            subjectNameCN = "孤独摇滚",
             subjectNames = setOf("孤独摇滚"),
             episodeSort = episodeSort,
             episodeEp = episodeEp,
@@ -425,6 +442,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "12",
                 episodeId = "0",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("ひ", "孤独摇滚"),
                 episodeSort = EpisodeSort(2), // using new
                 episodeEp = null,
@@ -461,6 +479,7 @@ class EpisodeCacheRequesterTest {
             MediaCacheMetadata(
                 subjectId = "12",
                 episodeId = "0",
+                subjectNameCN = "孤独摇滚",
                 subjectNames = setOf("ひ", "孤独摇滚"),
                 episodeSort = EpisodeSort(2), // using new
                 episodeEp = null,

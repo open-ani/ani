@@ -107,7 +107,7 @@ void session_t::start(const session_settings_t &settings) {
     s.set_bool(settings_pack::enable_lsd, true);
 
     s.set_int(settings_pack::download_rate_limit, settings.download_rate_limit);
-    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit); // 1MB/s
+    s.set_int(settings_pack::upload_rate_limit, settings.upload_rate_limit);
 
     s.set_int(settings_pack::active_downloads, 8);
     s.set_int(settings_pack::active_seeds, settings.active_seeds);
@@ -173,66 +173,6 @@ void session_t::resume() const {
     guard_global_lock;
     if (const auto session = session_; session && session->is_valid()) {
         session->resume();
-    }
-}
-
-[[nodiscard]] std::string
-session_t::fetch_magnet(const std::string &uri, const int timeout_seconds,
-                        const std::string &save_path) const { // NOLINT(*-unnecessary-value-param)
-    function_printer_t _fp("session_t::fetch_magnet");
-    guard_global_lock;
-    const auto fn = "[anilt::fetch_magnet]: ";
-    std::cerr << fn << uri << std::endl;
-
-    const std::string &magnet_uri = uri;
-
-    auto session_ptr = session_;
-    if (!session_ptr || !session_ptr->is_valid()) {
-        std::cerr << fn << "session_ is nullptr!" << std::endl;
-        return "";
-    }
-    lt::session &session = *session_ptr;
-
-    lt::add_torrent_params params = lt::parse_magnet_uri(magnet_uri);
-    params.save_path = save_path; // specify the save path
-
-    // Check if the torrent is already in the session
-    lt::sha1_hash info_hash = params.info_hashes.v1; // Assuming v1, adjust if using v2
-    lt::torrent_handle existing_handle = session.find_torrent(info_hash);
-
-    if (existing_handle.is_valid()) {
-        std::cerr << fn << "Torrent already added. Using exisiting file" << std::endl;
-        if (const auto file = existing_handle.torrent_file()) {
-            return compute_torrent_hash(file);
-        }
-        std::cerr << fn << "existing_handle.torrent_file() returned null" << std::endl;
-        return "";
-    }
-
-    const auto start_time = std::chrono::high_resolution_clock::now();
-
-    lt::torrent_handle handle = session.add_torrent(params);
-
-    while (true) {
-        std::vector<lt::alert *> alerts;
-        session.pop_alerts(&alerts);
-
-        for (lt::alert *alert: alerts) {
-            if (lt::alert_cast<lt::add_torrent_alert>(alert)) {
-            } else if (auto md = lt::alert_cast<lt::metadata_received_alert>(alert)) {
-                std::cerr << fn << "Metadata received, computing hash and return" << std::endl;
-                return compute_torrent_hash(md->handle.torrent_file());
-            }
-        }
-
-
-        const auto current_time = std::chrono::high_resolution_clock::now();
-        if (std::chrono::duration_cast<std::chrono::seconds>(current_time - start_time).count() >= timeout_seconds) {
-            std::cerr << "Timeout reached." << std::endl;
-            return "";
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
 

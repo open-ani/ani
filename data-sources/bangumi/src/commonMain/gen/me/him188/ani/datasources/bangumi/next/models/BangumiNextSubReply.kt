@@ -20,7 +20,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param createdAt
  * @param creator
@@ -28,7 +28,7 @@ import kotlinx.serialization.Serializable
  * @param isFriend
  * @param reactions
  * @param state
- * @param text
+ * @param text 
  */
 @Serializable
 
