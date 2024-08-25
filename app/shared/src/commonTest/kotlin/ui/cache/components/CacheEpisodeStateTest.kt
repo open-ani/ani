@@ -23,7 +23,7 @@ class CacheEpisodeStateTest {
 
         @Test
         fun `progress unavailable - total size available`() =
-            check("200 MB", 200.megaBytes, null)
+            check("200.0 MB", 200.megaBytes, null)
 
         @Test
         fun `progress available - total size unavailable`() =
@@ -31,7 +31,7 @@ class CacheEpisodeStateTest {
 
         @Test
         fun `all available`() =
-            check("100 MB / 200 MB", 200.megaBytes, 0.5f)
+            check("100.0 MB / 200.0 MB", 200.megaBytes, 0.5f)
 
         private fun check(expected: String?, total: FileSize, progress: Float?) {
             assertEquals(
@@ -92,7 +92,7 @@ class CacheEpisodeStateTest {
         ).run {
             assertEquals(false, isPaused)
             assertEquals(false, isFinished)
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals(null, progressText)
             assertEquals(Progress.Unspecified, progress)
             assertEquals(true, isProgressUnspecified)
@@ -108,7 +108,7 @@ class CacheEpisodeStateTest {
         ).run {
             assertEquals(false, isPaused)
             assertEquals(false, isFinished)
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals("10.0%", progressText)
             assertEquals(0.1f, progress.getOrNull())
             assertEquals(false, isProgressUnspecified)
@@ -124,7 +124,7 @@ class CacheEpisodeStateTest {
         ).run {
             assertEquals(false, isPaused)
             assertEquals(true, isFinished)
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals(null, progressText)
             assertEquals(1f, progress.getOrNull())
             assertEquals(false, isProgressUnspecified)
@@ -138,18 +138,18 @@ class CacheEpisodeStateTest {
             downloadSpeed = 100.megaBytes,
             progress = 0.1f.toProgress(),
         ).run {
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals("10.0%", progressText)
-            assertEquals("100 MB/s", speedText)
+            assertEquals("100.0 MB/s", speedText)
         }
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
             progress = 0.1f.toProgress(),
         ).run {
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals("10.0%", progressText)
-            assertEquals("100 MB/s", speedText)
+            assertEquals("100.0 MB/s", speedText)
         }
     }
 
@@ -160,7 +160,7 @@ class CacheEpisodeStateTest {
             downloadSpeed = 100.megaBytes,
             progress = 1f.toProgress(),
         ).run {
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals(null, progressText)
             assertEquals(null, speedText)
         }
@@ -169,7 +169,7 @@ class CacheEpisodeStateTest {
             downloadSpeed = 100.megaBytes,
             progress = 1f.toProgress(),
         ).run {
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals(null, progressText)
             assertEquals(null, speedText)
         }
@@ -178,7 +178,7 @@ class CacheEpisodeStateTest {
             downloadSpeed = 100.megaBytes,
             progress = 2f.toProgress(),
         ).run {
-            assertEquals("200 MB", sizeText)
+            assertEquals("200.0 MB", sizeText)
             assertEquals(null, progressText)
             assertEquals(null, speedText)
         }
