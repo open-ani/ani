@@ -68,34 +68,19 @@ abstract class MediaCacheManager(
                 }
             }
 
-            when {
-                hasAnyCached != null -> {
-                    emitAll(
-                        hasAnyCached.fileStats.map {
+            val target = hasAnyCached ?: hasAnyCaching
+            if (target == null) {
+                emit(EpisodeCacheStatus.NotCached)
+            } else {
+                emitAll(
+                    target.fileStats.map {
+                        if (it.downloadProgress.isFinished) {
                             EpisodeCacheStatus.Cached(totalSize = it.totalSize)
-                        },
-                    )
-                }
-
-                hasAnyCaching != null -> {
-                    emitAll(
-                        hasAnyCaching.fileStats.map {
-                            val progress = it.downloadProgress
-                            if (progress.isFinished) {
-                                EpisodeCacheStatus.Cached(it.totalSize)
-                            } else {
-                                EpisodeCacheStatus.Caching(
-                                    progress = progress,
-                                    totalSize = it.totalSize,
-                                )
-                            }
-                        },
-                    )
-                }
-
-                else -> {
-                    emit(EpisodeCacheStatus.NotCached)
-                }
+                        } else {
+                            EpisodeCacheStatus.Caching(progress = it.downloadProgress, totalSize = it.totalSize)
+                        }
+                    },
+                )
             }
         }.flowOn(Dispatchers.Default)
     }
