@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.selects.select
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.concurrent.Volatile
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * 平均速度计算工具.
@@ -133,8 +134,8 @@ fun Flow<Long>.averageRate(
     windowSize: Int = 5,
     tickerFlow: Flow<Unit> = flow {
         while (true) {
-            delay(1000)
             emit(Unit)
+            delay(1.seconds)
         }
     },
 ): Flow<Long> = flow {
