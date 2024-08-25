@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -18,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +43,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -52,9 +51,9 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ClickableText
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToInt
 
 @Composable
 fun RichText(
@@ -176,7 +175,7 @@ object RichTextDefaults {
             return maskState[maskIndex]
         }
     }
-    
+
     @Composable
     fun AnnotatedText(
         slice: List<UIRichElement.Annotated>,
@@ -192,7 +191,7 @@ object RichTextDefaults {
 
         val currentOnClick by rememberUpdatedState(onClick)
         val contentColor = LocalContentColor.current
-        
+
         val content = buildAnnotatedString {
             var currentLength = 0
 
@@ -330,7 +329,6 @@ object RichTextDefaults {
         )
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     @Composable
     fun Image(
         element: UIRichElement.Image,
@@ -338,32 +336,21 @@ object RichTextDefaults {
         onClick: () -> Unit
     ) {
         val context = LocalPlatformContext.current
-        val density = LocalDensity.current
-        
         var state by rememberSaveable { mutableIntStateOf(0) } // 0: loading, 1: success, 2: failed
-        var imageRealWidth by rememberSaveable { mutableFloatStateOf(0f) }
-        var imageRealHeight by rememberSaveable { mutableFloatStateOf(0f) }
-
 
         AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(element.imageUrl)
-                .crossfade(true)
-                .run {
-                    with(density) {
-                        if (state == 1) {
-                            if (imageRealWidth == 0f || imageRealHeight == 0f) this@run
-                            else size(
-                                imageRealWidth.dp.toPx().roundToInt(),
-                                imageRealHeight.dp.toPx().roundToInt(),
-                            )
-                        } else size(80.dp.toPx().roundToInt())
-                    }
-                }
-                .build(),
+            model = remember(element.imageUrl, context) {
+                ImageRequest.Builder(context)
+                    .data(element.imageUrl)
+                    .crossfade(true)
+                    .build()
+            },
             contentDescription = null,
             modifier = modifier
                 .padding(4.dp)
+                .ifThen(state != 1) {
+                    sizeIn(minWidth = 80.dp, minHeight = 80.dp)
+                }
                 .animateContentSize()
                 .placeholder(state == 0)
                 .clip(RoundedCornerShape(8.dp))
@@ -371,8 +358,6 @@ object RichTextDefaults {
             contentScale = ContentScale.Fit,
             onSuccess = {
                 if (state != 1) state = 1
-                if (imageRealWidth == 0f) imageRealWidth = it.result.image.width.toFloat()
-                if (imageRealHeight == 0f) imageRealHeight = it.result.image.height.toFloat()
             },
         )
     }
