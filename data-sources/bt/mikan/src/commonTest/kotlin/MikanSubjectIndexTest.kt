@@ -37,6 +37,7 @@ class MikanSubjectIndexTest {
             ),
             TopicCriteria.ANY,
             allowEpMatch = false, // doesn't matter
+            "",
         )
         assertEquals(318, list.size)
         assertTrue {
