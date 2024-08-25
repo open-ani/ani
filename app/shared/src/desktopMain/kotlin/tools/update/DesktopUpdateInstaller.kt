@@ -65,7 +65,8 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
         val copiedUpdateExecutable = appDir.resolve("ani_update.exe")
         updateExecutable.copyTo(copiedUpdateExecutable, true)
         
-        ProcessBuilder("cmd", "/c", "start", copiedUpdateExecutable.absolutePath, file.absolutePath, appDir.absolutePath)
+        ProcessBuilder("cmd", "/c", "start", "cmd", "/c", 
+            "\"", copiedUpdateExecutable.absolutePath, file.absolutePath, appDir.absolutePath, "\"")
             .directory(appDir)
             .start()
 
