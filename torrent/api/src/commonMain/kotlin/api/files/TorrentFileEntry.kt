@@ -291,18 +291,16 @@ abstract class AbstractTorrentFileEntry(
             val file = withContext(Dispatchers.IO) { resolveFileMaybeEmptyOrNull() }
             if (file != null) {
                 if (withContext(Dispatchers.IO) { file.length() == 0L }) {
-                    logger.info { "$torrentId: Got file, but it's length is zero. Waiting..." }
+                    logger.info { "[$torrentId][resolveDownloadingFile]: Got file, but it's length is zero. Waiting..." }
                     delay(1.seconds)
                     continue
                 }
-                logger.info { "$torrentId: Get file: ${file.absolutePath}" }
+                logger.info { "[$torrentId][resolveDownloadingFile]: Get file: ${file.absolutePath}" }
                 return file
             }
-            logger.info { "$torrentId: Still waiting to get file... saveDirectory: $saveDirectory" }
+            logger.info { "[$torrentId][resolveDownloadingFile]: Still waiting to get file... saveDirectory: $saveDirectory" }
             delay(1.seconds)
         }
-        @Suppress("UNREACHABLE_CODE") // compiler bug
-        error("")
     }
 
     @Throws(IOException::class)

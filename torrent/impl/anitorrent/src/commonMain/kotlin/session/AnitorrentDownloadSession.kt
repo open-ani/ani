@@ -295,11 +295,13 @@ class AnitorrentDownloadSession(
     }
 
     private fun reloadFilesAndInitializeIfNotYet() {
-        if (!actualTorrentInfo.isCompleted) {
+        if (actualTorrentInfo.isActive) {
             logger.info { "[$handleId] reloadFiles" }
             initializeTorrentInfo(
                 handle.reloadFile(),
             ) // split to multiple lines for debugging
+        } else {
+            logger.warn { "[$handleId] reloadFilesAndInitializeIfNotYet is called, but actualTorrentInfo is not active: $actualTorrentInfo" }
         }
     }
 

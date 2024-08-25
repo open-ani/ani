@@ -21,9 +21,7 @@ abstract class DownloadStats {
      * Bytes per second. `null` if not available, i.e. just started
      */
     open val downloadRate: Flow<Long>
-        get() = RateAverager.create(
-            downloadedBytes.sampleWithInitial(1000),
-        )
+        get() = downloadedBytes.sampleWithInitial(1000).averageRate()
 
     // 对 file handle 来说, 这实际上是整个 torrent session 的速度 (包含其他文件)
     abstract val uploadRate: Flow<Long>

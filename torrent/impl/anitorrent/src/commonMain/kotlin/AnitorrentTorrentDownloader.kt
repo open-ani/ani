@@ -203,26 +203,32 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
 
     private suspend inline fun <R> withHandleTaskQueue(crossinline block: suspend () -> R): R =
         sessionsLock.withLock { // 必须只能同时有一个任务在添加. see eventListener
-
             val queue = DisposableTaskQueue(this)
             check(handleTaskBuffer == null) { "handleTaskBuffer is not null" }
             handleTaskBuffer = queue
-            return kotlin.runCatching { block() }
-                .also {
-                    check(handleTaskBuffer == queue) {
-                        "handleTaskBuffer changed while executing block"
+            return try {
+                kotlin.runCatching { block() }
+                    .also {
+                        check(handleTaskBuffer == queue) {
+                            "handleTaskBuffer changed while executing block"
+                        }
                     }
-                }
-                .onSuccess {
-                    val size = queue.runAndDispose()
-                    logger.info { "withHandleTaskQueue: executed $size delayed tasks" }
-                    this.handleTaskBuffer = null
-                }
-                .onFailure {
-                    // drop all queued tasks
-                    this.handleTaskBuffer = null
-                }
-                .getOrThrow() // rethrow exception
+                    .onSuccess {
+                        try {
+                            val size = queue.runAndDispose()
+                            logger.info { "withHandleTaskQueue: executed $size delayed tasks" }
+                        } catch (e: Exception) {
+                            throw IllegalStateException(
+                                "Failed to run delayed tasks during withHandleTaskQueue, see cause",
+                                e,
+                            )
+                        }
+                    }
+                    .getOrThrow() // rethrow exception
+            } finally {
+                // May drop all queued tasks on exception
+                handleTaskBuffer = null
+            }
         }
 
     override suspend fun startDownload(

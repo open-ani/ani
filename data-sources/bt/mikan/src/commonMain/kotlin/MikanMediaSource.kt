@@ -144,7 +144,7 @@ abstract class AbstractMikanMediaSource(
             parameter("searchstr", query.subjectNameCN?.take(10))
         }
         return resp.bodyAsChannel().toSource().use {
-            parseRssTopicList(Xml.parse(it, baseUrl), query.toTopicCriteria(), allowEpMatch = false)
+            parseRssTopicList(Xml.parse(it, baseUrl), query.toTopicCriteria(), allowEpMatch = false, baseUrl)
         }.map {
             MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.FUZZY)
         }
@@ -175,7 +175,7 @@ abstract class AbstractMikanMediaSource(
 
         // https://mikanani.me/RSS/Bangumi?bangumiId=3060
         return client.get("$baseUrl/RSS/Bangumi?bangumiId=$subjectId").bodyAsChannel().toSource().use {
-            parseRssTopicList(Xml.parse(it, baseUrl), request.toTopicCriteria(), allowEpMatch = true)
+            parseRssTopicList(Xml.parse(it, baseUrl), request.toTopicCriteria(), allowEpMatch = true, baseUrl = baseUrl)
         }.map {
             MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.EXACT)
         }
@@ -219,7 +219,7 @@ abstract class AbstractMikanMediaSource(
     }
 
     companion object {
-        private fun parseDocument(document: Document, linkRegex: Regex): List<Topic> {
+        private fun parseDocument(document: Document, linkRegex: Regex, baseUrl: String): List<Topic> {
             val items = document.getElementsByTag("item")
 
             return items.map { element ->
@@ -243,10 +243,13 @@ abstract class AbstractMikanMediaSource(
                         .trim(),
                     author = null,
                     details = details.toTopicDetails(),
-                    originalLink = run {
+                    originalLink = kotlin.run {
                         element.getElementsByTag("link").text().takeIf { it.isNotBlank() }?.let { return@run it }
                         // Note: It looks like Jsoup failed to parse the xml. Debug and print `element` to see details.
                         linkRegex.find(element.toString())?.value // This should work well
+                    }?.let {
+                        if (it.startsWith("http")) it
+                        else "$baseUrl$it"
                     } ?: "",
                 )
             }
@@ -258,8 +261,9 @@ abstract class AbstractMikanMediaSource(
             document: Document,
             criteria: TopicCriteria,
             allowEpMatch: Boolean,
+            baseUrl: String,
         ): List<Topic> {
-            return parseDocument(document, linkRegex = linkRegex)
+            return parseDocument(document, linkRegex = linkRegex, baseUrl = baseUrl)
                 .filter { criteria.matches(it, allowEpMatch = allowEpMatch) }
         }
 

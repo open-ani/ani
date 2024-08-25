@@ -116,7 +116,9 @@ class PlayerLauncher(
                 logger.info { "Got new video source: $source, updating playerState" }
                 try {
                     playerState.setVideoSource(source)
-                    if (source != null) {
+                    if (source == null) {
+                        videoLoadingStateFlow.value = VideoLoadingState.Initial
+                    } else {
                         logger.info { "playerState.setVideoSource success" }
                         videoLoadingStateFlow.value = VideoLoadingState.Succeed(isBt = source is TorrentVideoSource)
                     }
