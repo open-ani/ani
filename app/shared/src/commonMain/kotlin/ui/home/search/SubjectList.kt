@@ -19,28 +19,21 @@
 package me.him188.ani.app.ui.home.search
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,22 +41,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.yield
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
 
 class SubjectPreviewListState(
     items: State<List<SubjectInfo>>,
@@ -72,8 +59,6 @@ class SubjectPreviewListState(
     backgroundScope: CoroutineScope,
 ) {
     val items by items
-
-    //    var hasMore by mutableStateOf(true)
     val hasMore by hasMore
 
     private val loadMoreTasker = MonoTasker(backgroundScope)
@@ -85,27 +70,6 @@ class SubjectPreviewListState(
             yield()
             onRequestMore()
         }
-
-//        if (!hasMore) return
-//
-//        loadMoreTasker.launch(start = CoroutineStart.UNDISPATCHED) {
-//            yield()
-//
-//            try {
-//                val nextPage = pagedSource.nextPageOrNull()
-//                if (nextPage == null) {
-//                    _hasMore.value = false
-//                } else {
-//                    _list.value += nextPage
-//                    _hasMore.value = true
-//                }
-//            } catch (e: Throwable) {
-//                _hasMore.value = false
-//                throw e
-//            } finally {
-//                _loading.value = false
-//            }
-//        }
     }
 }
 
@@ -118,36 +82,74 @@ fun SubjectPreviewColumn(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
 ) {
-    val lazyGridState = rememberLazyGridState()
     val layoutDirection = LocalLayoutDirection.current
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(360.dp),
         modifier.background(MaterialTheme.colorScheme.background),
-        state = lazyGridState,
         contentPadding = PaddingValues(
-            top = contentPadding.calculateTopPadding() + 8.dp,
-            bottom = contentPadding.calculateBottomPadding() + 8.dp,
-            start = contentPadding.calculateStartPadding(layoutDirection) + 8.dp,
-            end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp,
+            top = contentPadding.calculateTopPadding() + 20.dp,
+            bottom = contentPadding.calculateBottomPadding() + 20.dp,
+            start = contentPadding.calculateStartPadding(layoutDirection) + 20.dp,
+            end = contentPadding.calculateEndPadding(layoutDirection) + 20.dp,
 
             ),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalItemSpacing = 20.dp,
+        horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         // 用这个来让 (初始化时) 增加新的元素时, 保持滚动位置在最开始, 而不是到最后
-        item("dummy", span = { GridItemSpan(maxLineSpan) }) {}
+        item("dummy", span = StaggeredGridItemSpan.FullLine) {}
 
         items(state.items, key = { it.id }) { subject ->
             val navigator = LocalNavigator.current
             SubjectPreviewCard(
-                title = subject.displayName,
-                imageUrl = remember(subject.id) { subject.imageCommon },
+//                title = { Text(subject.displayName) },
+                imageUrl = subject.imageLarge,
+//                airingLabel = {
+//
+//
+//                    AiringLabel(
+//                        remember(subject) {
+//                            AiringLabelState(
+//                                stateOf(SubjectAiringInfo.computeFromSubjectInfo(subject)),
+//                                stateOf(SubjectProgressInfo.Start),
+//                            )
+//                        },
+//                    )
+//                },
                 onClick = { navigator.navigateSubjectDetails(subject.id) },
-                Modifier.animateItemPlacement().height(180.dp),
-            )
+                Modifier.animateItemPlacement(),
+            ) {
+                SubjectDetailsHeader(
+                    subject,
+                    subject.imageLarge,
+                    seasonTags = {},
+                    collectionData = {
+//                        SubjectDetailsDefaults.CollectionData(
+//                            collectionStats = subject.collection,
+//                        )
+                    },
+                    collectionAction = {
+
+                    },
+                    selectEpisodeButton = {},
+                    rating = {
+                        Button({}) {
+                            Text("查看详情")
+                        }
+//                        Rating(
+//                            rating = subject.ratingInfo,
+//                            selfRatingScore = 0,
+//                            onClick = {},
+//                            clickEnabled = false,
+//                        )
+                    },
+                    Modifier.padding(all = 16.dp),
+                    showLandscapeUI = false,
+                )
+            }
         }
 
-        item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
+        item("loading", span = StaggeredGridItemSpan.FullLine, contentType = "loading") {
             if (state.hasMore) {
                 SideEffect {
                     state.loadMore()
@@ -181,40 +183,32 @@ fun SubjectPreviewColumn(
  */
 @Composable
 fun SubjectPreviewCard(
-    title: String,
     imageUrl: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = MaterialTheme.shapes.large
     Card(
-        modifier
-            .shadow(2.dp, shape)
-            .clip(shape)
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(),
-                onClick = onClick,
-            ),
+        onClick,
+        modifier,
         shape = shape,
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
     ) {
-        Column {
-            AsyncImage(
-                imageUrl,
-                title,
-                Modifier.fillMaxWidth().height(120.dp).background(Color.LightGray),
-                contentScale = ContentScale.Crop,
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                title,
-                Modifier.padding(all = 8.dp),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-                style = MaterialTheme.typography.titleSmall,
-            )
+        Row {
+//            Card(shape = shape) {
+//                AsyncImage(
+//                    imageUrl,
+//                    null,
+//                    Modifier.fillMaxWidth()
+//                        .heightIn(min = 160.dp, max = 320.dp)
+//                        .background(Color.LightGray),
+//                    contentScale = ContentScale.Crop,
+//                )
+//            }
+
+            Column {
+                content()
+            }
         }
     }
 }

@@ -149,8 +149,13 @@ fun PreviewSubjectDetailsHeader(
         SubjectDetailsHeader(
             subjectInfo,
             TestCoverImage,
-            airingLabelState = remember {
-                AiringLabelState(stateOf(airingInfo), stateOf(progressInfo))
+            seasonTags = {
+                SubjectDetailsHeaderDefaults.SeasonTags(
+                    subjectInfo.airDate,
+                    remember {
+                        AiringLabelState(stateOf(airingInfo), stateOf(progressInfo))
+                    },
+                )
             },
             collectionData = {
                 SubjectDetailsDefaults.CollectionData(

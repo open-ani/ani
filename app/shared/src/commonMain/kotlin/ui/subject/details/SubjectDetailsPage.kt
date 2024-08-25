@@ -82,6 +82,7 @@ import me.him188.ani.app.ui.subject.details.components.SubjectBlurredBackground
 import me.him188.ani.app.ui.subject.details.components.SubjectCommentColumn
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
+import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeaderDefaults
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.subject.rating.EditableRating
 import moe.tlaster.precompose.navigation.BackHandler
@@ -97,7 +98,7 @@ fun SubjectDetailsScene(
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val browserNavigator = LocalBrowserNavigator.current
-    
+
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
         EpisodeListDialog(
@@ -306,7 +307,12 @@ fun SubjectDetailsPage(
                             SubjectDetailsHeader(
                                 state.info,
                                 state.coverImageUrl,
-                                airingLabelState = state.airingLabelState,
+                                seasonTags = {
+                                    SubjectDetailsHeaderDefaults.SeasonTags(
+                                        state.info.airDate,
+                                        state.airingLabelState,
+                                    )
+                                },
                                 collectionData = collectionData,
                                 collectionAction = collectionActions,
                                 selectEpisodeButton = selectEpisodeButton,

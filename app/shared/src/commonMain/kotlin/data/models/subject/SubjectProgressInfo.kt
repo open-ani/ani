@@ -49,6 +49,12 @@ data class SubjectProgressInfo(
             null,
         )
 
+        @Stable
+        val Start = SubjectProgressInfo(
+            ContinueWatchingStatus.Start,
+            null,
+        )
+
         fun calculate(
             collection: SubjectCollection,
         ): SubjectProgressInfo {

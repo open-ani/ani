@@ -217,7 +217,9 @@ fun Subject.toSubjectInfo(): SubjectInfo {
         tags = this.tags.map { Tag(it.first, it.second) }.sortedByDescending { it.count },
         imageCommon = this.images.landscapeCommon,
         imageLarge = this.images.largePoster,
-        ratingInfo = RatingInfo.Empty.copy(rank = rank),
+        ratingInfo = RatingInfo.Empty.copy(rank = rank, score = score.toString()),
+        airDateString = this.airDate,
+        eps = eps,
     )
 }
 

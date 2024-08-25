@@ -60,6 +60,8 @@ data class Subject(
     val sourceUrl: String, // 数据源
     val images: SubjectImages,
     val summary: String,
+    val airDate: String,
+    val eps: Int,
 )
 
 @Serializable(with = RatingScore.AsStringSerializer::class)

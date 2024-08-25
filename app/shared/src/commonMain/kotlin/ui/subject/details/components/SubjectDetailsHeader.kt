@@ -55,14 +55,15 @@ const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 internal fun SubjectDetailsHeader(
     info: SubjectInfo,
     coverImageUrl: String?,
-    airingLabelState: AiringLabelState,
+    seasonTags: @Composable RowScope.() -> Unit,
     collectionData: @Composable () -> Unit,
     collectionAction: @Composable () -> Unit,
-    selectEpisodeButton: @Composable BoxScope.() -> Unit,
+    selectEpisodeButton: @Composable (BoxScope.() -> Unit),
     rating: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    showLandscapeUI: Boolean = LocalLayoutMode.current.showLandscapeUI, // todo: not very good
 ) {
-    if (LocalLayoutMode.current.showLandscapeUI) {
+    if (showLandscapeUI) {
         SubjectDetailsHeaderWide(
             coverImageUrl = coverImageUrl,
             title = {
@@ -71,15 +72,7 @@ internal fun SubjectDetailsHeader(
             subtitle = {
                 Text(info.name)
             },
-            seasonTags = {
-                OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
-                AiringLabel(
-                    airingLabelState,
-                    Modifier.align(Alignment.CenterVertically),
-                    style = LocalTextStyle.current,
-                    progressColor = LocalContentColor.current,
-                )
-            },
+            seasonTags = seasonTags,
             collectionData = collectionData,
             collectionAction = collectionAction,
             selectEpisodeButton = selectEpisodeButton,
@@ -95,15 +88,7 @@ internal fun SubjectDetailsHeader(
             subtitle = {
                 Text(info.name)
             },
-            seasonTags = {
-                OutlinedTag { Text(renderSubjectSeason(info.airDate)) }
-                AiringLabel(
-                    airingLabelState,
-                    Modifier.align(Alignment.CenterVertically),
-                    style = LocalTextStyle.current,
-                    progressColor = LocalContentColor.current,
-                )
-            },
+            seasonTags = seasonTags,
             collectionData = collectionData,
             collectionAction = collectionAction,
             selectEpisodeButton = selectEpisodeButton,
@@ -184,7 +169,7 @@ fun SubjectDetailsHeaderCompact(
         }
 
         Row(
-            Modifier.padding(top = 16.dp).align(Alignment.Start),
+            Modifier.paddingIfNotEmpty(top = 16.dp).align(Alignment.Start),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
@@ -286,6 +271,28 @@ fun SubjectDetailsHeaderWide(
                     }
                 }
             }
+        }
+    }
+}
+
+object SubjectDetailsHeaderDefaults {
+    @Composable
+    fun SeasonTags(
+        airDate: PackedDate,
+        airingLabelState: AiringLabelState,
+        modifier: Modifier = Modifier,
+    ) {
+        FlowRow(
+            modifier,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+        ) {
+            OutlinedTag { Text(renderSubjectSeason(airDate)) }
+            AiringLabel(
+                airingLabelState,
+                style = LocalTextStyle.current,
+                progressColor = LocalContentColor.current,
+            )
         }
     }
 }

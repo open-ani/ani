@@ -10,7 +10,6 @@ import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjects200Response
 import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjectsRequest
 import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjectsRequest.Sort
 import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjectsRequestFilter
-import me.him188.ani.datasources.bangumi.models.BangumiSubject
 import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
@@ -75,10 +74,10 @@ class BangumiPagedSource(
             id = legaSub.id,
             originalName = legaSub.originalName,
             chineseName = legaSub.chineseName,
-            score = BigNum.ZERO,
-            rank = legaSub.rank.let { 0 },
+            score = legaSub.rating?.score?.let { BigNum(it) } ?: BigNum.ZERO,
+            rank = legaSub.rank ?: legaSub.rating?.rank ?: 0,
             tags = listOf(),
-            sourceUrl = legaSub.url.let { "" },
+            sourceUrl = legaSub.url.orEmpty(),
             images = SubjectImages(
                 landscapeCommon = BangumiClientImpl.getSubjectImageUrl(
                     legaSub.id,
@@ -90,6 +89,8 @@ class BangumiPagedSource(
                 ),
             ),
             summary = legaSub.summary,
+            airDate = legaSub.airDate,
+            eps = legaSub.eps,
         )
     }
 
@@ -113,22 +114,7 @@ private fun BangumiSearchSubjects200ResponseDataInner.toSubject(): Subject {
             largePoster = image,
         ),
         summary = summary,
-    )
-}
-
-private fun BangumiSubject.toSubject(): Subject {
-    return Subject(
-        id = id,
-        originalName = name,
-        chineseName = nameCn,
-        score = rating.score,
-        rank = rating.rank,
-        tags = tags.map { it.name to it.count },
-        sourceUrl = "",
-        images = SubjectImages(
-            landscapeCommon = images.common,
-            largePoster = images.large,
-        ),
-        summary = summary,
+        airDate = date,
+        eps = 0,
     )
 }
