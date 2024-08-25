@@ -15,8 +15,6 @@ import com.sun.jna.ptr.PointerByReference
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +41,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
@@ -65,23 +62,11 @@ import kotlin.time.Duration.Companion.seconds
 @Stable
 class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerState,
     AbstractPlayerState<VlcjData>(parentCoroutineContext) {
-    private companion object {
-        private val logger = logger<VlcjVideoPlayerState>()
-
-        init {
-            @OptIn(DelicateCoroutinesApi::class)
-            GlobalScope.launch {
-                try {
-                    NativeDiscovery().discover()
-                } catch (e: Throwable) {
-                    logger.error(e) { "Failed to discover vlcj native libraries" }
-                }
-            }
+    companion object {
+        fun prepareLibraries() {
+            NativeDiscovery().discover()
+            CallbackMediaPlayerComponent().release()
         }
-    }
-
-    init {
-        CallbackMediaPlayerComponent() // init libraries
     }
 
     val component = run {
