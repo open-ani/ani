@@ -42,6 +42,8 @@ import kotlin.jvm.JvmInline
 value class FileSize(
     val inBytes: Long,
 ) {
+    inline val isUnspecified: Boolean get() = this == Unspecified
+
     inline val inKiloBytes: Long get() = inKiloBytesDouble.toLong()
     inline val inMegaBytes: Long get() = inMegaBytesDouble.toLong()
     inline val inGigaBytes: Long get() = inGigaBytesDouble.toLong()

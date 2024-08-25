@@ -2,7 +2,7 @@ package me.him188.ani.app.videoplayer.data
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.io.IOException
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
@@ -20,21 +20,29 @@ interface VideoData {
      */
     val fileLength: Long // 用于匹配弹幕 (仅备选方案下), 一般用不到
 
-    /**
-     * The download speed in bytes per second.
-     *
-     * If this video data is not being downloaded, i.e. it is a local file,
-     * the flow emits [FileSize.Unspecified].
-     */
-    val downloadSpeed: Flow<FileSize>
+    data class Stats internal constructor(
+        /**
+         * The download speed in bytes per second.
+         *
+         * If this video data is not being downloaded, i.e. it is a local file,
+         * the flow emits [FileSize.Unspecified].
+         */
+        val downloadSpeed: FileSize,
 
-    /**
-     * The upload speed in bytes per second.
-     *
-     * If this video data is not being uploaded, i.e. it is a local file,
-     * the flow emits [FileSize.Unspecified].
-     */
-    val uploadRate: Flow<FileSize>
+        /**
+         * The upload speed in bytes per second.
+         *
+         * If this video data is not being uploaded, i.e. it is a local file,
+         * the flow emits [FileSize.Unspecified].
+         */
+        val uploadRate: FileSize,
+    ) {
+        companion object {
+            val Unspecified = Stats(FileSize.Unspecified, FileSize.Unspecified)
+        }
+    }
+
+    val networkStats: Flow<Stats>
 
     /**
      * 支持边下边播
@@ -64,8 +72,9 @@ fun emptyVideoData(): VideoData = EmptyVideoData
 private object EmptyVideoData : VideoData {
     override val filename: String get() = ""
     override val fileLength: Long get() = 0
-    override val downloadSpeed: Flow<FileSize> get() = emptyFlow()
-    override val uploadRate: Flow<FileSize> get() = emptyFlow()
+    override val networkStats: Flow<VideoData.Stats> =
+        flowOf(VideoData.Stats.Unspecified)
+
     override fun computeHash(): String? = null
     override suspend fun createInput(): SeekableInput = emptySeekableInput()
     override suspend fun close() {}

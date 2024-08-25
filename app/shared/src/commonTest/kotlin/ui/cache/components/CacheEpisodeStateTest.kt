@@ -3,6 +3,8 @@ package me.him188.ani.app.ui.cache.components
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import me.him188.ani.app.tools.Progress
+import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.datasources.api.EpisodeSort
@@ -54,7 +56,7 @@ class CacheEpisodeStateTest {
             else -> CacheEpisodePaused.IN_PROGRESS
         },
         downloadSpeed: FileSize = 100.megaBytes,
-        progress: Float? = 0.9f,
+        progress: Progress = 0.9f.toProgress(),
         totalSize: FileSize = 200.megaBytes,
     ): CacheEpisodeState {
         val state = mutableStateOf(initialPaused)
@@ -86,13 +88,13 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.IN_PROGRESS,
             downloadSpeed = 100.megaBytes,
-            progress = null,
+            progress = Progress.Unspecified,
         ).run {
             assertEquals(false, isPaused)
             assertEquals(false, isFinished)
             assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
-            assertEquals(0f, progress)
+            assertEquals(Progress.Unspecified, progress)
             assertEquals(true, isProgressUnspecified)
         }
     }
@@ -102,13 +104,13 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.IN_PROGRESS,
             downloadSpeed = 100.megaBytes,
-            progress = 0.1f,
+            progress = 0.1f.toProgress(),
         ).run {
             assertEquals(false, isPaused)
             assertEquals(false, isFinished)
             assertEquals("200 MB", sizeText)
             assertEquals("10.0%", progressText)
-            assertEquals(0.1f, progress)
+            assertEquals(0.1f, progress.getOrNull())
             assertEquals(false, isProgressUnspecified)
         }
     }
@@ -118,13 +120,13 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.IN_PROGRESS,
             downloadSpeed = 100.megaBytes,
-            progress = 1f,
+            progress = 1f.toProgress(),
         ).run {
             assertEquals(false, isPaused)
             assertEquals(true, isFinished)
             assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
-            assertEquals(1f, progress)
+            assertEquals(1f, progress.getOrNull())
             assertEquals(false, isProgressUnspecified)
         }
     }
@@ -134,7 +136,7 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.IN_PROGRESS,
             downloadSpeed = 100.megaBytes,
-            progress = 0.1f,
+            progress = 0.1f.toProgress(),
         ).run {
             assertEquals("200 MB", sizeText)
             assertEquals("10.0%", progressText)
@@ -143,7 +145,7 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
-            progress = 0.1f,
+            progress = 0.1f.toProgress(),
         ).run {
             assertEquals("200 MB", sizeText)
             assertEquals("10.0%", progressText)
@@ -156,7 +158,7 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.IN_PROGRESS,
             downloadSpeed = 100.megaBytes,
-            progress = 1f,
+            progress = 1f.toProgress(),
         ).run {
             assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
@@ -165,7 +167,7 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
-            progress = 1f,
+            progress = 1f.toProgress(),
         ).run {
             assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)
@@ -174,7 +176,7 @@ class CacheEpisodeStateTest {
         cacheEpisode(
             initialPaused = CacheEpisodePaused.PAUSED,
             downloadSpeed = 100.megaBytes,
-            progress = 2f,
+            progress = 2f.toProgress(),
         ).run {
             assertEquals("200 MB", sizeText)
             assertEquals(null, progressText)

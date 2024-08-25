@@ -6,7 +6,6 @@ import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.matcher.WebVideo
-import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SeekableInput
 
 class HttpStreamingVideoSource(
@@ -30,8 +29,7 @@ class HttpStreamingVideoData(
     override val filename: String
 ) : VideoData {
     override val fileLength: Long = 0
-    override val downloadSpeed: Flow<FileSize> = flowOf()
-    override val uploadRate: Flow<FileSize> = flowOf()
+    override val networkStats: Flow<VideoData.Stats> = flowOf(VideoData.Stats.Unspecified)
 
     override val supportsStreaming: Boolean get() = true
 

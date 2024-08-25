@@ -11,6 +11,8 @@ class SwigTorrentStats(
         get() = native.upload_payload_rate.toUInt().toLong()
     override val progress: Float
         get() = native.progress
+    override val totalPayloadDownload: Long
+        get() = native.total_payload_download
     override val totalPayloadUpload: Long
         get() = native.total_payload_upload
 }

@@ -8,10 +8,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import me.him188.ani.app.tools.Progress
+import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.ui.cache.TestCacheGroupSates
 import me.him188.ani.app.ui.cache.createTestCacheEpisode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -24,9 +25,9 @@ fun PreviewCacheGroupCardMissingTotalSize() = ProvideCompositionLocalsForPreview
         CacheEpisodeItem(
             createTestCacheEpisode(
                 1,
-                progress = 0.5f,
+                progress = 0.5f.toProgress(),
                 downloadSpeed = 233.megaBytes,
-                totalSize = FileSize.Unspecified,
+                totalSize = Unspecified,
             ),
         )
     }
@@ -40,7 +41,7 @@ fun PreviewCacheGroupCardMissingProgress() = ProvideCompositionLocalsForPreview 
         CacheEpisodeItem(
             createTestCacheEpisode(
                 1,
-                progress = null,
+                progress = Progress.Unspecified,
                 downloadSpeed = 233.megaBytes,
                 totalSize = 888.megaBytes,
             ),
@@ -56,7 +57,7 @@ fun PreviewCacheGroupCardMissingDownloadSpeed() = ProvideCompositionLocalsForPre
         CacheEpisodeItem(
             createTestCacheEpisode(
                 1,
-                progress = 0.3f,
+                progress = 0.3f.toProgress(),
                 downloadSpeed = Unspecified,
                 totalSize = 888.megaBytes,
             ),

@@ -1,7 +1,9 @@
 package me.him188.ani.app.data.source.media.cache
 
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -19,6 +21,7 @@ import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.torrent.anitorrent.session.AnitorrentDownloadSession
 import me.him188.ani.app.torrent.anitorrent.test.TestAnitorrentTorrentDownloader
+import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -496,6 +499,7 @@ class DirectoryMediaCacheStorageTest {
     // others
     ///////////////////////////////////////////////////////////////////////////
 
+
     /**
      * 持久化总上传量
      */
@@ -509,17 +513,18 @@ class DirectoryMediaCacheStorageTest {
             val cache =
                 storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
 
-            cache.getSession().overallStats.uploadedBytes.emit(100)
+            cache.getSession().sessionStats.emit(TorrentSession.Stats(0, 0, 0, 0, 0, 0f))
+            cache.getSession().sessionStats.emit { copy(uploadedBytes = 100) }
             runCurrent()
 
             assertEquals(100.bytes, dataStore.data.first().uploaded)
-            assertEquals(100.bytes, storage.stats.uploaded.first())
+            assertEquals(100.bytes, storage.getUploaded())
 
-            cache.getSession().overallStats.uploadedBytes.emit(200)
+            cache.getSession().sessionStats.emit { copy(uploadedBytes = 200) }
             runCurrent()
 
             assertEquals(200.bytes, dataStore.data.first().uploaded)
-            assertEquals(200.bytes, storage.stats.uploaded.first())
+            assertEquals(200.bytes, storage.getUploaded())
         }
         cleanup()
 
@@ -528,17 +533,24 @@ class DirectoryMediaCacheStorageTest {
         )
 
         assertEquals(200.bytes, dataStore.data.first().uploaded)
-        assertEquals(200.bytes, storage.stats.uploaded.first())
+        assertEquals(200.bytes, storage.getUploaded())
         kotlin.run {
             val cache =
                 storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
 
-            cache.getSession().overallStats.uploadedBytes.emit(150)
+            cache.getSession().sessionStats.emit { copy(uploadedBytes = 150) }
             runCurrent()
 
             assertEquals(350.bytes, dataStore.data.first().uploaded)
-            assertEquals(350.bytes, storage.stats.uploaded.first())
+            assertEquals(350.bytes, storage.getUploaded())
         }
         cleanup()
     }
+
+    private suspend fun DirectoryMediaCacheStorage.getUploaded() =
+        stats.map { it.uploaded }.first()
 }
+
+private suspend fun <T> MutableSharedFlow<T>.emit(
+    value: (T & Any).() -> T
+) = emit(value(replayCache.first()!!))

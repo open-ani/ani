@@ -44,6 +44,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.tools.Progress
+import me.him188.ani.app.tools.getOrZero
+import me.him188.ani.app.tools.toPercentageOrZero
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.interaction.clickableAndMouseRightClick
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
@@ -71,18 +74,22 @@ class CacheEpisodeState(
     @Immutable
     data class Stats(
         val downloadSpeed: FileSize,
-        val progress: Float?,
+        val progress: Progress,
         val totalSize: FileSize,
-    )
+    ) {
+        companion object {
+            val Unspecified = Stats(FileSize.Unspecified, Progress.Unspecified, FileSize.Unspecified)
+        }
+    }
 
     val hasValidSubjectAndEpisodeId get() = subjectId != 0 && episodeId != 0
 
-    val progress by derivedStateOf { stats.value.progress ?: 0f }
+    val progress by derivedStateOf { stats.value.progress }
 
     val screenShots by screenShots
 
     val isPaused by derivedStateOf { state.value == CacheEpisodePaused.PAUSED }
-    val isFinished by derivedStateOf { this.progress >= 1f }
+    val isFinished by derivedStateOf { stats.value.progress.isFinished }
 
     val totalSize: FileSize by derivedStateOf { stats.value.totalSize }
 
@@ -101,19 +108,18 @@ class CacheEpisodeState(
 
     val progressText by derivedStateOf {
         val value = stats.value.progress
-        if (value == null || this.isFinished) {
+        if (value.isUnspecified || this.isFinished) {
             null
         } else {
-            "${String.format1f(value * 100)}%"
+            "${String.format1f(value.toPercentageOrZero())}%"
         }
     }
 
     val speedText by derivedStateOf {
         val progressValue = stats.value.progress
         val speed = stats.value.downloadSpeed
-        if (progressValue != null) {
-            val isFinished = progressValue >= 1f
-            val showSpeed = !isFinished && speed != FileSize.Unspecified
+        if (!progressValue.isUnspecified) {
+            val showSpeed = !progressValue.isFinished && speed != FileSize.Unspecified
             if (showSpeed) {
                 return@derivedStateOf "${speed}/s"
             }
@@ -121,7 +127,7 @@ class CacheEpisodeState(
         null
     }
 
-    val isProgressUnspecified by derivedStateOf { stats.value.progress == null }
+    val isProgressUnspecified by derivedStateOf { stats.value.progress.isUnspecified }
 
     private val actionTasker = MonoTasker(backgroundScope)
 
@@ -257,7 +263,7 @@ fun CacheEpisodeItem(
                                 strokeCap = StrokeCap.Round,
                             )
                         } else {
-                            val progress by animateFloatAsState(state.progress)
+                            val progress by animateFloatAsState(state.progress.getOrZero())
                             LinearProgressIndicator(
                                 { progress },
                                 Modifier.fillMaxWidth(),

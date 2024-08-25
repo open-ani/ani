@@ -5,11 +5,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.media.cache.MediaStats
-import me.him188.ani.app.data.source.media.cache.emptyMediaStats
+import me.him188.ani.app.data.source.media.cache.engine.MediaStats
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
@@ -43,7 +43,7 @@ interface MediaCacheStorage : AutoCloseable {
     /**
      * 此存储的总体统计
      */
-    val stats: MediaStats
+    val stats: Flow<MediaStats>
 
     /**
      * A flow that subscribes on all the caches in the storage.
@@ -90,7 +90,7 @@ interface MediaCacheStorage : AutoCloseable {
  */
 val MediaCacheStorage.totalSize: Flow<FileSize>
     get() = listFlow.flatMapLatest { caches ->
-        combine(caches.map { it.totalSize }) { sizes ->
+        combine(caches.map { cache -> cache.fileStats.map { it.totalSize } }) { sizes ->
             sizes.sumOf { it.inBytes }.bytes
         }
     }
@@ -103,11 +103,6 @@ val MediaCacheStorage.count: Flow<Int>
 
 suspend inline fun MediaCacheStorage.contains(cache: MediaCache): Boolean = listFlow.first().any { it === cache }
 
-val MediaCacheStorage.anyCaching: Flow<Boolean>
-    get() = listFlow.flatMapLatest { caches ->
-        combine(caches.map { it.progress }) { array -> array.any { it < 1f } }
-    }
-
 class TestMediaCacheStorage : MediaCacheStorage {
     override val mediaSourceId: String
         get() = MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID
@@ -117,7 +112,7 @@ class TestMediaCacheStorage : MediaCacheStorage {
     override suspend fun restorePersistedCaches() {
     }
 
-    override val stats: MediaStats = emptyMediaStats()
+    override val stats: Flow<MediaStats> = flowOf(MediaStats.Unspecified)
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
         throw UnsupportedOperationException()

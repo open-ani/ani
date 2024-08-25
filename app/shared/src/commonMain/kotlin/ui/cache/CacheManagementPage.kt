@@ -39,12 +39,10 @@ import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.cache.MediaCacheState
-import me.him188.ani.app.data.source.media.cache.MediaStats
-import me.him188.ani.app.data.source.media.cache.downloadedSize
-import me.him188.ani.app.data.source.media.cache.emptyMediaStats
-import me.him188.ani.app.data.source.media.cache.sampled
-import me.him188.ani.app.data.source.media.cache.sum
+import me.him188.ani.app.data.source.media.cache.engine.MediaStats
+import me.him188.ani.app.data.source.media.cache.engine.sum
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.torrent.api.files.averageRate
 import me.him188.ani.app.ui.cache.components.CacheEpisodePaused
 import me.him188.ani.app.ui.cache.components.CacheEpisodeState
 import me.him188.ani.app.ui.cache.components.CacheGroupCard
@@ -62,6 +60,7 @@ import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.episodeIdInt
 import me.him188.ani.datasources.api.subjectIdInt
 import me.him188.ani.datasources.api.topic.FileSize
+import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.unwrapCached
 import me.him188.ani.utils.coroutines.sampleWithInitial
 import org.koin.core.component.KoinComponent
@@ -78,16 +77,13 @@ class CacheManagementViewModel(
     private val cacheManager: MediaCacheManager by inject()
     private val subjectManager: SubjectManager by inject()
 
-    val overallStats: MediaStats by cacheManager.enabledStorages.map { list ->
-        list.map { it.stats }.sum()
-    }.map {
-        it.sampled()
-    }.produceState(emptyMediaStats())
-    
     val lazyGridState: CacheGroupGridLayoutState = LazyStaggeredGridState()
 
     val state: CacheManagementState = CacheManagementState(
-        cacheManager.enabledStorages.flatMapLatest { storages ->
+        overallStats = cacheManager.enabledStorages.flatMapLatest { list ->
+            list.map { it.stats }.sum()
+        }.sampleWithInitial(1.seconds).produceState(MediaStats.Unspecified),
+        groups = cacheManager.enabledStorages.flatMapLatest { storages ->
             combine(storages.map { it.listFlow }) { it.asSequence().flatten().toList() }
                 .transformLatest { allCaches ->
                     supervisorScope {
@@ -129,15 +125,13 @@ class CacheManagementViewModel(
                 episodes = episodes.map { mediaCache ->
                     createCacheEpisode(mediaCache)
                 },
-                stats = combine(
-                    firstCache.sessionDownloadSpeed,
-                    firstCache.downloadedSize,
-                    firstCache.sessionUploadSpeed,
-                ) { downloadSpeed, downloadedSize, uploadSpeed ->
+                stats = firstCache.sessionStats.combine(
+                    firstCache.sessionStats.map { it.downloadedBytes.inBytes }.averageRate(),
+                ) { stats, downloadSpeed ->
                     CacheGroupState.Stats(
-                        downloadSpeed = downloadSpeed,
-                        downloadedSize = downloadedSize,
-                        uploadSpeed = uploadSpeed,
+                        downloadSpeed = downloadSpeed.bytes,
+                        downloadedSize = stats.downloadedBytes,
+                        uploadSpeed = stats.uploadSpeed,
                     )
                 }.sampleWithInitial(1.seconds)
                     .produceState(
@@ -174,18 +168,16 @@ class CacheManagementViewModel(
 //                    episodeScreenshotRepository.getScreenshots(mediaCache.metadata.)
 //            }.produceState(emptyList(), this),
             screenShots = stateOf(emptyList()),
-            stats = combine(
-                mediaCache.downloadSpeed,
-                mediaCache.progress,
-                mediaCache.totalSize,
-            ) { downloadSpeed, progress, totalSize ->
+            stats = mediaCache.fileStats.combine(
+                mediaCache.downloadSpeed.map { it.inBytes }.averageRate(),
+            ) { stats, downloadSpeed ->
                 CacheEpisodeState.Stats(
-                    downloadSpeed = downloadSpeed,
-                    progress = progress,
-                    totalSize = totalSize,
+                    downloadSpeed = downloadSpeed.bytes,
+                    progress = stats.downloadProgress,
+                    totalSize = stats.totalSize,
                 )
             }.sampleWithInitial(1.seconds)
-                .produceState(CacheEpisodeState.Stats(FileSize.Unspecified, null, FileSize.Unspecified), this),
+                .produceState(CacheEpisodeState.Stats.Unspecified, this),
             state = mediaCache.state.map {
                 when (it) {
                     MediaCacheState.IN_PROGRESS -> CacheEpisodePaused.IN_PROGRESS
@@ -210,8 +202,10 @@ class CacheManagementViewModel(
  */
 @Stable
 class CacheManagementState(
+    overallStats: State<MediaStats>,
     groups: State<List<CacheGroupState>>,
 ) {
+    val overallStats by overallStats
     val groups by groups
 }
 
@@ -227,7 +221,6 @@ fun CacheManagementPage(
 ) {
     CacheManagementPage(
         vm.state,
-        vm.overallStats,
         modifier = modifier,
         lazyGridState = vm.lazyGridState,
         showBack = showBack,
@@ -239,7 +232,6 @@ fun CacheManagementPage(
 @Composable
 fun CacheManagementPage(
     state: CacheManagementState,
-    overallStats: MediaStats,
     modifier: Modifier = Modifier,
     lazyGridState: CacheGroupGridLayoutState = rememberLazyStaggeredGridState(),
     showBack: Boolean = !isShowLandscapeUI(),
@@ -266,7 +258,7 @@ fun CacheManagementPage(
                 },
             ) {
                 CacheManagementOverallStats(
-                    overallStats,
+                    { state.overallStats },
                     Modifier
                         .padding(horizontal = 16.dp).padding(bottom = 16.dp)
                         .fillMaxWidth(),

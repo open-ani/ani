@@ -15,21 +15,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.cache.MediaStats
-import me.him188.ani.app.ui.cache.renderFileSize
-import me.him188.ani.app.ui.cache.renderSpeed
+import me.him188.ani.app.data.source.media.cache.engine.MediaStats
 import me.him188.ani.datasources.api.topic.FileSize
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 
 @Composable
 fun CacheManagementOverallStats(
-    stats: MediaStats,
+    stats: () -> MediaStats,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -42,12 +41,10 @@ fun CacheManagementOverallStats(
                 Text("总上传", style = MaterialTheme.typography.titleMedium)
             },
             speedText = {
-                val speed by stats.uploadRate.collectAsStateWithLifecycle(FileSize.Unspecified)
-                Text(renderSpeed(speed))
+                Text(renderSpeed(remember { derivedStateOf { stats().uploadSpeed } }.value))
             },
             totalText = {
-                val speed by stats.uploaded.collectAsStateWithLifecycle(FileSize.Unspecified)
-                Text(renderFileSize(speed))
+                Text(renderFileSize(remember { derivedStateOf { stats().uploaded } }.value))
             },
         )
 
@@ -57,12 +54,10 @@ fun CacheManagementOverallStats(
                 Text("总下载", style = MaterialTheme.typography.titleMedium)
             },
             speedText = {
-                val speed by stats.downloadRate.collectAsStateWithLifecycle(FileSize.Unspecified)
-                Text(renderSpeed(speed))
+                Text(renderSpeed(remember { derivedStateOf { stats().downloadSpeed } }.value))
             },
             totalText = {
-                val speed by stats.downloaded.collectAsStateWithLifecycle(FileSize.Unspecified)
-                Text(renderFileSize(speed))
+                Text(renderFileSize(remember { derivedStateOf { stats().downloaded } }.value))
             },
         )
     }
@@ -108,4 +103,21 @@ private fun Stat(
             }
         }
     }
+}
+
+
+@Stable
+private fun renderFileSize(size: FileSize): String {
+    if (size == FileSize.Unspecified) {
+        return ""
+    }
+    return "$size"
+}
+
+@Stable
+private fun renderSpeed(speed: FileSize): String {
+    if (speed == FileSize.Unspecified) {
+        return ""
+    }
+    return "$speed/s"
 }

@@ -54,6 +54,7 @@ import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.tools.getOrZero
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -375,12 +376,12 @@ fun EpisodeCacheActionIcon(
 
         is EpisodeCacheStatus.Caching -> {
             IconButton(onClick) {
-                val progressIsNull by remember(cacheStatus) {
+                val progressIsUnspecified by remember(cacheStatus) {
                     derivedStateOf {
-                        cacheStatus.progress == null
+                        cacheStatus.progress.isUnspecified
                     }
                 }
-                if (progressIsNull) {
+                if (progressIsUnspecified) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(progressIndicatorSize),
                         strokeWidth = strokeWidth,
@@ -388,7 +389,7 @@ fun EpisodeCacheActionIcon(
                     )
                 } else {
                     CircularProgressIndicator(
-                        progress = { cacheStatus.progress ?: 0f },
+                        progress = { cacheStatus.progress.getOrZero() },
                         modifier = Modifier.size(progressIndicatorSize),
                         strokeWidth = strokeWidth,
                         trackColor = trackColor,

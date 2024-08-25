@@ -8,19 +8,39 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
- * 下载管理器, 支持根据磁力链解析[种子信息][EncodedTorrentInfo], 然后根据种子信息创建下载会话 [TorrentDownloadSession].
+ * 下载管理器, 支持根据磁力链解析[种子信息][EncodedTorrentInfo], 然后根据种子信息创建下载会话 [TorrentSession].
  *
  * Must be closed when it is no longer needed.
  */
 interface TorrentDownloader : AutoCloseable {
     /**
-     * Total amount of bytes uploaded
+     * @see TorrentSession.Stats for comments
      */
-    val totalUploaded: Flow<Long>
-    val totalDownloaded: Flow<Long>
+    data class Stats(
+        val totalSize: Long,
+        /**
+         * 所有文件的下载字节数之和.
+         */
+        val downloadedBytes: Long,
+        /**
+         * Bytes per second.
+         */
+        val downloadSpeed: Long,
+        /**
+         * Bytes per second.
+         */
+        val uploadSpeed: Long,
+        /**
+         * Bytes per second.
+         */
+        val downloadProgress: Float,
+    )
 
-    val totalUploadRate: Flow<Long>
-    val totalDownloadRate: Flow<Long>
+    /**
+     * 所有任务合计的统计信息.
+     * @see TorrentSession.sessionStats
+     */
+    val totalStats: Flow<Stats>
 
     /**
      * Details about the underlying torrent library.
@@ -49,7 +69,7 @@ interface TorrentDownloader : AutoCloseable {
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
         overrideSaveDir: SystemPath? = null,
-    ): TorrentDownloadSession
+    ): TorrentSession
 
     fun getSaveDirForTorrent(
         data: EncodedTorrentInfo,
