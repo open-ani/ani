@@ -15,19 +15,16 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiIndexSubject
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param total
  * @param limit
  * @param offset
- * @param `data`
+ * @param `data` 
  */
 @Serializable
 

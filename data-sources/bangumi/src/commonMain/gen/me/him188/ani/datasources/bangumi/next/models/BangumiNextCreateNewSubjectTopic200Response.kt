@@ -13,25 +13,24 @@
     "UnusedImport",
 )
 
-package me.him188.ani.datasources.bangumi.models
+package me.him188.ani.datasources.bangumi.next.models
+
 
 import kotlinx.serialization.Required
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * 
  *
- * @param episode
- * @param type 
+ *
+ * @param id new topic id
  */
 @Serializable
 
-data class BangumiUserEpisodeCollection(
+data class BangumiNextCreateNewSubjectTopic200Response(
 
-    @SerialName(value = "episode") @Required val episode: BangumiEpisode,
-
-    @SerialName(value = "type") @Required val type: BangumiEpisodeCollectionType
+    /* new topic id */
+    @SerialName(value = "id") @Required val id: kotlin.Int
 
 )
 

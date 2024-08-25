@@ -82,7 +82,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Add a subject to Index
-     *
+     * 
      * @param indexId 目录 ID
      * @param bangumiIndexSubjectAddInfo  (optional)
      * @return void
@@ -115,6 +115,7 @@ open class DefaultApi : ApiClient {
     }
 
 
+
     /**
      * Collect index for current user
      * 为当前用户收藏一条目录
@@ -125,7 +126,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -149,7 +150,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Delete a subject from a Index
-     *
+     * 
      * @param indexId 目录 ID
      * @param subjectId 条目 ID
      * @return void
@@ -161,7 +162,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -186,7 +187,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Edit index&#39;s information
-     *
+     * 
      * @param indexId 目录 ID
      * @param bangumiIndexBasicInfo  (optional)
      * @return BangumiIndex
@@ -218,6 +219,7 @@ open class DefaultApi : ApiClient {
             localVariableAuthNames,
         ).wrap()
     }
+
 
 
     /**
@@ -258,6 +260,7 @@ open class DefaultApi : ApiClient {
     }
 
 
+
     /**
      * Get Character Detail
      * cache with 60s
@@ -269,7 +272,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -293,7 +296,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Character Image
-     *
+     * 
      * @param characterId 角色 ID
      * @param type 枚举值 {small|grid|large|medium}
      * @return void
@@ -302,7 +305,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -327,7 +330,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Character Revision
-     *
+     * 
      * @param revisionId 版本 ID
      * @return BangumiCharacterRevision
      */
@@ -336,7 +339,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -360,7 +363,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Character Revisions
-     *
+     * 
      * @param characterId 角色 ID
      * @param limit 分页参数 (optional, default to 30)
      * @param offset 分页参数 (optional, default to 0)
@@ -375,7 +378,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -402,7 +405,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Episode
-     *
+     * 
      * @param episodeId 章节 ID
      * @return BangumiEpisodeDetail
      */
@@ -411,7 +414,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -435,7 +438,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Episode Revision
-     *
+     * 
      * @param revisionId 版本 ID
      * @return BangumiDetailedRevision
      */
@@ -444,7 +447,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -468,7 +471,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Episode Revisions
-     *
+     * 
      * @param episodeId 章节 ID
      * @param limit 分页参数 (optional, default to 30)
      * @param offset 分页参数 (optional, default to 0)
@@ -483,7 +486,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -510,7 +513,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Episodes
-     *
+     * 
      * @param subjectId 条目 ID
      * @param type 参照章节的&#x60;type&#x60; (optional)
      * @param limit 分页参数 (optional, default to 100)
@@ -527,7 +530,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -555,7 +558,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Index By ID
-     *
+     * 
      * @param indexId 目录 ID
      * @return BangumiIndex
      */
@@ -564,7 +567,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -588,7 +591,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Index Subjects
-     *
+     * 
      * @param indexId 目录 ID
      * @param type 条目类型 (optional)
      * @param limit 分页参数 (optional, default to 30)
@@ -604,7 +607,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -639,7 +642,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -672,7 +675,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -696,7 +699,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Person Image
-     *
+     * 
      * @param personId 人物 ID
      * @param type 枚举值 {small|grid|large|medium}
      * @return void
@@ -705,7 +708,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -730,7 +733,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Person Revision
-     *
+     * 
      * @param revisionId 历史版本 ID
      * @return BangumiPersonRevision
      */
@@ -739,7 +742,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -763,7 +766,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Person Revisions
-     *
+     * 
      * @param personId 角色 ID
      * @param limit 分页参数 (optional, default to 30)
      * @param offset 分页参数 (optional, default to 0)
@@ -778,7 +781,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -805,7 +808,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * get person related characters
-     *
+     * 
      * @param personId 人物 ID
      * @return kotlin.collections.List<BangumiPersonCharacter>
      */
@@ -814,7 +817,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -851,7 +854,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Subject Characters
-     *
+     * 
      * @param subjectId 条目 ID
      * @return kotlin.collections.List<BangumiRelatedCharacter>
      */
@@ -860,7 +863,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -897,7 +900,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * get character related persons
-     *
+     * 
      * @param characterId 角色 ID
      * @return kotlin.collections.List<BangumiCharacterPerson>
      */
@@ -906,7 +909,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -943,7 +946,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Subject Persons
-     *
+     * 
      * @param subjectId 条目 ID
      * @return kotlin.collections.List<BangumiRelatedPerson>
      */
@@ -952,7 +955,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -988,7 +991,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * get character related subjects
-     *
+     * 
      * @param characterId 角色 ID
      * @return kotlin.collections.List<BangumiV0RelatedSubject>
      */
@@ -997,7 +1000,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1034,7 +1037,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * get person related subjects
-     *
+     * 
      * @param personId 人物 ID
      * @return kotlin.collections.List<BangumiV0RelatedSubject>
      */
@@ -1043,7 +1046,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1080,7 +1083,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Subject Relations
-     *
+     * 
      * @param subjectId 条目 ID
      * @return kotlin.collections.List<BangumiV0SubjectRelation>
      */
@@ -1089,7 +1092,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1135,7 +1138,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1159,7 +1162,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Subject Image
-     *
+     * 
      * @param subjectId 条目 ID
      * @param type 枚举值 {small|grid|large|medium|common}
      * @return void
@@ -1168,7 +1171,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1193,7 +1196,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Subject Revision
-     *
+     * 
      * @param revisionId 版本 ID
      * @return BangumiSubjectRevision
      */
@@ -1202,7 +1205,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1226,7 +1229,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Get Subject Revisions
-     *
+     * 
      * @param subjectId 条目 ID
      * @param limit 分页参数 (optional, default to 30)
      * @param offset 分页参数 (optional, default to 0)
@@ -1241,7 +1244,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1277,7 +1280,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1311,7 +1314,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1348,7 +1351,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1392,7 +1395,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("OptionalHTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1420,7 +1423,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * 章节收藏信息
-     *
+     * 
      * @param episodeId 章节 ID
      * @return BangumiUserEpisodeCollection
      */
@@ -1429,7 +1432,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1453,7 +1456,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * 章节收藏信息
-     *
+     * 
      * @param subjectId 条目 ID
      * @param offset 分页参数 (optional, default to 0)
      * @param limit 分页参数 (optional, default to 100)
@@ -1470,7 +1473,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1497,7 +1500,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * Create a new index
-     *
+     * 
      * @return BangumiIndex
      */
     @Suppress("UNCHECKED_CAST")
@@ -1505,7 +1508,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -1529,7 +1532,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * 修改用户单个收藏
-     * 修改条目收藏状态  由于直接修改剧集条目的完成度可能会引起意料之外效果，只能用于修改书籍类条目的完成度。  PATCH 方法的所有请求体字段均可选
+     * 修改条目收藏状态  由于直接修改剧集条目的完成度可能会引起意料之外效果，只能用于修改书籍类条目的完成度。  PATCH 方法的所有请求体字段均可选 
      * @param subjectId 条目 ID
      * @param bangumiUserSubjectCollectionModifyPayload  (optional)
      * @return void
@@ -1562,9 +1565,10 @@ open class DefaultApi : ApiClient {
     }
 
 
+
     /**
      * 章节收藏信息
-     * 同时会重新计算条目的完成度
+     * 同时会重新计算条目的完成度 
      * @param subjectId 条目 ID
      * @param bangumiPatchUserSubjectEpisodeCollectionRequest  (optional)
      * @return void
@@ -1597,9 +1601,10 @@ open class DefaultApi : ApiClient {
     }
 
 
+
     /**
      * 新增或修改用户单个收藏
-     * 修改条目收藏状态, 如果不存在则创建，如果存在则修改  由于直接修改剧集条目的完成度可能会引起意料之外效果，只能用于修改书籍类条目的完成度。  方法的所有请求体字段均可选
+     * 修改条目收藏状态, 如果不存在则创建，如果存在则修改  由于直接修改剧集条目的完成度可能会引起意料之外效果，只能用于修改书籍类条目的完成度。  方法的所有请求体字段均可选 
      * @param subjectId 条目 ID
      * @param bangumiUserSubjectCollectionModifyPayload  (optional)
      * @return void
@@ -1632,9 +1637,10 @@ open class DefaultApi : ApiClient {
     }
 
 
+
     /**
      * 更新章节收藏信息
-     *
+     * 
      * @param episodeId 章节 ID
      * @param bangumiPutUserEpisodeCollectionRequest  (optional)
      * @return void
@@ -1669,7 +1675,7 @@ open class DefaultApi : ApiClient {
 
     /**
      * 条目搜索
-     * ## 实验性 API， 本 schema 和实际的 API 行为都可能随时发生改动  目前支持的筛选条件包括: - &#x60;type&#x60;: 条目类型，参照 &#x60;SubjectType&#x60; enum， &#x60;或&#x60;。 - &#x60;tag&#x60;: 标签，可以多次出现。&#x60;且&#x60; 关系。 - &#x60;airdate&#x60;: 播出日期/发售日期。&#x60;且&#x60; 关系。 - &#x60;rating&#x60;: 用于搜索指定评分的条目。&#x60;且&#x60; 关系。 - &#x60;rank&#x60;: 用于搜索指定排名的条目。&#x60;且&#x60; 关系。 - &#x60;nsfw&#x60;: 使用 &#x60;include&#x60; 包含NSFW搜索结果。默认排除搜索NSFW条目。无权限情况下忽略此选项，不会返回NSFW条目。  不同筛选条件之间为 &#x60;且&#x60;   由于目前 meilisearch 的一些问题，条目排名更新并不会触发搜索数据更新，所以条目排名可能是过期数据。  希望未来版本的 meilisearch 能解决相关的问题。
+     * ## 实验性 API， 本 schema 和实际的 API 行为都可能随时发生改动  目前支持的筛选条件包括: - &#x60;type&#x60;: 条目类型，参照 &#x60;SubjectType&#x60; enum， &#x60;或&#x60;。 - &#x60;tag&#x60;: 标签，可以多次出现。&#x60;且&#x60; 关系。 - &#x60;airdate&#x60;: 播出日期/发售日期。&#x60;且&#x60; 关系。 - &#x60;rating&#x60;: 用于搜索指定评分的条目。&#x60;且&#x60; 关系。 - &#x60;rank&#x60;: 用于搜索指定排名的条目。&#x60;且&#x60; 关系。 - &#x60;nsfw&#x60;: 使用 &#x60;include&#x60; 包含NSFW搜索结果。默认排除搜索NSFW条目。无权限情况下忽略此选项，不会返回NSFW条目。  不同筛选条件之间为 &#x60;且&#x60;   由于目前 meilisearch 的一些问题，条目排名更新并不会触发搜索数据更新，所以条目排名可能是过期数据。  希望未来版本的 meilisearch 能解决相关的问题。 
      * @param limit 分页参数 (optional)
      * @param offset 分页参数 (optional)
      * @param bangumiSearchSubjectsRequest  (optional)
@@ -1717,7 +1723,7 @@ open class DefaultApi : ApiClient {
 
         val localVariableAuthNames = listOf<String>("HTTPBearer")
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()

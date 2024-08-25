@@ -15,15 +15,12 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
-import me.him188.ani.datasources.bangumi.models.BangumiTag
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param id 条目ID
  * @param date 上映/开播/连载开始日期，可能为空字符串
@@ -31,10 +28,10 @@ import kotlinx.serialization.encoding.*
  * @param summary 条目描述
  * @param name 条目原名
  * @param nameCn 条目中文名
- * @param tags
+ * @param tags 
  * @param score 评分
  * @param rank 排名
- * @param type
+ * @param type 
  */
 @Serializable
 

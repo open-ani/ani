@@ -15,25 +15,33 @@
 
 package me.him188.ani.datasources.bangumi.next.apis
 
+import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngine
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
+import me.him188.ani.datasources.bangumi.next.infrastructure.ApiClient
+import me.him188.ani.datasources.bangumi.next.infrastructure.HttpResponse
+import me.him188.ani.datasources.bangumi.next.infrastructure.RequestConfig
+import me.him188.ani.datasources.bangumi.next.infrastructure.RequestMethod
+import me.him188.ani.datasources.bangumi.next.infrastructure.map
+import me.him188.ani.datasources.bangumi.next.infrastructure.wrap
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextBasicReply
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextCreateNewSubjectTopic200Response
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextCreateSubjectEpCommentRequest
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextCreateSubjectReplyRequest
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextEditSubjectEpCommentRequest
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextEditSubjectPostRequest
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextErrorResponse
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextGetSubjectEpisodeComments200ResponseInner
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextGetSubjectTopicsBySubjectId200Response
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextGroupReply
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextSubjectInterestComment
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextTopicCreation
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextTopicDetail
-
-import me.him188.ani.datasources.bangumi.next.infrastructure.*
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.request.forms.formData
-import io.ktor.client.engine.HttpClientEngine
-import kotlinx.serialization.json.Json
-import io.ktor.http.ParametersBuilder
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
 
 open class SubjectBangumiNextApi : ApiClient {
 
@@ -55,8 +63,149 @@ open class SubjectBangumiNextApi : ApiClient {
     ) : super(baseUrl = baseUrl, httpClient = httpClient)
 
     /**
-     * 删除自己创建的条目讨论版回复
+     * 创建条目讨论版
+     * 需要 [turnstile](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)  next.bgm.tv 域名对应的 site-key 为 &#x60;0x4AAAAAAABkMYinukE8nzYS&#x60;  dev.bgm38.com 域名使用测试用的 site-key &#x60;1x00000000000000000000AA&#x60;
+     * @param subjectID
+     * @param bangumiNextTopicCreation  (optional)
+     * @return BangumiNextCreateNewSubjectTopic200Response
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun createNewSubjectTopic(
+        subjectID: kotlin.Int,
+        bangumiNextTopicCreation: BangumiNextTopicCreation? = null
+    ): HttpResponse<BangumiNextCreateNewSubjectTopic200Response> {
+
+        val localVariableAuthNames = listOf<String>()
+
+        val localVariableBody = bangumiNextTopicCreation
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/p1/subjects/{subjectID}/topics".replace("{" + "subjectID" + "}", "$subjectID"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames,
+        ).wrap()
+    }
+
+
+    /**
+     * 创建条目的剧集吐槽
+     * 需要 [turnstile](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)  next.bgm.tv 域名对应的 site-key 为 &#x60;0x4AAAAAAABkMYinukE8nzYS&#x60;  dev.bgm38.com 域名使用测试用的 site-key &#x60;1x00000000000000000000AA&#x60;
+     * @param episodeID
+     * @param bangumiNextCreateSubjectEpCommentRequest
+     * @return BangumiNextBasicReply
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun createSubjectEpComment(
+        episodeID: kotlin.Int,
+        bangumiNextCreateSubjectEpCommentRequest: BangumiNextCreateSubjectEpCommentRequest
+    ): HttpResponse<BangumiNextBasicReply> {
+
+        val localVariableAuthNames = listOf<String>()
+
+        val localVariableBody = bangumiNextCreateSubjectEpCommentRequest
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/p1/subjects/-/episode/{episodeID}/comments".replace("{" + "episodeID" + "}", "$episodeID"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames,
+        ).wrap()
+    }
+
+
+    /**
+     * 创建条目讨论版回复
+     * 需要 [turnstile](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)  next.bgm.tv 域名对应的 site-key 为 &#x60;0x4AAAAAAABkMYinukE8nzYS&#x60;  dev.bgm38.com 域名使用测试用的 site-key &#x60;1x00000000000000000000AA&#x60;
+     * @param topicID
+     * @param bangumiNextCreateSubjectReplyRequest
+     * @return BangumiNextBasicReply
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun createSubjectReply(
+        topicID: kotlin.Int,
+        bangumiNextCreateSubjectReplyRequest: BangumiNextCreateSubjectReplyRequest
+    ): HttpResponse<BangumiNextBasicReply> {
+
+        val localVariableAuthNames = listOf<String>()
+
+        val localVariableBody = bangumiNextCreateSubjectReplyRequest
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.POST,
+            "/p1/subjects/-/topics/{topicID}/replies".replace("{" + "topicID" + "}", "$topicID"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames,
+        ).wrap()
+    }
+
+
+    /**
+     * 删除条目的剧集吐槽
      *
+     * @param commentID
+     * @return kotlin.String
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun deleteSubjectEpComment(commentID: kotlin.Int): HttpResponse<kotlin.String> {
+
+        val localVariableAuthNames = listOf<String>()
+
+        val localVariableBody =
+            io.ktor.client.utils.EmptyContent
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.DELETE,
+            "/p1/subjects/-/episode/-/comments/{commentID}".replace("{" + "commentID" + "}", "$commentID"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+        )
+
+        return request(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames,
+        ).wrap()
+    }
+
+
+    /**
+     * 删除自己创建的条目讨论版回复
+     * 
      * @param postID 
      * @return kotlin.String
      */
@@ -88,9 +237,46 @@ open class SubjectBangumiNextApi : ApiClient {
 
 
     /**
+     * 编辑条目的剧集吐槽
+     *
+     * @param commentID
+     * @param bangumiNextEditSubjectEpCommentRequest
+     * @return kotlin.String
+     */
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun editSubjectEpComment(
+        commentID: kotlin.Int,
+        bangumiNextEditSubjectEpCommentRequest: BangumiNextEditSubjectEpCommentRequest
+    ): HttpResponse<kotlin.String> {
+
+        val localVariableAuthNames = listOf<String>()
+
+        val localVariableBody = bangumiNextEditSubjectEpCommentRequest
+
+        val localVariableQuery = mutableMapOf<String, List<String>>()
+        val localVariableHeaders = mutableMapOf<String, String>()
+
+        val localVariableConfig = RequestConfig<kotlin.Any?>(
+            RequestMethod.PUT,
+            "/p1/subjects/-/episode/-/comments/{commentID}".replace("{" + "commentID" + "}", "$commentID"),
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = false,
+        )
+
+        return jsonRequest(
+            localVariableConfig,
+            localVariableBody,
+            localVariableAuthNames,
+        ).wrap()
+    }
+
+
+
+    /**
      * 编辑自己创建的条目讨论版回复
      *
-     * @param postID
+     * @param postID 
      * @param bangumiNextEditSubjectPostRequest 
      * @return kotlin.String
      */
@@ -126,7 +312,7 @@ open class SubjectBangumiNextApi : ApiClient {
 
     /**
      * 编辑自己创建的条目讨论版
-     *
+     * 
      * @param topicID 
      * @param bangumiNextTopicCreation  (optional)
      * @return kotlin.String
@@ -162,8 +348,8 @@ open class SubjectBangumiNextApi : ApiClient {
 
 
     /**
-     * 获取条目的剧集评论
-     *
+     * 获取条目的剧集吐槽箱
+     * 
      * @param episodeID 
      * @return kotlin.collections.List<BangumiNextGetSubjectEpisodeComments200ResponseInner>
      */
@@ -209,7 +395,7 @@ open class SubjectBangumiNextApi : ApiClient {
 
     /**
      * 获取条目讨论版回复
-     *
+     * 
      * @param postID 
      * @return BangumiNextGroupReply
      */
@@ -243,11 +429,11 @@ open class SubjectBangumiNextApi : ApiClient {
     /**
      * 获取帖子列表
      *
-     * @param id 
+     * @param topicID 
      * @return BangumiNextTopicDetail
      */
     @Suppress("UNCHECKED_CAST")
-    open suspend fun getSubjectTopicDetail(id: kotlin.Int): HttpResponse<BangumiNextTopicDetail> {
+    open suspend fun getSubjectTopicDetail(topicID: kotlin.Int): HttpResponse<BangumiNextTopicDetail> {
 
         val localVariableAuthNames = listOf<String>()
 
@@ -259,7 +445,7 @@ open class SubjectBangumiNextApi : ApiClient {
 
         val localVariableConfig = RequestConfig<kotlin.Any?>(
             RequestMethod.GET,
-            "/p1/subjects/-/topics/{id}".replace("{" + "id" + "}", "$id"),
+            "/p1/subjects/-/topics/{topicID}".replace("{" + "topicID" + "}", "$topicID"),
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,
@@ -275,7 +461,7 @@ open class SubjectBangumiNextApi : ApiClient {
 
     /**
      * 获取条目讨论版列表
-     *
+     * 
      * @param subjectID 
      * @param limit  (optional, default to 30)
      * @param offset  (optional, default to 0)
@@ -316,7 +502,7 @@ open class SubjectBangumiNextApi : ApiClient {
 
     /**
      * 获取条目的吐槽箱
-     *
+     * 
      * @param subjectID 
      * @param limit  (optional, default to 20)
      * @param offset  (optional, default to 0)
