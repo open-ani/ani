@@ -31,7 +31,6 @@ import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
-import me.him188.ani.app.torrent.api.files.averageRate
 import me.him188.ani.app.torrent.api.files.isFinished
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
@@ -155,18 +154,13 @@ class TorrentMediaCacheEngine(
             }
         }.flowOn(flowDispatcher)
 
-        override val downloadSpeed: Flow<FileSize> = lazyFileHandle.entry.flatMapLatest { entry ->
-            if (entry == null) return@flatMapLatest unspecifiedFileSizeFlow
-            entry.fileStats.map { it.downloadedBytes }.averageRate().map { it.bytes }
-        }.flowOn(flowDispatcher)
-
         override val sessionStats: Flow<MediaCache.SessionStats> = lazyFileHandle.session.flatMapLatest { handle ->
             if (handle == null) return@flatMapLatest unspecifiedSessionStatsFlow
             handle.sessionStats
                 .map { stats ->
                     if (stats == null) return@map MediaCache.SessionStats.Unspecified
                     MediaCache.SessionStats(
-                        totalSize = stats.totalSize.bytes,
+                        totalSize = stats.totalSizeRequested.bytes,
                         downloadedBytes = stats.downloadedBytes.bytes,
                         downloadSpeed = stats.downloadSpeed.bytes,
                         uploadedBytes = stats.uploadedBytes.bytes,
@@ -280,15 +274,26 @@ class TorrentMediaCacheEngine(
                 logger.info { "$mediaSourceId: waiting for files" }
                 onDownloadStarted(session)
 
+                val files = session.getFiles()
                 val selectedFile = TorrentVideoSourceResolver.selectVideoFileEntry(
-                    session.getFiles(),
+                    files,
                     { pathInTorrent },
                     listOf(metadata.episodeName),
                     episodeSort = metadata.episodeSort,
                     episodeEp = metadata.episodeEp,
                 )
 
-                logger.info { "$mediaSourceId: Selected file to download: $selectedFile" }
+                if (selectedFile == null) {
+                    logger.error {
+                        """
+                            $mediaSourceId: Selected null file to download. Diagnosis:
+                            - Files: ${files.map { it.pathInTorrent }}
+                            - Metadata: $metadata
+                        """.trimIndent()
+                    }
+                } else {
+                    logger.info { "$mediaSourceId: Selected file to download: $selectedFile" }
+                }
 
                 val handle = selectedFile?.createHandle()
                 if (handle == null) {
