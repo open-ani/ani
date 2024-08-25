@@ -94,10 +94,10 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
 
         val statsFlows = map.values.map {
             // 保证至少 emit 一个, 因为 combine 时如果有一个不 emit, 其他的就会等着
-            it.sessionStats.onStart<TorrentSession.Stats?> { emit(null) }
+            it.sessionStats.onStart { emit(null) }
         }
         if (statsFlows.isEmpty()) {
-            return@flatMapLatest flowOf(TorrentDownloader.Stats(0, 0, 0, 0, 0f))
+            return@flatMapLatest flowOf(TorrentDownloader.Stats(0, 0, 0, 0, 0, 0f))
         }
 
         combine(statsFlows) { sessions ->
@@ -107,6 +107,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
                 totalSize = totalSize,
                 downloadedBytes = downloadedBytes,
                 downloadSpeed = sessions.sumOf { it?.downloadSpeed ?: 0L },
+                uploadedBytes = sessions.sumOf { it?.uploadedBytes ?: 0L },
                 uploadSpeed = sessions.sumOf { it?.uploadSpeed ?: 0L },
                 downloadProgress = if (totalSize == 0L) 0f else downloadedBytes.toFloat() / totalSize,
             )

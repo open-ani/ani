@@ -26,6 +26,7 @@ interface TorrentDownloader : AutoCloseable {
          * Bytes per second.
          */
         val downloadSpeed: Long,
+        val uploadedBytes: Long,
         /**
          * Bytes per second.
          */

@@ -237,7 +237,7 @@ class TorrentMediaCacheEngine(
             it.totalStats
         }.map {
             MediaStats(
-                uploaded = FileSize.Unspecified, // TODO: MediaCacheEngine uploaded 
+                uploaded = it.uploadedBytes.bytes,
                 downloaded = it.downloadedBytes.bytes,
                 uploadSpeed = it.uploadSpeed.bytes,
                 downloadSpeed = it.downloadSpeed.bytes,

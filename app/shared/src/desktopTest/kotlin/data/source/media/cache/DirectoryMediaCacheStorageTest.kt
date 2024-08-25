@@ -509,11 +509,12 @@ class DirectoryMediaCacheStorageTest {
             createEngine(onDownloadStarted = { it.onTorrentChecked() }),
         )
 
+        val empty = TorrentSession.Stats(0, 0, 0, 0, 0, 0f)
         kotlin.run {
             val cache =
                 storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
 
-            cache.getSession().sessionStats.emit(TorrentSession.Stats(0, 0, 0, 0, 0, 0f))
+            cache.getSession().sessionStats.emit(empty)
             cache.getSession().sessionStats.emit { copy(uploadedBytes = 100) }
             runCurrent()
 
@@ -538,6 +539,7 @@ class DirectoryMediaCacheStorageTest {
             val cache =
                 storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
 
+            cache.getSession().sessionStats.emit(empty)
             cache.getSession().sessionStats.emit { copy(uploadedBytes = 150) }
             runCurrent()
 

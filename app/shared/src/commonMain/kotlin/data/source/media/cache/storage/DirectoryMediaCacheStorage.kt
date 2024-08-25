@@ -94,7 +94,7 @@ class DirectoryMediaCacheStorage(
                 var value: Long = 0L
             }
             engine.stats.collect { stats ->
-                val new = stats.downloaded
+                val new = stats.uploaded
                 if (new.isUnspecified) return@collect
 
                 val diff = (new.inBytes - maxUploaded.value).bytes
