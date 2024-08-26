@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.RatingCounts
 import me.him188.ani.app.data.models.subject.RatingInfo
@@ -48,6 +49,7 @@ import org.koin.core.component.inject
  */
 interface BangumiSubjectRepository : Repository {
     suspend fun getSubject(id: Int): ApiResponse<BangumiSubject>
+    suspend fun getSubjectBatch(ids: List<Int>): ApiResponse<List<SubjectInfo>>
 
     fun getSubjectCollections(
         username: String,
@@ -84,6 +86,98 @@ class RemoteBangumiSubjectRepository : BangumiSubjectRepository, KoinComponent {
 
     override suspend fun getSubject(id: Int): ApiResponse<BangumiSubject> = runApiRequest {
         client.getApi().getSubjectById(id).body()
+    }
+
+
+//    // graphql
+//    @Serializable
+//    private data class SubjectFragment(
+//        val id: Int,
+//        val type: Int,
+//        val name: String,
+//        val nameCn: String,
+//        val images: BangumiImages,
+//        val platform: BangumiPlatform,
+//        val infobox: List<BangumiInfo>,
+//        val summary: String,
+//        val volumes: Int,
+//        val eps: Int,
+//        val collection: SubjectCollection,
+//        val series: Boolean,
+//        val seriesEntry: Int,
+//        val airtime: SubjectAirtime,
+//        val rating: SubjectRating,
+//        val nsfw: Boolean,
+//        val locked: Boolean,
+//        val redirect: Int,
+//        val tags: List<SubjectTag>,
+//        val episodes: List<Episode>,
+//        val relations: List<SubjectRelation>
+//    )
+
+
+    override suspend fun getSubjectBatch(ids: List<Int>): ApiResponse<List<SubjectInfo>> {
+        if (ids.isEmpty()) {
+            return ApiResponse.success(emptyList())
+        }
+
+        runApiRequest {
+            client.executeGraphQL(
+                buildString {
+                    appendLine(
+                        """
+                    fragment SubjectFragment on Subject {
+                      id
+                      type
+                      name
+                      name_cn
+                      images{large, common}
+                      platform{id, type, type_cn}
+                      infobox {
+                        values {
+                          k
+                          v
+                        }
+                        key
+                      }
+                      summary
+                      volumes
+                      eps
+                      series
+                      series_entry
+                      collection{__typename}
+                      airtime{date}
+                      rating{count, rank, score, total}
+                      nsfw
+                      locked
+                      tags{count, name}
+                      episodes{airdate, id}
+                    }
+                    """.trimIndent(),
+                    )
+                    appendLine("query MyQuery {")
+                    for (id in ids) {
+                        /*
+                            query MyQuery {
+                              c10: subject(id: 11200) {
+                                ...SubjectFragment
+                              }
+                            }
+                         */
+                        append("c")
+                        append(id)
+                        append(": subject(id: ")
+                        append(id)
+                        appendLine(") {")
+                        appendLine("""  ...SubjectFragment""")
+                        appendLine("}")
+                    }
+                    appendLine("}")
+                }.trimIndent(),
+            )
+        }.map {
+        }
+        TODO()
     }
 
     override suspend fun patchSubjectCollection(subjectId: Int, payload: BangumiUserSubjectCollectionModifyPayload) {
