@@ -3,6 +3,7 @@ package me.him188.ani.app.videoplayer.torrent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
+import me.him188.ani.app.torrent.api.files.averageRate
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -17,12 +18,13 @@ class TorrentVideoData(
 
     override fun computeHash(): String? = null
 
-    override val networkStats: Flow<VideoData.Stats> = handle.entry.fileStats.map {
-        VideoData.Stats(
-            downloadSpeed = it.downloadedBytes.bytes,
-            uploadRate = FileSize.Unspecified,
-        )
-    }
+    override val networkStats: Flow<VideoData.Stats> =
+        handle.entry.fileStats.map { it.downloadedBytes }.averageRate().map { downloadSpeed ->
+            VideoData.Stats(
+                downloadSpeed = downloadSpeed.bytes,
+                uploadRate = FileSize.Unspecified,
+            )
+        }
 
     val pieces get() = handle.entry.pieces
     val isCacheFinished get() = handle.entry.fileStats.map { it.isDownloadFinished }
