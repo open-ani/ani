@@ -42,6 +42,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.asAutoCloseable
 import me.him188.ani.datasources.api.source.toOnlineMedia
@@ -66,9 +67,10 @@ import me.him188.ani.utils.xml.Xml
 class MikanCNMediaSource(
     config: MediaSourceConfig,
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
-) : AbstractMikanMediaSource(ID, config, "https://mikanime.tv", indexCacheProvider) {
+) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+        override val info: MediaSourceInfo get() = INFO
 
         override fun create(config: MediaSourceConfig): MediaSource =
             MikanCNMediaSource(config)
@@ -81,15 +83,24 @@ class MikanCNMediaSource(
 
     companion object {
         const val ID = "mikan-mikanime-tv"
+        const val BASE_URL = "https://mikanime.tv"
+        val INFO = MediaSourceInfo(
+            displayName = "蜜柑计划",
+            websiteUrl = BASE_URL,
+            imageUrl = "https://mikanani.me/images/mikan-pic.png",
+        )
     }
+
+    override val info: MediaSourceInfo get() = INFO
 }
 
 class MikanMediaSource(
     config: MediaSourceConfig,
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
-) : AbstractMikanMediaSource(ID, config, "https://mikanani.me", indexCacheProvider) {
+) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+        override val info: MediaSourceInfo get() = INFO
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
 
         // TODO: this is actually not so good. We should generalize how MS can access caches.
@@ -101,7 +112,15 @@ class MikanMediaSource(
 
     companion object {
         const val ID = "mikan"
+        const val BASE_URL = "https://mikanani.me"
+        val INFO = MediaSourceInfo(
+            displayName = "蜜柑计划",
+            websiteUrl = BASE_URL,
+            imageUrl = "https://mikanani.me/images/mikan-pic.png",
+        )
     }
+
+    override val info: MediaSourceInfo get() = INFO
 }
 
 abstract class AbstractMikanMediaSource(
@@ -112,7 +131,7 @@ abstract class AbstractMikanMediaSource(
 ) : HttpMediaSource() {
     override val kind: MediaSourceKind get() = MediaSourceKind.BitTorrent
 
-    private val baseUrl = baseUrl.removeSuffix("/")
+    protected val baseUrl = baseUrl.removeSuffix("/")
     private val client by lazy { useHttpClient(config).also { addCloseable(it.asAutoCloseable()) } }
 
     override suspend fun checkConnection(): ConnectionStatus {

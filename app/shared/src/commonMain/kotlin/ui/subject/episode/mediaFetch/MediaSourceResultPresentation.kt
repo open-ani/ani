@@ -31,6 +31,7 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
@@ -54,6 +55,8 @@ class MediaSourceResultPresentation(
     val isWorking by derivedStateOf { state.isWorking }
     val isDisabled by derivedStateOf { state.isDisabled }
     val isFailedOrAbandoned by derivedStateOf { state.isFailedOrAbandoned }
+
+    val info: MediaSourceInfo get() = delegate.sourceInfo
 
     val kind = delegate.kind
 
@@ -153,30 +156,35 @@ fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = remember 
                 listOf(
                     TestMediaSourceResult(
                         MikanMediaSource.ID,
+                        MikanMediaSource.INFO,
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Working,
                         results = TestMediaList,
                     ),
                     TestMediaSourceResult(
                         "dmhy",
+                        MediaSourceInfo("dmhy"),
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Succeed(1),
                         results = TestMediaList,
                     ),
                     TestMediaSourceResult(
                         "acg.rip",
+                        MediaSourceInfo("acg.rip"),
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Disabled,
                         results = TestMediaList,
                     ),
                     TestMediaSourceResult(
                         "nyafun",
+                        MediaSourceInfo("nyafun"),
                         MediaSourceKind.WEB,
                         initialState = MediaSourceFetchState.Succeed(1),
                         results = TestMediaList,
                     ),
                     TestMediaSourceResult(
                         MikanCNMediaSource.ID,
+                        MikanCNMediaSource.INFO,
                         MediaSourceKind.BitTorrent,
                         initialState = MediaSourceFetchState.Failed(IllegalStateException(), 1),
                         results = emptyList(),
@@ -191,6 +199,7 @@ fun rememberTestMediaSourceResults(): MediaSourceResultsPresentation = remember 
 
 private class TestMediaSourceResult(
     override val mediaSourceId: String,
+    override val sourceInfo: MediaSourceInfo,
     override val kind: MediaSourceKind,
     initialState: MediaSourceFetchState,
     results: List<Media>,

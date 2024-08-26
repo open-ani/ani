@@ -88,6 +88,11 @@ interface MediaSource : AutoCloseable {
     val kind: MediaSourceKind
 
     /**
+     * 此数据源的描述信息
+     */
+    val info: MediaSourceInfo
+
+    /**
      * 检查该数据源是否可用.
      *
      * @see Boolean.toConnectionStatus
@@ -119,3 +124,10 @@ interface MediaSource : AutoCloseable {
     override fun close() {}
 }
 
+class MediaSourceInfo(
+    val displayName: String,
+    val description: String? = null,
+    val websiteUrl: String? = null,
+    val imageUrl: String? = null,
+    val imageResourceId: String? = null, // not very good be fine for now
+)

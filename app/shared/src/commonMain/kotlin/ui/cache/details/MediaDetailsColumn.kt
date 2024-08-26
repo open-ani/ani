@@ -33,10 +33,10 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
-import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.SubtitleKind
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -45,6 +45,7 @@ import me.him188.ani.datasources.api.topic.isSingleEpisode
 @Composable
 fun MediaDetailsColumn(
     media: Media,
+    sourceInfo: MediaSourceInfo?,
     modifier: Modifier = Modifier,
 ) {
     val browser = LocalBrowserNavigator.current
@@ -91,14 +92,14 @@ fun MediaDetailsColumn(
         )
         ListItem(
             headlineContent = { Text("数据源") },
-            leadingContent = { MediaSourceIcon(media.mediaSourceId, Modifier.size(24.dp)) },
+            leadingContent = { MediaSourceIcon(sourceInfo?.imageUrl, Modifier.size(24.dp)) },
             supportingContent = {
                 val kind = when (media.kind) {
                     MediaSourceKind.WEB -> "在线"
                     MediaSourceKind.BitTorrent -> "BT"
                     MediaSourceKind.LocalCache -> "本地"
                 }
-                SelectionContainer { Text("[$kind] ${renderMediaSource(media.mediaSourceId)}") }
+                SelectionContainer { Text("[$kind] ${sourceInfo?.displayName ?: "未知"}") }
             },
             trailingContent = kotlin.run {
                 val originalUrl by rememberUpdatedState(media.originalUrl)

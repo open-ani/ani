@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 
@@ -16,6 +17,7 @@ import me.him188.ani.utils.coroutines.cancellableCoroutineScope
  */
 interface MediaSourceFetchResult {
     val mediaSourceId: String
+    val sourceInfo: MediaSourceInfo
     val kind: MediaSourceKind
 
     val state: StateFlow<MediaSourceFetchState>

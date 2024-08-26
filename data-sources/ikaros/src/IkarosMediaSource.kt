@@ -12,6 +12,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.get
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
@@ -23,6 +24,12 @@ import java.util.Base64
 class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     companion object {
         const val ID = "ikaros"
+        val INFO = MediaSourceInfo(
+            displayName = "Ikaros",
+            description = "专注于 ACGMN 的内容管理系统 (CMS)",
+            websiteUrl = "https://docs.ikaros.run",
+            imageUrl = "https://docs.ikaros.run/img/favicon.ico",
+        )
     }
 
     internal val client = IkarosClient(
@@ -55,10 +62,11 @@ class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
         override val parameters: MediaSourceParameters = Parameters.build()
         override val allowMultipleInstances: Boolean get() = true
         override fun create(config: MediaSourceConfig): MediaSource = IkarosMediaSource(config)
+        override val info: MediaSourceInfo get() = INFO
     }
 
     override val kind: MediaSourceKind get() = MediaSourceKind.WEB
-
+    override val info: MediaSourceInfo get() = INFO
     override val mediaSourceId: String get() = ID
 
     override suspend fun checkConnection(): ConnectionStatus {

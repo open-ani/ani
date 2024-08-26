@@ -30,6 +30,7 @@ import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.matches
@@ -248,4 +249,9 @@ private class MediaCacheStorageSource(
             }.asFlow()
         }
     }
+
+    override val info: MediaSourceInfo = MediaSourceInfo(
+        "本地",
+        "本地缓存",
+    )
 }

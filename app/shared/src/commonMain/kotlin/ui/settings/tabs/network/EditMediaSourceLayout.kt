@@ -39,11 +39,12 @@ import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.MediaSourceConfig
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.BooleanParameter
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameter
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.source.parameter.SimpleEnumParameter
 import me.him188.ani.datasources.api.source.parameter.StringParameter
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.coroutines.CoroutineContext
 
 
@@ -56,12 +57,14 @@ sealed class EditType {
 
 @Stable
 class EditMediaSourceState(
+    val mediaSourceId: String,
     val info: MediaSourceInfo,
+    val parameters: MediaSourceParameters,
     persistedArguments: Flow<MediaSourceConfig>, // 加载会有延迟
     val editType: EditType,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), Closeable {
-    val arguments = info.parameters.list.map { param ->
+    val arguments = parameters.list.map { param ->
         when (param) {
             is BooleanParameter -> BooleanArgumentState(param)
             is SimpleEnumParameter -> SimpleEnumArgumentState(param)
@@ -148,15 +151,14 @@ internal fun EditMediaSourceDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isLoading by state.isLoading.collectAsStateWithLifecycle(true)
     AlertDialog(
         onDismissRequest,
         title = {
-            Text(state.info.name)
+            Text(state.info.displayName)
         },
         icon = {
             Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(24.dp)) {
-                MediaSourceIcon(state.info.mediaSourceId, Modifier.size(24.dp), state.info.iconUrl)
+                MediaSourceIcon(state.info.imageUrl, Modifier.size(24.dp))
             }
         },
         text = {

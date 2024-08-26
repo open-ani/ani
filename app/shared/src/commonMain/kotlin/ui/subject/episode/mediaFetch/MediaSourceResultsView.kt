@@ -49,7 +49,6 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
 import me.him188.ani.app.ui.settings.rendering.SmallMediaSourceIcon
-import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 
 @Composable
 fun MediaSourceResultsView(
@@ -257,10 +256,10 @@ private fun MediaSourceResultCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    SmallMediaSourceIcon(id = source.mediaSourceId, allowText = false)
+                    SmallMediaSourceIcon(source.info)
 
                     Text(
-                        renderMediaSource(source.mediaSourceId),
+                        source.info.displayName,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         softWrap = false,
@@ -338,7 +337,7 @@ private fun MediaSourceResultCard(
             modifier = modifier.heightIn(min = 40.dp),
             leadingIcon = {
                 SmallMediaSourceIcon(
-                    id = source.mediaSourceId,
+                    source.info,
                 )
             },
         )

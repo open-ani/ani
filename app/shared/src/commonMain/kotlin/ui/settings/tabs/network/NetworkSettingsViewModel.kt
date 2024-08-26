@@ -23,11 +23,10 @@ import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
-import me.him188.ani.app.ui.settings.rendering.renderMediaSource
-import me.him188.ani.app.ui.settings.rendering.renderMediaSourceDescription
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -42,21 +41,11 @@ import kotlin.time.Duration.Companion.seconds
 class MediaSourcePresentation(
     val instanceId: String,
     val isEnabled: Boolean,
+    val mediaSourceId: String,
     val info: MediaSourceInfo,
+    val parameters: MediaSourceParameters,
     val connectionTester: ConnectionTester,
     val instance: MediaSourceInstance
-)
-
-val MediaSourcePresentation.mediaSourceId get() = info.mediaSourceId
-
-@Immutable
-class MediaSourceInfo(
-    val mediaSourceId: String,
-    val name: String,
-    val description: String? = null, // localized
-    val iconUrl: String? = null,
-    val website: String? = null,
-    val parameters: MediaSourceParameters,
 )
 
 /**
@@ -64,11 +53,10 @@ class MediaSourceInfo(
  */
 @Immutable
 class MediaSourceTemplate(
+    val mediaSourceId: String,
     val info: MediaSourceInfo,
+    val parameters: MediaSourceParameters
 )
-
-val MediaSourceTemplate.mediaSourceId get() = info.mediaSourceId
-
 
 @Stable
 class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
@@ -88,14 +76,9 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                 MediaSourcePresentation(
                     instanceId = instance.instanceId,
                     isEnabled = instance.isEnabled,
-                    info = MediaSourceInfo(
-                        mediaSourceId = instance.source.mediaSourceId,
-                        name = renderMediaSource(instance.source.mediaSourceId),
-                        description = renderMediaSourceDescription(instance.source.mediaSourceId),
-                        iconUrl = null,
-                        website = null,
-                        parameters = factory.parameters,
-                    ),
+                    mediaSourceId = instance.source.mediaSourceId,
+                    info = instance.source.info,
+                    parameters = factory.parameters,
                     connectionTester = ConnectionTester(
                         id = instance.mediaSourceId,
                         testConnection = {
@@ -120,15 +103,9 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
                 return@mapNotNull null
             }
             MediaSourceTemplate(
-                MediaSourceInfo(
-                    mediaSourceId = factory.mediaSourceId,
-                    name = renderMediaSource(factory.mediaSourceId),
-                    description = renderMediaSourceDescription(factory.mediaSourceId),
-                    iconUrl = if (factory.mediaSourceId == "ikaros")
-                        "https://docs.ikaros.run/logo.png" else null, // TODO: properly configure icon
-                    website = null,
-                    parameters = factory.parameters,
-                ),
+                mediaSourceId = factory.mediaSourceId,
+                info = factory.info,
+                parameters = factory.parameters,
             )
         }
     }.produceState(emptyList())
@@ -165,7 +142,9 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     fun startAdding(template: MediaSourceTemplate): EditMediaSourceState {
         cancelEdit()
         val state = EditMediaSourceState(
+            mediaSourceId = template.mediaSourceId,
             info = template.info,
+            parameters = template.parameters,
             persistedArguments = flowOf(MediaSourceConfig.Default),
             editType = EditType.Add,
             backgroundScope.coroutineContext,
@@ -177,7 +156,9 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     fun startEditing(presentation: MediaSourcePresentation) {
         cancelEdit()
         editMediaSourceState = EditMediaSourceState(
+            mediaSourceId = presentation.mediaSourceId,
             info = presentation.info,
+            parameters = presentation.parameters,
             persistedArguments = mediaSourceManager.instanceConfigFlow(presentation.instanceId),
             editType = EditType.Edit(presentation.instanceId),
             backgroundScope.coroutineContext,
@@ -189,7 +170,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             EditType.Add -> {
                 launchInBackground {
                     mediaSourceManager.addInstance(
-                        state.info.mediaSourceId,
+                        state.mediaSourceId,
                         state.createConfig(),
                     )
                     withContext(Dispatchers.Main) { cancelEdit() }

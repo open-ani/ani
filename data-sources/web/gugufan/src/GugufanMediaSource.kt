@@ -11,6 +11,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.ThreeStepWebMediaSource
 import me.him188.ani.datasources.api.source.bodyAsDocument
 import me.him188.ani.datasources.api.source.useHttpClient
@@ -42,10 +43,17 @@ class GugufanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() 
     companion object {
         const val ID = "gugufan"
         const val BASE_URL = "https://www.gugufan.com"
+        val INFO = MediaSourceInfo(
+            "咕咕番",
+            "咕咕番",
+            imageUrl = "$BASE_URL/upload/site/20230512-1/8d3bab2eb1440259baad5079c0a28071.png",
+            imageResourceId = "gugufan",
+        )
     }
 
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+        override val info: MediaSourceInfo get() = INFO
 
         override fun create(config: MediaSourceConfig): MediaSource = GugufanMediaSource(config)
     }
@@ -122,4 +130,5 @@ class GugufanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() 
     }
 
     override val mediaSourceId: String get() = ID
+    override val info: MediaSourceInfo get() = INFO
 }

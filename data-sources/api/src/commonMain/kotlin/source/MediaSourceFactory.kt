@@ -30,6 +30,8 @@ interface MediaSourceFactory { // SPI service load
      */
     val parameters: MediaSourceParameters get() = MediaSourceParameters.Empty
 
+    val info: MediaSourceInfo
+
     /**
      * 必须返回新实例.
      */
