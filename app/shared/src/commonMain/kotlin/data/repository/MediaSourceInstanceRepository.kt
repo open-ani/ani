@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.utils.platform.Uuid
@@ -33,9 +34,14 @@ data class MediaSourceSaves(
     companion object {
         val Empty = MediaSourceSaves(emptyList())
         val Default: MediaSourceSaves by lazy {
-            fun createSave(it: String, isEnabled: Boolean) = MediaSourceSave(
+            fun createSave(
+                sourceId: String,
+                factoryId: FactoryId,
+                isEnabled: Boolean
+            ) = MediaSourceSave(
                 instanceId = Uuid.randomString(),
-                mediaSourceId = it,
+                mediaSourceId = sourceId,
+                factoryId = factoryId,
                 isEnabled = isEnabled,
                 config = MediaSourceConfig.Default,
             )
@@ -48,9 +54,9 @@ data class MediaSourceSaves(
 
             MediaSourceSaves(
                 buildList {
-                    enabledWebSources.forEach { add(createSave(it, isEnabled = true)) }
-                    enabledBtSources.forEach { add(createSave(it, isEnabled = true)) }
-                    disabledBtSources.forEach { add(createSave(it, isEnabled = false)) }
+                    enabledWebSources.forEach { add(createSave(it, FactoryId(it), isEnabled = true)) }
+                    enabledBtSources.forEach { add(createSave(it, FactoryId(it), isEnabled = true)) }
+                    disabledBtSources.forEach { add(createSave(it, FactoryId(it), isEnabled = false)) }
                 },
             )
         }

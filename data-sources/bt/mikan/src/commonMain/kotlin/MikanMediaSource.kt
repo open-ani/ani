@@ -35,6 +35,7 @@ import kotlinx.datetime.toInstant
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -69,10 +70,11 @@ class MikanCNMediaSource(
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
 ) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+
         override val info: MediaSourceInfo get() = INFO
 
-        override fun create(config: MediaSourceConfig): MediaSource =
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource =
             MikanCNMediaSource(config)
 
         fun create(
@@ -99,9 +101,10 @@ class MikanMediaSource(
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
 ) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+
         override val info: MediaSourceInfo get() = INFO
-        override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
 
         // TODO: this is actually not so good. We should generalize how MS can access caches.
         fun create(

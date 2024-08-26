@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.subject.episode.TAG_MEDIA_SELECTOR_SHEET
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsView
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
@@ -23,6 +24,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsS
 fun EpisodeVideoMediaSelectorSideSheet(
     mediaSelectorPresentation: MediaSelectorPresentation,
     mediaSourceResultsPresentation: MediaSourceResultsPresentation,
+    mediaSourceInfoProvider: MediaSourceInfoProvider,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

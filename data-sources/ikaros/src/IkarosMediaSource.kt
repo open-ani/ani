@@ -6,6 +6,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
@@ -21,7 +22,10 @@ import me.him188.ani.datasources.api.source.useHttpClient
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
+class IkarosMediaSource(
+    override val mediaSourceId: String,
+    config: MediaSourceConfig
+) : HttpMediaSource() {
     companion object {
         const val ID = "ikaros"
         val INFO = MediaSourceInfo(
@@ -58,16 +62,17 @@ class IkarosMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     }
 
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = FactoryId(ID)
+
         override val parameters: MediaSourceParameters = Parameters.build()
         override val allowMultipleInstances: Boolean get() = true
-        override fun create(config: MediaSourceConfig): MediaSource = IkarosMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource =
+            IkarosMediaSource(mediaSourceId, config)
         override val info: MediaSourceInfo get() = INFO
     }
 
     override val kind: MediaSourceKind get() = MediaSourceKind.WEB
     override val info: MediaSourceInfo get() = INFO
-    override val mediaSourceId: String get() = ID
 
     override suspend fun checkConnection(): ConnectionStatus {
         return if ((HttpStatusCode.OK == client.checkConnection())

@@ -33,15 +33,15 @@ fun EpisodePlayMediaSelector(
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .navigationBarsPadding(),
+        itemProgressBar = {},
+        onClickItem = {
+            mediaSelector.select(it)
+            onSelected(it)
+        },
         bottomActions = {
             TextButton(onDismissRequest) {
                 Text("取消")
             }
         },
-        onClickItem = {
-            mediaSelector.select(it)
-            onSelected(it)
-        },
-        itemProgressBar = {},
     )
 }

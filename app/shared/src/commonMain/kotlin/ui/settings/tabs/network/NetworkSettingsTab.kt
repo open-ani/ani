@@ -1,5 +1,8 @@
 package me.him188.ani.app.ui.settings.tabs.network
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material3.Icon
@@ -9,20 +12,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import me.him188.ani.app.Res
+import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.framework.MediaSourceTesterView
+import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun NetworkSettingsTab(
@@ -45,7 +56,24 @@ private fun SettingsScope.OtherTestGroup(vm: NetworkSettingsViewModel) {
         title = { Text("其他测试") },
     ) {
         for (tester in vm.otherTesters.testers) {
-            MediaSourceTesterView(tester, showTime = false)
+            TextItem(
+                description = { Text("提供观看记录数据") },
+                icon = {
+                    Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
+                        Image(
+                            painterResource(Res.drawable.bangumi), null,
+                            contentScale = ContentScale.Crop,
+                            alignment = Alignment.Center,
+                        )
+                    }
+                },
+                action = {
+                    ConnectionTesterResultIndicator(tester, showTime = false)
+                },
+                title = {
+                    Text("Bangumi")
+                },
+            )
         }
 
         TextButtonItem(
@@ -197,8 +225,20 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
                     val currentlySelected by derivedStateOf {
                         vm.danmakuSettings.value.useGlobal == (tester.id == AniBangumiSeverBaseUrls.GLOBAL)
                     }
-                    MediaSourceTesterView(
-                        tester,
+                    TextItem(
+                        description = when {
+                            currentlySelected -> {
+                                { Text("当前使用") }
+                            }
+
+                            tester.id == AniBangumiSeverBaseUrls.GLOBAL -> {
+                                { Text("建议在其他地区使用") }
+                            }
+
+                            else -> {
+                                { Text("建议在中国大陆和香港使用") }
+                            }
+                        },
                         icon = {
                             if (tester.id == AniBangumiSeverBaseUrls.GLOBAL)
                                 Icon(
@@ -207,6 +247,12 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
                                 )
                             else Text("CN", fontFamily = FontFamily.Monospace)
 
+                        },
+                        action = {
+                            ConnectionTesterResultIndicator(
+                                tester,
+                                showTime = true,
+                            )
                         },
                         title = {
                             val textColor =
@@ -221,20 +267,6 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
                                 Text("中国大陆", color = textColor)
                             }
                         },
-                        description = when {
-                            currentlySelected -> {
-                                { Text("当前使用") }
-                            }
-
-                            tester.id == AniBangumiSeverBaseUrls.GLOBAL -> {
-                                { Text("建议在其他地区使用") }
-                            }
-
-                            else -> {
-                                { Text("建议在中国大陆和香港使用") }
-                            }
-                        },
-                        showTime = true,
                     )
                 }
 

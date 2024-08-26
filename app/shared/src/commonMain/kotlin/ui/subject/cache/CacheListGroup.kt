@@ -60,6 +60,7 @@ import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsView
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberMediaSourceResultsPresentation
@@ -103,6 +104,7 @@ data class EpisodeCacheInfo(
 @Composable
 fun SettingsScope.EpisodeCacheListGroup(
     state: EpisodeCacheListState,
+    mediaSourceInfoProvider: MediaSourceInfoProvider,
     mediaSelectorSettingsProvider: () -> Flow<MediaSelectorSettings>,
     modifier: Modifier = Modifier,
 ) {
@@ -142,17 +144,18 @@ fun SettingsScope.EpisodeCacheListGroup(
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                 modifier = Modifier,
             ) {
-                val selectorPresentation = rememberMediaSelectorPresentation { task.mediaSelector }
+                val selectorPresentation =
+                    rememberMediaSelectorPresentation(mediaSourceInfoProvider) { task.mediaSelector }
                 MediaSelectorView(
                     selectorPresentation,
                     sourceResults = { MediaSourceResultsView(sourceResults, selectorPresentation) },
-                    onClickItem = {
-                        state.selectMedia(it)
-                    },
                     modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                         .navigationBarsPadding()
                         .fillMaxHeight() // 防止添加筛选后数量变少导致 bottom sheet 高度变化
                         .fillMaxWidth(),
+                    onClickItem = {
+                        state.selectMedia(it)
+                    },
                     bottomActions = {
                         TextButton({ state.cancelRequest() }) {
                             Text("取消")

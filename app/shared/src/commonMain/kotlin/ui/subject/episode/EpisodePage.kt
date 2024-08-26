@@ -640,6 +640,7 @@ private fun EpisodeVideo(
         mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
         episodeSelectorState = vm.episodeSelectorState,
         progressSliderState = progressSliderState,
+        mediaSourceInfoProvider = vm.mediaSourceInfoProvider,
         leftBottomTips = {
             AnimatedVisibility(
                 visible = vm.playerSkipOpEdState.showSkipTips,

@@ -56,6 +56,7 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.utils.coroutines.flows.combine
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -71,6 +72,8 @@ interface SubjectCacheViewModel {
      * 单个条目的缓存管理页面的状态
      */
     val cacheListState: EpisodeCacheListState
+
+    val mediaSourceInfoProvider: MediaSourceInfoProvider
 }
 
 @Stable
@@ -165,6 +168,11 @@ class SubjectCacheViewModelImpl(
             }
         },
     )
+    override val mediaSourceInfoProvider: MediaSourceInfoProvider = MediaSourceInfoProvider(
+        getSourceInfoFlow = {
+            mediaSourceManager.infoFlowByMediaSourceId(it)
+        },
+    )
 
     init {
         launchInBackground {
@@ -235,6 +243,7 @@ fun SubjectCacheScene(
         cacheListGroup = {
             EpisodeCacheListGroup(
                 vm.cacheListState,
+                vm.mediaSourceInfoProvider,
                 mediaSelectorSettingsProvider = {
                     vm.mediaSelectorSettingsFlow
                 },

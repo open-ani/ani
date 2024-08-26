@@ -29,7 +29,7 @@ internal val previewMediaList = TestMediaList.run {
 @PreviewLightDark
 @Composable
 private fun PreviewMediaSelector() {
-    val mediaSelector = rememberMediaSelectorPresentation {
+    val mediaSelector = rememberMediaSelectorPresentation(rememberTestMediaSourceInfoProvider()) {
         DefaultMediaSelector(
             mediaSelectorContextNotCached = flowOf(MediaSelectorContext.EmptyForPreview),
             mediaListNotCached = MutableStateFlow(
@@ -62,3 +62,4 @@ private fun PreviewMediaSelector() {
         )
     }
 }
+

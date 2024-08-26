@@ -40,7 +40,7 @@ abstract class TopicMediaSource : HttpMediaSource() {
 
 // Only used by data source modules
 data class DownloadSearchQuery(
-    val keywords: String? = null,
+    val keywords: String,
     val category: TopicCategory? = null,
     val alliance: Alliance? = null,
     val ordering: SearchOrdering? = null,
