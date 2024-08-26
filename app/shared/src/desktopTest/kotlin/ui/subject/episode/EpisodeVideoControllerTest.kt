@@ -31,7 +31,7 @@ import me.him188.ani.app.ui.framework.runAniComposeUiTest
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
-import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
+import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -138,13 +138,7 @@ class EpisodeVideoControllerTest {
                 mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 gestureFamily = gestureFamily,
-                danmakuRegexFilterState = DanmakuRegexFilterState(
-                    list = stateOf(persistentListOf()),
-                    add = {},
-                    edit = { _, _ -> },
-                    remove = {},
-                    switch = {},
-                ),
+                danmakuRegexFilterState = createDanmakuRegexFilterState(),
             )
         }
     }
