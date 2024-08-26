@@ -85,6 +85,7 @@ kotlin {
         api(projects.utils.coroutines)
         api(projects.utils.io)
         api(projects.app.shared.imageViewer)
+        api(projects.utils.xml)
 
         // Ktor
         api(libs.ktor.client.websockets)
