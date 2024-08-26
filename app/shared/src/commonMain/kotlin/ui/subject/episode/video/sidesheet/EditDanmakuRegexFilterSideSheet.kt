@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.subject.episode.video.sidesheet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -80,89 +79,83 @@ fun EditDanmakuRegexFilterSideSheet(
         modifier = modifier
             .clickable(onClick = { focusManager.clearFocus() }),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { focusManager.clearFocus() },
-        ) {
-            Surface {
+        Surface {
+            Column(
+                modifier.padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                // 输入框
                 Column(
-                    modifier.padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .verticalScroll(rememberScrollState()),
+                    modifier = Modifier.padding(top = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    // 输入框
-                    Column(
-                        modifier = Modifier.padding(top = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        OutlinedTextField(
-                            value = regexTextFieldValue,
-                            onValueChange = {
-                                regexTextFieldValue = it
-                            },
-                            isError = isBlank,
-                            supportingText = {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = if (isBlank) {
-                                        "正则表达式不能为空"
-                                    } else if (expanded) {
-                                        "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
-                                    } else {
-                                        "竖屏状态下无法编辑"
-                                    },
-                                    color = if (isBlank) {
-                                        MaterialTheme.colorScheme.error
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface
-                                    },
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = "正则表达式",
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                                .onKeyEvent { event: KeyEvent ->
-                                    if (event.key == Key.Enter) {
-                                        handleAdd()
-                                        true // Consume the event
-                                    } else {
-                                        false // Pass the event to other handlers
-                                    }
+                    OutlinedTextField(
+                        value = regexTextFieldValue,
+                        onValueChange = {
+                            regexTextFieldValue = it
+                        },
+                        isError = isBlank,
+                        supportingText = {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = if (isBlank) {
+                                    "正则表达式不能为空"
+                                } else if (expanded) {
+                                    "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+                                } else {
+                                    "竖屏状态下无法编辑"
                                 },
-                            enabled = expanded,  // Disable the text field if expanded is false
-                            keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Done,
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = { handleAdd() },
-                            ),
-                        )
-
-                        // 提交按钮
-                        TextButton(
-                            onClick = ::handleAdd,
-                            enabled = expanded,  // Disable the button if expanded is false
-                        ) {
-                            Text(text = "添加")
-                        }
-                    }
-
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        danmakuRegexFilterState.list.forEach { item ->
-                            RegexFilterItem(
-                                item,
-                                onDelete = { danmakuRegexFilterState.remove(item) },
-                                onDisable = { danmakuRegexFilterState.switch(item) },
+                                color = if (isBlank) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
                             )
-                        }
+                        },
+                        label = {
+                            Text(
+                                text = "正则表达式",
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                            .onKeyEvent { event: KeyEvent ->
+                                if (event.key == Key.Enter) {
+                                    handleAdd()
+                                    true // Consume the event
+                                } else {
+                                    false // Pass the event to other handlers
+                                }
+                            },
+                        enabled = expanded,  // Disable the text field if expanded is false
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { handleAdd() },
+                        ),
+                    )
+
+                    // 提交按钮
+                    TextButton(
+                        onClick = ::handleAdd,
+                        enabled = expanded,  // Disable the button if expanded is false
+                    ) {
+                        Text(text = "添加")
+                    }
+                }
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    danmakuRegexFilterState.list.forEach { item ->
+                        RegexFilterItem(
+                            item,
+                            onDelete = { danmakuRegexFilterState.remove(item) },
+                            onDisable = { danmakuRegexFilterState.switch(item) },
+                        )
                     }
                 }
             }
