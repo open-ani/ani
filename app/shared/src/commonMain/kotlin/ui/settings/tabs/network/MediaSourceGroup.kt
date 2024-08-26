@@ -67,7 +67,7 @@ import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 import me.him188.ani.app.ui.settings.rendering.renderMediaSourceDescription
-import me.him188.ani.datasources.api.source.isEmpty
+import me.him188.ani.datasources.api.source.parameter.isEmpty
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress

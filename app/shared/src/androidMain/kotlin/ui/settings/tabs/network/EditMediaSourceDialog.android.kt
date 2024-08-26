@@ -5,8 +5,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.datasources.api.source.MediaSourceConfig
-import me.him188.ani.datasources.api.source.MediaSourceParameters
-import me.him188.ani.datasources.api.source.buildMediaSourceParameters
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
+import me.him188.ani.datasources.api.source.parameter.buildMediaSourceParameters
 import kotlin.coroutines.EmptyCoroutineContext
 
 @PreviewLightDark

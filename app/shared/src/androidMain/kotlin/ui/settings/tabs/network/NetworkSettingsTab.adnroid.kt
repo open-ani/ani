@@ -16,8 +16,8 @@ import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
-import me.him188.ani.datasources.api.source.MediaSourceParameters
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 

@@ -28,7 +28,7 @@ import me.him188.ani.app.ui.settings.rendering.renderMediaSourceDescription
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
-import me.him188.ani.datasources.api.source.MediaSourceParameters
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import org.koin.core.component.KoinComponent

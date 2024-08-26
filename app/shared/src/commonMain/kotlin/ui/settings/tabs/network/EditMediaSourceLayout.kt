@@ -38,11 +38,11 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
-import me.him188.ani.datasources.api.source.BooleanParameter
 import me.him188.ani.datasources.api.source.MediaSourceConfig
-import me.him188.ani.datasources.api.source.MediaSourceParameter
-import me.him188.ani.datasources.api.source.SimpleEnumParameter
-import me.him188.ani.datasources.api.source.StringParameter
+import me.him188.ani.datasources.api.source.parameter.BooleanParameter
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameter
+import me.him188.ani.datasources.api.source.parameter.SimpleEnumParameter
+import me.him188.ani.datasources.api.source.parameter.StringParameter
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.coroutines.CoroutineContext
 

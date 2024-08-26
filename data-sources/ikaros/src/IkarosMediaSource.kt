@@ -13,9 +13,9 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceKind
-import me.him188.ani.datasources.api.source.MediaSourceParameters
-import me.him188.ani.datasources.api.source.MediaSourceParametersBuilder
 import me.him188.ani.datasources.api.source.get
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParametersBuilder
 import me.him188.ani.datasources.api.source.useHttpClient
 import java.nio.charset.StandardCharsets
 import java.util.Base64
