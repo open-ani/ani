@@ -23,7 +23,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,10 +45,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,29 +58,72 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.yield
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AsyncImage
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+
+class SubjectPreviewListState(
+    items: State<List<SubjectInfo>>,
+    hasMore: State<Boolean>,
+    private val onRequestMore: suspend () -> Unit,
+    backgroundScope: CoroutineScope,
+) {
+    val items by items
+
+    //    var hasMore by mutableStateOf(true)
+    val hasMore by hasMore
+
+    private val loadMoreTasker = MonoTasker(backgroundScope)
+    val isLoading by loadMoreTasker::isRunning
+
+    fun loadMore() {
+        if (isLoading) return
+        loadMoreTasker.launch {
+            yield()
+            onRequestMore()
+        }
+
+//        if (!hasMore) return
+//
+//        loadMoreTasker.launch(start = CoroutineStart.UNDISPATCHED) {
+//            yield()
+//
+//            try {
+//                val nextPage = pagedSource.nextPageOrNull()
+//                if (nextPage == null) {
+//                    _hasMore.value = false
+//                } else {
+//                    _list.value += nextPage
+//                    _hasMore.value = true
+//                }
+//            } catch (e: Throwable) {
+//                _hasMore.value = false
+//                throw e
+//            } finally {
+//                _loading.value = false
+//            }
+//        }
+    }
+}
 
 /**
  * 番剧预览列表, 双列模式
  */
 @Composable
 fun SubjectPreviewColumn(
-    viewModel: SubjectListViewModel,
+    state: SubjectPreviewListState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier,
 ) {
-    val items by viewModel.list.collectAsStateWithLifecycle()
-
-    val state = rememberLazyGridState()
-    val context by rememberUpdatedState(LocalContext.current)
+    val lazyGridState = rememberLazyGridState()
     val layoutDirection = LocalLayoutDirection.current
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier.background(MaterialTheme.colorScheme.background),
-        state = state,
+        state = lazyGridState,
         contentPadding = PaddingValues(
             top = contentPadding.calculateTopPadding() + 8.dp,
             bottom = contentPadding.calculateBottomPadding() + 8.dp,
@@ -95,7 +137,7 @@ fun SubjectPreviewColumn(
         // 用这个来让 (初始化时) 增加新的元素时, 保持滚动位置在最开始, 而不是到最后
         item("dummy", span = { GridItemSpan(maxLineSpan) }) {}
 
-        items(items, key = { it.id }) { subject ->
+        items(state.items, key = { it.id }) { subject ->
             val navigator = LocalNavigator.current
             SubjectPreviewCard(
                 title = subject.displayName,
@@ -106,26 +148,25 @@ fun SubjectPreviewColumn(
         }
 
         item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
-            val hasMore by viewModel.hasMore.collectAsStateWithLifecycle()
-            val loading by viewModel.loading.collectAsStateWithLifecycle()
-            if (loading || hasMore) {
-                LaunchedEffect(true) {
-                    viewModel.loadMore()
+            if (state.hasMore) {
+                SideEffect {
+                    state.loadMore()
                 }
+            }
+            if (state.isLoading) {
                 Row(
-                    Modifier.padding(vertical = 8.dp).fillMaxWidth().height(IntrinsicSize.Min),
-                    horizontalArrangement = Arrangement.Center,
+                    Modifier.padding(vertical = 16.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 1.5.dp)
+                    CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 3.dp)
                     Text(
                         "加载中",
-                        Modifier.height(IntrinsicSize.Max)
-                            .padding(start = 8.dp)
-                            .align(Alignment.CenterVertically),
+                        Modifier.padding(start = 8.dp),
+                        softWrap = false,
                     )
                 }
                 return@item
-//                LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 16.dp))
             }
 
             // no more items 

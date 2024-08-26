@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,9 +29,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -39,6 +42,7 @@ class MediaCacheDetailsPageViewModel(
     private val cacheId: String,
 ) : AbstractViewModel(), KoinComponent {
     private val cacheManager: MediaCacheManager by inject()
+    private val mediaSourceManager: MediaSourceManager by inject()
 
     private val mediaCacheFlow = cacheManager.enabledStorages.flatMapLatest { storages ->
         combine(
@@ -55,6 +59,9 @@ class MediaCacheDetailsPageViewModel(
     private val originMediaFlow = mediaCacheFlow.map { it?.origin }
 
     val media by originMediaFlow.produceState(null)
+    val sourceInfo: MediaSourceInfo? by derivedStateOf {
+        media?.mediaSourceId?.let { mediaSourceManager.findInfoByMediaSourceId(it) }
+    }
 }
 
 @Composable
@@ -65,6 +72,7 @@ fun MediaCacheDetailsPage(
 ) {
     MediaCacheDetailsPage(
         media = vm.media,
+        sourceInfo = vm.sourceInfo,
         modifier = modifier,
         allowBack = allowBack,
     )
@@ -73,6 +81,7 @@ fun MediaCacheDetailsPage(
 @Composable
 fun MediaCacheDetailsPage(
     media: Media?,
+    sourceInfo: MediaSourceInfo?,
     modifier: Modifier = Modifier,
     allowBack: Boolean = true,
 ) {
@@ -108,6 +117,7 @@ fun MediaCacheDetailsPage(
                         media?.let {
                             MediaDetailsColumn(
                                 it,
+                                sourceInfo = sourceInfo,
                                 Modifier
                                     .verticalScroll(rememberScrollState())
                                     .padding(horizontal = 16.dp)

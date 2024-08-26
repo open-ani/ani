@@ -87,7 +87,7 @@ private fun SettingsScope.RateSliderItem(
     modifier: Modifier = Modifier,
 ) {
     var editingValue by remember(value) {
-        mutableFloatStateOf(if (value == Unspecified) 10f else value.inMegaBytesDouble.toFloat())
+        mutableFloatStateOf(if (value == Unspecified) 10f else value.inMegaBytes)
     }
     SliderItem(
         if (editingValue == -1f) 10f else editingValue,
@@ -98,7 +98,7 @@ private fun SettingsScope.RateSliderItem(
         onValueChangeFinished = {
             onValueChangeFinished(
                 if (editingValue == 10f) Unspecified
-                else editingValue.toDouble().megaBytes,
+                else editingValue.megaBytes,
             )
         },
         modifier = modifier,

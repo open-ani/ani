@@ -1,10 +1,11 @@
 package me.him188.ani.app.data.source.media.cache
 
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
@@ -13,7 +14,6 @@ import kotlinx.serialization.json.put
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
-import me.him188.ani.app.tools.caching.MemoryDataStore
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
@@ -27,7 +27,6 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
-import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.unwrapCached
@@ -125,14 +124,11 @@ class DirectoryMediaCacheStorageTest {
         }
     }
 
-    private val dataStore = MemoryDataStore(DirectoryMediaCacheStorage.SaveData.Initial)
-
     private fun TestScope.createStorage(engine: TorrentMediaCacheEngine = createEngine()): DirectoryMediaCacheStorage {
         return DirectoryMediaCacheStorage(
             CACHE_MEDIA_SOURCE_ID,
             metadataDir,
             engine.also { cacheEngine = it },
-            dataStore = dataStore,
             this.coroutineContext,
         ).also {
             storages.add(it)
@@ -496,49 +492,10 @@ class DirectoryMediaCacheStorageTest {
     // others
     ///////////////////////////////////////////////////////////////////////////
 
-    /**
-     * 持久化总上传量
-     */
-    @Test
-    fun `persist total uploaded`() = runTest {
-        var storage = createStorage(
-            createEngine(onDownloadStarted = { it.onTorrentChecked() }),
-        )
-
-        kotlin.run {
-            val cache =
-                storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
-
-            cache.getSession().overallStats.uploadedBytes.emit(100)
-            runCurrent()
-
-            assertEquals(100.bytes, dataStore.data.first().uploaded)
-            assertEquals(100.bytes, storage.stats.uploaded.first())
-
-            cache.getSession().overallStats.uploadedBytes.emit(200)
-            runCurrent()
-
-            assertEquals(200.bytes, dataStore.data.first().uploaded)
-            assertEquals(200.bytes, storage.stats.uploaded.first())
-        }
-        cleanup()
-
-        storage = createStorage(
-            createEngine(onDownloadStarted = { it.onTorrentChecked() }),
-        )
-
-        assertEquals(200.bytes, dataStore.data.first().uploaded)
-        assertEquals(200.bytes, storage.stats.uploaded.first())
-        kotlin.run {
-            val cache =
-                storage.cache(media, mediaCacheMetadata(), resume = false) as TorrentMediaCacheEngine.TorrentMediaCache
-
-            cache.getSession().overallStats.uploadedBytes.emit(150)
-            runCurrent()
-
-            assertEquals(350.bytes, dataStore.data.first().uploaded)
-            assertEquals(350.bytes, storage.stats.uploaded.first())
-        }
-        cleanup()
-    }
+    private suspend fun DirectoryMediaCacheStorage.getUploaded() =
+        stats.map { it.uploaded }.first()
 }
+
+private suspend fun <T> MutableSharedFlow<T>.emit(
+    value: (T & Any).() -> T
+) = emit(value(replayCache.first()!!))

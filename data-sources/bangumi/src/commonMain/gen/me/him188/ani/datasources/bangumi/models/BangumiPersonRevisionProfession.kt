@@ -16,12 +16,11 @@
 package me.him188.ani.datasources.bangumi.models
 
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param producer
  * @param mangaka
@@ -29,7 +28,7 @@ import kotlinx.serialization.encoding.*
  * @param seiyu
  * @param writer
  * @param illustrator
- * @param actor
+ * @param actor 
  */
 @Serializable
 

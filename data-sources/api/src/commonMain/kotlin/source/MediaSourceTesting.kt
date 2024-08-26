@@ -12,6 +12,10 @@ open class TestHttpMediaSource(
     private val randomConnectivity: Boolean = false,
     private val fetch: suspend (MediaFetchRequest) -> SizedSource<MediaMatch> = { emptySizedSource() }
 ) : HttpMediaSource() {
+    override val info: MediaSourceInfo = MediaSourceInfo(
+        displayName = "Test Http Media Source",
+    )
+
     override suspend fun checkConnection(): ConnectionStatus {
         if (randomConnectivity) {
             return Random.nextBoolean().let {

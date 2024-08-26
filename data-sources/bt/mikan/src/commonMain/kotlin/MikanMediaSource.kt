@@ -42,6 +42,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.asAutoCloseable
 import me.him188.ani.datasources.api.source.toOnlineMedia
@@ -66,9 +67,10 @@ import me.him188.ani.utils.xml.Xml
 class MikanCNMediaSource(
     config: MediaSourceConfig,
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
-) : AbstractMikanMediaSource(ID, config, "https://mikanime.tv", indexCacheProvider) {
+) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+        override val info: MediaSourceInfo get() = INFO
 
         override fun create(config: MediaSourceConfig): MediaSource =
             MikanCNMediaSource(config)
@@ -81,15 +83,24 @@ class MikanCNMediaSource(
 
     companion object {
         const val ID = "mikan-mikanime-tv"
+        const val BASE_URL = "https://mikanime.tv"
+        val INFO = MediaSourceInfo(
+            displayName = "蜜柑计划",
+            websiteUrl = BASE_URL,
+            imageUrl = "https://mikanani.me/images/mikan-pic.png",
+        )
     }
+
+    override val info: MediaSourceInfo get() = INFO
 }
 
 class MikanMediaSource(
     config: MediaSourceConfig,
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
-) : AbstractMikanMediaSource(ID, config, "https://mikanani.me", indexCacheProvider) {
+) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+        override val info: MediaSourceInfo get() = INFO
         override fun create(config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
 
         // TODO: this is actually not so good. We should generalize how MS can access caches.
@@ -101,7 +112,15 @@ class MikanMediaSource(
 
     companion object {
         const val ID = "mikan"
+        const val BASE_URL = "https://mikanani.me"
+        val INFO = MediaSourceInfo(
+            displayName = "蜜柑计划",
+            websiteUrl = BASE_URL,
+            imageUrl = "https://mikanani.me/images/mikan-pic.png",
+        )
     }
+
+    override val info: MediaSourceInfo get() = INFO
 }
 
 abstract class AbstractMikanMediaSource(
@@ -112,7 +131,7 @@ abstract class AbstractMikanMediaSource(
 ) : HttpMediaSource() {
     override val kind: MediaSourceKind get() = MediaSourceKind.BitTorrent
 
-    private val baseUrl = baseUrl.removeSuffix("/")
+    protected val baseUrl = baseUrl.removeSuffix("/")
     private val client by lazy { useHttpClient(config).also { addCloseable(it.asAutoCloseable()) } }
 
     override suspend fun checkConnection(): ConnectionStatus {
@@ -144,7 +163,7 @@ abstract class AbstractMikanMediaSource(
             parameter("searchstr", query.subjectNameCN?.take(10))
         }
         return resp.bodyAsChannel().toSource().use {
-            parseRssTopicList(Xml.parse(it, baseUrl), query.toTopicCriteria(), allowEpMatch = false)
+            parseRssTopicList(Xml.parse(it, baseUrl), query.toTopicCriteria(), allowEpMatch = false, baseUrl)
         }.map {
             MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.FUZZY)
         }
@@ -175,7 +194,7 @@ abstract class AbstractMikanMediaSource(
 
         // https://mikanani.me/RSS/Bangumi?bangumiId=3060
         return client.get("$baseUrl/RSS/Bangumi?bangumiId=$subjectId").bodyAsChannel().toSource().use {
-            parseRssTopicList(Xml.parse(it, baseUrl), request.toTopicCriteria(), allowEpMatch = true)
+            parseRssTopicList(Xml.parse(it, baseUrl), request.toTopicCriteria(), allowEpMatch = true, baseUrl = baseUrl)
         }.map {
             MediaMatch(it.toOnlineMedia(mediaSourceId), MatchKind.EXACT)
         }
@@ -219,7 +238,7 @@ abstract class AbstractMikanMediaSource(
     }
 
     companion object {
-        private fun parseDocument(document: Document, linkRegex: Regex): List<Topic> {
+        private fun parseDocument(document: Document, linkRegex: Regex, baseUrl: String): List<Topic> {
             val items = document.getElementsByTag("item")
 
             return items.map { element ->
@@ -243,10 +262,13 @@ abstract class AbstractMikanMediaSource(
                         .trim(),
                     author = null,
                     details = details.toTopicDetails(),
-                    originalLink = run {
+                    originalLink = kotlin.run {
                         element.getElementsByTag("link").text().takeIf { it.isNotBlank() }?.let { return@run it }
                         // Note: It looks like Jsoup failed to parse the xml. Debug and print `element` to see details.
                         linkRegex.find(element.toString())?.value // This should work well
+                    }?.let {
+                        if (it.startsWith("http")) it
+                        else "$baseUrl$it"
                     } ?: "",
                 )
             }
@@ -258,8 +280,9 @@ abstract class AbstractMikanMediaSource(
             document: Document,
             criteria: TopicCriteria,
             allowEpMatch: Boolean,
+            baseUrl: String,
         ): List<Topic> {
-            return parseDocument(document, linkRegex = linkRegex)
+            return parseDocument(document, linkRegex = linkRegex, baseUrl = baseUrl)
                 .filter { criteria.matches(it, allowEpMatch = allowEpMatch) }
         }
 

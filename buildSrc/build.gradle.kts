@@ -57,10 +57,4 @@ dependencies {
     api(libs.kotlin.compose.compiler.gradle.plugin)
     implementation(kotlin("script-runtime"))
     implementation(libs.snakeyaml)
-
-
-//    api(libs.aws.s3)
-//    api(libs.aws.s3control)
-//    api(libs.aws.sts)
-//    api(libs.aws.secretsmanager)
 }

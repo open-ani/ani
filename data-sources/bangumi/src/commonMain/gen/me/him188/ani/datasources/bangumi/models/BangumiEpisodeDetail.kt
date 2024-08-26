@@ -16,24 +16,24 @@
 package me.him188.ani.datasources.bangumi.models
 
 
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
+ * 
  *
- *
- * @param id
+ * @param id 
  * @param type `0` 本篇，`1` SP，`2` OP，`3` ED
  * @param name
- * @param nameCn
+ * @param nameCn 
  * @param sort 同类条目的排序和集数
  * @param airdate
  * @param comment
- * @param duration
+ * @param duration 
  * @param desc 简介
  * @param disc 音乐曲目的碟片数
- * @param subjectId
+ * @param subjectId 
  * @param ep 条目内的集数, 从`1`开始。非本篇剧集的此字段无意义
  */
 @Serializable

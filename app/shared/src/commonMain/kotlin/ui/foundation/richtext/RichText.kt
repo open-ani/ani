@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -338,10 +340,9 @@ object RichTextDefaults {
         val context = LocalPlatformContext.current
         val density = LocalDensity.current
         
-        val currentOnClick by rememberUpdatedState(onClick)
-        var state by rememberSaveable { mutableStateOf(0) } // 0: loading, 1: success, 2: failed
-        var imageRealWidth by rememberSaveable { mutableStateOf(0f) }
-        var imageRealHeight by rememberSaveable { mutableStateOf(0f) }
+        var state by rememberSaveable { mutableIntStateOf(0) } // 0: loading, 1: success, 2: failed
+        var imageRealWidth by rememberSaveable { mutableFloatStateOf(0f) }
+        var imageRealHeight by rememberSaveable { mutableFloatStateOf(0f) }
 
 
         AsyncImage(
@@ -366,7 +367,7 @@ object RichTextDefaults {
                 .animateContentSize()
                 .placeholder(state == 0)
                 .clip(RoundedCornerShape(8.dp))
-                .then(Modifier.clickable { currentOnClick() }),
+                .then(Modifier.clickable { onClick() }),
             contentScale = ContentScale.Fit,
             onSuccess = {
                 if (state != 1) state = 1

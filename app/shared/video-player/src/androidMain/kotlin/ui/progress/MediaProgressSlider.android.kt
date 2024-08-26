@@ -15,8 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import me.him188.ani.app.tools.torrent.TorrentMediaCacheProgressState
-import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
@@ -25,7 +25,7 @@ import kotlin.time.Duration.Companion.milliseconds
 // Try interactive preview to see cache progress change
 @Preview
 @Composable
-fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview() {
+fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview {
     var currentPositionMillis by remember { mutableLongStateOf(2000) }
     val totalDurationMillis by remember { mutableLongStateOf(30_000) }
     val pieces = remember {

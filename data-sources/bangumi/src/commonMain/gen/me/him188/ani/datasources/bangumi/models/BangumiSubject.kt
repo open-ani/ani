@@ -15,19 +15,12 @@
 
 package me.him188.ani.datasources.bangumi.models
 
-import me.him188.ani.datasources.bangumi.models.BangumiCollection
-import me.him188.ani.datasources.bangumi.models.BangumiImages
-import me.him188.ani.datasources.bangumi.models.BangumiItem
-import me.him188.ani.datasources.bangumi.models.BangumiRating
-import me.him188.ani.datasources.bangumi.models.BangumiSubjectType
-import me.him188.ani.datasources.bangumi.models.BangumiTag
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param id
  * @param type
@@ -35,17 +28,17 @@ import kotlinx.serialization.encoding.*
  * @param nameCn
  * @param summary
  * @param nsfw
- * @param locked
+ * @param locked 
  * @param platform TV, Web, 欧美剧, PS4...
- * @param images
+ * @param images 
  * @param volumes 书籍条目的册数，由旧服务端从wiki中解析
  * @param eps 由旧服务端从wiki中解析，对于书籍条目为`话数`
  * @param totalEpisodes 数据库中的章节数量
  * @param rating
  * @param collection
- * @param tags
+ * @param tags 
  * @param date air date in `YYYY-MM-DD` format
- * @param infobox
+ * @param infobox 
  */
 @Serializable
 

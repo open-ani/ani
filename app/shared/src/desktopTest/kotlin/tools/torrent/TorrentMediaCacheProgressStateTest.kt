@@ -1,8 +1,8 @@
 package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.framework.takeSnapshot
 import me.him188.ani.app.videoplayer.ui.state.ChunkState

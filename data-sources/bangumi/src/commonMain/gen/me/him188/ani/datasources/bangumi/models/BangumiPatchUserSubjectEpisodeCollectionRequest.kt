@@ -20,10 +20,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- *
+ * 
  *
  * @param episodeId
- * @param type
+ * @param type 
  */
 @Serializable
 
@@ -32,5 +32,6 @@ data class BangumiPatchUserSubjectEpisodeCollectionRequest(
     @SerialName(value = "episode_id") @Required val episodeId: kotlin.collections.List<kotlin.Int>,
 
     @SerialName(value = "type") @Required val type: BangumiEpisodeCollectionType
+
 )
 

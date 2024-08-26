@@ -25,6 +25,7 @@ import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.TopicMediaSource
 import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.Topic
@@ -37,13 +38,20 @@ class DmhyMediaSource(
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String = ID
+        override val info: MediaSourceInfo get() = INFO
         override fun create(config: MediaSourceConfig): MediaSource = DmhyMediaSource(config)
     }
 
     companion object {
         const val ID = "dmhy"
+        val INFO = MediaSourceInfo(
+            displayName = "動漫花園",
+            description = "动漫资源聚合网站",
+            imageUrl = "https://dmhy.org/favicon.ico",
+        )
     }
 
+    override val info: MediaSourceInfo get() = INFO
     private val network by lazy {
         Network(useHttpClient(config))
     }

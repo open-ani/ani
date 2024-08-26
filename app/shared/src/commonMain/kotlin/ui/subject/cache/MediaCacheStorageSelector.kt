@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
-import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 
 @Composable
 fun SelectMediaStorageDialog(
@@ -44,7 +43,7 @@ fun SelectMediaStorageDialog(
                             { onSelect(storage) },
                             shape = MaterialTheme.shapes.small,
                         ) {
-                            Text(renderMediaSource(storage.mediaSourceId)) // TODO: 本地的全都叫 "本地" 无法区分 
+                            Text(storage.cacheMediaSource.info.displayName) // TODO: 本地的全都叫 "本地" 无法区分 
                         }
                     }
                 }

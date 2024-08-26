@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDefaults
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
@@ -24,7 +25,7 @@ private val testEpisodes = listOf(
         episodeSort = "00",
         collectionType = UnifiedCollectionType.DONE,
         isOnAir = false,
-        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+        cacheStatus = EpisodeCacheStatus.Caching(0.3f.toProgress(), 300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 1,
@@ -52,7 +53,7 @@ private val testEpisodes = listOf(
         episodeSort = "04",
         collectionType = UnifiedCollectionType.WISH,
         isOnAir = false,
-        cacheStatus = EpisodeCacheStatus.Caching(0.7f, 300.megaBytes),
+        cacheStatus = EpisodeCacheStatus.Caching(0.7f.toProgress(), 300.megaBytes),
     ),
     EpisodeProgressItem(
         episodeId = 5,
@@ -80,7 +81,7 @@ private val testEpisodes = listOf(
         episodeSort = "08",
         collectionType = UnifiedCollectionType.WISH,
         isOnAir = true,
-        cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+        cacheStatus = EpisodeCacheStatus.Caching(0.3f.toProgress(), 300.megaBytes),
     ),
 )
 
@@ -161,5 +162,5 @@ private fun item(id: Int) = EpisodeProgressItem(
     episodeSort = id.toString(),
     collectionType = UnifiedCollectionType.WISH,
     isOnAir = true,
-    cacheStatus = EpisodeCacheStatus.Caching(0.3f, 300.megaBytes),
+    cacheStatus = EpisodeCacheStatus.Caching(0.3f.toProgress(), 300.megaBytes),
 )

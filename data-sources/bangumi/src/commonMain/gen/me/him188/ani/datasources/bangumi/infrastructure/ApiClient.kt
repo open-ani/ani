@@ -49,7 +49,7 @@ open class ApiClient(
         this.client = httpClient
     }
 
-    val authentications: kotlin.collections.Map<String, Authentication> by lazy {
+    private val authentications: kotlin.collections.Map<String, Authentication> by lazy {
         mapOf(
             "OptionalHTTPBearer" to HttpBearerAuth("Bearer"),
             "HTTPBearer" to HttpBearerAuth("Bearer"),
@@ -119,7 +119,7 @@ open class ApiClient(
      *
      * @param accessToken Access token
      */
-    fun setAccessToken(accessToken: String?) {
+    fun setAccessToken(accessToken: String) {
         val auth = authentications?.values?.firstOrNull { it is OAuth } as OAuth?
             ?: throw Exception("No OAuth2 authentication configured")
         auth.accessToken = accessToken
@@ -130,7 +130,7 @@ open class ApiClient(
      *
      * @param bearerToken The bearer token.
      */
-    fun setBearerToken(bearerToken: String?) {
+    fun setBearerToken(bearerToken: String) {
         val auth = authentications?.values?.firstOrNull { it is HttpBearerAuth } as HttpBearerAuth?
             ?: throw Exception("No Bearer authentication configured")
         auth.bearerToken = bearerToken

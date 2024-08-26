@@ -251,15 +251,19 @@ class EpisodeVideoControllerTest {
         waitForIdle()
         val root = onAllNodes(isRoot()).onFirst()
 
-        root.performClick() // 显示全部控制器
+        runOnUiThread {
+            root.performClick() // 显示全部控制器 
+        }
         runOnIdle {
             waitUntil { topBar.exists() }
             detachedProgressSlider.assertDoesNotExist()
         }
 
-        root.performTouchInput {
-            down(centerLeft)
-            moveBy(Offset(width / 2f, 0f))
+        runOnUiThread {
+            root.performTouchInput {
+                down(centerLeft)
+                moveBy(Offset(width / 2f, 0f))
+            }
         }
         runOnIdle {
             waitUntil { previewPopup.exists() }
@@ -267,8 +271,10 @@ class EpisodeVideoControllerTest {
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
-        root.performTouchInput {
-            up()
+        runOnUiThread {
+            root.performTouchInput {
+                up()
+            }
         }
         runOnIdle {
             waitUntil { previewPopup.doesNotExist() }
@@ -311,9 +317,10 @@ class EpisodeVideoControllerTest {
                 up()
             }
         }
-        mainClock.autoAdvance = true
-        mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-
+        runOnIdle {
+            mainClock.autoAdvance = true
+            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+        }
         runOnIdle {
             waitUntil { onNodeWithText("00:46 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
@@ -353,9 +360,10 @@ class EpisodeVideoControllerTest {
                     up()
                 }
             }
-            mainClock.autoAdvance = true
-            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-
+            runOnIdle {
+                mainClock.autoAdvance = true
+                mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+            }
             runOnIdle {
                 waitUntil { onNodeWithText("00:46 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
@@ -557,7 +565,9 @@ class EpisodeVideoControllerTest {
             expectAlwaysOn = true,
         )
         // 点击外部, 关闭 side sheet
-        mainClock.autoAdvance = false
+        runOnUiThread {
+            mainClock.autoAdvance = false
+        }
         runOnIdle {
             onRoot().performTouchInput {
                 click(center)
@@ -571,7 +581,9 @@ class EpisodeVideoControllerTest {
         runOnIdle {
             mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
         }
-        mainClock.autoAdvance = true
+        runOnUiThread {
+            mainClock.autoAdvance = true
+        }
         waitForIdle()
         assertControllerVisible(false)
     }
@@ -660,9 +672,11 @@ class EpisodeVideoControllerTest {
         }
 
         // 显示控制器
-        mainClock.autoAdvance = false
-        onRoot().performTouchInput {
-            swipe(centerLeft, center)
+        runOnUiThread {
+            mainClock.autoAdvance = false
+            onRoot().performTouchInput {
+                swipe(centerLeft, center)
+            }
         }
         runOnIdle {
             waitUntil { topBar.exists() }
@@ -672,10 +686,14 @@ class EpisodeVideoControllerTest {
             )
         }
 
-        performGesture()
+        runOnUiThread {
+            performGesture()
+        }
 
-        mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
-        mainClock.autoAdvance = true
+        runOnUiThread {
+            mainClock.advanceTimeBy((VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
+            mainClock.autoAdvance = true
+        }
         runOnIdle {
             assertEquals(expectAlwaysOn, controllerState.alwaysOn)
             assertControllerVisible(expectAlwaysOn)

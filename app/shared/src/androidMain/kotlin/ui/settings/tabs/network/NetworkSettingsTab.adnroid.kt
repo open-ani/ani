@@ -16,8 +16,9 @@ import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
-import me.him188.ani.datasources.api.source.MediaSourceParameters
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.TestHttpMediaSource
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 
@@ -109,18 +110,18 @@ private fun PreviewSelectMediaSourceTemplateLayout() {
             remember {
                 listOf(
                     MediaSourceTemplate(
+                        mediaSourceId = "1",
                         MediaSourceInfo(
-                            mediaSourceId = "1",
-                            name = "Test",
-                            parameters = MediaSourceParameters.Empty,
+                            "Test",
                         ),
+                        parameters = MediaSourceParameters.Empty,
                     ),
                     MediaSourceTemplate(
+                        mediaSourceId = "123",
                         MediaSourceInfo(
-                            mediaSourceId = "123",
-                            name = "Test2",
-                            parameters = MediaSourceParameters.Empty,
+                            "Test2",
                         ),
+                        parameters = MediaSourceParameters.Empty,
                     ),
                 )
             },

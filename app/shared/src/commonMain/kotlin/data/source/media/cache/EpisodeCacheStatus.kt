@@ -1,6 +1,7 @@
 package me.him188.ani.app.data.source.media.cache
 
 import androidx.compose.runtime.Stable
+import me.him188.ani.app.tools.Progress
 import me.him188.ani.datasources.api.topic.FileSize
 
 @Stable
@@ -22,8 +23,7 @@ sealed class EpisodeCacheStatus {
         /**
          * This will not be 1f (on which it will become [Cached]).
          */
-        // TODO: Do not box progress Float 
-        val progress: Float?, // null means still connecting
+        val progress: Progress,
         val totalSize: FileSize,
     ) : EpisodeCacheStatus()
 

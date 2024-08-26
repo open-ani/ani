@@ -23,16 +23,16 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
 /**
- *
+ * 
  *
  * @param id
- * @param name
+ * @param name 
  * @param type 角色，机体，舰船，组织...
  * @param subjectId
  * @param subjectName
- * @param subjectNameCn
+ * @param subjectNameCn 
  * @param images object with some size of images, this object maybe `null`
- * @param staff
+ * @param staff 
  */
 @Serializable
 

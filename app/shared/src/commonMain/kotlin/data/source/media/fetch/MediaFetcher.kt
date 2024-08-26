@@ -40,6 +40,7 @@ import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.toStringMultiline
 import me.him188.ani.utils.coroutines.cancellableCoroutineScope
@@ -137,11 +138,12 @@ class MediaSourceMediaFetcher(
 ) : MediaFetcher {
     private inner class MediaSourceResultImpl(
         override val mediaSourceId: String,
+        override val sourceInfo: MediaSourceInfo,
         override val kind: MediaSourceKind,
         private val config: MediaFetcherConfig,
         val disabled: Boolean,
         pagedSources: Flow<SizedSource<MediaMatch>>,
-        flowContext: CoroutineContext,
+        flowContext: CoroutineContext, 
     ) : MediaSourceFetchResult, SynchronizedObject() {
         /**
          * 为了确保线程安全, 对 [state] 的写入必须谨慎.
@@ -289,6 +291,7 @@ class MediaSourceMediaFetcher(
         override val mediaSourceResults: List<MediaSourceFetchResult> = mediaSources.map { instance ->
             MediaSourceResultImpl(
                 mediaSourceId = instance.mediaSourceId,
+                instance.source.info,
                 instance.source.kind,
                 config,
                 disabled = !instance.isEnabled,

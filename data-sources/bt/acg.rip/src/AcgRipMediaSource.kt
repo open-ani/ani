@@ -31,6 +31,7 @@ import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.TopicMediaSource
 import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -53,11 +54,18 @@ class AcgRipMediaSource(
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
+        override val info: MediaSourceInfo get() = INFO
+
         override fun create(config: MediaSourceConfig): MediaSource = AcgRipMediaSource(config)
     }
 
     companion object {
         const val ID = "acg.rip"
+        val INFO = MediaSourceInfo(
+            "ACG.RIP",
+            websiteUrl = "https://acg.rip",
+            imageUrl = "https://acg.rip/favicon.ico",
+        )
     }
 
     override val mediaSourceId: String get() = ID
@@ -107,6 +115,7 @@ class AcgRipMediaSource(
         }
     }
 
+    override val info: MediaSourceInfo get() = INFO
 }
 
 private val FORMATTER = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH)

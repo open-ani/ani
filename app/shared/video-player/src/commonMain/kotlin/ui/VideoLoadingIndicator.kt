@@ -19,7 +19,7 @@ fun VideoLoadingIndicator(
     showProgress: Boolean,
     text: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    textStyle: TextStyle = MaterialTheme.typography.labelSmall,
+    textStyle: TextStyle = MaterialTheme.typography.labelLarge,
 ) {
     MaterialTheme(aniDarkColorTheme()) {
         Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {

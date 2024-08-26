@@ -10,25 +10,27 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import me.him188.ani.app.torrent.anitorrent.DisposableTaskQueue
-import me.him188.ani.app.torrent.api.TorrentDownloadSession
+import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.app.torrent.api.files.AbstractTorrentFileEntry
-import me.him188.ani.app.torrent.api.files.DownloadStats
 import me.him188.ani.app.torrent.api.files.FilePriority
-import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.app.torrent.api.files.TorrentFilePieceMatcher
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PiecePriorities
+import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex
@@ -38,11 +40,15 @@ import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
 import me.him188.ani.utils.io.deleteRecursively
 import me.him188.ani.utils.logging.debug
+import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
+
+private val PROGRESS_RANGE = 0f..1f
 
 class AnitorrentDownloadSession(
     private val handle: TorrentHandle,
@@ -53,13 +59,23 @@ class AnitorrentDownloadSession(
     private val onDelete: (AnitorrentDownloadSession) -> Unit,
     parentCoroutineContext: CoroutineContext,
     dispatcher: CoroutineContext = Dispatchers.IO,
-) : TorrentDownloadSession, SynchronizedObject() {
+) : TorrentSession, SynchronizedObject() {
     val logger = logger(this::class)
     val handleId get() = handle.id // 内存地址, 不可持久
 
     private val scope = CoroutineScope(
         parentCoroutineContext + dispatcher + SupervisorJob(parentCoroutineContext[Job]),
     )
+
+    // 要放在 init 前面, 因为 init 会用到它
+    override val sessionStats: MutableSharedFlow<TorrentSession.Stats?> =
+        MutableSharedFlow<TorrentSession.Stats?>(
+            replay = 1,
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        ).apply {
+            tryEmit(null)
+        }
 
     init {
         scope.launch {
@@ -71,9 +87,26 @@ class AnitorrentDownloadSession(
                 delay(1000)
             }
         }
-    }
 
-    override val overallStats: MutableDownloadStats = MutableDownloadStats()
+        scope.launch {
+            var lastUploaded = 0L
+            while (isActive) {
+                if (!handle.isValid) {
+                    return@launch
+                }
+                val uploaded = sessionStats.first()
+                if (uploaded != null && uploaded.uploadedBytes != lastUploaded) {
+                    lastUploaded = uploaded.uploadedBytes
+                    try {
+                        handle.postSaveResume()
+                    } catch (e: Throwable) {
+                        logger.error(e) { "Failed to save resume data" }
+                    }
+                }
+                delay(60.seconds)
+            }
+        }
+    }
 
     private val openFiles = mutableListOf<AnitorrentEntry.EntryHandle>()
     private val prioritizer = createPiecePriorities()
@@ -90,7 +123,12 @@ class AnitorrentDownloadSession(
         parentCoroutineContext,
     ) {
         override val supportsStreaming: Boolean get() = true
-        val pieceRange = if (pieces.isEmpty()) LongRange.EMPTY else pieces.first().startIndex..pieces.last().lastIndex
+
+        /**
+         * 是 [Piece.pieceIndex], 不是 file offset
+         */
+        val pieceIndexRange =
+            if (pieces.isEmpty()) IntRange.EMPTY else pieces.first().pieceIndex..pieces.last().pieceIndex
 
         val controller: TorrentDownloadController = TorrentDownloadController(
             pieces,
@@ -117,7 +155,7 @@ class AnitorrentDownloadSession(
 
             override suspend fun closeAndDelete() {
                 close()
-                deleteEntireTorrentIfNotInUse()
+                withContext(Dispatchers.IO) { deleteEntireTorrentIfNotInUse() }
             }
         }
 
@@ -127,15 +165,15 @@ class AnitorrentDownloadSession(
         }
 
         val downloadedBytes: MutableStateFlow<Long> = MutableStateFlow(initialDownloadedBytes)
-        override val stats: DownloadStats = object : DownloadStats() {
-            override val totalSize: MutableStateFlow<Long> = MutableStateFlow(length)
-            override val downloadedBytes: MutableStateFlow<Long> get() = this@AnitorrentEntry.downloadedBytes
-            override val uploadRate: MutableStateFlow<Long> get() = this@AnitorrentDownloadSession.overallStats.uploadRate
-            override val progress: Flow<Float> =
-                combine(totalSize, downloadedBytes) { total, downloaded ->
-                    if (total == 0L) return@combine 0f
-                    downloaded.toFloat() / total.toFloat()
-                }
+        override val fileStats: Flow<TorrentFileEntry.Stats> = downloadedBytes.map { downloaded ->
+            TorrentFileEntry.Stats(
+                downloadedBytes = downloaded.coerceAtMost(length),
+                downloadProgress = if (length == 0L) {
+                    0f
+                } else {
+                    (downloaded.toFloat() / length).coerceIn(PROGRESS_RANGE)
+                },
+            )
         }
 
         override fun createHandle(): TorrentFileHandle {
@@ -192,7 +230,7 @@ class AnitorrentDownloadSession(
     private val actualTorrentInfo = CompletableDeferred<TorrentInfo>()
 
     /**
-     * 在某些时候 [close] 需要等待此 session 完全关闭，通过 [event_listener_t.on_torrent_removed] 来监听此事件
+     * 在某些时候 [close] 需要等待此 session 完全关闭，通过 [onTorrentRemoved] 来监听此事件
      */
     private val closingDeferred: CompletableDeferred<Unit> by lazy { CompletableDeferred() }
 
@@ -284,7 +322,6 @@ class AnitorrentDownloadSession(
             entries,
         )
         logger.info { "[$handleId] Got torrent info: $value" }
-        this.overallStats.totalSize.value = entries.sumOf { it.length }
 //        handle.ignore_all_files() // no need because we set libtorrent::torrent_flags::default_dont_download in native
         this.actualTorrentInfo.complete(value)
     }
@@ -295,11 +332,13 @@ class AnitorrentDownloadSession(
     }
 
     private fun reloadFilesAndInitializeIfNotYet() {
-        if (!actualTorrentInfo.isCompleted) {
+        if (actualTorrentInfo.isActive) {
             logger.info { "[$handleId] reloadFiles" }
             initializeTorrentInfo(
                 handle.reloadFile(),
             ) // split to multiple lines for debugging
+        } else {
+            logger.warn { "[$handleId] reloadFilesAndInitializeIfNotYet is called, but actualTorrentInfo is not active: $actualTorrentInfo" }
         }
     }
 
@@ -325,13 +364,13 @@ class AnitorrentDownloadSession(
     ) {
         info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
         for (file in openFiles) {
-            if (pieceIndex in file.entry.pieceRange) {
+            if (pieceIndex in file.entry.pieceIndexRange) {
                 file.entry.controller.onPieceDownloaded(pieceIndex)
             }
         }
         // TODO: Anitorrent 计算 file 完成度的算法需要优化性能, 这有 n^2 复杂度
         for (entry in info.entries) {
-            if (pieceIndex !in entry.pieceRange) continue
+            if (pieceIndex !in entry.pieceIndexRange) continue
 
             val downloadedBytes = entry.downloadedBytes.value
             if (downloadedBytes == entry.length) {
@@ -355,12 +394,16 @@ class AnitorrentDownloadSession(
     }
 
     fun onStatsUpdate(stats: TorrentStats) {
-        this.overallStats.downloadRate.value = stats.downloadPayloadRate.toUInt().toLong()
-        this.overallStats.uploadRate.value = stats.uploadPayloadRate.toUInt().toLong()
-        this.overallStats.progress.value = stats.progress
-        this.overallStats.downloadedBytes.value = (this.overallStats.totalSize.value * stats.progress).toLong()
-        this.overallStats.uploadedBytes.value = stats.totalPayloadUpload
-        this.overallStats.isFinished.value = stats.progress >= 1f
+        this.sessionStats.tryEmit(
+            TorrentSession.Stats(
+                totalSizeRequested = stats.total,
+                downloadedBytes = stats.totalDone,
+                downloadSpeed = stats.downloadPayloadRate,
+                uploadedBytes = stats.allTimeUpload,
+                uploadSpeed = stats.uploadPayloadRate,
+                downloadProgress = stats.progress,
+            ),
+        )
     }
 
     fun onFileCompleted(index: Int) {

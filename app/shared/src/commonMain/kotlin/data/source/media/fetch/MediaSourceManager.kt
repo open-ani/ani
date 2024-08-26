@@ -26,6 +26,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.utils.coroutines.onReplacement
@@ -69,6 +70,10 @@ interface MediaSourceManager { // available by inject
     }
 
     fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig>
+
+    fun findInfoByMediaSourceId(mediaSourceId: String): MediaSourceInfo? {
+        return allFactories.find { it.mediaSourceId == mediaSourceId }?.info
+    }
 
     suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig)
     suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)

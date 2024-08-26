@@ -15,12 +15,9 @@
 
 package me.him188.ani.datasources.bangumi.next.models
 
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextGroup
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextSubject
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -39,7 +36,7 @@ import kotlinx.serialization.encoding.*
  * @param locked
  * @param platform
  * @param redirect
- * @param summary
+ * @param summary 
  * @param typeID 
  */
 @Serializable

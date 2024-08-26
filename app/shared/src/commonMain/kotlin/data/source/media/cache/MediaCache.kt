@@ -4,8 +4,12 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
+import me.him188.ani.app.tools.Progress
+import me.him188.ani.app.tools.toProgress
+import me.him188.ani.app.torrent.api.TorrentSession
+import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
@@ -56,49 +60,121 @@ interface MediaCache {
     fun isValid(): Boolean
 
     /**
-     * 下载速度, 每秒. 对于不支持下载的缓存, 该值为 [FileSize.Zero].
-     *
-     * 为单个文件的下载速度.
-     *
-     * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
-     * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
+     * @see TorrentFileEntry.Stats
+     * @see TorrentMediaCacheEngine.TorrentMediaCache.fileStats
      */
-    val downloadSpeed: Flow<FileSize>
+    data class FileStats(
+        val totalSize: FileSize,
+        /**
+         * 已经下载成功的字节数.
+         *
+         * @return `0L`..[TorrentFileEntry.length]
+         * @see TorrentFileEntry.Stats.downloadedBytes
+         */
+        val downloadedBytes: FileSize,
+        /**
+         * 已完成比例.
+         *
+         * @return `0f`..`1f`, 在未开始下载时, 该值为 [Progress.Unspecified].
+         */
+        val downloadProgress: Progress = if (totalSize.isUnspecified || downloadedBytes.isUnspecified) {
+            Progress.Unspecified
+        } else {
+            if (totalSize.inBytes == 0L) {
+                0f.toProgress()
+            } else {
+                (downloadedBytes.inBytes.toFloat() / totalSize.inBytes).toProgress()
+            }
+        },
 
-    val sessionDownloadSpeed: Flow<FileSize> get() = downloadSpeed
+        // 没有上传信息
+        // hint: 要获取下载速度: downloadedBytes.sampleWithInitial(1000).averageRate()
+    ) {
+        /**
+         * 下载是否已经完成.
+         *
+         * 在刚创建时, [MediaCache] 可能需要时间扫描已经下载的文件状态.
+         * 在扫描完成前, 即使文件已经下载成功, 该值也为 `false`.
+         */
+        val isDownloadFinished: Boolean get() = downloadProgress.isFinished
+
+        companion object {
+            val Unspecified = FileStats(FileSize.Unspecified, FileSize.Unspecified, Progress.Unspecified)
+        }
+    }
 
     /**
-     * 上传速度, 每秒. 对于不支持上传的缓存, 该值为 [FileSize.Zero].
-     *
-     * 注意, 这实际上是整个 media 的下载速度.
-     *
-     * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
-     * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
+     * 当前文件的下载状态.
      */
-    val sessionUploadSpeed: Flow<FileSize> // todo this is shit
+    val fileStats: Flow<FileStats>
 
     /**
-     * 下载进度, 范围为 `0.0f..1.0f`.
+     * 所属的 [Media] 的下载状态, 也就是会包含其他剧集的下载状态.
+     *
+     * 注意, 所有属性都需要检查 Unspecified
+     *
+     * @see sessionStats
+     * @see TorrentSession.Stats
+     * @see TorrentMediaCacheEngine.TorrentMediaCache.sessionStats
      */
-    val progress: Flow<Float>
+    data class SessionStats(
+        /**
+         * 所有请求了的文件的大小
+         */
+        val totalSize: FileSize,
+        /**
+         * 已经下载成功的字节数.
+         *
+         * @return `0L`..[TorrentFileEntry.length]
+         */
+        val downloadedBytes: FileSize,
+        /**
+         * 下载速度, 每秒. 对于不支持下载的缓存, 该值为 [FileSize.Zero].
+         *
+         * 为单个文件的下载速度.
+         *
+         * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
+         * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
+         */
+        val downloadSpeed: FileSize,
+        /**
+         * 已经上传成功的字节数.
+         *
+         * @return `0L`..INF
+         */
+        val uploadedBytes: FileSize,
+        /**
+         * 上传速度, 每秒. 对于不支持上传的缓存, 该值为 [FileSize.Zero].
+         *
+         * 注意, 这实际上是整个 media 的下载速度.
+         *
+         * - 若 emit [FileSize.Unspecified], 表示上传速度未知. 这只会在该缓存正在上传, 但无法知道具体速度时出现.
+         * - 若 emit [FileSize.Zero], 表示上传速度真的是零.
+         */
+        val uploadSpeed: FileSize,
+        /**
+         * Bytes per second.
+         */
+        val downloadProgress: Progress,
+    ) {
+        companion object {
+            val Unspecified = SessionStats(
+                FileSize.Unspecified,
+                FileSize.Unspecified,
+                FileSize.Unspecified,
+                FileSize.Unspecified,
+                FileSize.Unspecified,
+                Progress.Unspecified,
+            )
+        }
+    }
 
     /**
-     * 下载是否已经完成.
+     * 该文件所属的 [Media] 的下载状态, 也就是会包含其他剧集的下载状态.
      *
-     * 在刚创建时, [MediaCache] 可能需要时间扫描已经下载的文件状态.
-     * 在扫描完成前, 即使文件已经下载成功, 该值也为 `false`.
+     * 因为每个 [MediaCache] 只对应单个文件 (剧集), 而 [Media] 可能包含多个文件 (剧集).
      */
-    val finished: Flow<Boolean>
-
-    /**
-     * 下载的总大小.
-     *
-     * 在刚创建时, [MediaCache] 可能需要时间扫描已经下载的文件状态.
-     * 在扫描完成前, 即使文件已经下载成功, 该值为 [FileSize.Zero].
-     *
-     * 不会返回 [FileSize.Unspecified].
-     */
-    val totalSize: Flow<FileSize>
+    val sessionStats: Flow<SessionStats>
 
     /**
      * 请求暂停下载.
@@ -125,8 +201,6 @@ interface MediaCache {
 
     /**
      * 该缓存的文件是否已经被删除. 删除后不可恢复.
-     *
-     * 删除后 [MediaCacheStorage] 应当移除该 [MediaCache], 但 [MediaCache] 可能仍按被其他对象引用, 解释
      */
     val isDeleted: StateFlow<Boolean>
 
@@ -153,14 +227,7 @@ interface MediaCache {
     }
 }
 
-val MediaCache.downloadedSize
-    get() = this.totalSize.combine(this.progress) { totalSize, progress ->
-        if (totalSize == FileSize.Unspecified) {
-            FileSize.Unspecified
-        } else {
-            totalSize * progress
-        }
-    }
+suspend inline fun MediaCache.isFinished(): Boolean = sessionStats.first().downloadProgress.isFinished
 
 enum class MediaCacheState {
     IN_PROGRESS,
@@ -170,18 +237,16 @@ enum class MediaCacheState {
 open class TestMediaCache(
     val media: CachedMedia,
     override val metadata: MediaCacheMetadata,
-    override val progress: Flow<Float> = MutableStateFlow(0f),
-    override val totalSize: Flow<FileSize> = MutableStateFlow(0.bytes),
+    override val sessionStats: MutableStateFlow<MediaCache.SessionStats> =
+        MutableStateFlow(MediaCache.SessionStats(0.bytes, 0.bytes, 0.bytes, 0.bytes, 0.bytes, 0f.toProgress())),
+    override val fileStats: MutableStateFlow<MediaCache.FileStats> =
+        MutableStateFlow(MediaCache.FileStats(FileSize.Unspecified, FileSize.Unspecified, 0f.toProgress())),
 ) : MediaCache {
     override val origin: Media get() = media.origin
     override val state: MutableStateFlow<MediaCacheState> = MutableStateFlow(MediaCacheState.IN_PROGRESS)
 
     override suspend fun getCachedMedia(): CachedMedia = media
     override fun isValid(): Boolean = true
-
-    override val downloadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
-    override val sessionUploadSpeed: Flow<FileSize> = MutableStateFlow(1.bytes)
-    override val finished: Flow<Boolean> by lazy { progress.map { it == 1f } }
 
     private val resumeCalled = atomic(0)
 

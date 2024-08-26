@@ -5,14 +5,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.source.media.cache.MediaCache
 import me.him188.ani.app.data.source.media.cache.MediaCacheState
-import me.him188.ani.app.data.source.media.cache.MediaStats
-import me.him188.ani.app.data.source.media.cache.emptyMediaStats
+import me.him188.ani.app.tools.toProgress
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.source.MediaSourceLocation
-import me.him188.ani.datasources.api.topic.FileSize
-import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
@@ -24,7 +21,8 @@ class DummyMediaCacheEngine(
     private val mediaSourceId: String,
     private val location: MediaSourceLocation = MediaSourceLocation.Local,
 ) : MediaCacheEngine {
-    override val stats: MediaStats = emptyMediaStats()
+    override val stats: Flow<MediaStats> = flowOf(MediaStats.Unspecified)
+
     override fun supports(media: Media): Boolean = true
 
     override suspend fun restore(
@@ -60,11 +58,19 @@ class DummyMediaCache(
     private var isValid = true
     override fun isValid(): Boolean = isValid
 
-    override val downloadSpeed: Flow<FileSize> = flowOf(100.kiloBytes)
-    override val sessionUploadSpeed: Flow<FileSize> = flowOf(0.kiloBytes)
-    override val progress: Flow<Float> = flowOf(0.3f)
-    override val finished: Flow<Boolean> = flowOf(false)
-    override val totalSize: Flow<FileSize> = flowOf(100.megaBytes)
+    override val fileStats: Flow<MediaCache.FileStats> =
+        flowOf(MediaCache.FileStats(300.megaBytes, 100.megaBytes))
+    override val sessionStats: Flow<MediaCache.SessionStats> =
+        flowOf(
+            MediaCache.SessionStats(
+                0.megaBytes,
+                0.megaBytes,
+                0.megaBytes,
+                0.megaBytes,
+                0.megaBytes,
+                0f.toProgress(),
+            ),
+        )
 
     override suspend fun pause() {
     }

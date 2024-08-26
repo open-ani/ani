@@ -11,6 +11,7 @@ import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.ThreeStepWebMediaSource
 import me.him188.ani.datasources.api.source.bodyAsDocument
 import me.him188.ani.datasources.api.source.useHttpClient
@@ -48,6 +49,11 @@ class XfdmMediaSource(
     companion object {
         const val ID = "xfdm"
         const val BASE_URL = "https://dm1.xfdm.pro"
+        val INFO = MediaSourceInfo(
+            displayName = "稀饭动漫",
+            websiteUrl = BASE_URL,
+            imageUrl = "$BASE_URL/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
+        )
     }
 
     override val baseUrl: String get() = BASE_URL
@@ -57,6 +63,8 @@ class XfdmMediaSource(
 
         override fun create(config: MediaSourceConfig): MediaSource =
             XfdmMediaSource(config)
+
+        override val info: MediaSourceInfo = INFO
     }
 
 
@@ -130,4 +138,5 @@ class XfdmMediaSource(
     }
 
     override val mediaSourceId: String get() = ID
+    override val info: MediaSourceInfo = INFO
 }

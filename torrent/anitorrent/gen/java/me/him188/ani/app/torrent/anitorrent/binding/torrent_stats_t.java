@@ -49,6 +49,46 @@ public class torrent_stats_t {
     }
   }
 
+  public void setTotal(long value) {
+    anitorrentJNI.torrent_stats_t_total_set(swigCPtr, this, value);
+  }
+
+  public long getTotal() {
+    return anitorrentJNI.torrent_stats_t_total_get(swigCPtr, this);
+  }
+
+  public void setTotal_done(long value) {
+    anitorrentJNI.torrent_stats_t_total_done_set(swigCPtr, this, value);
+  }
+
+  public long getTotal_done() {
+    return anitorrentJNI.torrent_stats_t_total_done_get(swigCPtr, this);
+  }
+
+  public void setTotal_upload(long value) {
+    anitorrentJNI.torrent_stats_t_total_upload_set(swigCPtr, this, value);
+  }
+
+  public long getTotal_upload() {
+    return anitorrentJNI.torrent_stats_t_total_upload_get(swigCPtr, this);
+  }
+
+  public void setAll_time_upload(long value) {
+    anitorrentJNI.torrent_stats_t_all_time_upload_set(swigCPtr, this, value);
+  }
+
+  public long getAll_time_upload() {
+    return anitorrentJNI.torrent_stats_t_all_time_upload_get(swigCPtr, this);
+  }
+
+  public void setAll_time_download(long value) {
+    anitorrentJNI.torrent_stats_t_all_time_download_set(swigCPtr, this, value);
+  }
+
+  public long getAll_time_download() {
+    return anitorrentJNI.torrent_stats_t_all_time_download_get(swigCPtr, this);
+  }
+
   public void setDownload_payload_rate(int value) {
     anitorrentJNI.torrent_stats_t_download_payload_rate_set(swigCPtr, this, value);
   }

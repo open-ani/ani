@@ -2,7 +2,6 @@ package me.him188.ani.app.torrent.api.pieces
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import me.him188.ani.app.torrent.api.files.PieceState
 
 /**
  * Torrent 下载优先级控制器.

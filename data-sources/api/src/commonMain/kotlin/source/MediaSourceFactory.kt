@@ -2,6 +2,8 @@ package me.him188.ani.datasources.api.source
 
 import io.ktor.client.HttpClientConfig
 import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameter
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.userAgent
@@ -27,6 +29,8 @@ interface MediaSourceFactory { // SPI service load
      * @see MediaSourceParametersBuilder
      */
     val parameters: MediaSourceParameters get() = MediaSourceParameters.Empty
+
+    val info: MediaSourceInfo
 
     /**
      * 必须返回新实例.

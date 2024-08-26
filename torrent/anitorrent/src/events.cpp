@@ -18,6 +18,11 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
         function_printer_t _fp("call_listener:torrent_state_update_event_t");
         for (auto &torrent: a->status) {
             torrent_stats_t stats;
+            stats.total = torrent.total;
+            stats.total_done = torrent.total_done;
+            stats.total_upload = torrent.total_upload;
+            stats.all_time_download = torrent.all_time_download;
+            stats.all_time_upload = torrent.all_time_upload;
             stats.download_payload_rate = torrent.download_payload_rate;
             stats.upload_payload_rate = torrent.upload_payload_rate;
             stats.progress = torrent.progress;
