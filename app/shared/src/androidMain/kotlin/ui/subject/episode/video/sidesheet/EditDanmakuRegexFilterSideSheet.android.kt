@@ -16,7 +16,7 @@ fun PreviewEditDanmakuRegexFilterSideSheet() {
     ProvideCompositionLocalsForPreview {
         EditDanmakuRegexFilterSideSheet(
             danmakuRegexFilterState = DanmakuRegexFilterState(
-                danmakuRegexFilterList = mutableStateOf(
+                list = mutableStateOf(
                     listOf(
                         DanmakuRegexFilter(
                             id = Uuid.randomString(),
@@ -30,10 +30,10 @@ fun PreviewEditDanmakuRegexFilterSideSheet() {
                         ),
                     ),
                 ),
-                addDanmakuRegexFilter = { },
-                editDanmakuRegexFilter = { _, _ -> },
-                removeDanmakuRegexFilter = { },
-                switchDanmakuRegexFilter = { },
+                add = { },
+                edit = { _, _ -> },
+                remove = { },
+                switch = { },
             ),
             onDismissRequest = { },
         )

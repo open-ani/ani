@@ -130,11 +130,11 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
     }
 
     val danmakuRegexFilterState = DanmakuRegexFilterState(
-        danmakuRegexFilterList = danmakuRegexFilterRepository.flow.produceState(emptyList()),
-        addDanmakuRegexFilter = ::addDanmakuRegexFilter,
-        editDanmakuRegexFilter = ::editDanmakuRegexFilter,
-        removeDanmakuRegexFilter = ::removeDanmakuRegexFilter,
-        switchDanmakuRegexFilter = ::switchDanmakuRegexFilter,
+        list = danmakuRegexFilterRepository.flow.produceState(emptyList()),
+        add = ::addDanmakuRegexFilter,
+        edit = ::editDanmakuRegexFilter,
+        remove = ::removeDanmakuRegexFilter,
+        switch = ::switchDanmakuRegexFilter,
     )
 
     /**

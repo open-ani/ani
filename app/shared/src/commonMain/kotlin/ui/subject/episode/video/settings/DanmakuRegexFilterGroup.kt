@@ -78,7 +78,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                         errorMessage = "正则输入法不正确"
                         isError = true
                     } else {
-                        danmakuRegexFilterState.addDanmakuRegexFilter(
+                        danmakuRegexFilterState.add(
                             DanmakuRegexFilter(
                                 id = Uuid.randomString(),
                                 name = name,
@@ -114,11 +114,11 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            danmakuRegexFilterState.danmakuRegexFilterList.forEachIndexed { index, item ->
+            danmakuRegexFilterState.list.forEachIndexed { index, item ->
                 RegexFilterItem(
                     item,
-                    onDelete = { danmakuRegexFilterState.removeDanmakuRegexFilter(item) },
-                    onDisable = { danmakuRegexFilterState.switchDanmakuRegexFilter(item) },
+                    onDelete = { danmakuRegexFilterState.remove(item) },
+                    onDisable = { danmakuRegexFilterState.switch(item) },
                 )
             }
         }

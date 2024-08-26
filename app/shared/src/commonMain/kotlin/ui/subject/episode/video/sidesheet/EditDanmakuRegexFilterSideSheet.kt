@@ -67,7 +67,7 @@ fun EditDanmakuRegexFilterSideSheet(
 
     fun handleAdd(): Unit {
         if (regexTextFieldValue.isNotBlank()) {
-            danmakuRegexFilterState.addDanmakuRegexFilter(
+            danmakuRegexFilterState.add(
                 DanmakuRegexFilter(
                     id = Uuid.randomString(),
                     name = "",
@@ -166,11 +166,11 @@ fun EditDanmakuRegexFilterSideSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        danmakuRegexFilterState.danmakuRegexFilterList.forEach { item ->
+                        danmakuRegexFilterState.list.forEach { item ->
                             RegexFilterItem(
                                 item,
-                                onDelete = { danmakuRegexFilterState.removeDanmakuRegexFilter(item) },
-                                onDisable = { danmakuRegexFilterState.switchDanmakuRegexFilter(item) },
+                                onDelete = { danmakuRegexFilterState.remove(item) },
+                                onDisable = { danmakuRegexFilterState.switch(item) },
                             )
                         }
                     }

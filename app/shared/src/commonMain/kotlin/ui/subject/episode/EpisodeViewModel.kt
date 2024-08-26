@@ -28,8 +28,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.models.episode.episode
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
 import me.him188.ani.app.data.models.episode.type
@@ -366,11 +366,11 @@ private class EpisodeViewModelImpl(
     }
     
     override val danmakuRegexFilterState = DanmakuRegexFilterState(
-        danmakuRegexFilterList = danmakuRegexFilterRepository.flow.produceState(emptyList()),
-        addDanmakuRegexFilter = ::addDanmakuRegexFilter,
-        editDanmakuRegexFilter = ::editDanmakuRegexFilter,
-        removeDanmakuRegexFilter = ::removeDanmakuRegexFilter,
-        switchDanmakuRegexFilter = ::switchDanmakuRegexFilter,
+        list = danmakuRegexFilterRepository.flow.produceState(emptyList()),
+        add = ::addDanmakuRegexFilter,
+        edit = ::editDanmakuRegexFilter,
+        remove = ::removeDanmakuRegexFilter,
+        switch = ::switchDanmakuRegexFilter,
     )
 
     override val subjectPresentation: SubjectPresentation by subjectInfo

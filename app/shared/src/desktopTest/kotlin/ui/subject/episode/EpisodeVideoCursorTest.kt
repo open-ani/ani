@@ -111,11 +111,11 @@ class EpisodeVideoCursorTest {
                     episodeSelectorState = rememberTestEpisodeSelectorState(),
                     modifier = Modifier.weight(1f),
                     danmakuRegexFilterState = DanmakuRegexFilterState(
-                        danmakuRegexFilterList = mutableStateOf(emptyList()),
-                        addDanmakuRegexFilter = {},
-                        removeDanmakuRegexFilter = {},
-                        switchDanmakuRegexFilter = {},
-                        editDanmakuRegexFilter = {s, s1 ->}
+                        list = mutableStateOf(emptyList()),
+                        add = {},
+                        remove = {},
+                        switch = {},
+                        edit = { s, s1 -> },
                     ),
                 )
 

@@ -139,11 +139,11 @@ class EpisodeVideoControllerTest {
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 gestureFamily = gestureFamily,
                 danmakuRegexFilterState = DanmakuRegexFilterState(
-                    danmakuRegexFilterList = stateOf(persistentListOf()),
-                    addDanmakuRegexFilter = {},
-                    editDanmakuRegexFilter = { _, _ -> },
-                    removeDanmakuRegexFilter = {},
-                    switchDanmakuRegexFilter = {},
+                    list = stateOf(persistentListOf()),
+                    add = {},
+                    edit = { _, _ -> },
+                    remove = {},
+                    switch = {},
                 ),
             )
         }
