@@ -13,13 +13,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -64,8 +63,8 @@ fun EditDanmakuRegexFilterSideSheet(
                 ),
             )
             regexTextFieldValue = "" // Clear the text field after adding
-            focusManager.clearFocus()
         }
+        focusManager.clearFocus()
     }
 
     EpisodeVideoSettingsSideSheet(
@@ -93,26 +92,26 @@ fun EditDanmakuRegexFilterSideSheet(
                 ) {
                     OutlinedTextField(
                         value = regexTextFieldValue,
+                        placeholder = {
+                            Text(
+                                text = "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。",
+                            )
+                        },
                         onValueChange = {
                             regexTextFieldValue = it
                         },
-                        isError = isBlank,
                         supportingText = {
-                            Text(
-                                modifier = Modifier.fillMaxWidth(),
-                                text = if (isBlank) {
-                                    "正则表达式不能为空"
-                                } else if (expanded) {
-                                    "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
-                                } else {
-                                    "竖屏状态下无法编辑"
-                                },
-                                color = if (isBlank) {
-                                    MaterialTheme.colorScheme.error
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                },
-                            )
+                            if (!expanded) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = "竖屏状态下禁用编辑",
+                                )
+                            } else if (isBlank) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = "正则表达式不能为空",
+                                )
+                            }
                         },
                         label = {
                             Text(
@@ -138,9 +137,9 @@ fun EditDanmakuRegexFilterSideSheet(
                     )
 
                     // 提交按钮
-                    TextButton(
+                    Button(
                         onClick = ::handleAdd,
-                        enabled = expanded,  // Disable the button if expanded is false
+                        enabled = expanded && !isBlank,  // Disable the button if expanded is false
                     ) {
                         Text(text = "添加")
                     }

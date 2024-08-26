@@ -190,7 +190,7 @@ fun AddRegexFilterDialog(
 ) {
     var nameTextFieldValue by rememberSaveable { mutableStateOf("") }
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
-    val isError by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
+    val isBlank by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -215,7 +215,7 @@ fun AddRegexFilterDialog(
                     OutlinedTextField(
                         value = regexTextFieldValue,
                         onValueChange = { regexTextFieldValue = it },
-                        label = { Text("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕") },
+                        label = { Text("正则表达式") },
                         modifier = Modifier.fillMaxWidth()
                             .onKeyEvent { event: KeyEvent ->
                                 if (event.key == Key.Enter) {
@@ -232,13 +232,17 @@ fun AddRegexFilterDialog(
                             onDone = { onConfirm(nameTextFieldValue, regexTextFieldValue) },
                         ),
                         supportingText = {
-                            if (isError) {
+                            if (isBlank) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = errorMessage,
-                                    color = MaterialTheme.colorScheme.error,
                                 )
                             }
+                        },
+                        placeholder = {
+                            Text(
+                                text = "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。",
+                            )
                         },
                     )
                 }
@@ -259,7 +263,7 @@ fun AddRegexFilterDialog(
                                 regexTextFieldValue,
                             )
                         }, // Pass the text field value to onConfirm
-                        enabled = confirmEnabled,
+                        enabled = confirmEnabled && !isBlank,
                     ) {
                         Text("确认")
                     }
