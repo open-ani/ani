@@ -195,7 +195,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override suspend fun cleanupPlayer() {
-        player.controls().stop()
+        player.submit {
+            player.controls().stop()
+        }
         withContext(Dispatchers.Main) {
             bitmap = ImageBitmap(1, 1) // 0, 0 会导致异常
         }
