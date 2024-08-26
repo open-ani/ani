@@ -421,7 +421,7 @@ internal fun EpisodeVideoImpl(
                     ) {
                         EpisodeVideoSettings(
                             rememberViewModel { EpisodeVideoSettingsViewModel() },
-                            onOverlayContentShow = {
+                            onManageRegexFilters = {
                                 sideSheetState = SideSheetState.EDIT_DANMAKU_REGEX_FILTER
                             },
                         )

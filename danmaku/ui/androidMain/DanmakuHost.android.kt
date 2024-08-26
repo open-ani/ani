@@ -123,6 +123,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 remember {
                     TestEpisodeVideoSettingsViewModel()
                 },
+                {},
             )
         }
     } else {
@@ -153,6 +154,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 remember {
                     TestEpisodeVideoSettingsViewModel()
                 },
+                { },
             )
         }
 

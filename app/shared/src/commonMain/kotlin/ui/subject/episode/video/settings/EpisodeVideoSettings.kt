@@ -87,8 +87,8 @@ private class EpisodeVideoSettingsViewModelImpl(
 @Composable
 fun EpisodeVideoSettings(
     vm: EpisodeVideoSettingsViewModel,
+    onManageRegexFilters: () -> Unit,
     modifier: Modifier = Modifier,
-    onOverlayContentShow: () -> Unit = { }
 ) {
     return EpisodeVideoSettings(
         danmakuConfig = vm.danmakuConfig,
@@ -99,7 +99,7 @@ fun EpisodeVideoSettings(
             { vm.isLoading }
         },
         modifier = modifier,
-        onClickManage = onOverlayContentShow,
+        onManageRegexFilters = onManageRegexFilters,
         enableRegexFilter = vm.danmakuFilterConfig.enableRegexFilter,
         switchDanmakuRegexFilterCompletely = vm::switchDanmakuRegexFilterCompletely,
     )
@@ -113,10 +113,10 @@ fun EpisodeVideoSettings(
     danmakuConfig: DanmakuConfig,
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
     isLoading: () -> Boolean = LOADING_FALSE,
-    modifier: Modifier = Modifier,
-    onClickManage: () -> Unit,
     enableRegexFilter: Boolean,
+    onManageRegexFilters: () -> Unit,
     switchDanmakuRegexFilterCompletely: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val isLoadingState by remember(isLoading) {
         derivedStateOf(isLoading)
@@ -361,12 +361,12 @@ fun EpisodeVideoSettings(
                 onCheckedChange = {
                     switchDanmakuRegexFilterCompletely()
                 },
-                title = { Text("正则弹幕过滤器开启") },
+                title = { Text("启用正则弹幕过滤器") },
                 modifier = Modifier.placeholder(isLoadingState),
             )
 
             TextItem(
-                onClick = { onClickManage() },
+                onClick = { onManageRegexFilters() },
                 modifier = Modifier.placeholder(isLoadingState).padding(bottom = 8.dp, top = 8.dp),
             ) {
                 Text("管理正则弹幕过滤器")
