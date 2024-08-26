@@ -5,23 +5,12 @@ SWIG 生成 JNI 接口供 Kotlin 对接.
 
 > 为了让 libtorrent 的交互工作都在 C++ 实现, 避免 JNI 交互可能导致的内存所有权等问题. 直接交互也拥有最高的自由度.
 
-注意, 构建 C++ 不像构建 Kotlin 那样轻松, 这在 Windows 上甚至是***比较有挑战性***的. 提交 PR 后, CI 会
-*承担*一切构建工作.
-
-此文档仅适用于需要修改 torrent 功能的开发者. 如果你不需要修改 BT 功能代码, 在构建 Ani 测试时也无需使用
-BT 数据源, 则可以直接忽略本文档. Ani 的构建系统默认不会构建 Anitorrent.
-
-[//]: # (如果不希望构建 torrent, 但又想在本地构建 Ani)
-
-[//]: # (PC 版时使用 BT 功能, 你可以从一个 Ani 安装包中的 `Contents/app/resources`)
-
-[//]: # (中将以下文件复制到项目的 `/app/desktop/appResources/{os}-{arch}/` 里:)
-
-[//]: # ()
-
-[//]: # (- `libtorrent-rasterbar.2.0.10.dylib` &#40;macOS&#41; / `torrent-rasterbar.dll` &#40;Windows&#41;)
-
-[//]: # (- `libanitorrent.dylib` &#40;macOS&#41; / `anitorrent.dll` &#40;Windows&#41;)
+> [!WARNING]
+> 构建 C++ 不像构建 Kotlin 那样轻松, 这在 Windows 上甚至是***比较有挑战性***的. 提交 PR 后, CI 会
+> *承担*一切构建工作.
+>
+> 此文档仅适用于需要修改 torrent 功能的开发者. 如果你不需要修改 BT 功能代码, 在构建 Ani 测试时也无需使用
+> BT 数据源, 则可以直接忽略本文档. Ani 的构建系统默认不会构建 Anitorrent.
 
 ## 安装依赖和配置
 
