@@ -67,6 +67,16 @@ class AnitorrentDownloadSession(
         parentCoroutineContext + dispatcher + SupervisorJob(parentCoroutineContext[Job]),
     )
 
+    // 要放在 init 前面, 因为 init 会用到它
+    override val sessionStats: MutableSharedFlow<TorrentSession.Stats?> =
+        MutableSharedFlow<TorrentSession.Stats?>(
+            replay = 1,
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        ).apply {
+            tryEmit(null)
+        }
+
     init {
         scope.launch {
             while (isActive) {
@@ -97,15 +107,6 @@ class AnitorrentDownloadSession(
             }
         }
     }
-
-    override val sessionStats: MutableSharedFlow<TorrentSession.Stats?> =
-        MutableSharedFlow<TorrentSession.Stats?>(
-            replay = 1,
-            extraBufferCapacity = 1,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        ).apply {
-            tryEmit(null)
-        }
 
     private val openFiles = mutableListOf<AnitorrentEntry.EntryHandle>()
     private val prioritizer = createPiecePriorities()
