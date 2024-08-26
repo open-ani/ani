@@ -22,9 +22,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -33,11 +34,9 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
-import me.him188.ani.app.ui.subject.episode.TAG_EPISODE_SELECTOR_SHEET
 import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.RegexFilterItem
@@ -53,20 +52,10 @@ fun EditDanmakuRegexFilterSideSheet(
 ) {
     val focusManager = LocalFocusManager.current
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
-    var regexTextFieldOutlineTitleText by rememberSaveable { mutableStateOf("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") }
-    var isError by rememberSaveable { mutableStateOf(false) }
-
-    // Monitor the expanded state and update the title text accordingly
-    LaunchedEffect(expanded) {
-        regexTextFieldOutlineTitleText = if (expanded) {
-            "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
-        } else {
-            "竖屏状态下无法编辑"
-        }
-    }
+    val isBlank by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
 
     fun handleAdd(): Unit {
-        if (regexTextFieldValue.isNotBlank()) {
+        if (!isBlank) {
             danmakuRegexFilterState.add(
                 DanmakuRegexFilter(
                     id = Uuid.randomString(),
@@ -77,9 +66,6 @@ fun EditDanmakuRegexFilterSideSheet(
             )
             regexTextFieldValue = "" // Clear the text field after adding
             focusManager.clearFocus()
-            isError = false
-        } else {
-            isError = true
         }
     }
 
@@ -91,7 +77,7 @@ fun EditDanmakuRegexFilterSideSheet(
                 Icon(Icons.Rounded.Close, contentDescription = "关闭")
             }
         },
-        modifier = modifier.testTag(TAG_EPISODE_SELECTOR_SHEET)
+        modifier = modifier
             .clickable(onClick = { focusManager.clearFocus() }),
     ) {
         Box(
@@ -115,24 +101,28 @@ fun EditDanmakuRegexFilterSideSheet(
                             value = regexTextFieldValue,
                             onValueChange = {
                                 regexTextFieldValue = it
-                                if (expanded) {
-                                    regexTextFieldOutlineTitleText =
-                                        "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
-                                }
                             },
-                            isError = isError,
+                            isError = isBlank,
                             supportingText = {
-                                if (isError) {
-                                    Text(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        text = "正则表达式不能为空",
-                                        color = MaterialTheme.colorScheme.error,
-                                    )
-                                }
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = if (isBlank) {
+                                        "正则表达式不能为空"
+                                    } else if (expanded) {
+                                        "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。"
+                                    } else {
+                                        "竖屏状态下无法编辑"
+                                    },
+                                    color = if (isBlank) {
+                                        MaterialTheme.colorScheme.error
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    },
+                                )
                             },
                             label = {
                                 Text(
-                                    text = regexTextFieldOutlineTitleText,
+                                    text = "正则表达式",
                                 )
                             },
                             modifier = Modifier.fillMaxWidth()
