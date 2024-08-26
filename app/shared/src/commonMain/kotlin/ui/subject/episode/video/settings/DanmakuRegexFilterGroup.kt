@@ -23,8 +23,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,29 +58,25 @@ internal fun isValidRegex(pattern: String): Boolean {
 
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
-    danmakuRegexFilterState: DanmakuRegexFilterState,
+    state: DanmakuRegexFilterState,
     isLoadingState: Boolean
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
     var errorMessage by rememberSaveable { mutableStateOf("") }
-    var isError by rememberSaveable { mutableStateOf(false) }
 
     if (showAdd) {
         AddRegexFilterDialog(
             onDismissRequest = {
                 showAdd = false
-                isError = false
             },
             onConfirm = { name, regex ->
                 if (regex.isBlank()) {
                     errorMessage = "正则不能为空"
-                    isError = true
                 } else {
                     if (!isValidRegex(regex)) {
                         errorMessage = "正则输入法不正确"
-                        isError = true
                     } else {
-                        danmakuRegexFilterState.add(
+                        state.add(
                             DanmakuRegexFilter(
                                 id = Uuid.randomString(),
                                 name = name,
@@ -86,18 +84,16 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
                             ),
                         )
                         showAdd = false
-                        isError = false
                     }
                 }
             },
             title = { Text("添加正则过滤器") },
-            isError = isError,
             errorMessage = errorMessage,
         )
     }
 
     Group(
-        title = { Text("正则弹幕过滤器管理", color = MaterialTheme.colorScheme.onSurface) },
+        title = { Text("弹幕正则过滤器管理", color = MaterialTheme.colorScheme.onSurface) },
         actions = {
             Row {
                 IconButton(
@@ -114,11 +110,11 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
             Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            danmakuRegexFilterState.list.forEachIndexed { index, item ->
+            state.list.forEach { item ->
                 RegexFilterItem(
                     item,
-                    onDelete = { danmakuRegexFilterState.remove(item) },
-                    onDisable = { danmakuRegexFilterState.switch(item) },
+                    onDelete = { state.remove(item) },
+                    onDisable = { state.switch(item) },
                 )
             }
         }
@@ -190,11 +186,11 @@ fun AddRegexFilterDialog(
     onConfirm: (name: String, regex: String) -> Unit, // onConfirm now accepts the text field value
     title: @Composable () -> Unit,
     confirmEnabled: Boolean = true,
-    isError: Boolean = false,
     errorMessage: String = "",
 ) {
     var nameTextFieldValue by rememberSaveable { mutableStateOf("") }
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
+    val isError by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -219,7 +215,7 @@ fun AddRegexFilterDialog(
                     OutlinedTextField(
                         value = regexTextFieldValue,
                         onValueChange = { regexTextFieldValue = it },
-                        label = { Text("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。") },
+                        label = { Text("填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕") },
                         modifier = Modifier.fillMaxWidth()
                             .onKeyEvent { event: KeyEvent ->
                                 if (event.key == Key.Enter) {

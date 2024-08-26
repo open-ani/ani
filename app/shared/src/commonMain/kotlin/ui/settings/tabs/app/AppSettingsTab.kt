@@ -457,7 +457,7 @@ private fun SettingsScope.PlayerGroup(
         )
         HorizontalDividerItem()
         DanmakuRegexFilterGroup(
-            danmakuRegexFilterState = vm.danmakuRegexFilterState,
+            state = vm.danmakuRegexFilterState,
             isLoadingState = vm.uiSettings.loading,
         )
         HorizontalDividerItem()
