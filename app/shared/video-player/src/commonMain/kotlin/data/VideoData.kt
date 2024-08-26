@@ -20,7 +20,7 @@ interface VideoData {
      */
     val fileLength: Long // 用于匹配弹幕 (仅备选方案下), 一般用不到
 
-    data class Stats internal constructor(
+    data class Stats(
         /**
          * The download speed in bytes per second.
          *

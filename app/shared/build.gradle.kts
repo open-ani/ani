@@ -110,8 +110,6 @@ kotlin {
         api(libs.sqlite.bundled) // database driver implementation
 
         // Torrent
-        implementation(libs.bencode)
-
         implementation(libs.constraintlayout.compose)
 
         implementation(libs.jna)
@@ -190,8 +188,6 @@ kotlin {
 //        implementation(libs.javafx.graphics)
 
         // https://repo1.maven.org/maven2/org/openjfx/javafx-graphics/17.0.11/
-        val os = getOs()
-
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         implementation(libs.log4j.core)
