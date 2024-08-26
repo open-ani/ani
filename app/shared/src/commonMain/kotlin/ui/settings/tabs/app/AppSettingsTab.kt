@@ -22,7 +22,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
@@ -93,27 +92,6 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
         VideoScaffoldConfig(_placeholder = -1),
     )
 
-    fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        launchInBackground { danmakuRegexFilterRepository.add(filter) }
-    }
-
-    fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter) {
-        launchInBackground { danmakuRegexFilterRepository.update(id, new) }
-    }
-
-    fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        launchInBackground {
-            danmakuRegexFilterRepository.remove(filter)
-        }
-    }
-
-    fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        launchInBackground {
-            danmakuRegexFilterRepository.update(filter.id, filter.copy(enabled = !filter.enabled))
-        }
-    }
-
-
     val danmakuRegexFilter: State<DanmakuFilterConfig> = settingsRepository.danmakuFilterConfig.flow.produceState(
         DanmakuFilterConfig.Default,
     )
@@ -131,10 +109,22 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
 
     val danmakuRegexFilterState = DanmakuRegexFilterState(
         list = danmakuRegexFilterRepository.flow.produceState(emptyList()),
-        add = ::addDanmakuRegexFilter,
-        edit = ::editDanmakuRegexFilter,
-        remove = ::removeDanmakuRegexFilter,
-        switch = ::switchDanmakuRegexFilter,
+        add = {
+            launchInBackground { danmakuRegexFilterRepository.add(it) }
+        },
+        edit = { regex, filter ->
+            launchInBackground {
+                danmakuRegexFilterRepository.update(filter.id, filter.copy(regex = regex))
+            }
+        },
+        remove = {
+            launchInBackground { danmakuRegexFilterRepository.remove(it) }
+        },
+        switch = {
+            launchInBackground {
+                danmakuRegexFilterRepository.update(it.id, it.copy(enabled = !it.enabled))
+            }
+        },
     )
 
     /**
@@ -452,7 +442,7 @@ private fun SettingsScope.PlayerGroup(
             onCheckedChange = {
                 vm.switchAllDanmakuRegexFilter()
             },
-            title = { Text("正则弹幕过滤器开启") },
+            title = { Text("启用正则弹幕过滤器") },
             modifier = Modifier.placeholder(vm.uiSettings.loading),
         )
         HorizontalDividerItem()

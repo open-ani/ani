@@ -449,7 +449,7 @@ internal fun EpisodeVideoImpl(
 }
 
 
-enum class SideSheetState {
+private enum class SideSheetState {
     NONE,
     SETTINGS,
     EDIT_DANMAKU_REGEX_FILTER
