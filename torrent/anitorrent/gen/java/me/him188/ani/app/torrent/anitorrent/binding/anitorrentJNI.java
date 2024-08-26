@@ -57,6 +57,7 @@ public class anitorrentJNI {
   public final static native int torrent_handle_t_kReloadFileSuccess_get();
   public final static native int torrent_handle_t_reload_file(long jarg1, torrent_handle_t jarg1_);
   public final static native boolean torrent_handle_t_is_valid(long jarg1, torrent_handle_t jarg1_);
+  public final static native int torrent_handle_t_get_state(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_post_status_updates(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_post_save_resume(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_post_file_progress(long jarg1, torrent_handle_t jarg1_);

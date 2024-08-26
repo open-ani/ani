@@ -334,8 +334,17 @@ class AnitorrentDownloadSession(
     private fun reloadFilesAndInitializeIfNotYet() {
         if (actualTorrentInfo.isActive) {
             logger.info { "[$handleId] reloadFiles" }
+            val info = handle.reloadFile()
+            if (handle.getState().isProcessingMetadata()) {
+                logger.warn { "[$handleId] reloadFilesAndInitializeIfNotYet is called, but native is still processing metadata" }
+                // 文件还没找到, 等一会
+                scope.launch {
+                    delay(1000)
+                    reloadFilesAndInitializeIfNotYet() // TODO: thread safety 
+                }
+            }
             initializeTorrentInfo(
-                handle.reloadFile(),
+                info,
             ) // split to multiple lines for debugging
         } else {
             logger.warn { "[$handleId] reloadFilesAndInitializeIfNotYet is called, but actualTorrentInfo is not active: $actualTorrentInfo" }
@@ -535,3 +544,16 @@ val TorrentDescriptor.fileSequence
 
 private fun calculateTotalFinishedSize(pieces: List<Piece>): Long =
     pieces.sumOf { if (it.state.value == PieceState.FINISHED) it.size else 0 }
+
+private fun TorrentHandleState.isProcessingMetadata(): Boolean {
+    return when (this) {
+        TorrentHandleState.QUEUED_FOR_CHECKING -> true
+        TorrentHandleState.CHECKING_FILES -> true
+        TorrentHandleState.DOWNLOADING_METADATA -> true
+        TorrentHandleState.DOWNLOADING -> false
+        TorrentHandleState.FINISHED -> false
+        TorrentHandleState.SEEDING -> false
+        TorrentHandleState.ALLOCATING -> true
+        TorrentHandleState.CHECKING_RESUME_DATA -> true
+    }
+}

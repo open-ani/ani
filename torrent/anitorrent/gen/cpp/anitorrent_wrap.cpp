@@ -2540,6 +2540,21 @@ SWIGEXPORT jboolean JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_an
 }
 
 
+SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1handle_1t_1get_1state(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  anilt::torrent_handle_t *arg1 = (anilt::torrent_handle_t *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_handle_t **)&jarg1; 
+  result = (int)((anilt::torrent_handle_t const *)arg1)->get_state();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1handle_1t_1post_1status_1updates(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   anilt::torrent_handle_t *arg1 = (anilt::torrent_handle_t *) 0 ;
   
