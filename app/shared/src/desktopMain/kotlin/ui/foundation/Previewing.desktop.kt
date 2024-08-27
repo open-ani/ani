@@ -9,6 +9,8 @@ import androidx.compose.ui.window.WindowState
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.PlatformWindow
 import java.io.File
 
 @Composable
@@ -22,6 +24,9 @@ actual fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Un
                 File("./logs"),
                 ExtraWindowProperties(false),
             )
+        },
+        LocalPlatformWindow provides remember {
+            PlatformWindow(0L)
         },
     ) {
         content()

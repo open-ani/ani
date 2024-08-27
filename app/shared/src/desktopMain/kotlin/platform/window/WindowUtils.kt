@@ -35,8 +35,8 @@ interface WindowUtils {
 }
 
 abstract class AwtWindowUtils : WindowUtils {
-    private companion object {
-        private val blankCursor: Cursor by lazy {
+    companion object {
+        val blankCursor: Cursor by lazy {
             Toolkit.getDefaultToolkit().createCustomCursor(
                 BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), Point(0, 0), "blank cursor",
             )

@@ -274,7 +274,6 @@ object AniDesktop {
                     LocalPlatformWindow provides remember(window.windowHandle) {
                         PlatformWindow(
                             windowHandle = window.windowHandle,
-                            composeWindow = window,
                         )
                     },
                 ) {
