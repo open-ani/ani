@@ -114,13 +114,11 @@ interface BangumiClient : Closeable {
 
     companion object Factory {
         fun create(
-            clientId: String,
-            clientSecret: String,
             bearerToken: Flow<String?>,
             parentCoroutineContext: CoroutineContext,
             httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {}
         ): BangumiClient =
-            BangumiClientImpl(clientId, clientSecret, bearerToken, parentCoroutineContext, httpClientConfiguration)
+            BangumiClientImpl(bearerToken, parentCoroutineContext, httpClientConfiguration)
     }
 }
 
@@ -153,8 +151,6 @@ private const val BANGUMI_NEXT_API_HOST = "https://next.bgm.tv" // dev.bgm38.com
 private const val BANGUMI_HOST = "https://bgm.tv"
 
 internal class BangumiClientImpl(
-    private val clientId: String,
-    private val clientSecret: String,
     private val bearerToken: Flow<String?>,
     parentCoroutineContext: CoroutineContext,
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},
