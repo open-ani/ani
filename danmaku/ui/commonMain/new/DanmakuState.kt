@@ -1,6 +1,7 @@
 package me.him188.ani.danmaku.ui.new
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
@@ -20,7 +21,7 @@ import me.him188.ani.utils.platform.format2f
 /**
  * DanmakuState holds all params which [Canvas] needs to draw a danmaku text.
  */
-@Immutable
+@Stable
 data class DanmakuState(
     val presentation: DanmakuPresentation,
     val measurer: TextMeasurer,

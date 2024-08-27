@@ -5,6 +5,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameMillis
@@ -13,14 +14,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
@@ -44,31 +44,41 @@ class DanmakuHostState(
     /**
      * DanmakuHost 显示大小, 在显示时修改
      */
-    internal var hostWidth by mutableIntStateOf(0)
-    internal var hostHeight by mutableIntStateOf(0)
+    private val hostWidthState = mutableIntStateOf(0)
+    internal var hostWidth by hostWidthState
+    private val hostHeightState = mutableIntStateOf(0)
+    internal var hostHeight by hostHeightState
     
     @Volatile
     internal lateinit var baseStyle: TextStyle
-    
-    internal var trackHeight by mutableIntStateOf(0)
+
+    private val trackHeightState = mutableIntStateOf(0)
 
     /**
      * 当前播放时间, 读取 [progress] 并插帧过渡.
      * 
      * 为了避免弹幕跳动, 插帧过度必须平滑, 详见 [interpolateFrame]
      */
-    internal var currentTimeMillis by mutableLongStateOf(0)
+    private val currentTimeMillisState = mutableLongStateOf(0)
+    internal var currentTimeMillis by currentTimeMillisState
     
-
+    private val floatingTrack: MutableList<FloatingDanmakuTrack> = mutableListOf()
+    
     /**
      * All presented danmaku which should be shown on screen.
      */
-    internal val presentDanmaku: List<PositionedDanmakuState> = mutableListOf()
+    internal val presentDanmaku: MutableList<PositionedDanmakuState> = mutableStateListOf()
 
+    /**
+     * position of danmaku is calculated at [interpolateFrame].
+     */
+    internal val presentDanmakuPositions: Array<Float> = Array(3000) { 0f }
+    internal var presetDanmakuCount: Int by mutableIntStateOf(0)
+    
     /**
      * Measure track count and track height and apply to states
      */
-    internal suspend fun measureTrack(measurer: TextMeasurer, density: Density) {
+    internal suspend fun observeTrack(measurer: TextMeasurer, density: Density) {
         combine(
             snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
                 old.displayArea == new.displayArea && old.style == new.style
@@ -88,10 +98,34 @@ class DanmakuHostState(
         }
             .distinctUntilChanged()
             .collect { (trackCount, trackHeight) ->
-                withContext(Dispatchers.Main.immediate) {
-                    this@DanmakuHostState.trackHeight = trackHeight
-                }
+                setTrackCount(trackCount)
+                trackHeightState.value = trackHeight
             }
+    }
+    
+    private fun setTrackCount(count: Int) {
+        floatingTrack.setTrackCountImpl(count) { index ->
+            FloatingDanmakuTrack(
+                currentTimeMillis = currentTimeMillisState, 
+                trackHeight = trackHeightState, 
+                screenWidth = hostWidthState, 
+                trackIndex = index, 
+                speedPxPerSecond = danmakuConfig.speed.toInt(),
+                onRemoveDanmaku = { removed -> presentDanmaku.remove(removed) }
+            )
+        }
+    }
+
+    private fun <T : DanmakuTrack> MutableList<T>.setTrackCountImpl(
+        count: Int,
+        newInstance: (index: Int) -> T,
+    ) {
+        when {
+            size == count -> return
+            // 清除 track 的同时要把 track 里的 danmaku 也要清除
+            count < size -> repeat(size - count) { removeLast().clearAll() }
+            else -> addAll(List(count - size) { newInstance(size + it) })
+        }
     }
 
     /**
@@ -104,7 +138,7 @@ class DanmakuHostState(
         
         coroutineScope {
             launch {
-                progress.collect {
+                progress.collectLatest {
                     latestUpstreamTimeMillis = it.inWholeMilliseconds
                     restartInterpolate = true
                 }
@@ -178,11 +212,12 @@ class DanmakuHostState(
                                 elapsedFrame = elapsedFrame.addDelta(delta)
                                 lastFrameTime = millis
                             }
+                            calculateDanmakuPosition()
                         } while (!restartInterpolate)
                     } else {
                         @Suppress("NAME_SHADOWING") var current = interpolationBase
                         @Suppress("NAME_SHADOWING") var upstream = latestUpstreamTimeMillis
-                        do
+                        do {
                             /**
                              * interpolate on each frame. `curr` should be interpolated and move close to `upstream next`.
                              * Here is the process of interpolation.
@@ -214,11 +249,22 @@ class DanmakuHostState(
                                 
                                 lastFrameTime = millis
                             }
-                        while (!restartInterpolate)
+                            calculateDanmakuPosition()
+                        } while (!restartInterpolate)
                     }
                 }
             }
         }
+    }
+    
+    private inline fun calculateDanmakuPosition() {
+        var currentIndex = 0
+        for (danmaku in presentDanmaku.take(presentDanmakuPositions.size / 2)) {
+            presentDanmakuPositions[currentIndex * 2] = danmaku.calculatePosX()
+            presentDanmakuPositions[currentIndex * 2 + 1] = danmaku.calculatePosY()
+            currentIndex ++
+        }
+        presetDanmakuCount = currentIndex
     }
 
     /**
@@ -231,10 +277,11 @@ class DanmakuHostState(
     /**
      * DanmakuState which is positioned and an be placed on [Canvas].
      */
-    internal interface PositionedDanmakuState {
+    interface PositionedDanmakuState {
         val state: DanmakuState
-        val posXInScreen: Float
-        val posYInScreen: Float
+        
+        fun calculatePosX(): Float
+        fun calculatePosY(): Float
     }
 }
 
@@ -247,17 +294,16 @@ private value class ElapsedFrame private constructor(private val packed: Long) {
     fun addDelta(delta: Long): ElapsedFrame {
         var time = packed shr 32
         time += delta
-        return ElapsedFrame((time shl 32) or (packed and 0x00_00_00_00_ff_ff_ff_ff) + 1)
+        return ElapsedFrame((time shl 32) or (packed and 0x0000_0000_ffff_ffff) + 1)
     }
     
     fun avg(): Long {
         val time = packed shr 32
-        val count = packed and 0x00_00_00_00_ff_ff_ff_ff
+        val count = packed and 0x0000_0000_ffff_ffff
         
         if (count == 0L) return 0L
         return time / count
     }
-    
 }
 
 internal fun dummyDanmaku(
@@ -265,7 +311,7 @@ internal fun dummyDanmaku(
     baseStyle: TextStyle,
     style: DanmakuStyle,
 ): DanmakuState {
-    DanmakuState(
+    return DanmakuState(
         presentation = DanmakuPresentation(
             Danmaku(
                 Uuid.randomString(),

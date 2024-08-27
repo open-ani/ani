@@ -24,7 +24,8 @@ fun DanmakuHost(
     val density = LocalDensity.current
     val trackStubMeasurer = rememberTextMeasurer(1)
     
-    LaunchedEffect(trackStubMeasurer) { state.measureTrack(trackStubMeasurer, density) }
+    SideEffect { state.baseStyle = baseStyle }
+    LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer, density) }
     LaunchedEffect(true) { state.interpolateFrame() }
     
     BoxWithConstraints(modifier) {
@@ -38,8 +39,14 @@ fun DanmakuHost(
         
         
         Canvas(Modifier.size(width, height)) {
+            var currentIndex = 0
             for (danmaku in state.presentDanmaku) {
-                drawDanmakuText(danmaku.state, danmaku.posXInScreen, danmaku.posYInScreen)
+                drawDanmakuText(
+                    danmaku.state, 
+                    state.presentDanmakuPositions[currentIndex * 2], 
+                    state.presentDanmakuPositions[currentIndex * 2 + 1]
+                )
+                currentIndex ++
             }
         }
     }
