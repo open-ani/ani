@@ -97,7 +97,6 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             Box(Modifier.weight(1f)) {
                 DanmakuHost(
                     state,
-                    { config },
                     Modifier.fillMaxHeight(),
                 )
                 Column {
@@ -110,7 +109,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     HorizontalDivider()
                     state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track floating$index: offset=${danmakuTrackState.trackOffsetX.toInt()}, " +
+                            "track floating$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
                                     "starting=${danmakuTrackState.startingDanmaku.size}",
                         )
@@ -138,14 +137,13 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             ) {
                 DanmakuHost(
                     state,
-                    { config },
                     Modifier.fillMaxWidth(),
                 )
                 Column {
                     Text("Emitted: $emitted")
                     state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
                         Text(
-                            "track$index: offset=${danmakuTrackState.trackOffsetX.toInt()}, " +
+                            "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
                                     "visible=${danmakuTrackState.visibleDanmaku.size}, " +
                                     "starting=${danmakuTrackState.startingDanmaku.size}",
                         )
@@ -177,7 +175,6 @@ private fun PreviewDanmakuText() {
             iter.forEach { off ->
                 drawDanmakuText(
                     DummyDanmakuState,
-                    style = DanmakuStyle(),
                     borderTextMeasurer = measurer,
                     solidTextMeasurer = measurer,
                     baseStyle = baseStyle,

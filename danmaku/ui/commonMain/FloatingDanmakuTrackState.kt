@@ -23,6 +23,7 @@ import kotlin.jvm.JvmField
  */
 class FloatingDanmakuTrackState(
     private val trackWidth: State<Int>,
+    private val danmakuConfig: State<DanmakuConfig>,
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : DanmakuTrackState {
     /**
@@ -60,7 +61,7 @@ class FloatingDanmakuTrackState(
      *
      * 使用时注意检查 [Float.isNaN]
      */
-    var trackOffsetX: Float by mutableFloatStateOf(Float.NaN)
+    var trackOffset: Float by mutableFloatStateOf(Float.NaN)
         internal set
 
     var populationVersion: Int by mutableIntStateOf(0)
@@ -69,14 +70,14 @@ class FloatingDanmakuTrackState(
     /**
      * track 在屏幕里的 y offset
      */
-    var trackPosOffsetY by mutableStateOf(0f)
+    var trackPosY by mutableStateOf(0f)
         internal set
     
     internal inner class FloatingDanmakuState(val state: DanmakuState) {
         internal val posXInScreen by derivedStateOf { 
-            state.offsetInsideTrack + if (trackOffsetX.isNaN()) 0f else trackOffsetX
+            state.offsetInsideTrack + if (trackOffset.isNaN()) 0f else trackOffset
         }
-        internal val posYInScreen get() = trackPosOffsetY
+        internal val posYInScreen get() = trackPosY
 
         /**
          * 此弹幕是否已完全滑到屏幕左侧，表示此弹幕已消失
@@ -117,9 +118,15 @@ class FloatingDanmakuTrackState(
     @UiThread
     fun place(
         presentation: DanmakuPresentation,
-        offsetInsideTrack: Float = -trackOffsetX + trackWidth.value,
+        offsetInsideTrack: Float = -trackOffset + trackWidth.value,
     ): DanmakuState {
-        return DanmakuState(presentation, offsetInsideTrack = offsetInsideTrack).also {
+        return DanmakuState(
+            presentation, 
+            offsetInsideTrack = offsetInsideTrack,
+            style = danmakuConfig.value.style,
+            enableColor = danmakuConfig.value.enableColor,
+            isDebug = danmakuConfig.value.isDebug
+        ).also {
             visibleDanmaku.add(FloatingDanmakuState(it))
             startingDanmaku.add(FloatingDanmakuState(it))
         }
@@ -144,7 +151,7 @@ class FloatingDanmakuTrackState(
         lastSafeSeparation = safeSeparation
         // Remove the danmaku from the track when it is out of screen, 
         // so that Track view will remove the Danmaku view from the layout.
-        val trackOffset = trackOffsetX
+        val trackOffset = trackOffset
         if (trackOffset.isNaN()) return
         visibleDanmaku.removeAll { it.isGone }
 
@@ -160,7 +167,7 @@ class FloatingDanmakuTrackState(
     @UiThread
     internal suspend fun receiveNewDanmaku() {
         if (trackWidth.value == 0) return
-        if (trackOffsetX.isNaN()) return // track 还未放置
+        if (trackOffset.isNaN()) return // track 还未放置
         if (visibleDanmaku.size >= danmakuTrackProperties.maxDanmakuInTrack) return // `>` is impossible, just to be defensive
         if (startingDanmaku.isNotEmpty()) return // 有弹幕仍然在屏幕右边
 
@@ -169,10 +176,10 @@ class FloatingDanmakuTrackState(
     }
 
     /**
-     * 匀速减少 [trackOffsetX].
+     * 匀速减少 [trackOffset].
      *
      * This function can be safely cancelled,
-     * because it remembers the last [trackOffsetX].
+     * because it remembers the last [trackOffset].
      *
      * Returns when the animation has ended,
      * which means the danmaku has moved out of the screen (to the start).
@@ -184,13 +191,13 @@ class FloatingDanmakuTrackState(
     ) {
         lastBaseSpeed = baseSpeed
         val speed = -baseSpeed / 1_000_000_000f // px/ns
-        if (trackOffsetX.isNaN()) {
-            trackOffsetX = trackWidth.value.toFloat()
+        if (trackOffset.isNaN()) {
+            trackOffset = trackWidth.value.toFloat()
         }
 
         restartAnimation@ while (true) {
             val currentVersion = populationVersion
-            val startOffset = trackOffsetX
+            val startOffset = trackOffset
             val startTime = withFrameNanos { it }
 
             while (true) { // for each frame
@@ -201,7 +208,7 @@ class FloatingDanmakuTrackState(
                     if (currentVersion != populationVersion) { // 必须在赋值 trackOffset 之前检查
                         return@withFrameNanos true
                     }
-                    trackOffsetX = res
+                    trackOffset = res
                     false
                 }
                 if (shouldRestart) {

@@ -114,7 +114,6 @@ internal fun EpisodeVideoImpl(
     danmakuEnabled: Boolean,
     onToggleDanmaku: () -> Unit,
     videoLoadingState: () -> VideoLoadingState,
-    danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     onExitFullscreen: () -> Unit,
     danmakuEditor: @Composable (RowScope.() -> Unit),
@@ -128,7 +127,6 @@ internal fun EpisodeVideoImpl(
     leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
-    danmakuFrozen: Boolean = false,
     gestureFamily: GestureFamily = currentPlatform.mouseFamily,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
@@ -214,7 +212,7 @@ internal fun EpisodeVideoImpl(
                 enter = fadeIn(tween(200)),
                 exit = fadeOut(tween(200)),
             ) {
-                DanmakuHost(danmakuHostState, danmakuConfig, Modifier.matchParentSize(), frozen = danmakuFrozen)
+                DanmakuHost(danmakuHostState, Modifier.matchParentSize())
             }
         },
         gestureHost = {

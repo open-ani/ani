@@ -3,7 +3,6 @@ package me.him188.ani.danmaku.ui
 import androidx.annotation.UiThread
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -15,12 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -28,15 +25,11 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import me.him188.ani.danmaku.api.Danmaku
@@ -51,9 +44,11 @@ import kotlin.random.Random
 class DanmakuState internal constructor(
     val presentation: DanmakuPresentation,
     /**
-     * 初始值满足 [offsetInsideTrack] + [FloatingDanmakuTrackState.trackOffsetX] == [FloatingDanmakuTrackState.trackSize].width
+     * 初始值满足 [offsetInsideTrack] + [FloatingDanmakuTrackState.trackOffset] == [FloatingDanmakuTrackState.trackSize].width
      */
     val offsetInsideTrack: Float = 0f, // positive
+    internal val style: DanmakuStyle = DanmakuStyle.Default,
+    private val enableColor: Boolean = true,
     isDebug: Boolean = false,
 ) {
     internal val danmakuText by derivedStateOf {
@@ -68,7 +63,40 @@ class DanmakuState internal constructor(
      * Can be `-1` if not yet initialized.
      */
     internal var textWidth by mutableIntStateOf(-1)
-    internal var animationStarted by mutableStateOf(false)
+
+    /**
+     * Measure this danmaku and get layout.
+     * 
+     * This method ensures the measure param is same except [baseStyle].
+     * So that you are expected to use the same [measurer] to accelerate measurement.
+     * 
+     * @see TextMeasurer.cacheSize
+     */
+    internal fun measure(
+        measurer: TextMeasurer, 
+        baseStyle: TextStyle,
+        isForText: Boolean = true,
+    ): TextLayoutResult {
+        return measurer.measure(
+            text = danmakuText,
+            style = baseStyle.merge(
+                if (isForText) {
+                    style.styleForText(
+                        color = if (enableColor) {
+                            rgbColor(presentation.danmaku.color.toUInt().toLong()).copy(alpha = style.alpha)
+                        } else Color.White,
+                    )
+                } else {
+                    style.styleForBorder().run {
+                        copy(color.copy(alpha = style.alpha))
+                    }
+                },
+            ),
+            overflow = TextOverflow.Clip,
+            maxLines = 1,
+            softWrap = false,
+        )
+    }
 }
 
 @Stable
@@ -92,9 +120,13 @@ class DanmakuTrackProperties(
      */
     val visibilitySafeArea: Int = 0,
     /**
-     * maximum count of danmaku that a floating track can holds 
+     * maximum count of danmaku that a floating track can holds.
      */
     val maxDanmakuInTrack: Int = 30,
+    /**
+     * vertical padding of danmaku track.
+     */
+    val verticalPadding: Int = 1,
 ) {
     companion object {
         val Default = DanmakuTrackProperties()
@@ -189,7 +221,7 @@ private class DanmakuTrackScopeImpl(
     ) {
         Box(
             modifier
-                .alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
+                //.alpha(if (danmaku.animationStarted) 1f else 0f) // Don't use `danmaku.offset == 0`, see danmaku.offset comments.
                 .graphicsLayer {
                     translationX = danmaku.offsetInsideTrack
                 }
@@ -223,49 +255,19 @@ fun DrawScope.drawDanmakuText(
     offsetX: Float,
     offsetY: Float,
     baseStyle: TextStyle,
-    config: DanmakuConfig = DanmakuConfig.Default,
-    style: DanmakuStyle = config.style,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
 ) {
     translate(left = offsetX, top = offsetY) {
-        // draw black bolder
-        drawText(
-            textMeasurer = borderTextMeasurer,
-            text = state.danmakuText,
-            overflow = TextOverflow.Clip,
-            maxLines = 1,
-            softWrap = false,
-            style = baseStyle.merge(
-                style.styleForBorder().run { 
-                    copy(color.copy(alpha = style.alpha)) 
-                }
-            ),
-        )
-        
-        val solidTextLayout = solidTextMeasurer.measure(
-            text = state.danmakuText,
-            style = baseStyle.merge(
-                style.styleForText(
-                    color = if (config.enableColor) {
-                        rgbColor(state.presentation.danmaku.color.toUInt().toLong())
-                            .copy(alpha = style.alpha)
-                    } else Color.White,
-                ),
-            ),
-            overflow = TextOverflow.Clip,
-            maxLines = 1,
-            softWrap = false,
-            layoutDirection = layoutDirection,
-            density = this
-        )
+        val solidTextLayout = state.measure(solidTextMeasurer, baseStyle)
         onTextLayout?.invoke(solidTextLayout)
-        // draw solid text
-        drawText(textLayoutResult = solidTextLayout)
-        // draw underline
+        // draw black bolder first, then solid text
+        drawText(state.measure(borderTextMeasurer, baseStyle, false))
+        drawText(solidTextLayout)
+        // draw underline if sent by self
         if (state.presentation.isSelf) {
             drawLine(
-                color = style.strokeColor,
-                strokeWidth = style.strokeWidth,
+                color = state.style.strokeColor,
+                strokeWidth = state.style.strokeWidth,
                 cap = StrokeCap.Square,
                 start = Offset(0f, solidTextLayout.size.height.toFloat()),
                 end = solidTextLayout.size.run { Offset(width.toFloat(), height.toFloat()) }

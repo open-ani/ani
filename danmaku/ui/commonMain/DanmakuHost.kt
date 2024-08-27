@@ -41,39 +41,34 @@ import kotlin.math.roundToInt
 @Composable
 fun DanmakuHost(
     state: DanmakuHostState,
-    configProvider: () -> DanmakuConfig,
     modifier: Modifier = Modifier,
-    frozen: Boolean = false,
 ) {
     val baseStyle = MaterialTheme.typography.bodyMedium
     val textMeasurer = rememberTextMeasurer(state.textMeasurerCacheSize * 2)
     val verticalPadding = 1.dp // to both top and bottom
 
     val density by rememberUpdatedState(LocalDensity.current)
-    val config by remember { derivedStateOf(configProvider) }
 
     // update floating danmaku when enabled
-    if (config.enableFloating) {
+    if (state.config.enableFloating) {
         val layoutDirection by rememberUpdatedState(LocalLayoutDirection.current)
-        val safeSeparation by remember { derivedStateOf { with(density) { config.safeSeparation.toPx() } } }
-        val speedPxPerSecond by remember { derivedStateOf { with(density) { config.speed.dp.toPx() } } }
+        val safeSeparation by remember { derivedStateOf { with(density) { state.config.safeSeparation.toPx() } } }
+        val speedPxPerSecond by remember { derivedStateOf { with(density) { state.config.speed.dp.toPx() } } }
 
         LaunchedEffect(
-            state.floatingTracks, 
-            frozen,
+            state.floatingTracks,
             state.isPaused,
-            speedPxPerSecond,
             state.trackWidth,
-            state.trackHeight
+            state.trackHeight,
+            state.config
         ) {
-            if (frozen) return@LaunchedEffect // don't launch any task if frozen
             supervisorScope {
                 var currentYOffset = 0f
                 val verticalPaddingPx = with(density) { (verticalPadding * 2).toPx() }
                 
                 for (track in state.floatingTracks) {
                     // update y offset of floating track
-                    track.trackPosOffsetY = currentYOffset
+                    track.trackPosY = currentYOffset
                     currentYOffset += state.trackHeight + verticalPaddingPx
                     
                     launch {
@@ -101,20 +96,21 @@ fun DanmakuHost(
     BoxWithConstraints(modifier) {
         val screenHeightPx by rememberUpdatedState(constraints.maxHeight)
         
-        SideEffect { 
-            state.textMeasurer = textMeasurer
+        SideEffect {
             state.baseStyle = baseStyle
+            state.textMeasurer = textMeasurer
         }
 
         // 更新显示区域
-        LaunchedEffect(textMeasurer) {
+        val dummyTextMeasurer = rememberTextMeasurer(1)
+        LaunchedEffect(dummyTextMeasurer) {
             combine(
-                snapshotFlow { config }.distinctUntilChanged { old, new -> 
+                snapshotFlow { state.config }.distinctUntilChanged { old, new -> 
                     old.displayArea == new.displayArea && old.style == new.style 
                 },
                 snapshotFlow { screenHeightPx }.debounce(500)
             ) { config, screenHeightPx ->
-                val danmakuTextHeight = textMeasurer.measure(
+                val danmakuTextHeight = dummyTextMeasurer.measure(
                     DummyDanmakuState.presentation.danmaku.text,
                     style = config.style.styleForText(),
                 ).size.height
@@ -145,7 +141,7 @@ fun DanmakuHost(
                 .onSizeChanged { state.trackWidthState.value = it.width }
         ) {
             // 浮动弹幕
-            if (config.enableFloating) {
+            if (state.config.enableFloating) {
                 for (track in state.floatingTracks) {
                     track.visibleDanmaku.forEach { danmaku ->
                         drawDanmakuText(
@@ -155,7 +151,6 @@ fun DanmakuHost(
                             offsetX = danmaku.posXInScreen,
                             offsetY = danmaku.posYInScreen,
                             baseStyle = baseStyle,
-                            config = config,
                             onTextLayout = { danmaku.state.textWidth = it.size.width }
                         )
                     }

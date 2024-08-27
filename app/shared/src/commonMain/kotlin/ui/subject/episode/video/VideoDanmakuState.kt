@@ -151,7 +151,6 @@ class DanmakuLoaderImpl(
 @Stable
 interface VideoDanmakuState {
     val danmakuHostState: DanmakuHostState
-    val config: DanmakuConfig
 
     val enabled: Boolean
     val isSettingEnabled: Boolean
@@ -173,8 +172,8 @@ class VideoDanmakuStateImpl(
     private val backgroundScope: CoroutineScope,
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
-    override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuTrackProperties)
-
+    override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuConfig, danmakuTrackProperties)
+    
     override val enabled: Boolean by danmakuEnabled
     override val isSettingEnabled: Boolean get() = setEnabledTasker.isRunning
     private val setEnabledTasker = MonoTasker(backgroundScope)
@@ -185,8 +184,6 @@ class VideoDanmakuStateImpl(
     }
 
     override var danmakuEditorText: String by mutableStateOf("")
-
-    override val config by danmakuConfig
 
     private val sendDanmakuTasker = MonoTasker(backgroundScope)
     override val isSending: Boolean get() = sendDanmakuTasker.isRunning

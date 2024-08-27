@@ -98,7 +98,6 @@ private fun PreviewVideoScaffoldImpl(
         danmakuEnabled = danmakuEnabled,
         onToggleDanmaku = { danmakuEnabled = !danmakuEnabled },
         videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
-        danmakuConfig = { DanmakuConfig.Default },
         onClickFullScreen = { },
         onExitFullscreen = { },
         danmakuEditor = {

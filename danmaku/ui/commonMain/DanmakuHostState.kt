@@ -2,6 +2,7 @@ package me.him188.ani.danmaku.ui
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,7 +10,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.Dispatchers
@@ -18,12 +18,17 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 import kotlin.concurrent.Volatile
 
 @Stable
 class DanmakuHostState(
+    private val danmakuConfig: State<DanmakuConfig> = mutableStateOf(DanmakuConfig.Default),
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) {
+    val config by danmakuConfig
+    
     private val isPausedState = mutableStateOf(false)
     var isPaused: Boolean by isPausedState
         internal set
@@ -64,7 +69,7 @@ class DanmakuHostState(
      * 浮动弹幕，显示为从右到左移动的弹幕
      */
     val floatingTracks: MutableList<FloatingDanmakuTrackState> = mutableStateListOf(
-        FloatingDanmakuTrackState(trackWidthState, danmakuTrackProperties),
+        FloatingDanmakuTrackState(trackWidthState, danmakuConfig, danmakuTrackProperties),
     )
 
     /**
@@ -92,7 +97,7 @@ class DanmakuHostState(
     fun setTrackCount(count: Int) {
         floatingTracks.setTrackCountImpl(
             count = count,
-            newInstance = { FloatingDanmakuTrackState(trackWidthState, danmakuTrackProperties) },
+            newInstance = { FloatingDanmakuTrackState(trackWidthState, danmakuConfig, danmakuTrackProperties) },
         )
         topTracks.setTrackCountImpl(
             count = (count / 2).coerceAtLeast(1),
@@ -128,29 +133,27 @@ class DanmakuHostState(
     /**
      * 清空所有弹幕轨道并重新填充
      */
-    suspend fun repopulate(list: List<DanmakuPresentation>, style: DanmakuStyle) {
+    suspend fun repopulate(list: List<DanmakuPresentation>) {
         withContext(Dispatchers.Main.immediate) { // immediate: do not pay for dispatch
             // 还没 layout 之前等着
             while (!::textMeasurer.isInitialized
                 || !::baseStyle.isInitialized
-                || floatingTracks.fastAny { it.trackOffsetX.isNaN() }
+                || floatingTracks.fastAny { it.trackOffset.isNaN() }
             ) {
                 delay(100)
             }
-            runPopulate(list, style)
+            runPopulate(list)
         }
     }
 
-    private fun runPopulate(
-        list: List<DanmakuPresentation>,
-        style: DanmakuStyle
-    ) {
+    private fun runPopulate(list: List<DanmakuPresentation>) {
+        logger<DanmakuHostState>().info("repopulate danmaku, size = ${list.size}")
         val textMeasurer = textMeasurer
 
         // 重置所有轨道以及它们的偏移
         for (track in floatingTracks) {
             track.clear()
-            track.trackOffsetX = 0f
+            track.trackOffset = 0f
             track.populationVersion++
         }
 
@@ -191,8 +194,6 @@ class DanmakuHostState(
             }
             return null
         }
-
-        val danmakuStyle = baseStyle.merge(style.styleForText())
         
         var lastSent: Danmaku? = null
         for (danmaku in list) { // 时间由旧到新
@@ -206,20 +207,14 @@ class DanmakuHostState(
                 val off =
                     (danmaku.danmaku.playTimeMillis - lastSent.playTimeMillis) / 1000f * track.state.lastBaseSpeed
                 check(off >= 0f)
-                track.state.trackOffsetX -= off
+                track.state.trackOffset -= off
             }
             lastSent = danmaku.danmaku
 
             val track = useNextTrackOrNull() ?: continue // 所有轨道都有弹幕还未完全显示, 也就是都不能发弹幕, 跳过
 
-            track.state.place(danmaku).apply {
-                textWidth = textMeasurer.measure(
-                    danmaku.danmaku.text,
-                    overflow = TextOverflow.Visible,
-                    style = danmakuStyle,
-                    softWrap = false,
-                    maxLines = 1,
-                ).size.width
+            track.state.place(danmaku).apply { 
+                measure(textMeasurer, baseStyle) 
             }
             track.lastSent = danmaku.danmaku
         }

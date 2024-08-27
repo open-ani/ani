@@ -560,17 +560,10 @@ private class EpisodeViewModelImpl(
                 }
             }
         }
-        launchInBackground {
-            settingsRepository.danmakuConfig.flow.drop(1).collectLatest {
-                logger.info { "Danmaku config changed, repopulating" }
-                danmakuLoader.requestRepopulate()
-            }
-        }
 
         launchInBackground {
             cancellableCoroutineScope {
                 val selfId = selfUserId.stateIn(this)
-                val danmakuConfig = settingsRepository.danmakuConfig.flow.stateIn(this)
                 danmakuLoader.eventFlow.collect { event ->
                     when (event) {
                         is DanmakuEvent.Add -> {
@@ -585,7 +578,6 @@ private class EpisodeViewModelImpl(
                                 event.list.map {
                                     createDanmakuPresentation(it, selfId.value)
                                 },
-                                danmakuConfig.value.style,
                             )
 
                         }
