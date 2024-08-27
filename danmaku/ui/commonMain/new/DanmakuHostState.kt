@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -51,13 +52,15 @@ class DanmakuHostState(
     
     @Volatile
     internal lateinit var baseStyle: TextStyle
+    @Volatile
+    internal lateinit var textMeasurer: TextMeasurer
 
     private val trackHeightState = mutableIntStateOf(0)
 
     /**
      * 当前播放时间, 读取 [progress] 并插帧过渡.
      * 
-     * 为了避免弹幕跳动, 插帧过度必须平滑, 详见 [interpolateFrame]
+     * 为了避免弹幕跳动, 插帧过度必须平滑, 详见 [interpolateFrameLoop]
      */
     private val currentTimeMillisState = mutableLongStateOf(0)
     internal var currentTimeMillis by currentTimeMillisState
@@ -70,7 +73,7 @@ class DanmakuHostState(
     internal val presentDanmaku: MutableList<PositionedDanmakuState> = mutableStateListOf()
 
     /**
-     * position of danmaku is calculated at [interpolateFrame].
+     * position of danmaku is calculated at [interpolateFrameLoop].
      */
     internal val presentDanmakuPositions: Array<Float> = Array(3000) { 0f }
     internal var presetDanmakuCount: Int by mutableIntStateOf(0)
@@ -132,7 +135,7 @@ class DanmakuHostState(
      * 根据 [progress] 为每一帧平滑插值到 [currentTimeMillis].
      */
     @UiThread
-    internal suspend fun interpolateFrame() {
+    internal suspend fun interpolateFrameLoop() {
         var latestUpstreamTimeMillis by atomic(0L)
         var restartInterpolate by atomic(true)
         
@@ -266,12 +269,52 @@ class DanmakuHostState(
         }
         presetDanmakuCount = currentIndex
     }
+    
+    suspend fun send(danmaku: DanmakuPresentation) {
+        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
+            delay(100)
+        }
+        when (danmaku.danmaku.location) {
+            DanmakuLocation.NORMAL -> {
+                val danmakuState = floatingTrack.firstNotNullOfOrNull { track ->
+                    track.tryPlace(
+                        DanmakuState(
+                            presentation = danmaku,
+                            measurer = textMeasurer,
+                            baseStyle = baseStyle,
+                            style = danmakuConfig.style,
+                            enableColor = danmakuConfig.enableColor,
+                            isDebug = danmakuConfig.isDebug,
+                        )
+                    )
+                }
+                // if danmakuState is not null, it means successfully placed.
+                if (danmakuState != null) presentDanmaku.add(danmakuState)
+            }
+            else -> { }
+        }
+    }
 
     /**
      * 重置当前弹幕状态, 重新绘制弹幕
      */
-    fun reset() {
+    suspend fun invalidate() {
+        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
+            delay(100)
+        }
         
+        val currentPresentDanmakuPresentation = presentDanmaku.map { it.state.presentation }
+        repopulate(currentPresentDanmakuPresentation)
+    }
+    
+    suspend fun repopulate(list: List<DanmakuPresentation>) {
+        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
+            delay(100)
+        }
+        
+        floatingTrack.forEach { it.clearAll() }
+        
+        for (danmaku in list) { send(danmaku) }
     }
 
     /**

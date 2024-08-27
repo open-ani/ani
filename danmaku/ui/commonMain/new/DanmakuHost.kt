@@ -26,7 +26,7 @@ fun DanmakuHost(
     
     SideEffect { state.baseStyle = baseStyle }
     LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer, density) }
-    LaunchedEffect(true) { state.interpolateFrame() }
+    LaunchedEffect(true) { state.interpolateFrameLoop() }
     
     BoxWithConstraints(modifier) {
         SideEffect {
