@@ -14,7 +14,7 @@
 
 - TG
   开发者群 [![Group](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/openani_dev)
-- [GitHub Discussions](https://github.com/him188/ani/discussions)
+- [GitHub Discussions](https://github.com/open-ani/ani/discussions)
 
 ## 目录
 
