@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -501,42 +502,75 @@ actual fun VideoPlayer(
         }
     }
 
+    val frameSizeCalculator = remember {
+        FrameSizeCalculator()
+    }
     Canvas(modifier) {
-        fun calculateImageSizeAndOffsetToFillFrame(
-            imageWidth: Int,
-            imageHeight: Int,
-            frameWidth: Int,
-            frameHeight: Int
-        ): Pair<IntSize, IntOffset> {
-            // 计算图片和画框的宽高比
-            val imageAspectRatio = imageWidth.toFloat() / imageHeight.toFloat()
+        val bitmap = surface.bitmap ?: return@Canvas
+        frameSizeCalculator.calculate(
+            IntSize(bitmap.width, bitmap.height),
+            Size(size.width, size.height),
+        )
+        drawImage(
+            bitmap,
+            dstSize = frameSizeCalculator.dstSize,
+            dstOffset = frameSizeCalculator.dstOffset,
+            filterQuality = FilterQuality.High,
+        )
+    }
+}
 
-            // 初始化最终的宽度和高度
-            val finalWidth: Int = frameWidth
-            val finalHeight: Int = (frameWidth / imageAspectRatio).toInt()
-            if (finalHeight > frameHeight) {
-                // 如果高度超出了画框的高度，那么就使用高度来计算宽度
-                val finalHeight2 = frameHeight
-                val finalWidth2 = frameHeight * imageAspectRatio
-                return Pair(
-                    IntSize(finalWidth2.roundToInt(), finalHeight2),
-                    IntOffset(((frameWidth - finalWidth2) / 2).roundToInt(), 0),
-                )
-            }
+private class FrameSizeCalculator {
+    private var lastImageSize: IntSize = IntSize.Zero
+    private var lastFrameSize: Size = Size.Zero
 
-            // 计算左上角的偏移量
-            val offsetX = 0
-            val offsetY = (frameHeight - finalHeight) / 2
+    // no boxing
+    var dstSize: IntSize = IntSize.Zero
+    var dstOffset: IntOffset = IntOffset.Zero
 
-            return Pair(IntSize(finalWidth, finalHeight), IntOffset(offsetX, offsetY))
+    private fun calculateImageSizeAndOffsetToFillFrame(
+        imageWidth: Int,
+        imageHeight: Int,
+        frameWidth: Float,
+        frameHeight: Float
+    ) {
+        // 计算图片和画框的宽高比
+        val imageAspectRatio = imageWidth.toFloat() / imageHeight.toFloat()
+
+        // 初始化最终的宽度和高度
+        val finalWidth = frameWidth
+        val finalHeight = frameWidth / imageAspectRatio
+        if (finalHeight > frameHeight) {
+            // 如果高度超出了画框的高度，那么就使用高度来计算宽度
+            val finalHeight2 = frameHeight
+            val finalWidth2 = frameHeight * imageAspectRatio
+            dstSize = IntSize(finalWidth2.roundToInt(), finalHeight2.roundToInt())
+            dstOffset = IntOffset(((frameWidth - finalWidth2) / 2).roundToInt(), 0)
+            return
         }
 
-        val bitmap = surface.bitmap ?: return@Canvas
-        val (dstSize, dstOffset) = calculateImageSizeAndOffsetToFillFrame(
-            bitmap.width, bitmap.height,
-            size.width.roundToInt(), size.height.roundToInt(),
+        // 计算左上角的偏移量
+        val offsetX = 0
+        val offsetY = (frameHeight - finalHeight) / 2
+
+        dstSize = IntSize(finalWidth.roundToInt(), finalHeight.roundToInt())
+        dstOffset = IntOffset(offsetX, offsetY.roundToInt())
+    }
+
+    fun calculate(
+        imageSize: IntSize,
+        frameSize: Size,
+    ) {
+        // 缓存上次计算结果, 因为这个函数会每帧绘制都调用
+        if (lastImageSize == imageSize && lastFrameSize == frameSize) {
+            return
+        }
+        calculateImageSizeAndOffsetToFillFrame(
+            imageWidth = imageSize.width, imageHeight = imageSize.height,
+            frameWidth = frameSize.width, frameHeight = frameSize.height,
         )
-        drawImage(bitmap, dstSize = dstSize, dstOffset = dstOffset, filterQuality = FilterQuality.High)
+        lastImageSize = imageSize
+        lastFrameSize = frameSize
     }
 }
 
