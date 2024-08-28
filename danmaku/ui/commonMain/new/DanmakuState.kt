@@ -36,8 +36,8 @@ data class DanmakuState(
         }
     }
     
-    val solidTextLayout by lazy {
-        measurer.measure(
+    val solidTextLayout 
+        get() = measurer.measure(
             text = danmakuText,
             style = baseStyle.merge(
                 style.styleForText(
@@ -50,18 +50,18 @@ data class DanmakuState(
             maxLines = 1,
             softWrap = false,
         )
-    }
-    val borderTextLayout by lazy {
-        measurer.measure(
+    
+    val borderTextLayout 
+        get() = measurer.measure(
             text = danmakuText,
             style = baseStyle.merge(style.styleForBorder()),
             overflow = TextOverflow.Clip,
             maxLines = 1,
             softWrap = false,
         )
-    }
     
-    val textWidth by lazy { solidTextLayout.size.width }
+    val textWidth 
+        get() = solidTextLayout.size.width
 }
 
 /**

@@ -1,64 +1,53 @@
 package me.him188.ani.danmaku.ui.new
 
+import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 
 @Stable
 class FloatingDanmakuTrack(
+    val trackIndex: Int,
     private val currentTimeMillis: LongState,
     private val trackHeight: IntState,
     private val screenWidth: IntState,
-    val trackIndex: Int,
-    val speedPxPerSecond: Int,
+    private val speedPxPerSecond: State<Float>,
+    private val safeSeparation: State<Float>,
+    
     // 某个弹幕消失了
     override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {
-    private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
-
-    /**
-     * 在逻辑帧执行弹幕可见性检查
-     */
+    internal val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
+    
     override fun tick() {
         if (danmakuList.isEmpty()) return
-        // If it is already sorted. it doesn't cost time.
-        danmakuList.sortBy { it.state.presentation.danmaku.playTimeMillis }
         danmakuList.removeAll { danmaku ->
             danmaku.isGone().also { if (it) onRemoveDanmaku(danmaku) }
         }
     }
-
-    /**
-     * check if this track can place danmaku now.
-     */
-    override fun canPlace(): Boolean {
+    
+    // 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标
+    // 如果有那说明此弹幕放置后可能会与已有弹幕重叠
+    override fun canPlace(danmaku: DanmakuState): Boolean {
         if (danmakuList.isEmpty()) return true
-        // If it is already sorted. it doesn't cost time.
-        danmakuList.sortBy { it.state.presentation.danmaku.playTimeMillis }
-        return danmakuList.last().isFullyVisible()
+        val upcomingDanmakuPosX = FloatingDanmaku(danmaku).calculatePosX()
+        for (d in danmakuList.asReversed()) {
+            if (d.calculatePosX() + d.state.textWidth + safeSeparation.value > upcomingDanmakuPosX) return false
+        }
+        return true
     }
-
-    /**
-     * place a danmaku to the track
-     * 
-     * @return A positioned danmaku which can be placed on danmaku host.
-     */
+    
     override fun place(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState {
         return FloatingDanmaku(danmaku).also { danmakuList.add(it) }
     }
-
-    /**
-     * try to place a danmaku, if this track can't place now, return null.
-     */
+    
     override fun tryPlace(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState? {
-        if (!canPlace()) return null
+        if (!canPlace(danmaku)) return null
         return place(danmaku)
     }
 
-    /**
-     * remove all danmaku of this track.
-     */
     override fun clearAll() {
         danmakuList.removeAll {
             onRemoveDanmaku(it)
@@ -66,12 +55,12 @@ class FloatingDanmakuTrack(
         }
     }
 
-    private inline fun FloatingDanmaku.isGone(): Boolean {
+    internal fun FloatingDanmaku.isGone(): Boolean {
         return calculatePosX() + state.textWidth.toFloat() < 0
     }
 
-    private inline fun FloatingDanmaku.isFullyVisible(): Boolean {
-        return screenWidth.value.toFloat() - calculatePosX() >= state.textWidth
+    internal fun FloatingDanmaku.isFullyVisible(): Boolean {
+        return screenWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation.value
     }
     
     @Immutable
@@ -80,11 +69,15 @@ class FloatingDanmakuTrack(
     ) : DanmakuHostState.PositionedDanmakuState {
         override fun calculatePosX(): Float {
             val timeDiff = (currentTimeMillis.value - state.presentation.danmaku.playTimeMillis) / 1000f
-            return screenWidth.value - timeDiff * speedPxPerSecond
+            return screenWidth.value - timeDiff * speedPxPerSecond.value
         }
 
         override fun calculatePosY(): Float {
             return trackHeight.value.toFloat() * trackIndex
+        }
+
+        override fun toString(): String {
+            return "FloatingDanmaku(p=${calculatePosX()}:${calculatePosY()}, v=${isFullyVisible()}, g=${isGone()})"
         }
     }
 }

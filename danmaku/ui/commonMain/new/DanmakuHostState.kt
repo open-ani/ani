@@ -2,10 +2,13 @@ package me.him188.ani.danmaku.ui.new
 
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameMillis
@@ -30,7 +33,6 @@ import me.him188.ani.danmaku.ui.DanmakuStyle
 import me.him188.ani.danmaku.ui.DanmakuTrackProperties
 import me.him188.ani.utils.platform.Uuid
 import kotlin.concurrent.Volatile
-import kotlin.jvm.JvmInline
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -39,9 +41,10 @@ import kotlin.time.Duration
 @Stable
 class DanmakuHostState(
     private val progress: Flow<Duration>,
-    private val danmakuConfig: DanmakuConfig = DanmakuConfig.Default, // state 
+    danmakuConfigState: State<DanmakuConfig> = mutableStateOf(DanmakuConfig.Default), // state 
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default, // state
 ) {
+    private val danmakuConfig by danmakuConfigState
     /**
      * DanmakuHost 显示大小, 在显示时修改
      */
@@ -55,7 +58,7 @@ class DanmakuHostState(
     @Volatile
     internal lateinit var textMeasurer: TextMeasurer
 
-    private val trackHeightState = mutableIntStateOf(0)
+    internal val trackHeightState = mutableIntStateOf(0)
 
     /**
      * 当前播放时间, 读取 [progress] 并插帧过渡.
@@ -65,7 +68,7 @@ class DanmakuHostState(
     private val currentTimeMillisState = mutableLongStateOf(0)
     internal var currentTimeMillis by currentTimeMillisState
     
-    private val floatingTrack: MutableList<FloatingDanmakuTrack> = mutableListOf()
+    internal val floatingTrack: MutableList<FloatingDanmakuTrack> = mutableListOf()
     
     /**
      * All presented danmaku which should be shown on screen.
@@ -75,45 +78,56 @@ class DanmakuHostState(
     /**
      * position of danmaku is calculated at [interpolateFrameLoop].
      */
-    internal val presentDanmakuPositions: Array<Float> = Array(3000) { 0f }
-    internal var presetDanmakuCount: Int by mutableIntStateOf(0)
+    // internal val presentDanmakuPositions: Array<Float> = Array(3000) { 0f }
+    // internal var presetDanmakuCount: Int by mutableIntStateOf(0)
+    
+    // test only prop
+    // internal var glitched: Int by mutableIntStateOf(0)
+    // internal var delta: Long by mutableLongStateOf(0)
+    // internal var interpCurr: Long by mutableLongStateOf(0)
+    // internal var interpUpst: Long by mutableLongStateOf(0)
+    // internal var restartEvent: String by mutableStateOf("")
     
     /**
-     * Measure track count and track height and apply to states
+     * 监听 轨道数量, 轨道高度 和 弹幕配置项目的变化
      */
     internal suspend fun observeTrack(measurer: TextMeasurer, density: Density) {
         combine(
-            snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
-                old.displayArea == new.displayArea && old.style == new.style
-            },
+            snapshotFlow { danmakuConfig }.distinctUntilChanged(),
             snapshotFlow { hostHeight }.debounce(500)
         ) { config, height ->
             val dummyTextLayout = dummyDanmaku(measurer, baseStyle, config.style).solidTextLayout
             val verticalPadding = with(density) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
-            
+
             val trackHeight = dummyTextLayout.size.height + verticalPadding
             val trackCount = height / trackHeight * config.displayArea
 
-            Pair(
+            Triple(
                 trackCount.roundToInt().coerceAtLeast(1),
-                trackHeight.toInt()
+                trackHeight.toInt(),
+                danmakuConfig
             )
         }
             .distinctUntilChanged()
-            .collect { (trackCount, trackHeight) ->
-                setTrackCount(trackCount)
-                trackHeightState.value = trackHeight
+            .collect { (trackCount, trackHeight, _) ->
+                setTrackCount(trackCount, density)
+                if (trackHeight != trackHeightState.value) {
+                    trackHeightState.value = trackHeight
+                }
+                invalidate()
             }
     }
     
-    private fun setTrackCount(count: Int) {
+    // 更新所有浮动轨道的滚动速度
+    private fun setTrackCount(count: Int, density: Density) {
         floatingTrack.setTrackCountImpl(count) { index ->
             FloatingDanmakuTrack(
                 currentTimeMillis = currentTimeMillisState, 
                 trackHeight = trackHeightState, 
                 screenWidth = hostWidthState, 
                 trackIndex = index, 
-                speedPxPerSecond = danmakuConfig.speed.toInt(),
+                speedPxPerSecond = derivedStateOf { with(density) { danmakuConfig.speed.dp.toPx() } },
+                safeSeparation = derivedStateOf { with(density) { danmakuConfig.safeSeparation.toPx() } },
                 onRemoveDanmaku = { removed -> presentDanmaku.remove(removed) }
             )
         }
@@ -137,7 +151,7 @@ class DanmakuHostState(
     @UiThread
     internal suspend fun interpolateFrameLoop() {
         var latestUpstreamTimeMillis by atomic(0L)
-        var restartInterpolate by atomic(true)
+        var restartInterpolate by atomic(false)
         
         coroutineScope {
             launch {
@@ -147,18 +161,19 @@ class DanmakuHostState(
                 }
             }
             launch {
-                var elapsedFrame = ElapsedFrame(0, 0)
+                var elapsedFrame = ElapsedFrame.zero()
                 
                 while (true) {
                     val current = currentTimeMillis
                     val upstream = latestUpstreamTimeMillis
-                    
                     val avgFrameTime = elapsedFrame.avg()
                     var glitched = false
                     
+                    // restartEvent = "c: $current, u: $upstream, a: $avgFrameTime"
+                    
                     val interpolationBase = when {
                         /**
-                         * initial state.
+                         * 初始状态
                          * 
                          *   current 
                          * ->> |v-----------------------------------------------------------|
@@ -167,7 +182,7 @@ class DanmakuHostState(
                          */
                         upstream == 0L && current == 0L -> { 0L }
                         /**
-                         * no-op, just start interpolate.
+                         * upstream 和 current 相等
                          *
                          *                     current
                          * ->> |-------------------v----------------------------------------|
@@ -176,28 +191,29 @@ class DanmakuHostState(
                          */
                         current == upstream -> { current }
                         /**
-                         * Diff between current time and upstream time is smaller than average frame time.
-                         * so ust apply the maximum of these two to prevent glitch from interpolating.
-                         * This branch should happens the most.
+                         * current 和 upstream 的差小于 4 * 平均帧时间
+                         * 通过插值来更新 current 以逼近 upstream, 插值更新会改变 current 的速度.
+                         * 为什么阈值是 4 倍帧时间?
+                         * - 突然的帧时间波动随时可能发生, 在可接受的范围内插值不会在视觉上感受到弹幕的速度变快或变慢.
                          *
                          *                     current
                          * ->> |-------------------v----------------------------------------|
                          * ->> |------------(--^------------)-------------------------------|
-                         *                 upstream         ^ avg time of each frame 
+                         *                 upstream         ^ 4 * avgFrameTime
                          */
-                        (current - upstream).absoluteValue <= avgFrameTime / 2 -> {
+                        (current - upstream).absoluteValue <= avgFrameTime * 4 -> {
                             max(current, upstream)
                         }
                         /**
-                         * Current time and upstream time differ two large, possible reason:
-                         * 1. User click progress bar to airdrop to specific time, diff is smaller than repopulate threshold.
-                         * 2. Frame rate becomes low when interpolating in interval of upstream updates.
-                         * Glitch in interpolating cannot be avoided, use upstream time to ensure accuracy of time. 
+                         * current 和 upstream 差别过大, 可能原因:
+                         * 1. [progress] flow 发生了重大改变, 例如用户用进度条调整视频时间.
+                         * 2. 帧时间突然增大很多, 例如 CPU 突然满载.
+                         * 出现这种情况时没办法避免弹幕的抖动, 直接使用 upstream 时间来确保弹幕的准确性. 
                          *
                          *                     current
                          * ->> |-------------------v----------------------------------------|
                          * ->> |-^--(---------------)---------------------------------------|
-                         *     upstream             ^ avg time of each frame 
+                         *     upstream             ^ avgFrameTime
                          */
                         else -> {
                             glitched = true
@@ -205,27 +221,34 @@ class DanmakuHostState(
                         }
                     }
                     
+                    // this@DanmakuHostState.glitched = if (glitched) 1 else 0 // test only
+                    
+                    elapsedFrame = ElapsedFrame.zero()
                     var lastFrameTime = withFrameMillis { it }
-                    if (glitched) { 
-                        // interpolation is not necessary if glitched because current time is amended.
+                    
+                    if (glitched) {
+                        // 如果弹幕抖动就不用插值.
                         do {
                             withFrameMillis { millis ->
                                 val delta = millis - lastFrameTime
+                                // this@DanmakuHostState.delta = delta // test only
+                                
                                 currentTimeMillis += delta // update state
+                                
                                 elapsedFrame = elapsedFrame.addDelta(delta)
                                 lastFrameTime = millis
                             }
-                            calculateDanmakuPosition()
                         } while (!restartInterpolate)
                     } else {
-                        @Suppress("NAME_SHADOWING") var current = interpolationBase
-                        @Suppress("NAME_SHADOWING") var upstream = latestUpstreamTimeMillis
+                        var current1 = interpolationBase
+                        var upstream1 = latestUpstreamTimeMillis
+                        
                         do {
                             /**
-                             * interpolate on each frame. `curr` should be interpolated and move close to `upstream next`.
-                             * Here is the process of interpolation.
+                             * 在每一帧进行插值, 使 current 更逼近 upstream.
+                             * 插值会导致 current 增加的速率发生变化: 如果 current < upstream, 那速度会稍微加快.
                              * 
-                             * Case 1: current < upstream
+                             * case 1: current < upstream
                              *
                              *                      interp        interp
                              *       curr       (next)|       (next)|
@@ -233,7 +256,7 @@ class DanmakuHostState(
                              * ->>----------|^-----------|^-----------|^-------------
                              *           upstream      (next)       (next)
                              *           
-                             * Case 2: current > upstream
+                             * case 2: current > upstream
                              * 
                              *                      interp     interp
                              *             curr       |(next)    |(next)
@@ -243,33 +266,36 @@ class DanmakuHostState(
                              */ 
                             withFrameMillis { millis ->
                                 val delta = millis - lastFrameTime
+                                // this@DanmakuHostState.delta = delta // test only
                                 
-                                val interpolated = current + delta + (upstream - current) / 2
+                                val interpolated = current1 + delta + (upstream1 - current1) / 2
                                 currentTimeMillis = interpolated
                                 
-                                current = interpolated
-                                upstream += delta
+                                // this@DanmakuHostState.interpCurr = current1 // test only
+                                // this@DanmakuHostState.interpUpst = upstream1 // test only
                                 
+                                current1 = interpolated
+                                upstream1 += delta
+
+                                elapsedFrame = elapsedFrame.addDelta(delta)
                                 lastFrameTime = millis
                             }
-                            calculateDanmakuPosition()
                         } while (!restartInterpolate)
                     }
+                    restartInterpolate = false
                 }
             }
         }
     }
     
-    private inline fun calculateDanmakuPosition() {
-        var currentIndex = 0
-        for (danmaku in presentDanmaku.take(presentDanmakuPositions.size / 2)) {
-            presentDanmakuPositions[currentIndex * 2] = danmaku.calculatePosX()
-            presentDanmakuPositions[currentIndex * 2 + 1] = danmaku.calculatePosY()
-            currentIndex ++
-        }
-        presetDanmakuCount = currentIndex
+    @UiThread
+    internal fun tick() {
+        floatingTrack.forEach { it.tick() }
     }
-    
+
+    /**
+     * send a danmaku to the host.
+     */
     suspend fun send(danmaku: DanmakuPresentation) {
         while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
             delay(100)
@@ -325,27 +351,6 @@ class DanmakuHostState(
         
         fun calculatePosX(): Float
         fun calculatePosY(): Float
-    }
-}
-
-// Elapsed time is used at [interpolateFrame].
-// higher 32 bit = time, lower 32 bit = count
-@JvmInline
-private value class ElapsedFrame private constructor(private val packed: Long) {
-    constructor(time: Long, count: Int) : this((time shl 32) or count.toLong())
-    
-    fun addDelta(delta: Long): ElapsedFrame {
-        var time = packed shr 32
-        time += delta
-        return ElapsedFrame((time shl 32) or (packed and 0x0000_0000_ffff_ffff) + 1)
-    }
-    
-    fun avg(): Long {
-        val time = packed shr 32
-        val count = packed and 0x0000_0000_ffff_ffff
-        
-        if (count == 0L) return 0L
-        return time / count
     }
 }
 

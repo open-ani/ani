@@ -7,21 +7,22 @@ interface DanmakuTrack {
     val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
     
     /**
-     * place a danmaku to the track
+     * place a danmaku to the track without check.
      *
      * @return A positioned danmaku which can be placed on danmaku host.
      */
-    fun place(danmakuState: DanmakuState): DanmakuHostState.PositionedDanmakuState
+    fun place(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState
 
     /**
-     * check if this track can place danmaku now.
+     * check if this track can place danmaku.
      */
-    fun canPlace(): Boolean
+    fun canPlace(danmaku: DanmakuState): Boolean
 
     /**
-     * try to place a danmaku, if this track can't place now, return null.
+     * try to place a danmaku. there are reasons that the upcoming danmaku cannot be placed.
+     * - [canPlace]
      */
-    fun tryPlace(danmakuState: DanmakuState): DanmakuHostState.PositionedDanmakuState?
+    fun tryPlace(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState?
 
     /**
      * clear all danmaku in this track
