@@ -80,7 +80,7 @@ Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开�
 - PR 审核将会比较严格. 在保证项目代码质量的同时, 我们也希望尽可能地帮助你提高技术水平.
   审核者技术有限, 如有意见不统一的情况, 请务必提出, 相互学习 :)
 
-## 3. 模块结构
+## 项目总体架构
 
 Ani 现在已经是一个不小的项目, 本章节将给你一个全局的了解.
 
@@ -107,12 +107,12 @@ Ani 项目的几乎所有模块都使用 KMP. 源集结构如下:
 flowchart TD
     subgraph "多平台项目统一源集结构"
         direction BT
-        style common fill: white
-        style android fill: aqua
-        style desktop fill: aqua
-        style iosArm64 fill: aqua
-        style iosSimulatorArm64 fill: lightgreen
-        style skiko fill: #ECECEBA0, stroke-dasharray: 4 4
+        style common fill: white, color: black
+        style android fill: aqua, color: black
+        style desktop fill: aqua, color: black
+        style iosArm64 fill: aqua, color: black
+        style iosSimulatorArm64 fill: lightgreen, color: black
+        style skiko fill: #ECECEBA0, stroke-dasharray: 4 4, color: black
         jvm ---> common
         android --> jvm
         desktop --> jvm
@@ -131,13 +131,28 @@ flowchart TD
 蓝色为最终目标. 它们将会构建成为 APP.
 绿色的是 iOS 模拟器目标, 仅为运行测试.
 
-Compose Multiplatform 在 `desktop` 和 `ios` 均使用 Skiko 渲染, 因此共享的 `skiko` 源集.
+[Skiko]: https://github.com/JetBrains/skiko
+
+Compose Multiplatform 在 `desktop` 和 `ios` 均使用 [Skiko][Skiko] 渲染, 因此共享的 `skiko` 源集.
 中间源集 `skiko` 为辅助作用. 主要的平台适配代码在 `jvm` 和 `apple` 中.
 
-> [!TIP]
+> [!NOTE]
 > 实际上有些模块的源集结构是不完整的 (更简单一些). 例如工具模块 `:utils:io` 不区分 `android`
-> 和 `desktop`, 其 `jvm`
-> 为最终目标. 因此它也没有中间源集 `skiko`.
+> 和 `desktop`, 它只有 `jvm` 作为最终目标, 同时支持 Android 和桌面端.
+
+在这种架构下, 要开发一个适配各个平台的功能的流程通常是如下所示. 以增加视频播放器为例:
+
+1. 在 `commonMain` 中增加 `expect fun VideoPlayer(state: PlayerState)`. 该函数没有函数体,
+   各个平台分别实现函数体.
+2. 考虑该功能应当如何在各个平台实现. 对于视频播放器, 我们需要在三个平台分别实现.
+3. 在 `androidMain`, `desktopMain`, `iosMain` 中分别增加
+   `actual fun VideoPlayer(state: PlayerState) { ... }`
+
+这样, 就可以在 `commonMain` 中调用 `VideoPlayer` 函数, 而在编译时 Kotlin 自动选择正确的实现.
+
+> [!TIP]
+> 如果有一些功能只有一个平台需要, 例如 PC 上的隐藏鼠标指针功能, 你仍然需要为所有平台提供实现,
+> 将函数体留空即可.
 
 ### 模块结构
 
@@ -179,7 +194,7 @@ flowchart TD
 
         在线 --> data-sources:api
         BT --> data-sources:api
-        data-sources:bangumi(:data-sources:bangumi\nBangumi, 提供条目数据) --> data-sources:api
+        data-sources:bangumi(:data-sources:bangumi<br/>Bangumi, 提供条目数据) --> data-sources:api
     end
 
     数据源 --> 基础工具
@@ -187,18 +202,18 @@ flowchart TD
     APP --> 数据源
 
     subgraph "弹幕"
-        danmaku:api[:danmaku:api \n 多弹幕源接口]
-        danmaku:dandanplay[:danmaku:dandanplay\n 弹弹 play] --> danmaku:api
-        danmaku:ui[:danmaku:ui\n 视频播放器 UI 的弹幕层] --> danmaku:api
+        danmaku:api[:danmaku:api <br/> 多弹幕源接口]
+        danmaku:dandanplay[:danmaku:dandanplay<br/> 弹弹 play] --> danmaku:api
+        danmaku:ui[:danmaku:ui<br/> 视频播放器 UI 的弹幕层] --> danmaku:api
     end
 
     弹幕 --> 基础工具
     APP --> 弹幕
 
     subgraph "BitTorrent"
-        torrent:api[:torrent:api\n多 BT 引擎接口]
-        torrent:anitorrent[:torrent:anitorrent\nAnitorrent 自身]
-        torrent:impl:anitorrent[:torrent:impl:anitorrent\n用 Anitorrent 实现 BT 引擎] --> torrent:api
+        torrent:api[:torrent:api<br/>多 BT 引擎接口]
+        torrent:anitorrent[:torrent:anitorrent<br/>Anitorrent 自身, C++ 编写]
+        torrent:impl:anitorrent[:torrent:impl:anitorrent<br/>用 Anitorrent 实现 BT 引擎] --> torrent:api
         torrent:impl:anitorrent .-> torrent:anitorrent
     end
 
@@ -206,53 +221,113 @@ flowchart TD
     APP --> BitTorrent
 
     subgraph "APP"
-        android[":app:android \n Android 入口"] --> shared
-        desktop[":app:desktop \n 桌面端入口"] --> shared
-        ios[":app:ios \n 计划"] --> shared
-        client[":client\nAni 服务客户端 (弹幕+登录)"]
-        shared[":app:shared\nAPP 主要代码"] --> client
-        style android fill: cyan
-        style desktop fill: cyan
-        style ios fill: cyan, stroke-dasharray: 4 4
+        android[":app:android <br/> Android 入口"] --> shared
+        desktop[":app:desktop <br/> 桌面端入口"] --> shared
+        ios[":app:ios <br/> 计划"] --> shared
+        client[":client<br/>Ani 服务客户端 (弹幕+登录)"]
+        shared[":app:shared<br/>APP 主要代码"] --> client
+        style android fill: cyan, color: black
+        style desktop fill: cyan, color: black
+        style ios fill: cyan, stroke-dasharray: 4 4, color: black
 
         subgraph "UI组件"
             direction TB
-            image-viewer[:app:shared:image-view\n图片查看器]
-            video-player[:app:shared:video-player\n视频播放器]
-            placeholder[:app:shared:placeholder\n载入特效组件]
-            reorderable[:app:shared:reorderable\n长按排序组件]
+            image-viewer[:app:shared:image-view<br/>图片查看器]
+            video-player[:app:shared:video-player<br/>视频播放器]
+            placeholder[:app:shared:placeholder<br/>载入特效组件]
+            reorderable[:app:shared:reorderable<br/>长按排序组件]
         end
 
         shared --> UI组件
     end
 ```
 
-> [!TIP]
-> 蓝色的模块为 APP 的入口点. 它们里面只有微量的代码用来启动 `:app:shared` 中的 UI 等.
-> 绝大部分客户端代码都在共享模块 `:app:shared` 中.
+蓝色的模块为 APP 的入口点. 它们里面只有微量的代码用来启动 `:app:shared` 中的 UI 等.
+绝大部分客户端代码都在共享模块 `:app:shared` 中.
+
+> 这样做的一个原因是各个平台的构建限制:
 >
-> > 这样做的一个原因是各个平台的构建限制:
-> >
-> > - Android 方面是因为 Android Library 无法在 manifest 定义 Activity.
-> > - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
+> - Android 方面是因为 Android Library 无法在 manifest 定义 Activity.
+> - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
+> - iOS 需要使用 Xcode 项目才能启动
 
-## 4. 依赖管理
+## 运行测试版本 APP
 
-Ani 使用 Gradle Version Catalogs.
-依赖位于 [`gradle/libs.versions.toml`](/gradle/libs.versions.toml).
+以下各个小节分别说明如何运行各个平台的测试. 如果遇到问题,
+请查看 [常见构建和运行问题](#常见构建和运行问题)
 
-提示: 更新依赖后, 请先让 IDE sync 一下新的配置, 然后才能在 `build.gradle.kts` 中有 `libs.xxx` 的自动补全.
+### 什么是 Run Configuration (运行配置)
 
-## 5. 构建打包
+项目自带一些运行配置, 方便你运行测试版 APP, 可以在 Android Studio 顶部找到:
 
-执行 `./gradlew build` 即可编译并运行测试 (前提是你已经配置了上面的几步)。需要正确的 Android SDK
-配置才能完成编译。在没有配置时，编译将会出错并提示如何配置。
+![](.readme/images/contributing/run-configuration.png)
 
-> [!NOTE]
-> 如果提示找不到 `Res.*` , 请生成 Compose Multiplatform 资源:
-> 执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
+`app.android` 就是一个运行配置, 使用它即可运行 Android APP (下面有说明).
 
-### 构建桌面应用
+> [!WARNING]
+> **如何编辑一个运行配置**
+>
+> ![](.readme/images/contributing/edit-run-configuration.png)
+>
+> 打开后, 将配置复制一份, 然后修改复制的配置. 因为默认配置是由 Git 管理的, 除非有很强的理由,
+> 否则不要修改默认配置.
+
+### 运行调试版本 Android APP
+
+在 Android Studio 中, 选择运行配置 `app.android`, 点击按钮运行或调试即可.
+Android Studio 的调试器同时支持调试 Kotlin 和 C++ 代码 (torrent 部分由 C++ 编写). 因此你可能会看到两个调试器窗口,
+请注意切换.
+
+> [!TIP]
+> **Android 调试版本 (Debug) 的性能远低于发布版本 (Release)**
+>
+> 由于调试版本禁用了一切优化, 且包含了 Compose 额外的调试信息, 性能会比发布版本低很多.
+> 所有手机都会非常卡. 如果你要测试性能, 请切换到发布版本.
+
+### 运行 PC APP
+
+仅支持 macOS 和 Windows.
+
+在 Android Studio 中, 选择运行配置 `Run Desktop`, 点击按钮运行或调试即可.
+
+### 运行 iOS APP
+
+TODO
+
+### 常见构建和运行问题
+
+#### 提示找不到 `reorderable`
+
+未找到 `app/shared/reorderable`, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
+
+1. `git submodule update --init --recursive`
+2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
+3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
+
+#### 编译报错找不到 `Res.*`
+
+这是 Compose 的 bug, 请生成 Compose Multiplatform 资源:
+
+执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
+
+#### Android 触发断点恢复运行后, APP 无响应
+
+打开 `app.android` 的配置, 将 Debugger -> Debug type 改为 Java only.
+
+#### 启动 PC 版时报错 `ClassNotDefFoundError`
+
+打开 `Run Desktop` 的配置, 复制一份, 将 "Use classpath of module" 改为 `ani.app.desktop.test`.
+
+## 打包 APP
+
+### 打包 Android APP
+
+执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
+，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
+
+在 IDE 上
+
+### 打包桌面应用
 
 要构建桌面应用，请参考 [Compose for Desktop]
 官方文档，或简单执行 `./gradlew createReleaseDistributable`
@@ -260,22 +335,19 @@ Ani 使用 Gradle Version Catalogs.
 
 一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
 
-> [!NOTE]
-> 默认情况下, 桌面端不会构建 Anitorrent (C++), 也就没有 BT 支持.
-> 可阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md) 了解如何配置 C++ 构建.
+## 运行测试
 
-### 构建 Android 应用
+`./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
 
-要构建 Android 应用，请执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
-，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
+在 macOS 上, 这将会运行全部测试, 总共约 8000 个. 在 Windows 上只能运行安卓和 JVM 平台测试, 无法运行
+iOS 测试.
 
 > [!TIP]
-> **重复运行所有测试**
+> **重复运行测试**
 >
 > 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
 >
-> 可使用 `./gradlew clean generateComposeResClass check` 清空测试的缓存并重新运行所有测试.
-
+> 可使用 `./gradlew clean check` 清空缓存并重新运行所有测试.
 
 ## 6. App 项目架构
 
