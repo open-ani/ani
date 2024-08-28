@@ -1,10 +1,12 @@
 package me.him188.ani.app.ui.cache.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -13,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Downloading
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Restore
@@ -23,6 +27,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -226,9 +231,20 @@ fun CacheEpisodeItem(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
                     ) {
-                        Box(Modifier.padding(end = 16.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Crossfade(state.isFinished, Modifier.size(20.dp)) {
+                                if (it) {
+                                    Icon(Icons.Rounded.DownloadDone, "下载完成")
+                                } else {
+                                    Icon(Icons.Rounded.Downloading, "下载中")
+                                }
+                            }
+
                             state.sizeText?.let {
-                                Text(it, softWrap = false)
+                                Text(it, Modifier.padding(end = 16.dp), softWrap = false)
                             }
                         }
 
@@ -276,34 +292,46 @@ fun CacheEpisodeItem(
             }
         },
         trailingContent = {
-            Box {
-                if (state.isActionInProgress) {
-                    IconButton(
-                        onClick = {
-                            // no-op
-                        },
-                    ) {
-                        CircularProgressIndicator(Modifier.size(24.dp))
+            BoxWithConstraints {
+                // 仅当有足够宽度时, 才展示当前状态下的推荐操作
+                val showPrimaryAction by remember {
+                    derivedStateOf { maxWidth >= 320.dp }
+                }
+                Row(horizontalArrangement = Arrangement.aligned(Alignment.End)) {
+                    // 当前状态下的推荐操作
+                    AnimatedVisibility(showPrimaryAction) {
+                        if (state.isActionInProgress) {
+                            IconButton(
+                                onClick = {
+                                    // no-op
+                                },
+                                enabled = false,
+                                colors = IconButtonDefaults.iconButtonColors().run {
+                                    copy(disabledContainerColor = containerColor, disabledContentColor = contentColor)
+                                },
+                            ) {
+                                CircularProgressIndicator(Modifier.size(24.dp))
+                            }
+                        } else {
+                            when {
+                                state.isPaused -> {
+                                    IconButton({ state.resume() }) {
+                                        Icon(Icons.Rounded.Restore, "继续下载")
+                                    }
+                                }
+
+                                !state.isPaused -> {
+                                    IconButton({ state.pause() }) {
+                                        Icon(Icons.Rounded.Pause, "暂停下载", Modifier.size(28.dp))
+                                    }
+                                }
+                            }
+                        }
                     }
-                } else {
-                    when {
-                        state.isFinished -> {
-                            IconButton({ showDropdown = true }) {
-                                Icon(Icons.Rounded.Check, "下载完成")
-                            }
-                        }
 
-                        state.isPaused -> {
-                            IconButton({ state.resume() }) {
-                                Icon(Icons.Rounded.Restore, "继续下载")
-                            }
-                        }
-
-                        !state.isPaused -> {
-                            IconButton({ state.pause() }) {
-                                Icon(Icons.Rounded.Pause, "暂停下载", Modifier.size(28.dp))
-                            }
-                        }
+                    // 总是展示的更多操作. 实际上点击整个 ListItem 都能展示 dropdown, 但留有这个按钮避免用户无法发现点击 list 能展开.
+                    IconButton({ showDropdown = true }) {
+                        Icon(Icons.Rounded.MoreVert, "管理此项")
                     }
                 }
                 Dropdown(
