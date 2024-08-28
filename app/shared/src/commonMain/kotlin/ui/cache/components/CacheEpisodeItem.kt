@@ -199,13 +199,13 @@ fun CacheEpisodeItem(
         headlineContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "${state.sort}  ",
+                    "${state.sort}",
                     softWrap = false,
                 )
 
                 Text(
                     state.displayName,
-                    Modifier.basicMarquee(),
+                    Modifier.padding(start = 8.dp).basicMarquee(),
                 )
             }
         },
