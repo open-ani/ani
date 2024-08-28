@@ -7,6 +7,12 @@ import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 
+/**
+ * FloatingDanmakuTrack 中的弹幕在以下情况会移除:
+ * - tick 中的逻辑帧检测
+ * - 调用 [DanmakuTrack.clearAll]
+ * 移除时必须调用 [DanmakuTrack.onRemoveDanmaku] 避免内存泄露.
+ */
 @Stable
 class FloatingDanmakuTrack(
     val trackIndex: Int,
@@ -15,18 +21,10 @@ class FloatingDanmakuTrack(
     private val screenWidth: IntState,
     private val speedPxPerSecond: State<Float>,
     private val safeSeparation: State<Float>,
-    
-    // 某个弹幕消失了
+    // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {
     internal val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
-    
-    override fun tick() {
-        if (danmakuList.isEmpty()) return
-        danmakuList.removeAll { danmaku ->
-            danmaku.isGone().also { if (it) onRemoveDanmaku(danmaku) }
-        }
-    }
     
     // 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标
     // 如果有那说明此弹幕放置后可能会与已有弹幕重叠
@@ -42,16 +40,18 @@ class FloatingDanmakuTrack(
     override fun place(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState {
         return FloatingDanmaku(danmaku).also { danmakuList.add(it) }
     }
-    
-    override fun tryPlace(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState? {
-        if (!canPlace(danmaku)) return null
-        return place(danmaku)
-    }
 
     override fun clearAll() {
         danmakuList.removeAll {
             onRemoveDanmaku(it)
             true
+        }
+    }
+
+    override fun tick() {
+        if (danmakuList.isEmpty()) return
+        danmakuList.removeAll { danmaku ->
+            danmaku.isGone().also { if (it) onRemoveDanmaku(danmaku) }
         }
     }
 

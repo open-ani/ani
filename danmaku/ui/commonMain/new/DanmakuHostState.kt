@@ -71,8 +71,13 @@ class DanmakuHostState(
      */
     private val currentTimeMillisState = mutableLongStateOf(0)
     internal var currentTimeMillis by currentTimeMillisState
-    
+
+    /**
+     * 弹幕轨道
+     */
     internal val floatingTrack: MutableList<FloatingDanmakuTrack> = mutableListOf()
+    internal val topTrack: MutableList<FixedDanmakuTrack> = mutableListOf()
+    internal val bottomTrack: MutableList<FixedDanmakuTrack> = mutableListOf()
     
     /**
      * All presented danmaku which should be shown on screen.
@@ -114,8 +119,8 @@ class DanmakuHostState(
             )
         }
             .distinctUntilChanged()
-            .collect { (trackCount, trackHeight, _) ->
-                setTrackCount(trackCount, density)
+            .collect { (trackCount, trackHeight, config) ->
+                setTrackCount(trackCount, config, density)
                 if (trackHeight != trackHeightState.value) {
                     trackHeightState.value = trackHeight
                 }
@@ -124,15 +129,37 @@ class DanmakuHostState(
     }
     
     // 更新所有浮动轨道的滚动速度
-    private fun setTrackCount(count: Int, density: Density) {
-        floatingTrack.setTrackCountImpl(count) { index ->
+    private fun setTrackCount(count: Int, config: DanmakuConfig, density: Density) {
+        floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
-                currentTimeMillis = currentTimeMillisState, 
-                trackHeight = trackHeightState, 
+                trackIndex = index,
+                currentTimeMillis = currentTimeMillisState,
+                trackHeight = trackHeightState,
                 screenWidth = hostWidthState, 
-                trackIndex = index, 
                 speedPxPerSecond = derivedStateOf { with(density) { danmakuConfig.speed.dp.toPx() } },
                 safeSeparation = derivedStateOf { with(density) { danmakuConfig.safeSeparation.toPx() } },
+                onRemoveDanmaku = { removed -> presentDanmaku.remove(removed) }
+            )
+        }
+        topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
+            FixedDanmakuTrack(
+                trackIndex = index,
+                currentTimeMillis = currentTimeMillisState,
+                trackHeight = trackHeightState,
+                screenWidth = hostWidthState,
+                screenHeight = hostHeightState,
+                fromBottom = false,
+                onRemoveDanmaku = { removed -> presentDanmaku.remove(removed) }
+            )
+        }
+        bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
+            FixedDanmakuTrack(
+                trackIndex = index,
+                currentTimeMillis = currentTimeMillisState,
+                trackHeight = trackHeightState,
+                screenWidth = hostWidthState,
+                screenHeight = hostHeightState,
+                fromBottom = true,
                 onRemoveDanmaku = { removed -> presentDanmaku.remove(removed) }
             )
         }
@@ -304,6 +331,8 @@ class DanmakuHostState(
     @UiThread
     internal fun tick() {
         floatingTrack.forEach { it.tick() }
+        topTrack.forEach { it.tick() }
+        bottomTrack.forEach { it.tick() }
     }
 
     /**
@@ -313,25 +342,27 @@ class DanmakuHostState(
         while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
             delay(100)
         }
-        when (danmaku.danmaku.location) {
-            DanmakuLocation.NORMAL -> {
-                val danmakuState = floatingTrack.firstNotNullOfOrNull { track ->
-                    track.tryPlace(
-                        DanmakuState(
-                            presentation = danmaku,
-                            measurer = textMeasurer,
-                            baseStyle = baseStyle,
-                            style = danmakuConfig.style,
-                            enableColor = danmakuConfig.enableColor,
-                            isDebug = danmakuConfig.isDebug,
-                        )
-                    )
-                }
-                // if danmakuState is not null, it means successfully placed.
-                if (danmakuState != null) presentDanmaku.add(danmakuState)
-            }
-            else -> { }
+        
+        fun createDanmakuState(): DanmakuState {
+            return DanmakuState(
+                presentation = danmaku,
+                measurer = textMeasurer,
+                baseStyle = baseStyle,
+                style = danmakuConfig.style,
+                enableColor = danmakuConfig.enableColor,
+                isDebug = danmakuConfig.isDebug,
+            )
         }
+        
+        val positionedDanmakuState: PositionedDanmakuState? = when (danmaku.danmaku.location) {
+            DanmakuLocation.NORMAL -> floatingTrack.firstNotNullOfOrNull { track ->
+                track.tryPlace(createDanmakuState())
+            }
+            else -> (if (danmaku.danmaku.location == DanmakuLocation.TOP) topTrack else bottomTrack)
+                .firstNotNullOfOrNull { track -> track.tryPlace(createDanmakuState()) }
+        }
+        // if danmakuState is not null, it means successfully placed.
+        if (positionedDanmakuState != null) presentDanmaku.add(positionedDanmakuState)
     }
 
     /**

@@ -22,7 +22,10 @@ interface DanmakuTrack {
      * try to place a danmaku. there are reasons that the upcoming danmaku cannot be placed.
      * - [canPlace]
      */
-    fun tryPlace(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState?
+    fun tryPlace(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState? {
+        if (!canPlace(danmaku)) return null
+        return place(danmaku)
+    }
 
     /**
      * clear all danmaku in this track

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -46,12 +47,11 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Note, use "Run Preview" to preview on your phone or the emulator if you only see the initial danmaku-s.
  */
-@OptIn(TestOnly::class)
 @Composable
 @Preview(showBackground = true, device = Devices.TABLET)
 internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     var emitted by remember { mutableIntStateOf(0) }
-    var config = remember { mutableStateOf(DanmakuConfig(displayArea = 1.0f)) }
+    val config = remember { mutableStateOf(DanmakuConfig(displayArea = 1.0f)) }
     var upstreamCurrent by remember { mutableLongStateOf(0) }
     
     val data = remember {
@@ -76,7 +76,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             while (true) {
                 emit(danmaku())
                 emitted++
-                delay(Random.nextLong(20, 50).milliseconds)
+                delay(Random.nextLong(10, 25).milliseconds)
             }
         }
     }
@@ -120,10 +120,25 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 // Text("frame time delta: ${state.delta}")
                 Text("present danmaku count: ${state.presentDanmaku.size}")
                 Text("trackHeight: ${state.trackHeightState.value}")
+                HorizontalDivider()
                 state.floatingTrack.forEach { danmakuTrackState ->
                     Text(
                         "track floating ${danmakuTrackState.trackIndex}: " +
                                 "size=${danmakuTrackState.danmakuList.size}, "
+                    )
+                }
+                HorizontalDivider()
+                state.topTrack.forEach { danmakuTrackState ->
+                    Text(
+                        "track top ${danmakuTrackState.trackIndex}: " +
+                                "curr=${danmakuTrackState.currentDanmaku}, "
+                    )
+                }
+                HorizontalDivider()
+                state.bottomTrack.forEach { danmakuTrackState ->
+                    Text(
+                        "track bottom ${danmakuTrackState.trackIndex}: " +
+                                "curr=${danmakuTrackState.currentDanmaku}, "
                     )
                 }
             }
