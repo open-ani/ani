@@ -68,6 +68,10 @@ public class event_listener_t {
     if (getClass() == event_listener_t.class) anitorrentJNI.event_listener_t_on_checked(swigCPtr, this, handle_id); else anitorrentJNI.event_listener_t_on_checkedSwigExplicitevent_listener_t(swigCPtr, this, handle_id);
   }
 
+  public void on_metadata_received(long handle_id) {
+    if (getClass() == event_listener_t.class) anitorrentJNI.event_listener_t_on_metadata_received(swigCPtr, this, handle_id); else anitorrentJNI.event_listener_t_on_metadata_receivedSwigExplicitevent_listener_t(swigCPtr, this, handle_id);
+  }
+
   public void on_torrent_added(long handle_id) {
     if (getClass() == event_listener_t.class) anitorrentJNI.event_listener_t_on_torrent_added(swigCPtr, this, handle_id); else anitorrentJNI.event_listener_t_on_torrent_addedSwigExplicitevent_listener_t(swigCPtr, this, handle_id);
   }

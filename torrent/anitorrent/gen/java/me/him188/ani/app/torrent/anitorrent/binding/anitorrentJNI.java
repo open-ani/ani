@@ -111,6 +111,8 @@ public class anitorrentJNI {
   public final static native void delete_event_listener_t(long jarg1);
   public final static native void event_listener_t_on_checked(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_checkedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2);
+  public final static native void event_listener_t_on_metadata_received(long jarg1, event_listener_t jarg1_, long jarg2);
+  public final static native void event_listener_t_on_metadata_receivedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_torrent_added(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_torrent_addedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_save_resume_data(long jarg1, event_listener_t jarg1_, long jarg2, long jarg3, torrent_resume_data_t jarg3_);
@@ -179,6 +181,9 @@ public class anitorrentJNI {
 
   public static void SwigDirector_event_listener_t_on_checked(event_listener_t jself, long handle_id) {
     jself.on_checked(handle_id);
+  }
+  public static void SwigDirector_event_listener_t_on_metadata_received(event_listener_t jself, long handle_id) {
+    jself.on_metadata_received(handle_id);
   }
   public static void SwigDirector_event_listener_t_on_torrent_added(event_listener_t jself, long handle_id) {
     jself.on_torrent_added(handle_id);

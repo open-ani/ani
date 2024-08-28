@@ -121,6 +121,8 @@ open class TestTorrentHandle(
     var started: Boolean = false
     lateinit var addInfo: TestTorrentAddInfo
     lateinit var saveDir: Path
+
+    @JvmField // clash
     var state: TorrentHandleState = TorrentHandleState.DOWNLOADING
 
     private fun dispatchEvent(block: (AnitorrentDownloadSession) -> Unit) {

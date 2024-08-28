@@ -331,23 +331,22 @@ class AnitorrentDownloadSession(
         reloadFilesAndInitializeIfNotYet()
     }
 
-    private fun reloadFilesAndInitializeIfNotYet() {
-        if (actualTorrentInfo.isActive) {
+    // 这个不一定会触发. 有可能是如果种子内已经有信息的就不会触发
+    fun onMetadataReceived() {
+        logger.info { "[$handleId] onMetadataReceived" }
+        reloadFilesAndInitializeIfNotYet()
+    }
+
+    private val reloadFilesLock = SynchronizedObject()
+    private fun reloadFilesAndInitializeIfNotYet() = synchronized(reloadFilesLock) {
+        val handleIsValid = handle.isValid
+        val metadataReady = handle.getState().isMetadataReady()
+        if (actualTorrentInfo.isActive && handleIsValid && metadataReady) {
             logger.info { "[$handleId] reloadFiles" }
-            val info = handle.reloadFile()
-            if (handle.getState().isProcessingMetadata()) {
-                logger.warn { "[$handleId] reloadFilesAndInitializeIfNotYet is called, but native is still processing metadata" }
-                // 文件还没找到, 等一会
-                scope.launch {
-                    delay(1000)
-                    reloadFilesAndInitializeIfNotYet() // TODO: thread safety 
-                }
-            }
-            initializeTorrentInfo(
-                info,
-            ) // split to multiple lines for debugging
+            val info = handle.reloadFile() // split to multiple lines for debugging
+            initializeTorrentInfo(info)
         } else {
-            logger.warn { "[$handleId] reloadFilesAndInitializeIfNotYet is called, but actualTorrentInfo is not active: $actualTorrentInfo" }
+            logger.debug { "[$handleId] reloadFiles condition not met, actualTorrentInfo=$actualTorrentInfo handleIsValid=$handleIsValid, metadataReady=$metadataReady" }
         }
     }
 
@@ -394,11 +393,11 @@ class AnitorrentDownloadSession(
         }
     }
 
+    // 这可能会被调用多次
     fun onTorrentFinished() {
         // 注意, 这个事件不一定是所有文件下载完成了. 
         // 在刚刚创建任务的时候所有文件都是完全不下载的状态, libtorrent 会立即广播这个事件.
         logger.info { "[$handleId] onTorrentFinished" }
-        reloadFilesAndInitializeIfNotYet()
         handle.postSaveResume()
     }
 
@@ -545,15 +544,15 @@ val TorrentDescriptor.fileSequence
 private fun calculateTotalFinishedSize(pieces: List<Piece>): Long =
     pieces.sumOf { if (it.state.value == PieceState.FINISHED) it.size else 0 }
 
-private fun TorrentHandleState.isProcessingMetadata(): Boolean {
+private fun TorrentHandleState.isMetadataReady(): Boolean {
     return when (this) {
-        TorrentHandleState.QUEUED_FOR_CHECKING -> true
-        TorrentHandleState.CHECKING_FILES -> true
-        TorrentHandleState.DOWNLOADING_METADATA -> true
-        TorrentHandleState.DOWNLOADING -> false
-        TorrentHandleState.FINISHED -> false
-        TorrentHandleState.SEEDING -> false
-        TorrentHandleState.ALLOCATING -> true
-        TorrentHandleState.CHECKING_RESUME_DATA -> true
+        TorrentHandleState.QUEUED_FOR_CHECKING -> false
+        TorrentHandleState.CHECKING_FILES -> false
+        TorrentHandleState.DOWNLOADING_METADATA -> false
+        TorrentHandleState.DOWNLOADING -> true
+        TorrentHandleState.FINISHED -> true
+        TorrentHandleState.SEEDING -> true
+        TorrentHandleState.ALLOCATING -> false
+        TorrentHandleState.CHECKING_RESUME_DATA -> false
     }
 }
