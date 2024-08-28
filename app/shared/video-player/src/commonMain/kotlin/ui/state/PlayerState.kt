@@ -85,7 +85,12 @@ interface PlayerState {
      * @throws VideoSourceOpenException 当打开失败时抛出, 包含原因
      */
     @Throws(VideoSourceOpenException::class, CancellationException::class)
-    suspend fun setVideoSource(source: VideoSource<*>?)
+    suspend fun setVideoSource(source: VideoSource<*>)
+
+    /**
+     * 停止播放并清除上次[设置][setVideoSource]的视频源. 之后还可以通过 [setVideoSource] 恢复播放.
+     */
+    suspend fun clearVideoSource()
 
     /**
      * Properties of the video being played.
@@ -257,15 +262,7 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
         }
     }
 
-    final override suspend fun setVideoSource(source: VideoSource<*>?) {
-        if (source == null) {
-            logger.info { "setVideoSource: Cleaning up player since source is null" }
-            cleanupPlayer()
-            this.videoSource.value = null
-            this.openResource.value = null
-            return
-        }
-
+    final override suspend fun setVideoSource(source: VideoSource<*>) {
         val previousResource = openResource.value
         if (source == previousResource?.videoSource) {
             return
@@ -297,6 +294,13 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
         }
 
         this.openResource.value = opened
+    }
+
+    final override suspend fun clearVideoSource() {
+        logger.info { "clearVideoSource: Cleaning up player" }
+        cleanupPlayer()
+        this.videoSource.value = null
+        this.openResource.value = null
     }
 
     fun closeVideoSource() {

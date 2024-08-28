@@ -138,6 +138,7 @@ private fun stripP1Api(path: String): File {
         "Reaction",
         "Reply",
         "SubReply",
+        "BasicReply",
     )
     val schemas = components["schemas"].cast<Map<String, *>>().toMutableMap()
     val keepSchemas = schemas.filter { (component, _) -> component in keepSchemaKeys }
@@ -177,6 +178,7 @@ val fixGeneratedOpenApi = tasks.register("fixGeneratedOpenApi") {
         )
         models.resolve("BangumiEpisodeCollectionType.kt").delete()
         models.resolve("BangumiSubjectCollectionType.kt").delete()
+        models.resolve("BangumiSubjectType.kt").delete()
     }
 }
 

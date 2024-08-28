@@ -2,8 +2,8 @@ package me.him188.ani.app.torrent.io
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.IOException
-import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.awaitFinished
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.app.torrent.api.pieces.startIndex

@@ -8,9 +8,12 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -21,10 +24,10 @@ import me.him188.ani.app.torrent.anitorrent.session.TorrentAddInfo
 import me.him188.ani.app.torrent.anitorrent.session.TorrentHandle
 import me.him188.ani.app.torrent.anitorrent.session.TorrentManagerSession
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloadSession
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
+import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.SystemPaths
@@ -86,17 +89,29 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
     // must be thread-safe
     val openSessions = MutableStateFlow<Map<String, AnitorrentDownloadSession>>(emptyMap())
 
-    override val totalUploaded = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.uploadedBytes }) { it.sum() }
-    }
-    override val totalDownloaded = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.downloadedBytes }) { it.sum() }
-    }
-    override val totalUploadRate = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.uploadRate }) { it.sum() }
-    }
-    override val totalDownloadRate = openSessions.flatMapLatest { map ->
-        combine(map.values.map { it.overallStats.downloadRate }) { it.sum() }
+    override val totalStats: Flow<TorrentDownloader.Stats> = openSessions.flatMapLatest { map ->
+        // TODO: 这个信息应该能用 libtorrent 获得, 性能应该更好, 但是要考虑它的 downloadedBytes. LT 的可能暂停了就没了
+
+        val statsFlows = map.values.map {
+            // 保证至少 emit 一个, 因为 combine 时如果有一个不 emit, 其他的就会等着
+            it.sessionStats.onStart { emit(null) }
+        }
+        if (statsFlows.isEmpty()) {
+            return@flatMapLatest flowOf(TorrentDownloader.Stats(0, 0, 0, 0, 0, 0f))
+        }
+
+        combine(statsFlows) { sessions ->
+            val totalSize = sessions.sumOf { it?.totalSizeRequested ?: 0L }
+            val downloadedBytes = sessions.sumOf { it?.downloadedBytes ?: 0L }
+            TorrentDownloader.Stats(
+                totalSize = totalSize,
+                downloadedBytes = downloadedBytes,
+                downloadSpeed = sessions.sumOf { it?.downloadSpeed ?: 0L },
+                uploadedBytes = sessions.sumOf { it?.uploadedBytes ?: 0L },
+                uploadSpeed = sessions.sumOf { it?.uploadSpeed ?: 0L },
+                downloadProgress = if (totalSize == 0L) 0f else downloadedBytes.toFloat() / totalSize,
+            )
+        }
     }
 
     override val vendor: TorrentLibInfo = TorrentLibInfo(
@@ -203,33 +218,39 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
 
     private suspend inline fun <R> withHandleTaskQueue(crossinline block: suspend () -> R): R =
         sessionsLock.withLock { // 必须只能同时有一个任务在添加. see eventListener
-
             val queue = DisposableTaskQueue(this)
             check(handleTaskBuffer == null) { "handleTaskBuffer is not null" }
             handleTaskBuffer = queue
-            return kotlin.runCatching { block() }
-                .also {
-                    check(handleTaskBuffer == queue) {
-                        "handleTaskBuffer changed while executing block"
+            return try {
+                kotlin.runCatching { block() }
+                    .also {
+                        check(handleTaskBuffer == queue) {
+                            "handleTaskBuffer changed while executing block"
+                        }
                     }
-                }
-                .onSuccess {
-                    val size = queue.runAndDispose()
-                    logger.info { "withHandleTaskQueue: executed $size delayed tasks" }
-                    this.handleTaskBuffer = null
-                }
-                .onFailure {
-                    // drop all queued tasks
-                    this.handleTaskBuffer = null
-                }
-                .getOrThrow() // rethrow exception
+                    .onSuccess {
+                        try {
+                            val size = queue.runAndDispose()
+                            logger.info { "withHandleTaskQueue: executed $size delayed tasks" }
+                        } catch (e: Exception) {
+                            throw IllegalStateException(
+                                "Failed to run delayed tasks during withHandleTaskQueue, see cause",
+                                e,
+                            )
+                        }
+                    }
+                    .getOrThrow() // rethrow exception
+            } finally {
+                // May drop all queued tasks on exception
+                handleTaskBuffer = null
+            }
         }
 
     override suspend fun startDownload(
         data: EncodedTorrentInfo,
         parentCoroutineContext: CoroutineContext,
         overrideSaveDir: SystemPath?
-    ): TorrentDownloadSession = withHandleTaskQueue {
+    ): TorrentSession = withHandleTaskQueue {
         // 这个函数的 native 部分跑得也都很快, 整个函数十几毫秒就可以跑完, 所以 lock 也不会影响性能 (刚启动时需要尽快恢复 resume)
 
         val info = AnitorrentAddTorrentInfo.decodeFrom(data)

@@ -47,9 +47,12 @@ sealed interface VideoLoadingState {
     data object ResolvingSource : VideoLoadingState, Progressing
 
     /**
-     * 在寻找种子资源中的正确的文件, 并打开文件
+     * WEB: 已经成功解析到 m3u8 链接
+     * BT: 要解析磁力链, 查询元数据
      */
-    data object DecodingData : VideoLoadingState, Progressing
+    data class DecodingData(
+        val isBt: Boolean,
+    ) : VideoLoadingState, Progressing
 
     /**
      * 文件成功找到

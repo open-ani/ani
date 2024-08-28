@@ -71,6 +71,16 @@ public class anitorrentJNI {
   public final static native String torrent_handle_t_make_magnet_uri(long jarg1, torrent_handle_t jarg1_);
   public final static native long new_torrent_handle_t();
   public final static native void delete_torrent_handle_t(long jarg1);
+  public final static native void torrent_stats_t_total_set(long jarg1, torrent_stats_t jarg1_, long jarg2);
+  public final static native long torrent_stats_t_total_get(long jarg1, torrent_stats_t jarg1_);
+  public final static native void torrent_stats_t_total_done_set(long jarg1, torrent_stats_t jarg1_, long jarg2);
+  public final static native long torrent_stats_t_total_done_get(long jarg1, torrent_stats_t jarg1_);
+  public final static native void torrent_stats_t_total_upload_set(long jarg1, torrent_stats_t jarg1_, long jarg2);
+  public final static native long torrent_stats_t_total_upload_get(long jarg1, torrent_stats_t jarg1_);
+  public final static native void torrent_stats_t_all_time_upload_set(long jarg1, torrent_stats_t jarg1_, long jarg2);
+  public final static native long torrent_stats_t_all_time_upload_get(long jarg1, torrent_stats_t jarg1_);
+  public final static native void torrent_stats_t_all_time_download_set(long jarg1, torrent_stats_t jarg1_, long jarg2);
+  public final static native long torrent_stats_t_all_time_download_get(long jarg1, torrent_stats_t jarg1_);
   public final static native void torrent_stats_t_download_payload_rate_set(long jarg1, torrent_stats_t jarg1_, int jarg2);
   public final static native int torrent_stats_t_download_payload_rate_get(long jarg1, torrent_stats_t jarg1_);
   public final static native void torrent_stats_t_upload_payload_rate_set(long jarg1, torrent_stats_t jarg1_, int jarg2);

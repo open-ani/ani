@@ -19,7 +19,6 @@
 package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Stable
-import androidx.datastore.core.DataStoreFactory
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import io.ktor.client.plugins.UserAgent
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -86,7 +85,6 @@ import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
-import me.him188.ani.app.tools.caching.MemoryDataStore
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
@@ -184,7 +182,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                             mediaSourceId = "test-in-memory",
                             metadataDir = getMediaMetadataDir("test-in-memory"),
                             engine = DummyMediaCacheEngine("test-in-memory"),
-                            dataStore = MemoryDataStore(DirectoryMediaCacheStorage.SaveData.Initial),
                             coroutineScope.childScopeContext(),
                         ),
                     )
@@ -197,14 +194,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
                             engine = TorrentMediaCacheEngine(
                                 mediaSourceId = id,
                                 torrentEngine = engine,
-                            ),
-                            dataStore = DataStoreFactory.create(
-                                DirectoryMediaCacheStorage.SaveData.serializer()
-                                    .asDataStoreSerializer({ DirectoryMediaCacheStorage.SaveData.Initial }),
-                                corruptionHandler = ReplaceFileCorruptionHandler { DirectoryMediaCacheStorage.SaveData.Initial },
-                                produceFile = {
-                                    getContext().dataStores.resolveDataStoreFile("DirectoryMediaCacheStorage-${engine.type.id}")
-                                },
                             ),
                             coroutineScope.childScopeContext(),
                         ),
@@ -310,8 +299,6 @@ interface AniBuildConfig {
      * `3.0.0-rc04`
      */
     val versionName: String
-    val bangumiOauthClientAppId: String
-    val bangumiOauthClientSecret: String
     val isDebug: Boolean
     val aniAuthServerUrl: String
 
@@ -366,8 +353,6 @@ fun createBangumiClient(
     parentCoroutineContext: CoroutineContext,
 ): BangumiClient {
     return BangumiClient.create(
-        currentAniBuildConfig.bangumiOauthClientAppId,
-        currentAniBuildConfig.bangumiOauthClientSecret,
         bearerToken,
         parentCoroutineContext,
     ) {

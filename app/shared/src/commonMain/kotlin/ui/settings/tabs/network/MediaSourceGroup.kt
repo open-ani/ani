@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -65,9 +64,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
-import me.him188.ani.app.ui.settings.rendering.renderMediaSource
-import me.him188.ani.app.ui.settings.rendering.renderMediaSourceDescription
-import me.him188.ani.datasources.api.source.isEmpty
+import me.him188.ani.datasources.api.source.parameter.isEmpty
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -81,7 +78,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
         SelectMediaSourceTemplateDialog(
             templates = vm.availableMediaSourceTemplates,
             onClick = {
-                if (it.info.parameters.list.isEmpty()) {
+                if (it.parameters.list.isEmpty()) {
                     // 没有参数, 直接添加
                     vm.confirmEdit(vm.startAdding(it))
                     showAdd = false
@@ -263,11 +260,11 @@ internal fun SettingsScope.MediaSourceItem(
     item: MediaSourcePresentation,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = item.isEnabled,
-    title: @Composable RowScope.() -> Unit = {
+    title: @Composable () -> Unit = {
         val name = if (!isEnabled) {
-            item.info.name + "（已禁用）"
+            item.info.displayName + "（已禁用）"
         } else {
-            item.info.name
+            item.info.displayName
         }
         Text(
             name,
@@ -285,17 +282,23 @@ internal fun SettingsScope.MediaSourceItem(
             Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
             contentAlignment = Alignment.Center,
         ) {
-            MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp), item.info.iconUrl)
+            MediaSourceIcon(item.info.imageUrl, Modifier.size(48.dp))
         }
     },
     action: @Composable () -> Unit,
 ) {
+//    ListItem(
+//        headlineContent = title,
+//        leadingContent = icon?.let { { it() } },
+//        supportingContent = description,
+//        trailingContent = action,
+//    )
     TextItem(
         modifier = modifier,
         description = description,
         icon = icon,
         action = action,
-        title = title,
+        title = { title() },
     )
 }
 
@@ -322,7 +325,7 @@ internal fun NormalMediaSourceItemAction(
                 icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                 title = { Text("删除数据源") },
                 text = {
-                    if (item.info.parameters.isEmpty()) {
+                    if (item.parameters.isEmpty()) {
                         Text("该数据源无特殊配置，删除后可以重新从模板直接添加，确认删除吗？")
                     } else {
                         Text("该数据源有配置，删除后将丢失配置，之后从模板添加时需要重新配置，确认删除吗？")
@@ -423,17 +426,17 @@ internal fun SelectMediaSourceTemplateDialog(
                         onClick = { onClick(item) },
                         title = {
                             Text(
-                                remember(item.mediaSourceId) { renderMediaSource(item.mediaSourceId) },
+                                item.info.displayName,
                                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                             )
                         },
                         icon = {
                             Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-                                MediaSourceIcon(item.mediaSourceId, Modifier.size(48.dp), item.info.iconUrl)
+                                MediaSourceIcon(item.info.imageUrl, Modifier.size(48.dp))
                             }
                         },
                         content = {
-                            renderMediaSourceDescription(item.mediaSourceId)?.let {
+                            item.info.description?.let {
                                 Text(it)
                             }
                         },

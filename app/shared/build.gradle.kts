@@ -17,11 +17,9 @@
  */
 
 @file:Suppress("UnstableApiUsage")
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import com.google.devtools.ksp.gradle.KspTaskJvm
 import com.google.devtools.ksp.gradle.KspTaskNative
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 
@@ -85,6 +83,7 @@ kotlin {
         api(projects.utils.coroutines)
         api(projects.utils.io)
         api(projects.app.shared.imageViewer)
+        api(projects.utils.xml)
 
         // Ktor
         api(libs.ktor.client.websockets)
@@ -110,8 +109,6 @@ kotlin {
         api(libs.sqlite.bundled) // database driver implementation
 
         // Torrent
-        implementation(libs.bencode)
-
         implementation(libs.constraintlayout.compose)
 
         implementation(libs.jna)
@@ -190,8 +187,6 @@ kotlin {
 //        implementation(libs.javafx.graphics)
 
         // https://repo1.maven.org/maven2/org/openjfx/javafx-graphics/17.0.11/
-        val os = getOs()
-
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         implementation(libs.log4j.core)
@@ -297,19 +292,9 @@ room {
 
 // BUILD CONFIG
 
-val bangumiClientAndroidAppId = getPropertyOrNull("bangumi.oauth.client.android.appId")
-val bangumiClientAndroidSecret = getPropertyOrNull("bangumi.oauth.client.android.secret")
-
-val bangumiClientDesktopAppId = getPropertyOrNull("bangumi.oauth.client.desktop.appId")
-val bangumiClientDesktopSecret = getPropertyOrNull("bangumi.oauth.client.desktop.secret")
-
 val aniAuthServerUrlDebug =
     getPropertyOrNull("ani.auth.server.url.debug") ?: "https://auth.myani.org"
 val aniAuthServerUrlRelease = getPropertyOrNull("ani.auth.server.url.release") ?: "https://auth.myani.org"
-
-if (bangumiClientAndroidAppId == null || bangumiClientAndroidSecret == null) {
-    logger.warn("i:: bangumi.oauth.client.android.appId or bangumi.oauth.client.android.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
-}
 
 //if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
 //    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
@@ -321,8 +306,6 @@ android {
     defaultConfig {
         minSdk = getIntProperty("android.min.sdk")
         buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
-        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_APP_ID", "\"$bangumiClientAndroidAppId\"")
-        buildConfigField("String", "BANGUMI_OAUTH_CLIENT_SECRET", "\"$bangumiClientAndroidSecret\"")
     }
     buildTypes.getByName("release") {
         isMinifyEnabled = false // shared 不能 minify, 否则构建 app 会失败
@@ -382,8 +365,6 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 
     inputs.property("project.version", project.version)
-    inputs.property("bangumiClientAppIdDesktop", bangumiClientDesktopAppId).optional(true)
-    inputs.property("bangumiClientSecret", bangumiClientDesktopSecret).optional(true)
 
     outputs.file(file)
 
@@ -391,8 +372,6 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
             package me.him188.ani.app.platform
             object AniBuildConfigDesktop : AniBuildConfig {
                 override val versionName = "${project.version}"
-                override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
-                override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
                 override val isDebug = System.getenv("ANI_DEBUG") == "true" || System.getProperty("ani.debug") == "true"
                 override val aniAuthServerUrl = if (isDebug) "$aniAuthServerUrlDebug" else "$aniAuthServerUrlRelease"
             }
@@ -414,8 +393,6 @@ val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
     }
 
     inputs.property("project.version", project.version)
-    inputs.property("bangumiClientAppIdDesktop", bangumiClientDesktopAppId).optional(true)
-    inputs.property("bangumiClientSecret", bangumiClientDesktopSecret).optional(true)
 
     outputs.file(file)
 
@@ -423,8 +400,6 @@ val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
             package me.him188.ani.app.platform
             object AniBuildConfigIos : AniBuildConfig {
                 override val versionName = "${project.version}"
-                override val bangumiOauthClientAppId = "$bangumiClientDesktopAppId"
-                override val bangumiOauthClientSecret = "$bangumiClientDesktopSecret"
                 override val isDebug = false
                 override val aniAuthServerUrl = if (isDebug) "$aniAuthServerUrlDebug" else "$aniAuthServerUrlRelease"
             }

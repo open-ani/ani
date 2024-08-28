@@ -47,7 +47,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.TextWithBorder
-import me.him188.ani.app.ui.foundation.effects.CursorVisibilityEffect
+import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
@@ -147,15 +147,11 @@ internal fun EpisodeVideoImpl(
     var isMediaSelectorVisible by remember { mutableStateOf(false) }
     var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
-
-    CursorVisibilityEffect(
-        key = Unit,
-        visible = showCursor,
-    )
-
     VideoScaffold(
         expanded = expanded,
-        modifier = modifier.hoverable(videoInteractionSource),
+        modifier = modifier
+            .hoverable(videoInteractionSource)
+            .cursorVisibility(showCursor),
         maintainAspectRatio = maintainAspectRatio,
         controllerState = videoControllerState,
         gestureLocked = { isLocked },

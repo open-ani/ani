@@ -5,8 +5,7 @@ components:
         large:
           type: string
         medium:
-          examples:
-            - sai
+          example: sai
           type: string
         small:
           type: string
@@ -209,14 +208,11 @@ components:
       properties:
         date:
           description: YYYY-MM-DD
-          examples:
-            - '2022-02-02'
+          example: '2022-02-02'
           pattern: ^\d{4}-\d{2}-\d{2}$
           type: string
         duration:
-          examples:
-            - '24:53'
-            - 24m52s
+          example: '24:53'
           type: string
         ep:
           type: number
@@ -312,8 +308,7 @@ components:
             large:
               type: string
             medium:
-              examples:
-                - sai
+              example: sai
               type: string
             small:
               type: string
@@ -411,10 +406,10 @@ components:
         - createdAt
       type: object
     LoginRequestBody:
-      examples:
-        - cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
-          email: treeholechan@gmail.com
-          password: lovemeplease
+      example:
+        cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
+        email: treeholechan@gmail.com
+        password: lovemeplease
       properties:
         cf-turnstile-response:
           minLength: 1
@@ -446,8 +441,7 @@ components:
                 large:
                   type: string
                 medium:
-                  examples:
-                    - sai
+                  example: sai
                   type: string
                 small:
                   type: string
@@ -458,20 +452,17 @@ components:
               title: Avatar
               type: object
             id:
-              examples:
-                - 1
+              example: 1
               type: integer
             nickname:
-              examples:
-                - Sai🖖
+              example: Sai🖖
               type: string
             sign:
               type: string
             user_group:
               type: integer
             username:
-              examples:
-                - sai
+              example: sai
               type: string
           required:
             - id
@@ -618,44 +609,42 @@ components:
         - image
       type: object
     SubjectEdit:
-      examples:
-        - infobox: |-
-            {{Infobox animanga/TVAnime
-            |中文名= 沙盒
-            |别名={
-            }
-            |话数= 7
-            |放送开始= 0000-10-06
-            |放送星期= 
-            |官方网站= 
-            |播放电视台= 
-            |其他电视台= 
-            |播放结束= 
-            |其他= 
-            |Copyright= 
-            |平台={
-            [龟壳]
-            [Xbox Series S]
-            [Xbox Series X]
-            [Xbox Series X/S]
-            [PC]
-            [Xbox Series X|S]
-            }
-            }}
-          name: 沙盒
-          nsfw: false
-          platform: 0
-          summary: |-
-            本条目是一个沙盒，可以用于尝试bgm功能。
+      example:
+        infobox: |-
+          {{Infobox animanga/TVAnime
+          |中文名= 沙盒
+          |别名={
+          }
+          |话数= 7
+          |放送开始= 0000-10-06
+          |放送星期= 
+          |官方网站= 
+          |播放电视台= 
+          |其他电视台= 
+          |播放结束= 
+          |其他= 
+          |Copyright= 
+          |平台={
+          [龟壳]
+          [Xbox Series S]
+          [Xbox Series X]
+          [Xbox Series X/S]
+          [PC]
+          [Xbox Series X|S]
+          }
+          }}
+        name: 沙盒
+        nsfw: false
+        platform: 0
+        summary: |-
+          本条目是一个沙盒，可以用于尝试bgm功能。
 
-            普通维基人可以随意编辑条目信息以及相关关联查看编辑效果，但是请不要完全删除沙盒说明并且不要关联非沙盒条目/人物/角色。
+          普通维基人可以随意编辑条目信息以及相关关联查看编辑效果，但是请不要完全删除沙盒说明并且不要关联非沙盒条目/人物/角色。
 
-            https://bgm.tv/group/topic/366812#post_1923517
+          https://bgm.tv/group/topic/366812#post_1923517
       properties:
         date:
-          examples:
-            - '0000-00-00'
-            - '2007-01-30'
+          example: '0000-00-00'
           pattern: ^\d{4}-\d{2}-\d{2}$
           type: string
         infobox:
@@ -787,8 +776,7 @@ components:
                 large:
                   type: string
                 medium:
-                  examples:
-                    - sai
+                  example: sai
                   type: string
                 small:
                   type: string
@@ -799,20 +787,17 @@ components:
               title: Avatar
               type: object
             id:
-              examples:
-                - 1
+              example: 1
               type: integer
             nickname:
-              examples:
-                - Sai🖖
+              example: Sai🖖
               type: string
             sign:
               type: string
             user_group:
               type: integer
             username:
-              examples:
-                - sai
+              example: sai
               type: string
           required:
             - id
@@ -847,10 +832,14 @@ components:
       title: Topic
       type: object
     TopicCreation:
-      examples:
-        - content: topic content
-          title: topic title
+      example:
+        cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
+        content: topic content
+        title: topic title
       properties:
+        cf-turnstile-response:
+          minLength: 1
+          type: string
         text:
           description: bbcode
           minLength: 1
@@ -861,6 +850,7 @@ components:
       required:
         - title
         - text
+        - cf-turnstile-response
       type: object
     TopicDetail:
       properties:
@@ -906,8 +896,7 @@ components:
             large:
               type: string
             medium:
-              examples:
-                - sai
+              example: sai
               type: string
             small:
               type: string
@@ -918,20 +907,17 @@ components:
           title: Avatar
           type: object
         id:
-          examples:
-            - 1
+          example: 1
           type: integer
         nickname:
-          examples:
-            - Sai🖖
+          example: Sai🖖
           type: string
         sign:
           type: string
         user_group:
           type: integer
         username:
-          examples:
-            - sai
+          example: sai
           type: string
       required:
         - id
@@ -969,7 +955,7 @@ info:
     关于订阅通知的 socket.io 相关的文档在
     <https://github.com/bangumi/GraphQL/blob/master/docs/socket.io.md>
   title: bangumi private api
-  version: 2024-07-03-d6ee077
+  version: 2024-08-23-3e4602f
 openapi: 3.0.3
 paths:
   /p1/clear-notify:
@@ -1286,13 +1272,18 @@ paths:
             examples:
               example1:
                 value:
+                  cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
                   content: post contents
               example2:
                 value:
+                  cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
                   content: post contents
                   replyTo: 2
             schema:
               properties:
+                cf-turnstile-response:
+                  minLength: 1
+                  type: string
                 content:
                   minLength: 1
                   type: string
@@ -1303,6 +1294,7 @@ paths:
                   type: integer
               required:
                 - content
+                - cf-turnstile-response
               type: object
         required: true
       responses:
@@ -1811,6 +1803,107 @@ paths:
       summary: 获取未读通知
       tags:
         - user
+  /p1/subjects/-/episode/-/comments/{commentID}:
+    delete:
+      operationId: deleteSubjectEpComment
+      parameters:
+        - example: 1034989
+          in: path
+          name: commentID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties: { }
+                type: object
+          description: Default Response
+        '401':
+          content:
+            application/json:
+              examples:
+                NOT_ALLOWED:
+                  value:
+                    code: NOT_ALLOWED
+                    error: Unauthorized
+                    message: you don't have permission to delete this comment
+                    statusCode: 401
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Default Response
+        '404':
+          content:
+            application/json:
+              examples:
+                NOT_FOUND:
+                  value:
+                    code: NOT_FOUND
+                    error: Not Found
+                    message: comment not found
+                    statusCode: 404
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Default Response
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                description: 意料之外的服务器错误
+          description: 意料之外的服务器错误
+      security:
+        - CookiesSession: [ ]
+          HTTPBearer: [ ]
+      summary: 删除条目的剧集吐槽
+      tags:
+        - subject
+    put:
+      operationId: editSubjectEpComment
+      parameters:
+        - example: 1075440
+          in: path
+          name: commentID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            example:
+              content: new comment contents
+            schema:
+              properties:
+                content:
+                  minLength: 1
+                  type: string
+              required:
+                - content
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties: { }
+                type: object
+          description: Default Response
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                description: 意料之外的服务器错误
+          description: 意料之外的服务器错误
+      security:
+        - CookiesSession: [ ]
+          HTTPBearer: [ ]
+      summary: 编辑条目的剧集吐槽
+      tags:
+        - subject
   /p1/subjects/-/episode/{episodeID}/comments:
     get:
       operationId: getSubjectEpisodeComments
@@ -1898,9 +1991,76 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
                 description: 意料之外的服务器错误
           description: 意料之外的服务器错误
+      summary: 获取条目的剧集吐槽箱
+      tags:
+        - subject
+    post:
+      description: >-
+        需要
+        [turnstile](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)
+
+
+        next.bgm.tv 域名对应的 site-key 为 `0x4AAAAAAABkMYinukE8nzYS`
+
+
+        dev.bgm38.com 域名使用测试用的 site-key `1x00000000000000000000AA`
+      operationId: createSubjectEpComment
+      parameters:
+        - example: 1075440
+          in: path
+          name: episodeID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            examples:
+              example1:
+                value:
+                  cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
+                  content: comment contents
+              example2:
+                value:
+                  cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
+                  content: comment contents
+                  replyTo: 2
+            schema:
+              properties:
+                cf-turnstile-response:
+                  minLength: 1
+                  type: string
+                content:
+                  minLength: 1
+                  type: string
+                replyTo:
+                  default: 0
+                  description: 被回复的吐槽 ID, `0` 代表发送顶层吐槽
+                  example: 0
+                  type: integer
+              required:
+                - content
+                - cf-turnstile-response
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicReply'
+          description: Default Response
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                description: 意料之外的服务器错误
+          description: 意料之外的服务器错误
       security:
         - CookiesSession: [ ]
-      summary: 获取条目的剧集评论
+          HTTPBearer: [ ]
+      summary: 创建条目的剧集吐槽
       tags:
         - subject
   /p1/subjects/-/posts/{postID}:
@@ -1956,6 +2116,7 @@ paths:
           description: 意料之外的服务器错误
       security:
         - CookiesSession: [ ]
+          HTTPBearer: [ ]
       summary: 删除自己创建的条目讨论版回复
       tags:
         - subject
@@ -1997,6 +2158,7 @@ paths:
           description: 意料之外的服务器错误
       security:
         - CookiesSession: [ ]
+          HTTPBearer: [ ]
       summary: 获取条目讨论版回复
       tags:
         - subject
@@ -2053,16 +2215,17 @@ paths:
           description: 意料之外的服务器错误
       security:
         - CookiesSession: [ ]
+          HTTPBearer: [ ]
       summary: 编辑自己创建的条目讨论版回复
       tags:
         - subject
-  /p1/subjects/-/topics/{id}:
+  /p1/subjects/-/topics/{topicID}:
     get:
       operationId: getSubjectTopicDetail
       parameters:
         - example: 1
           in: path
-          name: id
+          name: topicID
           required: true
           schema:
             minimum: 0
@@ -2083,10 +2246,10 @@ paths:
           description: 意料之外的服务器错误
       security:
         - CookiesSession: [ ]
+          HTTPBearer: [ ]
       summary: 获取帖子列表
       tags:
         - subject
-  /p1/subjects/-/topics/{topicID}:
     put:
       operationId: editSubjectTopic
       parameters:
@@ -2137,7 +2300,93 @@ paths:
           description: 意料之外的服务器错误
       security:
         - CookiesSession: [ ]
+          HTTPBearer: [ ]
       summary: 编辑自己创建的条目讨论版
+      tags:
+        - subject
+  /p1/subjects/-/topics/{topicID}/replies:
+    post:
+      description: >-
+        需要
+        [turnstile](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)
+
+
+        next.bgm.tv 域名对应的 site-key 为 `0x4AAAAAAABkMYinukE8nzYS`
+
+
+        dev.bgm38.com 域名使用测试用的 site-key `1x00000000000000000000AA`
+      operationId: createSubjectReply
+      parameters:
+        - example: 371602
+          in: path
+          name: topicID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            examples:
+              example1:
+                value:
+                  cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
+                  content: post contents
+              example2:
+                value:
+                  cf-turnstile-response: 10000000-aaaa-bbbb-cccc-000000000001
+                  content: post contents
+                  replyTo: 2
+            schema:
+              properties:
+                cf-turnstile-response:
+                  minLength: 1
+                  type: string
+                content:
+                  minLength: 1
+                  type: string
+                replyTo:
+                  default: 0
+                  description: 被回复的 topic ID, `0` 代表回复楼主
+                  example: 0
+                  type: integer
+              required:
+                - content
+                - cf-turnstile-response
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicReply'
+          description: Default Response
+        '401':
+          content:
+            application/json:
+              examples:
+                NOT_JOIN_PRIVATE_GROUP_ERROR:
+                  value:
+                    code: NOT_JOIN_PRIVATE_GROUP_ERROR
+                    error: Unauthorized
+                    message: >-
+                      you need to join private group '沙盒' before you create a
+                      post or reply
+                    statusCode: 401
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Default Response
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                description: 意料之外的服务器错误
+          description: 意料之外的服务器错误
+      security:
+        - CookiesSession: [ ]
+          HTTPBearer: [ ]
+      summary: 创建条目讨论版回复
       tags:
         - subject
   /p1/subjects/{subjectID}/comments:
@@ -2178,8 +2427,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
                 description: 意料之外的服务器错误
           description: 意料之外的服务器错误
-      security:
-        - CookiesSession: [ ]
       summary: 获取条目的吐槽箱
       tags:
         - subject
@@ -2244,7 +2491,60 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
                 description: 意料之外的服务器错误
           description: 意料之外的服务器错误
+      security:
+        - CookiesSession: [ ]
+          HTTPBearer: [ ]
       summary: 获取条目讨论版列表
+      tags:
+        - subject
+    post:
+      description: >-
+        需要
+        [turnstile](https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/)
+
+
+        next.bgm.tv 域名对应的 site-key 为 `0x4AAAAAAABkMYinukE8nzYS`
+
+
+        dev.bgm38.com 域名使用测试用的 site-key `1x00000000000000000000AA`
+      operationId: createNewSubjectTopic
+      parameters:
+        - example: 114514
+          in: path
+          name: subjectID
+          required: true
+          schema:
+            minimum: 0
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicCreation'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    description: new topic id
+                    type: integer
+                required:
+                  - id
+                type: object
+          description: Default Response
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                description: 意料之外的服务器错误
+          description: 意料之外的服务器错误
+      security:
+        - CookiesSession: [ ]
+          HTTPBearer: [ ]
+      summary: 创建条目讨论版
       tags:
         - subject
   /p1/wiki/ep/{episodeID}:
@@ -2414,10 +2714,7 @@ paths:
         - wiki
   /p1/wiki/subjects/{subjectID}:
     get:
-      description: |-
-        获取当前的 wiki 信息
-
-        暂时只能修改沙盒条目 184017, 309445, 354667, 354677, 363612
+      description: 获取当前的 wiki 信息
       operationId: subjectInfo
       parameters:
         - example: 363612
@@ -2459,7 +2756,6 @@ paths:
       tags:
         - wiki
     patch:
-      description: 暂时只能修改沙盒条目 184017,309445,354667,354677,363612
       operationId: patchSubjectInfo
       parameters:
         - example: 363612
@@ -2503,6 +2799,22 @@ paths:
                 commitMessage:
                   minLength: 1
                   type: string
+                expectedRevision:
+                  description: >-
+                    a optional object to check if input is changed by others
+
+                    if `infobox` is given, and current data in database doesn't
+                    match input, subject will not be changed
+                  properties:
+                    infobox:
+                      minLength: 1
+                      type: string
+                    name:
+                      minLength: 1
+                      type: string
+                    platform:
+                      type: integer
+                  type: object
                 subject:
                   example:
                     infobox: |-
@@ -2590,10 +2902,7 @@ paths:
       tags:
         - wiki
     put:
-      description: |-
-        暂时只能修改沙盒条目 184017,309445,354667,354677,363612
-
-        需要 `subjectWikiEdit` 权限
+      description: 需要 `subjectWikiEdit` 权限
       operationId: putSubjectInfo
       parameters:
         - example: 363612
@@ -2646,6 +2955,22 @@ paths:
                 commitMessage:
                   minLength: 1
                   type: string
+                expectedRevision:
+                  description: >-
+                    a optional object to check if input is changed by others
+
+                    if `infobox` is given, and current data in database doesn't
+                    match input, subject will not be changed
+                  properties:
+                    infobox:
+                      minLength: 1
+                      type: string
+                    name:
+                      minLength: 1
+                      type: string
+                    platform:
+                      type: integer
+                  type: object
                 subject:
                   $ref: '#/components/schemas/SubjectEdit'
               required:
@@ -2922,10 +3247,7 @@ paths:
         - wiki
   /p1/wiki/subjects/{subjectID}/history-summary:
     get:
-      description: |-
-        获取当前的 wiki 信息
-
-        暂时只能修改沙盒条目 184017, 309445, 354667, 354677, 363612
+      description: 获取当前的 wiki 信息
       operationId: subjectEditHistorySummary
       parameters:
         - example: 8

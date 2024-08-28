@@ -1,6 +1,6 @@
 package me.him188.ani.app.videoplayer.data
 
-import me.him188.ani.app.torrent.api.TorrentDownloadSession
+import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.utils.io.SeekableInput
 import kotlin.coroutines.cancellation.CancellationException
@@ -23,7 +23,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * Though the actual implementation might start downloading very soon (e.g. when [VideoSource] is just created), so that
  * the video buffers more soon.
  *
- * @param S the type of the stream. For example, a torrent video source would be [TorrentDownloadSession].
+ * @param S the type of the stream. For example, a torrent video source would be [TorrentSession].
  */
 interface VideoSource<S : VideoData> {
     val uri: String

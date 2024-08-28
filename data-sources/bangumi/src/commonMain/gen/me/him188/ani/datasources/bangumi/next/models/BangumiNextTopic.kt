@@ -15,11 +15,9 @@
 
 package me.him188.ani.datasources.bangumi.next.models
 
-import me.him188.ani.datasources.bangumi.next.models.BangumiNextUser
-
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
+import kotlinx.serialization.Required
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 
@@ -28,7 +26,7 @@ import kotlinx.serialization.encoding.*
  * @param creator 
  * @param id topic id
  * @param parentID 小组/条目ID
- * @param repliesCount
+ * @param repliesCount 
  * @param title 
  * @param updatedAt 最后回复时间，unix time stamp in seconds
  */

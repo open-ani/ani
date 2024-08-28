@@ -32,13 +32,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
-import me.him188.ani.app.ui.settings.rendering.renderMediaSource
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
+import org.koin.mp.KoinPlatform
 
 
 private inline val WINDOW_VERTICAL_PADDING get() = 8.dp
@@ -226,7 +227,11 @@ private fun MediaItem(
                             Icon(MediaSourceIcons.location(media.location, media.kind), null)
 
                             Text(
-                                remember(media.mediaSourceId) { renderMediaSource(media.mediaSourceId) },
+                                remember(media.mediaSourceId) {
+                                    KoinPlatform.getKoin().get<MediaSourceManager>()
+                                        .findInfoByMediaSourceId(media.mediaSourceId)
+                                        ?.displayName ?: "未知"
+                                },
                                 maxLines = 1,
                                 softWrap = false,
                             )

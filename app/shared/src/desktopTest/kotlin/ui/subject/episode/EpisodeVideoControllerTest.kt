@@ -241,15 +241,19 @@ class EpisodeVideoControllerTest {
         waitForIdle()
         val root = onAllNodes(isRoot()).onFirst()
 
-        root.performClick() // 显示全部控制器
+        runOnUiThread {
+            root.performClick() // 显示全部控制器 
+        }
         runOnIdle {
             waitUntil { topBar.exists() }
             detachedProgressSlider.assertDoesNotExist()
         }
 
-        root.performTouchInput {
-            down(centerLeft)
-            moveBy(Offset(width / 2f, 0f))
+        runOnUiThread {
+            root.performTouchInput {
+                down(centerLeft)
+                moveBy(Offset(width / 2f, 0f))
+            }
         }
         runOnIdle {
             waitUntil { previewPopup.exists() }
@@ -257,8 +261,10 @@ class EpisodeVideoControllerTest {
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
-        root.performTouchInput {
-            up()
+        runOnUiThread {
+            root.performTouchInput {
+                up()
+            }
         }
         runOnIdle {
             waitUntil { previewPopup.doesNotExist() }

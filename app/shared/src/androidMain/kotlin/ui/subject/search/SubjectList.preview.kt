@@ -20,37 +20,37 @@ package me.him188.ani.app.ui.subject.search
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.models.subject.RatingInfo
-import me.him188.ani.app.data.models.subject.SubjectInfo
+import androidx.compose.ui.tooling.preview.PreviewFontScale
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.home.search.SubjectListViewModel
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
-import me.him188.ani.datasources.api.paging.PageBasedPagedSource
-import me.him188.ani.datasources.api.paging.Paged
+import me.him188.ani.app.ui.home.search.SubjectPreviewListState
+import me.him188.ani.app.ui.subject.details.components.TestSubjectInfo
+import me.him188.ani.utils.platform.annotations.TestOnly
 
+@OptIn(TestOnly::class)
 @Composable
-@Preview(apiLevel = 33)
+@PreviewLightDark
+@PreviewFontScale
 private fun PreviewSubjectList() {
-    val viewModel = remember {
-        SubjectListViewModel(
-            PageBasedPagedSource {
-                Paged(
-                    listOf(
-                        SubjectInfo.Empty.copy(
-                            id = 400602,
-                            name = "葬送的芙莉莲",
-                            nameCn = "葬送的芙莉莲",
-                            tags = listOf(),
-                            summary = "",
-                            ratingInfo = RatingInfo.Empty,
-                        ),
-                    ),
-                )
-            },
+    ProvideCompositionLocalsForPreview {
+        SubjectPreviewColumn(
+            rememberTestSubjectPreviewListState(),
         )
     }
-    ProvideCompositionLocalsForPreview {
-        SubjectPreviewColumn(viewModel)
-    }
+}
+
+@OptIn(DelicateCoroutinesApi::class)
+@Composable
+@TestOnly
+fun rememberTestSubjectPreviewListState() = remember {
+    SubjectPreviewListState(
+        stateOf(listOf(TestSubjectInfo)),
+        stateOf(false),
+        {},
+        GlobalScope,
+    )
 }

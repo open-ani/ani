@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.videoplayer.ui.VideoLoadingIndicator
@@ -34,7 +35,9 @@ fun EpisodeVideoLoadingIndicator(
     val state by playerState.state.collectAsStateWithLifecycle()
 
     val speed by remember(playerState) {
-        playerState.videoData.filterNotNull().flatMapLatest { it.downloadSpeed }
+        playerState.videoData.filterNotNull().flatMapLatest { video ->
+            video.networkStats.map { it.downloadSpeed }
+        }
     }.collectAsStateWithLifecycle(FileSize.Unspecified)
 
     if (isBuffering ||
@@ -77,11 +80,21 @@ fun EpisodeVideoLoadingIndicator(
                 }
 
                 VideoLoadingState.ResolvingSource -> {
-                    TextWithBorder("正在解析资源链接")
+                    TextWithBorder(
+                        "正在解析资源链接\n若 30 秒内未完成, 请尝试切换数据源",
+                        textAlign = TextAlign.Center,
+                    )
                 }
 
-                VideoLoadingState.DecodingData -> {
-                    TextWithBorder("资源解析成功, 正在准备视频")
+                is VideoLoadingState.DecodingData -> {
+                    TextWithBorder(
+                        if (state.isBt) {
+                            "资源解析成功, 正在准备视频"
+                        } else {
+                            "正在解析磁力链或查询元数据\n若 15 秒内未完成, 请尝试切换数据源或先缓存再看"
+                        },
+                        textAlign = TextAlign.Center,
+                    )
                 }
 
                 is VideoLoadingState.Succeed -> {
@@ -91,11 +104,11 @@ fun EpisodeVideoLoadingIndicator(
                     val speed by remember { derivedStateOf(speedProvider) }
                     if (speed == FileSize.Zero) {
                         LaunchedEffect(true) {
-                            delay(10.seconds)
+                            delay(15.seconds)
                             tooLong = true
                         }
                     }
-                    val text by remember(speed) {
+                    val text by remember {
                         derivedStateOf {
                             buildString {
                                 append("正在缓冲")
@@ -108,7 +121,11 @@ fun EpisodeVideoLoadingIndicator(
                                 if (tooLong) {
                                     appendLine()
                                     if (state.isBt) {
-                                        append("BT 初始缓冲耗时稍长, 请耐心等待半分钟")
+                                        append("BT 初始缓冲耗时稍长, 请耐心等待")
+                                        appendLine()
+                                        append("若速度过慢, 可尝试切换数据源")
+                                    } else {
+                                        append("缓冲耗时过长, 可尝试切换数据源")
                                     }
                                 }
                             }
@@ -122,6 +139,7 @@ fun EpisodeVideoLoadingIndicator(
                     TextWithBorder(
                         "加载失败: ${renderCause(state)}",
                         color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }

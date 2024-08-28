@@ -7,17 +7,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.data.source.media.cache.storage.MediaCacheStorage
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.utils.coroutines.sampleWithInitial
 
 abstract class MediaCacheManager(
     val storagesIncludingDisabled: List<MediaCacheStorage>,
@@ -33,20 +30,6 @@ abstract class MediaCacheManager(
     private val cacheListFlow: Flow<List<MediaCache>> by lazy {
         combine(storagesIncludingDisabled.map { it.listFlow }) {
             it.asSequence().flatten().toList()
-        }
-    }
-
-    @Stable
-    fun listCacheForEpisode(
-        subjectId: Int,
-        episodeId: Int,
-    ): Flow<List<MediaCache>> {
-        val subjectIdString = subjectId.toString()
-        val episodeIdString = episodeId.toString()
-        return cacheListFlow.map { list ->
-            list.filter { cache ->
-                cache.metadata.subjectId == subjectIdString && cache.metadata.episodeId == episodeIdString
-            }
         }
     }
 
@@ -78,47 +61,26 @@ abstract class MediaCacheManager(
 
             for (mediaCache in list) {
                 if (mediaCache.metadata.subjectId == subjectIdString && mediaCache.metadata.episodeId == episodeIdString) {
-                    hasAnyCached = mediaCache
-                    if (mediaCache.finished.firstOrNull() != true) {
-                        hasAnyCaching = mediaCache
+                    hasAnyCaching = mediaCache
+                    if (mediaCache.isFinished()) {
+                        hasAnyCached = mediaCache
                     }
                 }
             }
 
-            when {
-                hasAnyCaching != null -> {
-                    emitAll(
-                        combine(
-                            hasAnyCaching.progress
-                                .sampleWithInitial(1000) // Sample might not emit the last value
-                                .onCompletion { if (it == null) emit(1f) }, // Always emit 1f on finish
-                            hasAnyCaching.totalSize,
-                        ) { progress, totalSize ->
-                            if (progress == 1f) {
-                                EpisodeCacheStatus.Cached(totalSize)
-                            } else {
-                                EpisodeCacheStatus.Caching(
-                                    progress = progress,
-                                    totalSize = totalSize,
-                                )
-                            }
-                        },
-                    )
-                }
-
-                hasAnyCached != null -> {
-                    emitAll(
-                        hasAnyCached.totalSize.map {
-                            EpisodeCacheStatus.Cached(
-                                totalSize = it,
-                            )
-                        },
-                    )
-                }
-
-                else -> {
-                    emit(EpisodeCacheStatus.NotCached)
-                }
+            val target = hasAnyCached ?: hasAnyCaching
+            if (target == null) {
+                emit(EpisodeCacheStatus.NotCached)
+            } else {
+                emitAll(
+                    target.fileStats.map {
+                        if (it.downloadProgress.isFinished) {
+                            EpisodeCacheStatus.Cached(totalSize = it.totalSize)
+                        } else {
+                            EpisodeCacheStatus.Caching(progress = it.downloadProgress, totalSize = it.totalSize)
+                        }
+                    },
+                )
             }
         }.flowOn(Dispatchers.Default)
     }

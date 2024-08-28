@@ -74,8 +74,6 @@ fun HomePage(
     val airDate by searchViewModel.airDate.collectAsStateWithLifecycle()
     val rating by searchViewModel.rating.collectAsStateWithLifecycle()
 
-    val searchResult by searchViewModel.result.collectAsStateWithLifecycle()
-
     var isEditingSearchTags by remember { mutableStateOf(false) }
 
     BackHandler(isEditingSearchTags) {
@@ -133,17 +131,15 @@ fun HomePage(
         contentWindowInsets = contentWindowInsets,
     ) { topBarPadding ->
         Column(Modifier.fillMaxSize()) {
-            searchResult?.let {
-                SubjectPreviewColumn(
-                    it,
-                    contentPadding = PaddingValues(
-                        top = topBarPadding.calculateTopPadding(),
-                        bottom = contentPadding.calculateBottomPadding(),
-                        start = contentPadding.calculateStartPadding(layoutDirection),
-                        end = contentPadding.calculateEndPadding(layoutDirection),
-                    ),
-                )
-            }
+            SubjectPreviewColumn(
+                searchViewModel.previewListState,
+                contentPadding = PaddingValues(
+                    top = topBarPadding.calculateTopPadding(),
+                    bottom = contentPadding.calculateBottomPadding(),
+                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    end = contentPadding.calculateEndPadding(layoutDirection),
+                ),
+            )
         }
     }
 }

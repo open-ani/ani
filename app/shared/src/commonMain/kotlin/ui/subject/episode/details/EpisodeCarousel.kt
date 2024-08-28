@@ -33,12 +33,14 @@ import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.isCachedOrCaching
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.tools.toPercentageOrZero
+import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.ui.foundation.icons.PlayingIcon
-import me.him188.ani.app.ui.foundation.text.toPercentageString
 import me.him188.ani.app.ui.subject.episode.details.components.EpisodeWatchStatusButton
 import me.him188.ani.app.ui.subject.episode.details.components.PlayingEpisodeItem
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
+import me.him188.ani.utils.platform.format1f
 
 
 /**
@@ -213,18 +215,19 @@ private fun EpisodeCacheStatusLabel(
     val isCachedOrCaching by remember {
         derivedStateOf { cacheStatusState.isCachedOrCaching() }
     }
-    val cacheProgress by remember {
-        derivedStateOf {
-            val s = cacheStatusState
-            if (s is EpisodeCacheStatus.Caching) {
-                s.progress
-            } else {
-                0f
-            }
-        }
-    }
 
     if (isCachedOrCaching) {
+        val cacheProgress by remember {
+            derivedStateOf {
+                val s = cacheStatusState
+                if (s is EpisodeCacheStatus.Caching) {
+                    s.progress
+                } else {
+                    0f.toProgress()
+                }
+            }
+        }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -239,7 +242,7 @@ private fun EpisodeCacheStatusLabel(
                     Icon(Icons.Rounded.Downloading, contentDescription = null)
                     val text by remember {
                         derivedStateOf {
-                            cacheProgress?.toPercentageString() ?: "正在缓存"
+                            String.format1f(cacheProgress.toPercentageOrZero()) + "%"
                         }
                     }
                     Text(text, softWrap = false)

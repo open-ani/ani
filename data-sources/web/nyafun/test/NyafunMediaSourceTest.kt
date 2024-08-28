@@ -26,7 +26,7 @@ class NyafunMediaSourceTest {
         list[0].run {
             assertEquals("7168", id)
             assertEquals("GIRLS BAND CRY", name)
-            assertEquals("https://www.nyafun.net/bangumi/7168.html", url)
+            assertEquals("${NyafunMediaSource.BASE_URL}/bangumi/7168.html", url)
         }
     }
 
@@ -40,7 +40,7 @@ class NyafunMediaSourceTest {
         assertEquals(8, list.size)
         list[0].run {
             assertEquals("第01集", name)
-            assertEquals("https://www.nyafun.net/play/7168-1-1.html", url)
+            assertEquals("${NyafunMediaSource.BASE_URL}/play/7168-1-1.html", url)
         }
     }
 
@@ -51,9 +51,9 @@ class NyafunMediaSourceTest {
                 DefaultMedia(
                     mediaId = "nyafun.7168-01",
                     mediaSourceId = NyafunMediaSource.ID,
-                    originalUrl = "https://www.nyafun.net/bangumi/7168.html",
+                    originalUrl = "${NyafunMediaSource.BASE_URL}/bangumi/7168.html",
                     download = ResourceLocation.WebVideo(
-                        "https://www.nyafun.net/play/7168-1-1.html",
+                        "${NyafunMediaSource.BASE_URL}/play/7168-1-1.html",
                     ),
                     originalTitle = "GIRLS BAND CRY 第01集",
                     publishedTime = 0L,
@@ -74,9 +74,9 @@ class NyafunMediaSourceTest {
                 NyafunBangumi(
                     "7168",
                     "GIRLS BAND CRY",
-                    "https://www.nyafun.net/bangumi/7168.html",
+                    "${NyafunMediaSource.BASE_URL}/bangumi/7168.html",
                 ),
-                NyafunEp("第01集", "https://www.nyafun.net/play/7168-1-1.html"),
+                NyafunEp("第01集", "${NyafunMediaSource.BASE_URL}/play/7168-1-1.html"),
             ).toString(),
         )
     }

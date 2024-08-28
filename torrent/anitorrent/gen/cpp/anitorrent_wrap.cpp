@@ -2724,6 +2724,146 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1total_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->total = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1total_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  result = (int64_t) ((arg1)->total);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1total_1done_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->total_done = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1total_1done_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  result = (int64_t) ((arg1)->total_done);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1total_1upload_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->total_upload = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1total_1upload_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  result = (int64_t) ((arg1)->total_upload);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1all_1time_1upload_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->all_time_upload = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1all_1time_1upload_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  result = (int64_t) ((arg1)->all_time_upload);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1all_1time_1download_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->all_time_download = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1all_1time_1download_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::torrent_stats_t **)&jarg1; 
+  result = (int64_t) ((arg1)->all_time_download);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1stats_1t_1download_1payload_1rate_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   anilt::torrent_stats_t *arg1 = (anilt::torrent_stats_t *) 0 ;
   int arg2 ;

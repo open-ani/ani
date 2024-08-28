@@ -1,7 +1,7 @@
 package me.him188.ani.app.data.source.media.cache.engine
 
+import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaStats
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import kotlin.coroutines.CoroutineContext
@@ -29,7 +29,7 @@ interface MediaCacheEngine {
     /**
      * 此引擎的总体传输统计
      */
-    val stats: MediaStats
+    val stats: Flow<MediaStats>
 
     /**
      * 是否支持给定缓存给定的 [Media].
@@ -67,3 +67,4 @@ interface MediaCacheEngine {
      */
     suspend fun deleteUnusedCaches(all: List<MediaCache>)
 }
+

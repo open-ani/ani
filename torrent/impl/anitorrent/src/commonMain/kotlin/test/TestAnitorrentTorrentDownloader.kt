@@ -81,10 +81,15 @@ class TestTorrentResumeData : TorrentResumeData {
 
 @TestOnly
 data class TestTorrentStats(
+    override val total: Long,
+    override val totalDone: Long,
+    override val allTimeUpload: Long,
+    override val allTimeDownload: Long,
     override val downloadPayloadRate: Long,
     override val uploadPayloadRate: Long,
     override val progress: Float,
-    override val totalPayloadUpload: Long
+    override val totalPayloadDownload: Long,
+    override val totalPayloadUpload: Long,
 ) : TorrentStats
 
 @TestOnly
@@ -123,7 +128,7 @@ open class TestTorrentHandle(
     override fun postStatusUpdates() {
         dispatchEvent(
             block = {
-                it.onStatsUpdate(TestTorrentStats(0, 0, 0f, 0))
+                it.onStatsUpdate(TestTorrentStats(0, 0, 0, 0, 0, 0, 0f, 0, 0))
             },
         )
     }

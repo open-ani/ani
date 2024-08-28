@@ -31,6 +31,7 @@ import me.him188.ani.datasources.api.source.MediaMatch
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.definitelyMatches
@@ -82,7 +83,12 @@ class NyafunWebVideoMatcher : WebVideoMatcher {
 class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     companion object {
         const val ID = "nyafun"
-        internal const val BASE_URL = "https://www.nyafun.net"
+        internal const val BASE_URL = "https://www.nyacg.net"
+        val INFO = MediaSourceInfo(
+            displayName = "Nyafun",
+            websiteUrl = BASE_URL,
+            imageUrl = "https://files.superbed.cn/proxy/7468686c6f26333378737f75717b2f3278737f6f326d6d327f73713375717d7b79335d7b5d5d5f2a6931484a4c5d71757f28666d4650502b682c28702f4b2b566a6c326c727b",
+        )
 
         // https://www.nyafun.net/search.html?wd=girls%20band%20cry
         fun parseBangumiSearch(document: Document): List<NyafunBangumi> =
@@ -154,7 +160,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
 
     class Factory : MediaSourceFactory {
         override val mediaSourceId: String get() = ID
-
+        override val info: MediaSourceInfo get() = INFO
         override fun create(config: MediaSourceConfig): MediaSource = NyafunMediaSource(config)
     }
 
@@ -220,4 +226,5 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
         Jsoup.parse(it, "UTF-8", BASE_URL)
     }
 
+    override val info: MediaSourceInfo get() = INFO
 }

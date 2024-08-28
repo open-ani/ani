@@ -1,8 +1,8 @@
 package me.him188.ani.app.torrent.io
 
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.torrent.api.files.PieceState
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.lastIndex
 import me.him188.ani.utils.io.readAllBytes
 import me.him188.ani.utils.io.readBytes

@@ -1,14 +1,17 @@
 package me.him188.ani.app.data.repository
 
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.episode.EpisodeComment
 import me.him188.ani.app.data.models.episode.toEpisodeComment
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.SubjectComment
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.paging.processPagedResponse
 import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.next.models.BangumiNextCreateSubjectEpCommentRequest
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextGetSubjectEpisodeComments200ResponseInner
 import me.him188.ani.datasources.bangumi.next.models.BangumiNextSubjectInterestCommentListInner
 import me.him188.ani.utils.logging.logger
@@ -16,6 +19,9 @@ import me.him188.ani.utils.logging.logger
 sealed interface CommentRepository {
     fun getSubjectEpisodeComments(episodeId: Int): PagedSource<EpisodeComment>
     fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment>
+
+    // comment.id 会被忽略
+    suspend fun postEpisodeComment(episodeId: Int, content: String, replyToCommentId: Int? = null): ApiResponse<Unit>
 }
 
 class BangumiCommentRepositoryImpl(
@@ -59,6 +65,23 @@ class BangumiCommentRepositoryImpl(
                 logger.warn("Exception in getSubjectComments", e)
                 null
             }
+        }
+    }
+
+    override suspend fun postEpisodeComment(
+        episodeId: Int,
+        content: String,
+        replyToCommentId: Int?
+    ): ApiResponse<Unit> {
+        return runApiRequest {
+            client.getNextApi().createSubjectEpComment(
+                episodeId,
+                BangumiNextCreateSubjectEpCommentRequest(
+                    "XXXX.DUMMY.TOKEN.XXXX",
+                    content,
+                    replyToCommentId,
+                ),
+            )
         }
     }
 

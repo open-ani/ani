@@ -10,14 +10,11 @@
 
 ## 获取帮助
 
-如你对项目结构有任何疑问, 欢迎通过以下途径寻求帮助:
-> 群里大部分是普通用户, 但也有一些开发者.
-> 建议在群内问, 以便更多人看到你的问题.
+开发文档一直都是一个进行中的工作. 如你对项目结构有任何疑问, 欢迎通过以下途径寻求帮助:
 
-- [![Group](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/openani)
-- [![QQ](https://img.shields.io/badge/927170241-EB1923?logo=tencent-qq&logoColor=white)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=2EbZ0Qxe-fI_AHJLCMnSIOnqw-nfrFH5&authKey=L31zTMwfbMG0FhIgt8xNHGOFPHc531mSw2YzUVupHLRJ4L2f8xerAd%2ByNl4OigRK&noverify=0&group_code=927170241)
-  927170241
-- [GitHub Discussions](https://github.com/him188/ani/discussions)
+- TG
+  开发者群 [![Group](https://img.shields.io/badge/Telegram-2CA5E0?style=flat-squeare&logo=telegram&logoColor=white)](https://t.me/openani_dev)
+- [GitHub Discussions](https://github.com/open-ani/ani/discussions)
 
 ## 目录
 
@@ -29,26 +26,19 @@
 6. App 架构: 最主要的客户端模块的层级划分, 以及各层的职责
 7. 开发与调试: 源集结构, 预览 Compose UI, Navigation, 问答, 以及一些坑
 
-## 1. 开发工具
+## 1. 开发工具和环境
 
-请使用 Android Studio.
+请使用 Android Studio. Intellij IDEA 会无法预览 UI.
 
-- 需要 JDK 版本至少为 17（如果系统没有, 会自动下载）
 - 需要 Android SDK 版本至少为 API 34
 
 安装如下 IDE 插件:
 
 - Jetpack Compose
 - Compose Multiplatform IDE Support
+- Kotlin Multiplatform (为了运行 iOS)
 - Compose colors preview (可选安装, 用于预览颜色)
 - ANTLR v4 (如果你要修改 BBCode 解析模块)
-
-### 配置 Android NDK
-
-Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开发:
-
-1. 打开 SDK Manager (Android Studio 中 Tools -> SDK Manager)
-2. 安装 NDK 和 Cmake
 
 > [!WARNING]
 > **Windows 特别提示**
@@ -62,19 +52,25 @@ Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开�
 >   git add --update --renormalize
 >   ```
 
-## 2. 代码风格
+### 配置 Android NDK
+
+Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开发:
+
+1. 打开 SDK Manager (Android Studio 中 Tools -> SDK Manager)
+2. 安装 NDK 和 Cmake 并更新到最新版本
+
+## 2. 代码风格与代码规范
 
 ### 格式化
-
-项目根目录有 `.editorconfig` 文件, IDE 会自动读取该文件以确保代码风格一致.
-请使用 IDE 提供的自动代码格式化功能即可.
 
 建议在 IDE 的 Commit 页面, 点击右下角设置, 勾选 "Reformat code" 和 "Optimize imports".
 在提交时将会自动格式化代码.
 
+<img src=".readme/images/contributing/formatting.png" alt="commit-settings" width="300"/>
+
 ### 代码规范
 
-我们力求打造一个示范级质量的 Compose Multiplatform 项目.
+我们力求打造一个高质量的 Compose Multiplatform 项目.
 
 为了达成这一点:
 
@@ -132,13 +128,11 @@ flowchart TD
     end
 ```
 
-> [!NOTE]
-> 蓝色为最终目标. 它们将会构建成为 APP.
-> 绿色的是 iOS 模拟器目标, 仅为运行测试.
+蓝色为最终目标. 它们将会构建成为 APP.
+绿色的是 iOS 模拟器目标, 仅为运行测试.
 
-> [!NOTE]
-> Compose Multiplatform 在 `desktop` 和 `ios` 均使用 Skiko 渲染, 因此共享的 `skiko` 源集.
-> 中间源集 `skiko` 为辅助作用. 主要的平台适配代码在 `jvm` 和 `apple` 中.
+Compose Multiplatform 在 `desktop` 和 `ios` 均使用 Skiko 渲染, 因此共享的 `skiko` 源集.
+中间源集 `skiko` 为辅助作用. 主要的平台适配代码在 `jvm` 和 `apple` 中.
 
 > [!TIP]
 > 实际上有些模块的源集结构是不完整的 (更简单一些). 例如工具模块 `:utils:io` 不区分 `android`
@@ -264,10 +258,9 @@ Ani 使用 Gradle Version Catalogs.
 官方文档，或简单执行 `./gradlew createReleaseDistributable`
 ，结果保存在 `app/desktop/build/compose/binaries` 中。
 
-> [!NOTE]
-> 一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
+一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
 
-> [!WARNING]
+> [!NOTE]
 > 默认情况下, 桌面端不会构建 Anitorrent (C++), 也就没有 BT 支持.
 > 可阅读 [torrent/anitorrent/README.md](torrent/anitorrent/README.md) 了解如何配置 C++ 构建.
 
@@ -282,6 +275,7 @@ Ani 使用 Gradle Version Catalogs.
 > 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
 >
 > 可使用 `./gradlew clean generateComposeResClass check` 清空测试的缓存并重新运行所有测试.
+
 
 ## 6. App 项目架构
 
@@ -424,7 +418,8 @@ Page (首页/我的收藏/个人中心).
 使用视频播放器作为示例, 视频播放器的入口点是 `VideoScaffold`, 它提供播放器的框架.
 调用方在该框架上通过参数传递 `topBar`, `video`, `danmakuHost` 等组件来组装一个视频播放器 UI.
 
-[`VideoScaffold`](https://github.com/Him188/ani/tree/master/app/shared/video-player/common/ui/VideoScaffold.kt#39)
+[
+`VideoScaffold`](https://github.com/Him188/ani/tree/master/app/shared/video-player/common/ui/VideoScaffold.kt#39)
 是通用的, 全部代码都位于 common 中:
 
 `app/shared/video-player/common/ui/VideoScaffold.kt`

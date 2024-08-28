@@ -225,6 +225,15 @@ object AniDesktop {
             )
         }.startCommonKoinModule(coroutineScope)
 
+        // 预先加载 VLC, https://github.com/open-ani/ani/issues/618
+        coroutineScope.launch {
+            kotlin.runCatching {
+                VlcjVideoPlayerState.prepareLibraries()
+            }.onFailure {
+                logger.error(it) { "Failed to prepare VLC" }
+            }
+        }
+
         kotlin.runCatching {
             val desktopUpdateInstaller = koin.koin.get<UpdateInstaller>() as DesktopUpdateInstaller
             desktopUpdateInstaller.deleteOldUpdater()
@@ -265,7 +274,6 @@ object AniDesktop {
                     LocalPlatformWindow provides remember(window.windowHandle) {
                         PlatformWindow(
                             windowHandle = window.windowHandle,
-                            composeWindow = window,
                         )
                     },
                 ) {
