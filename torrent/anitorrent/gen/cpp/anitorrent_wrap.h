@@ -17,6 +17,7 @@ public:
     SwigDirector_event_listener_t(JNIEnv *jenv);
     virtual ~SwigDirector_event_listener_t();
     virtual void on_checked(anilt::handle_id_t handle_id);
+    virtual void on_metadata_received(anilt::handle_id_t handle_id);
     virtual void on_torrent_added(anilt::handle_id_t handle_id);
     virtual void on_save_resume_data(anilt::handle_id_t handle_id,anilt::torrent_resume_data_t &data);
     virtual void on_torrent_state_changed(anilt::handle_id_t handle_id,anilt::torrent_state_t state);
@@ -28,10 +29,10 @@ public:
     virtual void on_session_stats(anilt::handle_id_t handle_id,anilt::session_stats_t &stats);
 public:
     bool swig_overrides(int n) {
-      return (n < 10 ? swig_override[n] : false);
+      return (n < 11 ? swig_override[n] : false);
     }
 protected:
-    Swig::BoolArray<10> swig_override;
+    Swig::BoolArray<11> swig_override;
 };
 
 class SwigDirector_new_event_listener_t : public anilt::new_event_listener_t, public Swig::Director {
