@@ -1,4 +1,4 @@
-package me.him188.ani.danmaku.ui.new
+package me.him188.ani.danmaku.ui
 
 import kotlin.jvm.JvmInline
 

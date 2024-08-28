@@ -1,6 +1,5 @@
-package me.him188.ani.danmaku.ui.new
+package me.him188.ani.danmaku.ui
 
-import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState

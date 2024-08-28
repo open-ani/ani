@@ -491,6 +491,7 @@ private class EpisodeViewModelImpl(
     override val danmaku = VideoDanmakuStateImpl(
         danmakuEnabled = settingsRepository.danmakuEnabled.flow.produceState(false),
         danmakuConfig = settingsRepository.danmakuConfig.flow.produceState(DanmakuConfig.Default),
+        currentPosition = playerState.currentPositionMillis.map { it.milliseconds },
         onSend = { info ->
             danmakuManager.post(episodeId.value, info)
         },
@@ -553,11 +554,7 @@ private class EpisodeViewModelImpl(
     init {
         launchInMain { // state changes must be in main thread
             playerState.state.collect {
-                if (it.isPlaying) {
-                    danmaku.danmakuHostState.resume()
-                } else {
-                    danmaku.danmakuHostState.pause()
-                }
+                danmaku.danmakuHostState.setPause(!it.isPlaying)
             }
         }
 
@@ -568,7 +565,7 @@ private class EpisodeViewModelImpl(
                     when (event) {
                         is DanmakuEvent.Add -> {
                             val data = event.danmaku
-                            danmaku.danmakuHostState.trySend(
+                            danmaku.danmakuHostState.send(
                                 createDanmakuPresentation(data, selfId.value),
                             )
                         }

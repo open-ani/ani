@@ -41,7 +41,6 @@ import me.him188.ani.danmaku.api.emptyDanmakuCollection
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.danmaku.ui.DanmakuTrackProperties
-import me.him188.ani.danmaku.ui.send
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -166,13 +165,15 @@ interface VideoDanmakuState {
 class VideoDanmakuStateImpl(
     danmakuEnabled: State<Boolean>,
     danmakuConfig: State<DanmakuConfig>,
+    currentPosition: Flow<Duration>,
     private val onSend: suspend (info: DanmakuInfo) -> Danmaku,
     private val onSetEnabled: suspend (enabled: Boolean) -> Unit,
     private val onHideController: () -> Unit,
     private val backgroundScope: CoroutineScope,
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
-    override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuConfig, danmakuTrackProperties)
+    override val danmakuHostState: DanmakuHostState = 
+        DanmakuHostState(currentPosition, danmakuConfig, danmakuTrackProperties)
     
     override val enabled: Boolean by danmakuEnabled
     override val isSettingEnabled: Boolean get() = setEnabledTasker.isRunning

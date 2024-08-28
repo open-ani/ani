@@ -1,4 +1,4 @@
-package me.him188.ani.danmaku.ui.new
+package me.him188.ani.danmaku.ui
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.IntState
@@ -6,7 +6,6 @@ import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import kotlin.math.absoluteValue
 
 /**
  * FixedDanmakuTrack 中的弹幕在以下情况会移除:

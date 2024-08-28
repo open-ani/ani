@@ -1,6 +1,5 @@
-package me.him188.ani.danmaku.ui.new
+package me.him188.ani.danmaku.ui
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -15,7 +14,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.style.TextOverflow
 import me.him188.ani.danmaku.api.DanmakuPresentation
-import me.him188.ani.danmaku.ui.DanmakuStyle
 import me.him188.ani.utils.platform.format2f
 
 /**

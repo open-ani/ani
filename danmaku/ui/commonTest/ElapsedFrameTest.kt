@@ -1,4 +1,4 @@
-import me.him188.ani.danmaku.ui.new.ElapsedFrame
+import me.him188.ani.danmaku.ui.ElapsedFrame
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
