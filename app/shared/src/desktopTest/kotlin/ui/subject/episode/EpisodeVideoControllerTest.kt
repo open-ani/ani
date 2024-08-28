@@ -20,6 +20,7 @@ import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.doesNotExist
 import me.him188.ani.app.ui.exists
@@ -47,6 +48,7 @@ import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 private const val TAG_DETACHED_PROGRESS_SLIDER = "detachedProgressSlider"
@@ -112,7 +114,7 @@ class EpisodeVideoControllerTest {
                 onClickNextEpisode = {},
                 videoControllerState = controllerState,
                 title = { PlayerTopBar() },
-                danmakuHostState = remember { DanmakuHostState() },
+                danmakuHostState = remember { DanmakuHostState(MutableStateFlow(0.milliseconds)) },
                 danmakuEnabled = false,
                 onToggleDanmaku = {},
                 videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },

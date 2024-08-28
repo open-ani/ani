@@ -20,6 +20,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.doesNotExist
 import me.him188.ani.app.ui.exists
@@ -46,6 +47,7 @@ import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class EpisodeVideoCursorTest {
@@ -83,7 +85,7 @@ class EpisodeVideoCursorTest {
                     onClickNextEpisode = {},
                     videoControllerState = controllerState,
                     title = { PlayerTopBar() },
-                    danmakuHostState = remember { DanmakuHostState() },
+                    danmakuHostState = remember { DanmakuHostState(MutableStateFlow(0.milliseconds)) },
                     danmakuEnabled = false,
                     onToggleDanmaku = {},
                     videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
