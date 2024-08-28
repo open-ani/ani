@@ -47,7 +47,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.TextWithBorder
-import me.him188.ani.app.ui.foundation.effects.CursorVisibilityEffect
+import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
@@ -83,6 +83,7 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedS
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
 import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
@@ -153,15 +154,11 @@ internal fun EpisodeVideoImpl(
     }
 
 
-
-    CursorVisibilityEffect(
-        key = Unit,
-        visible = showCursor,
-    )
-
     VideoScaffold(
         expanded = expanded,
-        modifier = modifier.hoverable(videoInteractionSource),
+        modifier = modifier
+            .hoverable(videoInteractionSource)
+            .cursorVisibility(showCursor),
         maintainAspectRatio = maintainAspectRatio,
         controllerState = videoControllerState,
         gestureLocked = { isLocked },
@@ -240,6 +237,7 @@ internal fun EpisodeVideoImpl(
                 progressSliderState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
+                playerState,
                 locked = isLocked,
                 enableSwipeToSeek = enableSwipeToSeek,
                 Modifier.padding(top = 100.dp),
@@ -312,6 +310,22 @@ internal fun EpisodeVideoImpl(
                         danmakuEnabled,
                         onClick = { onToggleDanmaku() },
                     )
+                    if (expanded && playerState is SupportsAudio) {
+                        val volumeState by playerState.volume.collectAsStateWithLifecycle()
+                        val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
+                        PlayerControllerDefaults.AudioIcon(
+                            volumeState,
+                            isMute = volumeMute,
+                            maxValue = playerState.maxValue,
+                            onClick = {
+                                playerState.toggleMute()
+                            },
+                            onchange = {
+                                playerState.setVolume(it)
+                            },
+                            controllerState = videoControllerState,
+                        )
+                    }
                 },
                 progressIndicator = {
                     MediaProgressIndicatorText(progressSliderState)

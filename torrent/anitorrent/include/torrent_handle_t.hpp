@@ -25,6 +25,8 @@ class torrent_handle_t final {
 
     [[nodiscard]] bool is_valid() const;
 
+    int get_state() const;
+
     // See event_listener_t::on_status_update
     void post_status_updates() const;
     void post_save_resume() const;

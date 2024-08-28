@@ -9,6 +9,7 @@ expect abstract class Document : Element
 
 @Suppress("EXPECT_ACTUAL_INCOMPATIBILITY")
 expect abstract class Element : Node {
+    fun tagName(): String
 
     /**
      * Finds elements, including and recursively under this element, with the specified tag name.

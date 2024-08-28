@@ -143,4 +143,11 @@ void torrent_handle_t::set_file_priority(const int index, const uint8_t priority
         }
         return "";
     }
+
+    int torrent_handle_t::get_state() const {
+        if (const auto handle = handle_; handle && handle->is_valid()) {
+            return handle->status().state;
+        }
+        return -1;
+    }
 } // namespace anilt

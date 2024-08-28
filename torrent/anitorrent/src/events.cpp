@@ -1,4 +1,4 @@
-
+﻿
 #include "events.hpp"
 
 #include <fstream>
@@ -70,6 +70,11 @@ void call_listener(lt::alert *alert, libtorrent::session &session, event_listene
     if (lt::alert_cast<lt::torrent_checked_alert>(torrent_alert)) {
         function_printer_t _fp("call_listener:torrent_checked_event_t");
         listener.on_checked(handle.id());
+        return;
+    }
+    if (lt::alert_cast<lt::metadata_received_alert>(torrent_alert)) {
+        function_printer_t _fp("call_listener:metadata_received_alert");
+        listener.on_metadata_received(handle.id());
         return;
     }
     if (const auto a = lt::alert_cast<lt::save_resume_data_alert>(torrent_alert)) {

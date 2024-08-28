@@ -181,13 +181,14 @@ class EpisodeVideoControllerTest {
             assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
         }
 
-        onRoot().performClick()
+        val root = onAllNodes(isRoot()).onFirst()
+        root.performClick()
         runOnIdle {
             waitUntil { topBar.exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
-        onRoot().performClick()
+        root.performClick()
         runOnIdle {
             waitUntil { topBar.doesNotExist() }
             assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
@@ -509,10 +510,11 @@ class EpisodeVideoControllerTest {
      */
     @Test
     fun `mouse - hover to always on - bottom bar`() = runAniComposeUiTest {
+        val root = onAllNodes(isRoot()).onFirst()
         testRequestAlwaysOn(
             performGesture = {
                 // 鼠标移动到控制器上
-                onRoot().performMouseInput {
+                root.performMouseInput {
                     moveTo(bottomCenter) // 肯定在 bottomBar 区域内
                 }
             },
@@ -525,10 +527,11 @@ class EpisodeVideoControllerTest {
      */
     @Test
     fun `mouse - hover to always on - top bar`() = runAniComposeUiTest {
+        val root = onAllNodes(isRoot()).onFirst()
         testRequestAlwaysOn(
             performGesture = {
                 // 鼠标移动到控制器上
-                onRoot().performMouseInput {
+                root.performMouseInput {
                     moveTo(topCenter) // 肯定在 topBar 区域内
                 }
             },
@@ -545,10 +548,11 @@ class EpisodeVideoControllerTest {
         waitForSideSheetOpen: () -> Unit,
         waitForSideSheetClose: () -> Unit,
     ) {
+        val root = onAllNodes(isRoot()).onFirst()
         testRequestAlwaysOn(
             performGesture = {
                 openSideSheet()
-                onRoot().performMouseInput {
+                root.performMouseInput {
                     moveTo(centerRight)
                 }
                 waitForSideSheetOpen()
@@ -563,7 +567,7 @@ class EpisodeVideoControllerTest {
             mainClock.autoAdvance = false
         }
         runOnIdle {
-            onRoot().performTouchInput {
+            root.performTouchInput {
                 click(center)
             }
         }
@@ -618,10 +622,11 @@ class EpisodeVideoControllerTest {
      */
     @Test
     fun `mouse - clicking does not request always on - bottom bar`() = runAniComposeUiTest {
+        val root = onAllNodes(isRoot()).onFirst()
         testRequestAlwaysOn(
             performGesture = {
                 // 手指单击控制器
-                onRoot().performTouchInput {
+                root.performTouchInput {
                     click(bottomCenter) // 肯定在 bottomBar 区域内
                 }
             },
@@ -634,10 +639,11 @@ class EpisodeVideoControllerTest {
      */
     @Test
     fun `mouse - clicking does not request always on - top bar`() = runAniComposeUiTest {
+        val root = onAllNodes(isRoot()).onFirst()
         testRequestAlwaysOn(
             performGesture = {
                 // 手指单击控制器
-                onRoot().performTouchInput {
+                root.performTouchInput {
                     click(topCenter) // 肯定在 topBar 区域内
                 }
             },
@@ -665,10 +671,11 @@ class EpisodeVideoControllerTest {
             )
         }
 
+        val root = onAllNodes(isRoot()).onFirst()
         // 显示控制器
         runOnUiThread {
             mainClock.autoAdvance = false
-            onRoot().performTouchInput {
+            root.performTouchInput {
                 swipe(centerLeft, center)
             }
         }

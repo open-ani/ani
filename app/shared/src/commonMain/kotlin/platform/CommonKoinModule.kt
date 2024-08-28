@@ -299,8 +299,6 @@ interface AniBuildConfig {
      * `3.0.0-rc04`
      */
     val versionName: String
-    val bangumiOauthClientAppId: String
-    val bangumiOauthClientSecret: String
     val isDebug: Boolean
     val aniAuthServerUrl: String
 
@@ -355,8 +353,6 @@ fun createBangumiClient(
     parentCoroutineContext: CoroutineContext,
 ): BangumiClient {
     return BangumiClient.create(
-        currentAniBuildConfig.bangumiOauthClientAppId,
-        currentAniBuildConfig.bangumiOauthClientSecret,
         bearerToken,
         parentCoroutineContext,
     ) {

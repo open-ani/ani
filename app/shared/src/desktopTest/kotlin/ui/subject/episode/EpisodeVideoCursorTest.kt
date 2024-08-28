@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performMouseInput
@@ -210,21 +212,22 @@ class EpisodeVideoCursorTest {
         setContent {
             Player(gestureFamily = GestureFamily.MOUSE)
         }
+        val root = onAllNodes(isRoot()).onFirst()
         runOnIdle {
             assertEquals(true, controllerState.visibility.topBar)
             waitUntil { cursorVisible.exists() } // 因为没有 hover
-            onRoot().performMouseInput {
+            root.performMouseInput {
                 moveTo(centerRight) // 初始在视频外面
             }
         }
         mainClock.autoAdvance = false
         runOnIdle {
-            onRoot().performMouseInput {
+            root.performMouseInput {
                 moveTo(center)
             }
             // 目前的 controller mouseHoverForController 依赖 Move 事件, 但 compose 似乎有点问题
             // 所以额外广播一个事件
-            onRoot().performTouchInput {
+            root.performTouchInput {
                 swipe(center, center - Offset(1f, 1f))
             }
         }

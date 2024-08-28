@@ -107,6 +107,17 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 
 // https://github.com/aclassen/ComposeReorderable
+if (file("app/shared/reorderable").run { !exists() || listFiles().isNullOrEmpty() }) {
+    error(
+        """
+        未找到 app/shared/reorderable, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
+        1. `git submodule update --init --recursive`
+        2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
+        3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
+        """.trimIndent(),
+    )
+}
+
 includeBuild("app/shared/reorderable") {
     dependencySubstitution {
         substitute(module("org.burnoutcrew.composereorderable:reorderable")).using(project(":reorderable"))
