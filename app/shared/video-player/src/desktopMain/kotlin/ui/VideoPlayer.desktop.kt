@@ -94,8 +94,8 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             .mediaPlayers()
             .newEmbeddedMediaPlayer()
     }
-    private val surface = SkiaBitmapVideoSurface().apply {
-        player.videoSurface().set(this)
+    val surface = SkiaBitmapVideoSurface().apply {
+        player.videoSurface().set(this) // 只能 attach 一次
         attach(player)
     }
 
@@ -495,18 +495,11 @@ actual fun VideoPlayer(
     }
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
 
-    val surface = remember {
-        SkiaBitmapVideoSurface().apply {
-            mediaPlayer.videoSurface().set(this)
-            attach(mediaPlayer)
-        }
-    }
-
     val frameSizeCalculator = remember {
         FrameSizeCalculator()
     }
     Canvas(modifier) {
-        val bitmap = surface.bitmap ?: return@Canvas
+        val bitmap = playerState.surface.bitmap ?: return@Canvas
         frameSizeCalculator.calculate(
             IntSize(bitmap.width, bitmap.height),
             Size(size.width, size.height),
