@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Restore
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,6 +33,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -389,11 +391,30 @@ private fun Dropdown(
             )
         }
         ProvideContentColor(MaterialTheme.colorScheme.error) {
+            var showConfirm by remember { mutableStateOf(false) }
+            if (showConfirm) {
+                AlertDialog(
+                    { showConfirm = false },
+                    icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                    title = { Text("删除缓存") },
+                    text = { Text("删除后不可恢复，确认删除吗?") },
+                    confirmButton = {
+                        TextButton({ state.delete() }) {
+                            Text("删除", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton({ showConfirm = false }) {
+                            Text("取消")
+                        }
+                    },
+                )
+            }
             DropdownMenuItem(
                 text = { Text("删除", color = MaterialTheme.colorScheme.error) },
                 leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                 onClick = {
-                    state.delete()
+                    showConfirm = true
                     onDismissRequest()
                 },
             )
