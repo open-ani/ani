@@ -32,7 +32,6 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.MediaSourceInfo
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import org.koin.mp.KoinPlatform
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -114,16 +113,12 @@ fun SettingsScope.MediaSourceTesterView(
     },
     showTime: Boolean,
     title: @Composable RowScope.() -> Unit = { Text(info?.displayName ?: "未知") },
-    description: (@Composable () -> Unit)? = if (tester.id == BangumiSubjectProvider.ID) {
-        { Text("提供观看记录数据") }
-    } else {
-        info?.description?.let {
-            { Text(it) }
-        }
+    description: (@Composable () -> Unit)? = info?.description?.let {
+        { Text(it) }
     },
     icon: (@Composable () -> Unit)? = {
         Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-            MediaSourceIcon(info?.imageUrl)
+            MediaSourceIcon(info?.imageUrl, Modifier.matchParentSize())
         }
     },
 ) {
