@@ -315,14 +315,12 @@ fun CacheEpisodeItem(
                                 CircularProgressIndicator(Modifier.size(24.dp))
                             }
                         } else {
-                            when {
-                                state.isPaused -> {
+                            if (!state.isFinished) {
+                                if (state.isPaused) {
                                     IconButton({ state.resume() }) {
                                         Icon(Icons.Rounded.Restore, "继续下载")
                                     }
-                                }
-
-                                !state.isPaused -> {
+                                } else {
                                     IconButton({ state.pause() }) {
                                         Icon(Icons.Rounded.Pause, "暂停下载", Modifier.size(28.dp))
                                     }
