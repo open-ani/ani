@@ -59,6 +59,10 @@ class DanmakuHostState(
     internal lateinit var textMeasurer: TextMeasurer
 
     internal val trackHeightState = mutableIntStateOf(0)
+    
+    internal val canvasAlpha by derivedStateOf { danmakuConfig.style.alpha }
+    internal var paused by mutableStateOf(false)
+    
 
     /**
      * 当前播放时间, 读取 [progress] 并插帧过渡.
@@ -84,6 +88,7 @@ class DanmakuHostState(
     // test only prop
     // internal var glitched: Int by mutableIntStateOf(0)
     // internal var delta: Long by mutableLongStateOf(0)
+    // internal var frameVersion: Long by mutableLongStateOf(0)
     // internal var interpCurr: Long by mutableLongStateOf(0)
     // internal var interpUpst: Long by mutableLongStateOf(0)
     // internal var restartEvent: String by mutableStateOf("")
@@ -166,12 +171,12 @@ class DanmakuHostState(
                 while (true) {
                     val current = currentTimeMillis
                     val upstream = latestUpstreamTimeMillis
-                    val avgFrameTime = elapsedFrame.avg()
+                    val lastInterpolationAvgFrameTime = elapsedFrame.avg()
                     var glitched = false
                     
                     // restartEvent = "c: $current, u: $upstream, a: $avgFrameTime"
                     
-                    val interpolationBase = when {
+                    var interpolationBase = when {
                         /**
                          * 初始状态
                          * 
@@ -191,17 +196,17 @@ class DanmakuHostState(
                          */
                         current == upstream -> { current }
                         /**
-                         * current 和 upstream 的差小于 4 * 平均帧时间
+                         * current 和 upstream 的差小于 3 * 平均帧时间
                          * 通过插值来更新 current 以逼近 upstream, 插值更新会改变 current 的速度.
-                         * 为什么阈值是 4 倍帧时间?
+                         * 为什么阈值是 3 倍帧时间?
                          * - 突然的帧时间波动随时可能发生, 在可接受的范围内插值不会在视觉上感受到弹幕的速度变快或变慢.
                          *
                          *                     current
                          * ->> |-------------------v----------------------------------------|
                          * ->> |------------(--^------------)-------------------------------|
-                         *                 upstream         ^ 4 * avgFrameTime
+                         *                 upstream         ^ 3 * avgFrameTime
                          */
-                        (current - upstream).absoluteValue <= avgFrameTime * 4 -> {
+                        (current - upstream).absoluteValue <= lastInterpolationAvgFrameTime * 3 -> {
                             max(current, upstream)
                         }
                         /**
@@ -223,13 +228,21 @@ class DanmakuHostState(
                     
                     // this@DanmakuHostState.glitched = if (glitched) 1 else 0 // test only
                     
+                    // 在这里使用了一帧的时间获取当前帧的时间，用上一次插值的平均帧时间补偿这一帧的运动
+                    var lastFrameTime = withFrameMillis { 
+                        // frameVersion += 1 // test only
+                        interpolationBase += lastInterpolationAvgFrameTime
+                        currentTimeMillis = interpolationBase
+                        it
+                    }
                     elapsedFrame = ElapsedFrame.zero()
-                    var lastFrameTime = withFrameMillis { it }
+                    
                     
                     if (glitched) {
                         // 如果弹幕抖动就不用插值.
                         do {
                             withFrameMillis { millis ->
+                                // frameVersion += 1
                                 val delta = millis - lastFrameTime
                                 // this@DanmakuHostState.delta = delta // test only
                                 
@@ -341,6 +354,11 @@ class DanmakuHostState(
         floatingTrack.forEach { it.clearAll() }
         
         for (danmaku in list) { send(danmaku) }
+    }
+    
+    @UiThread
+    fun setPause(pause: Boolean) {
+        paused = pause
     }
 
     /**

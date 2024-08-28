@@ -116,7 +116,8 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                 Text("emitted: $emitted")
                 Text("upstream time: ${upstreamCurrent}, current time millis: ${state.currentTimeMillis}")
                 // Text("  gli: ${state.glitched}, delta: ${state.delta}, interpCurr: ${state.interpCurr}, interpUpst: ${state.interpUpst}")
-                // Text("  re: ${state.restartEvent}")
+                // Text("frame version: ${state.frameVersion}")
+                // Text("frame time delta: ${state.delta}")
                 Text("present danmaku count: ${state.presentDanmaku.size}")
                 Text("trackHeight: ${state.trackHeightState.value}")
                 state.floatingTrack.forEach { danmakuTrackState ->

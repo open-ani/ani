@@ -12,6 +12,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -34,7 +35,7 @@ fun DanmakuHost(
     // observe screen size changes to calculate track height and track count
     LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer, density) }
     // calculate current play time on every frame
-    LaunchedEffect(true) { state.interpolateFrameLoop() }
+    LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for danmaku track
     LaunchedEffect(true) { 
         while (true) {
@@ -45,10 +46,13 @@ fun DanmakuHost(
     
     BoxWithConstraints(modifier) {
         Canvas(
-            Modifier.fillMaxSize().onSizeChanged { 
-                state.hostWidth = it.width
-                state.hostHeight = it.height
-            }
+            Modifier
+                .fillMaxSize()
+                .alpha(state.canvasAlpha)
+                .onSizeChanged { 
+                    state.hostWidth = it.width
+                    state.hostHeight = it.height
+                }
         ) {
             for (danmaku in state.presentDanmaku) {
                 drawDanmakuText(
