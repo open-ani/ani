@@ -1,14 +1,17 @@
 package me.him188.ani.danmaku.ui
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -19,7 +22,7 @@ import me.him188.ani.utils.platform.format2f
 /**
  * DanmakuState holds all params which [Canvas] needs to draw a danmaku text.
  */
-@Stable
+@Immutable
 data class DanmakuState(
     val presentation: DanmakuPresentation,
     val measurer: TextMeasurer,
@@ -28,38 +31,33 @@ data class DanmakuState(
     val enableColor: Boolean,
     val isDebug: Boolean
 ) {
-    val danmakuText by derivedStateOf {
-        presentation.danmaku.run {
-            if (isDebug) "$text (${String.format2f(playTimeMillis.toFloat().div(1000))})" else text
-        }
+    val danmakuText = presentation.danmaku.run {
+        if (isDebug) "$text (${String.format2f(playTimeMillis.toFloat().div(1000))})" else text
     }
     
-    val solidTextLayout 
-        get() = measurer.measure(
-            text = danmakuText,
-            style = baseStyle.merge(
-                style.styleForText(
-                    color = if (enableColor) {
-                        rgbColor(presentation.danmaku.color.toUInt().toLong()).copy(alpha = style.alpha)
-                    } else Color.White,
-                ),
+    val solidTextLayout = measurer.measure(
+        text = danmakuText,
+        style = baseStyle.merge(
+            style.styleForText(
+                color = if (enableColor) {
+                    rgbColor(presentation.danmaku.color.toUInt().toLong()).copy(alpha = style.alpha)
+                } else Color.White,
             ),
-            overflow = TextOverflow.Clip,
-            maxLines = 1,
-            softWrap = false,
-        )
+        ),
+        overflow = TextOverflow.Clip,
+        maxLines = 1,
+        softWrap = false,
+    )
     
-    val borderTextLayout 
-        get() = measurer.measure(
-            text = danmakuText,
-            style = baseStyle.merge(style.styleForBorder()),
-            overflow = TextOverflow.Clip,
-            maxLines = 1,
-            softWrap = false,
-        )
+    val borderTextLayout = measurer.measure(
+        text = danmakuText,
+        style = baseStyle.merge(style.styleForBorder()),
+        overflow = TextOverflow.Clip,
+        maxLines = 1,
+        softWrap = false,
+    )
     
-    val textWidth 
-        get() = solidTextLayout.size.width
+    val textWidth = solidTextLayout.size.width
 }
 
 /**
