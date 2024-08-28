@@ -18,8 +18,8 @@ class FloatingDanmakuTrack(
     private val currentTimeMillis: LongState,
     private val trackHeight: IntState,
     private val screenWidth: IntState,
-    private val speedPxPerSecond: State<Float>,
-    private val safeSeparation: State<Float>,
+    private val speedPxPerSecond: Float,
+    private val safeSeparation: Float,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {
@@ -31,7 +31,7 @@ class FloatingDanmakuTrack(
         if (danmakuList.isEmpty()) return true
         val upcomingDanmakuPosX = FloatingDanmaku(danmaku).calculatePosX()
         for (d in danmakuList.asReversed()) {
-            if (d.calculatePosX() + d.state.textWidth + safeSeparation.value > upcomingDanmakuPosX) return false
+            if (d.calculatePosX() + d.state.textWidth + safeSeparation > upcomingDanmakuPosX) return false
         }
         return true
     }
@@ -59,7 +59,7 @@ class FloatingDanmakuTrack(
     }
 
     internal fun FloatingDanmaku.isFullyVisible(): Boolean {
-        return screenWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation.value
+        return screenWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation
     }
     
     @Immutable
@@ -68,7 +68,7 @@ class FloatingDanmakuTrack(
     ) : DanmakuHostState.PositionedDanmakuState {
         override fun calculatePosX(): Float {
             val timeDiff = (currentTimeMillis.value - state.presentation.danmaku.playTimeMillis) / 1000f
-            return screenWidth.value - timeDiff * speedPxPerSecond.value
+            return screenWidth.value - timeDiff * speedPxPerSecond
         }
 
         override fun calculatePosY(): Float {
