@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -576,7 +575,7 @@ private class EpisodeViewModelImpl(
                     when (event) {
                         is DanmakuEvent.Add -> {
                             val data = event.danmaku
-                            danmaku.danmakuHostState.send(
+                            danmaku.danmakuHostState.trySend(
                                 createDanmakuPresentation(data, selfId.value),
                             )
                         }

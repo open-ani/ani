@@ -27,6 +27,7 @@ fun DanmakuHost(
     val trackStubMeasurer = rememberTextMeasurer(1)
     val danmakuTextMeasurer = rememberTextMeasurer(3000)
     SideEffect { 
+        state.density = density
         state.baseStyle = baseStyle 
         state.textMeasurer = danmakuTextMeasurer
     }

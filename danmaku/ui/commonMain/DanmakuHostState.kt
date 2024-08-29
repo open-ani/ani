@@ -6,42 +6,37 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameMillis
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import me.him188.ani.utils.platform.Uuid
-import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.concurrent.Volatile
-import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 @Stable
 class DanmakuHostState(
-    private val progress: Flow<Duration>,
+    progress: Flow<Duration>,
     danmakuConfigState: State<DanmakuConfig> = mutableStateOf(DanmakuConfig.Default), // state 
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default, // state
 ) {
@@ -60,20 +55,20 @@ class DanmakuHostState(
     internal lateinit var baseStyle: TextStyle
     @Volatile
     internal lateinit var textMeasurer: TextMeasurer
+    @Volatile
+    internal lateinit var density: Density
 
     internal val trackHeightState = mutableIntStateOf(0)
     
     internal val canvasAlpha by derivedStateOf { danmakuConfig.style.alpha }
     internal var paused by mutableStateOf(false)
     
-
+    private val elapsedFrameTimeNanoState = mutableLongStateOf(0)
     /**
-     * 当前播放时间, 读取 [progress] 并插帧过渡.
-     * 
-     * 为了避免弹幕跳动, 插帧过度必须平滑, 详见 [interpolateFrameLoop]
+     * 已经过的帧时间
      */
-    private val currentTimeMillisState = mutableLongStateOf(0)
-    internal var currentTimeMillis by currentTimeMillisState
+    internal var elapsedFrameTimeNanos by elapsedFrameTimeNanoState
+    private val avgFrameTimeNanos = FastLongSumQueue(120)
 
     /**
      * 弹幕轨道
@@ -102,7 +97,7 @@ class DanmakuHostState(
     // internal var totalPercent: Double by mutableDoubleStateOf(0.0)
     
     /**
-     * 监听 轨道数量, 轨道高度 和 弹幕配置项目的变化
+     * 监听 轨道数量, 轨道高度 和 弹幕配置项目 的变化
      */
     internal suspend fun observeTrack(measurer: TextMeasurer, density: Density) {
         combine(
@@ -133,13 +128,14 @@ class DanmakuHostState(
     /**
      * 更新弹幕轨道信息, 更新完成后调用 [invalidate] 显示新的信息.
      */
+    @UiThread
     private suspend fun updateTrack(count: Int, config: DanmakuConfig, density: Density) {
         val newFloatingTrackSpeed = with(density) { danmakuConfig.speed.dp.toPx() }
         val newFloatingTrackSafeSeparation = with(density) { danmakuConfig.safeSeparation.toPx() }
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
                 trackIndex = index,
-                currentTimeMillis = currentTimeMillisState,
+                frameTimeNanos = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState, 
                 speedPxPerSecond = newFloatingTrackSpeed,
@@ -154,7 +150,7 @@ class DanmakuHostState(
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
                 trackIndex = index,
-                currentTimeMillis = currentTimeMillisState,
+                frameTimeNanos = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState,
                 screenHeight = hostHeightState,
@@ -165,7 +161,7 @@ class DanmakuHostState(
         bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
             FixedDanmakuTrack(
                 trackIndex = index,
-                currentTimeMillis = currentTimeMillisState,
+                frameTimeNanos = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState,
                 screenHeight = hostHeightState,
@@ -188,133 +184,23 @@ class DanmakuHostState(
         }
     }
 
-    /**
-     * 根据 [progress] 为每一帧平滑插值到 [currentTimeMillis].
-     */
     @UiThread
     internal suspend fun interpolateFrameLoop() {
-        var elapsedFrame = ElapsedFrame.zero()
-        val progressTickTime = FastLongSumQueue(50)
-        var currentUpstreamTickTime = 0L
-        
-        progress.map { it.inWholeMilliseconds }.collectLatest { upstreamTimeMillis ->
-            val currentTimeMillis = currentTimeMillis
-            val lastIntpAvgFrameTime = elapsedFrame.avg()
-            val progressTickAvgTime = progressTickTime.avg()
-
-            // restartEvent = "lastIntpAvgFrameTime: $lastIntpAvgFrameTime, progressTickAvgTime: $progressTickAvgTime\n" +
-            //         "current: $currentTimeMillis, upstream: $upstreamTimeMillis"
-
-            var interpolationBase = when {
-                /**
-                 * 初始状态
-                 *
-                 *   current
-                 * ->> |v-----------------------------------------------------------|
-                 * ->> |^-----------------------------------------------------------|
-                 *   upstream
-                 */
-                upstreamTimeMillis == 0L && currentTimeMillis == 0L -> { 0L }
-                /**
-                 * upstream 和 current 相等
-                 *
-                 *                     current
-                 * ->> |-------------------v----------------------------------------|
-                 * ->> |-------------------^----------------------------------------|
-                 *                     upstream
-                 */
-                currentTimeMillis == upstreamTimeMillis -> { currentTimeMillis }
-                /**
-                 * current 和 upstream 的差小于上一次插值循环的帧时间
-                 * 每次插值循环的总帧时间是趋于稳定的, 所以我们使用前一次插值循环的总帧时间来作为这一次的抖动判断.
-                 * 
-                 * 如果 current 与 upstream 的差小于前一次插值循环的总帧时间, 
-                 * 根据预测可以判断通过插值可以让 current 在这一个插值循环中完全逼近 upstream
-                 *
-                 *                     current
-                 * ->> |-------------------v----------------------------------------|
-                 * ->> |------------(--^------------)-------------------------------|
-                 *                 upstream         ^ lastIntpTotalFrameTime
-                 */
-                (currentTimeMillis - upstreamTimeMillis).absoluteValue <= progressTickAvgTime -> {
-                    currentTimeMillis
+        coroutineScope {
+            launch {
+                var currentFrameTimeNanos = withFrameNanos {
+                    // 使用了这一帧来获取时间, 需要补偿平均帧时间
+                    elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
+                    it
                 }
-                /**
-                 * current 和 upstream 差别过大, 可能原因:
-                 * 1. [progress] flow 发生了重大改变, 例如用户用进度条调整视频时间.
-                 * 2. 帧时间突然增大很多, 例如 CPU 突然满载.
-                 * 出现这种情况时没办法避免弹幕的抖动, 直接使用 upstream 时间来确保弹幕的准确性.
-                 *
-                 *                     current
-                 * ->> |-------------------v----------------------------------------|
-                 * ->> |-^--(---------------)---------------------------------------|
-                 *     upstream             ^ lastIntpTotalFrameTime
-                 */
-                else -> {
-                    logger.warn { " diff = ${upstreamTimeMillis - currentTimeMillis}" }
-                    upstreamTimeMillis.also { this@DanmakuHostState.currentTimeMillis = it }
-                }
-            }
 
-
-            // this@DanmakuHostState.glitched = if (glitched) 1 else 0 // test only
-
-            // 在这里使用了一帧的时间获取当前帧的时间，用上一次插值的平均帧时间补偿这一帧的运动
-            var lastFrameTime = withFrameMillis {
-                // frameVersion += 1 // test only
-                interpolationBase += lastIntpAvgFrameTime
-                this@DanmakuHostState.currentTimeMillis = interpolationBase
-                
-                if (currentUpstreamTickTime != 0L) progressTickTime += it - currentUpstreamTickTime
-                currentUpstreamTickTime = it
-                
-                it
-            }
-            
-            elapsedFrame = ElapsedFrame.zero()
-            val timeDiff = upstreamTimeMillis - interpolationBase // interpolationBase = currentTimeMillis
-            // this@DanmakuHostState.totalDiff = totalDiff // test only
-            
-            // 根据上一次插帧循环总帧时间预测这一次的插帧进度
-            while (true) {
-                /**
-                 * 在每一帧进行插值, 使 current 更逼近 upstream.
-                 * 插值会导致 current 增加的速率发生变化: 如果 current < upstream, 那速度会稍微加快.
-                 *
-                 * case 1: current < upstream
-                 *
-                 *                      interp        interp
-                 *       curr       (next)|       (next)|
-                 * ->>----|v-----------|v-*-----------|v*----------------
-                 * ->>----------|^-----------|^-----------|^-------------
-                 *           upstream      (next)       (next)
-                 *
-                 * case 2: current > upstream
-                 *
-                 *                      interp     interp
-                 *             curr       |(next)    |(next)
-                 * ->>----------|v--------*--|v------*|v-----------------
-                 * ->>----|^-----------|^-----------|^-------------------
-                 *     upstream      (next)       (next)
-                 */
-                withFrameMillis { millis ->
-                    val delta = millis - lastFrameTime
-                    // this@DanmakuHostState.delta = delta // test only
-                    elapsedFrame += delta
-                    
-                    // this@DanmakuHostState.elapsedFrame = elapsedFrame.sum() // test only
-                    // this@DanmakuHostState.elapsedFramePercent = elapsedFrame.sum() / progressTickAvgTime.toDouble() // test only
-
-                    // 使用 20 个 progress tick 时间来预测
-                    // 也就是我们假设接下来 20 个 progress tick upstream 和 current 是完全同步的
-                    val elapsedFramePercent = if (progressTickAvgTime == 0L) 0.0 else
-                            (elapsedFrame.sum() / progressTickAvgTime.toDouble()).coerceAtMost(1.0) / 20.0
-                    this@DanmakuHostState.currentTimeMillis =
-                        interpolationBase + (elapsedFramePercent * 20 * progressTickAvgTime + timeDiff).toLong()
-                    
-                    // this@DanmakuHostState.totalPercent = elapsedFramePercent // test only
-
-                    lastFrameTime = millis
+                while (true) {
+                    withFrameNanos { nanos ->
+                        val delta = nanos - currentFrameTimeNanos
+                        elapsedFrameTimeNanos += delta
+                        avgFrameTimeNanos += delta
+                        currentFrameTimeNanos = nanos
+                    }
                 }
             }
         }
@@ -328,9 +214,20 @@ class DanmakuHostState(
     }
 
     /**
-     * send a danmaku to the host.
+     * 发送弹幕到屏幕, 从最右侧开始向左滚动
      */
-    suspend fun send(danmaku: DanmakuPresentation) {
+    suspend fun trySend(danmaku: DanmakuPresentation): PositionedDanmakuState? {
+        return withContext(Dispatchers.Main.immediate) {
+            trySendWithTime(danmaku, elapsedFrameTimeNanos)
+        }
+    }
+
+    // 向指定帧时间的位置发送弹幕
+    @UiThread
+    private suspend fun trySendWithTime(
+        danmaku: DanmakuPresentation, 
+        placeFrameTimeNanos: Long
+    ): PositionedDanmakuState? {
         while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
             delay(100)
         }
@@ -346,51 +243,93 @@ class DanmakuHostState(
             )
         }
         
-        withContext(Dispatchers.Main.immediate) {
+        return withContext(Dispatchers.Main.immediate) {
             val positionedDanmakuState: PositionedDanmakuState? = when (danmaku.danmaku.location) {
                 DanmakuLocation.NORMAL -> floatingTrack.firstNotNullOfOrNull { track ->
-                    track.tryPlace(createDanmakuState())
+                    track.tryPlace(createDanmakuState(), placeFrameTimeNanos)
                 }
                 else -> (if (danmaku.danmaku.location == DanmakuLocation.TOP) topTrack else bottomTrack)
-                    .firstNotNullOfOrNull { track -> track.tryPlace(createDanmakuState()) }
+                    .firstNotNullOfOrNull { track -> track.tryPlace(createDanmakuState(), placeFrameTimeNanos) }
             }
             // if danmakuState is not null, it means successfully placed.
-            if (positionedDanmakuState != null) presentDanmaku.add(positionedDanmakuState)
+            positionedDanmakuState?.also(presentDanmaku::add)
+        }
+    }
+
+    /**
+     * 清空屏幕并填充 [list] 里的弹幕到屏幕
+     */
+    suspend fun repopulate(list: List<DanmakuPresentation>) {
+        if (list.isEmpty()) return
+        while (!::density.isInitialized || hostWidth == 0 ||
+            !::baseStyle.isInitialized || !::textMeasurer.isInitialized) delay(100)
+        
+        withContext(Dispatchers.Main.immediate) {
+            clearPresentDanmaku()
+
+            val floatingDanmaku = list.filter { it.danmaku.location == DanmakuLocation.NORMAL }
+            if (floatingDanmaku.isNotEmpty()) {
+                // list 弹幕的所有时间
+                val danmakuDurationMillis = list.last().danmaku.playTimeMillis - list.first().danmaku.playTimeMillis
+                // 弹幕从左滑倒右边需要的时间(毫秒)
+                val screenDurationMillis = hostWidth / with(density) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
+
+                // 我们先把 list 中第一条弹幕放到最左边
+                val firstDanmakuPlaceTimeNanos = elapsedFrameTimeNanos +
+                        (screenDurationMillis - ((screenDurationMillis - danmakuDurationMillis).coerceAtLeast(0) / 2)) * 1_000_000L
+                val firstDanmakuTimeMillis = list.first().danmaku.playTimeMillis
+
+                floatingDanmaku.map { danmaku ->
+                    val playTimeNanos = firstDanmakuPlaceTimeNanos +
+                            (danmaku.danmaku.playTimeMillis + firstDanmakuTimeMillis) * 1_000_000L
+                    trySendWithTime(danmaku, playTimeNanos)
+                }
+            }
+
+            // 非浮动弹幕直接放到当前时间即可
+            list
+                .filter { it.danmaku.location != DanmakuLocation.NORMAL }
+                .forEach { danmaku -> trySend(danmaku) }
+        }
+    }
+    
+    // 放置弹幕并指定放置的帧时间位置
+    @UiThread
+    private suspend fun repopulatePositioned(list: List<PositionedDanmakuState>) {
+        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) { delay(100) }
+        
+        withContext(Dispatchers.Main.immediate) {
+            clearPresentDanmaku()
+            for (danmaku in list) { 
+                trySendWithTime(danmaku.state.presentation, danmaku.placeFrameTimeNanos) 
+            }
+        }
+    }
+    
+    @UiThread
+    private fun clearPresentDanmaku() {
+        floatingTrack.forEach { it.clearAll() }
+        topTrack.forEach { it.clearAll() }
+        bottomTrack.forEach { it.clearAll() }
+
+        if (presentDanmaku.isNotEmpty()) {
+            logger.warn { "presentDanmaku is not totally cleared after releasing track. This may cause memory leak" }
+            presentDanmaku.clear()
         }
     }
 
     /**
      * 重置当前弹幕状态, 重新绘制弹幕
      */
+    @UiThread
     private suspend fun invalidate() {
         while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
             delay(100)
         }
-        
-        withContext(Dispatchers.Main.immediate) {
-            val currentPresentDanmakuPresentation = presentDanmaku.map { it.state.presentation }
-            repopulate(currentPresentDanmakuPresentation)
-        }
-    }
-    
-    suspend fun repopulate(list: List<DanmakuPresentation>) {
-        if (list.isEmpty()) return
-        
-        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
-            delay(100)
-        }
-        
-        withContext(Dispatchers.Main.immediate) {
-            floatingTrack.forEach { it.clearAll() }
-            topTrack.forEach { it.clearAll() }
-            bottomTrack.forEach { it.clearAll() }
-            
-            if (presentDanmaku.isNotEmpty()) {
-                logger.warn { "presentDanmaku is not totally cleared after releasing track. This may cause memory leak" }
-                presentDanmaku.clear()
-            }
 
-            for (danmaku in list) { send(danmaku) }
+        withContext(Dispatchers.Main.immediate) {
+            if (presentDanmaku.isEmpty()) return@withContext
+            repopulatePositioned(presentDanmaku)
         }
     }
     
@@ -400,35 +339,13 @@ class DanmakuHostState(
     }
 
     /**
-     * DanmakuState which is positioned and an be placed on [Canvas].
+     * DanmakuState which is positioned and can be placed on [Canvas].
      */
     interface PositionedDanmakuState {
         val state: DanmakuState
+        val placeFrameTimeNanos: Long
         
         fun calculatePosX(): Float
         fun calculatePosY(): Float
     }
-}
-
-internal fun dummyDanmaku(
-    measurer: TextMeasurer,
-    baseStyle: TextStyle,
-    style: DanmakuStyle,
-): DanmakuState {
-    return DanmakuState(
-        presentation = DanmakuPresentation(
-            Danmaku(
-                Uuid.randomString(),
-                "dummy",
-                0L, "1",
-                DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0,
-            ),
-            isSelf = false
-        ),
-        measurer = measurer,
-        baseStyle = baseStyle,
-        style = style,
-        enableColor = false,
-        isDebug = false
-    )
 }

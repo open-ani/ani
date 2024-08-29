@@ -104,7 +104,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     
     LaunchedEffect(true) {
         data.collect {
-            state.send(
+            state.trySend(
                 DanmakuPresentation(
                     it,
                     isSelf = Random.nextBoolean(),
@@ -121,7 +121,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             )
             Column(modifier = Modifier.padding(4.dp)) {
                 Text("emitted: $emitted")
-                Text("upstream time: ${upstreamCurrent}, current time millis: ${state.currentTimeMillis}")
+                Text("upstream time: ${upstreamCurrent}, elapsed frame time nanos: ${state.elapsedFrameTimeNanos}")
                 // Text("  gli: ${state.glitched}, delta: ${state.delta}, interpCurr: ${state.interpCurr}, interpUpst: ${state.interpUpst}")
                 // Text("frame version: ${state.frameVersion}")
                 // Text("frame time delta: ${state.delta}")

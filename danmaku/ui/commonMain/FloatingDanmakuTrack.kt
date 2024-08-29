@@ -1,10 +1,8 @@
 package me.him188.ani.danmaku.ui
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 
 /**
  * FloatingDanmakuTrack 中的弹幕在以下情况会移除:
@@ -15,7 +13,7 @@ import androidx.compose.runtime.State
 @Stable
 class FloatingDanmakuTrack(
     val trackIndex: Int,
-    private val currentTimeMillis: LongState,
+    override val frameTimeNanos: LongState,
     private val trackHeight: IntState,
     private val screenWidth: IntState,
     var speedPxPerSecond: Float,
@@ -27,17 +25,23 @@ class FloatingDanmakuTrack(
     
     // 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标
     // 如果有那说明此弹幕放置后可能会与已有弹幕重叠
-    override fun canPlace(danmaku: DanmakuState): Boolean {
+    override fun canPlace(
+        danmaku: DanmakuState,
+        placeTimeNanos: Long
+    ): Boolean {
         if (danmakuList.isEmpty()) return true
-        val upcomingDanmakuPosX = FloatingDanmaku(danmaku).calculatePosX()
+        val upcomingDanmakuPosX = FloatingDanmaku(danmaku, placeTimeNanos).calculatePosX()
         for (d in danmakuList.asReversed()) {
             if (d.calculatePosX() + d.state.textWidth + safeSeparation > upcomingDanmakuPosX) return false
         }
         return true
     }
     
-    override fun place(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState {
-        return FloatingDanmaku(danmaku).also { danmakuList.add(it) }
+    override fun place(
+        danmaku: DanmakuState,
+        placeTimeNanos: Long
+    ): DanmakuHostState.PositionedDanmakuState {
+        return FloatingDanmaku(danmaku, placeTimeNanos).also { danmakuList.add(it) }
     }
 
     override fun clearAll() {
@@ -62,12 +66,13 @@ class FloatingDanmakuTrack(
         return screenWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation
     }
     
-    @Immutable
+    @Stable
     inner class FloatingDanmaku(
         override val state: DanmakuState,
+        override val placeFrameTimeNanos: Long,
     ) : DanmakuHostState.PositionedDanmakuState {
         override fun calculatePosX(): Float {
-            val timeDiff = (currentTimeMillis.value - state.presentation.danmaku.playTimeMillis) / 1000f
+            val timeDiff = (frameTimeNanos.value - placeFrameTimeNanos) / 1_000_000_000f
             return screenWidth.value - timeDiff * speedPxPerSecond
         }
 

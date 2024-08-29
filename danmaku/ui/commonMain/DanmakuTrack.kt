@@ -1,9 +1,11 @@
 package me.him188.ani.danmaku.ui
 
+import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
 
 @Stable
 interface DanmakuTrack {
+    val frameTimeNanos: LongState
     val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
     
     /**
@@ -11,20 +13,29 @@ interface DanmakuTrack {
      *
      * @return A positioned danmaku which can be placed on danmaku host.
      */
-    fun place(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState
+    fun place(
+        danmaku: DanmakuState,
+        placeTimeNanos: Long = frameTimeNanos.value
+    ): DanmakuHostState.PositionedDanmakuState
 
     /**
      * check if this track can place danmaku.
      */
-    fun canPlace(danmaku: DanmakuState): Boolean
+    fun canPlace(
+        danmaku: DanmakuState,
+        placeTimeNanos: Long = frameTimeNanos.value
+    ): Boolean
 
     /**
      * try to place a danmaku. there are reasons that the upcoming danmaku cannot be placed.
      * - [canPlace]
      */
-    fun tryPlace(danmaku: DanmakuState): DanmakuHostState.PositionedDanmakuState? {
-        if (!canPlace(danmaku)) return null
-        return place(danmaku)
+    fun tryPlace(
+        danmaku: DanmakuState,
+        placeTimeNanos: Long = frameTimeNanos.value
+    ): DanmakuHostState.PositionedDanmakuState? {
+        if (!canPlace(danmaku, placeTimeNanos)) return null
+        return place(danmaku, placeTimeNanos)
     }
 
     /**

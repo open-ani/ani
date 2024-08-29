@@ -17,7 +17,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import me.him188.ani.utils.platform.Uuid
 import me.him188.ani.utils.platform.format2f
 
 /**
@@ -82,4 +85,27 @@ fun DrawScope.drawDanmakuText(
 @Suppress("NOTHING_TO_INLINE")
 private inline fun rgbColor(value: Long): Color {
     return Color(0xFF_00_00_00L or value)
+}
+
+internal fun dummyDanmaku(
+    measurer: TextMeasurer,
+    baseStyle: TextStyle,
+    style: DanmakuStyle,
+): DanmakuState {
+    return DanmakuState(
+        presentation = DanmakuPresentation(
+            Danmaku(
+                Uuid.randomString(),
+                "dummy",
+                0L, "1",
+                DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0,
+            ),
+            isSelf = false
+        ),
+        measurer = measurer,
+        baseStyle = baseStyle,
+        style = style,
+        enableColor = false,
+        isDebug = false
+    )
 }
