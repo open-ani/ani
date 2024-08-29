@@ -292,7 +292,11 @@ Android Studio 的调试器同时支持调试 Kotlin 和 C++ 代码 (torrent 部
 
 ### 运行 iOS APP
 
-TODO
+只有 macOS 才能运行 iOS APP. 需要先在 App Store 安装 Xcode 并打开一次同意 Xcode 的协议.
+
+如果提示找不到模拟器, 请安装一个 iPhone 15 模拟器.
+
+在 Android Studio 中, 选择运行配置 `Run iOS Debug`, 点击按钮运行即可.
 
 ### 常见构建和运行问题
 
