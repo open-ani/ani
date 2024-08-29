@@ -18,8 +18,8 @@ class FloatingDanmakuTrack(
     private val currentTimeMillis: LongState,
     private val trackHeight: IntState,
     private val screenWidth: IntState,
-    private val speedPxPerSecond: Float,
-    private val safeSeparation: Float,
+    var speedPxPerSecond: Float,
+    var safeSeparation: Float,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {

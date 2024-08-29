@@ -125,24 +125,30 @@ class DanmakuHostState(
                 if (trackHeight != trackHeightState.value) {
                     trackHeightState.value = trackHeight
                 }
-                setTrackCount(trackCount, config, density)
+                updateTrack(trackCount, config, density)
             }
     }
 
     /**
-     * 更新轨道数量, 会导致 [invalidate]
+     * 更新弹幕轨道信息, 更新完成后调用 [invalidate] 显示新的信息.
      */
-    private suspend fun setTrackCount(count: Int, config: DanmakuConfig, density: Density) {
+    private suspend fun updateTrack(count: Int, config: DanmakuConfig, density: Density) {
+        val newFloatingTrackSpeed = with(density) { danmakuConfig.speed.dp.toPx() }
+        val newFloatingTrackSafeSeparation = with(density) { danmakuConfig.safeSeparation.toPx() }
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
                 trackIndex = index,
                 currentTimeMillis = currentTimeMillisState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState, 
-                speedPxPerSecond = with(density) { danmakuConfig.speed.dp.toPx() },
-                safeSeparation = with(density) { danmakuConfig.safeSeparation.toPx() },
+                speedPxPerSecond = newFloatingTrackSpeed,
+                safeSeparation = newFloatingTrackSafeSeparation,
                 onRemoveDanmaku = { removed -> presentDanmaku.remove(removed) }
             )
+        }
+        floatingTrack.forEach {
+            it.speedPxPerSecond = newFloatingTrackSpeed
+            it.safeSeparation = newFloatingTrackSafeSeparation
         }
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
@@ -302,7 +308,7 @@ class DanmakuHostState(
                         val delta = millis - lastFrameTime
                         // this@DanmakuHostState.delta = delta // test only
 
-                        val interpolated = current1 + delta + (upstream1 - current1) / 2
+                        val interpolated = current1 + delta + (upstream1 - current1).coerceAtLeast(0) / 2
                         this@DanmakuHostState.currentTimeMillis = interpolated
 
                         // this@DanmakuHostState.interpCurr = current1 // test only
@@ -403,6 +409,9 @@ class DanmakuHostState(
      */
     interface PositionedDanmakuState {
         val state: DanmakuState
+        
+       // val posX: Float
+       // val posY: Float
         
         fun calculatePosX(): Float
         fun calculatePosY(): Float
