@@ -35,7 +35,6 @@ import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.platform.window.WindowUtils
 import me.him188.ani.utils.io.SystemPath
@@ -106,11 +105,10 @@ actual fun isInLandscapeMode(): Boolean = false
 actual fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Boolean) {
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
-    WindowUtils.setFullscreen(window, fullscreen)
+    windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
     if (currentPlatform is Platform.Windows) {
+        WindowUtils.setUndecorated(window, fullscreen)
         window.didSetFullscreen = true
-    } else {
-        windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
     }
 }
 
@@ -124,11 +122,7 @@ internal actual val Context.filesImpl: ContextFiles
 actual fun isSystemInFullscreenImpl(): Boolean {
     val context = LocalDesktopContext.current
     // should be true
-    if (currentPlatform is Platform.Windows) {
-        return LocalPlatformWindow.current.didSetFullscreen
-    } else {
-        val placement by rememberUpdatedState(context.windowState.placement)
-        val isFullscreen by remember { derivedStateOf { placement == WindowPlacement.Fullscreen } }
-        return isFullscreen
-    }
+    val placement by rememberUpdatedState(context.windowState.placement)
+    val isFullscreen by remember { derivedStateOf { placement == WindowPlacement.Fullscreen } }
+    return isFullscreen
 }

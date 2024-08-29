@@ -17,7 +17,7 @@ interface WindowUtils {
         return false
     }
 
-    fun setFullscreen(window: PlatformWindow, fullscreen: Boolean) {
+    fun setUndecorated(window: PlatformWindow, undecorated: Boolean) {
     }
 
     fun setPreventScreenSaver(prevent: Boolean) {
