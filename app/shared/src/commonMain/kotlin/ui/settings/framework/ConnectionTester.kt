@@ -118,7 +118,7 @@ fun SettingsScope.MediaSourceTesterView(
     },
     icon: (@Composable () -> Unit)? = {
         Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-            MediaSourceIcon(info?.imageUrl, Modifier.matchParentSize())
+            MediaSourceIcon(info, Modifier.matchParentSize())
         }
     },
 ) {
