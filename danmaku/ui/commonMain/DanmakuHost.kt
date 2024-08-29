@@ -2,8 +2,10 @@ package me.him188.ani.danmaku.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -59,4 +61,12 @@ fun DanmakuHost(
             }
         }
     }
+    // Column(modifier = modifier.fillMaxSize()) {
+    //     Text("progressTickRestartEvent: ${state.restartEvent}")
+    //     Text("delta: ${state.delta}")
+    //     Text("elapsedFrame: ${state.elapsedFrame}")
+    //     Text("elapsedFramePercent: ${state.elapsedFramePercent}")
+    //     Text("totalDiff: ${state.totalDiff}")
+    //     Text("totalPercent: ${state.totalPercent}")
+    // }
 }

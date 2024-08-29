@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -32,9 +33,9 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import me.him188.ani.utils.platform.Uuid
+import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.concurrent.Volatile
 import kotlin.math.absoluteValue
-import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
@@ -93,12 +94,12 @@ class DanmakuHostState(
     // internal var presetDanmakuCount: Int by mutableIntStateOf(0)
     
     // test only prop
-    // internal var glitched: Int by mutableIntStateOf(0)
     // internal var delta: Long by mutableLongStateOf(0)
-    // internal var frameVersion: Long by mutableLongStateOf(0)
-    // internal var interpCurr: Long by mutableLongStateOf(0)
-    // internal var interpUpst: Long by mutableLongStateOf(0)
     // internal var restartEvent: String by mutableStateOf("")
+    // internal var elapsedFrame: Long by mutableLongStateOf(0)
+    // internal var elapsedFramePercent: Double by mutableDoubleStateOf(0.0)
+    // internal var totalDiff: Long by mutableLongStateOf(0)
+    // internal var totalPercent: Double by mutableDoubleStateOf(0.0)
     
     /**
      * 监听 轨道数量, 轨道高度 和 弹幕配置项目的变化
@@ -193,13 +194,16 @@ class DanmakuHostState(
     @UiThread
     internal suspend fun interpolateFrameLoop() {
         var elapsedFrame = ElapsedFrame.zero()
+        val progressTickTime = FastLongSumQueue(50)
+        var currentUpstreamTickTime = 0L
         
         progress.map { it.inWholeMilliseconds }.collectLatest { upstreamTimeMillis ->
             val currentTimeMillis = currentTimeMillis
-            val lastInterpolationAvgFrameTime = elapsedFrame.avg()
-            var glitched = false
+            val lastIntpAvgFrameTime = elapsedFrame.avg()
+            val progressTickAvgTime = progressTickTime.avg()
 
-            // restartEvent = "c: $current, u: $upstream, a: $avgFrameTime"
+            // restartEvent = "lastIntpAvgFrameTime: $lastIntpAvgFrameTime, progressTickAvgTime: $progressTickAvgTime\n" +
+            //         "current: $currentTimeMillis, upstream: $upstreamTimeMillis"
 
             var interpolationBase = when {
                 /**
@@ -219,22 +223,21 @@ class DanmakuHostState(
                  * ->> |-------------------^----------------------------------------|
                  *                     upstream
                  */
-                currentTimeMillis == upstreamTimeMillis -> {
-                    currentTimeMillis
-                }
+                currentTimeMillis == upstreamTimeMillis -> { currentTimeMillis }
                 /**
-                 * current 和 upstream 的差小于 3 * 平均帧时间
-                 * 通过插值来更新 current 以逼近 upstream, 插值更新会改变 current 的速度.
-                 * 为什么阈值是 3 倍帧时间?
-                 * - 突然的帧时间波动随时可能发生, 在可接受的范围内插值不会在视觉上感受到弹幕的速度变快或变慢.
+                 * current 和 upstream 的差小于上一次插值循环的帧时间
+                 * 每次插值循环的总帧时间是趋于稳定的, 所以我们使用前一次插值循环的总帧时间来作为这一次的抖动判断.
+                 * 
+                 * 如果 current 与 upstream 的差小于前一次插值循环的总帧时间, 
+                 * 根据预测可以判断通过插值可以让 current 在这一个插值循环中完全逼近 upstream
                  *
                  *                     current
                  * ->> |-------------------v----------------------------------------|
                  * ->> |------------(--^------------)-------------------------------|
-                 *                 upstream         ^ 3 * avgFrameTime
+                 *                 upstream         ^ lastIntpTotalFrameTime
                  */
-                (currentTimeMillis - upstreamTimeMillis).absoluteValue <= lastInterpolationAvgFrameTime * 3 -> {
-                    max(currentTimeMillis, upstreamTimeMillis)
+                (currentTimeMillis - upstreamTimeMillis).absoluteValue <= progressTickAvgTime -> {
+                    currentTimeMillis
                 }
                 /**
                  * current 和 upstream 差别过大, 可能原因:
@@ -245,81 +248,73 @@ class DanmakuHostState(
                  *                     current
                  * ->> |-------------------v----------------------------------------|
                  * ->> |-^--(---------------)---------------------------------------|
-                 *     upstream             ^ avgFrameTime
+                 *     upstream             ^ lastIntpTotalFrameTime
                  */
                 else -> {
-                    glitched = true
+                    logger.warn { " diff = ${upstreamTimeMillis - currentTimeMillis}" }
                     upstreamTimeMillis.also { this@DanmakuHostState.currentTimeMillis = it }
                 }
             }
+
 
             // this@DanmakuHostState.glitched = if (glitched) 1 else 0 // test only
 
             // 在这里使用了一帧的时间获取当前帧的时间，用上一次插值的平均帧时间补偿这一帧的运动
             var lastFrameTime = withFrameMillis {
                 // frameVersion += 1 // test only
-                interpolationBase += lastInterpolationAvgFrameTime
+                interpolationBase += lastIntpAvgFrameTime
                 this@DanmakuHostState.currentTimeMillis = interpolationBase
+                
+                if (currentUpstreamTickTime != 0L) progressTickTime += it - currentUpstreamTickTime
+                currentUpstreamTickTime = it
+                
                 it
             }
+            
             elapsedFrame = ElapsedFrame.zero()
+            val timeDiff = upstreamTimeMillis - interpolationBase // interpolationBase = currentTimeMillis
+            // this@DanmakuHostState.totalDiff = totalDiff // test only
+            
+            // 根据上一次插帧循环总帧时间预测这一次的插帧进度
+            while (true) {
+                /**
+                 * 在每一帧进行插值, 使 current 更逼近 upstream.
+                 * 插值会导致 current 增加的速率发生变化: 如果 current < upstream, 那速度会稍微加快.
+                 *
+                 * case 1: current < upstream
+                 *
+                 *                      interp        interp
+                 *       curr       (next)|       (next)|
+                 * ->>----|v-----------|v-*-----------|v*----------------
+                 * ->>----------|^-----------|^-----------|^-------------
+                 *           upstream      (next)       (next)
+                 *
+                 * case 2: current > upstream
+                 *
+                 *                      interp     interp
+                 *             curr       |(next)    |(next)
+                 * ->>----------|v--------*--|v------*|v-----------------
+                 * ->>----|^-----------|^-----------|^-------------------
+                 *     upstream      (next)       (next)
+                 */
+                withFrameMillis { millis ->
+                    val delta = millis - lastFrameTime
+                    // this@DanmakuHostState.delta = delta // test only
+                    elapsedFrame += delta
+                    
+                    // this@DanmakuHostState.elapsedFrame = elapsedFrame.sum() // test only
+                    // this@DanmakuHostState.elapsedFramePercent = elapsedFrame.sum() / progressTickAvgTime.toDouble() // test only
 
+                    // 使用 20 个 progress tick 时间来预测
+                    // 也就是我们假设接下来 20 个 progress tick upstream 和 current 是完全同步的
+                    val elapsedFramePercent = if (progressTickAvgTime == 0L) 0.0 else
+                            (elapsedFrame.sum() / progressTickAvgTime.toDouble()).coerceAtMost(1.0) / 20.0
+                    this@DanmakuHostState.currentTimeMillis =
+                        interpolationBase + (elapsedFramePercent * 20 * progressTickAvgTime + timeDiff).toLong()
+                    
+                    // this@DanmakuHostState.totalPercent = elapsedFramePercent // test only
 
-            if (glitched) {
-                // 如果弹幕抖动就不用插值.
-                while (true) {
-                    withFrameMillis { millis ->
-                        // frameVersion += 1
-                        val delta = millis - lastFrameTime
-                        // this@DanmakuHostState.delta = delta // test only
-
-                        this@DanmakuHostState.currentTimeMillis += delta // update state
-
-                        elapsedFrame = elapsedFrame.addDelta(delta)
-                        lastFrameTime = millis
-                    }
-                }
-            } else {
-                var current1 = interpolationBase
-                var upstream1 = upstreamTimeMillis
-
-                while (true) {
-                    /**
-                     * 在每一帧进行插值, 使 current 更逼近 upstream.
-                     * 插值会导致 current 增加的速率发生变化: 如果 current < upstream, 那速度会稍微加快.
-                     *
-                     * case 1: current < upstream
-                     *
-                     *                      interp        interp
-                     *       curr       (next)|       (next)|
-                     * ->>----|v-----------|v-*-----------|v*----------------
-                     * ->>----------|^-----------|^-----------|^-------------
-                     *           upstream      (next)       (next)
-                     *
-                     * case 2: current > upstream
-                     *
-                     *                      interp     interp
-                     *             curr       |(next)    |(next)
-                     * ->>----------|v--------*--|v------*|v-----------------
-                     * ->>----|^-----------|^-----------|^-------------------
-                     *     upstream      (next)       (next)
-                     */
-                    withFrameMillis { millis ->
-                        val delta = millis - lastFrameTime
-                        // this@DanmakuHostState.delta = delta // test only
-
-                        val interpolated = current1 + delta + (upstream1 - current1).coerceAtLeast(0) / 2
-                        this@DanmakuHostState.currentTimeMillis = interpolated
-
-                        // this@DanmakuHostState.interpCurr = current1 // test only
-                        // this@DanmakuHostState.interpUpst = upstream1 // test only
-
-                        current1 = interpolated
-                        upstream1 += delta
-
-                        elapsedFrame = elapsedFrame.addDelta(delta)
-                        lastFrameTime = millis
-                    }
+                    lastFrameTime = millis
                 }
             }
         }
@@ -367,7 +362,7 @@ class DanmakuHostState(
     /**
      * 重置当前弹幕状态, 重新绘制弹幕
      */
-    suspend fun invalidate() {
+    private suspend fun invalidate() {
         while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
             delay(100)
         }
@@ -409,9 +404,6 @@ class DanmakuHostState(
      */
     interface PositionedDanmakuState {
         val state: DanmakuState
-        
-       // val posX: Float
-       // val posY: Float
         
         fun calculatePosX(): Float
         fun calculatePosY(): Float

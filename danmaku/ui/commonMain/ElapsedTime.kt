@@ -7,11 +7,15 @@ import kotlin.jvm.JvmInline
 @JvmInline
 internal value class ElapsedFrame private constructor(private val packed: Long) {
     constructor(time: Long, count: Int) : this((time shl 32) or count.toLong())
-
-    fun addDelta(delta: Long): ElapsedFrame {
+    
+    operator fun plus(delta: Long): ElapsedFrame {
         var time = packed shr 32
         time += delta
         return ElapsedFrame((time shl 32) or (packed and 0x0000_0000_ffff_ffff) + 1)
+    }
+    
+    fun sum(): Long {
+        return packed shr 32
     }
 
     fun avg(): Long {

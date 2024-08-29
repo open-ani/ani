@@ -18,11 +18,11 @@ class ElapsedFrameTest {
     @Test
     fun testIncremental() {
         var elapsedFrame = ElapsedFrame(0, 0)
-        elapsedFrame = elapsedFrame.addDelta(100)
+        elapsedFrame += 100
         assertEquals(100, elapsedFrame.avg())
-        elapsedFrame = elapsedFrame.addDelta(100)
+        elapsedFrame += 100
         assertEquals(100, elapsedFrame.avg())
-        elapsedFrame = elapsedFrame.addDelta(31)
+        elapsedFrame += 31
         assertEquals(77, elapsedFrame.avg())
     }
 }
