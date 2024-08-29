@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
@@ -102,13 +103,23 @@ inline fun Context.checkIsDesktop(): DesktopContext {
 @Composable
 actual fun isInLandscapeMode(): Boolean = false
 
-actual fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Boolean) {
+actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Boolean) {
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
-    windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
     if (currentPlatform is Platform.Windows) {
+        if (fullscreen) {
+            if (windowState.placement == WindowPlacement.Fullscreen) return
+            windowState.placement = WindowPlacement.Maximized
+            withFrameMillis { }
+            windowState.placement = WindowPlacement.Fullscreen
+            withFrameMillis { }
+        } else {
+            windowState.placement = WindowPlacement.Floating
+        }
         WindowUtils.setUndecorated(window, fullscreen)
         window.didSetFullscreen = true
+    } else {
+        windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
     }
 }
 
