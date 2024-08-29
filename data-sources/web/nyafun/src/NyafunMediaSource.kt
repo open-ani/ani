@@ -88,6 +88,7 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
             displayName = "Nyafun",
             websiteUrl = BASE_URL,
             imageUrl = "https://files.superbed.cn/proxy/7468686c6f26333378737f75717b2f3278737f6f326d6d327f73713375717d7b79335d7b5d5d5f2a6931484a4c5d71757f28666d4650502b682c28702f4b2b566a6c326c727b",
+            imageResourceId = "nyafun.png",
         )
 
         // https://www.nyafun.net/search.html?wd=girls%20band%20cry

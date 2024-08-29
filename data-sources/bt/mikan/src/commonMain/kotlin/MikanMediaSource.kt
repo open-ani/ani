@@ -90,6 +90,7 @@ class MikanCNMediaSource(
             displayName = "蜜柑计划",
             websiteUrl = BASE_URL,
             imageUrl = "https://mikanani.me/images/mikan-pic.png",
+            imageResourceId = "mikan.png",
         )
     }
 
@@ -120,6 +121,7 @@ class MikanMediaSource(
             displayName = "蜜柑计划",
             websiteUrl = BASE_URL,
             imageUrl = "https://mikanani.me/images/mikan-pic.png",
+            imageResourceId = "mikan.png",
         )
     }
 

@@ -49,6 +49,7 @@ class DmhyMediaSource(
             displayName = "動漫花園",
             description = "动漫资源聚合网站",
             imageUrl = "https://dmhy.org/favicon.ico",
+            imageResourceId = "dmhy.png",
         )
     }
 

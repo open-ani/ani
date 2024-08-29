@@ -47,6 +47,7 @@ class MxdongmanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource(
             "MX 动漫",
             websiteUrl = BASE_URL,
             imageUrl = "$BASE_URL/favicon.ico",
+            imageResourceId = "mxdongman.png",
         )
     }
 

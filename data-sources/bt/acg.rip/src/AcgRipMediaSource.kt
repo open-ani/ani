@@ -65,6 +65,7 @@ class AcgRipMediaSource(
             "ACG.RIP",
             websiteUrl = "https://acg.rip",
             imageUrl = "https://acg.rip/favicon.ico",
+            imageResourceId = "acg-rip.png",
         )
     }
 

@@ -54,6 +54,7 @@ class XfdmMediaSource(
             displayName = "稀饭动漫",
             websiteUrl = BASE_URL,
             imageUrl = "$BASE_URL/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
+            imageResourceId = "xfdm.png",
         )
     }
 
