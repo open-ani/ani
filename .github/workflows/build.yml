@@ -150,9 +150,11 @@ jobs:
         if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
         run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
 
+      - name: Compile Kotlin
+        run: ./gradlew compileKotlin ${{ env.gradleArgs }}
+
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
-
 
       - if: ${{ matrix.uploadApk }}
         name: Build Android Debug APK
