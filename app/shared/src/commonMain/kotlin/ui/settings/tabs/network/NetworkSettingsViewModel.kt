@@ -24,12 +24,14 @@ import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
+import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.seconds
@@ -42,10 +44,11 @@ class MediaSourcePresentation(
     val instanceId: String,
     val isEnabled: Boolean,
     val mediaSourceId: String,
+    val factoryId: FactoryId,
     val info: MediaSourceInfo,
     val parameters: MediaSourceParameters,
     val connectionTester: ConnectionTester,
-    val instance: MediaSourceInstance
+    val instance: MediaSourceInstance,
 )
 
 /**
@@ -53,7 +56,7 @@ class MediaSourcePresentation(
  */
 @Immutable
 class MediaSourceTemplate(
-    val mediaSourceId: String,
+    val factoryId: FactoryId,
     val info: MediaSourceInfo,
     val parameters: MediaSourceParameters
 )
@@ -72,11 +75,12 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     val mediaSourcesFlow = mediaSourceManager.allInstances
         .map { instances ->
             instances.mapNotNull { instance ->
-                val factory = findFactory(instance.source.mediaSourceId) ?: return@mapNotNull null
+                val factory = findFactory(instance.factoryId) ?: return@mapNotNull null
                 MediaSourcePresentation(
                     instanceId = instance.instanceId,
                     isEnabled = instance.isEnabled,
                     mediaSourceId = instance.source.mediaSourceId,
+                    factoryId = instance.factoryId,
                     info = instance.source.info,
                     parameters = factory.parameters,
                     connectionTester = ConnectionTester(
@@ -99,11 +103,11 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     val availableMediaSourceTemplates by mediaSourcesFlow.map { mediaSources ->
         mediaSourceManager.allFactories.mapNotNull { factory ->
-            if (!factory.allowMultipleInstances && mediaSources.any { it.mediaSourceId == factory.mediaSourceId }) {
+            if (!factory.allowMultipleInstances && mediaSources.any { it.factoryId == factory.factoryId }) {
                 return@mapNotNull null
             }
             MediaSourceTemplate(
-                mediaSourceId = factory.mediaSourceId,
+                factoryId = factory.factoryId,
                 info = factory.info,
                 parameters = factory.parameters,
             )
@@ -117,6 +121,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         )
     }
 
+    // do not add more, check ui first.
     val otherTesters = Testers(
         listOf(
             ConnectionTester(
@@ -142,10 +147,11 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     fun startAdding(template: MediaSourceTemplate): EditMediaSourceState {
         cancelEdit()
         val state = EditMediaSourceState(
-            mediaSourceId = template.mediaSourceId,
+            editingMediaSourceId = null,
+            factoryId = template.factoryId,
             info = template.info,
             parameters = template.parameters,
-            persistedArguments = flowOf(MediaSourceConfig.Default),
+            persistedArguments = flowOf(MediaSourceConfig()),
             editType = EditType.Add,
             backgroundScope.coroutineContext,
         )
@@ -156,7 +162,8 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     fun startEditing(presentation: MediaSourcePresentation) {
         cancelEdit()
         editMediaSourceState = EditMediaSourceState(
-            mediaSourceId = presentation.mediaSourceId,
+            editingMediaSourceId = presentation.mediaSourceId,
+            factoryId = presentation.factoryId,
             info = presentation.info,
             parameters = presentation.parameters,
             persistedArguments = mediaSourceManager.instanceConfigFlow(presentation.instanceId),
@@ -170,7 +177,8 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             EditType.Add -> {
                 launchInBackground {
                     mediaSourceManager.addInstance(
-                        state.mediaSourceId,
+                        Uuid.randomString(),
+                        state.factoryId,
                         state.createConfig(),
                     )
                     withContext(Dispatchers.Main) { cancelEdit() }
@@ -194,8 +202,8 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         editMediaSourceState = null
     }
 
-    private fun findFactory(mediaSourceId: String): MediaSourceFactory? {
-        return mediaSourceManager.allFactories.find { it.mediaSourceId == mediaSourceId }
+    private fun findFactory(factoryId: FactoryId): MediaSourceFactory? {
+        return mediaSourceManager.allFactories.find { it.factoryId == factoryId }
     }
 
     fun deleteMediaSource(item: MediaSourcePresentation) {

@@ -40,40 +40,40 @@ import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.subject.episode.details.renderProperties
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaSourceInfo
 
 /**
  * 视频统计信息, 用于获取当前播放器正在播放的视频的来源 [Media] 和文件名, 以及弹幕信息.
  */
 @Stable
-abstract class VideoStatistics {
+class VideoStatistics(
+    playingMedia: State<Media?>,
+    playingMediaSourceInfo: State<MediaSourceInfo?>,
+    playingFilename: State<String?>,
+    mediaSourceLoading: State<Boolean>,
+    videoLoadingState: State<VideoLoadingState>,
+) {
     /**
      * [MediaFetcher] 的所有数据源是否都已经加载完成.
      */
-    abstract val mediaSourceLoading: Boolean
+    val mediaSourceLoading by mediaSourceLoading
 
     /**
      * 从 [MediaSelector] 选择后就有
      */
-    abstract val playingMedia: Media?
+    val playingMedia by playingMedia
+
+    /**
+     * [playingMedia] 所属的 [MediaSourceInfo]
+     */
+    val playingMediaSourceInfo: MediaSourceInfo? by playingMediaSourceInfo
+
 
     /**
      * 要播放器获取到视频文件后才有
      */
-    abstract val playingFilename: String?
-    abstract val videoLoadingState: VideoLoadingState
-}
-
-@Stable
-class DelegateVideoStatistics(
-    playingMedia: State<Media?>,
-    playingFilename: State<String?>,
-    mediaSourceLoading: State<Boolean>,
-    videoLoadingState: State<VideoLoadingState>,
-) : VideoStatistics() {
-    override val mediaSourceLoading by mediaSourceLoading
-    override val playingMedia by playingMedia
-    override val playingFilename by playingFilename
-    override val videoLoadingState by videoLoadingState
+    val playingFilename by playingFilename
+    val videoLoadingState by videoLoadingState
 }
 
 @Composable

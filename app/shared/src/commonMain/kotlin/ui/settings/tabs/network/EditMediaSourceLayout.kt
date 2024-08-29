@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.BooleanParameter
@@ -57,13 +58,21 @@ sealed class EditType {
 
 @Stable
 class EditMediaSourceState(
-    val mediaSourceId: String,
+    val editingMediaSourceId: String?,
+    val factoryId: FactoryId,
     val info: MediaSourceInfo,
     val parameters: MediaSourceParameters,
     persistedArguments: Flow<MediaSourceConfig>, // 加载会有延迟
     val editType: EditType,
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), Closeable {
+    init {
+        check(if (editType is EditType.Edit) editingMediaSourceId != null else editingMediaSourceId == null) {
+            "Invalid edit type and editingMediaSourceId: $editType, $editingMediaSourceId"
+        }
+    }
+
+
     val arguments = parameters.list.map { param ->
         when (param) {
             is BooleanParameter -> BooleanArgumentState(param)
@@ -105,7 +114,7 @@ sealed class ArgumentState(
 class StringArgumentState(
     val parameter: StringParameter,
 ) : ArgumentState(parameter) {
-    var value: String by mutableStateOf(parameter.default)
+    var value: String by mutableStateOf(parameter.default())
     override val isError: Boolean by derivedStateOf { !parameter.validate(value) }
 
     override fun loadFromPersisted(value: String?) {
@@ -119,11 +128,11 @@ class StringArgumentState(
 class BooleanArgumentState(
     private val origin: BooleanParameter,
 ) : ArgumentState(origin) {
-    var value: Boolean by mutableStateOf(origin.default)
+    var value: Boolean by mutableStateOf(origin.default())
     override val isError: Boolean get() = false
 
     override fun loadFromPersisted(value: String?) {
-        this.value = value?.toBooleanStrictOrNull() ?: origin.default
+        this.value = value?.toBooleanStrictOrNull() ?: origin.default()
     }
 
     override fun toPersisted() = value.toString()
@@ -134,11 +143,11 @@ class SimpleEnumArgumentState(
     private val origin: SimpleEnumParameter,
 ) : ArgumentState(origin) {
     val options get() = origin.oneOf
-    var value: String by mutableStateOf(origin.default)
+    var value: String by mutableStateOf(origin.default())
     override val isError: Boolean by derivedStateOf { value !in origin.oneOf }
 
     override fun loadFromPersisted(value: String?) {
-        this.value = value.takeIf { it in origin.oneOf } ?: origin.default
+        this.value = value.takeIf { it in origin.oneOf } ?: origin.default()
     }
 
     override fun toPersisted() = value
@@ -186,6 +195,7 @@ internal fun EditMediaSourceDialog(
                                 value = argument.value,
                                 onValueChange = { argument.value = argument.parameter.sanitize(it) },
                                 label = { Text(argument.name) },
+                                placeholder = argument.parameter.placeholder?.let { { Text(it) } },
                                 supportingText = argument.description?.let { { Text(it) } },
                                 isError = argument.isError,
                                 shape = MaterialTheme.shapes.medium,

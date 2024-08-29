@@ -25,13 +25,15 @@ open class MediaSourceParametersBuilder {
      */
     fun string(
         name: String,
-        default: String? = null,
+        defaultProvider: (() -> String)? = null,
         description: String? = null,
+        placeholder: String? = null,
     ): StringParameter {
         val param = StringParameter(
             name, description,
-            default = default ?: "",
-            isRequired = default == null,
+            default = defaultProvider ?: { "" },
+            isRequired = defaultProvider == null,
+            placeholder = placeholder,
         )
         add(param)
         return param
@@ -45,7 +47,7 @@ open class MediaSourceParametersBuilder {
         default: Boolean,
         description: String? = null,
     ): BooleanParameter {
-        val param = BooleanParameter(name, description, default)
+        val param = BooleanParameter(name, description) { default }
         add(param)
         return param
     }
@@ -59,7 +61,7 @@ open class MediaSourceParametersBuilder {
         default: String,
         description: String? = null,
     ): SimpleEnumParameter {
-        val param = SimpleEnumParameter(name, oneOf, description, default)
+        val param = SimpleEnumParameter(name, oneOf, description) { default }
         add(param)
         return param
     }
@@ -81,4 +83,3 @@ open class MediaSourceParametersBuilder {
 
     fun build(): MediaSourceParameters = MediaSourceParameters(list)
 }
-

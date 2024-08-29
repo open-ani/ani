@@ -27,21 +27,23 @@ import kotlin.coroutines.CoroutineContext
 
 fun MediaSelectorPresentation(
     mediaSelector: MediaSelector,
+    mediaSourceInfoProvider: MediaSourceInfoProvider,
     parentCoroutineContext: CoroutineContext,
 ): MediaSelectorPresentation = MediaSelectorPresentationImpl(
-    mediaSelector, parentCoroutineContext,
+    mediaSelector, mediaSourceInfoProvider, parentCoroutineContext,
 )
 
 @Composable
 fun rememberMediaSelectorPresentation(
-    mediaSelector: () -> MediaSelector // lambda remembered
+    mediaSourceInfoProvider: MediaSourceInfoProvider,
+    mediaSelector: () -> MediaSelector,// lambda remembered
 ): MediaSelectorPresentation {
     val scope = rememberBackgroundScope()
     val selector by remember {
         derivedStateOf(mediaSelector)
     }
     return remember {
-        MediaSelectorPresentation(selector, scope.backgroundScope.coroutineContext)
+        MediaSelectorPresentation(selector, mediaSourceInfoProvider, scope.backgroundScope.coroutineContext)
     }
 }
 
@@ -50,6 +52,8 @@ fun rememberMediaSelectorPresentation(
  */
 @Stable
 interface MediaSelectorPresentation : AutoCloseable {
+    val mediaSourceInfoProvider: MediaSourceInfoProvider
+
     /**
      * The list of media available for selection.
      */
@@ -117,6 +121,7 @@ fun <T : Any> MediaPreferenceItemPresentation<T>.preferOrRemove(value: T?) {
  */
 internal class MediaSelectorPresentationImpl(
     private val mediaSelector: MediaSelector,
+    override val mediaSourceInfoProvider: MediaSourceInfoProvider,
     parentCoroutineContext: CoroutineContext,
 ) : MediaSelectorPresentation, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     override val mediaList: List<Media> by mediaSelector.mediaList.produceState(emptyList())
@@ -171,6 +176,7 @@ private fun createState(backgroundScope: CoroutineScope) =
             savedDefaultPreference = flowOf(MediaPreference.Empty),
             mediaSelectorSettings = flowOf(MediaSelectorSettings.Default),
         ),
+        createTestMediaSourceInfoProvider(),
         backgroundScope.coroutineContext,
     )
 

@@ -14,12 +14,12 @@ import kotlinx.serialization.json.put
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.source.media.createTestDefaultMedia
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.torrent.anitorrent.session.AnitorrentDownloadSession
 import me.him188.ani.app.torrent.anitorrent.test.TestAnitorrentTorrentDownloader
-import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
@@ -88,7 +88,7 @@ class DirectoryMediaCacheStorageTest {
         )
     }
 
-    private val media = DefaultMedia(
+    private val media = createTestDefaultMedia(
         mediaId = "dmhy.2",
         mediaSourceId = "dmhy",
         originalTitle = "夜晚的水母不会游泳 02 测试剧集",

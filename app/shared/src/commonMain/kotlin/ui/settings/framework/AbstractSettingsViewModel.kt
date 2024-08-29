@@ -116,13 +116,14 @@ abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
     class SingleTester<T>(
         tester: Tester<T>,
         backgroundScope: CoroutineScope,
-    ) : Testers<T>(listOf(tester), backgroundScope) {
+    ) : Testers<Tester<T>>(listOf(tester), backgroundScope) {
         val tester get() = testers.single()
     }
 
+    // 堆屎咯
     @Stable
-    open class Testers<T>(
-        val testers: List<Tester<T>>,
+    open class Testers<TT : Tester<*>>(
+        val testers: List<TT>,
         backgroundScope: CoroutineScope,
     ) {
         private val testScope = MonoTasker(backgroundScope)
