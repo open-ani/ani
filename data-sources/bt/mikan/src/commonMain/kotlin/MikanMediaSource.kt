@@ -70,7 +70,7 @@ class MikanCNMediaSource(
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
 ) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
-        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+        override val factoryId: FactoryId get() = FactoryId(ID)
 
         override val info: MediaSourceInfo get() = INFO
 
@@ -102,7 +102,7 @@ class MikanMediaSource(
     indexCacheProvider: MikanIndexCacheProvider = MemoryMikanIndexCacheProvider(),
 ) : AbstractMikanMediaSource(ID, config, BASE_URL, indexCacheProvider) {
     class Factory : MediaSourceFactory {
-        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+        override val factoryId: FactoryId get() = FactoryId(ID)
 
         override val info: MediaSourceInfo get() = INFO
         override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = MikanMediaSource(config)
@@ -136,7 +136,7 @@ abstract class AbstractMikanMediaSource(
 ) : HttpMediaSource() {
     override val kind: MediaSourceKind get() = MediaSourceKind.BitTorrent
 
-    protected val baseUrl = baseUrl.removeSuffix("/")
+    private val baseUrl = baseUrl.removeSuffix("/")
     private val client by lazy { useHttpClient(config).also { addCloseable(it.asAutoCloseable()) } }
 
     override suspend fun checkConnection(): ConnectionStatus {
@@ -187,7 +187,7 @@ abstract class AbstractMikanMediaSource(
         // "无职转生Ⅱ ～到了异世界就拿出真本事～" 19 chars, 可以搜索, 再长的就会直接没有结果
 
 
-        val bangumiSubjectId = request.subjectId ?: return null
+        val bangumiSubjectId = request.subjectId
 
         val subjectId =
             indexCacheProvider.getMikanSubjectId(bangumiSubjectId)
