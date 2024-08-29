@@ -414,7 +414,7 @@ internal fun EpisodeVideoImpl(
             when (sideSheetState) {
                 SideSheetState.EDIT_DANMAKU_REGEX_FILTER -> {
                     EditDanmakuRegexFilterSideSheet(
-                        danmakuRegexFilterState = danmakuRegexFilterState,
+                        state = danmakuRegexFilterState,
                         onDismissRequest = {
                             sideSheetState = SideSheetState.NONE
                         },

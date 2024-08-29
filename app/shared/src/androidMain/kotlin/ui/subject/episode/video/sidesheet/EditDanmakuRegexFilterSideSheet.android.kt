@@ -12,7 +12,7 @@ import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFil
 fun PreviewEditDanmakuRegexFilterSideSheet() {
     ProvideCompositionLocalsForPreview {
         EditDanmakuRegexFilterSideSheet(
-            danmakuRegexFilterState = createDanmakuRegexFilterState(),
+            state = createDanmakuRegexFilterState(),
             onDismissRequest = { },
         )
     }

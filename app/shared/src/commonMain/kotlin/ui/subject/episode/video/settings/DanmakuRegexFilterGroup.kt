@@ -36,6 +36,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
@@ -47,7 +48,7 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.utils.platform.Uuid
 
-internal fun isValidRegex(pattern: String): Boolean {
+fun isValidRegex(pattern: String): Boolean {
     return try {
         Regex(pattern)
         true
@@ -62,33 +63,14 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
     isLoadingState: Boolean
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
-    var errorMessage by rememberSaveable { mutableStateOf("") }
 
     if (showAdd) {
         AddRegexFilterDialog(
             onDismissRequest = {
                 showAdd = false
             },
-            onConfirm = { name, regex ->
-                if (regex.isBlank()) {
-                    errorMessage = "正则不能为空"
-                } else {
-                    if (!isValidRegex(regex)) {
-                        errorMessage = "正则输入法不正确"
-                    } else {
-                        state.add(
-                            DanmakuRegexFilter(
-                                id = Uuid.randomString(),
-                                name = name,
-                                regex = regex,
-                            ),
-                        )
-                        showAdd = false
-                    }
-                }
-            },
+            onAdd = state.add,
             title = { Text("添加正则过滤器") },
-            errorMessage = errorMessage,
         )
     }
 
@@ -107,7 +89,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         },
     ) {
         FlowRow(
-            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
+            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             state.list.forEach { item ->
@@ -183,14 +165,33 @@ internal fun RegexFilterItem(
 @Composable
 fun AddRegexFilterDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (name: String, regex: String) -> Unit, // onConfirm now accepts the text field value
+    onAdd: (DanmakuRegexFilter) -> Unit,
     title: @Composable () -> Unit,
-    confirmEnabled: Boolean = true,
-    errorMessage: String = "",
 ) {
-    var nameTextFieldValue by rememberSaveable { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
     val isBlank by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
+    val validRegex by remember { derivedStateOf { isValidRegex(regexTextFieldValue) } }
+    var isError by remember { mutableStateOf(false) }
+
+    fun handleAdd(): Unit {
+        if (!isBlank && validRegex) {
+            isError = false
+            onAdd(
+                DanmakuRegexFilter(
+                    id = Uuid.randomString(),
+                    name = "",
+                    regex = regexTextFieldValue,
+                    enabled = true,
+                ),
+            )
+            regexTextFieldValue = ""
+            onDismissRequest()
+        } else {
+            isError = true
+        }
+        focusManager.clearFocus()
+    }
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -214,12 +215,15 @@ fun AddRegexFilterDialog(
                 ) {
                     OutlinedTextField(
                         value = regexTextFieldValue,
-                        onValueChange = { regexTextFieldValue = it },
+                        onValueChange = {
+                            regexTextFieldValue = it
+                            isError = false
+                        },
                         label = { Text("正则表达式") },
                         modifier = Modifier.fillMaxWidth()
                             .onKeyEvent { event: KeyEvent ->
                                 if (event.key == Key.Enter) {
-                                    onConfirm(nameTextFieldValue, regexTextFieldValue)
+                                    handleAdd()
                                     true // Consume the event
                                 } else {
                                     false // Pass the event to other handlers
@@ -229,13 +233,13 @@ fun AddRegexFilterDialog(
                             imeAction = ImeAction.Done,
                         ),
                         keyboardActions = KeyboardActions(
-                            onDone = { onConfirm(nameTextFieldValue, regexTextFieldValue) },
+                            onDone = { handleAdd() },
                         ),
                         supportingText = {
-                            if (isBlank) {
+                            if (isError) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = errorMessage,
+                                    text = "正则表达式语法不正确",
                                 )
                             }
                         },
@@ -244,6 +248,8 @@ fun AddRegexFilterDialog(
                                 text = "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。",
                             )
                         },
+                        isError = isError,
+                        singleLine = true,
                     )
                 }
 
@@ -258,12 +264,9 @@ fun AddRegexFilterDialog(
 
                     Button(
                         onClick = {
-                            onConfirm(
-                                nameTextFieldValue,
-                                regexTextFieldValue,
-                            )
+                            handleAdd()
                         }, // Pass the text field value to onConfirm
-                        enabled = confirmEnabled && !isBlank,
+                        enabled = !isBlank,
                     ) {
                         Text("确认")
                     }
