@@ -87,7 +87,7 @@ class MikanCNMediaSource(
         const val ID = "mikan-mikanime-tv"
         const val BASE_URL = "https://mikanime.tv"
         val INFO = MediaSourceInfo(
-            displayName = "蜜柑计划",
+            displayName = "蜜柑计划 (CN)",
             websiteUrl = BASE_URL,
             iconUrl = "https://mikanani.me/images/mikan-pic.png",
             iconResourceId = "mikan.png",
