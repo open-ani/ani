@@ -15,6 +15,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.utils.platform.format2f
@@ -68,21 +69,14 @@ fun DrawScope.drawDanmakuText(
     screenPosX: Float,
     screenPosY: Float,
 ) {
-    translate(left = screenPosX, top = screenPosY) {
-        // draw black bolder first, then solid text
-        drawText(state.borderTextLayout)
-        drawText(state.solidTextLayout)
-        // draw underline if sent by self
-        if (state.presentation.isSelf) {
-            drawLine(
-                color = state.style.strokeColor,
-                strokeWidth = state.style.strokeWidth,
-                cap = StrokeCap.Square,
-                start = Offset(0f, state.solidTextLayout.size.height.toFloat()),
-                end = state.solidTextLayout.size.run { Offset(width.toFloat(), height.toFloat()) }
-            )
-        }
-    }
+    val offset = Offset(screenPosX, screenPosY)
+    // draw black bolder first, then solid text
+    drawText(textLayoutResult = state.borderTextLayout, topLeft = offset)
+    drawText(
+        textLayoutResult = state.solidTextLayout,
+        topLeft = offset,
+        textDecoration = if (state.presentation.isSelf) TextDecoration.Underline else null
+    )
 }
 
 @Suppress("NOTHING_TO_INLINE")
