@@ -150,8 +150,16 @@ jobs:
         if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
         run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
 
-      - name: Compile Kotlin
-        run: ./gradlew compileKotlin ${{ env.gradleArgs }}
+      - name: Build Anitorrent for Android Debug
+        run: ./gradlew buildCmakeDebug ${{ env.gradleArgs }}
+        if: ${{ matrix.anitorrent }}
+
+      - name: Build Anitorrent for Android Release
+        run: ./gradlew buildCMakeRelWithDebInfo ${{ env.gradleArgs }}
+        if: ${{ matrix.anitorrent }}
+
+      - name: Compile Kotlin JVM
+        run: ./gradlew compileKotlin compileKotlinJvm compileKotlinDesktop ${{ env.gradleArgs }}
 
       - name: Assemble
         run: ./gradlew assemble ${{ env.gradleArgs }}
