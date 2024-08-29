@@ -89,8 +89,8 @@ class MikanCNMediaSource(
         val INFO = MediaSourceInfo(
             displayName = "蜜柑计划",
             websiteUrl = BASE_URL,
-            imageUrl = "https://mikanani.me/images/mikan-pic.png",
-            imageResourceId = "mikan.png",
+            iconUrl = "https://mikanani.me/images/mikan-pic.png",
+            iconResourceId = "mikan.png",
         )
     }
 
@@ -120,8 +120,8 @@ class MikanMediaSource(
         val INFO = MediaSourceInfo(
             displayName = "蜜柑计划",
             websiteUrl = BASE_URL,
-            imageUrl = "https://mikanani.me/images/mikan-pic.png",
-            imageResourceId = "mikan.png",
+            iconUrl = "https://mikanani.me/images/mikan-pic.png",
+            iconResourceId = "mikan.png",
         )
     }
 

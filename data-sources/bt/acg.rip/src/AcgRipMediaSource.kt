@@ -64,8 +64,8 @@ class AcgRipMediaSource(
         val INFO = MediaSourceInfo(
             "ACG.RIP",
             websiteUrl = "https://acg.rip",
-            imageUrl = "https://acg.rip/favicon.ico",
-            imageResourceId = "acg-rip.png",
+            iconUrl = "https://acg.rip/favicon.ico",
+            iconResourceId = "acg-rip.png",
         )
     }
 

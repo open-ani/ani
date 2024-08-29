@@ -45,8 +45,8 @@ class NtdmMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() {
         val INFO = MediaSourceInfo(
             "NT 动漫",
             websiteUrl = BASE_URL,
-            imageUrl = "https://cdn.yinghuazy.xyz/webjs/ntdm8/image/favicon.ico",
-            imageResourceId = "ntdm.png",
+            iconUrl = "https://cdn.yinghuazy.xyz/webjs/ntdm8/image/favicon.ico",
+            iconResourceId = "ntdm.png",
         )
     }
 

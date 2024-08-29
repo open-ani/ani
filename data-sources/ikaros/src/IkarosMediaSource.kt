@@ -32,7 +32,7 @@ class IkarosMediaSource(
             displayName = "Ikaros",
             description = "专注于 ACGMN 的内容管理系统 (CMS)",
             websiteUrl = "https://docs.ikaros.run",
-            imageUrl = "https://docs.ikaros.run/img/favicon.ico",
+            iconUrl = "https://docs.ikaros.run/img/favicon.ico",
         )
     }
 

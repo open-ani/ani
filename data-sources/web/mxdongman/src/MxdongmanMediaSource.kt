@@ -46,8 +46,8 @@ class MxdongmanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource(
         val INFO = MediaSourceInfo(
             "MX 动漫",
             websiteUrl = BASE_URL,
-            imageUrl = "$BASE_URL/favicon.ico",
-            imageResourceId = "mxdongman.png",
+            iconUrl = "$BASE_URL/favicon.ico",
+            iconResourceId = "mxdongman.png",
         )
     }
 

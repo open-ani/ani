@@ -17,7 +17,7 @@ class JellyfinMediaSource(config: MediaSourceConfig) : BaseJellyfinMediaSource(c
             displayName = "Jellyfin",
             description = "Jellyfin Media Server",
             websiteUrl = "https://jellyfin.org",
-            imageUrl = "https://jellyfin.org/images/favicon.ico",
+            iconUrl = "https://jellyfin.org/images/favicon.ico",
         )
     }
 

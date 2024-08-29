@@ -128,6 +128,6 @@ class MediaSourceInfo(
     val displayName: String,
     val description: String? = null,
     val websiteUrl: String? = null,
-    val imageUrl: String? = null,
-    val imageResourceId: String? = null, // not very good be fine for now
+    val iconUrl: String? = null,
+    val iconResourceId: String? = null, // not very good be fine for now
 )

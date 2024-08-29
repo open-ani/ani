@@ -17,7 +17,7 @@ class EmbyMediaSource(config: MediaSourceConfig) : BaseJellyfinMediaSource(confi
             displayName = "Emby",
             description = "Emby Media Server",
             websiteUrl = "https://emby.media",
-            imageUrl = "https://emby.media/favicon-32x32.png",
+            iconUrl = "https://emby.media/favicon-32x32.png",
         )
     }
 

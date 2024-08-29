@@ -21,7 +21,7 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 
 fun MediaSourceInfo.getResourceOrImageUri(): String? {
-    return imageResourceId?.let { Res.getUri("drawable/$it") } ?: imageUrl
+    return iconResourceId?.let { Res.getUri("drawable/$it") } ?: iconUrl
 }
 
 @Composable
