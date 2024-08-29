@@ -29,6 +29,7 @@ import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
+import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -126,6 +127,7 @@ fun LockableVideoGestureHost(
     progressSliderState: MediaProgressSliderState,
     indicatorState: GestureIndicatorState,
     fastSkipState: FastSkipState,
+    playerState: PlayerState,
     locked: Boolean,
     enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
@@ -147,6 +149,7 @@ fun LockableVideoGestureHost(
             progressSliderState,
             indicatorState,
             fastSkipState,
+            playerState,
             enableSwipeToSeek = enableSwipeToSeek,
             onTogglePauseResume = onTogglePauseResume,
             onToggleFullscreen = onToggleFullscreen,

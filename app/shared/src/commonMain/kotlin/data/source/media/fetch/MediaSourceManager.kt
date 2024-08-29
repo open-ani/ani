@@ -72,6 +72,14 @@ interface MediaSourceManager { // available by inject
     fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig>
 
     fun findInfoByMediaSourceId(mediaSourceId: String): MediaSourceInfo? {
+        if (mediaSourceId == "Bangumi") { // workaround for bangumi connectivity testing
+            return MediaSourceInfo(
+                "Bangumi",
+                "提供观看记录数据",
+                "https://bangumi.tv",
+                "https://bangumi.tv/img/favicon.ico",
+            )
+        }
         return allFactories.find { it.mediaSourceId == mediaSourceId }?.info
     }
 

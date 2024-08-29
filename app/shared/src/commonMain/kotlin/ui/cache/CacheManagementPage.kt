@@ -288,7 +288,7 @@ fun CacheGroupColumn(
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     LazyVerticalStaggeredGrid(
-        StaggeredGridCells.Adaptive(300.dp),
+        StaggeredGridCells.Adaptive(320.dp),
         modifier,
         state = lazyGridState,
         verticalItemSpacing = 20.dp,

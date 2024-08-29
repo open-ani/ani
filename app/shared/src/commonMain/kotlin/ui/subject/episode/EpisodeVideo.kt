@@ -81,6 +81,7 @@ import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.SpeedS
 import me.him188.ani.app.videoplayer.ui.progress.SubtitleSwitcher
 import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
+import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
@@ -230,6 +231,7 @@ internal fun EpisodeVideoImpl(
                 progressSliderState,
                 indicatorState,
                 fastSkipState = rememberPlayerFastSkipState(playerState = playerState, indicatorState),
+                playerState,
                 locked = isLocked,
                 enableSwipeToSeek = enableSwipeToSeek,
                 Modifier.padding(top = 100.dp),
@@ -302,6 +304,22 @@ internal fun EpisodeVideoImpl(
                         danmakuEnabled,
                         onClick = { onToggleDanmaku() },
                     )
+                    if (expanded && playerState is SupportsAudio) {
+                        val volumeState by playerState.volume.collectAsStateWithLifecycle()
+                        val volumeMute by playerState.isMute.collectAsStateWithLifecycle()
+                        PlayerControllerDefaults.AudioIcon(
+                            volumeState,
+                            isMute = volumeMute,
+                            maxValue = playerState.maxValue,
+                            onClick = {
+                                playerState.toggleMute()
+                            },
+                            onchange = {
+                                playerState.setVolume(it)
+                            },
+                            controllerState = videoControllerState,
+                        )
+                    }
                 },
                 progressIndicator = {
                     MediaProgressIndicatorText(progressSliderState)

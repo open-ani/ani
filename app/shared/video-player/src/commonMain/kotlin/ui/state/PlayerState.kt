@@ -386,10 +386,28 @@ fun interface PlayerStateFactory {
     fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState
 }
 
+interface SupportsAudio {
+
+    val volume: StateFlow<Float>
+    val isMute: StateFlow<Boolean>
+    val maxValue: Float
+
+    fun toggleMute(mute: Boolean? = null)
+
+    @UiThread
+    fun setVolume(volume: Float)
+
+    @UiThread
+    fun volumeUp()
+
+    @UiThread
+    fun volumeDown()
+}
+
 /**
  * For previewing
  */
-class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext) {
+class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext), SupportsAudio {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PLAYING)
     override fun stopImpl() {
 
@@ -462,6 +480,26 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override val subtitleTracks: TrackGroup<SubtitleTrack> = emptyTrackGroup()
     override val audioTracks: TrackGroup<AudioTrack> = emptyTrackGroup()
+
+    override val volume: MutableStateFlow<Float> = MutableStateFlow(0f)
+    override val isMute: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    override val maxValue: Float = 1f
+
+    override fun toggleMute(mute: Boolean?) {
+        isMute.value = mute ?: !isMute.value
+    }
+
+    override fun setVolume(volume: Float) {
+        this.volume.value = volume
+    }
+
+    override fun volumeUp() {
+        setVolume(volume.value + 0.05f)
+    }
+
+    override fun volumeDown() {
+        setVolume(volume.value - 0.05f)
+    }
 
     override fun saveScreenshotFile(filename: String) {
     }

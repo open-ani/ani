@@ -1,8 +1,15 @@
 package me.him188.ani.app.videoplayer.ui.progress
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,12 +20,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.VolumeDown
+import androidx.compose.material.icons.automirrored.rounded.VolumeMute
+import androidx.compose.material.icons.automirrored.rounded.VolumeOff
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.Pause
@@ -36,11 +48,14 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,6 +79,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
@@ -72,8 +89,10 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
+import kotlin.math.roundToInt
 
 internal const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
 
@@ -117,6 +136,104 @@ object PlayerControllerDefaults {
                 Icon(Icons.Rounded.Subtitles, contentDescription = "禁用弹幕")
             } else {
                 Icon(Icons.Rounded.SubtitlesOff, contentDescription = "启用弹幕")
+            }
+        }
+    }
+
+    @Composable
+    fun AudioIcon(
+        volume: Float,
+        isMute: Boolean,
+        maxValue: Float,
+        onClick: () -> Unit,
+        onchange: (Float) -> Unit,
+        controllerState: VideoControllerState,
+        modifier: Modifier = Modifier,
+    ) {
+        val hoverInteraction = remember { MutableInteractionSource() }
+        val isHovered by hoverInteraction.collectIsHoveredAsState()
+        val audioIconRequester = remember { Any() }
+
+        LaunchedEffect(true) {
+            snapshotFlow { isHovered }.collect {
+                controllerState.setRequestAlwaysOn(audioIconRequester, isHovered)
+            }
+        }
+        Box(
+            modifier = modifier.hoverable(hoverInteraction),
+            contentAlignment = Alignment.BottomCenter,
+        ) {
+            val iconButton = @Composable {
+                IconButton(
+                    onClick = onClick,
+                ) {
+                    when {
+                        isMute -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeOff, contentDescription = "静音")
+                        }
+
+                        volume < 0.33f -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeMute, contentDescription = "音量")
+                        }
+
+                        volume < 0.66f -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeDown, contentDescription = "音量")
+                        }
+
+                        else -> {
+                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = "音量")
+                        }
+                    }
+                }
+            }
+
+            iconButton()
+
+            Popup(
+                alignment = Alignment.BottomCenter,
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .hoverable(hoverInteraction)
+                        .clip(shape = CircleShape),
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        AnimatedVisibility(
+                            visible = isHovered && !isMute,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically(),
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    text = volume.times(100).roundToInt().toString(),
+                                    modifier = Modifier.padding(8.dp),
+                                )
+                                VerticalSlider(
+                                    value = volume,
+                                    onValueChange = onchange,
+                                    modifier = Modifier.width(96.dp),
+                                    thumb = {},
+                                    colors = SliderDefaults.colors(
+                                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
+                                    ),
+                                    valueRange = 0f..maxValue,
+                                )
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = isHovered && !isMute,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            iconButton()
+                        }
+                    }
+                }
             }
         }
     }

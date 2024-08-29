@@ -27,6 +27,14 @@ class SwigTorrentHandle(
         native.set_file_priority(index, priority.toLibtorrentValue())
     }
 
+    override fun getState(): TorrentHandleState {
+        val state = native._state
+        if (state == -1) {
+            error("Failed to get state, native returned -1 (session is invalid)")
+        }
+        return TorrentHandleState.entries[state]
+    }
+
     override fun reloadFile(): TorrentDescriptor {
         val res = native.reload_file()
         if (res != torrent_handle_t.reload_file_result_t.kReloadFileSuccess) {

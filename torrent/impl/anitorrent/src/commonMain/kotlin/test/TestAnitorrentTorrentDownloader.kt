@@ -8,6 +8,7 @@ import me.him188.ani.app.torrent.anitorrent.session.TorrentAddInfo
 import me.him188.ani.app.torrent.anitorrent.session.TorrentDescriptor
 import me.him188.ani.app.torrent.anitorrent.session.TorrentFileInfo
 import me.him188.ani.app.torrent.anitorrent.session.TorrentHandle
+import me.him188.ani.app.torrent.anitorrent.session.TorrentHandleState
 import me.him188.ani.app.torrent.anitorrent.session.TorrentManagerSession
 import me.him188.ani.app.torrent.anitorrent.session.TorrentResumeData
 import me.him188.ani.app.torrent.anitorrent.session.TorrentStats
@@ -121,6 +122,9 @@ open class TestTorrentHandle(
     lateinit var addInfo: TestTorrentAddInfo
     lateinit var saveDir: Path
 
+    @JvmField // clash
+    var state: TorrentHandleState = TorrentHandleState.DOWNLOADING
+
     private fun dispatchEvent(block: (AnitorrentDownloadSession) -> Unit) {
         dispatchEvent(id, block)
     }
@@ -146,6 +150,8 @@ open class TestTorrentHandle(
 
     override fun setFilePriority(index: Int, priority: FilePriority) {
     }
+
+    override fun getState(): TorrentHandleState = state
 
     protected var descriptor: TestTorrentDescriptor = TestTorrentDescriptor("test", 1024_000 / 1024, 1024, 1024).apply {
         files.add(TestTorrentFileInfo("test.mkv", "test.mkv", 1024_000))
