@@ -158,7 +158,7 @@ internal fun EditMediaSourceDialog(
         },
         icon = {
             Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(24.dp)) {
-                MediaSourceIcon(state.info.imageUrl, Modifier.size(24.dp))
+                MediaSourceIcon(state.info, Modifier.size(24.dp))
             }
         },
         text = {

@@ -92,7 +92,7 @@ fun MediaDetailsColumn(
         )
         ListItem(
             headlineContent = { Text("数据源") },
-            leadingContent = { MediaSourceIcon(sourceInfo?.imageUrl, Modifier.size(24.dp)) },
+            leadingContent = { MediaSourceIcon(sourceInfo, Modifier.size(24.dp)) },
             supportingContent = {
                 val kind = when (media.kind) {
                     MediaSourceKind.WEB -> "在线"

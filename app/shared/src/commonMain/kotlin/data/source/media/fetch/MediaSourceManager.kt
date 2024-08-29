@@ -78,6 +78,7 @@ interface MediaSourceManager { // available by inject
                 "提供观看记录数据",
                 "https://bangumi.tv",
                 "https://bangumi.tv/img/favicon.ico",
+                imageResourceId = "bangumi.png",
             )
         }
         return allFactories.find { it.mediaSourceId == mediaSourceId }?.info

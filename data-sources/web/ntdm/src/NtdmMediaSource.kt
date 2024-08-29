@@ -45,6 +45,7 @@ class NtdmMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() {
             "NT 动漫",
             websiteUrl = BASE_URL,
             imageUrl = "https://cdn.yinghuazy.xyz/webjs/ntdm8/image/favicon.ico",
+            imageResourceId = "ntdm.png",
         )
     }
 

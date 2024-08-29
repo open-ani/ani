@@ -129,4 +129,5 @@ class MediaSourceInfo(
     val description: String? = null,
     val websiteUrl: String? = null,
     val imageUrl: String? = null,
+    val imageResourceId: String? = null,
 )

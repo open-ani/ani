@@ -47,6 +47,7 @@ class GugufanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() 
             "咕咕番",
             "咕咕番",
             imageUrl = "$BASE_URL/upload/site/20230512-1/8d3bab2eb1440259baad5079c0a28071.png",
+            imageResourceId = "gugufan.png",
         )
     }
 
