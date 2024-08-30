@@ -51,7 +51,21 @@ atomicfu {
     transformJvm = false // 这东西很不靠谱, 等 atomicfu 正式版了可能可以考虑下
 }
 
+val enableIosFramework = getPropertyOrNull("ani.build.framework") != "false"
+
 kotlin {
+    if (enableIosFramework) {
+        listOf(
+            iosArm64(),
+            iosSimulatorArm64(),
+        ).forEach { iosTarget ->
+            iosTarget.binaries.framework {
+                baseName = "ComposeApp"
+                isStatic = false
+            }
+        }
+    }
+
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
@@ -84,6 +98,7 @@ kotlin {
         api(projects.utils.io)
         api(projects.app.shared.imageViewer)
         api(projects.utils.xml)
+        api(projects.utils.bbcode)
 
         // Ktor
         api(libs.ktor.client.websockets)
@@ -107,15 +122,7 @@ kotlin {
             exclude("org.jetbrains.kotlinx", "atomicfu")
         } // multi-platform database
         api(libs.sqlite.bundled) // database driver implementation
-
-        // Torrent
         implementation(libs.constraintlayout.compose)
-
-        implementation(libs.jna)
-
-        implementation(libs.slf4j.api)
-
-        implementation(projects.utils.bbcode)
     }
 
     // shared by android and desktop
@@ -132,6 +139,8 @@ kotlin {
         api(projects.dataSources.jellyfin)
         api(projects.dataSources.ikaros)
 
+        implementation(libs.jna)
+        implementation(libs.slf4j.api)
         api(libs.ktor.client.okhttp)
     }
 
@@ -434,3 +443,29 @@ tasks.withType(KspTaskNative::class.java) {
     dependsOn(generateAniBuildConfigIos)
 }
 
+// 太耗内存了, 只能一次跑一个
+// compose bug, 不能用这个 https://youtrack.jetbrains.com/issue/CMP-5835
+//tasks.filter { it.name.contains("link") && it.name.contains("Framework") && it.name.contains("Ios") }
+//    .sorted()
+//    .let { links ->
+//        links.forEachIndexed { index, task ->
+//            for (index1 in (index + 1)..links.lastIndex) {
+//                task.mustRunAfter(links[index1])
+//            }
+//        }
+//    }
+
+if (enableIosFramework) {
+    tasks.named("linkDebugFrameworkIosArm64") {
+        mustRunAfter("linkReleaseFrameworkIosArm64")
+        mustRunAfter("linkDebugFrameworkIosSimulatorArm64")
+        mustRunAfter("linkReleaseFrameworkIosSimulatorArm64")
+    }
+    tasks.named("linkReleaseFrameworkIosArm64") {
+        mustRunAfter("linkDebugFrameworkIosSimulatorArm64")
+        mustRunAfter("linkReleaseFrameworkIosSimulatorArm64")
+    }
+    tasks.named("linkDebugFrameworkIosSimulatorArm64") {
+        mustRunAfter("linkReleaseFrameworkIosSimulatorArm64")
+    }
+}
