@@ -24,6 +24,7 @@ import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
@@ -40,7 +41,6 @@ import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -87,7 +87,8 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
         val INFO = MediaSourceInfo(
             displayName = "Nyafun",
             websiteUrl = BASE_URL,
-            imageUrl = "https://files.superbed.cn/proxy/7468686c6f26333378737f75717b2f3278737f6f326d6d327f73713375717d7b79335d7b5d5d5f2a6931484a4c5d71757f28666d4650502b682c28702f4b2b566a6c326c727b",
+            iconUrl = "https://files.superbed.cn/proxy/7468686c6f26333378737f75717b2f3278737f6f326d6d327f73713375717d7b79335d7b5d5d5f2a6931484a4c5d71757f28666d4650502b682c28702f4b2b566a6c326c727b",
+            iconResourceId = "nyafun.png",
         )
 
         // https://www.nyafun.net/search.html?wd=girls%20band%20cry
@@ -159,9 +160,10 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
     }
 
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+
         override val info: MediaSourceInfo get() = INFO
-        override fun create(config: MediaSourceConfig): MediaSource = NyafunMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = NyafunMediaSource(config)
     }
 
     private val client by lazy {
@@ -213,7 +215,6 @@ class NyafunMediaSource(config: MediaSourceConfig) : HttpMediaSource() {
                         }
                         .toList()
 
-                    logger.info { "$ID fetched ${result.size} episodes for '$name': ${result.joinToString { it.media.episodeRange.toString() }}" }
                     result.asFlow()
                 }
         }

@@ -74,6 +74,7 @@ import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
 import me.him188.ani.app.ui.subject.episode.details.EpisodeDetailsState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
@@ -159,6 +160,8 @@ interface EpisodeViewModel : HasBackgroundScope {
      * 是否显示数据源选择器
      */
     var mediaSelectorVisible: Boolean
+
+    val mediaSourceInfoProvider: MediaSourceInfoProvider
 
 
     // Video
@@ -311,8 +314,12 @@ private class EpisodeViewModelImpl(
             }
         }
 
+    override val mediaSourceInfoProvider: MediaSourceInfoProvider = MediaSourceInfoProvider(
+        getSourceInfoFlow = { mediaSourceManager.infoFlowByMediaSourceId(it) },
+    )
+
     override val mediaSelectorPresentation: MediaSelectorPresentation =
-        MediaSelectorPresentation(mediaSelector, backgroundScope.coroutineContext)
+        MediaSelectorPresentation(mediaSelector, mediaSourceInfoProvider, backgroundScope.coroutineContext)
 
     override val mediaSourceResultsPresentation: MediaSourceResultsPresentation =
         MediaSourceResultsPresentation(
@@ -327,7 +334,7 @@ private class EpisodeViewModelImpl(
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
-        mediaSelector, videoSourceResolver, playerState,
+        mediaSelector, videoSourceResolver, playerState, mediaSourceInfoProvider,
         episodeInfo,
         mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it },
         backgroundScope.coroutineContext,

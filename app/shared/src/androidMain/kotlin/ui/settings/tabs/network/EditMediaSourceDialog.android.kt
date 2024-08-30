@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
@@ -16,7 +17,8 @@ private fun PreviewEditMediaSourceDialogNoConfig() {
     ProvideCompositionLocalsForPreview {
         EditMediaSourceDialog(
             state = EditMediaSourceState(
-                mediaSourceId = "test",
+                editingMediaSourceId = "test",
+                factoryId = FactoryId("test"),
                 info = MediaSourceInfo(
                     displayName = "Test",
                     description = "Test description",
@@ -38,7 +40,8 @@ private fun PreviewEditMediaSourceDialog() {
     ProvideCompositionLocalsForPreview {
         EditMediaSourceDialog(
             state = EditMediaSourceState(
-                mediaSourceId = "test",
+                editingMediaSourceId = "test",
+                factoryId = FactoryId("test"),
                 info = MediaSourceInfo(
                     displayName = "Test",
                     description = "Test description",

@@ -1,9 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.statistics
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import me.him188.ani.app.data.source.danmaku.AniDanmakuProvider
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
@@ -40,21 +38,14 @@ private fun halfFuzzy() = DanmakuMatchInfo(
     method = DanmakuMatchMethod.ExactSubjectFuzzyEpisode("Subject Title", "Episode Title"),
 )
 
-
-class TestVideoStatistics : VideoStatistics() {
-    override var mediaSourceLoading: Boolean by mutableStateOf(false)
-    override var playingMedia: Media? by mutableStateOf(null)
-    override var playingFilename: String? by mutableStateOf(null)
-    override var videoLoadingState: VideoLoadingState by mutableStateOf(VideoLoadingState.Initial)
-}
-
 fun testPlayerStatisticsState(
     playingMedia: Media? = null,
     playingFilename: String = "filename-filename-filename-filename-filename-filename-filename.mkv",
     videoLoadingState: VideoLoadingState = VideoLoadingState.Initial,
-) =
-    TestVideoStatistics().apply {
-        this.playingMedia = playingMedia
-        this.playingFilename = playingFilename
-        this.videoLoadingState = videoLoadingState
-    }
+) = VideoStatistics(
+    playingMedia = stateOf(playingMedia),
+    playingMediaSourceInfo = stateOf(null),
+    playingFilename = stateOf(playingFilename),
+    mediaSourceLoading = stateOf(true),
+    videoLoadingState = stateOf(videoLoadingState),
+)

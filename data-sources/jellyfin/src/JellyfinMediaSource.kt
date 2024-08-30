@@ -1,5 +1,6 @@
 package me.him188.ani.datasources.jellyfin
 
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
@@ -16,14 +17,14 @@ class JellyfinMediaSource(config: MediaSourceConfig) : BaseJellyfinMediaSource(c
             displayName = "Jellyfin",
             description = "Jellyfin Media Server",
             websiteUrl = "https://jellyfin.org",
-            imageUrl = "https://jellyfin.org/images/favicon.ico",
+            iconUrl = "https://jellyfin.org/images/favicon.ico",
         )
     }
 
     object Parameters : MediaSourceParametersBuilder() {
         val baseUrl = string(
             "baseUrl",
-            default = "http://localhost:8096",
+            defaultProvider = { "http://localhost:8096" },
             description = "服务器地址\n示例: http://localhost:8096",
         )
         val userId = string(
@@ -37,11 +38,12 @@ class JellyfinMediaSource(config: MediaSourceConfig) : BaseJellyfinMediaSource(c
     }
 
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = FactoryId(ID)
+
         override val parameters: MediaSourceParameters = Parameters.build()
         override val info: MediaSourceInfo get() = INFO
         override val allowMultipleInstances: Boolean get() = true
-        override fun create(config: MediaSourceConfig): MediaSource = JellyfinMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = JellyfinMediaSource(config)
     }
 
     override val kind: MediaSourceKind get() = MediaSourceKind.WEB

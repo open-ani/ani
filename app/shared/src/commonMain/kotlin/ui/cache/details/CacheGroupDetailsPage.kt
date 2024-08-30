@@ -20,13 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
@@ -59,9 +59,9 @@ class MediaCacheDetailsPageViewModel(
     private val originMediaFlow = mediaCacheFlow.map { it?.origin }
 
     val media by originMediaFlow.produceState(null)
-    val sourceInfo: MediaSourceInfo? by derivedStateOf {
-        media?.mediaSourceId?.let { mediaSourceManager.findInfoByMediaSourceId(it) }
-    }
+    val sourceInfo: MediaSourceInfo? by originMediaFlow.flatMapLatest { media ->
+        media?.mediaSourceId?.let { mediaSourceManager.infoFlowByMediaSourceId(it) } ?: flowOf(null)
+    }.produceState(null)
 }
 
 @Composable

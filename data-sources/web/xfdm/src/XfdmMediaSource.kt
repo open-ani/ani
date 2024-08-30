@@ -7,6 +7,7 @@ import io.ktor.client.request.parameter
 import me.him188.ani.datasources.api.matcher.WebVideo
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -52,16 +53,18 @@ class XfdmMediaSource(
         val INFO = MediaSourceInfo(
             displayName = "稀饭动漫",
             websiteUrl = BASE_URL,
-            imageUrl = "$BASE_URL/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
+            iconUrl = "$BASE_URL/upload/site/20240308-1/813e41f81d6f85bfd7a44bf8a813f9e5.png",
+            iconResourceId = "xfdm.png",
         )
     }
 
     override val baseUrl: String get() = BASE_URL
 
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
 
-        override fun create(config: MediaSourceConfig): MediaSource =
+
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource =
             XfdmMediaSource(config)
 
         override val info: MediaSourceInfo = INFO

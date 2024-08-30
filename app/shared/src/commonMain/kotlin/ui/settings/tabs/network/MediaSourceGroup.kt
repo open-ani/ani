@@ -282,7 +282,7 @@ internal fun SettingsScope.MediaSourceItem(
             Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
             contentAlignment = Alignment.Center,
         ) {
-            MediaSourceIcon(item.info.imageUrl, Modifier.size(48.dp))
+            MediaSourceIcon(item.info, Modifier.size(48.dp))
         }
     },
     action: @Composable () -> Unit,
@@ -432,7 +432,7 @@ internal fun SelectMediaSourceTemplateDialog(
                         },
                         icon = {
                             Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-                                MediaSourceIcon(item.info.imageUrl, Modifier.size(48.dp))
+                                MediaSourceIcon(item.info, Modifier.size(48.dp))
                             }
                         },
                         content = {

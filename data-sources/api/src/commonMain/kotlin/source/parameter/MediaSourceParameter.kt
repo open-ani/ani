@@ -3,7 +3,7 @@ package me.him188.ani.datasources.api.source.parameter
 sealed interface MediaSourceParameter<T> {
     val name: String
     val description: String?  // todo: how to localize?
-    val default: T
+    val default: () -> T
 
     fun parseFromString(value: String): T
 }
@@ -14,7 +14,8 @@ private val NoopSanitizer: (String) -> String = { it }
 class StringParameter(
     override val name: String,
     override val description: String? = null,
-    override val default: String = "",
+    override val default: () -> String,
+    val placeholder: String? = null,
     val isRequired: Boolean = false,
     /**
      * 验证用户输入是否合法
@@ -45,7 +46,7 @@ class StringParameter(
 data class BooleanParameter(
     override val name: String,
     override val description: String? = null,
-    override val default: Boolean,
+    override val default: () -> Boolean,
 ) : MediaSourceParameter<Boolean> {
     init {
         require(name.isNotEmpty()) { "name must not be empty" }
@@ -60,12 +61,11 @@ data class SimpleEnumParameter(
     override val name: String,
     val oneOf: List<String>,
     override val description: String? = null,
-    override val default: String,
+    override val default: () -> String,
 ) : MediaSourceParameter<String> {
     init {
         require(name.isNotEmpty()) { "name must not be empty" }
         require(oneOf.isNotEmpty()) { "oneOf must not be empty" }
-        require(default in oneOf) { "default value must be in oneOf" }
     }
 
     override fun parseFromString(value: String): String {
