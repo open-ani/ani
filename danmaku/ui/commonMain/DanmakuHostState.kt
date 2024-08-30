@@ -37,7 +37,6 @@ import kotlin.time.Duration
 
 @Stable
 class DanmakuHostState(
-    progress: Flow<Duration>,
     danmakuConfigState: State<DanmakuConfig> = mutableStateOf(DanmakuConfig.Default), // state 
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default, // state
 ) {
@@ -83,20 +82,6 @@ class DanmakuHostState(
      * All presented danmaku which should be shown on screen.
      */
     internal val presentDanmaku: MutableList<PositionedDanmakuState> = mutableStateListOf()
-
-    /**
-     * position of danmaku is calculated at [interpolateFrameLoop].
-     */
-    // internal val presentDanmakuPositions: Array<Float> = Array(3000) { 0f }
-    // internal var presetDanmakuCount: Int by mutableIntStateOf(0)
-    
-    // test only prop
-    // internal var delta: Long by mutableLongStateOf(0)
-    // internal var restartEvent: String by mutableStateOf("")
-    // internal var elapsedFrame: Long by mutableLongStateOf(0)
-    // internal var elapsedFramePercent: Double by mutableDoubleStateOf(0.0)
-    // internal var totalDiff: Long by mutableLongStateOf(0)
-    // internal var totalPercent: Double by mutableDoubleStateOf(0.0)
     
     /**
      * 监听 轨道数量, 轨道高度 和 弹幕配置项目 的变化

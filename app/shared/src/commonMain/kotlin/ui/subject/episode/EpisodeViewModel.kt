@@ -498,7 +498,6 @@ private class EpisodeViewModelImpl(
     override val danmaku = VideoDanmakuStateImpl(
         danmakuEnabled = settingsRepository.danmakuEnabled.flow.produceState(false),
         danmakuConfig = settingsRepository.danmakuConfig.flow.produceState(DanmakuConfig.Default),
-        currentPosition = playerState.currentPositionMillis.map { it.milliseconds },
         onSend = { info ->
             danmakuManager.post(episodeId.value, info)
         },

@@ -165,7 +165,6 @@ interface VideoDanmakuState {
 class VideoDanmakuStateImpl(
     danmakuEnabled: State<Boolean>,
     danmakuConfig: State<DanmakuConfig>,
-    currentPosition: Flow<Duration>,
     private val onSend: suspend (info: DanmakuInfo) -> Danmaku,
     private val onSetEnabled: suspend (enabled: Boolean) -> Unit,
     private val onHideController: () -> Unit,
@@ -173,7 +172,7 @@ class VideoDanmakuStateImpl(
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
     override val danmakuHostState: DanmakuHostState = 
-        DanmakuHostState(currentPosition, danmakuConfig, danmakuTrackProperties)
+        DanmakuHostState(danmakuConfig, danmakuTrackProperties)
     
     override val enabled: Boolean by danmakuEnabled
     override val isSettingEnabled: Boolean get() = setEnabledTasker.isRunning

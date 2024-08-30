@@ -88,19 +88,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         }
     }
     
-    val progress = remember {
-        flow {
-            val startTime = currentTimeMillis()
-            while (true) {
-                val time = currentTimeMillis() -  startTime
-                upstreamCurrent = time
-                emit(time.milliseconds)
-                delay(1000 / 30)
-            }
-        }
-    }
-    
-    val state = remember { DanmakuHostState(progress, config) }
+    val state = remember { DanmakuHostState(config) }
     
     LaunchedEffect(true) {
         data.collect {

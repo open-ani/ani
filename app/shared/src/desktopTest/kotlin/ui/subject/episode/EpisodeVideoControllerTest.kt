@@ -115,7 +115,7 @@ class EpisodeVideoControllerTest {
                 onClickNextEpisode = {},
                 videoControllerState = controllerState,
                 title = { PlayerTopBar() },
-                danmakuHostState = remember { DanmakuHostState(MutableStateFlow(0.milliseconds)) },
+                danmakuHostState = remember { DanmakuHostState() },
                 danmakuEnabled = false,
                 onToggleDanmaku = {},
                 videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },

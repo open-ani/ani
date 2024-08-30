@@ -97,9 +97,7 @@ private fun PreviewVideoScaffoldImpl(
                 "葬送的芙莉莲",
             )
         },
-        danmakuHostState = remember {
-            DanmakuHostState(MutableStateFlow(0.milliseconds))
-        },
+        danmakuHostState = remember { DanmakuHostState() },
         danmakuEnabled = danmakuEnabled,
         onToggleDanmaku = { danmakuEnabled = !danmakuEnabled },
         videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
