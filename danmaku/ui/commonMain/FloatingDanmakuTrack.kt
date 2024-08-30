@@ -1,8 +1,10 @@
 package me.him188.ani.danmaku.ui
 
+import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
+import kotlin.math.pow
 
 /**
  * FloatingDanmakuTrack 中的弹幕在以下情况会移除:
@@ -18,6 +20,9 @@ class FloatingDanmakuTrack(
     private val screenWidth: IntState,
     var speedPxPerSecond: Float,
     var safeSeparation: Float,
+    // 放到这个轨道的弹幕里, 长度大于此基础长度才会加速弹幕运动, 等于此长度的弹幕速度为 100% [speedPxPerSecond]
+    var baseTextLength: Int,
+    val speedMultiplier: FloatState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {
@@ -73,7 +78,10 @@ class FloatingDanmakuTrack(
     ) : DanmakuHostState.PositionedDanmakuState {
         override fun calculatePosX(): Float {
             val timeDiff = (frameTimeNanos.value - placeFrameTimeNanos) / 1_000_000_000f
-            return screenWidth.value - timeDiff * speedPxPerSecond
+            val multiplier = speedMultiplier.value
+                .pow(state.textWidth / (baseTextLength.toFloat() * 2f))
+                .coerceAtLeast(1f)
+            return screenWidth.value - timeDiff * speedPxPerSecond * multiplier
         }
 
         override fun calculatePosY(): Float {

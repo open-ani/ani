@@ -9,19 +9,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -114,7 +111,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         }
     } else {
         Column {
-            DanmakuHost(state, Modifier.fillMaxWidth(),)
+            DanmakuHost(state, Modifier.fillMaxWidth().height(360.dp),)
             HorizontalDivider()
             Box(Modifier.weight(1f)) {
                 EpisodeVideoSettings(

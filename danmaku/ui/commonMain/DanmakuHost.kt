@@ -40,7 +40,7 @@ fun DanmakuHost(
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for removal of danmaku
-    LaunchedEffect(true) {  state.tickLoop() }
+    LaunchedEffect(true) { state.tickLoop() }
     
     BoxWithConstraints(modifier) {
         Canvas(

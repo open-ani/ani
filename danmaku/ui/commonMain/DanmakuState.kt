@@ -1,17 +1,10 @@
 package me.him188.ani.danmaku.ui
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -93,6 +86,7 @@ internal fun dummyDanmaku(
     measurer: TextMeasurer,
     baseStyle: TextStyle,
     style: DanmakuStyle,
+    dummyText: String = "dummy 占位 攟 の \uD83D\uDE04"
 ): DanmakuState {
     return DanmakuState(
         presentation = DanmakuPresentation(
@@ -100,7 +94,7 @@ internal fun dummyDanmaku(
                 Uuid.randomString(),
                 "dummy",
                 0L, "1",
-                DanmakuLocation.NORMAL, "dummy 占位 攟 の 😄", 0,
+                DanmakuLocation.NORMAL, dummyText, 0,
             ),
             isSelf = false
         ),

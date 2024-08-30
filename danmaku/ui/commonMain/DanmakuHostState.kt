@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -58,6 +59,8 @@ class DanmakuHostState(
     private val trackHeightState = mutableIntStateOf(0)
     internal var trackHeight by trackHeightState
         private set
+    // currently not configurable
+    private val floatingSpeedMultiplierState = mutableFloatStateOf(danmakuTrackProperties.speedMultiplier)
     
     internal val canvasAlpha by derivedStateOf { danmakuConfig.style.alpha }
     internal var paused by mutableStateOf(false)
@@ -91,7 +94,7 @@ class DanmakuHostState(
             snapshotFlow { danmakuConfig }.distinctUntilChanged(),
             snapshotFlow { hostHeight }.debounce(500)
         ) { config, height ->
-            val dummyTextLayout = dummyDanmaku(measurer, baseStyle, config.style).solidTextLayout
+            val dummyTextLayout = dummyDanmaku(measurer, baseStyle, config.style, "哈哈哈哈").solidTextLayout
             val verticalPadding = with(density) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
 
             val trackHeight = dummyTextLayout.size.height + verticalPadding
@@ -99,16 +102,17 @@ class DanmakuHostState(
 
             Triple(
                 trackCount.roundToInt().coerceAtLeast(1),
-                trackHeight.toInt(),
+                Pair(trackHeight.toInt(), dummyTextLayout.size.width),
                 danmakuConfig
             )
         }
             .distinctUntilChanged()
-            .collect { (trackCount, trackHeight, config) ->
+            .collect { (trackCount, sizeProp, config) ->
+                val (trackHeight, baseWidth) = sizeProp
                 if (trackHeight != this@DanmakuHostState.trackHeight) {
                     this@DanmakuHostState.trackHeight = trackHeight
                 }
-                updateTrack(trackCount, config, density)
+                updateTrack(trackCount, config, baseWidth, density)
             }
     }
 
@@ -116,7 +120,12 @@ class DanmakuHostState(
      * 更新弹幕轨道信息, 更新完成后调用 [invalidate] 显示新的信息.
      */
     @UiThread
-    private suspend fun updateTrack(count: Int, config: DanmakuConfig, density: Density) {
+    private suspend fun updateTrack(
+        count: Int, 
+        config: DanmakuConfig, 
+        floatingBaseTextLengthForSpeed: Int,
+        density: Density,
+    ) {
         val newFloatingTrackSpeed = with(density) { danmakuConfig.speed.dp.toPx() }
         val newFloatingTrackSafeSeparation = with(density) { danmakuConfig.safeSeparation.toPx() }
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
@@ -127,12 +136,15 @@ class DanmakuHostState(
                 screenWidth = hostWidthState, 
                 speedPxPerSecond = newFloatingTrackSpeed,
                 safeSeparation = newFloatingTrackSafeSeparation,
+                baseTextLength = floatingBaseTextLengthForSpeed,
+                speedMultiplier = floatingSpeedMultiplierState,
                 onRemoveDanmaku = { removed -> mutablePresentDanmaku.remove(removed) }
             )
         }
         floatingTrack.forEach {
             it.speedPxPerSecond = newFloatingTrackSpeed
             it.safeSeparation = newFloatingTrackSafeSeparation
+            it.baseTextLength = floatingBaseTextLengthForSpeed
         }
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
