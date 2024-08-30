@@ -725,8 +725,7 @@ private fun AutoPauseEffect(viewModel: EpisodeViewModel) {
 
     val autoPauseTasker = rememberUiMonoTasker()
     OnLifecycleEvent {
-        println("$it, pausedVideo=$pausedVideo")
-        if (it == Lifecycle.Event.ON_PAUSE || it == Lifecycle.Event.ON_DESTROY) {
+        if (it == Lifecycle.Event.ON_START || it == Lifecycle.Event.ON_DESTROY) {
             if (viewModel.playerState.state.value.isPlaying) {
                 pausedVideo = true
                 autoPauseTasker.launch {
@@ -738,7 +737,7 @@ private fun AutoPauseEffect(viewModel: EpisodeViewModel) {
                 // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
                 pausedVideo = false
             }
-        } else if (it == Lifecycle.Event.ON_RESUME && pausedVideo) {
+        } else if (it == Lifecycle.Event.ON_STOP && pausedVideo) {
             autoPauseTasker.launch {
                 viewModel.playerState.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
             }
