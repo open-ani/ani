@@ -1,4 +1,4 @@
-package me.him188.ani.danmaku.ui.new
+package me.him188.ani.danmaku.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
@@ -40,12 +40,6 @@ import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsV
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
-import me.him188.ani.danmaku.ui.DanmakuConfig
-import me.him188.ani.danmaku.ui.DanmakuHost
-import me.him188.ani.danmaku.ui.DanmakuHostState
-import me.him188.ani.danmaku.ui.DanmakuStyle
-import me.him188.ani.danmaku.ui.drawDanmakuText
-import me.him188.ani.danmaku.ui.dummyDanmaku
 import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.random.Random
 import kotlin.random.nextInt
