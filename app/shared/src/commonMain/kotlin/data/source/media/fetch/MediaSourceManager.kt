@@ -21,6 +21,7 @@ import me.him188.ani.app.data.repository.updateConfig
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.platform.ServiceLoader
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.datasources.api.source.FactoryId
@@ -141,6 +142,7 @@ class MediaSourceManagerImpl(
         addAll(ServiceLoader.loadServices(MediaSourceFactory::class))
         add(MikanMediaSource.Factory()) // Kotlin bug, MPP 加载不了 resources
         add(MikanCNMediaSource.Factory())
+        add(RssMediaSource.Factory())
     }.toList()
 
     private val additionalSources by lazy {
