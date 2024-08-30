@@ -44,7 +44,7 @@ jobs:
             gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M'
           - os: macos-13
             name: macOS x86_64
-            uploadApk: false
+            uploadApk: true
             arch: x64
             anitorrent: true
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
@@ -53,13 +53,13 @@ jobs:
             gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M -Porg.gradle.parallel=false'
           - os: macos-14
             name: macOS aarch64
-            uploadApk: true
+            uploadApk: false
             arch: aarch64
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
             run_tests: true
-            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M -Dani.build.framework=false'
+            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M -Porg.gradle.parallel=false -Dani.build.framework=false'
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
