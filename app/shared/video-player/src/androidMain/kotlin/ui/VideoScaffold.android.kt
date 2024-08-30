@@ -129,7 +129,6 @@ private fun PreviewVideoScaffoldImpl(
         leftBottomTips = {
             PlayerControllerDefaults.LeftBottomTips(onClick = {})
         },
-        onClickGoBack = {},
     )
 
 //    VideoScaffold(

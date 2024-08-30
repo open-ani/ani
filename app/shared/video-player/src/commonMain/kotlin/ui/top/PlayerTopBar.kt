@@ -29,10 +29,9 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
  */
 @Composable
 fun PlayerTopBar(
-    onClickGoBack: () -> Unit,
     modifier: Modifier = Modifier,
-    title: @Composable (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {},
+    title: @Composable() (() -> Unit)? = null,
+    actions: @Composable() (RowScope.() -> Unit) = {},
     color: Color = aniDarkColorTheme().onBackground,
 ) {
     TopAppBar(

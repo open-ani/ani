@@ -119,7 +119,7 @@ internal fun EpisodeVideoImpl(
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     onExitFullscreen: () -> Unit,
-    danmakuEditor: @Composable (RowScope.() -> Unit),
+    danmakuEditor: @Composable() (RowScope.() -> Unit),
     configProvider: () -> VideoScaffoldConfig,
     onClickScreenshot: () -> Unit,
     detachedProgressSlider: @Composable () -> Unit,
@@ -129,7 +129,6 @@ internal fun EpisodeVideoImpl(
     episodeSelectorState: EpisodeSelectorState,
     mediaSourceInfoProvider: MediaSourceInfoProvider,
     leftBottomTips: @Composable () -> Unit,
-    onClickGoBack: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
     danmakuFrozen: Boolean = false,
@@ -163,7 +162,6 @@ internal fun EpisodeVideoImpl(
         gestureLocked = { isLocked },
         topBar = {
             PlayerTopBar(
-                onClickGoBack = onClickGoBack,
                 Modifier.testTag(TAG_EPISODE_VIDEO_TOP_BAR),
                 title = if (expanded) {
                     { title() }

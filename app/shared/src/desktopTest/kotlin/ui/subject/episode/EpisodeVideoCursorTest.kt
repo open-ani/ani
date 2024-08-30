@@ -112,7 +112,6 @@ class EpisodeVideoCursorTest {
                     episodeSelectorState = rememberTestEpisodeSelectorState(),
                     mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                     leftBottomTips = {},
-                    onClickGoBack = {},
                     modifier = Modifier.weight(1f),
                     danmakuFrozen = true,
                     gestureFamily = gestureFamily,

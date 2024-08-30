@@ -223,7 +223,6 @@ private fun EpisodeSceneTabletVeryWide(
                 expanded = true,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 maintainAspectRatio = false,
-                onClickGoBack = {},
             )
 
             if (vm.isFullscreen) {
@@ -359,7 +358,7 @@ private fun EpisodeSceneContentPhone(
         videoOnly = vm.isFullscreen,
         commentCount = { vm.episodeCommentState.count },
         video = {
-            EpisodeVideo(vm, vm.videoControllerState, vm.isFullscreen, {})
+            EpisodeVideo(vm, vm.videoControllerState, vm.isFullscreen)
         },
         episodeDetails = {
             EpisodeDetails(
@@ -517,7 +516,6 @@ private fun EpisodeVideo(
     vm: EpisodeViewModel,
     videoControllerState: VideoControllerState,
     expanded: Boolean,
-    onClickGoBack: () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
 ) {
@@ -661,7 +659,6 @@ private fun EpisodeVideo(
                 )
             }
         },
-        onClickGoBack = onClickGoBack,
         modifier = modifier
             .fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),

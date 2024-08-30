@@ -141,7 +141,6 @@ class EpisodeVideoControllerTest {
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                 leftBottomTips = {},
-                onClickGoBack = {},
                 danmakuFrozen = true,
                 gestureFamily = gestureFamily,
             )
