@@ -166,6 +166,7 @@ fun SubjectDetailsScene(
                     pullToRefreshState = commentPullToRefreshState,
                     modifier = Modifier
                         .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
+                        .fillMaxHeight()
                         .ifThen(currentPlatform.isDesktop()) {
                             nestedScrollWorkaround(
                                 vm.commentTabLazyListState,
