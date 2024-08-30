@@ -166,7 +166,7 @@ fun WelcomePage(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     item {
-                        Column(Modifier.animateItemPlacement()) {
+                        Column(Modifier.animateItem()) {
                             Text("欢迎使用 Ani", style = MaterialTheme.typography.headlineMedium)
 
                             ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
@@ -201,7 +201,7 @@ fun WelcomePage(
 
                     if (showDetails) {
                         item {
-                            Column(Modifier.animateItemPlacement(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Column(Modifier.animateItem(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 Text(
                                     "资源来自于网络",
                                     Modifier.padding(top = 8.dp),
