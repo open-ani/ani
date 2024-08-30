@@ -30,13 +30,11 @@ fun DanmakuHost(
     val danmakuTextMeasurer = rememberTextMeasurer(3000)
     
     SideEffect { 
-        state.density = density
-        state.baseStyle = baseStyle 
-        state.textMeasurer = danmakuTextMeasurer
+        state.setUIContext(baseStyle, danmakuTextMeasurer, density)
     }
     
     // observe screen size changes to calculate track height and track count
-    LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer, density) }
+    LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer) }
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for removal of danmaku
@@ -54,7 +52,7 @@ fun DanmakuHost(
         ) {
             for (danmaku in state.presentDanmaku) {
                 drawDanmakuText(
-                    state = danmaku.state, 
+                    state = danmaku.state,
                     screenPosX = danmaku.calculatePosX(), 
                     screenPosY = danmaku.calculatePosY()
                 )

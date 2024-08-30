@@ -3,8 +3,7 @@ package me.him188.ani.danmaku.ui
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 
 /**
  * FixedDanmakuTrack 中的弹幕在以下情况会移除:
@@ -17,16 +16,17 @@ import androidx.compose.runtime.mutableStateOf
 class FixedDanmakuTrack(
     val trackIndex: Int,
     val fromBottom: Boolean,
-    override val frameTimeNanos: LongState,
+    frameTimeNanosState: LongState,
     private val trackHeight: IntState,
     private val screenWidth: IntState,
     private val screenHeight: IntState,
     // 顶部或底部弹幕的显示时间，现在还不能自定义
-    private val durationMillis: State<Long> = mutableStateOf(5000L),
+    private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
+    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {
-    internal var currentDanmaku: FixedDanmaku? = null
+    private var currentDanmaku: FixedDanmaku? = null
+    override val frameTimeNanos: Long by frameTimeNanosState
     
     override fun place(
         danmaku: DanmakuState,
@@ -44,7 +44,7 @@ class FixedDanmakuTrack(
     ): Boolean {
         if (currentDanmaku != null) return false
         // 当前没有正在显示的弹幕并且弹幕可以被显示
-        return frameTimeNanos.value - placeTimeNanos < durationMillis.value
+        return frameTimeNanos - placeTimeNanos < durationMillis.value
     }
 
     override fun clearAll() {
@@ -55,7 +55,7 @@ class FixedDanmakuTrack(
     override fun tick() {
         val current = currentDanmaku ?: return
         val danmakuTime = current.placeFrameTimeNanos
-        if (frameTimeNanos.value - danmakuTime >= durationMillis.value * 1_000_000) {
+        if (frameTimeNanos - danmakuTime >= durationMillis.value * 1_000_000) {
             onRemoveDanmaku(current)
             currentDanmaku = null
         }

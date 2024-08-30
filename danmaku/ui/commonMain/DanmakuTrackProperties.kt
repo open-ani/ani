@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 
 @Immutable
-@Stable
 class DanmakuTrackProperties(
     /**
      * Shift of the danmaku to be considered as fully out of the screen.
@@ -18,9 +17,15 @@ class DanmakuTrackProperties(
      * speed multiplier for speed of floating danmaku.
      * represents a multiplier to speed that 2x length of danmaku text
      */
-    val speedMultiplier: Float = 1.14f
+    val speedMultiplier: Float = 1.14f,
+    /**
+     * fixed danmaku present duration.
+     * unit: ms
+     */
+    val fixedDanmakuPresentDuration: Long = 5000
 ) {
     companion object {
+        @Stable
         val Default = DanmakuTrackProperties()
     }
 }

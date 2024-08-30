@@ -4,7 +4,7 @@ package me.him188.ani.danmaku.ui
  * 保证队列元素的平均值计算是 O(1) 的队列
  */
 class FastLongSumQueue(private val queueSize: Int) {
-    private val queue: Array<Long> = Array(queueSize) { 0L }
+    private val queue: LongArray = LongArray(queueSize)
 
     private var tailPtr = 0 // tail index of the queue
     private var sum: Long = 0

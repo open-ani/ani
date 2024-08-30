@@ -18,6 +18,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -29,19 +30,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
-import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.logging.warn
-import kotlin.concurrent.Volatile
 import kotlin.math.roundToInt
 
 @Stable
 class DanmakuHostState(
     danmakuConfigState: State<DanmakuConfig> = mutableStateOf(DanmakuConfig.Default), // state 
-    private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default, // state
+    private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) {
-    private val logger = logger<DanmakuHostState>()
-    
     private val danmakuConfig by danmakuConfigState
+    private val uiContextDeferred: CompletableDeferred<UIContext> = CompletableDeferred()
     /**
      * DanmakuHost 显示大小, 在显示时修改
      */
@@ -49,19 +46,14 @@ class DanmakuHostState(
     internal var hostWidth by hostWidthState
     private val hostHeightState = mutableIntStateOf(0)
     internal var hostHeight by hostHeightState
-    
-    @Volatile
-    internal lateinit var baseStyle: TextStyle
-    @Volatile
-    internal lateinit var textMeasurer: TextMeasurer
-    @Volatile
-    internal lateinit var density: Density
 
     private val trackHeightState = mutableIntStateOf(0)
     internal var trackHeight by trackHeightState
         private set
     // currently not configurable
     private val floatingSpeedMultiplierState = mutableFloatStateOf(danmakuTrackProperties.speedMultiplier)
+    // currently not configurable
+    private val fixedDanmakuPresentDuration = mutableLongStateOf(danmakuTrackProperties.fixedDanmakuPresentDuration)
     
     internal val canvasAlpha by derivedStateOf { danmakuConfig.style.alpha }
     internal var paused by mutableStateOf(false)
@@ -87,16 +79,26 @@ class DanmakuHostState(
     private val mutablePresentDanmaku: MutableList<PositionedDanmakuState> = mutableStateListOf()
     val presentDanmaku: List<PositionedDanmakuState> = mutablePresentDanmaku
     
+    fun setUIContext(
+        baseStyle: TextStyle,
+        textMeasurer: TextMeasurer,
+        density: Density
+    ) {
+        uiContextDeferred.complete(UIContext(baseStyle, textMeasurer, density))
+    }
+    
     /**
      * 监听 轨道数量, 轨道高度 和 弹幕配置项目 的变化
      */
-    internal suspend fun observeTrack(measurer: TextMeasurer, density: Density) {
+    internal suspend fun observeTrack(measurer: TextMeasurer) {
+        val uiContext = uiContextDeferred.await()
         combine(
             snapshotFlow { danmakuConfig }.distinctUntilChanged(),
             snapshotFlow { hostHeight }.debounce(500)
         ) { config, height ->
-            val dummyTextLayout = dummyDanmaku(measurer, baseStyle, config.style, "哈哈哈哈").solidTextLayout
-            val verticalPadding = with(density) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
+            val dummyTextLayout = 
+                dummyDanmaku(measurer, uiContext.baseStyle, config.style, "哈哈哈哈").solidTextLayout
+            val verticalPadding = with(uiContext.density) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
 
             val trackHeight = dummyTextLayout.size.height + verticalPadding
             val trackCount = height / trackHeight * config.displayArea
@@ -113,7 +115,7 @@ class DanmakuHostState(
                 if (trackHeight != this@DanmakuHostState.trackHeight) {
                     this@DanmakuHostState.trackHeight = trackHeight
                 }
-                updateTrack(trackCount, config, baseWidth, density)
+                updateTrack(trackCount, config, baseWidth, uiContext.density)
             }
     }
 
@@ -132,7 +134,7 @@ class DanmakuHostState(
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
                 trackIndex = index,
-                frameTimeNanos = elapsedFrameTimeNanoState,
+                frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState, 
                 speedPxPerSecond = newFloatingTrackSpeed,
@@ -150,38 +152,28 @@ class DanmakuHostState(
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
                 trackIndex = index,
-                frameTimeNanos = elapsedFrameTimeNanoState,
+                frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState,
                 screenHeight = hostHeightState,
                 fromBottom = false,
+                durationMillis = fixedDanmakuPresentDuration,
                 onRemoveDanmaku = { removed -> mutablePresentDanmaku.remove(removed) }
             )
         }
         bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
             FixedDanmakuTrack(
                 trackIndex = index,
-                frameTimeNanos = elapsedFrameTimeNanoState,
+                frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 screenWidth = hostWidthState,
                 screenHeight = hostHeightState,
                 fromBottom = true,
+                durationMillis = fixedDanmakuPresentDuration,
                 onRemoveDanmaku = { removed -> mutablePresentDanmaku.remove(removed) }
             )
         }
         invalidate()
-    }
-
-    private fun <T : DanmakuTrack> MutableList<T>.setTrackCountImpl(
-        count: Int,
-        newInstance: (index: Int) -> T,
-    ) {
-        when {
-            size == count -> return
-            // 清除 track 的同时要把 track 里的 danmaku 也要清除
-            count < size -> repeat(size - count) { removeLast().clearAll() }
-            else -> addAll(List(count - size) { newInstance(size + it) })
-        }
     }
 
     @UiThread
@@ -239,15 +231,13 @@ class DanmakuHostState(
         danmaku: DanmakuPresentation, 
         placeFrameTimeNanos: Long
     ): PositionedDanmakuState? {
-        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
-            delay(100)
-        }
+        val uiContext = uiContextDeferred.await()
         
         fun createDanmakuState(): DanmakuState {
             return DanmakuState(
                 presentation = danmaku,
-                measurer = textMeasurer,
-                baseStyle = baseStyle,
+                measurer = uiContext.textMeasurer,
+                baseStyle = uiContext.baseStyle,
                 style = danmakuConfig.style,
                 enableColor = danmakuConfig.enableColor,
                 isDebug = danmakuConfig.isDebug,
@@ -272,8 +262,7 @@ class DanmakuHostState(
      */
     suspend fun repopulate(list: List<DanmakuPresentation>) {
         if (list.isEmpty()) return
-        while (!::density.isInitialized || hostWidth == 0 ||
-            !::baseStyle.isInitialized || !::textMeasurer.isInitialized) delay(100)
+        val uiContext = uiContextDeferred.await()
         
         withContext(Dispatchers.Main.immediate) {
             clearPresentDanmaku()
@@ -283,7 +272,8 @@ class DanmakuHostState(
                 // list 弹幕的所有时间
                 val danmakuDurationMillis = list.last().danmaku.playTimeMillis - list.first().danmaku.playTimeMillis
                 // 弹幕从左滑倒右边需要的时间(毫秒)
-                val screenDurationMillis = hostWidth / with(density) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
+                val screenDurationMillis = 
+                    hostWidth / with(uiContext.density) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
 
                 // 我们先把 list 中第一条弹幕放到最左边
                 val firstDanmakuTimeMillis = list.first().danmaku.playTimeMillis
@@ -319,8 +309,6 @@ class DanmakuHostState(
     // 放置弹幕并指定放置的帧时间位置
     @UiThread
     private suspend fun repopulatePositioned(list: List<PositionedDanmakuState>) {
-        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) { delay(100) }
-        
         withContext(Dispatchers.Main.immediate) {
             clearPresentDanmaku()
             for (danmaku in list) { 
@@ -335,9 +323,8 @@ class DanmakuHostState(
         topTrack.forEach { it.clearAll() }
         bottomTrack.forEach { it.clearAll() }
 
-        if (mutablePresentDanmaku.isNotEmpty()) {
-            logger.warn { "presentDanmaku is not totally cleared after releasing track. This may cause memory leak" }
-            mutablePresentDanmaku.clear()
+        check(mutablePresentDanmaku.size == 0) {
+            "presentDanmaku is not totally cleared after releasing track."
         }
     }
 
@@ -346,10 +333,6 @@ class DanmakuHostState(
      */
     @UiThread
     private suspend fun invalidate() {
-        while (!::baseStyle.isInitialized || !::textMeasurer.isInitialized) {
-            delay(100)
-        }
-
         withContext(Dispatchers.Main.immediate) {
             if (mutablePresentDanmaku.isEmpty()) return@withContext
             val mapped = mutablePresentDanmaku.map { OverridePlaceTimeDanmakuState(it, it.placeFrameTimeNanos) }
@@ -389,5 +372,30 @@ class DanmakuHostState(
         
         fun calculatePosX(): Float
         fun calculatePosY(): Float
+    }
+    
+    private class UIContext(
+        val baseStyle: TextStyle,
+        val textMeasurer: TextMeasurer,
+        val density: Density
+    )
+}
+
+/**
+ * 发送弹幕, 在发送成功之前一直挂起
+ */
+suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
+    while (trySend(danmaku) == null) delay(50)
+}
+
+private fun <T : DanmakuTrack> MutableList<T>.setTrackCountImpl(
+    count: Int,
+    newInstance: (index: Int) -> T,
+) {
+    when {
+        size == count -> return
+        // 清除 track 的同时要把 track 里的 danmaku 也要清除
+        count < size -> repeat(size - count) { removeLast().clearAll() }
+        else -> addAll(List(count - size) { newInstance(size + it) })
     }
 }

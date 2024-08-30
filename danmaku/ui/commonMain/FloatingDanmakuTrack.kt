@@ -4,6 +4,7 @@ import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import kotlin.math.pow
 
 /**
@@ -15,7 +16,7 @@ import kotlin.math.pow
 @Stable
 class FloatingDanmakuTrack(
     val trackIndex: Int,
-    override val frameTimeNanos: LongState,
+    frameTimeNanosState: LongState,
     private val trackHeight: IntState,
     private val screenWidth: IntState,
     var speedPxPerSecond: Float,
@@ -24,9 +25,10 @@ class FloatingDanmakuTrack(
     var baseTextLength: Int,
     val speedMultiplier: FloatState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    override val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
+    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : DanmakuTrack {
-    internal val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
+    private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
+    override val frameTimeNanos: Long by frameTimeNanosState
     
     // 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标
     // 如果有那说明此弹幕放置后可能会与已有弹幕重叠
@@ -77,7 +79,7 @@ class FloatingDanmakuTrack(
         override val placeFrameTimeNanos: Long,
     ) : DanmakuHostState.PositionedDanmakuState {
         override fun calculatePosX(): Float {
-            val timeDiff = (frameTimeNanos.value - placeFrameTimeNanos) / 1_000_000_000f
+            val timeDiff = (frameTimeNanos - placeFrameTimeNanos) / 1_000_000_000f
             val multiplier = speedMultiplier.value
                 .pow(state.textWidth / (baseTextLength.toFloat() * 2f))
                 .coerceAtLeast(1f)
