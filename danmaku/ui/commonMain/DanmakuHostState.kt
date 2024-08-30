@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -62,13 +63,14 @@ class DanmakuHostState(
     
     internal val canvasAlpha by derivedStateOf { danmakuConfig.style.alpha }
     internal var paused by mutableStateOf(false)
+    internal val isDebug by derivedStateOf { danmakuConfig.isDebug }
     
     private val elapsedFrameTimeNanoState = mutableLongStateOf(0)
     /**
      * 已经过的帧时间
      */
     internal var elapsedFrameTimeNanos by elapsedFrameTimeNanoState
-    private val avgFrameTimeNanos = FastLongSumQueue(120)
+    internal val avgFrameTimeNanos = FastLongSumQueue(120)
 
     /**
      * 弹幕轨道
@@ -275,13 +277,25 @@ class DanmakuHostState(
                 val screenDurationMillis = hostWidth / with(density) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
 
                 // 我们先把 list 中第一条弹幕放到最左边
-                val firstDanmakuPlaceTimeNanos = elapsedFrameTimeNanos +
-                        (screenDurationMillis - ((screenDurationMillis - danmakuDurationMillis).coerceAtLeast(0) / 2)) * 1_000_000L
                 val firstDanmakuTimeMillis = list.first().danmaku.playTimeMillis
+                
+                val firstDanmakuPlaceTimeNanos = elapsedFrameTimeNanos + // 屏幕最右侧
+                        when {
+                            // 如果 repopulate 中的弹幕有可以显示在开始的, 例如用户跳到刚开始播放
+                            // 那需要把弹幕按时间放置到屏幕上, 这也是比较符合直觉的
+                            firstDanmakuTimeMillis < screenDurationMillis -> {
+                                -firstDanmakuTimeMillis * 1_000_000L // seek to 第一条弹幕出现时间
+                            }
+                            // 没有跳到最开始, 放到屏幕中间即可
+                            else -> (-screenDurationMillis + // seek to 屏幕左侧 
+                                    ((screenDurationMillis - danmakuDurationMillis)
+                                        .coerceAtLeast(0) / 2) // seek to 屏幕中间
+                                    ) * 1_000_000L
+                        }
 
                 floatingDanmaku.map { danmaku ->
                     val playTimeNanos = firstDanmakuPlaceTimeNanos +
-                            (danmaku.danmaku.playTimeMillis + firstDanmakuTimeMillis) * 1_000_000L
+                            (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis) * 1_000_000L
                     trySendWithTime(danmaku, playTimeNanos)
                 }
             }
@@ -329,13 +343,32 @@ class DanmakuHostState(
 
         withContext(Dispatchers.Main.immediate) {
             if (presentDanmaku.isEmpty()) return@withContext
-            repopulatePositioned(presentDanmaku)
+            val mapped = presentDanmaku.map { OverridePlaceTimeDanmakuState(it, it.placeFrameTimeNanos) }
+            repopulatePositioned(mapped)
         }
     }
     
     @UiThread
     fun setPause(pause: Boolean) {
         paused = pause
+    }
+    
+    inner class OverridePlaceTimeDanmakuState(
+        private val correspondingState: PositionedDanmakuState,
+        override val placeFrameTimeNanos: Long
+    ) : PositionedDanmakuState by correspondingState {
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false
+            if (other is FloatingDanmakuTrack.FloatingDanmaku) return other.state === this.state
+            if (other is FixedDanmakuTrack.FixedDanmaku) return other.state === this.state
+            return (other as? OverridePlaceTimeDanmakuState) === this
+        }
+
+        override fun hashCode(): Int {
+            var result = correspondingState.state.hashCode()
+            result = 31 * result + placeFrameTimeNanos.hashCode()
+            return result
+        }
     }
 
     /**

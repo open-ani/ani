@@ -42,11 +42,9 @@ class FixedDanmakuTrack(
         danmaku: DanmakuState,
         placeTimeNanos: Long
     ): Boolean {
-        return currentDanmaku == null
-        // if (currentDanmaku != null) return false
-        // // 当前没有正在显示的弹幕并且弹幕可以被显示
-        // val danmakuTime = danmaku.presentation.danmaku.playTimeMillis
-        // return elapsedFrameTimeMillis.value - danmakuTime < durationMillis.value
+        if (currentDanmaku != null) return false
+        // 当前没有正在显示的弹幕并且弹幕可以被显示
+        return frameTimeNanos.value - placeTimeNanos < durationMillis.value
     }
 
     override fun clearAll() {
@@ -84,5 +82,24 @@ class FixedDanmakuTrack(
             return "FixedDanmaku(p=${calculatePosX()}:${calculatePosY()}, " +
                     "d=${placeFrameTimeNanos}..${placeFrameTimeNanos + durationMillis.value})"
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false
+            if (other is DanmakuHostState.OverridePlaceTimeDanmakuState) {
+                return other.state === this.state
+            }
+            return (other as? FixedDanmaku) === this
+        }
+
+        override fun hashCode(): Int {
+            var result = state.hashCode()
+            result = 31 * result + placeFrameTimeNanos.hashCode()
+            return result
+        }
+    }
+
+    override fun toString(): String {
+        return "FixedTrack(index=${trackIndex}, " +
+                "placeTime=${currentDanmaku?.placeFrameTimeNanos?.div(1_000_000)})"
     }
 }

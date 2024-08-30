@@ -83,6 +83,27 @@ class FloatingDanmakuTrack(
         override fun toString(): String {
             return "FloatingDanmaku(p=${calculatePosX()}:${calculatePosY()}, v=${isFullyVisible()}, g=${isGone()})"
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false
+            if (other is DanmakuHostState.OverridePlaceTimeDanmakuState) {
+                return other.state === this.state
+            }
+            return (other as? FloatingDanmaku) === this
+        }
+
+        override fun hashCode(): Int {
+            var result = state.hashCode()
+            result = 31 * result + placeFrameTimeNanos.hashCode()
+            return result
+        }
+    }
+
+    override fun toString(): String {
+        return "FloatingTrack(index=${trackIndex}, " +
+                "danmakuCount=${danmakuList.size}, " +
+                "firstPlaceTimeMillis=${danmakuList.firstOrNull()?.placeFrameTimeNanos?.div(1_000_000)}, " +
+                "lastPlaceTimeMillis=${danmakuList.lastOrNull()?.placeFrameTimeNanos?.div(1_000_000)})"
     }
 }
 

@@ -22,6 +22,7 @@ import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.utils.platform.Uuid
 import me.him188.ani.utils.platform.format2f
+import kotlin.math.floor
 
 /**
  * DanmakuState holds all params which [Canvas] needs to draw a danmaku text.
@@ -36,7 +37,8 @@ data class DanmakuState(
     val isDebug: Boolean
 ) {
     val danmakuText = presentation.danmaku.run {
-        if (isDebug) "$text (${String.format2f(playTimeMillis.toFloat().div(1000))})" else text
+        val seconds = playTimeMillis.toFloat().div(1000)
+        if (isDebug) "$text (${floor((seconds / 60)).toInt()}:${String.format2f(seconds % 60)})" else text
     }
     
     val solidTextLayout = measurer.measure(

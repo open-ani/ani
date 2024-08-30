@@ -4,6 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +17,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 @Composable
@@ -62,12 +65,27 @@ fun DanmakuHost(
             }
         }
     }
-    // Column(modifier = modifier.fillMaxSize()) {
-    //     Text("progressTickRestartEvent: ${state.restartEvent}")
-    //     Text("delta: ${state.delta}")
-    //     Text("elapsedFrame: ${state.elapsedFrame}")
-    //     Text("elapsedFramePercent: ${state.elapsedFramePercent}")
-    //     Text("totalDiff: ${state.totalDiff}")
-    //     Text("totalPercent: ${state.totalPercent}")
-    // }
+    
+    if (state.isDebug) {
+        Column(modifier = Modifier.padding(4.dp).fillMaxSize()) { 
+            Text("DanmakuHost state: ")
+            Text("  paused: ${state.paused}")
+            Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeightState.value}")
+            Text("  elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}, avgFrameTimeMillis: ${state.avgFrameTimeNanos.avg() / 1_000_000}")
+            Text("  presentDanmakuCount: ${state.presentDanmaku.size}")
+            HorizontalDivider()
+            Text("  floating tracks: ")
+            for (track in state.floatingTrack) {
+                Text("    $track")
+            }
+            Text("  top tracks: ")
+            for (track in state.topTrack) {
+                Text("    $track")
+            }
+            Text("  bottom tracks: ")
+            for (track in state.bottomTrack) {
+                Text("    $track")
+            }
+        }
+    }
 }

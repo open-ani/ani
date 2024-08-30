@@ -61,7 +61,7 @@ data class DanmakuConfig(
      */
     val enableBottom: Boolean = true,
     /**
-     * 调试模式, 启用发送弹幕的信息.
+     * 调试模式, 启用发送弹幕的信息和弹幕处理信息.
      */
     val isDebug: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
