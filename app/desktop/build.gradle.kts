@@ -352,6 +352,5 @@ idea {
         excludeDirs.add(file("appResources/macos-arm64/lib"))
         excludeDirs.add(file("appResources/macos-arm64/plugins"))
         excludeDirs.add(file("appResources/windows-x64/lib"))
-        excludeDirs.add(file("test-sandbox"))
     }
 }

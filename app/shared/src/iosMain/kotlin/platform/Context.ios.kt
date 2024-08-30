@@ -24,10 +24,12 @@ fun Context.asIosContext(): IosContext {
 
 internal actual val Context.filesImpl: ContextFiles get() = files
 
-class IosContextFiles(
-    override val cacheDir: SystemPath,
+class IosContextFiles() : ContextFiles {
+    override val cacheDir: SystemPath
+        get() = TODO("Not yet implemented")
     override val dataDir: SystemPath
-) : ContextFiles
+        get() = TODO("Not yet implemented")
+}
 
 /**
  * 横屏模式. 横屏模式不一定是全屏.

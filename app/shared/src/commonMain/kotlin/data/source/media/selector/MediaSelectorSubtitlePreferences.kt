@@ -70,16 +70,7 @@ value class MediaSelectorSubtitlePreferences(
                     }
                 }
 
-                // TODO("MediaSelectorSubtitleKindPreferences.Companion.forPlatform for ios")
-                Platform.Ios -> ImmutableEnumMap<SubtitleKind, _> {
-                    when (it) {
-                        SubtitleKind.EMBEDDED -> NORMAL
-                        SubtitleKind.CLOSED -> NORMAL
-                        SubtitleKind.EXTERNAL_PROVIDED -> NORMAL
-                        SubtitleKind.EXTERNAL_DISCOVER -> NORMAL
-                        SubtitleKind.CLOSED_OR_EXTERNAL_DISCOVER -> NORMAL
-                    }
-                }
+                Platform.Ios -> TODO("MediaSelectorSubtitleKindPreferences.Companion.forPlatform for ios")
             }
 
             return MediaSelectorSubtitlePreferences(map)
