@@ -156,9 +156,24 @@ class TestEpisodeVideoSettingsViewModel(
         setDanmakuConfig.invoke(config)
     }
 
-    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) { }
-    override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) { }
-    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) { }
-    override fun switchDanmakuRegexFilterCompletely() { }
-    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) { }
+    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        //Do nothing in preview
+    }
+
+    override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) {
+        //Do nothing in preview
+    }
+
+    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        //Do nothing in preview
+    }
+
+    override fun switchDanmakuRegexFilterCompletely() {
+        //Do nothing in preview
+
+    }
+
+    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
+        // Do nothing in preview
+    }
 }
