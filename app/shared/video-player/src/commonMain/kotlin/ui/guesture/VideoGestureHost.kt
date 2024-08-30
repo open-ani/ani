@@ -621,7 +621,8 @@ fun VideoGestureHost(
 
             val indicatorTasker = rememberUiMonoTasker()
             val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
-
+            val scope = rememberUiMonoTasker()
+            
             Box(
                 modifier
                     .testTag("VideoGestureHost")
@@ -644,6 +645,10 @@ fun VideoGestureHost(
                                 if (family.clickToToggleController) {
                                     focusManager.clearFocus()
                                     controllerState.toggleFullVisible()
+                                    scope.launch {
+                                        delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
+                                        controllerState.toggleFullVisible(false)
+                                    }
                                 }
                             }
                         },
