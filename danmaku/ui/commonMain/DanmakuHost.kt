@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 
 @Composable
 fun DanmakuHost(
@@ -29,22 +28,19 @@ fun DanmakuHost(
     val density = LocalDensity.current
     val trackStubMeasurer = rememberTextMeasurer(1)
     val danmakuTextMeasurer = rememberTextMeasurer(3000)
+    
     SideEffect { 
         state.density = density
         state.baseStyle = baseStyle 
         state.textMeasurer = danmakuTextMeasurer
     }
+    
     // observe screen size changes to calculate track height and track count
     LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer, density) }
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
-    // logical tick for danmaku track
-    LaunchedEffect(true) { 
-        while (true) {
-            state.tick()
-            delay(1000 / 30)
-        }
-    }
+    // logical tick for removal of danmaku
+    LaunchedEffect(true) {  state.tickLoop() }
     
     BoxWithConstraints(modifier) {
         Canvas(
@@ -70,7 +66,7 @@ fun DanmakuHost(
         Column(modifier = Modifier.padding(4.dp).fillMaxSize()) { 
             Text("DanmakuHost state: ")
             Text("  paused: ${state.paused}")
-            Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeightState.value}")
+            Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
             Text("  elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}, avgFrameTimeMillis: ${state.avgFrameTimeNanos.avg() / 1_000_000}")
             Text("  presentDanmakuCount: ${state.presentDanmaku.size}")
             HorizontalDivider()

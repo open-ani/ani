@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
+import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
@@ -51,15 +54,12 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * Note, use "Run Preview" to preview on your phone or the emulator if you only see the initial danmaku-s.
- */
 @Composable
+@Preview(showBackground = true)
 @Preview(showBackground = true, device = Devices.TABLET)
 internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     var emitted by remember { mutableIntStateOf(0) }
-    val config = remember { mutableStateOf(DanmakuConfig(displayArea = 1.0f)) }
-    var upstreamCurrent by remember { mutableLongStateOf(0) }
+    val config = remember { mutableStateOf(DanmakuConfig(displayArea = 1.0f, isDebug = true)) }
     
     val data = remember {
         flow {
@@ -83,7 +83,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             while (true) {
                 emit(danmaku())
                 emitted++
-                delay(Random.nextLong(10, 25).milliseconds)
+                delay(Random.nextLong(5, 5).milliseconds)
             }
         }
     }
@@ -101,50 +101,27 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         }
     }
 
-    Row {
-        Box(Modifier.weight(1f)) {
-            DanmakuHost(
-                state,
-                Modifier.fillMaxHeight(),
+    if (isInLandscapeMode()) {
+        Row {
+            Box(Modifier.weight(1f)) {
+                DanmakuHost(state, Modifier.fillMaxHeight(),)
+            }
+            VerticalDivider()
+            EpisodeVideoSettings(
+                remember { TestEpisodeVideoSettingsViewModel(config) { config.value = it } },
+                Modifier.width(300.dp)
             )
-            Column(modifier = Modifier.padding(4.dp)) {
-                Text("emitted: $emitted")
-                Text("upstream time: ${upstreamCurrent}, elapsed frame time nanos: ${state.elapsedFrameTimeNanos}")
-                // Text("  gli: ${state.glitched}, delta: ${state.delta}, interpCurr: ${state.interpCurr}, interpUpst: ${state.interpUpst}")
-                // Text("frame version: ${state.frameVersion}")
-                // Text("frame time delta: ${state.delta}")
-                Text("present danmaku count: ${state.presentDanmaku.size}")
-                Text("trackHeight: ${state.trackHeightState.value}")
-                HorizontalDivider()
-                state.floatingTrack.forEach { danmakuTrackState ->
-                    Text(
-                        "track floating ${danmakuTrackState.trackIndex}: " +
-                                "size=${danmakuTrackState.danmakuList.size}, "
-                    )
-                }
-                HorizontalDivider()
-                state.topTrack.forEach { danmakuTrackState ->
-                    Text(
-                        "track top ${danmakuTrackState.trackIndex}: " +
-                                "curr=${danmakuTrackState.currentDanmaku}, "
-                    )
-                }
-                HorizontalDivider()
-                state.bottomTrack.forEach { danmakuTrackState ->
-                    Text(
-                        "track bottom ${danmakuTrackState.trackIndex}: " +
-                                "curr=${danmakuTrackState.currentDanmaku}, "
-                    )
-                }
+        }
+    } else {
+        Column {
+            DanmakuHost(state, Modifier.fillMaxWidth(),)
+            HorizontalDivider()
+            Box(Modifier.weight(1f)) {
+                EpisodeVideoSettings(
+                    remember { TestEpisodeVideoSettingsViewModel(config) { config.value = it } }
+                )
             }
         }
-        VerticalDivider()
-        EpisodeVideoSettings(
-            remember {
-                TestEpisodeVideoSettingsViewModel(config) { config.value = it }
-            },
-            modifier = Modifier.width(300.dp)
-        )
     }
 }
 
@@ -182,24 +159,9 @@ class TestEpisodeVideoSettingsViewModel(
         setDanmakuConfig.invoke(config)
     }
 
-    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        //Do nothing in preview
-    }
-
-    override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) {
-        //Do nothing in preview
-    }
-
-    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        //Do nothing in preview
-    }
-
-    override fun switchDanmakuRegexFilterCompletely() {
-        //Do nothing in preview
-
-    }
-
-    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        // Do nothing in preview
-    }
+    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) { }
+    override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) { }
+    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) { }
+    override fun switchDanmakuRegexFilterCompletely() { }
+    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) { }
 }
