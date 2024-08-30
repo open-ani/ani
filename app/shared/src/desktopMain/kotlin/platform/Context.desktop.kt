@@ -107,6 +107,8 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
     if (currentPlatform is Platform.Windows) {
+        WindowUtils.setUndecorated(window, fullscreen)
+        withFrameMillis { }
         if (fullscreen) {
             if (windowState.placement == WindowPlacement.Fullscreen) return
             windowState.placement = WindowPlacement.Maximized
@@ -116,7 +118,6 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
         } else {
             windowState.placement = WindowPlacement.Floating
         }
-        WindowUtils.setUndecorated(window, fullscreen)
         window.didSetFullscreen = true
     } else {
         windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
