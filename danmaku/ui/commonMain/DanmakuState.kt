@@ -21,13 +21,13 @@ import kotlin.math.floor
  * DanmakuState holds all params which [Canvas] needs to draw a danmaku text.
  */
 @Immutable
-data class DanmakuState(
+class DanmakuState(
     val presentation: DanmakuPresentation,
-    val measurer: TextMeasurer,
-    val baseStyle: TextStyle,
-    val style: DanmakuStyle,
-    val enableColor: Boolean,
-    val isDebug: Boolean
+    measurer: TextMeasurer,
+    baseStyle: TextStyle,
+    style: DanmakuStyle,
+    enableColor: Boolean,
+    isDebug: Boolean
 ) {
     val danmakuText = presentation.danmaku.run {
         val seconds = playTimeMillis.toFloat().div(1000)
