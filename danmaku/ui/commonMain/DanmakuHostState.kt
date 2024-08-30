@@ -24,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.DanmakuLocation
@@ -212,11 +213,13 @@ class DanmakuHostState(
     internal suspend fun tickLoop() {
         coroutineScope { 
             launch {
-                floatingTrack.forEach { it.tick() }
-                topTrack.forEach { it.tick() }
-                bottomTrack.forEach { it.tick() }
-                
-                delay(1000 / 30) // 30 fps
+                while (isActive) {
+                    floatingTrack.forEach { it.tick() }
+                    topTrack.forEach { it.tick() }
+                    bottomTrack.forEach { it.tick() }
+
+                    delay(1000 / 30) // 30 fps
+                }
             }
         }
     }
