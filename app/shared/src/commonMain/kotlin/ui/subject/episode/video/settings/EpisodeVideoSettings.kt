@@ -42,37 +42,35 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
-interface EpisodeVideoSettingsViewModel {
-    val danmakuConfig: DanmakuConfig
-    val isLoading: Boolean
-    val danmakuFilterConfig: DanmakuFilterConfig
-    val danmakuRegexFilterList: List<DanmakuRegexFilter>
+abstract class EpisodeVideoSettingsViewModel : AbstractSettingsViewModel() {
+    abstract val danmakuConfig: DanmakuConfig
+    abstract val isLoading: Boolean
+    abstract val danmakuFilterConfig: DanmakuFilterConfig
+    abstract val danmakuRegexFilterList: List<DanmakuRegexFilter>
 
-    fun setDanmakuConfig(config: DanmakuConfig)
-    fun addDanmakuRegexFilter(filter: DanmakuRegexFilter)
-    fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter)
-    fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter)
+    abstract fun setDanmakuConfig(config: DanmakuConfig)
+    abstract fun addDanmakuRegexFilter(filter: DanmakuRegexFilter)
+    abstract fun editDanmakuRegexFilter(id: String, new: DanmakuRegexFilter)
+    abstract fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter)
 
     // 关闭/开启所有正则过滤器
-    fun switchDanmakuRegexFilterCompletely()
+    abstract fun switchDanmakuRegexFilterCompletely()
 
     // 关闭/开启一个正则过滤器
-    fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter)
+    abstract fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter)
 }
 
-fun EpisodeVideoSettingsViewModel(): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
-
-private class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel, AbstractSettingsViewModel(),
+class EpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel(),
     KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
     private val danmakuRegexFilterRepository by inject<DanmakuRegexFilterRepository>()
 
-    val danmakuConfigSettings by settings(
+    private val danmakuConfigSettings by settings(
         settingsRepository.danmakuConfig,
         DanmakuConfig(_placeholder = -1),
     )
 
-    val danmakuFilterConfigSetting by settings(
+    private val danmakuFilterConfigSetting by settings(
         settingsRepository.danmakuFilterConfig,
         DanmakuFilterConfig.Default.copy(_placeholder = -1),
     )

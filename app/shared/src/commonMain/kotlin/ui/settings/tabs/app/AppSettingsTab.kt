@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
@@ -37,7 +38,6 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.isInDebugMode
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.Tester
@@ -112,7 +112,7 @@ class AppSettingsViewModel : AbstractSettingsViewModel() {
 
 @Composable
 fun AppSettingsTab(
-    vm: AppSettingsViewModel = rememberViewModel<AppSettingsViewModel> { AppSettingsViewModel() },
+    vm: AppSettingsViewModel = viewModel<AppSettingsViewModel> { AppSettingsViewModel() },
     modifier: Modifier = Modifier
 ) {
     SettingsTab(modifier) {
@@ -219,7 +219,7 @@ fun AppSettingsTab(
             }
             HorizontalDividerItem()
             var showUpdatePopup by remember { mutableStateOf(false) }
-            val autoUpdate: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() }
+            val autoUpdate: AutoUpdateViewModel = viewModel { AutoUpdateViewModel() }
             if (showUpdatePopup) {
                 (vm.updateCheckerTester.tester.result as? CheckVersionResult.HasNewVersion)?.let {
                     ChangelogDialog(

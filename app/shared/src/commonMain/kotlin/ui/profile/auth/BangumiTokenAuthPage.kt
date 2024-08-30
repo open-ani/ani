@@ -35,11 +35,11 @@ import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.utils.platform.currentTimeMillis
-import moe.tlaster.precompose.navigation.BackHandler
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.mp.KoinPlatform
@@ -67,7 +67,7 @@ fun BangumiTokenAuthPage(
     val navigator = LocalNavigator.current
     BackHandler {
         vm.onCancel("BangumiTokenAuthPage BackHandler")
-        navigator.goBack()
+        navigator.popBackStack()
     }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Scaffold(
@@ -135,7 +135,7 @@ fun BangumiTokenAuthPage(
                         vm.launchInBackground {
                             authByToken(token)
                             withContext(Dispatchers.Main) {
-                                navigator.goBack()
+                                navigator.popBackStack()
                             }
                         }
                     },

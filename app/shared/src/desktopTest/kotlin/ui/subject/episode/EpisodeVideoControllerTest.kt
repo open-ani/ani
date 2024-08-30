@@ -135,13 +135,14 @@ class EpisodeVideoControllerTest {
                         enabled = false,
                     )
                 },
-                leftBottomTips = {},
                 progressSliderState = progressSliderState,
-                danmakuFrozen = true,
                 mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                 mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
+                leftBottomTips = {},
+                onClickGoBack = {},
+                danmakuFrozen = true,
                 gestureFamily = gestureFamily,
             )
         }

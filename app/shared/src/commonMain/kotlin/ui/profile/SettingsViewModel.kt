@@ -7,7 +7,6 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.utils.platform.currentTimeMillis
-import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -17,7 +16,7 @@ class SettingsViewModel(
     private val settingsRepository by inject<SettingsRepository>()
     private val debugTriggerRecord = ArrayDeque<Long>()
 
-    private val tasker = MonoTasker(viewModelScope)
+    private val tasker = MonoTasker(backgroundScope)
 
     private val _debugSettings by settings(
         settingsRepository.debugSettings,

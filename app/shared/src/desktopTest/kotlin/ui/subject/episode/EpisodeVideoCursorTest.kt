@@ -45,7 +45,6 @@ import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
-import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
@@ -89,7 +88,7 @@ class EpisodeVideoCursorTest {
                     hasNextEpisode = true,
                     onClickNextEpisode = {},
                     videoControllerState = controllerState,
-                    title = { PlayerTopBar() },
+                    title = { Text("Title") },
                     danmakuHostState = remember { DanmakuHostState() },
                     danmakuEnabled = false,
                     onToggleDanmaku = {},
@@ -107,15 +106,16 @@ class EpisodeVideoCursorTest {
                             enabled = false,
                         )
                     },
-                    leftBottomTips = {},
                     progressSliderState = progressSliderState,
-                    danmakuFrozen = true,
-                    gestureFamily = gestureFamily,
                     mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                     mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                     episodeSelectorState = rememberTestEpisodeSelectorState(),
                     mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
+                    leftBottomTips = {},
+                    onClickGoBack = {},
                     modifier = Modifier.weight(1f),
+                    danmakuFrozen = true,
+                    gestureFamily = gestureFamily,
                 )
 
                 Column(Modifier.fillMaxHeight().requiredWidth(100.dp)) {

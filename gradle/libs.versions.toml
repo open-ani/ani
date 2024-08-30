@@ -17,7 +17,7 @@ korlibs = "6.0.0"
 playwright = "1.44.0"
 reorderable = "0.9.6" # 这个没用了, 我们 composite build fork
 ktor = "2.3.12"
-koin = "4.0.0-RC1" # https://github.com/InsertKoinIO/koin/releases
+koin = "3.5.6" # https://github.com/InsertKoinIO/koin/releases
 slf4j = "2.0.13"
 jsoup = "1.18.1" # https://github.com/jhy/jsoup/releases 
 android-gradle-plugin = "8.2.2"
@@ -46,6 +46,9 @@ jetpack-compose = "1.6.8"
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
 compose-multiplatform = "1.6.11"
+compose-lifecycle = "2.8.0"
+compose-navigation = "2.7.0-alpha07"
+
 # https://maven.pkg.jetbrains.space/public/p/compose/dev/org/jetbrains/compose/compiler/compiler/
 #compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
 stately-common = "2.0.7"
@@ -156,11 +159,17 @@ precompose-viewmodel = { module = "moe.tlaster:precompose-viewmodel", version = 
 # Compose Multiplatform
 reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
 constraintlayout-compose = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayout-compose" }
+compose-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "compose-lifecycle" }
+compose-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "compose-lifecycle" }
+compose-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "compose-navigation" }
+compose-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navigation-runtime", version.ref = "compose-navigation" }
+
 
 # Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.13.1" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.1" }
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version = "1.9.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 androidx-material = { module = "com.google.android.material:material", version = "1.12.0" }

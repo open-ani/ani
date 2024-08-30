@@ -6,6 +6,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
@@ -16,7 +17,6 @@ import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SelectableItem
@@ -102,7 +102,7 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             settingsRepository.mediaCacheSettings.set(copy)
         }
     }
-    
+
     val videoResolverSettings by settings(
         settingsRepository.videoResolverSettings,
         VideoResolverSettings.Default.copy(_placeholder = -1),
@@ -111,7 +111,7 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
 @Composable
 fun MediaPreferenceTab(
-    vm: MediaSettingsViewModel = rememberViewModel { MediaSettingsViewModel() },
+    vm: MediaSettingsViewModel = viewModel { MediaSettingsViewModel() },
     modifier: Modifier = Modifier,
 ) {
     val navigator by rememberUpdatedState(LocalNavigator.current)

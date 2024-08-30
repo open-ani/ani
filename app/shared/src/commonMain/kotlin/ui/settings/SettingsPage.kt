@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
@@ -36,7 +37,6 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.SettingsViewModel
@@ -74,7 +74,7 @@ fun SettingsPage(
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val toaster = LocalToaster.current
-    val vm = rememberViewModel {
+    val vm = viewModel {
         SettingsViewModel(
             triggerOnEnableDebugMode = { toaster.toast("调试模式已开启") },
         )

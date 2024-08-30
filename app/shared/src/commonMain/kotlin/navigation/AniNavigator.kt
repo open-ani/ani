@@ -9,35 +9,35 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.CompletableDeferred
 import me.him188.ani.app.ui.settings.SettingsTab
-import moe.tlaster.precompose.navigation.NavOptions
-import moe.tlaster.precompose.navigation.Navigator
-import moe.tlaster.precompose.navigation.PopUpTo
 import org.koin.core.component.KoinComponent
 import org.koin.mp.KoinPlatform
 
 /**
  * Supports navigation to any page in the app.
  *
+ * 应当总是使用 [AniNavigator], 而不要访问 [navigator].
+ *
  * @see LocalNavigator
  */
 interface AniNavigator {
-    fun setNavigator(
-        navigator: Navigator,
+    fun setNavController(
+        controller: NavHostController,
     )
 
-    suspend fun awaitNavigator(): Navigator
+    suspend fun awaitNavController(): NavHostController
 
-    val navigator: Navigator
+    val navigator: NavHostController
 
-    fun goBack() {
-        navigator.goBack()
+    fun popBackStack() {
+        navigator.popBackStack()
     }
 
     fun popUntilNotAuth() {
-        navigator.goBack(PopUpTo("/bangumi-token-oauth", inclusive = true), inclusive = true)
-        navigator.goBack(PopUpTo("/bangumi-oauth", inclusive = true), inclusive = true)
+        navigator.popBackStack("/bangumi-token-oauth", inclusive = true)
+        navigator.popBackStack("/bangumi-oauth", inclusive = true)
     }
 
     fun navigateSubjectDetails(subjectId: Int) {
@@ -49,9 +49,9 @@ interface AniNavigator {
     }
 
     fun navigateEpisodeDetails(subjectId: Int, episodeId: Int, fullscreen: Boolean = false) {
+        navigator.popBackStack("/subjects/$subjectId/episodes/$episodeId", inclusive = true)
         navigator.navigate(
             "/subjects/$subjectId/episodes/$episodeId?fullscreen=$fullscreen",
-            NavOptions(launchSingleTop = true, includePath = true),
         )
     }
 
@@ -71,17 +71,20 @@ interface AniNavigator {
      * 登录页面
      */
     fun navigateBangumiOAuthOrTokenAuth() {
-        navigator.navigate("/bangumi-oauth", NavOptions(launchSingleTop = true))
+        navigator.navigate("/bangumi-oauth") {
+            launchSingleTop = true
+        }
     }
 
     fun navigateBangumiTokenAuth() {
         navigator.navigate(
             "/bangumi-token-auth",
-            NavOptions(
-                launchSingleTop = true,
-                popUpTo = PopUpTo("/bangumi-oauth", inclusive = true),
-            ),
-        )
+        ) {
+            launchSingleTop = true
+            popUpTo("/bangumi-oauth") {
+                inclusive = true
+            }
+        }
     }
 
     fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
@@ -100,16 +103,16 @@ interface AniNavigator {
 fun AniNavigator(): AniNavigator = AniNavigatorImpl()
 
 private class AniNavigatorImpl : AniNavigator, KoinComponent {
-    private val _navigator: CompletableDeferred<Navigator> = CompletableDeferred()
+    private val _navigator: CompletableDeferred<NavHostController> = CompletableDeferred()
 
-    override val navigator: Navigator
+    override val navigator: NavHostController
         get() = _navigator.getCompleted()
 
-    override fun setNavigator(navigator: Navigator) {
-        this._navigator.complete(navigator)
+    override fun setNavController(controller: NavHostController) {
+        this._navigator.complete(controller)
     }
 
-    override suspend fun awaitNavigator(): Navigator {
+    override suspend fun awaitNavController(): NavHostController {
         return _navigator.await()
     }
 }
