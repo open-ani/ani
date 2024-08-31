@@ -398,10 +398,10 @@ interface SupportsAudio {
     fun setVolume(volume: Float)
 
     @UiThread
-    fun volumeUp()
+    fun volumeUp(value: Float = 0.05f)
 
     @UiThread
-    fun volumeDown()
+    fun volumeDown(value: Float = 0.05f)
 }
 
 /**
@@ -493,12 +493,12 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
         this.volume.value = volume
     }
 
-    override fun volumeUp() {
-        setVolume(volume.value + 0.05f)
+    override fun volumeUp(value: Float) {
+        setVolume(volume.value + value)
     }
 
-    override fun volumeDown() {
-        setVolume(volume.value - 0.05f)
+    override fun volumeDown(value: Float) {
+        setVolume(volume.value - value)
     }
 
     override fun saveScreenshotFile(filename: String) {
