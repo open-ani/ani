@@ -19,13 +19,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
@@ -180,25 +177,21 @@ class DanmakuHostState(
 
     @UiThread
     internal suspend fun interpolateFrameLoop() {
-        coroutineScope {
-            launch {
-                var currentFrameTimeNanos = withFrameNanos {
-                    // 使用了这一帧来获取时间, 需要补偿平均帧时间
-                    elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
-                    it
-                }
+        var currentFrameTimeNanos = withFrameNanos {
+            // 使用了这一帧来获取时间, 需要补偿平均帧时间
+            elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
+            it
+        }
 
-                while (true) {
-                    withFrameNanos { nanos ->
-                        val delta = nanos - currentFrameTimeNanos
-                        
-                        elapsedFrameTimeNanos += delta
-                        avgFrameTimeNanos += delta
-                        
-                        currentFrameTimeNanos = nanos
-                        for (danmaku in mutablePresentDanmaku) danmaku.calculatePos()
-                    }
-                }
+        while (true) {
+            withFrameNanos { nanos ->
+                val delta = nanos - currentFrameTimeNanos
+
+                elapsedFrameTimeNanos += delta
+                avgFrameTimeNanos += delta
+
+                currentFrameTimeNanos = nanos
+                for (danmaku in mutablePresentDanmaku) danmaku.calculatePos()
             }
         }
     }
@@ -208,17 +201,11 @@ class DanmakuHostState(
      */
     @UiThread
     internal suspend fun tickLoop() {
-        coroutineScope { 
-            launch {
-                while (isActive) {
-                    floatingTrack.forEach { it.tick() }
-                    topTrack.forEach { it.tick() }
-                    bottomTrack.forEach { it.tick() }
-
-                    delay(1000 / 30) // 30 fps
-                }
-            }
-        }
+        floatingTrack.forEach { it.tick() }
+        topTrack.forEach { it.tick() }
+        bottomTrack.forEach { it.tick() }
+        
+        delay(1000 / 10) // 10 fps
     }
 
     /**
@@ -361,7 +348,7 @@ class DanmakuHostState(
     }
     
     @UiThread
-    fun setPause(pause: Boolean) {
+    fun setPaused(pause: Boolean) {
         paused = pause
     }
 

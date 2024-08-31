@@ -570,7 +570,7 @@ private class EpisodeViewModelImpl(
     init {
         launchInMain { // state changes must be in main thread
             playerState.state.collect {
-                danmaku.danmakuHostState.setPause(!it.isPlaying)
+                danmaku.danmakuHostState.setPaused(!it.isPlaying)
             }
         }
 
