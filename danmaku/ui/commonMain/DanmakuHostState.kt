@@ -190,9 +190,12 @@ class DanmakuHostState(
                 while (true) {
                     withFrameNanos { nanos ->
                         val delta = nanos - currentFrameTimeNanos
+                        
                         elapsedFrameTimeNanos += delta
                         avgFrameTimeNanos += delta
+                        
                         currentFrameTimeNanos = nanos
+                        for (danmaku in mutablePresentDanmaku) danmaku.calculatePos()
                     }
                 }
             }
@@ -364,12 +367,20 @@ class DanmakuHostState(
      * DanmakuState which is positioned and can be placed on [Canvas].
      */
     @Stable
-    interface PositionedDanmakuState {
-        val state: DanmakuState
-        val placeFrameTimeNanos: Long
+    abstract class PositionedDanmakuState(
+        private val calculatePosX: () -> Float,
+        private val calculatePosY: () -> Float
+    ) {
+        abstract val state: DanmakuState
+        abstract val placeFrameTimeNanos: Long
         
-        fun calculatePosX(): Float
-        fun calculatePosY(): Float
+        var x: Float = calculatePosX()
+        var y: Float = calculatePosY()
+        
+        internal fun calculatePos() {
+            x = calculatePosX()
+            y = calculatePosY()
+        }
     }
     
     private class UIContext(

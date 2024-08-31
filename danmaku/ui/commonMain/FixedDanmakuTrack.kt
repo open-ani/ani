@@ -63,21 +63,18 @@ internal class FixedDanmakuTrack(
     inner class FixedDanmaku(
         override val state: DanmakuState,
         override val placeFrameTimeNanos: Long,
-    ) : DanmakuHostState.PositionedDanmakuState {
-        override fun calculatePosX(): Float {
-            return (screenWidth.value - state.textWidth.toFloat()) / 2
-        }
-
-        override fun calculatePosY(): Float {
-            return if (fromBottom) {
+    ) : DanmakuHostState.PositionedDanmakuState(
+        calculatePosX = { (screenWidth.value - state.textWidth.toFloat()) / 2 },
+        calculatePosY = {
+            if (fromBottom) {
                 screenHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()
             } else {
                 trackIndex * trackHeight.value.toFloat()
             }
         }
-
+    ) {
         override fun toString(): String {
-            return "FixedDanmaku(p=${calculatePosX()}:${calculatePosY()}, " +
+            return "FixedDanmaku(p=$x:$y, " +
                     "d=${placeFrameTimeNanos}..${placeFrameTimeNanos + durationMillis.value})"
         }
     }

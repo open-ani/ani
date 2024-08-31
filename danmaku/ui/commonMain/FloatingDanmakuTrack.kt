@@ -37,9 +37,9 @@ internal class FloatingDanmakuTrack(
         placeTimeNanos: Long
     ): Boolean {
         if (danmakuList.isEmpty()) return true
-        val upcomingDanmakuPosX = FloatingDanmaku(danmaku, placeTimeNanos).calculatePosX()
+        val upcomingDanmakuPosX = FloatingDanmaku(danmaku, placeTimeNanos).x
         for (d in danmakuList.asReversed()) {
-            if (d.calculatePosX() + d.state.textWidth + safeSeparation > upcomingDanmakuPosX) return false
+            if (d.x + d.state.textWidth + safeSeparation > upcomingDanmakuPosX) return false
         }
         return true
     }
@@ -66,32 +66,29 @@ internal class FloatingDanmakuTrack(
     }
 
     internal fun FloatingDanmaku.isGone(): Boolean {
-        return calculatePosX() + state.textWidth.toFloat() < 0
+        return x + state.textWidth.toFloat() < 0
     }
 
     internal fun FloatingDanmaku.isFullyVisible(): Boolean {
-        return trackWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation
+        return trackWidth.value.toFloat() - x >= state.textWidth + safeSeparation
     }
     
     @Stable
     inner class FloatingDanmaku(
         override val state: DanmakuState,
         override val placeFrameTimeNanos: Long,
-    ) : DanmakuHostState.PositionedDanmakuState {
-        override fun calculatePosX(): Float {
+    ) : DanmakuHostState.PositionedDanmakuState(
+        calculatePosX = {
             val timeDiff = (frameTimeNanos - placeFrameTimeNanos) / 1_000_000_000f
             // val multiplier = speedMultiplier.value
             //     .pow(state.textWidth / (baseTextLength.toFloat() * 2f))
             //     .coerceAtLeast(1f)
-            return trackWidth.value - timeDiff * speedPxPerSecond // * multiplier
-        }
-
-        override fun calculatePosY(): Float {
-            return trackHeight.value.toFloat() * trackIndex
-        }
-
+            trackWidth.value - timeDiff * speedPxPerSecond // * multiplier
+        },
+        calculatePosY = { trackHeight.value.toFloat() * trackIndex }
+    ) {
         override fun toString(): String {
-            return "FloatingDanmaku(p=${calculatePosX()}:${calculatePosY()}, v=${isFullyVisible()}, g=${isGone()})"
+            return "FloatingDanmaku(p=$x:$y, v=${isFullyVisible()}, g=${isGone()})"
         }
     }
 
