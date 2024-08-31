@@ -11,14 +11,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.debounce
 
 @Composable
 fun DanmakuHost(
@@ -47,15 +50,19 @@ fun DanmakuHost(
     }
     
     BoxWithConstraints(modifier) {
-        Canvas(
-            Modifier
-                .fillMaxSize()
-                .alpha(state.canvasAlpha)
-                .onSizeChanged { 
-                    state.hostWidth = it.width
-                    state.hostHeight = it.height
+        val screenWidth by rememberUpdatedState(constraints.maxWidth)
+        val screenHeight by rememberUpdatedState(constraints.maxHeight)
+        
+        LaunchedEffect(true) {
+            snapshotFlow { screenWidth to screenHeight }
+                .debounce(500)
+                .collect { (width, height) ->
+                    state.hostWidth = width
+                    state.hostHeight = height
                 }
-        ) {
+        }
+        
+        Canvas(Modifier.fillMaxSize().alpha(state.canvasAlpha)) {
             state.elapsedFrameTimeNanos // subscribe changes
             for (danmaku in state.presentDanmaku) {
                 drawDanmakuText(

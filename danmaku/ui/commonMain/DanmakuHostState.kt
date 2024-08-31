@@ -21,7 +21,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.DanmakuLocation
@@ -91,7 +90,7 @@ class DanmakuHostState(
         val uiContext = uiContextDeferred.await()
         combine(
             snapshotFlow { danmakuConfig }.distinctUntilChanged(),
-            snapshotFlow { hostHeight }.debounce(500)
+            snapshotFlow { hostHeight }
         ) { config, height ->
             val dummyTextLayout = 
                 dummyDanmaku(measurer, uiContext.baseStyle, config.style, "哈哈哈哈").solidTextLayout
@@ -152,8 +151,8 @@ class DanmakuHostState(
                 trackIndex = index,
                 frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
-                screenWidth = hostWidthState,
-                screenHeight = hostHeightState,
+                hostWidth = hostWidthState,
+                hostHeight = hostHeightState,
                 fromBottom = false,
                 durationMillis = fixedDanmakuPresentDuration,
                 onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.state == removed.state } }
@@ -164,8 +163,8 @@ class DanmakuHostState(
                 trackIndex = index,
                 frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
-                screenWidth = hostWidthState,
-                screenHeight = hostHeightState,
+                hostWidth = hostWidthState,
+                hostHeight = hostHeightState,
                 fromBottom = true,
                 durationMillis = fixedDanmakuPresentDuration,
                 onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.state == removed.state } }

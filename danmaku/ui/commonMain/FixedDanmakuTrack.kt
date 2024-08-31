@@ -17,8 +17,8 @@ internal class FixedDanmakuTrack(
     val fromBottom: Boolean,
     frameTimeNanosState: LongState,
     private val trackHeight: IntState,
-    private val screenWidth: IntState,
-    private val screenHeight: IntState,
+    private val hostWidth: IntState,
+    private val hostHeight: IntState,
     // 顶部或底部弹幕的显示时间，现在还不能自定义
     private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
@@ -64,10 +64,10 @@ internal class FixedDanmakuTrack(
         override val state: DanmakuState,
         override val placeFrameTimeNanos: Long,
     ) : DanmakuHostState.PositionedDanmakuState(
-        calculatePosX = { (screenWidth.value - state.textWidth.toFloat()) / 2 },
+        calculatePosX = { (hostWidth.value - state.textWidth.toFloat()) / 2 },
         calculatePosY = {
             if (fromBottom) {
-                screenHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()
+                hostHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()
             } else {
                 trackIndex * trackHeight.value.toFloat()
             }
