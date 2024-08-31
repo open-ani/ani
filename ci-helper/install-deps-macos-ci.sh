@@ -8,4 +8,3 @@ brew install ninja
 
 # libtorrent
 brew install swig
-brew install boost
