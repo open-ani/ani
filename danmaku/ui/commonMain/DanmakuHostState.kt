@@ -199,12 +199,10 @@ class DanmakuHostState(
      * 逻辑帧 tick, 主要用于移除超出屏幕外或超过时间的弹幕
      */
     @UiThread
-    internal suspend fun tickLoop() {
+    internal fun tick() {
         floatingTrack.forEach { it.tick() }
         topTrack.forEach { it.tick() }
         bottomTrack.forEach { it.tick() }
-        
-        delay(1000 / 10) // 10 fps
     }
 
     /**

@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 @Composable
 fun DanmakuHost(
@@ -38,7 +39,12 @@ fun DanmakuHost(
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for removal of danmaku
-    LaunchedEffect(true) { state.tickLoop() }
+    LaunchedEffect(true) { 
+        while (true) {
+            state.tick()
+            delay(1000 / 10) // 10 fps
+        }
+    }
     
     BoxWithConstraints(modifier) {
         Canvas(
