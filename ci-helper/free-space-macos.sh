@@ -1,12 +1,18 @@
 #!/bin/zsh
 
+echo "Before cleanup"
+df -h
+echo ""
+echo ""
+
 rm -rf /tmp/* || true
 
-curl -O https://raw.githubusercontent.com/dotnet/sdk/main/scripts/obtain/uninstall/dotnet-uninstall-pkgs.sh
-chmod u+x dotnet-uninstall-pkgs.sh
+curl -O https://raw.githubusercontent.com/dotnet/sdk/main/scripts/obtain/uninstall/dotnet-uninstall-pkgs.sh || true
+chmod u+x dotnet-uninstall-pkgs.sh || true
 sudo ./dotnet-uninstall-pkgs.sh || true
 
 sudo rm -rf /usr/local/share/chromedriver-mac-x64 || true
+sudo rm -rf "$CHROMEWEBDRIVER" || true
 sudo rm -rf /usr/local/share/edge_driver || true
 sudo rm -rf /usr/local/opt/geckodriver || true
 
@@ -34,4 +40,12 @@ sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platfo
 sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.2.sdk || true
 sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.4.sdk || true
 
-rm -rf $JAVA_HOME_8_X64
+rm -rf "$JAVA_HOME_11_arm64" || true
+rm -rf "$JAVA_HOME_17_arm64" || true
+rm -rf "$JAVA_HOME_21_arm64" || true
+
+echo ""
+echo ""
+
+echo "After cleanup"
+df -h
