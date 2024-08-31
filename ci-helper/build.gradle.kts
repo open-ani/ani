@@ -419,10 +419,10 @@ fun ReleaseEnvironment.uploadDesktopDistributions() {
 }
 
 // ./gradlew updateDevVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
+val gradleProperties = rootProject.file("gradle.properties")
 tasks.register("updateDevVersionNameFromGit") {
     doLast {
-        val gradlePropertiesFile = rootProject.file("gradle.properties")
-        val properties = file(gradlePropertiesFile).readText()
+        val properties = file(gradleProperties).readText()
         val baseVersion =
             (Regex("version.name=(.+)").find(properties)
                 ?: error("Failed to find base version. Check version.name in gradle.properties"))
@@ -430,7 +430,7 @@ tasks.register("updateDevVersionNameFromGit") {
                 .substringBefore("-")
         val new = ReleaseEnvironment().generateDevVersionName(base = baseVersion)
         println("New version name: $new")
-        file(gradlePropertiesFile).writeText(
+        file(gradleProperties).writeText(
             properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new"),
         )
     }
@@ -439,11 +439,10 @@ tasks.register("updateDevVersionNameFromGit") {
 // ./gradlew updateReleaseVersionNameFromGit -DGITHUB_REF=refs/heads/master -DGITHUB_SHA=123456789 --no-configuration-cache
 tasks.register("updateReleaseVersionNameFromGit") {
     doLast {
-        val gradlePropertiesFile = rootProject.file("gradle.properties")
-        val properties = file(gradlePropertiesFile).readText()
+        val properties = file(gradleProperties).readText()
         val new = ReleaseEnvironment().generateReleaseVersionName()
         println("New version name: $new")
-        file(gradlePropertiesFile).writeText(
+        file(gradleProperties).writeText(
             properties.replaceFirst(Regex("version.name=(.+)"), "version.name=$new"),
         )
     }
