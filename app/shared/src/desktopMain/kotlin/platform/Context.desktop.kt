@@ -109,6 +109,7 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
     if (currentPlatform is Platform.Windows) {
         if (fullscreen) {
+            // hi, 相信前人的智慧, 如果操作不当会导致某些 Windows 设备上全屏会白屏 (你的电脑不一定能复现)
             if (windowState.placement == WindowPlacement.Fullscreen) return
             windowState.placement = WindowPlacement.Maximized
             withFrameMillis { }
