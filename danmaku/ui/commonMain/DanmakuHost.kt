@@ -55,7 +55,7 @@ fun DanmakuHost(
         
         LaunchedEffect(true) {
             snapshotFlow { screenWidth to screenHeight }
-                .debounce(500)
+                .debounce(1000 / 30)
                 .collect { (width, height) ->
                     state.hostWidth = width
                     state.hostHeight = height
@@ -77,9 +77,8 @@ fun DanmakuHost(
     if (state.isDebug) {
         Column(modifier = Modifier.padding(4.dp).fillMaxSize()) { 
             Text("DanmakuHost state: ")
-            Text("  paused: ${state.paused}")
             Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
-            Text("  elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}, avgFrameTimeMillis: ${state.avgFrameTimeNanos.avg() / 1_000_000}")
+            Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
             Text("  presentDanmakuCount: ${state.presentDanmaku.size}")
             HorizontalDivider()
             Text("  floating tracks: ")

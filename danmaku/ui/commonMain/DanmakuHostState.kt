@@ -56,10 +56,10 @@ class DanmakuHostState(
     
     private val elapsedFrameTimeNanoState = mutableLongStateOf(0)
     /**
-     * 已经过的帧时间
+     * 已经过的帧时间, 在 [setPaused] 设置暂停时此帧时间也会暂停
      */
     internal var elapsedFrameTimeNanos by elapsedFrameTimeNanoState
-    internal val avgFrameTimeNanos = FastLongSumQueue(120)
+    // internal val avgFrameTimeNanos = FastLongSumQueue(120)
 
     /**
      * 弹幕轨道
@@ -90,7 +90,7 @@ class DanmakuHostState(
         val uiContext = uiContextDeferred.await()
         combine(
             snapshotFlow { danmakuConfig }.distinctUntilChanged(),
-            snapshotFlow { hostHeight }
+            snapshotFlow { hostHeight }.distinctUntilChanged()
         ) { config, height ->
             val dummyTextLayout = 
                 dummyDanmaku(measurer, uiContext.baseStyle, config.style, "哈哈哈哈").solidTextLayout
@@ -177,7 +177,7 @@ class DanmakuHostState(
     internal suspend fun interpolateFrameLoop() {
         var currentFrameTimeNanos = withFrameNanos {
             // 使用了这一帧来获取时间, 需要补偿平均帧时间
-            elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
+            // elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
             it
         }
 
@@ -186,7 +186,7 @@ class DanmakuHostState(
                 val delta = nanos - currentFrameTimeNanos
 
                 elapsedFrameTimeNanos += delta
-                avgFrameTimeNanos += delta
+                // avgFrameTimeNanos += delta
 
                 currentFrameTimeNanos = nanos
                 for (danmaku in presentDanmaku) danmaku.calculatePos()
