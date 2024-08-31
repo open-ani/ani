@@ -36,6 +36,7 @@ import androidx.compose.ui.window.WindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import kotlinx.coroutines.delay
 import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.platform.window.WindowUtils
 import me.him188.ani.utils.io.SystemPath
@@ -107,15 +108,17 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
     if (currentPlatform is Platform.Windows) {
-        WindowUtils.setUndecorated(window, fullscreen)
-        withFrameMillis { }
         if (fullscreen) {
             if (windowState.placement == WindowPlacement.Fullscreen) return
             windowState.placement = WindowPlacement.Maximized
             withFrameMillis { }
             windowState.placement = WindowPlacement.Fullscreen
+            delay(1000)
+            WindowUtils.setUndecorated(window, true)
             withFrameMillis { }
         } else {
+            WindowUtils.setUndecorated(window, false)
+            withFrameMillis { }
             windowState.placement = WindowPlacement.Floating
         }
         window.didSetFullscreen = true
