@@ -50,7 +50,12 @@ jobs:
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
             run_tests: true
-            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M -Porg.gradle.parallel=false'
+            gradleArgs: >-
+              -Dorg.gradle.jvmargs=-Xmx4096m
+              -Dfile.encoding=UTF-8
+              -Dkotlin.daemon.jvm.options=-Xmx4096M
+              -Porg.gradle.parallel=false
+              -Pani.build.framework=false
           - os: macos-14
             name: macOS aarch64
             uploadApk: false
