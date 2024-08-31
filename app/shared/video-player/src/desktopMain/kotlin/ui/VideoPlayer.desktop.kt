@@ -308,7 +308,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     state.value = PlaybackState.PAUSED
                 }
 
-                override fun stopped(mediaPlayer: MediaPlayer) {
+                override fun finished(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.FINISHED
                 }
 
