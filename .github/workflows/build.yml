@@ -91,7 +91,7 @@ jobs:
 
       - if: ${{ startsWith(matrix.os, 'macos') }}
         name: Free space
-        run: ./ci-helper/free-space-macos.sh
+        run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
         continue-on-error: true
 
       - uses: actions/setup-java@v4
