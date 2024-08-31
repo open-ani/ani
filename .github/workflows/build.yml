@@ -54,7 +54,6 @@ jobs:
               -Dorg.gradle.jvmargs=-Xmx4096m
               -Dfile.encoding=UTF-8
               -Dkotlin.daemon.jvm.options=-Xmx4096M
-              -Porg.gradle.parallel=false
               -Pani.build.framework=false
           - os: macos-14
             name: macOS aarch64
@@ -68,16 +67,13 @@ jobs:
               -Dorg.gradle.jvmargs=-Xmx2g
               -Dfile.encoding=UTF-8
               -Dkotlin.daemon.jvm.options=-Xmx3g
-              -Porg.gradle.parallel=false
               -Pani.build.framework=false
               -Pani.android.abis=arm64-v8a
             # 这台机器硬盘小, 不要构建其他安卓架构
     env:
-      enableLocalPublishingTest: 'false'
       gradleArgs: >-
         --scan
         ${{ matrix.gradleArgs }} 
-        --no-configuration-cache 
         ${{ matrix.anitorrent == true && '"-Dani.enable.anitorrent=true"' || '' }}
         ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}
