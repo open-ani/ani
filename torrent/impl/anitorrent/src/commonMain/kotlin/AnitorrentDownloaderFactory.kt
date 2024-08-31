@@ -1,7 +1,6 @@
 package me.him188.ani.app.torrent.anitorrent
 
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
@@ -18,7 +17,7 @@ class AnitorrentDownloaderFactory : TorrentDownloaderFactory {
         httpFileDownloader: HttpFileDownloader,
         torrentDownloaderConfig: TorrentDownloaderConfig,
         parentCoroutineContext: CoroutineContext
-    ): TorrentDownloader =
+    ): AnitorrentTorrentDownloader<*, *> =
         createAnitorrentTorrentDownloader(
             rootDataDirectory,
             httpFileDownloader,

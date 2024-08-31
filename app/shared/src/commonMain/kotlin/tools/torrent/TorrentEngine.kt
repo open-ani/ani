@@ -5,11 +5,15 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -81,16 +85,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
     protected val logger = logger(this::class)
     protected val scope = parentCoroutineContext.childScope()
 
-    private val downloader = config
-        .run {
-            var isInitial = true
-            debounce {
-                if (isInitial) {
-                    isInitial = false
-                    0
-                } else 1000
-            }
-        }
+    private val downloader = flow { emit(config.first()) }
         .map { config ->
             // TODO: 这里不能 combine proxySettings, 因为这会导致更换设置时重新创建 downloader, 而 #775.
             //  而且在播放视频时, 关闭 downloader, 视频仍然会持有旧的 torrent session, 而旧的已经被关闭了, 视频就会一直显示缓冲中.
@@ -112,9 +107,19 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
         .onReplacement {
             closeInstance(it)
         }
-        .shareIn(scope, SharingStarted.Lazily, 1)
+        .stateIn(scope, SharingStarted.Lazily, null)
+
+    init {
+        scope.launch {
+            config.drop(1).debounce(1000).collect {
+                downloader.value?.applyConfig(it)
+            }
+        }
+    }
 
     protected abstract suspend fun newInstance(config: Config, proxySettings: MediaSourceProxySettings): Downloader
+
+    protected abstract suspend fun Downloader.applyConfig(config: Config)
 
     @CallSuper
     protected open fun closeInstance(downloader: Downloader) {
@@ -129,7 +134,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
     final override suspend fun getDownloader(): Downloader {
         if (!isSupported.first()) throw UnsupportedOperationException("Engine $this is not supported")
         return try {
-            downloader.first()
+            downloader.filterNotNull().first()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {

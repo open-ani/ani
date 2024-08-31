@@ -54,7 +54,7 @@ internal expect fun createAnitorrentTorrentDownloader(
     httpFileDownloader: HttpFileDownloader,
     torrentDownloaderConfig: TorrentDownloaderConfig,
     parentCoroutineContext: CoroutineContext,
-): TorrentDownloader
+): AnitorrentTorrentDownloader<*, *>
 
 
 abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : TorrentAddInfo>(
@@ -326,6 +326,10 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
 
     override fun listSaves(): List<SystemPath> {
         return downloadCacheDir.list().toList().map { it.inSystem }
+    }
+
+    fun applyConfig(config: TorrentDownloaderConfig) {
+        native.applyConfig(config)
     }
 
     override fun close() {

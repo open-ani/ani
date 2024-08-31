@@ -62,6 +62,7 @@ class session_t final {
   public:
     // session_settings_t is owned by Java and will be destroyed after this call
     void start(const session_settings_t &settings);
+    void apply_settings(const session_settings_t &settings);
 
     void resume() const;
 

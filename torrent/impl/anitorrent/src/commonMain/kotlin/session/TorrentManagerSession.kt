@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.anitorrent.session
 
 import kotlinx.io.files.Path
 import me.him188.ani.app.torrent.anitorrent.HandleId
+import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.files.FilePriority
 
 /**
@@ -15,6 +16,8 @@ interface TorrentManagerSession<Handle : TorrentHandle, AddInfo : TorrentAddInfo
     fun releaseHandle(handle: Handle)
 
     fun resume()
+
+    fun applyConfig(config: TorrentDownloaderConfig)
 }
 
 /**
