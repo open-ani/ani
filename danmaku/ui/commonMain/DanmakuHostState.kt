@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -75,9 +74,9 @@ class DanmakuHostState(
     
     /**
      * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
-     * 在这里保留一个引用, 方便在 repopulate 的时候重新计算所有弹幕位置.
+     * 在这里保留一个引用, 方便在 [repopulatePositioned] 的时候重新计算所有弹幕位置.
      */
-    private val mutablePresentDanmaku: MutableList<PositionedDanmakuState> = mutableStateListOf()
+    private val mutablePresentDanmaku: MutableList<PositionedDanmakuState> = mutableListOf()
     val presentDanmaku: List<PositionedDanmakuState> = mutablePresentDanmaku
     
     fun setUIContext(
@@ -142,7 +141,7 @@ class DanmakuHostState(
                 safeSeparation = newFloatingTrackSafeSeparation,
                 baseTextLength = floatingBaseTextLengthForSpeed,
                 speedMultiplier = floatingSpeedMultiplierState,
-                onRemoveDanmaku = { removed -> mutablePresentDanmaku.remove(removed) }
+                onRemoveDanmaku = { removed -> mutablePresentDanmaku.removeFirst { it.state == removed.state } }
             )
         }
         floatingTrack.forEach {
@@ -159,7 +158,7 @@ class DanmakuHostState(
                 screenHeight = hostHeightState,
                 fromBottom = false,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> mutablePresentDanmaku.remove(removed) }
+                onRemoveDanmaku = { removed -> mutablePresentDanmaku.removeFirst { it.state == removed.state } }
             )
         }
         bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
@@ -171,7 +170,7 @@ class DanmakuHostState(
                 screenHeight = hostHeightState,
                 fromBottom = true,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> mutablePresentDanmaku.remove(removed) }
+                onRemoveDanmaku = { removed -> mutablePresentDanmaku.removeFirst { it.state == removed.state } }
             )
         }
         invalidate()
@@ -249,9 +248,33 @@ class DanmakuHostState(
     }
 
     /**
-     * 清空屏幕并填充 [list] 里的弹幕到屏幕
+     * 清空屏幕并填充 [list] 到屏幕, 弹幕 [list] 必须已经按发送时间排序. 此方法不会重新排序弹幕.
+     * 
+     * 通过设置 [firstPlace] 来指定首条弹幕期望显示的位置.
+     * 
+     * - 如果 [firstPlace] 为 `null`, 则所有弹幕会被放置到屏幕中间的位置. 
+     *   若 [list] 的首条弹幕时间戳小于一条弹幕从左到右的运动时间, 则会尝试将首条弹幕按此时间放到对应的位置以符合直觉. 
+     *   
+     *   例如, 弹幕从左到右的运动时间为 `4s`, [list] 的首条弹幕时间戳为 `3s`, 
+     *   那么首条弹幕将会放到屏幕左侧 1/4 的位置, 其他弹幕依次按时间排放.
+     *   
+     *   ```
+     *   |-------(--------)----------------|
+     *           ^ 左侧为 1/4 屏幕位置
+     *   ```
+     *  
+     * - 如果 [firstPlace] 不为 `null`, 则其范围必须为 `0.0 - 1.0`, 表示首条弹幕放到距屏幕左侧百分之多少的位置.
+     *   
+     *   例如, `firstPlace` 为 `0.75`, 则首条弹幕会放置到距离屏幕左侧 `75%` 的位置.
+     *   ```
+     *   |------------------------(--------|
+     *                            ^ 左侧为 75% 屏幕位置
+     *   ```
+     *   
+     * @param list 要填充到屏幕的弹幕, 必须按发送时间戳排序.
+     * @param firstPlace 首条弹幕出现的屏幕位置百分比. 为 `null` 则让方法自动决定.
      */
-    suspend fun repopulate(list: List<DanmakuPresentation>) {
+    suspend fun repopulate(list: List<DanmakuPresentation>, firstPlace: Float? = null) {
         if (list.isEmpty()) return
         val uiContext = uiContextDeferred.await()
         
@@ -271,7 +294,11 @@ class DanmakuHostState(
                 
                 val firstDanmakuPlaceTimeNanos = elapsedFrameTimeNanos + // 屏幕最右侧
                         when {
-                            // 如果 repopulate 中的弹幕有可以显示在开始的, 例如用户跳到刚开始播放
+                            // 指定 firstPlace 就按照参数指定位置
+                            firstPlace != null -> {
+                                ((firstPlace.coerceIn(0f, 1f) - 1f) * screenDurationMillis).toLong()
+                            }
+                            // 如果 list 里的弹幕有可以显示在开始的, 例如用户跳到刚开始播放
                             // 那需要把弹幕按时间放置到屏幕上, 这也是比较符合直觉的
                             firstDanmakuTimeMillis < screenDurationMillis -> {
                                 -firstDanmakuTimeMillis * 1_000_000L // seek to 第一条弹幕出现时间
@@ -291,13 +318,11 @@ class DanmakuHostState(
             }
 
             // 非浮动弹幕直接放到当前时间即可
-            list
-                .filter { it.danmaku.location != DanmakuLocation.NORMAL }
+            list.filter { it.danmaku.location != DanmakuLocation.NORMAL }
                 .forEach { danmaku -> trySend(danmaku) }
         }
     }
     
-    // 放置弹幕并指定放置的帧时间位置
     private suspend fun repopulatePositioned(list: List<PositionedDanmakuState>) {
         withContext(Dispatchers.Main.immediate) {
             clearPresentDanmaku()
@@ -370,4 +395,10 @@ private fun <T : DanmakuTrack> MutableList<T>.setTrackCountImpl(
         count < size -> repeat(size - count) { removeLast().clearAll() }
         else -> addAll(List(count - size) { newInstance(size + it) })
     }
+}
+
+private inline fun <T> MutableList<T>.removeFirst(predicate: (T) -> Boolean): T? {
+    val index = indexOfFirst(predicate)
+    if (index == -1) return null
+    return removeAt(index)
 }
