@@ -161,7 +161,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
                 }
                 logger.warn { "A delayed task failed to find session on execute. handleId=$id" }
             }
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             logger.error(e) { "Error while handling event" }
         }
     }
