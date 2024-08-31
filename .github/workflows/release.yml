@@ -133,6 +133,7 @@ jobs:
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
+          # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
             name: Windows x86_64
             uploadApk: false
@@ -140,32 +141,39 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
-          - os: macos-12
+            run_tests: true
+            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx6000m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx8192M"'
+          - os: macos-13
             name: macOS x86_64
-            uploadApk: false
+            uploadApk: true
             arch: x64
             anitorrent: true
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
+            run_tests: true
+            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M -Porg.gradle.parallel=false'
           - os: macos-14
             name: macOS aarch64
-            uploadApk: true
+            uploadApk: false
             arch: aarch64
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
+            run_tests: true
+            gradleArgs: >-
+              -Dorg.gradle.jvmargs=-Xmx4096m
+              -Dfile.encoding=UTF-8
+              -Dkotlin.daemon.jvm.options=-Xmx4096M
+              -Porg.gradle.parallel=false
+              -Dani.build.framework=false
+              -Dani.android.abis=arm64-v8a
+            # 这台机器硬盘小, 不要构建其他安卓架构
     env:
       enableLocalPublishingTest: 'false'
       gradleArgs: >-
         --scan
-        "-Dorg.gradle.jvmargs=-Xmx4096m" 
-        "-Dfile.encoding=UTF-8"
-        --no-daemon
+        ${{ matrix.gradleArgs }} 
         --no-configuration-cache 
-        "-Pbangumi.oauth.client.android.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_ID }}" 
-        "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
-        "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
-        "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
         ${{ matrix.anitorrent == true && '"-Dani.enable.anitorrent=true"' || '' }}
         ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}

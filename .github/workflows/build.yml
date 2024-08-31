@@ -18,40 +18,40 @@ jobs:
       matrix:
         # https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners
         os:
-          - windows-2019 # 7 GB
-#          - ubuntu-20.04 # 7 GB
-#          - macos-13 # x86_64, 14 GB
+          - windows-2019 # 16 GB
+          - ubuntu-20.04 # 16 GB
+          - macos-13 # x86_64, 14 GB
           - macos-14 # aarch64, 7 GB
         include:
           # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
-            name: Windows x86_64 (Compile + Test)
+            name: Windows x86_64
             uploadApk: false
             arch: x64
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
             run_tests: true
-            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
-#          - os: ubuntu-20.04
-#            name: Ubuntu x86_64 (Compile only)
-#            uploadApk: false
-#            arch: x64
-#            anitorrent: false
-#            anitorrent_separate_build: false
-#            compose_resource_triple: linux-x64
-#            run_tests: false # 只编译, 因为 test 不支持 linux
-#            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M'
-#          - os: macos-13
-#            name: macOS x86_64 (Compile + Test + Upload)
-#            uploadApk: true
-#            arch: x64
-#            anitorrent: true
-#            anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
-#            compose_resource_triple: macos-x64
-#            run_tests: true
-#            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M -Porg.gradle.parallel=false'
-          - os: macos-14 (Compile + Test)
+            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx6000m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx8192M"'
+          - os: ubuntu-20.04
+            name: Ubuntu x86_64 (Compile only)
+            uploadApk: false
+            arch: x64
+            anitorrent: false
+            anitorrent_separate_build: false
+            compose_resource_triple: linux-x64
+            run_tests: false # 只编译, 因为 test 不支持 linux
+            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M'
+          - os: macos-13
+            name: macOS x86_64
+            uploadApk: true
+            arch: x64
+            anitorrent: true
+            anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
+            compose_resource_triple: macos-x64
+            run_tests: true
+            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M -Porg.gradle.parallel=false'
+          - os: macos-14
             name: macOS aarch64
             uploadApk: false
             arch: aarch64
@@ -73,10 +73,6 @@ jobs:
         --scan
         ${{ matrix.gradleArgs }} 
         --no-configuration-cache 
-        "-Pbangumi.oauth.client.android.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_ID }}" 
-        "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
-        "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
-        "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
         ${{ matrix.anitorrent == true && '"-Dani.enable.anitorrent=true"' || '' }}
         ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}
@@ -111,9 +107,6 @@ jobs:
         name: Install Native Dependencies
         run: chmod +x ./ci-helper/install-deps-macos-ci.sh && ./ci-helper/install-deps-macos-ci.sh
 
-      - name: Debug with tmate on failure
-        uses: mxschmitt/action-tmate@v3
-        
       - if: ${{ env.isWindows == 'true' }}
         name: Setup vcpkg cache
         uses: actions/github-script@v7
@@ -156,9 +149,17 @@ jobs:
           encodedString: ${{ secrets.SIGNING_RELEASE_STOREFILE }}
         continue-on-error: true
 
-      - name: Build Anitorrent
+      - name: Build Anitorrent for Desktop
         if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
         run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
+
+      - name: Build Anitorrent for Android Debug
+        if: ${{ matrix.anitorrent }}
+        run: ./gradlew buildCMakeDebug ${{ env.gradleArgs }}
+
+      - name: Build Anitorrent for Android Release
+        if: ${{ matrix.anitorrent }}
+        run: ./gradlew buildCMakeRelWithDebInfo ${{ env.gradleArgs }}
 
       - name: Compile Kotlin
         run: ./gradlew compileKotlin ${{ env.gradleArgs }}

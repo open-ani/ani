@@ -8,4 +8,3 @@ brew install llvm
 # libtorrent
 brew install swig
 brew install openssl
-brew install boost
