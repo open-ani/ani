@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -62,7 +63,11 @@ fun DanmakuHost(
                 }
         }
         
-        Canvas(Modifier.fillMaxSize().alpha(state.canvasAlpha)) {
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+                .clipToBounds()
+                .alpha(state.canvasAlpha)
+        ) {
             state.elapsedFrameTimeNanos // subscribe changes
             for (danmaku in state.presentDanmaku) {
                 drawDanmakuText(
