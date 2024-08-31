@@ -18,23 +18,23 @@ jobs:
       matrix:
         # https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners
         os:
-#          - windows-2019 # 7 GB
+          - windows-2019 # 7 GB
 #          - ubuntu-20.04 # 7 GB
 #          - macos-13 # x86_64, 14 GB
           - macos-14 # aarch64, 7 GB
         include:
           # matrix properties can be booleans. Check for plain true and false.
-#          - os: windows-2019
-#            name: Windows x86_64
-#            uploadApk: false
-#            arch: x64
-#            anitorrent: true
-#            anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
-#            compose_resource_triple: windows-x64
-#            run_tests: true
-#            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
+          - os: windows-2019
+            name: Windows x86_64 (Compile + Test)
+            uploadApk: false
+            arch: x64
+            anitorrent: true
+            anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
+            compose_resource_triple: windows-x64
+            run_tests: true
+            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
 #          - os: ubuntu-20.04
-#            name: Ubuntu x86_64
+#            name: Ubuntu x86_64 (Compile only)
 #            uploadApk: false
 #            arch: x64
 #            anitorrent: false
@@ -43,7 +43,7 @@ jobs:
 #            run_tests: false # 只编译, 因为 test 不支持 linux
 #            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M'
 #          - os: macos-13
-#            name: macOS x86_64
+#            name: macOS x86_64 (Compile + Test + Upload)
 #            uploadApk: true
 #            arch: x64
 #            anitorrent: true
@@ -51,7 +51,7 @@ jobs:
 #            compose_resource_triple: macos-x64
 #            run_tests: true
 #            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M -Porg.gradle.parallel=false'
-          - os: macos-14
+          - os: macos-14 (Compile + Test)
             name: macOS aarch64
             uploadApk: false
             arch: aarch64
