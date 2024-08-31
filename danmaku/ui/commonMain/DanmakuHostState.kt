@@ -74,8 +74,7 @@ class DanmakuHostState(
      * 在这里保留一个引用, 方便在 [repopulatePositioned] 的时候重新计算所有弹幕位置.
      * 大部分弹幕是按时间排序的, 确保 [removeFirst] 操作能消耗较低的时间.
      */
-    private val mutablePresentDanmaku: MutableList<PositionedDanmakuState> = mutableListOf()
-    val presentDanmaku: List<PositionedDanmakuState> = mutablePresentDanmaku
+    internal val presentDanmaku: MutableList<PositionedDanmakuState> = mutableListOf()
     
     fun setUIContext(
         baseStyle: TextStyle,
@@ -140,7 +139,7 @@ class DanmakuHostState(
                 safeSeparation = newFloatingTrackSafeSeparation,
                 baseTextLength = floatingBaseTextLengthForSpeed,
                 speedMultiplier = floatingSpeedMultiplierState,
-                onRemoveDanmaku = { removed -> mutablePresentDanmaku.removeFirst { it.state == removed.state } }
+                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.state == removed.state } }
             )
         }
         floatingTrack.forEach {
@@ -157,7 +156,7 @@ class DanmakuHostState(
                 screenHeight = hostHeightState,
                 fromBottom = false,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> mutablePresentDanmaku.removeFirst { it.state == removed.state } }
+                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.state == removed.state } }
             )
         }
         bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
@@ -169,7 +168,7 @@ class DanmakuHostState(
                 screenHeight = hostHeightState,
                 fromBottom = true,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> mutablePresentDanmaku.removeFirst { it.state == removed.state } }
+                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.state == removed.state } }
             )
         }
         invalidate()
@@ -191,7 +190,7 @@ class DanmakuHostState(
                 avgFrameTimeNanos += delta
 
                 currentFrameTimeNanos = nanos
-                for (danmaku in mutablePresentDanmaku) danmaku.calculatePos()
+                for (danmaku in presentDanmaku) danmaku.calculatePos()
             }
         }
     }
@@ -234,7 +233,7 @@ class DanmakuHostState(
             val positionedDanmakuState = track.firstNotNullOfOrNull {
                 it.tryPlace(danmakuState, placeFrameTimeNanos)
             }
-            positionedDanmakuState?.also(mutablePresentDanmaku::add)
+            positionedDanmakuState?.also(presentDanmaku::add)
         }
     }
 
@@ -276,7 +275,7 @@ class DanmakuHostState(
         }
         
         // list 中有没有浮动弹幕是两种处理过程
-        // 这么做是为了在 mutablePresentDanmaku 中的弹幕可以保证按发送时间戳排序
+        // 这么做是为了在 presentDanmaku 中的弹幕可以保证按发送时间戳排序
         if (list.any(isFloatingDanmaku)) {
             // 首条浮动弹幕发送时间戳
             val firstDanmakuTimeMillis = list.first(isFloatingDanmaku).danmaku.playTimeMillis
@@ -327,7 +326,7 @@ class DanmakuHostState(
         topTrack.forEach { it.clearAll() }
         bottomTrack.forEach { it.clearAll() }
 
-        check(mutablePresentDanmaku.size == 0) {
+        check(presentDanmaku.size == 0) {
             "presentDanmaku is not totally cleared after releasing track."
         }
     }
@@ -337,8 +336,8 @@ class DanmakuHostState(
      */
     @UiThread
     private suspend fun invalidate() {
-        if (mutablePresentDanmaku.isEmpty()) return
-        val presentDanmakuCopied = mutablePresentDanmaku.toList()
+        if (presentDanmaku.isEmpty()) return
+        val presentDanmakuCopied = presentDanmaku.toList()
         
         clearPresentDanmaku()
         
