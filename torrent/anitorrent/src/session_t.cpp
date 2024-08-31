@@ -89,18 +89,8 @@ static std::vector<char> load_file_to_vector(const std::string &filePath) {
 #define START_LOG(log) (void *) 0
 #endif
 
-void session_t::start(const session_settings_t &settings) {
-    function_printer_t _fp("session_t::start");
-    guard_global_lock;
+static void apply_settings_to_pack(libtorrent::settings_pack &s, const session_settings_t &settings) {
     using libtorrent::settings_pack;
-
-#if ENABLE_TRACE_LOGGING
-    std::ofstream log("session_t.log", std::ios::app);
-#endif
-
-    START_LOG("Starting session...");
-    settings_pack s{};
-    START_LOG("Pack initialied");
 
     s.set_bool(settings_pack::enable_dht,
                true); // this will start dht immediately when the setting is started
@@ -158,14 +148,39 @@ void session_t::start(const session_settings_t &settings) {
 
     s.set_int(settings_pack::alert_mask,
               libtorrent::alert_category::status | libtorrent::alert_category::piece_progress |
-                      libtorrent::alert_category::block_progress |
-                      libtorrent::alert_category::file_progress |
-                      libtorrent::alert_category::upload);
+              libtorrent::alert_category::block_progress |
+              libtorrent::alert_category::file_progress |
+              libtorrent::alert_category::upload);
+}
+
+void session_t::start(const session_settings_t &settings) {
+    function_printer_t _fp("session_t::start");
+    guard_global_lock;
+    using libtorrent::settings_pack;
+
+#if ENABLE_TRACE_LOGGING
+    std::ofstream log("session_t.log", std::ios::app);
+#endif
+
+    START_LOG("Starting session...");
+    settings_pack s{};
+    START_LOG("Pack initialied");
+
+    apply_settings_to_pack(s, settings);
 
     START_LOG("create session");
 
     session_ = std::make_shared<libtorrent::session>(s);
     START_LOG("session created");
+}
+
+void session_t::apply_settings(const session_settings_t &settings) {
+    function_printer_t _fp("session_t::apply_settings");
+    guard_global_lock;
+    
+    using libtorrent::settings_pack;
+    settings_pack s = session_->get_settings();
+    apply_settings_to_pack(s, settings);
 }
 
 void session_t::resume() const {

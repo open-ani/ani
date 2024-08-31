@@ -4133,6 +4133,24 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1t_1apply_1settings(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+  anilt::session_t *arg1 = (anilt::session_t *) 0 ;
+  anilt::session_settings_t *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg2_;
+  arg1 = *(anilt::session_t **)&jarg1; 
+  arg2 = *(anilt::session_settings_t **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "anilt::session_settings_t const & is null");
+    return ;
+  } 
+  (arg1)->apply_settings((anilt::session_settings_t const &)*arg2);
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1t_1resume(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   anilt::session_t *arg1 = (anilt::session_t *) 0 ;
   

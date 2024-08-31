@@ -18,28 +18,19 @@ import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentManagerSession
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentResumeData
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentStats
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.logging.info
 import kotlin.coroutines.CoroutineContext
 
-internal actual fun createAnitorrentTorrentDownloader(
-    rootDataDirectory: SystemPath,
-    httpFileDownloader: HttpFileDownloader,
-    torrentDownloaderConfig: TorrentDownloaderConfig,
-    parentCoroutineContext: CoroutineContext
-): TorrentDownloader {
-    AnitorrentLibraryLoader.loadLibraries()
-    AnitorrentTorrentDownloader.logger.info { "Creating a new AnitorrentTorrentDownloader" }
-
-    val session = session_t()
-    val settings = session_settings_t().apply {
-        user_agent = torrentDownloaderConfig.userAgent
-        peer_fingerprint = torrentDownloaderConfig.peerFingerprint
-        handshake_client_version = torrentDownloaderConfig.handshakeClientVersion
-        download_rate_limit = torrentDownloaderConfig.downloadRateLimitBytes
-        upload_rate_limit = torrentDownloaderConfig.uploadRateLimitBytes
+internal fun TorrentDownloaderConfig.toSessionSettings(): session_settings_t {
+    val config = this
+    return session_settings_t().apply {
+        user_agent = config.userAgent
+        peer_fingerprint = config.peerFingerprint
+        handshake_client_version = config.handshakeClientVersion
+        download_rate_limit = config.downloadRateLimitBytes
+        upload_rate_limit = config.uploadRateLimitBytes
         listOf(
             "router.utorrent.com:6881",
             "router.bittorrent.com:6881",
@@ -49,6 +40,20 @@ internal actual fun createAnitorrentTorrentDownloader(
             dht_bootstrap_nodes_extra_add(it)
         }
     }
+
+}
+
+internal actual fun createAnitorrentTorrentDownloader(
+    rootDataDirectory: SystemPath,
+    httpFileDownloader: HttpFileDownloader,
+    torrentDownloaderConfig: TorrentDownloaderConfig,
+    parentCoroutineContext: CoroutineContext
+): AnitorrentTorrentDownloader<*, *> {
+    AnitorrentLibraryLoader.loadLibraries()
+    AnitorrentTorrentDownloader.logger.info { "Creating a new AnitorrentTorrentDownloader" }
+
+    val session = session_t()
+    val settings = torrentDownloaderConfig.toSessionSettings()
     try {
         session.start(settings)
     } finally {
