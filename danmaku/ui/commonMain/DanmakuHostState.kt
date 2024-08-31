@@ -70,7 +70,7 @@ class DanmakuHostState(
     
     /**
      * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
-     * 在这里保留一个引用, 方便在 [repopulatePositioned] 的时候重新计算所有弹幕位置.
+     * 在这里保留一个引用, 方便在 [invalidate] 的时候重新计算所有弹幕位置.
      * 大部分弹幕是按时间排序的, 确保 [removeFirst] 操作能消耗较低的时间.
      */
     internal val presentDanmaku: MutableList<PositionedDanmakuState> = mutableListOf()
