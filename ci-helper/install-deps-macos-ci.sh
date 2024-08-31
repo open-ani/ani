@@ -8,4 +8,4 @@ brew install ninja
 
 # libtorrent
 brew install swig
-brew install boost-variant boost-system boost-range boost-crc boost-logic boost-parameter boost-asio boost-variant2 boost-multi-index boost-multiprecision
+brew install boost
