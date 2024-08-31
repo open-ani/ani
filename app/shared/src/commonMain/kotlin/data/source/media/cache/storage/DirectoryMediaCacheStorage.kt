@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.source.media.cache.MediaCache
@@ -63,6 +64,7 @@ class DirectoryMediaCacheStorage(
     val metadataDir: SystemPath,
     private val engine: MediaCacheEngine,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+    private val clock: Clock = Clock.System,
 ) : MediaCacheStorage {
     private companion object {
         private val json = Json {
@@ -170,6 +172,12 @@ class DirectoryMediaCacheStorage(
     private val lock = Mutex()
 
     override suspend fun cache(media: Media, metadata: MediaCacheMetadata, resume: Boolean): MediaCache {
+        @Suppress("NAME_SHADOWING")
+        val metadata = metadata.withExtra(
+            mapOf(
+                MediaCacheMetadata.KEY_CREATION_TIME to clock.now().toEpochMilliseconds().toString(),
+            ),
+        )
         return lock.withLock {
             logger.info { "$mediaSourceId creating cache, metadata=$metadata" }
             listFlow.value.firstOrNull {

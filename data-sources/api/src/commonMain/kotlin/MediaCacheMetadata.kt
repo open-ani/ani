@@ -102,7 +102,21 @@ constructor(
             extra = extra + other,
         )
     }
+
+    companion object {
+        /**
+         * 该缓存的创建时间. 重启 APP 之后不会变化. 每个缓存都应当有这个属性.
+         * @since 3.8
+         */
+        val KEY_CREATION_TIME = MetadataKey("creationTime")
+    }
 }
+
+/**
+ * 旧缓存没有这个
+ */
+val MediaCacheMetadata.creationTimeOrNull: Long?
+    get() = extra[MediaCacheMetadata.KEY_CREATION_TIME]?.toLongOrNull()
 
 @Serializable
 @JvmInline
