@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.utils.platform.annotations.SerializationOnly
+import kotlin.jvm.JvmInline
 
 /**
  * 一个 `MediaCache` 的元数据, 包含来源的条目和剧集信息, 以及 `MediaCacheEngine` 自行添加的额外信息 [extra].
@@ -55,7 +56,7 @@ constructor(
     /**
      * `MediaCacheEngine` 自行添加的额外信息. 例如来源 BT 磁力链.
      */
-    val extra: Map<String, String> = emptyMap(),
+    val extra: Map<MetadataKey, String> = emptyMap(),
     @Transient @Suppress("unused") private val _primaryConstructorMarker: Byte = 0, // avoid compiler error
 ) {
     val subjectId get() = _subjectId ?: "0" // 为了兼容旧版 (< 3.8) 的缓存, 但实际上这些缓存也并不会是 null
@@ -80,7 +81,7 @@ constructor(
         episodeSort: EpisodeSort,
         episodeEp: EpisodeSort?,
         episodeName: String,
-        extra: Map<String, String> = emptyMap(),
+        extra: Map<MetadataKey, String> = emptyMap(),
     ) : this(
         subjectId, episodeId, subjectNameCN, subjectNames, episodeSort, episodeEp, episodeName, extra,
         _primaryConstructorMarker = 0,
@@ -89,7 +90,7 @@ constructor(
     /**
      * Appends [other] to the existing [extra].
      */
-    fun withExtra(other: Map<String, String>): MediaCacheMetadata {
+    fun withExtra(other: Map<MetadataKey, String>): MediaCacheMetadata {
         return MediaCacheMetadata(
             subjectId = subjectId,
             episodeId = episodeId,
@@ -103,6 +104,10 @@ constructor(
     }
 }
 
+@Serializable
+@JvmInline
+value class MetadataKey(val key: String)
+
 val MediaCacheMetadata.subjectIdInt: Int
     get() = subjectId.toIntOrNull() ?: error("subjectId is not int: $subjectId")
 
@@ -111,7 +116,7 @@ val MediaCacheMetadata.episodeIdInt: Int
 
 fun MediaCacheMetadata(
     request: MediaFetchRequest,
-    extra: Map<String, String> = emptyMap(),
+    extra: Map<MetadataKey, String> = emptyMap(),
 ): MediaCacheMetadata {
     return MediaCacheMetadata(
         subjectId = request.subjectId,
