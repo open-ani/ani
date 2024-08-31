@@ -1,6 +1,5 @@
 package me.him188.ani.danmaku.ui
 
-import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
@@ -12,7 +11,7 @@ import androidx.compose.runtime.Stable
  * 移除时必须调用 [onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
-internal class FloatingDanmakuTrack<T : WidthSpecifiedDanmaku>(
+internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
     val trackIndex: Int,
     frameTimeNanosState: LongState,
     private val trackHeight: IntState,
@@ -20,10 +19,10 @@ internal class FloatingDanmakuTrack<T : WidthSpecifiedDanmaku>(
     var speedPxPerSecond: Float,
     var safeSeparation: Float,
     // 放到这个轨道的弹幕里, 长度大于此基础长度才会加速弹幕运动, 等于此长度的弹幕速度为 100% [speedPxPerSecond]
-    var baseTextLength: Int,
-    val speedMultiplier: FloatState,
+    // var baseTextLength: Int,
+    // val speedMultiplier: FloatState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState<T>) -> Unit
+    private val onRemoveDanmaku: (PositionedDanmakuState<T>) -> Unit
 ) : FrameTimeBasedDanmakuTrack<T>(frameTimeNanosState) {
     private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
 
@@ -42,7 +41,7 @@ internal class FloatingDanmakuTrack<T : WidthSpecifiedDanmaku>(
         return true
     }
     
-    override fun place(danmaku: T, placeTimeNanos: Long): DanmakuHostState.PositionedDanmakuState<T> {
+    override fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T> {
         return FloatingDanmaku(danmaku, placeTimeNanos).also { danmakuList.add(it) }
     }
 
@@ -72,7 +71,7 @@ internal class FloatingDanmakuTrack<T : WidthSpecifiedDanmaku>(
     inner class FloatingDanmaku(
         override val danmaku: T,
         override val placeFrameTimeNanos: Long,
-    ) : DanmakuHostState.PositionedDanmakuState<T>(
+    ) : PositionedDanmakuState<T>(
         calculatePosX = {
             val timeDiff = (frameTimeNanos - placeFrameTimeNanos) / 1_000_000_000f
             // val multiplier = speedMultiplier.value

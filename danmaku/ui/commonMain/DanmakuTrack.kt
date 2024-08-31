@@ -7,16 +7,16 @@ import androidx.compose.runtime.getValue
 /**
  * 弹幕轨道, 支持放置已知长度的弹幕. 
  * 
- * 这意味着[已经知道长度的弹幕][WidthSpecifiedDanmaku]一定可以计算是否可以放置到此轨道上.
+ * 这意味着[已经知道长度的弹幕][SizeSpecifiedDanmaku]一定可以计算是否可以放置到此轨道上.
  */
 @Stable
-interface DanmakuTrack<T : WidthSpecifiedDanmaku> {
+interface DanmakuTrack<T : SizeSpecifiedDanmaku> {
     /**
      * place a danmaku to the track without check.
      *
      * @return A positioned danmaku which can be placed on danmaku host.
      */
-    fun place(danmaku: T, placeTimeNanos: Long): DanmakuHostState.PositionedDanmakuState<T>
+    fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T>
 
     /**
      * check if this track can place danmaku.
@@ -27,7 +27,7 @@ interface DanmakuTrack<T : WidthSpecifiedDanmaku> {
      * try to place a danmaku. there are reasons that the upcoming danmaku cannot be placed.
      * - [canPlace]
      */
-    fun tryPlace(danmaku: T, placeTimeNanos: Long): DanmakuHostState.PositionedDanmakuState<T>?
+    fun tryPlace(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T>?
 
     /**
      * clear all danmaku in this track
@@ -41,15 +41,12 @@ interface DanmakuTrack<T : WidthSpecifiedDanmaku> {
 }
 
 @Stable
-internal abstract class FrameTimeBasedDanmakuTrack<T : WidthSpecifiedDanmaku>(
+internal abstract class FrameTimeBasedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     frameTimeNanosState: LongState
 ) : DanmakuTrack<T> {
     internal val frameTimeNanos: Long by frameTimeNanosState
     
-    override fun tryPlace(
-        danmaku: T, 
-        placeTimeNanos: Long
-    ): DanmakuHostState.PositionedDanmakuState<T>? {
+    override fun tryPlace(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T>? {
         if (!canPlace(danmaku, placeTimeNanos)) return null
         return place(danmaku, placeTimeNanos)
     }

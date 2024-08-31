@@ -21,14 +21,14 @@ import kotlin.math.floor
  * DanmakuState holds all params which [Canvas] needs to draw a danmaku text.
  */
 @Immutable
-class StyledDanmakuState(
+class StyledDanmaku(
     val presentation: DanmakuPresentation,
     measurer: TextMeasurer,
     baseStyle: TextStyle,
     style: DanmakuStyle,
     enableColor: Boolean,
     isDebug: Boolean
-) : WidthSpecifiedDanmaku {
+) : SizeSpecifiedDanmaku {
     private val danmakuText = presentation.danmaku.run {
         val seconds = playTimeMillis.toFloat().div(1000)
         if (isDebug) "$text (${floor((seconds / 60)).toInt()}:${String.format2f(seconds % 60)})" else text
@@ -57,13 +57,14 @@ class StyledDanmakuState(
     )
     
     override val danmakuWidth = solidTextLayout.size.width
+    override val danmakuHeight: Int = solidTextLayout.size.height
 }
 
 /**
  * actually draw
  */
 fun DrawScope.drawDanmakuText(
-    state: StyledDanmakuState,
+    state: StyledDanmaku,
     screenPosX: Float,
     screenPosY: Float,
 ) {
@@ -86,8 +87,8 @@ internal fun dummyDanmaku(
     baseStyle: TextStyle,
     style: DanmakuStyle,
     dummyText: String = "dummy 占位 攟 の \uD83D\uDE04"
-): StyledDanmakuState {
-    return StyledDanmakuState(
+): StyledDanmaku {
+    return StyledDanmaku(
         presentation = DanmakuPresentation(
             Danmaku(
                 Uuid.randomString(),

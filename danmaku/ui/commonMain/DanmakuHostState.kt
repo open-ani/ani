@@ -1,12 +1,10 @@
 package me.him188.ani.danmaku.ui
 
 import androidx.annotation.UiThread
-import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +44,7 @@ class DanmakuHostState(
     internal var trackHeight by trackHeightState
         private set
     // currently not configurable
-    private val floatingSpeedMultiplierState = mutableFloatStateOf(danmakuTrackProperties.speedMultiplier)
+    // private val floatingSpeedMultiplierState = mutableFloatStateOf(danmakuTrackProperties.speedMultiplier)
     // currently not configurable
     private val fixedDanmakuPresentDuration = mutableLongStateOf(danmakuTrackProperties.fixedDanmakuPresentDuration)
     
@@ -64,16 +62,16 @@ class DanmakuHostState(
     /**
      * 弹幕轨道
      */
-    internal val floatingTrack: MutableList<FloatingDanmakuTrack<StyledDanmakuState>> = mutableListOf()
-    internal val topTrack: MutableList<FixedDanmakuTrack<StyledDanmakuState>> = mutableListOf()
-    internal val bottomTrack: MutableList<FixedDanmakuTrack<StyledDanmakuState>> = mutableListOf()
+    internal val floatingTrack: MutableList<FloatingDanmakuTrack<StyledDanmaku>> = mutableListOf()
+    internal val topTrack: MutableList<FixedDanmakuTrack<StyledDanmaku>> = mutableListOf()
+    internal val bottomTrack: MutableList<FixedDanmakuTrack<StyledDanmaku>> = mutableListOf()
     
     /**
      * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
      * 在这里保留一个引用, 方便在 [invalidate] 的时候重新计算所有弹幕位置.
      * 大部分弹幕是按时间排序的, 确保 [removeFirst] 操作能消耗较低的时间.
      */
-    internal val presentDanmaku: MutableList<PositionedDanmakuState<StyledDanmakuState>> = mutableListOf()
+    internal val presentDanmaku: MutableList<PositionedDanmakuState<StyledDanmaku>> = mutableListOf()
     
     fun setUIContext(
         baseStyle: TextStyle,
@@ -101,17 +99,16 @@ class DanmakuHostState(
 
             Triple(
                 trackCount.roundToInt().coerceAtLeast(1),
-                Pair(trackHeight.toInt(), dummyTextLayout.size.width),
-                danmakuConfig
+                trackHeight.toInt(), /*Pair(trackHeight.toInt(), dummyTextLayout.size.width)*/
+                danmakuConfig,
             )
         }
             .distinctUntilChanged()
-            .collect { (trackCount, sizeProp, config) ->
-                val (trackHeight, baseWidth) = sizeProp
+            .collect { (trackCount, trackHeight, config) ->
                 if (trackHeight != this@DanmakuHostState.trackHeight) {
                     this@DanmakuHostState.trackHeight = trackHeight
                 }
-                updateTrack(trackCount, config, baseWidth)
+                updateTrack(trackCount, config)
             }
     }
 
@@ -121,8 +118,7 @@ class DanmakuHostState(
     @UiThread
     private suspend fun updateTrack(
         count: Int, 
-        config: DanmakuConfig, 
-        floatingBaseTextLengthForSpeed: Int
+        config: DanmakuConfig,
     ) {
         val uiContext = uiContextDeferred.await()
         
@@ -136,8 +132,8 @@ class DanmakuHostState(
                 trackWidth = hostWidthState, 
                 speedPxPerSecond = newFloatingTrackSpeed,
                 safeSeparation = newFloatingTrackSafeSeparation,
-                baseTextLength = floatingBaseTextLengthForSpeed,
-                speedMultiplier = floatingSpeedMultiplierState,
+                // baseTextLength = floatingBaseTextLengthForSpeed,
+                // speedMultiplier = floatingSpeedMultiplierState,
                 onRemoveDanmaku = { removed -> 
                     presentDanmaku.removeFirst { it.danmaku == removed.danmaku } 
                 }
@@ -146,7 +142,7 @@ class DanmakuHostState(
         floatingTrack.forEach {
             it.speedPxPerSecond = newFloatingTrackSpeed
             it.safeSeparation = newFloatingTrackSafeSeparation
-            it.baseTextLength = floatingBaseTextLengthForSpeed
+            // it.baseTextLength = floatingBaseTextLengthForSpeed
         }
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
@@ -212,14 +208,14 @@ class DanmakuHostState(
     suspend fun trySend(
         danmaku: DanmakuPresentation, 
         placeFrameTimeNanos: Long = elapsedFrameTimeNanos
-    ): PositionedDanmakuState<StyledDanmakuState>? {
+    ): PositionedDanmakuState<StyledDanmaku>? {
         val uiContext = uiContextDeferred.await()
         val track = when (danmaku.danmaku.location) {
             DanmakuLocation.NORMAL -> floatingTrack
             DanmakuLocation.TOP -> topTrack
             DanmakuLocation.BOTTOM -> bottomTrack
         }
-        val styledDanmaku = StyledDanmakuState(
+        val styledDanmaku = StyledDanmaku(
             presentation = danmaku,
             measurer = uiContext.textMeasurer,
             baseStyle = uiContext.baseStyle,
@@ -349,26 +345,6 @@ class DanmakuHostState(
     fun setPaused(pause: Boolean) {
         paused = pause
     }
-
-    /**
-     * DanmakuState which is positioned and can be placed on [Canvas].
-     */
-    @Stable
-    abstract class PositionedDanmakuState<T : WidthSpecifiedDanmaku>(
-        private val calculatePosX: () -> Float,
-        private val calculatePosY: () -> Float
-    ) {
-        abstract val danmaku: T
-        abstract val placeFrameTimeNanos: Long
-        
-        var x: Float = calculatePosX()
-        var y: Float = calculatePosY()
-        
-        internal fun calculatePos() {
-            x = calculatePosX()
-            y = calculatePosY()
-        }
-    }
     
     private class UIContext(
         val baseStyle: TextStyle,
@@ -384,7 +360,7 @@ suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
     while (trySend(danmaku) == null) delay(50)
 }
 
-private fun <D : WidthSpecifiedDanmaku, T : DanmakuTrack<D>> MutableList<T>.setTrackCountImpl(
+private fun <D : SizeSpecifiedDanmaku, T : DanmakuTrack<D>> MutableList<T>.setTrackCountImpl(
     count: Int,
     newInstance: (index: Int) -> T,
 ) {

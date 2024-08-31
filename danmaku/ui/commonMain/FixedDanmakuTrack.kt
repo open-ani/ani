@@ -12,7 +12,7 @@ import androidx.compose.runtime.Stable
  * 移除时必须调用 [onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
-internal class FixedDanmakuTrack<T : WidthSpecifiedDanmaku>(
+internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     val trackIndex: Int,
     val fromBottom: Boolean,
     frameTimeNanosState: LongState,
@@ -22,11 +22,11 @@ internal class FixedDanmakuTrack<T : WidthSpecifiedDanmaku>(
     // 顶部或底部弹幕的显示时间，现在还不能自定义
     private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState<T>) -> Unit
+    private val onRemoveDanmaku: (PositionedDanmakuState<T>) -> Unit
 ) : FrameTimeBasedDanmakuTrack<T>(frameTimeNanosState) {
     private var currentDanmaku: FixedDanmaku? = null
     
-    override fun place(danmaku: T, placeTimeNanos: Long): DanmakuHostState.PositionedDanmakuState<T> {
+    override fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T> {
         val upcomingDanmaku = FixedDanmaku(danmaku, placeTimeNanos)
         currentDanmaku?.let(onRemoveDanmaku)
         currentDanmaku = upcomingDanmaku
@@ -60,7 +60,7 @@ internal class FixedDanmakuTrack<T : WidthSpecifiedDanmaku>(
     inner class FixedDanmaku(
         override val danmaku: T,
         override val placeFrameTimeNanos: Long,
-    ) : DanmakuHostState.PositionedDanmakuState<T>(
+    ) : PositionedDanmakuState<T>(
         calculatePosX = { (hostWidth.value - danmaku.danmakuWidth.toFloat()) / 2 },
         calculatePosY = {
             if (fromBottom) {
