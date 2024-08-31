@@ -115,7 +115,7 @@ class DanmakuHostState(
                 if (trackHeight != this@DanmakuHostState.trackHeight) {
                     this@DanmakuHostState.trackHeight = trackHeight
                 }
-                updateTrack(trackCount, config, baseWidth, uiContext.density)
+                updateTrack(trackCount, config, baseWidth)
             }
     }
 
@@ -126,11 +126,12 @@ class DanmakuHostState(
     private suspend fun updateTrack(
         count: Int, 
         config: DanmakuConfig, 
-        floatingBaseTextLengthForSpeed: Int,
-        density: Density,
+        floatingBaseTextLengthForSpeed: Int
     ) {
-        val newFloatingTrackSpeed = with(density) { danmakuConfig.speed.dp.toPx() }
-        val newFloatingTrackSafeSeparation = with(density) { danmakuConfig.safeSeparation.toPx() }
+        val uiContext = uiContextDeferred.await()
+        
+        val newFloatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
+        val newFloatingTrackSafeSeparation = with(uiContext.density) { danmakuConfig.safeSeparation.toPx() }
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
                 trackIndex = index,

@@ -9,7 +9,7 @@ import androidx.compose.runtime.Stable
  * FloatingDanmakuTrack 中的弹幕在以下情况会移除:
  * - tick 中的逻辑帧检测
  * - 调用 [DanmakuTrack.clearAll]
- * 移除时必须调用 [DanmakuTrack.onRemoveDanmaku] 避免内存泄露.
+ * 移除时必须调用 [onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
 internal class FloatingDanmakuTrack(
