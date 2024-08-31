@@ -3,7 +3,6 @@ package me.him188.ani.danmaku.ui
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 
 /**
  * FixedDanmakuTrack 中的弹幕在以下情况会移除:
@@ -13,7 +12,7 @@ import androidx.compose.runtime.getValue
  * 移除时必须调用 [DanmakuTrack.onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
-class FixedDanmakuTrack(
+internal class FixedDanmakuTrack(
     val trackIndex: Int,
     val fromBottom: Boolean,
     frameTimeNanosState: LongState,
@@ -24,9 +23,8 @@ class FixedDanmakuTrack(
     private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
-) : DanmakuTrack {
+) : FrameTimeBasedDanmakuTrack(frameTimeNanosState) {
     private var currentDanmaku: FixedDanmaku? = null
-    override val frameTimeNanos: Long by frameTimeNanosState
     
     override fun place(
         danmaku: DanmakuState,

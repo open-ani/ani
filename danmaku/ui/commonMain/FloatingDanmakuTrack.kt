@@ -4,7 +4,6 @@ import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import kotlin.math.pow
 
 /**
@@ -14,7 +13,7 @@ import kotlin.math.pow
  * 移除时必须调用 [DanmakuTrack.onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
-class FloatingDanmakuTrack(
+internal class FloatingDanmakuTrack(
     val trackIndex: Int,
     frameTimeNanosState: LongState,
     private val trackHeight: IntState,
@@ -26,9 +25,8 @@ class FloatingDanmakuTrack(
     val speedMultiplier: FloatState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
-) : DanmakuTrack {
+) : FrameTimeBasedDanmakuTrack(frameTimeNanosState) {
     private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
-    override val frameTimeNanos: Long by frameTimeNanosState
     
     // 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标
     // 如果有那说明此弹幕放置后可能会与已有弹幕重叠
