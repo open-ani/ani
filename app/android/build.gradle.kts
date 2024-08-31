@@ -50,6 +50,16 @@ dependencies {
     implementation(libs.ktor.client.core)
 }
 
+val archs = buildList {
+    if (project.hasProperty("ani.android.abis")) {
+        addAll(project.property("ani.android.abis").toString().split(",").map { it.trim() })
+    } else {
+        add("arm64-v8a")
+        add("armeabi-v7a")
+        add("x86_64")
+    }
+}
+
 android {
     namespace = "me.him188.ani.android"
     compileSdk = getIntProperty("android.compile.sdk")
@@ -63,14 +73,16 @@ android {
             // Specifies the ABI configurations of your native
             // libraries Gradle should build and package with your app.
             abiFilters.clear()
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+            //noinspection ChromeOsAbiSupport
+            abiFilters += archs
         }
     }
     splits {
         abi {
             isEnable = true
             reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            //noinspection ChromeOsAbiSupport
+            include(*archs.toTypedArray())
             isUniversalApk = true // 额外构建一个
         }
     }
