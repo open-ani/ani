@@ -157,8 +157,10 @@ class EpisodeVideoControllerTest {
             )
         }
 
+        mainClock.autoAdvance = false
         onRoot().performClick()
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             assertEquals(
                 NORMAL_VISIBLE,
@@ -180,19 +182,66 @@ class EpisodeVideoControllerTest {
         }
 
         val root = onAllNodes(isRoot()).onFirst()
+        mainClock.autoAdvance = false
         root.performClick()
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
         root.performClick()
         runOnIdle {
+            mainClock.advanceTimeUntil { topBar.doesNotExist() }
             waitUntil { topBar.doesNotExist() }
             assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
         }
     }
 
+    private fun AniComposeUiTest.testClickAndWaitForHide() {
+        // 点击来显示控制器
+        runOnIdle {
+            mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
+            onRoot().performClick()
+        }
+        runOnIdle {
+            mainClock.advanceTimeBy(1000L)
+            waitUntil { topBar.exists() }
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        }
+
+        // 等待隐藏
+        runOnIdle {
+            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+            mainClock.autoAdvance = true
+        }
+        runOnIdle {
+            waitUntil { topBar.doesNotExist() }
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+    }
+
+    /**
+     * @see GestureFamily.clickToToggleController
+     */
+    @Test
+    fun `touch - clickToToggleController - wait for hide`() = runAniComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        runOnIdle {
+            assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+        }
+
+        testClickAndWaitForHide()
+        testClickAndWaitForHide()
+    }
     /**
      * @see GestureFamily.swipeToSeek
      */
@@ -245,9 +294,11 @@ class EpisodeVideoControllerTest {
         val root = onAllNodes(isRoot()).onFirst()
 
         runOnUiThread {
+            mainClock.autoAdvance = false
             root.performClick() // 显示全部控制器 
         }
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             detachedProgressSlider.assertDoesNotExist()
         }
@@ -285,9 +336,11 @@ class EpisodeVideoControllerTest {
         val root = onAllNodes(isRoot()).onFirst()
 
         runOnUiThread {
+            mainClock.autoAdvance = false
             root.performClick()// 显示全部控制器
         }
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             detachedProgressSlider.assertDoesNotExist()
         }
@@ -310,10 +363,7 @@ class EpisodeVideoControllerTest {
                 up()
             }
         }
-        runOnIdle {
-            mainClock.autoAdvance = true
-            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-        }
+
         runOnIdle {
             waitUntil { onNodeWithText("00:46 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
@@ -329,13 +379,14 @@ class EpisodeVideoControllerTest {
             waitForIdle()
             val root = onAllNodes(isRoot()).onFirst()
 
+            mainClock.autoAdvance = false
             root.performClick() // 显示全部控制器
             runOnIdle {
+                mainClock.advanceTimeBy(1000L)
                 waitUntil { topBar.exists() }
                 detachedProgressSlider.assertDoesNotExist()
             }
 
-            mainClock.autoAdvance = false
             runOnUiThread {
                 progressSlider.performTouchInput {
                     down(centerLeft)
@@ -353,10 +404,7 @@ class EpisodeVideoControllerTest {
                     up()
                 }
             }
-            runOnIdle {
-                mainClock.autoAdvance = true
-                mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-            }
+
             runOnIdle {
                 waitUntil { onNodeWithText("00:46 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
@@ -415,8 +463,11 @@ class EpisodeVideoControllerTest {
         }
 
         currentPositionMillis += 5000L // 播放 5 秒
+
+        mainClock.autoAdvance = false
         root.performClick()
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             assertEquals(0.52f, progressSliderState.displayPositionRatio)
         }
