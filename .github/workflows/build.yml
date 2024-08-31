@@ -59,7 +59,7 @@ jobs:
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
             run_tests: true
-            gradleArgs: >- 
+            gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4096m
               -Dfile.encoding=UTF-8
               -Dkotlin.daemon.jvm.options=-Xmx4096M
@@ -85,6 +85,11 @@ jobs:
       isUnix: ${{ startsWith(matrix.os, 'macos') || startsWith(matrix.os, 'ubuntu') }}
       doSigning: ${{ github.event_name != 'pull_request' && github.repository == 'open-ani/ani' }} # fork 和 PR 不使用签名
     steps:
+      - if: ${{ startsWith(matrix.os, 'macos') }}
+        name: Free space
+        run: ./ci-helper/free-space-macos.sh
+        continue-on-error: true
+
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
