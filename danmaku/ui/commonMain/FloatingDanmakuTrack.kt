@@ -4,7 +4,6 @@ import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
-import kotlin.math.pow
 
 /**
  * FloatingDanmakuTrack 中的弹幕在以下情况会移除:
@@ -27,9 +26,12 @@ internal class FloatingDanmakuTrack(
     private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
 ) : FrameTimeBasedDanmakuTrack(frameTimeNanosState) {
     private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
-    
-    // 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标
-    // 如果有那说明此弹幕放置后可能会与已有弹幕重叠
+
+    /**
+     * 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标.
+     * 
+     * 如果有那说明此弹幕放置后可能会与已有弹幕重叠.
+     */
     override fun canPlace(
         danmaku: DanmakuState,
         placeTimeNanos: Long
@@ -78,10 +80,10 @@ internal class FloatingDanmakuTrack(
     ) : DanmakuHostState.PositionedDanmakuState {
         override fun calculatePosX(): Float {
             val timeDiff = (frameTimeNanos - placeFrameTimeNanos) / 1_000_000_000f
-            val multiplier = speedMultiplier.value
-                .pow(state.textWidth / (baseTextLength.toFloat() * 2f))
-                .coerceAtLeast(1f)
-            return trackWidth.value - timeDiff * speedPxPerSecond * multiplier
+            // val multiplier = speedMultiplier.value
+            //     .pow(state.textWidth / (baseTextLength.toFloat() * 2f))
+            //     .coerceAtLeast(1f)
+            return trackWidth.value - timeDiff * speedPxPerSecond // * multiplier
         }
 
         override fun calculatePosY(): Float {
