@@ -165,8 +165,8 @@ jobs:
               -Dfile.encoding=UTF-8
               -Dkotlin.daemon.jvm.options=-Xmx4096M
               -Porg.gradle.parallel=false
-              -Dani.build.framework=false
-              -Dani.android.abis=arm64-v8a
+              -Pani.build.framework=false
+              -Pani.android.abis=arm64-v8a
             # 这台机器硬盘小, 不要构建其他安卓架构
     env:
       enableLocalPublishingTest: 'false'
