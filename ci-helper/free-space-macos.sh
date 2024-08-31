@@ -18,9 +18,9 @@ sudo rm -rf /usr/local/share/edge_driver || true
 sudo rm -rf /usr/local/opt/geckodriver || true
 
 sudo rm -rf /Applications/Xcode_15.1.app || true
-sudo rm -rf /Applications/Xcode_15.2.app || true
+# macos-13 (x86_64) default is Xcode 15.2 so keep it
 sudo rm -rf /Applications/Xcode_15.3.app || true
-# default is Xcode 15.4 so keep it
+# macos-14 (aarch64) default is Xcode 15.4 so keep it
 sudo rm -rf /Applications/Xcode_15.0.1.app || true
 sudo rm -rf /Applications/Xcode_14.3.1.app || true
 sudo rm -rf /Applications/Xcode_16_beta_6.app || true
