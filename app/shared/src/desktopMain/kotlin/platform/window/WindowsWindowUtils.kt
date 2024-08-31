@@ -97,7 +97,7 @@ class WindowsWindowUtils : AwtWindowUtils() {
             User32.INSTANCE.SetWindowLong(
                 hwnd, WinUser.GWL_EXSTYLE,
                 User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_EXSTYLE)
-                    .and(WS_EX_DLGMODALFRAME or WS_EX_WINDOWEDGE or WS_EX_CLIENTEDGE or WS_EX_STATICEDGE),
+                    .and((WS_EX_DLGMODALFRAME or WS_EX_WINDOWEDGE or WS_EX_CLIENTEDGE or WS_EX_STATICEDGE).inv()),
             )
 
             val rect = getMonitorInfo(hwnd).rcMonitor!!
@@ -128,7 +128,7 @@ class WindowsWindowUtils : AwtWindowUtils() {
             savedWindowState.rect.run {
                 User32.INSTANCE.SetWindowPos(
                     hwnd, null,
-                    left.roundToInt(), top.roundToInt(), (right - left).roundToInt(), bottom.roundToInt(),
+                    left.roundToInt(), top.roundToInt(), (right - left).roundToInt(), (bottom - top).roundToInt(),
                     SWP_NOZORDER or SWP_NOACTIVATE or SWP_FRAMECHANGED,
                 )
             }
@@ -165,16 +165,6 @@ class WindowsWindowUtils : AwtWindowUtils() {
 
 private fun WinDef.RECT.toComposeRect(): Rect {
     return Rect(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
-}
-
-private fun Rect.toWinDefRect(): WinDef.RECT {
-    val compose = this
-    return WinDef.RECT().apply {
-        this.left = compose.left.toInt()
-        this.top = compose.top.toInt()
-        this.right = compose.right.toInt()
-        this.bottom = compose.bottom.toInt()
-    }
 }
 
 @Keep
