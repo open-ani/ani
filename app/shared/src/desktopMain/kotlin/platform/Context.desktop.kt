@@ -114,7 +114,7 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
             windowState.placement = WindowPlacement.Maximized
             withFrameMillis { }
             windowState.placement = WindowPlacement.Fullscreen
-            delay(1000)
+            delay(1000) // 这个必须有, 而且不要调整 Fullscreen 和 setUndecorated 的顺序
             WindowUtils.setUndecorated(window, true)
             withFrameMillis { }
         } else {
