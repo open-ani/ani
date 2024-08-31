@@ -31,6 +31,11 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,6 +57,12 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.utils.logging.error
+import me.him188.ani.utils.logging.info
+import org.videolan.libvlc.LibVLC
+import org.videolan.libvlc.Media
+import org.videolan.libvlc.MediaPlayer
+import org.videolan.libvlc.interfaces.IMedia
+import org.videolan.libvlc.interfaces.IMedia.Meta
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
@@ -416,4 +427,299 @@ internal class ExoPlayerState @UiThread constructor(
     override fun setPlaybackSpeed(speed: Float) {
         player.setPlaybackSpeed(speed)
     }
+}
+
+class LibVlcAndroidPlayerFactory : PlayerStateFactory {
+    @OptIn(UnstableApi::class)
+    override fun create(context: Context, parentCoroutineContext: CoroutineContext): PlayerState =
+        LibVlcAndroidPlayerState(context, parentCoroutineContext)
+
+}
+
+@OptIn(UnstableApi::class)
+internal class LibVlcAndroidPlayerState @UiThread constructor(
+    context: Context,
+    parentCoroutineContext: CoroutineContext
+) : AbstractPlayerState<LibVlcAndroidPlayerState.LibVlcAndroidPlayerData>(parentCoroutineContext),
+    AutoCloseable {
+
+    class LibVlcAndroidPlayerData(
+        videoSource: VideoSource<*>,
+        videoData: VideoData,
+        releaseResource: () -> Unit,
+        val setMedia: () -> Unit,
+    ) : Data(videoSource, videoData, releaseResource)
+
+    private fun reloadAudioTracks() {
+        if (player.audioTrack < 0 || player.audioTracks == null) return
+        audioTracks.candidates.value =
+            player.audioTracks.asSequence()
+                .filterNot { it.id == -1 } // "Disable"
+                .mapNotNull { AudioTrack(it.id.toString(), it.id.toString(), it.name, mutableListOf()) }
+                .toList()
+    }
+
+    private fun reloadSubtitleTracks() {
+        if (player.spuTracksCount < 0 || player.spuTracks == null) return
+        subtitleTracks.candidates.value =
+            player.spuTracks.asSequence()
+                .filterNot { it.id == -1 } // "Disable"
+                .mapNotNull { SubtitleTrack(it.id.toString(), it.id.toString(), it.name, mutableListOf()) }
+                .toList()
+    }
+
+    private fun reloadChapters() {
+        TODO("Impl Reload Chapters")
+    }
+
+    private fun reloadVideoProperties() {
+        if (!player.isSeekable) return
+        val currentVideoTrack: IMedia.VideoTrack? = player.currentVideoTrack
+        val currentMediaTrack: IMedia? = player.media
+        val title = currentMediaTrack?.getMeta(Meta.Title) ?: ""
+        val duration = player.media?.duration ?: 0
+        videoProperties.value = VideoProperties(
+            title = title,
+            heightPx = currentVideoTrack?.height ?: 0,
+            widthPx = currentVideoTrack?.width ?: 0,
+            videoBitrate = currentVideoTrack?.bitrate ?: 0,
+            audioBitrate = 0,
+            frameRate = currentVideoTrack?.frameRateNum?.toFloat() ?: 0f,
+            durationMillis = duration,
+            fileLengthBytes = player.length,
+            fileHash = "",
+            filename = title,
+        )
+    }
+
+
+    private val listener: MediaPlayer.EventListener = MediaPlayer.EventListener { event ->
+        when (event.type) {
+            MediaPlayer.Event.Buffering -> {
+                if (player.isPlaying) {
+                    state.value = PlaybackState.PLAYING
+                    isBuffering.value = false
+                } else {
+                    state.value = PlaybackState.PAUSED_BUFFERING
+                }
+            }
+
+            MediaPlayer.Event.Playing -> {
+                state.value = PlaybackState.PLAYING
+                reloadVideoProperties()
+                reloadAudioTracks()
+                reloadSubtitleTracks()
+            }
+
+            MediaPlayer.Event.Paused -> {
+                state.value = PlaybackState.PAUSED
+            }
+
+            MediaPlayer.Event.ESAdded -> {
+                reloadAudioTracks()
+                reloadSubtitleTracks()
+            }
+
+        }
+        
+    }
+
+    private val libVlc = LibVLC(context, mutableListOf("-vvv"))
+    val player = kotlin.run {
+        MediaPlayer(libVlc)
+            .apply {
+                setEventListener(listener)
+            }
+    }
+
+    override val videoProperties = MutableStateFlow<VideoProperties?>(null)
+    override val currentPositionMillis: MutableStateFlow<Long> = MutableStateFlow(0)
+    override val bufferedPercentage = MutableStateFlow(0)
+    override val playbackSpeed: MutableStateFlow<Float> = MutableStateFlow(1f)
+    override val subtitleTracks: MutableTrackGroup<SubtitleTrack> = MutableTrackGroup()
+    override val audioTracks: MutableTrackGroup<AudioTrack> = MutableTrackGroup()
+    override val chapters: StateFlow<ImmutableList<Chapter>> = MutableStateFlow(persistentListOf())
+    override val isBuffering: MutableStateFlow<Boolean> = MutableStateFlow(false) // 需要单独状态, 因为要用户可能会覆盖 [state] 
+
+    override fun getExactCurrentPositionMillis(): Long = player.position.toLong()
+
+    init {
+        backgroundScope.launch(Dispatchers.Main) {
+            while (currentCoroutineContext().isActive) {
+                currentPositionMillis.value = player.time
+                delay(0.1.seconds) // 10 fps
+            }
+        }
+        backgroundScope.launch {
+            subtitleTracks.current.collect { track ->
+                try {
+                    if (state.value == PlaybackState.READY) {
+                        return@collect
+                    }
+                    if (track == null) {
+                        if (player.spuTrack != -1) {
+                            player.spuTrack = -1
+                        }
+                        return@collect
+                    }
+                    val id = track.internalId.toIntOrNull() ?: run {
+                        logger.error { "Invalid subtitle track id: ${track.id}" }
+                        return@collect
+                    }
+                    if (player.spuTracksCount <= 0 || player.spuTracks == null) {
+                        logger.error { "Not exists spu track id: ${track.id}" }
+                        return@collect
+                    }
+                    val subTrackIds = player.spuTracks.map { it.id }
+                    logger.info { "All ids: $subTrackIds" }
+                    if (!subTrackIds.contains(id)) {
+                        logger.error { "Invalid subtitle track id: $id" }
+                        return@collect
+                    }
+                    player.setSpuTrack(id)
+                    logger.info { "Set subtitle track to $id (${track.labels.firstOrNull()})" }
+                } catch (e: Throwable) {
+                    logger.error(e) { "Exception while setting subtitle track" }
+                }
+            }
+        }
+
+        backgroundScope.launch {
+            audioTracks.current.collect { track ->
+                try {
+                    if (state.value == PlaybackState.READY) {
+                        return@collect
+                    }
+                    if (track == null) {
+                        if (player.audioTrack != -1) {
+                            player.audioTrack = -1
+                        }
+                        return@collect
+                    }
+
+                    val id = track.internalId.toIntOrNull() ?: run {
+                        logger.error { "Invalid audio track id: ${track.id}" }
+                        return@collect
+                    }
+                    if (player.audioTracksCount <= 0 || player.audioTracks == null) {
+                        logger.error { "Not exists audio track id: ${track.id}" }
+                        return@collect
+                    }
+                    val audioTrackIds = player.audioTracks.map { it.id }
+                    if (!audioTrackIds.contains(id)) {
+                        logger.error { "Invalid audio track id: $id" }
+                        return@collect
+                    }
+                    logger.info { "All ids: $audioTrackIds" }
+                    player.setAudioTrack(id)
+                    logger.info { "Set audio track to $id (${track.labels.firstOrNull()})" }
+                } catch (e: Throwable) {
+                    logger.error(e) { "Exception while setting audio track" }
+                }
+            }
+        }
+
+        backgroundScope.launch {
+            openResource.filterNotNull().map { it.videoSource.extraFiles.subtitles }
+                .distinctUntilChanged()
+                .debounce(1000)
+                .collectLatest { urls ->
+                    logger.info { "Video ExtraFiles changed, updating slaves" }
+                    player.media?.clearSlaves()
+                    for (subtitle in urls) {
+                        logger.info { "Adding SUBTITLE slave: $subtitle" }
+                        player.addSlave(IMedia.Slave.Type.Subtitle, Uri.parse(subtitle.uri), false)
+                    }
+                }
+        }
+    }
+
+    override fun stopImpl() {
+        player.stop()
+    }
+
+    override suspend fun cleanupPlayer() {
+        withContext(Dispatchers.Main.immediate) {
+            player.stop()
+        }
+    }
+
+    override suspend fun openSource(source: VideoSource<*>): LibVlcAndroidPlayerData {
+        if (source is HttpStreamingVideoSource) {
+            return LibVlcAndroidPlayerData(
+                source,
+                emptyVideoData(),
+                releaseResource = {},
+                setMedia = {
+                    val media = Media(libVlc, Uri.parse(source.uri));
+                    player.setMedia(media)
+                    media.release();
+                },
+            )
+        }
+        val data = source.open()
+        val file = withContext(Dispatchers.IO) {
+            data.createInput()
+        }
+        return LibVlcAndroidPlayerData(
+            source,
+            data,
+            releaseResource = {
+                file.close()
+                backgroundScope.launch(NonCancellable) {
+                    data.close()
+                }
+            },
+            setMedia = {
+                player.setMedia(Media(libVlc, source.uri))
+            },
+        )
+    }
+
+    override fun closeImpl() {
+        @kotlin.OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch(Dispatchers.Main) {
+            try {
+                player.stop()
+                player.detachViews();
+                player.release()
+                logger.info("LibVlcAndroidPlayer $player released")
+            } catch (e: Throwable) {
+                logger.error(e) { "Failed to release LibVlcAndroidPlayer $player, ignoring" }
+            }
+        }
+    }
+
+    override suspend fun startPlayer(data: LibVlcAndroidPlayerData) {
+        withContext(Dispatchers.Main.immediate) {
+            data.setMedia()
+            player.play()
+        }
+    }
+
+
+    override fun pause() {
+        player.pause()
+    }
+
+    override fun resume() {
+        player.play()
+    }
+
+
+    override fun setPlaybackSpeed(speed: Float) {
+        player.rate = speed
+    }
+
+    override fun seekTo(positionMillis: Long) {
+        if (!player.isSeekable) return
+        player.time = positionMillis
+    }
+
+
+    override fun saveScreenshotFile(filename: String) {
+        TODO("Not yet implemented")
+    }
+
+
 }

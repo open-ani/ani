@@ -50,6 +50,7 @@ compose-multiplatform = "1.6.11"
 #compose-multiplatform-compiler = "1.5.11-kt-2.0.0-RC1" # used by buildscript, don't remove
 stately-common = "2.0.7"
 vlcj = "4.8.2"
+libvlc-android = "3.5.1"
 
 [libraries]
 # Build
@@ -200,6 +201,7 @@ mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-
 vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+libvlc-android = { module = "org.videolan.android:libvlc-all", version.ref = "libvlc-android" }
 
 
 #// https://mvnrepository.com/artifact/software.amazon.awssdk/s3

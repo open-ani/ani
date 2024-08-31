@@ -24,7 +24,7 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.AndroidUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
-import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
+import me.him188.ani.app.videoplayer.LibVlcAndroidPlayerFactory
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.io.deleteRecursively
 import me.him188.ani.utils.io.exists
@@ -144,7 +144,7 @@ fun getAndroidModules(
             baseSaveDir = { Path(cacheDir).inSystem },
         )
     }
-    single<PlayerStateFactory> { ExoPlayerStateFactory() }
+    single<PlayerStateFactory> { LibVlcAndroidPlayerFactory() }
 
 
     factory<VideoSourceResolver> {

@@ -22,6 +22,7 @@ import me.him188.ani.app.data.models.preference.ProfileSettings
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
+import me.him188.ani.app.data.models.preference.VideoPlayerSelectionSettings
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.serializers.DanmakuConfigSerializer
@@ -61,6 +62,7 @@ interface SettingsRepository {
     val videoScaffoldConfig: Settings<VideoScaffoldConfig>
 
     val videoResolverSettings: Settings<VideoResolverSettings>
+    val videoPlayerSelectionSettings: Settings<VideoPlayerSelectionSettings>
     val anitorrentConfig: Settings<AnitorrentConfig>
 
     val oneshotActionConfig: Settings<OneshotActionConfig>
@@ -199,6 +201,11 @@ class PreferencesRepositoryImpl(
         "videoResolverSettings",
         VideoResolverSettings.serializer(),
         default = { VideoResolverSettings.Default },
+    )
+    override val videoPlayerSelectionSettings: Settings<VideoPlayerSelectionSettings> = SerializablePreference(
+        name = "videoPlayerSelectionSettings",
+        VideoPlayerSelectionSettings.serializer(),
+        default = { VideoPlayerSelectionSettings.Default },
     )
     override val anitorrentConfig: Settings<AnitorrentConfig> = SerializablePreference(
         "anitorrentConfig",

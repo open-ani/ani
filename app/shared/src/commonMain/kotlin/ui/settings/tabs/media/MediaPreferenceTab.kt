@@ -102,11 +102,12 @@ class MediaSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
             settingsRepository.mediaCacheSettings.set(copy)
         }
     }
-    
+
     val videoResolverSettings by settings(
         settingsRepository.videoResolverSettings,
         VideoResolverSettings.Default.copy(_placeholder = -1),
     )
+
 }
 
 @Composable
