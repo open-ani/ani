@@ -43,7 +43,7 @@ actual fun isInLandscapeMode(): Boolean {
     return false // TODO("Not yet implemented")
 }
 
-actual fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean) {
+actual suspend fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean) {
 
 }
 

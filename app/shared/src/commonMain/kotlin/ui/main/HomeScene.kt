@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,7 +89,7 @@ fun HomeScene(modifier: Modifier = Modifier) {
     if (currentPlatform.isAndroid()) {
         val context = LocalContext.current
         val window = LocalPlatformWindow.current
-        SideEffect {
+        LaunchedEffect(true) {
             context.setRequestFullScreen(window, false)
         }
     }

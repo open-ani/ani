@@ -74,7 +74,7 @@ fun BoxWithConstraintsScope.showTabletUI(): Boolean {
  * Note that when [fullscreen] is `false`, the system bars will be visible,
  * but the app may be still in landscape mode if the user's system is in landscape mode.
  */
-expect fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean)
+expect suspend fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean)
 
 @Composable
 inline fun isSystemInFullscreen(): Boolean = isSystemInFullscreenImpl()
