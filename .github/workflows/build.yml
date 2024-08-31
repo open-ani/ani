@@ -111,6 +111,9 @@ jobs:
         name: Install Native Dependencies
         run: chmod +x ./ci-helper/install-deps-macos-ci.sh && ./ci-helper/install-deps-macos-ci.sh
 
+      - name: Debug with tmate on failure
+        uses: mxschmitt/action-tmate@v3
+        
       - if: ${{ env.isWindows == 'true' }}
         name: Setup vcpkg cache
         uses: actions/github-script@v7
