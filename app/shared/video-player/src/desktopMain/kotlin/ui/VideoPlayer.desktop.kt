@@ -234,12 +234,12 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         player.audio().setVolume(volume.times(100).roundToInt())
     }
 
-    override fun volumeUp() {
-        setVolume(volume.value + 0.05f)
+    override fun volumeUp(value: Float) {
+        setVolume(volume.value + value)
     }
 
-    override fun volumeDown() {
-        setVolume(volume.value - 0.05f)
+    override fun volumeDown(value: Float) {
+        setVolume(volume.value - value)
     }
 
     init {
