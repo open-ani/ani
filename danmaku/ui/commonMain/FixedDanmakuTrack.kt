@@ -9,10 +9,10 @@ import androidx.compose.runtime.Stable
  * - tick 中的逻辑帧检测
  * - [FixedDanmakuTrack.place] 覆盖了正在显示的弹幕
  * - 调用 [DanmakuTrack.clearAll]
- * 移除时必须调用 [DanmakuTrack.onRemoveDanmaku] 避免内存泄露.
+ * 移除时必须调用 [onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
-internal class FixedDanmakuTrack(
+internal class FixedDanmakuTrack<T : WidthSpecifiedDanmaku>(
     val trackIndex: Int,
     val fromBottom: Boolean,
     frameTimeNanosState: LongState,
@@ -22,14 +22,11 @@ internal class FixedDanmakuTrack(
     // 顶部或底部弹幕的显示时间，现在还不能自定义
     private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
-) : FrameTimeBasedDanmakuTrack(frameTimeNanosState) {
+    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState<T>) -> Unit
+) : FrameTimeBasedDanmakuTrack<T>(frameTimeNanosState) {
     private var currentDanmaku: FixedDanmaku? = null
     
-    override fun place(
-        danmaku: DanmakuState,
-        placeTimeNanos: Long
-    ): DanmakuHostState.PositionedDanmakuState {
+    override fun place(danmaku: T, placeTimeNanos: Long): DanmakuHostState.PositionedDanmakuState<T> {
         val upcomingDanmaku = FixedDanmaku(danmaku, placeTimeNanos)
         currentDanmaku?.let(onRemoveDanmaku)
         currentDanmaku = upcomingDanmaku
@@ -37,7 +34,7 @@ internal class FixedDanmakuTrack(
     }
 
     override fun canPlace(
-        danmaku: DanmakuState,
+        danmaku: T,
         placeTimeNanos: Long
     ): Boolean {
         if (currentDanmaku != null) return false
@@ -61,10 +58,10 @@ internal class FixedDanmakuTrack(
 
     @Stable
     inner class FixedDanmaku(
-        override val state: DanmakuState,
+        override val danmaku: T,
         override val placeFrameTimeNanos: Long,
-    ) : DanmakuHostState.PositionedDanmakuState(
-        calculatePosX = { (hostWidth.value - state.textWidth.toFloat()) / 2 },
+    ) : DanmakuHostState.PositionedDanmakuState<T>(
+        calculatePosX = { (hostWidth.value - danmaku.danmakuWidth.toFloat()) / 2 },
         calculatePosY = {
             if (fromBottom) {
                 hostHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()

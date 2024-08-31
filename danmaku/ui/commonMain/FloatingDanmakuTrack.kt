@@ -12,7 +12,7 @@ import androidx.compose.runtime.Stable
  * 移除时必须调用 [onRemoveDanmaku] 避免内存泄露.
  */
 @Stable
-internal class FloatingDanmakuTrack(
+internal class FloatingDanmakuTrack<T : WidthSpecifiedDanmaku>(
     val trackIndex: Int,
     frameTimeNanosState: LongState,
     private val trackHeight: IntState,
@@ -23,8 +23,8 @@ internal class FloatingDanmakuTrack(
     var baseTextLength: Int,
     val speedMultiplier: FloatState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState) -> Unit
-) : FrameTimeBasedDanmakuTrack(frameTimeNanosState) {
+    private val onRemoveDanmaku: (DanmakuHostState.PositionedDanmakuState<T>) -> Unit
+) : FrameTimeBasedDanmakuTrack<T>(frameTimeNanosState) {
     private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
 
     /**
@@ -32,22 +32,17 @@ internal class FloatingDanmakuTrack(
      * 
      * 如果有那说明此弹幕放置后可能会与已有弹幕重叠.
      */
-    override fun canPlace(
-        danmaku: DanmakuState,
-        placeTimeNanos: Long
-    ): Boolean {
+    override fun canPlace(danmaku: T, placeTimeNanos: Long): Boolean {
+        if (trackWidth.value <= 0) return false
         if (danmakuList.isEmpty()) return true
         val upcomingDanmakuPosX = FloatingDanmaku(danmaku, placeTimeNanos).x
         for (d in danmakuList.asReversed()) {
-            if (d.x + d.state.textWidth + safeSeparation > upcomingDanmakuPosX) return false
+            if (d.x + d.danmaku.danmakuWidth + safeSeparation > upcomingDanmakuPosX) return false
         }
         return true
     }
     
-    override fun place(
-        danmaku: DanmakuState,
-        placeTimeNanos: Long
-    ): DanmakuHostState.PositionedDanmakuState {
+    override fun place(danmaku: T, placeTimeNanos: Long): DanmakuHostState.PositionedDanmakuState<T> {
         return FloatingDanmaku(danmaku, placeTimeNanos).also { danmakuList.add(it) }
     }
 
@@ -66,18 +61,18 @@ internal class FloatingDanmakuTrack(
     }
 
     internal fun FloatingDanmaku.isGone(): Boolean {
-        return x + state.textWidth.toFloat() < 0
+        return x + danmaku.danmakuWidth.toFloat() < 0
     }
 
     internal fun FloatingDanmaku.isFullyVisible(): Boolean {
-        return trackWidth.value.toFloat() - x >= state.textWidth + safeSeparation
+        return trackWidth.value.toFloat() - x >= danmaku.danmakuWidth + safeSeparation
     }
     
     @Stable
     inner class FloatingDanmaku(
-        override val state: DanmakuState,
+        override val danmaku: T,
         override val placeFrameTimeNanos: Long,
-    ) : DanmakuHostState.PositionedDanmakuState(
+    ) : DanmakuHostState.PositionedDanmakuState<T>(
         calculatePosX = {
             val timeDiff = (frameTimeNanos - placeFrameTimeNanos) / 1_000_000_000f
             // val multiplier = speedMultiplier.value

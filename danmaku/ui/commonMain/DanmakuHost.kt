@@ -71,7 +71,7 @@ fun DanmakuHost(
             state.elapsedFrameTimeNanos // subscribe changes
             for (danmaku in state.presentDanmaku) {
                 drawDanmakuText(
-                    state = danmaku.state,
+                    state = danmaku.danmaku,
                     screenPosX = danmaku.x, 
                     screenPosY = danmaku.y
                 )
