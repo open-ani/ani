@@ -142,7 +142,7 @@ jobs:
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
             run_tests: true
-            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx6000m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx8192M"'
+            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
           - os: macos-13
             name: macOS x86_64
             uploadApk: true
@@ -151,7 +151,12 @@ jobs:
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
             run_tests: true
-            gradleArgs: '-Dorg.gradle.jvmargs=-Xmx6000m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx8192M -Porg.gradle.parallel=false'
+            gradleArgs: >-
+              -Dorg.gradle.jvmargs=-Xmx4096m
+              -Dfile.encoding=UTF-8
+              -Dkotlin.daemon.jvm.options=-Xmx4096M
+              -Porg.gradle.parallel=false
+              -Pani.build.framework=false
           - os: macos-14
             name: macOS aarch64
             uploadApk: false
@@ -189,6 +194,11 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - if: ${{ startsWith(matrix.os, 'macos') }}
+        name: Free space
+        run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
+        continue-on-error: true
+
       - name: Get Tag # usage:  ${{ steps.tag.outputs.tag }}
         id: tag
         uses: dawidd6/action-get-tag@v1
@@ -216,7 +226,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies
-        run: chmod +x ./ci-helper/install-deps-macos.sh && ./ci-helper/install-deps-macos.sh
+        run: chmod +x ./ci-helper/install-deps-macos-ci.sh && ./ci-helper/install-deps-macos-ci.sh
 
       - if: ${{ env.isWindows == 'true' }}
         name: Setup vcpkg cache
