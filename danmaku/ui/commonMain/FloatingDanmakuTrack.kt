@@ -18,7 +18,7 @@ class FloatingDanmakuTrack(
     val trackIndex: Int,
     frameTimeNanosState: LongState,
     private val trackHeight: IntState,
-    private val screenWidth: IntState,
+    private val trackWidth: IntState,
     var speedPxPerSecond: Float,
     var safeSeparation: Float,
     // 放到这个轨道的弹幕里, 长度大于此基础长度才会加速弹幕运动, 等于此长度的弹幕速度为 100% [speedPxPerSecond]
@@ -70,7 +70,7 @@ class FloatingDanmakuTrack(
     }
 
     internal fun FloatingDanmaku.isFullyVisible(): Boolean {
-        return screenWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation
+        return trackWidth.value.toFloat() - calculatePosX() >= state.textWidth + safeSeparation
     }
     
     @Stable
@@ -83,7 +83,7 @@ class FloatingDanmakuTrack(
             val multiplier = speedMultiplier.value
                 .pow(state.textWidth / (baseTextLength.toFloat() * 2f))
                 .coerceAtLeast(1f)
-            return screenWidth.value - timeDiff * speedPxPerSecond * multiplier
+            return trackWidth.value - timeDiff * speedPxPerSecond * multiplier
         }
 
         override fun calculatePosY(): Float {
@@ -92,20 +92,6 @@ class FloatingDanmakuTrack(
 
         override fun toString(): String {
             return "FloatingDanmaku(p=${calculatePosX()}:${calculatePosY()}, v=${isFullyVisible()}, g=${isGone()})"
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (other == null) return false
-            if (other is DanmakuHostState.OverridePlaceTimeDanmakuState) {
-                return other.state === this.state
-            }
-            return (other as? FloatingDanmaku) === this
-        }
-
-        override fun hashCode(): Int {
-            var result = state.hashCode()
-            result = 31 * result + placeFrameTimeNanos.hashCode()
-            return result
         }
     }
 

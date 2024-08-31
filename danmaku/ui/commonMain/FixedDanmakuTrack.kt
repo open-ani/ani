@@ -82,20 +82,6 @@ class FixedDanmakuTrack(
             return "FixedDanmaku(p=${calculatePosX()}:${calculatePosY()}, " +
                     "d=${placeFrameTimeNanos}..${placeFrameTimeNanos + durationMillis.value})"
         }
-
-        override fun equals(other: Any?): Boolean {
-            if (other == null) return false
-            if (other is DanmakuHostState.OverridePlaceTimeDanmakuState) {
-                return other.state === this.state
-            }
-            return (other as? FixedDanmaku) === this
-        }
-
-        override fun hashCode(): Int {
-            var result = state.hashCode()
-            result = 31 * result + placeFrameTimeNanos.hashCode()
-            return result
-        }
     }
 
     override fun toString(): String {

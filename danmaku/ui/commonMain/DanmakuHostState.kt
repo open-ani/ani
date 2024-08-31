@@ -74,7 +74,8 @@ class DanmakuHostState(
     internal val bottomTrack: MutableList<FixedDanmakuTrack> = mutableListOf()
     
     /**
-     * All presented danmaku which should be shown on screen.
+     * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
+     * 在这里保留一个引用, 方便在 repopulate 的时候重新计算所有弹幕位置.
      */
     private val mutablePresentDanmaku: MutableList<PositionedDanmakuState> = mutableStateListOf()
     val presentDanmaku: List<PositionedDanmakuState> = mutablePresentDanmaku
@@ -136,7 +137,7 @@ class DanmakuHostState(
                 trackIndex = index,
                 frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
-                screenWidth = hostWidthState, 
+                trackWidth = hostWidthState, 
                 speedPxPerSecond = newFloatingTrackSpeed,
                 safeSeparation = newFloatingTrackSafeSeparation,
                 baseTextLength = floatingBaseTextLengthForSpeed,
@@ -217,24 +218,21 @@ class DanmakuHostState(
     }
 
     /**
-     * 发送弹幕到屏幕, 从最右侧开始向左滚动
+     * 发送弹幕到屏幕
      */
-    suspend fun trySend(danmaku: DanmakuPresentation): PositionedDanmakuState? {
-        return withContext(Dispatchers.Main.immediate) {
-            trySendWithTime(danmaku, elapsedFrameTimeNanos)
-        }
-    }
-
-    // 向指定帧时间的位置发送弹幕
-    @UiThread
-    private suspend fun trySendWithTime(
+    suspend fun trySend(
         danmaku: DanmakuPresentation, 
-        placeFrameTimeNanos: Long
+        placeFrameTimeNanos: Long = elapsedFrameTimeNanos
     ): PositionedDanmakuState? {
         val uiContext = uiContextDeferred.await()
+        val track = when (danmaku.danmaku.location) {
+            DanmakuLocation.NORMAL -> floatingTrack
+            DanmakuLocation.TOP -> topTrack
+            DanmakuLocation.BOTTOM -> bottomTrack
+        }
         
-        fun createDanmakuState(): DanmakuState {
-            return DanmakuState(
+        return withContext(Dispatchers.Main.immediate) {
+            val danmakuState = DanmakuState(
                 presentation = danmaku,
                 measurer = uiContext.textMeasurer,
                 baseStyle = uiContext.baseStyle,
@@ -242,17 +240,10 @@ class DanmakuHostState(
                 enableColor = danmakuConfig.enableColor,
                 isDebug = danmakuConfig.isDebug,
             )
-        }
-        
-        return withContext(Dispatchers.Main.immediate) {
-            val positionedDanmakuState: PositionedDanmakuState? = when (danmaku.danmaku.location) {
-                DanmakuLocation.NORMAL -> floatingTrack.firstNotNullOfOrNull { track ->
-                    track.tryPlace(createDanmakuState(), placeFrameTimeNanos)
-                }
-                else -> (if (danmaku.danmaku.location == DanmakuLocation.TOP) topTrack else bottomTrack)
-                    .firstNotNullOfOrNull { track -> track.tryPlace(createDanmakuState(), placeFrameTimeNanos) }
+            
+            val positionedDanmakuState = track.firstNotNullOfOrNull {
+                it.tryPlace(danmakuState, placeFrameTimeNanos)
             }
-            // if danmakuState is not null, it means successfully placed.
             positionedDanmakuState?.also(mutablePresentDanmaku::add)
         }
     }
@@ -295,7 +286,7 @@ class DanmakuHostState(
                 floatingDanmaku.map { danmaku ->
                     val playTimeNanos = firstDanmakuPlaceTimeNanos +
                             (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis) * 1_000_000L
-                    trySendWithTime(danmaku, playTimeNanos)
+                    trySend(danmaku, playTimeNanos)
                 }
             }
 
@@ -307,12 +298,11 @@ class DanmakuHostState(
     }
     
     // 放置弹幕并指定放置的帧时间位置
-    @UiThread
     private suspend fun repopulatePositioned(list: List<PositionedDanmakuState>) {
         withContext(Dispatchers.Main.immediate) {
             clearPresentDanmaku()
-            for (danmaku in list) { 
-                trySendWithTime(danmaku.state.presentation, danmaku.placeFrameTimeNanos) 
+            for (danmaku in list) {
+                trySend(danmaku.state.presentation, danmaku.placeFrameTimeNanos) 
             }
         }
     }
@@ -335,8 +325,7 @@ class DanmakuHostState(
     private suspend fun invalidate() {
         withContext(Dispatchers.Main.immediate) {
             if (mutablePresentDanmaku.isEmpty()) return@withContext
-            val mapped = mutablePresentDanmaku.map { OverridePlaceTimeDanmakuState(it, it.placeFrameTimeNanos) }
-            repopulatePositioned(mapped)
+            repopulatePositioned(mutablePresentDanmaku.toList())
         }
     }
     
@@ -344,28 +333,11 @@ class DanmakuHostState(
     fun setPause(pause: Boolean) {
         paused = pause
     }
-    
-    inner class OverridePlaceTimeDanmakuState(
-        private val correspondingState: PositionedDanmakuState,
-        override val placeFrameTimeNanos: Long
-    ) : PositionedDanmakuState by correspondingState {
-        override fun equals(other: Any?): Boolean {
-            if (other == null) return false
-            if (other is FloatingDanmakuTrack.FloatingDanmaku) return other.state === this.state
-            if (other is FixedDanmakuTrack.FixedDanmaku) return other.state === this.state
-            return (other as? OverridePlaceTimeDanmakuState) === this
-        }
-
-        override fun hashCode(): Int {
-            var result = correspondingState.state.hashCode()
-            result = 31 * result + placeFrameTimeNanos.hashCode()
-            return result
-        }
-    }
 
     /**
      * DanmakuState which is positioned and can be placed on [Canvas].
      */
+    @Stable
     interface PositionedDanmakuState {
         val state: DanmakuState
         val placeFrameTimeNanos: Long
