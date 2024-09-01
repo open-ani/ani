@@ -18,11 +18,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionItem
@@ -80,7 +80,7 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val cacheVm = rememberViewModel {
+    val cacheVm = viewModel {
         AndroidTorrentCacheViewModel(context, vm.mediaCacheSettings, vm.permissionManager)
     }
 

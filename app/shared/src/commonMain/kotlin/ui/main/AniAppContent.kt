@@ -12,20 +12,20 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
+import androidx.navigation.compose.rememberNavController
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.showTabletUI
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
-import moe.tlaster.precompose.navigation.rememberNavigator
 
 /**
  * UI 入口点. 包含所有子页面, 以及组合这些子页面的方式 (navigation).
  */
 @Composable
 fun AniAppContent(aniNavigator: AniNavigator) {
-    val navigator = rememberNavigator()
+    val navigator = rememberNavController()
     SideEffect {
-        aniNavigator.setNavigator(navigator)
+        aniNavigator.setNavController(navigator)
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {

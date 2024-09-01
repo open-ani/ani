@@ -20,12 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import me.him188.ani.app.ui.loading.ConnectingDialog
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
 

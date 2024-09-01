@@ -13,6 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
@@ -31,6 +33,8 @@ import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isSystemInFullscreen
+import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
+import me.him188.ani.app.platform.navigation.OnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
@@ -41,7 +45,6 @@ import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.IosUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.AppTheme
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toast
@@ -53,11 +56,14 @@ import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import platform.UIKit.UIViewController
 
+// Workaround for Kotlin bug: iosMain cannot resolve actualized skikoMain code
+expect fun OnBackPressedDispatcherOwner(aniNavigator: AniNavigator): OnBackPressedDispatcherOwner
+
+@Suppress("FunctionName", "unused") // used in Swift
 fun MainViewController(): UIViewController {
     val scope = createAppRootCoroutineScope()
 
@@ -71,6 +77,8 @@ fun MainViewController(): UIViewController {
     koin.get<TorrentManager>() // start sharing, connect to DHT now
 
     val aniNavigator = AniNavigator()
+    val onBackPressedDispatcherOwner = OnBackPressedDispatcherOwner(aniNavigator)
+
     return ComposeUIViewController {
         AniApp {
             CompositionLocalProvider(
@@ -78,6 +86,7 @@ fun MainViewController(): UIViewController {
                 LocalPlatformWindow provides remember {
                     PlatformWindow()
                 },
+                LocalOnBackPressedDispatcherOwner provides onBackPressedDispatcherOwner,
             ) {
                 Box(
                     Modifier.background(color = AppTheme.colorScheme.background)
@@ -89,7 +98,7 @@ fun MainViewController(): UIViewController {
                     Box(Modifier.fillMaxSize()) {
                         val paddingByWindowSize by animateDpAsState(0.dp)
 
-                        val vm = rememberViewModel { ToastViewModel() }
+                        val vm = viewModel { ToastViewModel() }
 
                         val showing by vm.showing.collectAsStateWithLifecycle()
                         val content by vm.content.collectAsStateWithLifecycle()

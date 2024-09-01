@@ -4,10 +4,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
@@ -28,7 +28,7 @@ fun DebugTab(
     modifier: Modifier = Modifier,
     onDisableDebugMode: () -> Unit = {}
 ) {
-    val vm = rememberViewModel { DebugViewModel() }
+    val vm = viewModel { DebugViewModel() }
     val debugSettings by vm.debugSettings
 
     SettingsTab(modifier) {

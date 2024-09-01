@@ -19,12 +19,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.Res
 import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -37,7 +37,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun NetworkSettingsTab(
-    vm: NetworkSettingsViewModel = rememberViewModel { NetworkSettingsViewModel() },
+    vm: NetworkSettingsViewModel = viewModel { NetworkSettingsViewModel() },
     modifier: Modifier = Modifier,
 ) {
     val proxySettings by vm.proxySettings

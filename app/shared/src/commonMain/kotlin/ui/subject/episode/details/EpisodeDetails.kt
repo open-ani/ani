@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.data.models.episode.displayName
 import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectInfo
@@ -52,7 +53,6 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeDialogsHost
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
@@ -122,7 +122,7 @@ fun EpisodeDetails(
 
     if (state.subjectId != 0) {
         val subjectDetailsViewModel =
-            rememberViewModel(keys = listOf(state.subjectId)) { SubjectDetailsViewModel(state.subjectId) }
+            viewModel(key = state.subjectId.toString()) { SubjectDetailsViewModel(state.subjectId) }
         subjectDetailsViewModel.navigator = LocalNavigator.current
         if (showSubjectDetails) {
             ModalBottomSheet({ showSubjectDetails = false }) {

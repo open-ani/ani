@@ -69,13 +69,11 @@ suspend fun TestScope.takeSnapshot() {
  * 相对于 [runComposeUiTest], 有一些修改:
  * - [ComposeUiTest.waitUntil] 的超时时间更长
  */
-fun runAniComposeUiTest(
+expect fun runAniComposeUiTest(
     testBody: AniComposeUiTest.() -> Unit
-) = runComposeUiTest {
-    AniComposeUiTestImpl(this).run(testBody)
-}
+)
 
-private class AniComposeUiTestImpl(override val composeUiTest: ComposeUiTest) : AniComposeUiTest {
+internal class AniComposeUiTestImpl(override val composeUiTest: ComposeUiTest) : AniComposeUiTest {
     override val density: Density
         get() = composeUiTest.density
     override val mainClock: MainTestClock

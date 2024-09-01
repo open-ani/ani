@@ -19,16 +19,16 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.utils.platform.annotations.TestOnly
-import moe.tlaster.precompose.lifecycle.Lifecycle
 
 
 @OptIn(TestOnly::class)
@@ -75,8 +75,8 @@ internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewMode
                     mutableStateOf(powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true)
                 }
             }
-            OnLifecycleEvent {
-                if (!isPreviewing && it == Lifecycle.State.Active) {
+            LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                if (!isPreviewing) {
                     isIgnoring = powerManager?.isIgnoringBatteryOptimizations(context.packageName) == true
                 }
             }

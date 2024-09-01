@@ -5,6 +5,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -37,4 +38,4 @@ fun isInDebugMode(): Boolean {
 
 @Composable
 fun rememberDebugSettingsViewModel(): DebugSettingsViewModel =
-    rememberViewModel<DebugSettingsViewModel> { DebugSettingsViewModel() }
+    viewModel<DebugSettingsViewModel> { DebugSettingsViewModel() }

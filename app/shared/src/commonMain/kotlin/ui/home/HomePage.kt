@@ -49,12 +49,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import me.him188.ani.app.ui.foundation.rememberViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
 import me.him188.ani.app.ui.home.search.SubjectSearchBar
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import moe.tlaster.precompose.navigation.BackHandler
 
 @Composable
 fun HomePage(
@@ -63,7 +63,7 @@ fun HomePage(
     searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val searchViewModel = rememberViewModel { SearchViewModel() }
+    val searchViewModel = viewModel { SearchViewModel() }
     val snackBarHostState = remember { SnackbarHostState() }
     val layoutDirection = LocalLayoutDirection.current
 

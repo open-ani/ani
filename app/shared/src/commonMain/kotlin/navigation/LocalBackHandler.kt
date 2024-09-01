@@ -4,19 +4,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import moe.tlaster.precompose.navigation.BackHandler
-import moe.tlaster.precompose.navigation.Navigator
-import moe.tlaster.precompose.ui.LocalBackDispatcherOwner
+import me.him188.ani.app.platform.navigation.BackHandler
+import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
 
 fun interface BackDispatcher {
     /**
      * Call the most recently registered [BackHandler], if any.
      *
-     * If no [BackHandler] has been registered, this will call [Navigator.goBack].
+     * If no [BackHandler] has been registered, this will call [AniNavigator.popBackStack].
      */
-    fun onBackPress()
+    fun onBackPressed()
 }
 
+/**
+ * 可模拟点击返回键
+ */
 object LocalBackHandler {
     /**
      * @see BackDispatcher
@@ -24,13 +26,13 @@ object LocalBackHandler {
     val current: BackDispatcher
         @Composable
         get() {
-            val backPressed by rememberUpdatedState(LocalBackDispatcherOwner.current)
+            val backPressed by rememberUpdatedState(LocalOnBackPressedDispatcherOwner.current)
             val navigator by rememberUpdatedState(LocalNavigator.current)
             return remember {
                 BackDispatcher {
-                    backPressed?.backDispatcher?.onBackPress()
+                    backPressed?.onBackPressedDispatcher?.onBackPressed()
                         ?: kotlin.run {
-                            navigator.navigator.goBack()
+                            navigator.popBackStack()
                         }
                 }
             }

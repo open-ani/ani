@@ -29,9 +29,9 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
  */
 @Composable
 fun PlayerTopBar(
-    title: @Composable (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
+    title: @Composable() (() -> Unit)? = null,
+    actions: @Composable() (RowScope.() -> Unit) = {},
     color: Color = aniDarkColorTheme().onBackground,
 ) {
     TopAppBar(
@@ -49,7 +49,7 @@ fun PlayerTopBar(
             CompositionLocalProvider(LocalContentColor provides color) {
                 val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
                 IconButton(
-                    onClick = { back.onBackPress() },
+                    onClick = { back.onBackPressed() },
                     Modifier.ifThen(needWorkaroundForFocusManager) {
                         onFocusEvent {
                             if (it.hasFocus) {

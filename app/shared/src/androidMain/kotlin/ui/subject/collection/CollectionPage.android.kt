@@ -6,11 +6,11 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.tools.caching.mutate
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.rememberViewModel
 
 internal val TestSelfRatingInfo = SelfRatingInfo(
     score = 7,
@@ -23,7 +23,7 @@ internal val TestSelfRatingInfo = SelfRatingInfo(
 @Preview
 private fun PreviewCollectionPage() {
     ProvideCompositionLocalsForPreview {
-        rememberViewModel {
+        viewModel {
             MyCollectionsViewModel().apply {
                 val testData = TestSubjectCollections
                 runBlocking {

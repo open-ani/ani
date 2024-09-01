@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
@@ -49,7 +51,6 @@ import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
@@ -57,11 +58,10 @@ import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
-import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
+import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModelImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
-import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodeVideoTopBar
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
@@ -84,11 +84,11 @@ import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.state.togglePause
+import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.utils.platform.annotations.TestOnly
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.time.Duration.Companion.seconds
 
 internal const val TAG_EPISODE_VIDEO_TOP_BAR = "EpisodeVideoTopBar"
@@ -119,7 +119,7 @@ internal fun EpisodeVideoImpl(
     danmakuConfig: () -> DanmakuConfig,
     onClickFullScreen: () -> Unit,
     onExitFullscreen: () -> Unit,
-    danmakuEditor: @Composable (RowScope.() -> Unit),
+    danmakuEditor: @Composable() (RowScope.() -> Unit),
     configProvider: () -> VideoScaffoldConfig,
     onClickScreenshot: () -> Unit,
     detachedProgressSlider: @Composable () -> Unit,
@@ -161,7 +161,7 @@ internal fun EpisodeVideoImpl(
         controllerState = videoControllerState,
         gestureLocked = { isLocked },
         topBar = {
-            EpisodeVideoTopBar(
+            PlayerTopBar(
                 Modifier.testTag(TAG_EPISODE_VIDEO_TOP_BAR),
                 title = if (expanded) {
                     { title() }
@@ -421,7 +421,7 @@ internal fun EpisodeVideoImpl(
                     },
                 ) {
                     EpisodeVideoSettings(
-                        rememberViewModel { EpisodeVideoSettingsViewModel() },
+                        viewModel { EpisodeVideoSettingsViewModelImpl() },
                     )
                 }
             }
