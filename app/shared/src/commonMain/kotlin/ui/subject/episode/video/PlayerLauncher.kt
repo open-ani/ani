@@ -3,8 +3,10 @@ package me.him188.ani.app.ui.subject.episode.video
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
@@ -19,7 +21,7 @@ import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.subject.episode.statistics.DelegateVideoStatistics
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.videoplayer.data.OpenFailures
@@ -44,6 +46,7 @@ class PlayerLauncher(
     mediaSelector: MediaSelector,
     private val videoSourceResolver: VideoSourceResolver,
     private val playerState: PlayerState,
+    private val mediaSourceInfoProvider: MediaSourceInfoProvider,
     episodeInfo: Flow<EpisodeInfo?>,
     mediaSourceLoading: Flow<Boolean>,
     parentCoroutineContext: CoroutineContext,
@@ -54,8 +57,11 @@ class PlayerLauncher(
 
     private val videoLoadingStateFlow: MutableStateFlow<VideoLoadingState> = MutableStateFlow(VideoLoadingState.Initial)
 
-    val videoStatistics: VideoStatistics = DelegateVideoStatistics(
+    val videoStatistics: VideoStatistics = VideoStatistics(
         playingMedia = mediaSelector.selected.produceState(),
+        playingMediaSourceInfo = mediaSelector.selected.flatMapLatest {
+            mediaSourceInfoProvider.getSourceInfoFlow(it?.mediaSourceId ?: return@flatMapLatest emptyFlow())
+        }.produceState(null),
         playingFilename = playerState.videoData.map { it?.filename }.produceState(null),
         mediaSourceLoading = mediaSourceLoading.produceState(true),
         videoLoadingState = videoLoadingStateFlow.produceState(VideoLoadingState.Initial),

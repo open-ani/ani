@@ -9,6 +9,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
 import me.him188.ani.app.ui.subject.episode.mediaFetch.emptyMediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
@@ -20,6 +21,7 @@ fun PreviewEpisodeVideoMediaSelectorSideSheet() {
         EpisodeVideoMediaSelectorSideSheet(
             mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
             mediaSourceResultsPresentation = emptyMediaSourceResultsPresentation(),
+            rememberTestMediaSourceInfoProvider(),
             onDismissRequest = {},
         )
     }

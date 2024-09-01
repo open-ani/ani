@@ -32,6 +32,7 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
@@ -110,6 +111,7 @@ class EpisodeVideoCursorTest {
                     mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                     mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                     episodeSelectorState = rememberTestEpisodeSelectorState(),
+                    mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                     modifier = Modifier.weight(1f),
                     danmakuRegexFilterState = createDanmakuRegexFilterState(),
                 )

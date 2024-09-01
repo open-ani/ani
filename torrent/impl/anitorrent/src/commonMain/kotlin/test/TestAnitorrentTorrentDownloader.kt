@@ -13,7 +13,6 @@ import me.him188.ani.app.torrent.anitorrent.session.TorrentManagerSession
 import me.him188.ani.app.torrent.anitorrent.session.TorrentResumeData
 import me.him188.ani.app.torrent.anitorrent.session.TorrentStats
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
@@ -59,6 +58,9 @@ open class TestTorrentManagerSession(
     override fun createTorrentAddInfo(): TestTorrentAddInfo = TestTorrentAddInfo()
 
     override fun resume() {
+    }
+
+    override fun applyConfig(config: TorrentDownloaderConfig) {
     }
 
     override fun releaseHandle(handle: TestTorrentHandle) {
@@ -193,7 +195,7 @@ open class TestAnitorrentTorrentDownloader(
             httpFileDownloader: HttpFileDownloader,
             torrentDownloaderConfig: TorrentDownloaderConfig,
             parentCoroutineContext: CoroutineContext
-        ): TorrentDownloader {
+        ): AnitorrentTorrentDownloader<*, *> {
             return TestAnitorrentTorrentDownloader(
                 rootDataDirectory,
                 httpFileDownloader,

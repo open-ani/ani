@@ -59,6 +59,7 @@ import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.datasources.api.creationTimeOrNull
 import me.him188.ani.datasources.api.episodeIdInt
 import me.him188.ani.datasources.api.subjectIdInt
 import me.him188.ani.datasources.api.topic.FileSize
@@ -141,7 +142,10 @@ class CacheManagementViewModel(
                         this,
                     ),
             )
-        }
+        }.sortedWith(
+            compareByDescending<CacheGroupState> { it.latestCreationTime }
+                .thenByDescending { it.cacheId }, // 只有旧的缓存会没有时间, 才会走这个
+        )
 
     private fun createGroupCommonInfo(
         subjectId: Int,
@@ -171,6 +175,7 @@ class CacheManagementViewModel(
             //                }
             //                    episodeScreenshotRepository.getScreenshots(mediaCache.metadata.)
             //            }.produceState(emptyList(), this),
+            creationTime = mediaCache.metadata.creationTimeOrNull,
             screenShots = stateOf(emptyList()),
             stats = fileStats.combine(
                 fileStats.map { it.downloadedBytes.inBytes }.averageRate(),

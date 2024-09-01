@@ -2,6 +2,7 @@ package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
+import me.him188.ani.app.data.source.media.createTestDefaultMedia
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
@@ -111,7 +112,7 @@ sealed class AbstractDefaultMediaSelectorTest {
         extraFiles: MediaExtraFiles = MediaExtraFiles.Empty,
     ): DefaultMedia {
         val id = mediaId++
-        return DefaultMedia(
+        return createTestDefaultMedia(
             mediaId = "$sourceId.$id",
             mediaSourceId = sourceId,
             originalTitle = "[字幕组] 孤独摇滚 $id",

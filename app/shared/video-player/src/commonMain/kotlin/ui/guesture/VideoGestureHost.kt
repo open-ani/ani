@@ -56,6 +56,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -467,14 +472,42 @@ fun VideoGestureHost(
                             },
                         )
                     }
-                    .ifThen(family.keyboardUpDownForVolume) {
-                        audioController?.let { controller ->
-                            onKey(ComposeKey.DirectionUp) {
-                                controller.increaseLevel(0.10f)
+                    .ifThen(family.keyboardUpDownForVolume && playerState is SupportsAudio) {
+                        if (playerState !is SupportsAudio) {
+                            return@ifThen this
+                        }
+                        onKeyEvent {
+                            if (it.type == KeyEventType.KeyUp) return@onKeyEvent false
+                            val consumed = when {
+                                it.isShiftPressed && it.key == ComposeKey.DirectionUp -> {
+                                    playerState.volumeUp(0.01f)
+                                    true
+                                }
+
+                                it.isShiftPressed && it.key == ComposeKey.DirectionDown -> {
+                                    playerState.volumeDown(0.01f)
+                                    true
+                                }
+
+                                it.key == ComposeKey.DirectionUp -> {
+                                    playerState.volumeUp()
+                                    true
+                                }
+
+                                it.key == ComposeKey.DirectionDown -> {
+                                    playerState.volumeDown()
+                                    true
+                                }
+
+                                else -> false
                             }
-                            onKey(ComposeKey.DirectionDown) {
-                                controller.decreaseLevel(0.10f)
+                            if (consumed) {
+                                playerState.toggleMute(false)
+                                indicatorTasker.launch {
+                                    indicatorState.showVolumeRange(playerState.volume.value / playerState.maxValue)
+                                }
                             }
+                            consumed
                         }
                     }
                     .ifThen(family.keyboardSpaceForPauseResume) {

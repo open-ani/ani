@@ -88,7 +88,7 @@ fun EpisodeVideoLoadingIndicator(
 
                 is VideoLoadingState.DecodingData -> {
                     TextWithBorder(
-                        if (state.isBt) {
+                        if (!state.isBt) {
                             "资源解析成功, 正在准备视频"
                         } else {
                             "正在解析磁力链或查询元数据\n若 15 秒内未完成, 请尝试切换数据源或先缓存再看"

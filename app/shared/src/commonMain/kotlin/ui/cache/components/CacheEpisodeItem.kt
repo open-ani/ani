@@ -43,6 +43,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,7 @@ class CacheEpisodeState(
     val cacheId: String,
     val sort: EpisodeSort,
     val displayName: String,
+    val creationTime: Long?,
     screenShots: State<List<String>>, // url
     stats: State<Stats>,
     state: State<CacheEpisodePaused>,
@@ -350,6 +352,30 @@ private fun Dropdown(
     state: CacheEpisodeState,
     modifier: Modifier = Modifier,
 ) {
+    var showConfirm by rememberSaveable { mutableStateOf(false) }
+    if (showConfirm) {
+        AlertDialog(
+            { showConfirm = false },
+            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("删除缓存") },
+            text = { Text("删除后不可恢复，确认删除吗?") },
+            confirmButton = {
+                TextButton(
+                    {
+                        state.delete()
+                        showConfirm = false
+                    },
+                ) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton({ showConfirm = false }) {
+                    Text("取消")
+                }
+            },
+        )
+    }
     DropdownMenu(showDropdown, onDismissRequest, modifier) {
         if (!state.isFinished) {
             if (state.isPaused) {
@@ -389,25 +415,6 @@ private fun Dropdown(
             )
         }
         ProvideContentColor(MaterialTheme.colorScheme.error) {
-            var showConfirm by remember { mutableStateOf(false) }
-            if (showConfirm) {
-                AlertDialog(
-                    { showConfirm = false },
-                    icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                    title = { Text("删除缓存") },
-                    text = { Text("删除后不可恢复，确认删除吗?") },
-                    confirmButton = {
-                        TextButton({ state.delete() }) {
-                            Text("删除", color = MaterialTheme.colorScheme.error)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton({ showConfirm = false }) {
-                            Text("取消")
-                        }
-                    },
-                )
-            }
             DropdownMenuItem(
                 text = { Text("删除", color = MaterialTheme.colorScheme.error) },
                 leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },

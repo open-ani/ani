@@ -7,6 +7,7 @@ import io.ktor.client.request.parameter
 import me.him188.ani.datasources.api.matcher.WebVideo
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -46,15 +47,17 @@ class GugufanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource() 
         val INFO = MediaSourceInfo(
             "咕咕番",
             "咕咕番",
-            imageUrl = "$BASE_URL/upload/site/20230512-1/8d3bab2eb1440259baad5079c0a28071.png",
+            iconUrl = "$BASE_URL/upload/site/20230512-1/8d3bab2eb1440259baad5079c0a28071.png",
+            iconResourceId = "gugufan.png",
         )
     }
 
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+
         override val info: MediaSourceInfo get() = INFO
 
-        override fun create(config: MediaSourceConfig): MediaSource = GugufanMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = GugufanMediaSource(config)
     }
 
     override val baseUrl: String get() = BASE_URL

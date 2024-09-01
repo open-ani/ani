@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.runTest
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.SOURCE_DMHY
 import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.data.source.media.createTestDefaultMedia
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.instance.createTestMediaSourceInstance
@@ -153,7 +154,7 @@ class MediaSelectorAutoSelectTest {
 
     @Test
     fun `selectCached selects one when there is one cache`() = runTest {
-        val target = DefaultMedia(
+        val target = createTestDefaultMedia(
             mediaId = "$SOURCE_DMHY.1",
             mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
@@ -179,7 +180,7 @@ class MediaSelectorAutoSelectTest {
 
     @Test
     fun `selectCached selects first one when there are multiple caches`() = runTest {
-        val target = DefaultMedia(
+        val target = createTestDefaultMedia(
             mediaId = "$SOURCE_DMHY.1",
             mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",

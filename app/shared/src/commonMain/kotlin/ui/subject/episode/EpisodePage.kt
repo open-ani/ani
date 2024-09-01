@@ -140,9 +140,12 @@ private fun EpisodeSceneContent(
     // 按返回退出全屏
     val context by rememberUpdatedState(LocalContext.current)
     val window = LocalPlatformWindow.current
+    val scope = rememberCoroutineScope()
     BackHandler(enabled = vm.isFullscreen) {
-        context.setRequestFullScreen(window, false)
-        vm.isFullscreen = false
+        scope.launch {
+            context.setRequestFullScreen(window, false)
+            vm.isFullscreen = false
+        }
     }
 
     // image viewer
@@ -539,6 +542,7 @@ private fun EpisodeVideo(
             vm.playerState.seekTo(it)
         },
     )
+    val scope = rememberCoroutineScope()
 
     EpisodeVideoImpl(
         vm.playerState,
@@ -563,16 +567,22 @@ private fun EpisodeVideo(
         danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {
             if (vm.isFullscreen) {
-                context.setRequestFullScreen(window, false)
-                vm.isFullscreen = false
+                scope.launch {
+                    context.setRequestFullScreen(window, false)
+                    vm.isFullscreen = false
+                }
             } else {
-                vm.isFullscreen = true
-                context.setRequestFullScreen(window, true)
+                scope.launch {
+                    vm.isFullscreen = true
+                    context.setRequestFullScreen(window, true)
+                }
             }
         },
         onExitFullscreen = {
-            context.setRequestFullScreen(window, false)
-            vm.isFullscreen = false
+            scope.launch {
+                context.setRequestFullScreen(window, false)
+                vm.isFullscreen = false
+            }
         },
         danmakuEditor = {
             val danmakuEditorRequester = remember { Any() }
@@ -640,6 +650,7 @@ private fun EpisodeVideo(
         mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
         episodeSelectorState = vm.episodeSelectorState,
         progressSliderState = progressSliderState,
+        mediaSourceInfoProvider = vm.mediaSourceInfoProvider,
         danmakuRegexFilterState = vm.danmakuRegexFilterState,
         leftBottomTips = {
             AnimatedVisibility(

@@ -22,6 +22,7 @@ import kotlinx.coroutines.CancellationException
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
@@ -37,9 +38,9 @@ class DmhyMediaSource(
     config: MediaSourceConfig,
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String = ID
+        override val factoryId: FactoryId = FactoryId(ID)
         override val info: MediaSourceInfo get() = INFO
-        override fun create(config: MediaSourceConfig): MediaSource = DmhyMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = DmhyMediaSource(config)
     }
 
     companion object {
@@ -47,7 +48,8 @@ class DmhyMediaSource(
         val INFO = MediaSourceInfo(
             displayName = "動漫花園",
             description = "动漫资源聚合网站",
-            imageUrl = "https://dmhy.org/favicon.ico",
+            iconUrl = "https://dmhy.org/favicon.ico",
+            iconResourceId = "dmhy.png",
         )
     }
 

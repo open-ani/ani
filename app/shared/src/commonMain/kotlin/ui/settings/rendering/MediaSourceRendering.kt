@@ -15,32 +15,42 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.Res
 import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.datasources.api.source.MediaSourceInfo
+
+fun MediaSourceInfo.getResourceOrImageUri(): String? {
+    return iconResourceId?.let { Res.getUri("drawable/$it") } ?: iconUrl
+}
 
 @Composable
 fun MediaSourceIcon(
-    url: String?,
+    sourceInfo: MediaSourceInfo?,
     modifier: Modifier = Modifier,
 ) {
-    if (url == null) {
-        Image(
-            rememberVectorPainter(Icons.Rounded.DisplaySettings), null,
-            modifier,
-            contentScale = ContentScale.Crop,
-            alignment = Alignment.Center,
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-        )
-    } else {
-        AsyncImage(
-            url,
-            null,
-            modifier,
-            contentScale = ContentScale.Crop,
-            alignment = Alignment.Center,
-            colorFilter = null,
-        )
+    val url = sourceInfo?.getResourceOrImageUri()
+    when {
+        url != null && !LocalIsPreviewing.current -> { // TODO: 升级到 CMP 1.7 后, 可以去掉这里的 LocalIsPreviewing
+            AsyncImage(
+                url,
+                null,
+                modifier,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                colorFilter = null,
+            )
+        }
 
+        else -> {
+            Image(
+                rememberVectorPainter(Icons.Rounded.DisplaySettings), null,
+                modifier,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+            )
+        }
     }
 }
 
@@ -53,14 +63,15 @@ fun SmallMediaSourceIcon(
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.clip(MaterialTheme.shapes.extraSmall).height(24.dp)) {
-        if (info.imageUrl == null) {
+        val image = info.getResourceOrImageUri()
+        if (image == null) {
             Image(
                 rememberVectorPainter(Icons.Rounded.DisplaySettings),
                 null, Modifier.size(24.dp),
             )
         } else {
             AsyncImage(
-                info.imageUrl,
+                image,
                 null, Modifier.size(24.dp),
             )
         }

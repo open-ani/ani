@@ -6,6 +6,7 @@ import io.ktor.client.request.parameter
 import me.him188.ani.datasources.api.matcher.WebVideo
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -45,14 +46,17 @@ class MxdongmanMediaSource(config: MediaSourceConfig) : ThreeStepWebMediaSource(
         val INFO = MediaSourceInfo(
             "MX 动漫",
             websiteUrl = BASE_URL,
-            imageUrl = "$BASE_URL/favicon.ico",
+            iconUrl = "$BASE_URL/favicon.ico",
+            iconResourceId = "mxdongman.png",
         )
     }
 
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = me.him188.ani.datasources.api.source.FactoryId(ID)
+
         override val info: MediaSourceInfo get() = INFO
-        override fun create(config: MediaSourceConfig): MediaSource = MxdongmanMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource =
+            MxdongmanMediaSource(config)
     }
 
     override val baseUrl: String get() = BASE_URL

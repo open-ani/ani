@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -20,8 +21,10 @@ import me.him188.ani.app.data.repository.updateConfig
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager.Companion.LOCAL_FS_MEDIA_SOURCE_ID
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.platform.ServiceLoader
 import me.him188.ani.app.platform.getAniUserAgent
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -52,12 +55,12 @@ interface MediaSourceManager { // available by inject
     /**
      * 全部的 [MediaSource], 包括那些设置里关闭的, 包括本地的.
      */
-    val allFactoryIds: List<String>
+    val allFactoryIds: List<FactoryId>
 
     /**
      * 全部的 [MediaSource], 包括那些设置里关闭的, 但不包括本地的.
      */
-    val allFactoryIdsExceptLocal: List<String>
+    val allFactoryIdsExceptLocal: List<FactoryId>
         get() = allFactoryIds.filter { !isLocal(it) }
 
     /**
@@ -65,25 +68,40 @@ interface MediaSourceManager { // available by inject
      */
     val mediaFetcher: Flow<MediaFetcher>
 
+    fun isLocal(factoryId: FactoryId): Boolean = isLocal(factoryId.value)
     fun isLocal(mediaSourceId: String): Boolean {
         return mediaSourceId == LOCAL_FS_MEDIA_SOURCE_ID
     }
 
     fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig>
 
-    fun findInfoByMediaSourceId(mediaSourceId: String): MediaSourceInfo? {
-        if (mediaSourceId == "Bangumi") { // workaround for bangumi connectivity testing
-            return MediaSourceInfo(
-                "Bangumi",
-                "提供观看记录数据",
-                "https://bangumi.tv",
-                "https://bangumi.tv/img/favicon.ico",
-            )
-        }
-        return allFactories.find { it.mediaSourceId == mediaSourceId }?.info
+    fun findInfoByFactoryId(factoryId: FactoryId): MediaSourceInfo? {
+        return allFactories.find { it.factoryId == factoryId }?.info
     }
 
-    suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig)
+    fun infoFlowByMediaSourceId(mediaSourceId: String): Flow<MediaSourceInfo?> {
+        if (mediaSourceId == "Bangumi") { // workaround for bangumi connectivity testing
+            return flowOf(
+                MediaSourceInfo(
+                    "Bangumi",
+                    "提供观看记录数据",
+                    "https://bangumi.tv",
+                    "https://bangumi.tv/img/favicon.ico",
+                    iconResourceId = "bangumi.png",
+                ),
+            )
+        }
+        return allInstances.map { list ->
+            list.find { it.mediaSourceId == mediaSourceId }?.source?.info
+        }
+    }
+
+    suspend fun addInstance(
+        mediaSourceId: String,
+        factoryId: FactoryId,
+        config: MediaSourceConfig
+    )
+
     suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
     suspend fun setEnabled(instanceId: String, enabled: Boolean)
     suspend fun removeInstance(instanceId: String)
@@ -101,6 +119,11 @@ fun MediaSourceManager.createFetchFetchSessionFlow(requestLazy: Flow<MediaFetchR
     this.mediaFetcher.map { it.newSession(requestLazy) }
 
 class MediaSourceManagerImpl(
+    /**
+     * 必须是 Factory:MediaSource:Instance = 1:1:1 的关系.
+     *
+     * @see LOCAL_FS_MEDIA_SOURCE_ID
+     */
     additionalSources: () -> List<MediaSource>, // local sources, calculated only once
     flowCoroutineContext: CoroutineContext = Dispatchers.Default,
 ) : MediaSourceManager, KoinComponent {
@@ -119,16 +142,17 @@ class MediaSourceManagerImpl(
         addAll(ServiceLoader.loadServices(MediaSourceFactory::class))
         add(MikanMediaSource.Factory()) // Kotlin bug, MPP 加载不了 resources
         add(MikanCNMediaSource.Factory())
+        add(RssMediaSource.Factory())
     }.toList()
 
     private val additionalSources by lazy {
         additionalSources().map { source ->
             MediaSourceInstance(
-                source.mediaSourceId,
-                source.mediaSourceId,
-                true,
-                MediaSourceConfig.Default,
-                source,
+                instanceId = source.mediaSourceId,
+                factoryId = FactoryId(source.mediaSourceId),
+                isEnabled = true,
+                config = MediaSourceConfig.Default,
+                source = source,
             )
         }
     }
@@ -142,25 +166,25 @@ class MediaSourceManagerImpl(
     override val allFactories: List<MediaSourceFactory> get() = factories
 
     private fun createInstance(save: MediaSourceSave, config: MediaSourceProxySettings): MediaSourceInstance? {
-        val factory = factories.find { it.mediaSourceId == save.mediaSourceId }
+        val factory = factories.find { it.factoryId == save.factoryId }
         return if (factory == null) {
             logger.error { "MediaSourceFactory not found for ${save.mediaSourceId}" }
             null
         } else {
             MediaSourceInstance(
-                save.instanceId,
-                save.mediaSourceId,
-                save.isEnabled,
-                save.config,
-                factory.create(config, save.config),
+                instanceId = save.instanceId,
+                factoryId = save.factoryId,
+                isEnabled = save.isEnabled,
+                config = save.config,
+                source = factory.create(config, save.mediaSourceId, save.config),
             )
         }
     }
 
-    override val allFactoryIds: List<String> by lazy {
+    override val allFactoryIds: List<FactoryId> by lazy {
         factories
-            .map { it.mediaSourceId }
-            .plus(this.additionalSources.map { it.mediaSourceId })
+            .map { it.factoryId }
+            .plus(this.additionalSources.map { it.factoryId })
     }
 
     override val mediaFetcher: Flow<MediaFetcher> = allInstances.map { instances ->
@@ -176,10 +200,11 @@ class MediaSourceManagerImpl(
         }
     }
 
-    override suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig) {
+    override suspend fun addInstance(mediaSourceId: String, factoryId: FactoryId, config: MediaSourceConfig) {
         val save = MediaSourceSave(
             instanceId = Uuid.randomString(),
             mediaSourceId = mediaSourceId,
+            factoryId = factoryId,
             isEnabled = true,
             config = config,
         )
@@ -202,6 +227,7 @@ class MediaSourceManagerImpl(
 
     private fun MediaSourceFactory.create(
         globalProxySettings: MediaSourceProxySettings,
+        mediaSourceId: String,
         config: MediaSourceConfig,
     ): MediaSource {
         val mediaSourceConfig = config.copy(
@@ -211,7 +237,7 @@ class MediaSourceManagerImpl(
         return when (this) {
             is MikanMediaSource.Factory -> create(mediaSourceConfig, mikanIndexCacheRepository)
             is MikanCNMediaSource.Factory -> create(mediaSourceConfig, mikanIndexCacheRepository)
-            else -> create(mediaSourceConfig)
+            else -> create(mediaSourceId, mediaSourceConfig)
         }
     }
 

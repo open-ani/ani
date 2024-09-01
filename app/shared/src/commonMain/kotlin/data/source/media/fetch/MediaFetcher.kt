@@ -290,10 +290,10 @@ class MediaSourceMediaFetcher(
 
         override val mediaSourceResults: List<MediaSourceFetchResult> = mediaSources.map { instance ->
             MediaSourceResultImpl(
-                mediaSourceId = instance.mediaSourceId,
-                instance.source.info,
-                instance.source.kind,
-                config,
+                mediaSourceId = instance.source.mediaSourceId,
+                sourceInfo = instance.source.info,
+                kind = instance.source.kind,
+                config = config,
                 disabled = !instance.isEnabled,
                 pagedSources = this.request
                     .onEach {

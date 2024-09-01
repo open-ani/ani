@@ -35,6 +35,7 @@ import me.him188.ani.app.torrent.api.files.isFinished
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
+import me.him188.ani.datasources.api.MetadataKey
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -68,8 +69,8 @@ class TorrentMediaCacheEngine(
     private val onDownloadStarted: suspend (session: TorrentSession) -> Unit = {},
 ) : MediaCacheEngine, AutoCloseable {
     companion object {
-        private const val EXTRA_TORRENT_DATA = "torrentData"
-        const val EXTRA_TORRENT_CACHE_DIR = "torrentCacheDir" // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
+        private val EXTRA_TORRENT_DATA = MetadataKey("torrentData")
+        val EXTRA_TORRENT_CACHE_DIR = MetadataKey("torrentCacheDir") // 种子的缓存目录, 注意, 一个 MediaCache 可能只对应该种子资源的其中一个文件
 
         private val logger = logger<TorrentMediaCacheEngine>()
         private val unspecifiedFileStatsFlow = flowOf(MediaCache.FileStats.Unspecified)

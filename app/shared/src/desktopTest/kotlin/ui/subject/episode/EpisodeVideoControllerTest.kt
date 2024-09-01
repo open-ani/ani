@@ -29,6 +29,7 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.framework.AniComposeUiTest
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
@@ -137,6 +138,7 @@ class EpisodeVideoControllerTest {
                 mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                 mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
+                mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                 gestureFamily = gestureFamily,
                 danmakuRegexFilterState = createDanmakuRegexFilterState(),
             )

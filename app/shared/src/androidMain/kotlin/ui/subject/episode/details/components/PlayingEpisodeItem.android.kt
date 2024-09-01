@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.data.source.media.TestMediaSourceInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.details.renderProperties
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
@@ -69,7 +70,9 @@ private fun PreviewEpisodeItemImpl(
             mediaSource = {
                 var isLoading by remember { mutableStateOf(false) }
                 PlayingEpisodeItemDefaults.MediaSource(
-                    media = null, isLoading = isLoading,
+                    media = null,
+                    mediaSourceInfo = TestMediaSourceInfo,
+                    isLoading = isLoading,
                     onClick = { isLoading = !isLoading },
                     modifier = Modifier.clickable {
                         isLoading = !isLoading

@@ -12,6 +12,7 @@ import me.him188.ani.app.data.source.media.SOURCE_DMHY
 import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.cache.TestMediaCache
 import me.him188.ani.app.data.source.media.cache.storage.TestMediaCacheStorage
+import me.him188.ani.app.data.source.media.createTestDefaultMedia
 import me.him188.ani.app.data.source.media.fetch.MediaFetcherConfig
 import me.him188.ani.app.data.source.media.fetch.MediaSourceMediaFetcher
 import me.him188.ani.app.data.source.media.fetch.awaitCompletion
@@ -273,7 +274,7 @@ class EpisodeCacheRequesterTest {
 
     @Test
     fun `SelectMedia tryAutoSelectByCachedSeason selects none for inputs matching single ep`() = runTest {
-        val originalMedia = DefaultMedia(
+        val originalMedia = createTestDefaultMedia(
             mediaId = "$SOURCE_DMHY.1",
             mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
@@ -322,7 +323,7 @@ class EpisodeCacheRequesterTest {
 
     @Test
     fun `SelectMedia tryAutoSelectByCachedSeason selects none for inputs without matching ep`() = runTest {
-        val originalMedia = DefaultMedia(
+        val originalMedia = createTestDefaultMedia(
             mediaId = "$SOURCE_DMHY.1",
             mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
@@ -371,7 +372,7 @@ class EpisodeCacheRequesterTest {
 
     @Suppress("SameParameterValue")
     private fun createDefaultMedia(id: String, epRange: EpisodeRange): DefaultMedia {
-        return DefaultMedia(
+        return createTestDefaultMedia(
             mediaId = id,
             mediaSourceId = SOURCE_DMHY,
             originalTitle = "[桜都字幕组] 孤独摇滚 ABC ABC ABC ABC ABC ABC ABC ABC ABC ABC",
