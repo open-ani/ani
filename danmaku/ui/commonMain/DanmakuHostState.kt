@@ -31,7 +31,7 @@ class DanmakuHostState(
     private val danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) {
     private val danmakuConfig by danmakuConfigState
-    private val uiContextDeferred: CompletableDeferred<UIContext> = CompletableDeferred()
+    private val uiContext: UIContext = UIContext()
     /**
      * DanmakuHost 显示大小, 在显示时修改
      */
@@ -78,21 +78,20 @@ class DanmakuHostState(
         textMeasurer: TextMeasurer,
         density: Density
     ) {
-        uiContextDeferred.complete(UIContext(baseStyle, textMeasurer, density))
+        uiContext.set(baseStyle, textMeasurer, density)
     }
     
     /**
      * 监听 轨道数量, 轨道高度 和 弹幕配置项目 的变化
      */
     internal suspend fun observeTrack(measurer: TextMeasurer) {
-        val uiContext = uiContextDeferred.await()
         combine(
             snapshotFlow { danmakuConfig }.distinctUntilChanged(),
             snapshotFlow { hostHeight }.distinctUntilChanged()
         ) { config, height ->
             val dummyTextLayout = 
-                dummyDanmaku(measurer, uiContext.baseStyle, config.style, "哈哈哈哈").solidTextLayout
-            val verticalPadding = with(uiContext.density) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
+                dummyDanmaku(measurer, uiContext.getBaseStyle(), config.style, "哈哈哈哈").solidTextLayout
+            val verticalPadding = with(uiContext.getDensity()) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
 
             val trackHeight = dummyTextLayout.size.height + verticalPadding
             val trackCount = height / trackHeight * config.displayArea
@@ -120,10 +119,8 @@ class DanmakuHostState(
         count: Int, 
         config: DanmakuConfig,
     ) {
-        val uiContext = uiContextDeferred.await()
-        
-        val newFloatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
-        val newFloatingTrackSafeSeparation = with(uiContext.density) { danmakuConfig.safeSeparation.toPx() }
+        val newFloatingTrackSpeed = with(uiContext.getDensity()) { danmakuConfig.speed.dp.toPx() }
+        val newFloatingTrackSafeSeparation = with(uiContext.getDensity()) { danmakuConfig.safeSeparation.toPx() }
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
                 trackIndex = index,
@@ -220,7 +217,6 @@ class DanmakuHostState(
         danmaku: DanmakuPresentation, 
         placeFrameTimeNanos: Long = PositionedDanmakuState.NOT_PLACED
     ): PositionedDanmakuState<StyledDanmaku>? {
-        val uiContext = uiContextDeferred.await()
         val track = when (danmaku.danmaku.location) {
             DanmakuLocation.NORMAL -> floatingTrack
             DanmakuLocation.TOP -> topTrack
@@ -228,8 +224,8 @@ class DanmakuHostState(
         }
         val styledDanmaku = StyledDanmaku(
             presentation = danmaku,
-            measurer = uiContext.textMeasurer,
-            baseStyle = uiContext.baseStyle,
+            measurer = uiContext.getTextMeasurer(),
+            baseStyle = uiContext.getBaseStyle(),
             style = danmakuConfig.style,
             enableColor = danmakuConfig.enableColor,
             isDebug = danmakuConfig.isDebug,
@@ -272,8 +268,6 @@ class DanmakuHostState(
      */
     suspend fun repopulate(list: List<DanmakuPresentation>, firstPlace: Float? = null) {
         if (list.isEmpty()) return
-        val uiContext = uiContextDeferred.await()
-        
         withContext(Dispatchers.Main.immediate) { clearPresentDanmaku() }
         
         val isFloatingDanmaku = { danmaku: DanmakuPresentation -> 
@@ -289,7 +283,7 @@ class DanmakuHostState(
             val danmakuDurationMillis = list.last(isFloatingDanmaku).danmaku.playTimeMillis - firstDanmakuTimeMillis
             // 弹幕从左滑倒右边需要的时间(毫秒)
             val trackDurationMillis = 
-                hostWidth / with(uiContext.density) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
+                hostWidth / with(uiContext.getDensity()) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
 
             // 浮动弹幕首条弹幕放置的位置对应的帧时间
             val firstDanmakuPlaceTimeNanos = elapsedFrameTimeNanos + // 屏幕最右侧
@@ -357,11 +351,36 @@ class DanmakuHostState(
         paused = pause
     }
     
-    private class UIContext(
-        val baseStyle: TextStyle,
-        val textMeasurer: TextMeasurer,
-        val density: Density
-    )
+    private class UIContext {
+        private lateinit var baseStyle: TextStyle
+        private lateinit var textMeasurer: TextMeasurer
+        private lateinit var density: Density
+        
+        private val setDeferred: CompletableDeferred<Unit> = CompletableDeferred()
+        
+        fun set(baseStyle: TextStyle, textMeasurer: TextMeasurer, density: Density) {
+            this.baseStyle = baseStyle
+            this.textMeasurer = textMeasurer
+            this.density = density
+            
+            setDeferred.complete(Unit)
+        }
+        
+        suspend fun getBaseStyle(): TextStyle {
+            setDeferred.await()
+            return baseStyle
+        }
+
+        suspend fun getTextMeasurer(): TextMeasurer {
+            setDeferred.await()
+            return textMeasurer
+        }
+
+        suspend fun getDensity(): Density {
+            setDeferred.await()
+            return density
+        }
+    }
 }
 
 /**
