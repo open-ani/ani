@@ -184,10 +184,10 @@ class DanmakuHostState(
                 currentFrameTimeNanos = nanos
                 
                 for (danmaku in presentDanmaku) {
-                    // 没放置的弹幕要立即放置并计算位置
                     if (danmaku.placeFrameTimeNanos == PositionedDanmakuState.NOT_PLACED) {
+                        // 没放置的弹幕要立即放置并计算位置
                         danmaku.placeFrameTimeNanos = elapsedFrameTimeNanos
-                        danmaku.calculatePosX()
+                        danmaku.calculatePos()
                     } else when (danmaku) {
                         // 浮动弹幕只需要重新计算 X
                         is FloatingDanmakuTrack.FloatingDanmaku -> 
