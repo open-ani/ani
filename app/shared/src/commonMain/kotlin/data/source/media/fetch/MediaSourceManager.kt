@@ -7,10 +7,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.json.JsonElement
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.data.models.preference.ProxyAuthorization
 import me.him188.ani.app.data.models.preference.ProxyConfig
@@ -30,6 +33,7 @@ import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
+import me.him188.ani.datasources.api.source.serializeArguments
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
 import me.him188.ani.utils.coroutines.onReplacement
@@ -102,10 +106,25 @@ interface MediaSourceManager { // available by inject
         config: MediaSourceConfig
     )
 
+
+    /**
+     * deprecated.
+     */
     suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
     suspend fun setEnabled(instanceId: String, enabled: Boolean)
     suspend fun removeInstance(instanceId: String)
 }
+
+suspend fun MediaSourceManager.updateMediaSourceArguments(
+    instanceId: String,
+    arguments: JsonElement
+) = updateConfig(instanceId, instanceConfigFlow(instanceId).first().copy(serializedArguments = arguments))
+
+suspend fun <T> MediaSourceManager.updateMediaSourceArguments(
+    instanceId: String,
+    serializer: SerializationStrategy<T>,
+    arguments: T
+) = updateMediaSourceArguments(instanceId, MediaSourceConfig.serializeArguments(serializer, arguments))
 
 /**
  * 根据请求创建 [MediaFetchSession].

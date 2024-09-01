@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
@@ -35,8 +36,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -49,11 +52,11 @@ import me.him188.ani.datasources.api.source.parameter.StringParameter
 import kotlin.coroutines.CoroutineContext
 
 
-sealed class EditType {
-    data object Add : EditType()
+sealed class EditMediaSourceMode {
+    data object Add : EditMediaSourceMode()
     data class Edit(
         val instanceId: String,
-    ) : EditType()
+    ) : EditMediaSourceMode()
 }
 
 @Stable
@@ -63,15 +66,15 @@ class EditingMediaSource(
     val info: MediaSourceInfo,
     val parameters: MediaSourceParameters,
     persistedArguments: Flow<MediaSourceConfig>, // 加载会有延迟
-    val editType: EditType,
+    val editMediaSourceMode: EditMediaSourceMode,
+    private val onSave: suspend (EditingMediaSource) -> Unit, // background
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), Closeable {
     init {
-        check(if (editType is EditType.Edit) editingMediaSourceId != null else editingMediaSourceId == null) {
-            "Invalid edit type and editingMediaSourceId: $editType, $editingMediaSourceId"
+        check(if (editMediaSourceMode is EditMediaSourceMode.Edit) editingMediaSourceId != null else editingMediaSourceId == null) {
+            "Invalid edit type and editingMediaSourceId: $editMediaSourceMode, $editingMediaSourceId"
         }
     }
-
 
     val arguments = parameters.list.map { param ->
         when (param) {
@@ -93,6 +96,14 @@ class EditingMediaSource(
 
     override fun close() {
         backgroundScope.cancel()
+    }
+
+    private val saveTasker = MonoTasker(backgroundScope)
+    val isSaving = saveTasker.isRunning
+    fun save() {
+        saveTasker.launch {
+            onSave(this@EditingMediaSource)
+        }
     }
 }
 
@@ -153,13 +164,45 @@ class SimpleEnumArgumentState(
     override fun toPersisted() = value
 }
 
+// TODO: remove or replace with non-dialog one (dedicated page)
 @Composable
 internal fun EditMediaSourceDialog(
     state: EditingMediaSource,
-    onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // TODO: check changed 
+//    val backHandler = LocalBackHandler.current
+//    val confirmDiscardDialog = rememberConfirmDiscardChangeDialogState {
+//        state.isChanged = false
+//        backHandler.onBackPressed()
+//    }
+//    ConfirmDiscardChangeDialog(confirmDiscardDialog)
+//
+//    BackHandler(enabled = state.isChanged) {
+//        confirmDiscardDialog.show()
+//    }
+
+//    Scaffold(
+//        modifier,
+//        topBar = {
+//            TopAppBar(
+//                title = {
+//                    when (state.editMediaSourceMode) {
+//                        is EditMediaSourceMode.Edit -> Text(state.info.displayName)
+//                        EditMediaSourceMode.Add -> Text("新建数据源")
+//                    }
+//                },
+//                navigationIcon = { TopAppBarGoBackButton() },
+//                actions = {
+//                    IconButton({ state.save() }, enabled = !state.hasError) {
+//                        Icon(Icons.Rounded.Save, contentDescription = "保存")
+//                    }
+//                },
+//            )
+//        },
+//    ) { paddingValues ->
+
     AlertDialog(
         onDismissRequest,
         title = {
@@ -176,30 +219,32 @@ internal fun EditMediaSourceDialog(
                 return@AlertDialog
             }
 
-            Column(
-                Modifier.verticalScroll(rememberScrollState()).padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                for (argument in state.arguments) {
-                    when (argument) {
-                        is BooleanArgumentState -> {
-                            BooleanArgument(argument)
-                        }
+            Column(Modifier.padding()) {
+                Column(
+                    Modifier.verticalScroll(rememberScrollState()).padding(top = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    for (argument in state.arguments) {
+                        when (argument) {
+                            is BooleanArgumentState -> {
+                                BooleanArgument(argument)
+                            }
 
-                        is SimpleEnumArgumentState -> {
-                            SimpleEnumArgument(argument)
-                        }
+                            is SimpleEnumArgumentState -> {
+                                SimpleEnumArgument(argument)
+                            }
 
-                        is StringArgumentState -> {
-                            OutlinedTextField(
-                                value = argument.value,
-                                onValueChange = { argument.value = argument.parameter.sanitize(it) },
-                                label = { Text(argument.name) },
-                                placeholder = argument.parameter.placeholder?.let { { Text(it) } },
-                                supportingText = argument.description?.let { { Text(it) } },
-                                isError = argument.isError,
-                                shape = MaterialTheme.shapes.medium,
-                            )
+                            is StringArgumentState -> {
+                                OutlinedTextField(
+                                    value = argument.value,
+                                    onValueChange = { argument.value = argument.parameter.sanitize(it) },
+                                    label = { Text(argument.name) },
+                                    placeholder = argument.parameter.placeholder?.let { { Text(it) } },
+                                    supportingText = argument.description?.let { { Text(it) } },
+                                    isError = argument.isError,
+                                    shape = MaterialTheme.shapes.medium,
+                                )
+                            }
                         }
                     }
                 }
@@ -212,9 +257,9 @@ internal fun EditMediaSourceDialog(
                     !state.hasError
                 }
             }
-            when (state.editType) {
-                EditType.Add -> Button(onConfirm, enabled = canSave) { Text("添加") }
-                is EditType.Edit -> Button(onConfirm, enabled = canSave) { Text("保存") }
+            when (state.editMediaSourceMode) {
+                EditMediaSourceMode.Add -> Button({ state.save() }, enabled = canSave) { Text("添加") }
+                is EditMediaSourceMode.Edit -> Button({ state.save() }, enabled = canSave) { Text("保存") }
             }
         },
         dismissButton = {

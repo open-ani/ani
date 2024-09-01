@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CompletableDeferred
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.datasources.api.source.FactoryId
 import org.koin.core.component.KoinComponent
 import org.koin.mp.KoinPlatform
 
@@ -89,6 +90,22 @@ interface AniNavigator {
 
     fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
         navigator.navigate("/settings?tab=${tab.ordinal}&back=true")
+    }
+
+    fun navigateEditMediaSource(
+        factoryId: FactoryId,
+        existingMediaSourceInstanceId: String?,
+    ) {
+        navigator.navigate(
+            buildString {
+                append("/settings/media-source/edit/")
+                append(factoryId.value)
+                existingMediaSourceInstanceId?.let {
+                    append("?existingMediaSourceInstanceId=")
+                    append(it)
+                }
+            },
+        )
     }
 
     fun navigateCaches() {

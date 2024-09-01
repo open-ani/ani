@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceDialog
-import me.him188.ani.app.ui.settings.tabs.media.source.EditType
+import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceMode
 import me.him188.ani.app.ui.settings.tabs.media.source.EditingMediaSource
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -28,11 +28,11 @@ private fun PreviewEditMediaSourceDialogNoConfig() {
                 ),
                 parameters = MediaSourceParameters.Empty,
                 persistedArguments = flowOf(MediaSourceConfig.Default),
-                editType = EditType.Add,
+                editMediaSourceMode = EditMediaSourceMode.Add,
+                onSave = {},
                 parentCoroutineContext = EmptyCoroutineContext,
             ),
-            onDismissRequest = {},
-            onConfirm = {},
+            {}
         )
     }
 }
@@ -59,11 +59,11 @@ private fun PreviewEditMediaSourceDialog() {
                     simpleEnum("dropdown", "a", "b", "c", default = "b", description = "这是一个下拉菜单")
                 },
                 persistedArguments = flowOf(MediaSourceConfig.Default),
-                editType = EditType.Add,
+                editMediaSourceMode = EditMediaSourceMode.Add,
+                onSave = {},
                 parentCoroutineContext = EmptyCoroutineContext,
             ),
-            onDismissRequest = {},
-            onConfirm = {},
+            {}
         )
     }
 }
