@@ -6,6 +6,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -28,9 +29,11 @@ import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
+import me.him188.ani.datasources.api.source.asAutoCloseable
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
+import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -250,6 +253,15 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     ///////////////////////////////////////////////////////////////////////////
     // DanmakuSettings
     ///////////////////////////////////////////////////////////////////////////
+
+    private val httpClient = createDefaultHttpClient {
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 30_000
+        }
+    }.also {
+        addCloseable(it.asAutoCloseable())
+    }
 
     val danmakuSettings by settings(
         settingsRepository.danmakuSettings,

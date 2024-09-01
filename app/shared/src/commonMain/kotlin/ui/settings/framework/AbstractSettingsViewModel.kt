@@ -4,15 +4,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.datasources.api.source.asAutoCloseable
-import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.component.KoinComponent
@@ -25,17 +22,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
 abstract class AbstractSettingsViewModel : AbstractViewModel(), KoinComponent {
-    protected val httpClient by lazy {
-        createDefaultHttpClient {
-            install(HttpTimeout) {
-                requestTimeoutMillis = 30_000
-                connectTimeoutMillis = 30_000
-            }
-        }.also {
-            addCloseable(it.asAutoCloseable())
-        }
-    }
-
     private inline fun <T> propertyDelegateProvider(
         crossinline createProperty: (property: KProperty<*>) -> T,
     ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, T>> {
