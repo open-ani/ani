@@ -39,7 +39,8 @@ class StyledDanmaku(
         style = baseStyle.merge(
             style.styleForText(
                 color = if (enableColor) {
-                    rgbColor(presentation.danmaku.color.toUInt().toLong()).copy(alpha = style.alpha)
+                    Color(0xFF_00_00_00L or presentation.danmaku.color.toUInt().toLong())
+                        .copy(alpha = style.alpha)
                 } else Color.White,
             ),
         ),
@@ -76,10 +77,6 @@ fun DrawScope.drawDanmakuText(
         topLeft = offset,
         textDecoration = if (state.presentation.isSelf) TextDecoration.Underline else null
     )
-}
-
-private inline fun rgbColor(value: Long): Color {
-    return Color(0xFF_00_00_00L or value)
 }
 
 internal fun dummyDanmaku(
