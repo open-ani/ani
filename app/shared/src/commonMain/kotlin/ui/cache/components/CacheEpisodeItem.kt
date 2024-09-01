@@ -70,6 +70,7 @@ class CacheEpisodeState(
     val cacheId: String,
     val sort: EpisodeSort,
     val displayName: String,
+    val creationTime: Long?,
     screenShots: State<List<String>>, // url
     stats: State<Stats>,
     state: State<CacheEpisodePaused>,

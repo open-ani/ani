@@ -5,12 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 
-actual class PlatformWindow(
+actual open class PlatformWindow(
     val windowHandle: Long,
 ) {
-    var nonFullscreenStyle: Long = 0
-    var nonFullscreenExtStyle: Long = 0
-    var nonFullscreenRect: Rect = Rect.Zero
+    internal var savedWindowState: SavedWindowState? = null
 
-    var didSetFullscreen by mutableStateOf(false)
+    var isUndecoratedFullscreen by mutableStateOf(false)
 }
+
+class SavedWindowState(
+    val style: Int,
+    val exStyle: Int,
+    val rect: Rect,
+    val maximized: Boolean,
+)
