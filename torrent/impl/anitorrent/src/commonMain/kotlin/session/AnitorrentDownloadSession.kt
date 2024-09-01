@@ -44,6 +44,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
@@ -77,6 +78,11 @@ class AnitorrentDownloadSession(
             tryEmit(null)
         }
 
+    /**
+     * complete 此属性为 true 后, 将会开始循环获取文件信息. 用于处理在收到事件时没有文件信息导致需要延后一段时间再获取的情况.
+     */
+    private val shouldTryLoadFiles = CompletableDeferred<Boolean>()
+
     init {
         scope.launch {
             while (isActive) {
@@ -104,6 +110,18 @@ class AnitorrentDownloadSession(
                     }
                 }
                 delay(60.seconds)
+            }
+        }
+
+        scope.launch {
+            if (shouldTryLoadFiles.await()) {
+                while (true) {
+                    if (!handle.isValid) {
+                        return@launch
+                    }
+                    reloadFilesAndInitializeIfNotYet(force = false)
+                    delay(1000)
+                }
             }
         }
     }
@@ -229,6 +247,9 @@ class AnitorrentDownloadSession(
 
     private val actualTorrentInfo = CompletableDeferred<TorrentInfo>()
 
+    @TestOnly
+    val isActualTorrentInfoCompleted get() = actualTorrentInfo.isCompleted
+
     /**
      * 在某些时候 [close] 需要等待此 session 完全关闭，通过 [onTorrentRemoved] 来监听此事件
      */
@@ -328,25 +349,35 @@ class AnitorrentDownloadSession(
 
     fun onTorrentChecked() {
         logger.info { "[$handleId] onTorrentChecked" }
-        reloadFilesAndInitializeIfNotYet()
+        reloadFilesAndInitializeIfNotYet(force = true)
     }
 
     // 这个不一定会触发. 有可能是如果种子内已经有信息的就不会触发
     fun onMetadataReceived() {
         logger.info { "[$handleId] onMetadataReceived" }
-        reloadFilesAndInitializeIfNotYet()
+        reloadFilesAndInitializeIfNotYet(force = true)
     }
 
     private val reloadFilesLock = SynchronizedObject()
-    private fun reloadFilesAndInitializeIfNotYet() = synchronized(reloadFilesLock) {
+
+    private fun reloadFilesAndInitializeIfNotYet(
+        force: Boolean,
+    ): Boolean = synchronized(reloadFilesLock) {
         val handleIsValid = handle.isValid
         val metadataReady = handle.getState().isMetadataReady()
         if (actualTorrentInfo.isActive && handleIsValid && metadataReady) {
             logger.info { "[$handleId] reloadFiles" }
             val info = handle.reloadFile() // split to multiple lines for debugging
+            if (info.fileCount == 0 && !force) {
+                logger.debug { "[$handleId] reloadFiles fileCount is 0, actualTorrentInfo=$actualTorrentInfo handleIsValid=$handleIsValid, metadataReady=$metadataReady" }
+                return false
+            }
             initializeTorrentInfo(info)
+            shouldTryLoadFiles.complete(false) // cancel coroutine
+            return true
         } else {
             logger.debug { "[$handleId] reloadFiles condition not met, actualTorrentInfo=$actualTorrentInfo handleIsValid=$handleIsValid, metadataReady=$metadataReady" }
+            return false
         }
     }
 
@@ -399,6 +430,10 @@ class AnitorrentDownloadSession(
         // 在刚刚创建任务的时候所有文件都是完全不下载的状态, libtorrent 会立即广播这个事件.
         logger.info { "[$handleId] onTorrentFinished" }
         handle.postSaveResume()
+
+        if (!reloadFilesAndInitializeIfNotYet(force = false)) {
+            shouldTryLoadFiles.complete(true)
+        }
     }
 
     fun onStatsUpdate(stats: TorrentStats) {
