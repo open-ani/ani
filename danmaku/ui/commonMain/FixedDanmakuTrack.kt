@@ -15,7 +15,7 @@ import androidx.compose.runtime.Stable
 internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     val trackIndex: Int,
     val fromBottom: Boolean,
-    frameTimeNanosState: LongState,
+    private val frameTimeNanosState: LongState,
     private val trackHeight: IntState,
     private val hostWidth: IntState,
     private val hostHeight: IntState,
@@ -23,7 +23,7 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     private val onRemoveDanmaku: (PositionedDanmakuState<T>) -> Unit
-) : FrameTimeBasedDanmakuTrack<T>(frameTimeNanosState) {
+) : DanmakuTrack<T> {
     private var currentDanmaku: FixedDanmaku? = null
     
     override fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T> {
@@ -37,9 +37,12 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
         danmaku: T,
         placeTimeNanos: Long
     ): Boolean {
+        // 当前如果有正在显示的弹幕则一定不可放置
         if (currentDanmaku != null) return false
+        // 未放置的弹幕一定可以放置
+        if (placeTimeNanos == PositionedDanmakuState.NOT_PLACED) return true
         // 当前没有正在显示的弹幕并且弹幕可以被显示
-        return frameTimeNanos - placeTimeNanos < durationMillis.value
+        return frameTimeNanosState.value - placeTimeNanos < durationMillis.value
     }
 
     override fun clearAll() {
@@ -50,7 +53,7 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     override fun tick() {
         val current = currentDanmaku ?: return
         val danmakuTime = current.placeFrameTimeNanos
-        if (frameTimeNanos - danmakuTime >= durationMillis.value * 1_000_000) {
+        if (frameTimeNanosState.value - danmakuTime >= durationMillis.value * 1_000_000) {
             onRemoveDanmaku(current)
             currentDanmaku = null
         }
@@ -59,20 +62,25 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     @Stable
     inner class FixedDanmaku(
         override val danmaku: T,
-        override val placeFrameTimeNanos: Long,
-    ) : PositionedDanmakuState<T>(
-        calculatePosX = { (hostWidth.value - danmaku.danmakuWidth.toFloat()) / 2 },
-        calculatePosY = {
-            if (fromBottom) {
+        override var placeFrameTimeNanos: Long,
+    ) : PositionedDanmakuState<T>() {
+        override fun calculatePosX(): Float {
+            return (hostWidth.value - danmaku.danmakuWidth.toFloat()) / 2
+        }
+
+        override fun calculatePosY(): Float {
+            return if (fromBottom) {
                 hostHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()
             } else {
                 trackIndex * trackHeight.value.toFloat()
             }
         }
-    ) {
+        
         override fun toString(): String {
-            return "FixedDanmaku(p=$x:$y, " +
-                    "d=${placeFrameTimeNanos}..${placeFrameTimeNanos + durationMillis.value})"
+            val duration = if (placeFrameTimeNanos == NOT_PLACED) null else {
+                placeFrameTimeNanos..(placeFrameTimeNanos + durationMillis.value)
+            }
+            return "FixedDanmaku(pos=[$x:$y], duration=${duration ?: "NOT_PLACED"})"
         }
     }
 

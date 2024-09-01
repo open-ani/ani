@@ -70,6 +70,9 @@ fun DanmakuHost(
         ) {
             state.elapsedFrameTimeNanos // subscribe changes
             for (danmaku in state.presentDanmaku) {
+                // don't draw uninitialized danmaku
+                if (danmaku.x.isNaN() || danmaku.y.isNaN()) continue
+                
                 drawDanmakuText(
                     state = danmaku.danmaku,
                     screenPosX = danmaku.x, 

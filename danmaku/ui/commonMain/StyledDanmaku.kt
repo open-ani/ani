@@ -61,7 +61,7 @@ class StyledDanmaku(
 }
 
 /**
- * actually draw
+ * draw text
  */
 fun DrawScope.drawDanmakuText(
     state: StyledDanmaku,

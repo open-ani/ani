@@ -134,9 +134,7 @@ class DanmakuHostState(
                 safeSeparation = newFloatingTrackSafeSeparation,
                 // baseTextLength = floatingBaseTextLengthForSpeed,
                 // speedMultiplier = floatingSpeedMultiplierState,
-                onRemoveDanmaku = { removed -> 
-                    presentDanmaku.removeFirst { it.danmaku == removed.danmaku } 
-                }
+                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
         }
         floatingTrack.forEach {
@@ -182,12 +180,25 @@ class DanmakuHostState(
         while (true) {
             withFrameNanos { nanos ->
                 val delta = nanos - currentFrameTimeNanos
-
+                
                 elapsedFrameTimeNanos += delta
                 // avgFrameTimeNanos += delta
-
                 currentFrameTimeNanos = nanos
-                for (danmaku in presentDanmaku) danmaku.calculatePos()
+                
+                for (danmaku in presentDanmaku) {
+                    // 没放置的弹幕要立即放置并计算位置
+                    if (danmaku.placeFrameTimeNanos == PositionedDanmakuState.NOT_PLACED) {
+                        danmaku.placeFrameTimeNanos = elapsedFrameTimeNanos
+                        danmaku.calculatePosX()
+                    } else when (danmaku) {
+                        // 浮动弹幕只需要重新计算 X
+                        is FloatingDanmakuTrack.FloatingDanmaku -> 
+                            danmaku.calculatePos(calculateY = false)
+                        // 固定弹幕什么都不用重新计算
+                        is FixedDanmakuTrack.FixedDanmaku -> 
+                            danmaku.calculatePos(calculateX = false, calculateY = false)
+                    }
+                }
             }
         }
     }
@@ -207,7 +218,7 @@ class DanmakuHostState(
      */
     suspend fun trySend(
         danmaku: DanmakuPresentation, 
-        placeFrameTimeNanos: Long = elapsedFrameTimeNanos
+        placeFrameTimeNanos: Long = PositionedDanmakuState.NOT_PLACED
     ): PositionedDanmakuState<StyledDanmaku>? {
         val uiContext = uiContextDeferred.await()
         val track = when (danmaku.danmaku.location) {
@@ -355,6 +366,8 @@ class DanmakuHostState(
 
 /**
  * 发送弹幕, 在发送成功之前一直挂起
+ * 
+ * TODO: 保证必须优先发送出去, 现在的实现会导致 trySend 和 delay 抢调度
  */
 suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
     while (trySend(danmaku) == null) delay(50)

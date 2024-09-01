@@ -1,8 +1,6 @@
 package me.him188.ani.danmaku.ui
 
-import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 
 /**
  * 弹幕轨道, 支持放置已知长度的弹幕. 
@@ -16,18 +14,29 @@ interface DanmakuTrack<T : SizeSpecifiedDanmaku> {
      *
      * @return A positioned danmaku which can be placed on danmaku host.
      */
-    fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T>
+    fun place(
+        danmaku: T, 
+        placeTimeNanos: Long = PositionedDanmakuState.NOT_PLACED
+    ): PositionedDanmakuState<T>
 
     /**
      * check if this track can place danmaku.
      */
-    fun canPlace(danmaku: T, placeTimeNanos: Long): Boolean
+    fun canPlace(
+        danmaku: T, 
+        placeTimeNanos: Long = PositionedDanmakuState.NOT_PLACED
+    ): Boolean
 
     /**
      * try to place a danmaku. there are reasons that the upcoming danmaku cannot be placed.
-     * - [canPlace]
      */
-    fun tryPlace(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T>?
+    fun tryPlace(
+        danmaku: T, 
+        placeTimeNanos: Long = PositionedDanmakuState.NOT_PLACED
+    ): PositionedDanmakuState<T>? {
+        if (!canPlace(danmaku, placeTimeNanos)) return null
+        return place(danmaku, placeTimeNanos)
+    }
 
     /**
      * clear all danmaku in this track
@@ -38,16 +47,4 @@ interface DanmakuTrack<T : SizeSpecifiedDanmaku> {
      * check for visibility of danmaku in this track at logical tick
      */
     fun tick()
-}
-
-@Stable
-internal abstract class FrameTimeBasedDanmakuTrack<T : SizeSpecifiedDanmaku>(
-    frameTimeNanosState: LongState
-) : DanmakuTrack<T> {
-    internal val frameTimeNanos: Long by frameTimeNanosState
-    
-    override fun tryPlace(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T>? {
-        if (!canPlace(danmaku, placeTimeNanos)) return null
-        return place(danmaku, placeTimeNanos)
-    }
 }
