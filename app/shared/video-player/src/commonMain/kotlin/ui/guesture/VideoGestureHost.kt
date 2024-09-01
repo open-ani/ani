@@ -364,12 +364,13 @@ enum class GestureFamily(
     val swipeRhsForVolume: Boolean,
     val swipeLhsForBrightness: Boolean,
     val longPressForFastSkip: Boolean,
+    val scrollForVolume: Boolean,
+    val autoHideController: Boolean,
     val keyboardSpaceForPauseResume: Boolean = true,
     val keyboardUpDownForVolume: Boolean = true,
     val keyboardLeftRightToSeek: Boolean = true,
     val mouseHoverForController: Boolean = true, // not supported on mobile
     val escToExitFullscreen: Boolean = true,
-    val scrollForVolume: Boolean,
 ) {
     TOUCH(
         useDesktopGestureLayoutWorkaround = false,
@@ -383,6 +384,7 @@ enum class GestureFamily(
         longPressForFastSkip = true,
         mouseHoverForController = false,
         scrollForVolume = false,
+        autoHideController = true,
     ),
     MOUSE(
         useDesktopGestureLayoutWorkaround = true,
@@ -395,10 +397,12 @@ enum class GestureFamily(
         swipeLhsForBrightness = false,
         longPressForFastSkip = false,
         scrollForVolume = true,
+        autoHideController = false,
     )
 }
 
 internal val VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION = 3.seconds
+internal val VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION = 3.seconds
 
 @Composable
 fun VideoGestureHost(
@@ -633,6 +637,13 @@ fun VideoGestureHost(
                             }
                         }
                     }
+                    .ifThen(family.autoHideController) {
+                        scope.launch {
+                            delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
+                            controllerState.toggleFullVisible(false)
+                        }
+                        this
+                    }
                     .padding(top = 60.dp)
                     .combinedClickable(
                         remember { MutableInteractionSource() },
@@ -645,9 +656,11 @@ fun VideoGestureHost(
                                 if (family.clickToToggleController) {
                                     focusManager.clearFocus()
                                     controllerState.toggleFullVisible()
-                                    scope.launch {
-                                        delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
-                                        controllerState.toggleFullVisible(false)
+                                    if (family.autoHideController) {
+                                        scope.launch {
+                                            delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
+                                            controllerState.toggleFullVisible(false)
+                                        }
                                     }
                                 }
                             }
@@ -669,9 +682,15 @@ fun VideoGestureHost(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
+                                if (controllerState.visibility.bottomBar) {
+                                    controllerState.setRequestAlwaysOn(this, true)
+                                }
                                 controllerState.setRequestProgressBar(swipeToSeekRequester)
                             },
                             onDragStopped = {
+                                if (controllerState.visibility.bottomBar) {
+                                    controllerState.setRequestAlwaysOn(this, false)
+                                }
                                 controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
                                 progressSliderState.finishPreview()
                             },

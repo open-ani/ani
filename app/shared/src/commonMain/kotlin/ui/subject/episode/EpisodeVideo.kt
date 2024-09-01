@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -69,7 +68,6 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
-import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.guesture.mouseFamily
 import me.him188.ani.app.videoplayer.ui.guesture.rememberGestureIndicatorState
 import me.him188.ani.app.videoplayer.ui.guesture.rememberPlayerFastSkipState
@@ -290,9 +288,6 @@ internal fun EpisodeVideoImpl(
         },
         leftBottomTips = leftBottomTips,
         bottomBar = {
-            val scope = rememberUiMonoTasker()
-            val alwaysOnRequester = rememberAlwaysOnRequester(videoControllerState, "bottomBar")
-            var didClickBottomBar by remember { mutableStateOf(0) }
             
             PlayerControllerBar(
                 startActions = {
@@ -364,17 +359,6 @@ internal fun EpisodeVideoImpl(
                     )
                 },
                 expanded = expanded,
-                modifier = Modifier.pointerInput(didClickBottomBar) {
-                    awaitPointerEventScope {
-                        alwaysOnRequester.request()
-                        didClickBottomBar++
-                        scope.launch {
-                            delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
-                            alwaysOnRequester.cancelRequest()
-                            didClickBottomBar = 0
-                        }
-                    }
-                },
             )
         },
         detachedProgressSlider = detachedProgressSlider,

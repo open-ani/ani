@@ -135,9 +135,6 @@ class VideoControllerState(
      * @param requester 是谁希望请求显示进度条. 在 [cancelRequestProgressBarVisible] 时需要传入相同实例. 同一时刻有任一 requester 则会让进度条一直显示.
      */
     fun setRequestProgressBar(requester: Any) {
-        if (visibility.bottomBar) {
-            setRequestAlwaysOn(this, true)
-        }
         if (requester in progressBarRequesters) return
         progressBarRequesters.add(requester)
     }
@@ -146,9 +143,6 @@ class VideoControllerState(
      * 取消显示进度条
      */
     fun cancelRequestProgressBarVisible(requester: Any) {
-        if (visibility.bottomBar) {
-            setRequestAlwaysOn(this, false)
-        }
         progressBarRequesters.remove(requester)
     }
 
