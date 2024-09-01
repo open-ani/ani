@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
-import kotlin.math.ceil
+import kotlin.math.floor
 
 @Stable
 class DanmakuHostState(
@@ -98,7 +98,7 @@ class DanmakuHostState(
             val trackCount = height / trackHeight * config.displayArea
 
             Triple(
-                ceil(trackCount).toInt().coerceAtLeast(1),
+                floor(trackCount).toInt().coerceAtLeast(1),
                 trackHeight.toInt(), /*Pair(trackHeight.toInt(), dummyTextLayout.size.width)*/
                 danmakuConfig,
             )
