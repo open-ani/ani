@@ -89,7 +89,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         },
     ) {
         FlowRow(
-            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(4.dp),
+            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             state.list.forEach { item ->
