@@ -30,7 +30,9 @@ import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
 import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
+import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
 import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthPage
 import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthViewModel
@@ -187,7 +189,11 @@ fun AniAppContentPortrait(
                 val initialTab = backStackEntry.arguments?.getInt("tab")
                     ?.let { SettingsTab.entries.getOrNull(it) }
                     ?: SettingsTab.MEDIA
+
                 SettingsPage(
+                    viewModel {
+                        SettingsViewModel()
+                    },
                     Modifier.desktopTitleBarPadding().fillMaxSize(),
                     initialTab = initialTab,
                     allowBack = backStackEntry.arguments?.getBoolean("back") ?: false,

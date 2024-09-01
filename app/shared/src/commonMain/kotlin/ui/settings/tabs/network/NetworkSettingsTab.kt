@@ -24,7 +24,6 @@ import me.him188.ani.app.Res
 import me.him188.ani.app.bangumi
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
-import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -108,7 +107,6 @@ private fun SettingsScope.GlobalProxyGroup(
                 vm.proxySettings.update(proxySettings.copy(default = proxySettings.default.copy(enabled = it)))
             },
             title = { Text("启用代理") },
-            Modifier.placeholder(vm.proxySettings.loading),
             description = { Text("启用后下面的配置才生效") },
         )
 
@@ -117,7 +115,6 @@ private fun SettingsScope.GlobalProxyGroup(
         TextFieldItem(
             proxySettings.default.config.url,
             title = { Text("代理地址") },
-            Modifier.placeholder(vm.proxySettings.loading),
             description = {
                 Text(
                     "示例: http://127.0.0.1:7890 或 socks5://127.0.0.1:1080",
@@ -157,7 +154,6 @@ private fun SettingsScope.GlobalProxyGroup(
         TextFieldItem(
             username,
             title = { Text("用户名") },
-            Modifier.placeholder(vm.proxySettings.loading),
             description = { Text("可选") },
             placeholder = { Text("无") },
             onValueChangeCompleted = {
@@ -181,7 +177,6 @@ private fun SettingsScope.GlobalProxyGroup(
         TextFieldItem(
             password,
             title = { Text("密码") },
-            Modifier.placeholder(vm.proxySettings.loading),
             description = { Text("可选") },
             placeholder = { Text("无") },
             onValueChangeCompleted = {
@@ -212,7 +207,6 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
             checked = danmakuSettings.useGlobal,
             onCheckedChange = { vm.danmakuSettings.update(danmakuSettings.copy(useGlobal = it)) },
             title = { Text("全球加速") },
-            Modifier.placeholder(vm.danmakuSettings.loading),
             description = { Text("提升在获取弹幕数据的速度\n在中国大陆内启用会减速") },
         )
 

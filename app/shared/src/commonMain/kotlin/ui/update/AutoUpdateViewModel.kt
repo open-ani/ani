@@ -26,6 +26,7 @@ import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.list
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.annotations.TestOnly
 import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -202,3 +203,13 @@ class Changelog(
     val publishedAt: String,
     val changes: String
 )
+
+@TestOnly
+val TestNewVersion
+    get() = NewVersion(
+        "1.0.0",
+        listOf(),
+        listOf("https://example.com"),
+        "2024-01-02",
+    )
+

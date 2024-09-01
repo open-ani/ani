@@ -20,14 +20,20 @@ package me.him188.ani.app.ui.foundation
 
 import androidx.annotation.CallSuper
 import androidx.compose.runtime.RememberObserver
+import androidx.compose.ui.text.Placeholder
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import me.him188.ani.app.data.repository.Settings
+import me.him188.ani.app.ui.settings.framework.BaseSettingsState
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.trace
+import kotlin.properties.PropertyDelegateProvider
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 /**
  * 带有 [backgroundScope], 当 [AbstractViewModel] 被 forget 时自动 close scope 以防资源泄露.
@@ -83,5 +89,47 @@ abstract class AbstractViewModel : RememberObserver, ViewModel(), HasBackgroundS
     override fun onCleared() {
         backgroundScope.cancel()
         super.onCleared()
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Settings
+    ///////////////////////////////////////////////////////////////////////////
+    // TODO: Move extensions for Settings to top-level when context parameters are available.
+
+    // starts eagerly
+    fun <Value : Placeholder, Placeholder> Settings<Value>.stateInBackground(
+        placeholder: Placeholder,
+        backgroundScope: CoroutineScope = this@AbstractViewModel.backgroundScope,
+    ): BaseSettingsState<Value, Placeholder> {
+        return BaseSettingsState(
+            flow.produceState(placeholder, backgroundScope),
+            onUpdate = { set(it) },
+            placeholder,
+            backgroundScope,
+        )
+    }
+
+    private inline fun <T> propertyDelegateProvider(
+        crossinline createProperty: (property: KProperty<*>) -> T,
+    ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, T>> {
+        return PropertyDelegateProvider { _, property ->
+            val value = createProperty(property)
+            ReadOnlyProperty { _, _ ->
+                value
+            }
+        }
+    }
+
+    @Deprecated(
+        "Use stateInBackground instead",
+        ReplaceWith("settings.stateInBackground(placeholder)"),
+    )
+    fun <Value : Placeholder, Placeholder> settings(
+        settings: Settings<Value>,
+        placeholder: Placeholder
+    ): PropertyDelegateProvider<Any?, ReadOnlyProperty<Any?, BaseSettingsState<Value, Placeholder>>> {
+        return propertyDelegateProvider {
+            settings.stateInBackground(placeholder)
+        }
     }
 }

@@ -20,10 +20,11 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
+import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
+import me.him188.ani.app.ui.settings.framework.DefaultConnectionTesterRunner
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -65,7 +66,7 @@ class MediaSourceTemplate(
 )
 
 @Stable
-class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
+class NetworkSettingsViewModel : AbstractViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
     private val mediaSourceManager: MediaSourceManager by inject()
     private val mediaSourceInstanceRepository by inject<MediaSourceInstanceRepository>()
@@ -118,14 +119,14 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     }.produceState(emptyList())
 
     val mediaSourceTesters by derivedStateOf {
-        Testers(
+        DefaultConnectionTesterRunner(
             mediaSources.map { it.connectionTester },
             backgroundScope,
         )
     }
 
     // do not add more, check ui first.
-    val otherTesters = Testers(
+    val otherTesters = DefaultConnectionTesterRunner(
         listOf(
             ConnectionTester(
                 id = BangumiSubjectProvider.ID, // Bangumi 顺便也测一下
@@ -268,7 +269,7 @@ class NetworkSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         placeholder = DanmakuSettings(_placeholder = -1),
     )
 
-    val danmakuServerTesters = Testers(
+    val danmakuServerTesters = DefaultConnectionTesterRunner(
         AniBangumiSeverBaseUrls.list.map {
             ConnectionTester(
                 id = it,

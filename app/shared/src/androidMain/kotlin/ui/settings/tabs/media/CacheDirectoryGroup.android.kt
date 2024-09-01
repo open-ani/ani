@@ -76,16 +76,16 @@ private fun renderMigrationStatus(status: AndroidTorrentCacheViewModel.Migration
 private const val FEEDBACK_URL = "https://github.com/open-ani/ani/issues/new?labels=t%3A+bug%2CM&template=bug.yml"
 
 @Composable
-actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
+actual fun SettingsScope.CacheDirectoryGroup(state: CacheDirectoryGroupState) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
     val cacheVm = viewModel {
-        AndroidTorrentCacheViewModel(context, vm.mediaCacheSettings, vm.permissionManager)
+        AndroidTorrentCacheViewModel(context, state.mediaCacheSettingsState, state.permissionManager)
     }
 
     Group({ Text("存储设置") }) {
-        val loading = vm.mediaSelectorSettings.loading
+        val loading = state.mediaCacheSettingsState.isLoading
 
         LaunchedEffect(key1 = loading) {
             if (!loading) {

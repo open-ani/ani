@@ -68,10 +68,12 @@ import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
+import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.collection.CollectionPage
@@ -261,6 +263,7 @@ private fun HomeSceneLandscape(
 
                 Surface(Modifier.height(16.dp).fillMaxWidth()) {}
 
+                val toaster = LocalToaster.current
                 VerticalPager(pagerState, userScrollEnabled = false) {
                     when (it) {
                         0 -> {
@@ -286,6 +289,9 @@ private fun HomeSceneLandscape(
                         )
 
                         3 -> SettingsPage(
+                            viewModel {
+                                SettingsViewModel()
+                            },
                             Modifier.fillMaxSize(),
                             contentWindowInsets = insets,
                         )

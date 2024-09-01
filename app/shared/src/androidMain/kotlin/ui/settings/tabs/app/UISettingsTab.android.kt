@@ -15,6 +15,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
@@ -23,12 +24,17 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
+import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
+import me.him188.ani.app.ui.settings.framework.createTestSettingsState
+import me.him188.ani.app.ui.settings.framework.rememberTestSettingsState
+import me.him188.ani.app.ui.update.TestNewVersion
 import me.him188.ani.utils.platform.annotations.TestOnly
+import kotlin.random.Random
 
 
 @OptIn(TestOnly::class)
@@ -37,10 +43,26 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 private fun PreviewAppSettingsTab() {
     ProvideCompositionLocalsForPreview {
         AppSettingsTab(
-            vm = remember {
-                AppSettingsViewModel().apply {
-                    updateSettings._valueOverride = UpdateSettings(autoCheckUpdate = true)
-                    uiSettings._valueOverride = UISettings.Default
+            softwareUpdateGroupState = rememberTestSoftwareUpdateGroupState(),
+            uiSettings = rememberTestSettingsState(UISettings.Default),
+            videoScaffoldConfig = rememberTestSettingsState(VideoScaffoldConfig.Default),
+        )
+    }
+}
+
+@TestOnly
+@Composable
+internal fun rememberTestSoftwareUpdateGroupState(): SoftwareUpdateGroupState {
+    val scope = rememberCoroutineScope()
+    return remember {
+        SoftwareUpdateGroupState(
+            updateSettings = createTestSettingsState(UpdateSettings(autoCheckUpdate = true), scope),
+            scope,
+            onTest = {
+                when (Random.nextInt() % 3) {
+                    0 -> CheckVersionResult.UpToDate
+                    1 -> CheckVersionResult.HasNewVersion(TestNewVersion)
+                    else -> CheckVersionResult.Failed(Exception("Test"))
                 }
             },
         )
@@ -50,7 +72,7 @@ private fun PreviewAppSettingsTab() {
 
 @SuppressLint("BatteryLife")
 @Composable
-internal actual fun SettingsScope.AppSettingsTabPlatform(vm: AppSettingsViewModel) {
+internal actual fun SettingsScope.AppSettingsTabPlatform() {
     val context by rememberUpdatedState(newValue = LocalContext.current)
     val powerManager by remember {
         derivedStateOf {

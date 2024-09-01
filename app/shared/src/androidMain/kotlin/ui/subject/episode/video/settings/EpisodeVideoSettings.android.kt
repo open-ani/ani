@@ -18,9 +18,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 private fun PreviewEpisodeVideoSettings() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoSettings(
-            viewModel<EpisodeVideoSettingsViewModel> {
-                EpisodeVideoSettingsViewModelImpl()
-            },
+            remember { EpisodeVideoSettingsViewModel() },
         )
     }
 }
@@ -30,9 +28,7 @@ private fun PreviewEpisodeVideoSettings() {
 private fun PreviewEpisodeVideoSettingsSmall() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoSettings(
-            viewModel<EpisodeVideoSettingsViewModel> {
-                EpisodeVideoSettingsViewModelImpl()
-            },
+            remember { EpisodeVideoSettingsViewModel() },
         )
     }
 }
@@ -47,7 +43,7 @@ private fun PreviewEpisodeVideoSettingsSideSheet() = ProvideCompositionLocalsFor
             onDismissRequest = { showSettings = false },
         ) {
             EpisodeVideoSettings(
-                viewModel<EpisodeVideoSettingsViewModel> { EpisodeVideoSettingsViewModelImpl() },
+                remember { EpisodeVideoSettingsViewModel() },
                 Modifier.padding(8.dp),
             )
         }

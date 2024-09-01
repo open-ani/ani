@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
@@ -44,7 +43,11 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.tabs.AboutTab
 import me.him188.ani.app.ui.settings.tabs.DebugTab
 import me.him188.ani.app.ui.settings.tabs.app.AppSettingsTab
-import me.him188.ani.app.ui.settings.tabs.media.MediaPreferenceTab
+import me.him188.ani.app.ui.settings.tabs.media.AutoCacheGroup
+import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroup
+import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
+import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
+import me.him188.ani.app.ui.settings.tabs.media.VideoResolverGroup
 import me.him188.ani.app.ui.settings.tabs.network.NetworkSettingsTab
 
 /**
@@ -67,19 +70,13 @@ enum class SettingsTab {
 
 @Composable
 fun SettingsPage(
+    vm: SettingsViewModel,
     modifier: Modifier = Modifier,
     initialTab: SettingsTab = SettingsTab.Default,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     allowBack: Boolean = !isShowLandscapeUI(),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val toaster = LocalToaster.current
-    val vm = viewModel {
-        SettingsViewModel(
-            triggerOnEnableDebugMode = { toaster.toast("调试模式已开启") },
-        )
-    }
-
     Scaffold(
         modifier,
         topBar = {
@@ -96,7 +93,7 @@ fun SettingsPage(
     ) { topBarPaddings ->
         val pageCount by remember {
             derivedStateOf {
-                SettingsTab.entries.run { if (vm.debugSettings.enabled) size else (size - 1) }
+                SettingsTab.entries.run { if (vm.isInDebugMode) size else (size - 1) }
             }
         }
         val pagerState = rememberPagerState(
@@ -120,7 +117,7 @@ fun SettingsPage(
                 val tabs by remember {
                     derivedStateOf {
                         SettingsTab.entries
-                            .filter { if (vm.debugSettings.enabled) true else it != SettingsTab.DEBUG }
+                            .filter { if (vm.isInDebugMode) true else it != SettingsTab.DEBUG }
                     }
                 }
                 tabs.forEachIndexed { index, tabId ->
@@ -155,16 +152,40 @@ fun SettingsPage(
                     val type = SettingsTab.entries[index]
                     Column(Modifier.fillMaxSize().padding(contentPadding)) {
                         when (type) {
-                            SettingsTab.MEDIA -> MediaPreferenceTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.MEDIA -> {
+                                SettingsTab(modifier) {
+                                    VideoResolverGroup(vm.videoResolverSettingsState)
+                                    AutoCacheGroup(vm.mediaCacheSettingsState)
+
+                                    TorrentEngineGroup(vm.torrentSettingsState)
+                                    CacheDirectoryGroup(vm.cacheDirectoryGroupState)
+                                    MediaSelectionGroup(vm.mediaSelectionGroupState)
+                                }
+                            }
+
                             SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
-                            SettingsTab.ABOUT -> AboutTab(
-                                modifier = Modifier.fillMaxSize(),
-                                onTriggerDebugMode = { vm.triggerDebugMode() },
+                            SettingsTab.ABOUT -> {
+                                val toaster = LocalToaster.current
+                                AboutTab(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onTriggerDebugMode = {
+                                        if (vm.debugTriggerState.triggerDebugMode()) {
+                                            toaster.toast("已开启调试模式")
+                                        }
+                                    },
+                                )
+                            }
+
+                            SettingsTab.APP -> AppSettingsTab(
+                                vm.softwareUpdateGroupState,
+                                vm.uiSettings,
+                                vm.videoScaffoldConfig,
+                                Modifier.fillMaxSize(),
                             )
 
-                            SettingsTab.APP -> AppSettingsTab(modifier = Modifier.fillMaxSize())
                             SettingsTab.DEBUG -> DebugTab(
-                                modifier = Modifier.fillMaxSize(),
+                                vm.debugSettingsState,
+                                Modifier.fillMaxSize(),
                                 onDisableDebugMode = { scope.launch { pagerState.animateScrollToPage(0) } },
                             )
                         }

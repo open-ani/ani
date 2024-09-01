@@ -25,8 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
@@ -121,9 +119,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             }
             VerticalDivider()
             EpisodeVideoSettings(
-                remember {
-                    TestEpisodeVideoSettingsViewModelImpl()
-                },
+                remember { EpisodeVideoSettingsViewModel() },
             )
         }
     } else {
@@ -151,9 +147,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             }
             HorizontalDivider()
             EpisodeVideoSettings(
-                remember {
-                    TestEpisodeVideoSettingsViewModelImpl()
-                },
+                remember { EpisodeVideoSettingsViewModel() },
             )
         }
 
@@ -171,38 +165,6 @@ private fun PreviewDanmakuText() {
                 style = DanmakuStyle(),
             )
         }
-    }
-}
-
-class TestEpisodeVideoSettingsViewModelImpl : EpisodeVideoSettingsViewModel() {
-    override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
-    override val danmakuRegexFilterList: List<DanmakuRegexFilter> = emptyList()
-    override val danmakuFilterConfig: DanmakuFilterConfig = DanmakuFilterConfig.Default
-    override val isLoading: Boolean = false
-
-    override fun setDanmakuConfig(config: DanmakuConfig) {
-        // Do nothing in preview
-    }
-
-    override fun addDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        //Do nothing in preview
-    }
-
-    override fun editDanmakuRegexFilter(id: String, filter: DanmakuRegexFilter) {
-        //Do nothing in preview
-    }
-
-    override fun removeDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        //Do nothing in preview
-    }
-
-    override fun switchDanmakuRegexFilterCompletely() {
-        //Do nothing in preview
-
-    }
-
-    override fun switchDanmakuRegexFilter(filter: DanmakuRegexFilter) {
-        // Do nothing in preview
     }
 }
 
