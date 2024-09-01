@@ -265,7 +265,9 @@ class DanmakuHostState(
      */
     suspend fun repopulate(list: List<DanmakuPresentation>, timeOffsetMillis: Long = 0L) {
         if (list.isEmpty()) return
+        
         withContext(Dispatchers.Main.immediate) { clearPresentDanmaku() }
+        val currentElapsedFrameTimeNanos = elapsedFrameTimeNanos // take snapshot
         
         val isFloatingDanmaku = { danmaku: DanmakuPresentation -> 
             danmaku.danmaku.location == DanmakuLocation.NORMAL
@@ -283,11 +285,11 @@ class DanmakuHostState(
             val firstDanmakuPlaceTimeNanos = if (firstDanmakuTimeMillis <= trackDurationMillis) {
                 // repopulate 了最开始的弹幕, 要向后排列.
                 // 首条弹幕出现的时间在屏幕对应位置
-                elapsedFrameTimeNanos - firstDanmakuTimeMillis * 1_000_000L
+                currentElapsedFrameTimeNanos - firstDanmakuTimeMillis * 1_000_000L
             } else {
                 // 最后一条弹幕在屏幕最右侧, 所以首条弹幕出现的位置在前 danmakuDurationMillis 的帧时间.
                 // 如果超过了 elapsedFrameTimeNanos - trackDurationMillis, 那在 trySend 的时候也不会被放置.
-                elapsedFrameTimeNanos - danmakuDurationMillis * 1_000_000L
+                currentElapsedFrameTimeNanos - danmakuDurationMillis * 1_000_000L
             }
 
             floatingDanmaku.forEach { danmaku ->
@@ -300,10 +302,9 @@ class DanmakuHostState(
         val fixedDanmaku = list.filterNot(isFloatingDanmaku)
         if (fixedDanmaku.isNotEmpty()) {
             val lastDanmakuTimeMillis = fixedDanmaku.last().danmaku.playTimeMillis
-            val lastDanmakuPlaceTimeNanos = elapsedFrameTimeNanos
             // 浮动弹幕倒序 place 进 presentDanmaku 里
             fixedDanmaku.asReversed().forEach { danmaku ->
-                val playTimeNanos = lastDanmakuPlaceTimeNanos -
+                val playTimeNanos = currentElapsedFrameTimeNanos -
                         (lastDanmakuTimeMillis - danmaku.danmaku.playTimeMillis) * 1_000_000L
                 trySend(danmaku, playTimeNanos + timeOffsetMillis * 1_000_000L)
             }
