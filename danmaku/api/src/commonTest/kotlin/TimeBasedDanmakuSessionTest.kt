@@ -13,9 +13,9 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * @see DanmakuCollectionAlgorithmTest
+ * @see DanmakuSessionAlgorithmTest
  */
-internal class TimeBasedDanmakuCollectionTest {
+internal class TimeBasedDanmakuSessionTest {
     suspend fun create(
         sequence: Sequence<Danmaku>,
         shiftMillis: Long = 0,
