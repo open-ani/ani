@@ -27,38 +27,37 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
     private val danmakuList: MutableList<FloatingDanmaku> = mutableListOf()
 
     /**
-     * 检测是否有弹幕的右边缘坐标大于此弹幕的左边缘坐标.
+     * 检测是否可以放置这条[弹幕][danmaku].
      * 
-     * 如果有那说明此弹幕放置后可能会与已有弹幕重叠.
+     * 无论如何弹幕都不可以放到轨道长度之外.
      */
     override fun canPlace(danmaku: T, placeTimeNanos: Long): Boolean {
+        check(placeTimeNanos >= PositionedDanmakuState.NOT_PLACED) {
+            "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
+        }
         // 弹幕轨道宽度为 0 一定不能放
         if (trackWidth.value <= 0) return false
         
-        val upcomingDanmaku = FloatingDanmaku(danmaku, placeTimeNanos)
+        val upcoming = FloatingDanmaku(danmaku, placeTimeNanos)
         // 弹幕缓存为空, 那就判断是否 gone 了, 如果 gone 了就不放置
-        if (danmakuList.isEmpty()) return !upcomingDanmaku.isGone()
+        if (danmakuList.isEmpty()) return !upcoming.isGone()
         
-        // reverse 加快高阶函数的判断循环
-        val reversedList = danmakuList.asReversed()
-        if (upcomingDanmaku.x.isNaN()) {
+        if (upcoming.x.isNaN()) {
             // 如果 upcoming 弹幕也是未放置的, 若缓存里也有 未放置的弹幕 或者 未显示完全的弹幕 时一定不能放置
-            return !reversedList.any { it.x.isNaN() || !it.isFullyVisible() }
+            // reverse 加快高阶函数的判断循环
+            return !danmakuList.asReversed().any { it.x.isNaN() || !it.isFullyVisible() }
         } else {
-            // 如果有未显示的弹幕, 那判断是否有未显示完整的弹幕. 如果有就不能放置, 会导致直接重叠.
-            if (reversedList.any { it.x.isNaN() }) {
-                return upcomingDanmaku.isFullyVisible()
-            } else {
-                // 所有缓存和 upcoming 都已经是放置的, 那就判断
-                for (d in reversedList) {
-                    if (d.x + d.danmaku.danmakuWidth + safeSeparation > upcomingDanmaku.x) return false
-                }
-                return true
-            }
+            // 无论如何弹幕都不可以放到轨道长度之外
+            if (upcoming.x >= trackWidth.value) return false
+            // 目前弹幕的速度都一样, 所以直接判断 overlapping 即可
+            return upcoming.isNonOverlapping(danmakuList)
         }
     }
     
     override fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T> {
+        check(placeTimeNanos >= PositionedDanmakuState.NOT_PLACED) {
+            "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
+        }
         return FloatingDanmaku(danmaku, placeTimeNanos).also { danmakuList.add(it) }
     }
 
@@ -121,6 +120,32 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
         }
     }
 
+    /**
+     * [list] should be sorted increasingly by range left.
+     */
+    private fun PositionedDanmakuState<T>.isNonOverlapping(list: List<PositionedDanmakuState<T>>): Boolean {
+        fun PositionedDanmakuState<T>.left() = if (x.isNaN()) trackWidth.value.toFloat() else x
+        fun PositionedDanmakuState<T>.right() = left() + danmaku.danmakuWidth + safeSeparation
+        
+        // fast path: 检查弹幕左侧是否比列表最后一个还大
+        if (list.isEmpty() || left() >= list.last().right()) return true
+
+        // 下面是 chatgpt 写的
+        // Perform binary search to find the insertion point
+        val insertionIndex = list.binarySearch { it.left().compareTo(left()) }
+        val index = if (insertionIndex < 0) -insertionIndex - 1 else insertionIndex
+
+        // Check for overlap with the range at the insertion point and the one before it
+        if (index < list.size && right() >= list[index].left()) {
+            return false
+        }
+        if (index > 0 && left() <= list[index - 1].right()) {
+            return false
+        }
+
+        return true
+    }
+
     override fun toString(): String {
         return "FloatingTrack(index=${trackIndex}, " +
                 "danmakuCount=${danmakuList.size}, " +
@@ -128,4 +153,3 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
                 "lastPlaceTimeMillis=${danmakuList.lastOrNull()?.placeFrameTimeNanos?.div(1_000_000)})"
     }
 }
-
