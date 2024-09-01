@@ -21,6 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
+import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import kotlin.math.roundToInt
@@ -240,33 +241,29 @@ class DanmakuHostState(
     }
 
     /**
-     * 清空屏幕并填充 [list] 到屏幕, 弹幕 [list] 必须已经按发送时间排序. 此方法不会重新排序弹幕.
+     * 清空屏幕并填充 [list] 到屏幕.
      * 
-     * 通过设置 [firstPlace] 来指定首条弹幕期望显示的位置.
+     * **此方法不会重新排序 [list], 所以弹幕必须已经按发送时间排序**.
      * 
-     * - 如果 [firstPlace] 为 `null`, 则所有弹幕会被放置到屏幕中间的位置. 
-     *   若 [list] 的首条弹幕时间戳小于一条弹幕从左到右的运动时间, 则会尝试将首条弹幕按此时间放到对应的位置以符合直觉. 
-     *   
-     *   例如, 弹幕从左到右的运动时间为 `4s`, [list] 的首条弹幕时间戳为 `3s`, 
-     *   那么首条弹幕将会放到屏幕左侧 1/4 的位置, 其他弹幕依次按时间排放.
-     *   
-     *   ```
-     *   |-------(--------)----------------|
-     *           ^ 左侧为 1/4 屏幕位置
-     *   ```
-     *  
-     * - 如果 [firstPlace] 不为 `null`, 则其范围必须为 `0.0 - 1.0`, 表示首条弹幕放到距屏幕左侧百分之多少的位置.
-     *   
-     *   例如, `firstPlace` 为 `0.75`, 则首条弹幕会放置到距离屏幕左侧 `75%` 的位置.
-     *   ```
-     *   |------------------------(--------|
-     *                            ^ 左侧为 75% 屏幕位置
-     *   ```
-     *   
+     * **在通常情况下, 此方法假设 [list] 中弹幕是在 repopulate 时的[帧时间][elapsedFrameTimeNanos]之前发送的弹幕**.
+     * 因此, [list] 最后一条浮动弹幕会被放到屏幕的最右侧. 
+     * 其他弹幕将以其[发送时间戳][Danmaku.playTimeMillis]为基准依次**向前**排列.
+     * 
+     * 但是如果 [list] 中的第一条浮动弹幕是可以显示在最开始 trackDurationMillis 内的时间
+     * (trackDurationMillis 表示一条浮动的那幕从屏幕最右侧滚动到最左侧的时间),
+     * 那么 [list] 中的第一条弹幕会被放到屏幕对应位置来模拟最开始的弹幕滚动过程,
+     * 其他弹幕将以其[发送时间戳][Danmaku.playTimeMillis]为基准依次**向后**排列.
+     * 
+     * 例如 trackDurationMillis 为 `10000ms`, [list] 中的第一条弹幕的发送时间为 `5000ms`,
+     * 那么第一条弹幕就会被放置在轨道的中间位置.
+     * 
+     * 通过设置 [timeOffsetMillis] 来指定整体的弹幕放置时间偏移.
+     * 若 `timeOffsetMillis < 0L` 则弹幕放置的位置会向左偏移 [timeOffsetMillis] 的[帧时间][elapsedFrameTimeNanos].
+     * 
+     * @param timeOffsetMillis 弹幕放置偏移
      * @param list 要填充到屏幕的弹幕, 必须按发送时间戳排序.
-     * @param firstPlace 首条弹幕出现的屏幕位置百分比. 为 `null` 则让方法自动决定.
      */
-    suspend fun repopulate(list: List<DanmakuPresentation>, firstPlace: Float? = null) {
+    suspend fun repopulate(list: List<DanmakuPresentation>, timeOffsetMillis: Long = 0L) {
         if (list.isEmpty()) return
         withContext(Dispatchers.Main.immediate) { clearPresentDanmaku() }
         
@@ -274,49 +271,42 @@ class DanmakuHostState(
             danmaku.danmaku.location == DanmakuLocation.NORMAL
         }
         
-        // list 中有没有浮动弹幕是两种处理过程
-        // 这么做是为了在 presentDanmaku 中的弹幕可以保证按发送时间戳排序
-        if (list.any(isFloatingDanmaku)) {
-            // 首条浮动弹幕发送时间戳
+        val floatingDanmaku = list.filter(isFloatingDanmaku)
+        if (floatingDanmaku.isNotEmpty()) {
+            // 第一条和最后一条浮动弹幕发送时间戳
             val firstDanmakuTimeMillis = list.first(isFloatingDanmaku).danmaku.playTimeMillis
-            // list 中的所有弹幕时间间隔
             val danmakuDurationMillis = list.last(isFloatingDanmaku).danmaku.playTimeMillis - firstDanmakuTimeMillis
             // 弹幕从左滑倒右边需要的时间(毫秒)
-            val trackDurationMillis = 
+            val trackDurationMillis =
                 hostWidth / with(uiContext.getDensity()) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
 
-            // 浮动弹幕首条弹幕放置的位置对应的帧时间
-            val firstDanmakuPlaceTimeNanos = elapsedFrameTimeNanos + // 屏幕最右侧
-                    when {
-                        // 指定 firstPlace 就按照参数指定位置
-                        firstPlace != null -> {
-                            ((firstPlace.coerceIn(0f, 1f) - 1f) * trackDurationMillis).toLong()
-                        }
-                        // 如果 list 里的弹幕有可以显示在开始的, 例如用户跳到刚开始播放
-                        // 那需要把弹幕按时间放置到屏幕上, 这也是比较符合直觉的
-                        firstDanmakuTimeMillis < trackDurationMillis -> {
-                            -firstDanmakuTimeMillis * 1_000_000L // seek to 第一条弹幕出现时间
-                        }
-                        // 没有跳到最开始, 放到屏幕中间即可
-                        else -> (-trackDurationMillis + // seek to 屏幕左侧 
-                                ((trackDurationMillis - danmakuDurationMillis)
-                                    .coerceAtLeast(0) / 2) // seek to 屏幕中间
-                                ) * 1_000_000L
-                    }
-            
-            
-            list.forEach { danmaku -> 
-                if (isFloatingDanmaku(danmaku)) {
-                    val playTimeNanos = firstDanmakuPlaceTimeNanos + 
-                            (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis) * 1_000_000L
-                    trySend(danmaku, playTimeNanos)
-                } else {
-                    trySend(danmaku) // send fixed danmaku immediately
-                }
+            val firstDanmakuPlaceTimeNanos = if (firstDanmakuTimeMillis <= trackDurationMillis) {
+                // repopulate 了最开始的弹幕, 要向后排列.
+                // 首条弹幕出现的时间在屏幕对应位置
+                elapsedFrameTimeNanos - firstDanmakuTimeMillis * 1_000_000L
+            } else {
+                // 最后一条弹幕在屏幕最右侧, 所以首条弹幕出现的位置在前 danmakuDurationMillis 的帧时间.
+                // 如果超过了 elapsedFrameTimeNanos - trackDurationMillis, 那在 trySend 的时候也不会被放置.
+                elapsedFrameTimeNanos - danmakuDurationMillis * 1_000_000L
             }
-        } else {
-            // send fixed danmaku immediately
-            list.forEach { danmaku -> trySend(danmaku) }
+
+            floatingDanmaku.forEach { danmaku ->
+                val playTimeNanos = firstDanmakuPlaceTimeNanos +
+                        (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis) * 1_000_000L
+                trySend(danmaku, playTimeNanos + timeOffsetMillis * 1_000_000L)
+            }
+        }
+        
+        val fixedDanmaku = list.filterNot(isFloatingDanmaku)
+        if (fixedDanmaku.isNotEmpty()) {
+            val lastDanmakuTimeMillis = fixedDanmaku.last().danmaku.playTimeMillis
+            val lastDanmakuPlaceTimeNanos = elapsedFrameTimeNanos
+            // 浮动弹幕倒序 place 进 presentDanmaku 里
+            fixedDanmaku.asReversed().forEach { danmaku ->
+                val playTimeNanos = lastDanmakuPlaceTimeNanos -
+                        (lastDanmakuTimeMillis - danmaku.danmaku.playTimeMillis) * 1_000_000L
+                trySend(danmaku, playTimeNanos + timeOffsetMillis * 1_000_000L)
+            }
         }
     }
     
