@@ -1,10 +1,8 @@
 package me.him188.ani.app.ui.settings.tabs.network
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -12,7 +10,8 @@ import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceTemplate
+import me.him188.ani.app.ui.settings.tabs.media.source.SelectMediaSourceTemplateDialog
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSource

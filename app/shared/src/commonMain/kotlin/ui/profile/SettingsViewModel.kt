@@ -30,9 +30,9 @@ import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.tabs.app.SoftwareUpdateGroupState
 import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroupState
 import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroupState
-import me.him188.ani.app.ui.settings.tabs.network.EditMediaSourceState
-import me.him188.ani.app.ui.settings.tabs.network.MediaSourceGroupState
-import me.him188.ani.app.ui.settings.tabs.network.MediaSourceLoader
+import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceState
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroupState
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
@@ -136,8 +136,6 @@ class SettingsViewModel : AbstractViewModel(), KoinComponent {
 
     private val mediaSourceLoader = MediaSourceLoader(
         mediaSourceManager,
-        mediaSourceInstanceRepository,
-        bangumiSubjectProvider,
         backgroundScope.coroutineContext,
     )
     val mediaSourceGroupState = MediaSourceGroupState(

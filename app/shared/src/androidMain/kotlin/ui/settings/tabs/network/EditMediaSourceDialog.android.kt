@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceDialog
+import me.him188.ani.app.ui.settings.tabs.media.source.EditType
+import me.him188.ani.app.ui.settings.tabs.media.source.EditingMediaSource
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceInfo
