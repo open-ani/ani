@@ -16,7 +16,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 private fun PreviewEditMediaSourceDialogNoConfig() {
     ProvideCompositionLocalsForPreview {
         EditMediaSourceDialog(
-            state = EditMediaSourceState(
+            state = EditingMediaSource(
                 editingMediaSourceId = "test",
                 factoryId = FactoryId("test"),
                 info = MediaSourceInfo(
@@ -39,7 +39,7 @@ private fun PreviewEditMediaSourceDialogNoConfig() {
 private fun PreviewEditMediaSourceDialog() {
     ProvideCompositionLocalsForPreview {
         EditMediaSourceDialog(
-            state = EditMediaSourceState(
+            state = EditingMediaSource(
                 editingMediaSourceId = "test",
                 factoryId = FactoryId("test"),
                 info = MediaSourceInfo(

@@ -57,7 +57,7 @@ sealed class EditType {
 }
 
 @Stable
-class EditMediaSourceState(
+class EditingMediaSource(
     val editingMediaSourceId: String?,
     val factoryId: FactoryId,
     val info: MediaSourceInfo,
@@ -155,7 +155,7 @@ class SimpleEnumArgumentState(
 
 @Composable
 internal fun EditMediaSourceDialog(
-    state: EditMediaSourceState,
+    state: EditingMediaSource,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,

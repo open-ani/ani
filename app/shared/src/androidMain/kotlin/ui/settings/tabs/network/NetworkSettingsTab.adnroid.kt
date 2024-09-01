@@ -41,28 +41,28 @@ fun createTestMediaSourceInstance(
     source = source,
 )
 
-@OptIn(TestOnly::class)
-@Preview
-@Composable
-private fun PreviewNetworkPreferenceTab() {
-    ProvideCompositionLocalsForPreview(
-        module = {
-            single<MediaSourceManager> {
-                createTestMediaSourceManager()
-            }
-        },
-    ) {
-        val vm = viewModel { NetworkSettingsViewModel() }
-        SideEffect {
-            val testers = vm.mediaSourceTesters.testers
-            if (testers.size < 3) return@SideEffect
-            testers.first().result = ConnectionTestResult.SUCCESS
-            testers.drop(1).first().result = ConnectionTestResult.FAILED
-            testers.drop(2).first().result = ConnectionTestResult.NOT_ENABLED
-        }
-        NetworkSettingsTab()
-    }
-}
+//@OptIn(TestOnly::class)
+//@Preview
+//@Composable
+//private fun PreviewNetworkPreferenceTab() {
+//    ProvideCompositionLocalsForPreview(
+//        module = {
+//            single<MediaSourceManager> {
+//                createTestMediaSourceManager()
+//            }
+//        },
+//    ) {
+//        val vm = viewModel { NetworkSettingsViewModel() }
+//        SideEffect {
+//            val testers = vm.mediaSourceTesters.testers
+//            if (testers.size < 3) return@SideEffect
+//            testers.first().result = ConnectionTestResult.SUCCESS
+//            testers.drop(1).first().result = ConnectionTestResult.FAILED
+//            testers.drop(2).first().result = ConnectionTestResult.NOT_ENABLED
+//        }
+//        NetworkSettingsTab()
+//    }
+//}
 
 @TestOnly
 fun createTestMediaSourceManager() = object : MediaSourceManager {

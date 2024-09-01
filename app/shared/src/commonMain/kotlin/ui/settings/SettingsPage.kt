@@ -48,7 +48,10 @@ import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroup
 import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
 import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
 import me.him188.ani.app.ui.settings.tabs.media.VideoResolverGroup
-import me.him188.ani.app.ui.settings.tabs.network.NetworkSettingsTab
+import me.him188.ani.app.ui.settings.tabs.network.DanmakuGroup
+import me.him188.ani.app.ui.settings.tabs.network.GlobalProxyGroup
+import me.him188.ani.app.ui.settings.tabs.network.MediaSourceGroup
+import me.him188.ani.app.ui.settings.tabs.network.OtherTestGroup
 
 /**
  * @see renderPreferenceTab 查看名称
@@ -163,7 +166,15 @@ fun SettingsPage(
                                 }
                             }
 
-                            SettingsTab.NETWORK -> NetworkSettingsTab(modifier = Modifier.fillMaxSize())
+                            SettingsTab.NETWORK -> {
+                                SettingsTab(Modifier.fillMaxSize()) {
+                                    GlobalProxyGroup(vm.proxySettingsState)
+                                    MediaSourceGroup(vm.mediaSourceGroupState, vm.editMediaSourceState)
+                                    OtherTestGroup(vm.otherTesters)
+                                    DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)
+                                }
+                            }
+
                             SettingsTab.ABOUT -> {
                                 val toaster = LocalToaster.current
                                 AboutTab(

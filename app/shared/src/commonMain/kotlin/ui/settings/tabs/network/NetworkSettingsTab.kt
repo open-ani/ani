@@ -19,13 +19,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.Res
 import me.him188.ani.app.bangumi
+import me.him188.ani.app.data.models.preference.DanmakuSettings
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
-import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
+import me.him188.ani.app.ui.settings.framework.ConnectionTesterRunner
+import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
@@ -34,27 +36,15 @@ import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.utils.ktor.ClientProxyConfigValidator
 import org.jetbrains.compose.resources.painterResource
 
+
 @Composable
-fun NetworkSettingsTab(
-    vm: NetworkSettingsViewModel = viewModel { NetworkSettingsViewModel() },
-    modifier: Modifier = Modifier,
+internal fun SettingsScope.OtherTestGroup(
+    otherTesters: ConnectionTesterRunner<ConnectionTester>,
 ) {
-    val proxySettings by vm.proxySettings
-
-    SettingsTab(modifier) {
-        GlobalProxyGroup(proxySettings, vm)
-        MediaSourceGroup(vm)
-        OtherTestGroup(vm)
-        DanmakuGroup(vm)
-    }
-}
-
-@Composable
-private fun SettingsScope.OtherTestGroup(vm: NetworkSettingsViewModel) {
     Group(
         title = { Text("其他测试") },
     ) {
-        for (tester in vm.otherTesters.testers) {
+        for (tester in otherTesters.testers) {
             TextItem(
                 description = { Text("提供观看记录数据") },
                 icon = {
@@ -76,11 +66,9 @@ private fun SettingsScope.OtherTestGroup(vm: NetworkSettingsViewModel) {
         }
 
         TextButtonItem(
-            onClick = {
-                vm.otherTesters.toggleTest()
-            },
+            onClick = { otherTesters.toggleTest() },
             title = {
-                if (vm.otherTesters.anyTesting) {
+                if (otherTesters.anyTesting) {
                     Text("终止测试")
                 } else {
                     Text("开始测试")
@@ -91,10 +79,10 @@ private fun SettingsScope.OtherTestGroup(vm: NetworkSettingsViewModel) {
 }
 
 @Composable
-private fun SettingsScope.GlobalProxyGroup(
-    proxySettings: ProxySettings,
-    vm: NetworkSettingsViewModel
+internal fun SettingsScope.GlobalProxyGroup(
+    proxySettingsState: SettingsState<ProxySettings>,
 ) {
+    val proxySettings: ProxySettings by proxySettingsState
     Group(
         title = { Text("全局代理设置") },
         description = {
@@ -104,7 +92,7 @@ private fun SettingsScope.GlobalProxyGroup(
         SwitchItem(
             checked = proxySettings.default.enabled,
             onCheckedChange = {
-                vm.proxySettings.update(proxySettings.copy(default = proxySettings.default.copy(enabled = it)))
+                proxySettingsState.update(proxySettings.copy(default = proxySettings.default.copy(enabled = it)))
             },
             title = { Text("启用代理") },
             description = { Text("启用后下面的配置才生效") },
@@ -121,7 +109,7 @@ private fun SettingsScope.GlobalProxyGroup(
                 )
             },
             onValueChangeCompleted = {
-                vm.proxySettings.update(
+                proxySettingsState.update(
                     proxySettings.copy(
                         default = proxySettings.default.copy(
                             config = proxySettings.default.config.copy(
@@ -157,7 +145,7 @@ private fun SettingsScope.GlobalProxyGroup(
             description = { Text("可选") },
             placeholder = { Text("无") },
             onValueChangeCompleted = {
-                vm.proxySettings.update(
+                proxySettingsState.update(
                     proxySettings.copy(
                         default = proxySettings.default.copy(
                             config = proxySettings.default.config.copy(
@@ -180,7 +168,7 @@ private fun SettingsScope.GlobalProxyGroup(
             description = { Text("可选") },
             placeholder = { Text("无") },
             onValueChangeCompleted = {
-                vm.proxySettings.update(
+                proxySettingsState.update(
                     proxySettings.copy(
                         default = proxySettings.default.copy(
                             config = proxySettings.default.config.copy(
@@ -198,14 +186,17 @@ private fun SettingsScope.GlobalProxyGroup(
 }
 
 @Composable
-private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
+internal fun SettingsScope.DanmakuGroup(
+    danmakuSettingsState: SettingsState<DanmakuSettings>,
+    danmakuServerTesters: ConnectionTesterRunner<ConnectionTester>,
+) {
     Group(
         title = { Text("弹幕") },
     ) {
-        val danmakuSettings by vm.danmakuSettings
+        val danmakuSettings by danmakuSettingsState
         SwitchItem(
             checked = danmakuSettings.useGlobal,
-            onCheckedChange = { vm.danmakuSettings.update(danmakuSettings.copy(useGlobal = it)) },
+            onCheckedChange = { danmakuSettingsState.update(danmakuSettings.copy(useGlobal = it)) },
             title = { Text("全球加速") },
             description = { Text("提升在获取弹幕数据的速度\n在中国大陆内启用会减速") },
         )
@@ -215,9 +206,9 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
                 title = { Text("连接速度测试") },
                 useThinHeader = true,
             ) {
-                for (tester in vm.danmakuServerTesters.testers) {
+                for (tester in danmakuServerTesters.testers) {
                     val currentlySelected by derivedStateOf {
-                        vm.danmakuSettings.value.useGlobal == (tester.id == AniBangumiSeverBaseUrls.GLOBAL)
+                        danmakuSettings.useGlobal == (tester.id == AniBangumiSeverBaseUrls.GLOBAL)
                     }
                     TextItem(
                         description = when {
@@ -266,10 +257,10 @@ private fun SettingsScope.DanmakuGroup(vm: NetworkSettingsViewModel) {
 
                 TextButtonItem(
                     onClick = {
-                        vm.danmakuServerTesters.toggleTest()
+                        danmakuServerTesters.toggleTest()
                     },
                     title = {
-                        if (vm.danmakuServerTesters.anyTesting) {
+                        if (danmakuServerTesters.anyTesting) {
                             Text("终止测试")
                         } else {
                             Text("开始测试")
