@@ -71,7 +71,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.tools.MonoTasker
@@ -92,7 +91,6 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.source.parameter.isEmpty
-import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.utils.coroutines.childScope
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -103,8 +101,6 @@ import kotlin.time.Duration.Companion.seconds
 
 class MediaSourceLoader(
     private val mediaSourceManager: MediaSourceManager,
-    private val mediaSourceInstanceRepository: MediaSourceInstanceRepository,
-    private val bangumiSubjectProvider: SubjectProvider,
     parentCoroutineContext: CoroutineContext,
 ) {
     private val scope = parentCoroutineContext.childScope()
@@ -499,31 +495,6 @@ internal fun SettingsScope.MediaSourceItem(
     item: MediaSourcePresentation,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = item.isEnabled,
-    title: @Composable () -> Unit = {
-        val name = if (!isEnabled) {
-            item.info.displayName + "（已禁用）"
-        } else {
-            item.info.displayName
-        }
-        Text(
-            name,
-            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
-        )
-    },
-    description: (@Composable () -> Unit)? =
-        item.info.description?.let {
-            {
-                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
-            }
-        },
-    icon: (@Composable () -> Unit)? = {
-        Box(
-            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            MediaSourceIcon(item.info, Modifier.size(48.dp))
-        }
-    },
     action: @Composable () -> Unit,
 ) {
 //    ListItem(
@@ -534,10 +505,31 @@ internal fun SettingsScope.MediaSourceItem(
 //    )
     TextItem(
         modifier = modifier,
-        description = description,
-        icon = icon,
+        description = item.info.description?.let {
+            {
+                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
+            }
+        },
+        icon = {
+            Box(
+                Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                MediaSourceIcon(item.info, Modifier.size(48.dp))
+            }
+        },
         action = action,
-        title = { title() },
+        title = {
+            val name = if (!isEnabled) {
+                item.info.displayName + "（已禁用）"
+            } else {
+                item.info.displayName
+            }
+            Text(
+                name,
+                Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
+            )
+        },
     )
 }
 
