@@ -612,6 +612,35 @@ class EpisodeVideoControllerTest {
         }
     }
 
+    @Test
+    fun `touch - hover to always on - danmaku settings sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `touch - hover to always on - media selector sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `touch - hover to always on - episode selector sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
     ///////////////////////////////////////////////////////////////////////////
     // mouse
     ///////////////////////////////////////////////////////////////////////////
@@ -706,6 +735,7 @@ class EpisodeVideoControllerTest {
                     moveTo(bottomCenter) // 肯定在 bottomBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = true,
         )
     }
@@ -723,6 +753,7 @@ class EpisodeVideoControllerTest {
                     moveTo(topCenter) // 肯定在 topBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = true,
         )
     }
@@ -732,6 +763,7 @@ class EpisodeVideoControllerTest {
     /////////////////////////////////////////////////////////////////////////// 
 
     private fun AniComposeUiTest.testSideSheetRequestAlwaysOn(
+        gestureFamily: GestureFamily,
         openSideSheet: () -> Unit,
         waitForSideSheetOpen: () -> Unit,
         waitForSideSheetClose: () -> Unit,
@@ -748,6 +780,7 @@ class EpisodeVideoControllerTest {
                     assertEquals(true, controllerState.alwaysOn)
                 }
             },
+            gestureFamily = gestureFamily,
             expectAlwaysOn = true,
         )
         // 点击外部, 关闭 side sheet
@@ -777,6 +810,7 @@ class EpisodeVideoControllerTest {
     @Test
     fun `mouse - hover to always on - danmaku settings sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
             openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).doesNotExist() } },
@@ -786,6 +820,7 @@ class EpisodeVideoControllerTest {
     @Test
     fun `mouse - hover to always on - media selector sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
             openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).doesNotExist() } },
@@ -795,6 +830,7 @@ class EpisodeVideoControllerTest {
     @Test
     fun `mouse - hover to always on - episode selector sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
             openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
@@ -818,6 +854,7 @@ class EpisodeVideoControllerTest {
                     click(bottomCenter) // 肯定在 bottomBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = false,
         )
     }
@@ -835,6 +872,7 @@ class EpisodeVideoControllerTest {
                     click(topCenter) // 肯定在 topBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = false,
         )
     }
@@ -847,10 +885,11 @@ class EpisodeVideoControllerTest {
      */
     private fun AniComposeUiTest.testRequestAlwaysOn(
         performGesture: () -> Unit,
+        gestureFamily: GestureFamily,
         expectAlwaysOn: Boolean = false,
     ) {
         setContent {
-            Player(GestureFamily.MOUSE)
+            Player(gestureFamily)
         }
         runOnIdle {
             assertEquals(
@@ -864,11 +903,15 @@ class EpisodeVideoControllerTest {
         runOnUiThread {
             mainClock.autoAdvance = false
             root.performTouchInput {
-                swipe(centerLeft, center)
+                if (gestureFamily == GestureFamily.MOUSE) {
+                    swipe(centerLeft, center)
+                } else {
+                    click()
+                }
             }
         }
         runOnIdle {
-            waitUntil { topBar.exists() }
+            mainClock.advanceTimeUntil { topBar.exists() }
             assertEquals(
                 NORMAL_VISIBLE,
                 controllerState.visibility,
