@@ -659,6 +659,17 @@ fun VideoGestureHost(
             val indicatorTasker = rememberUiMonoTasker()
             val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
             val scope = rememberUiMonoTasker()
+
+            if (family.autoHideController) {
+                LaunchedEffect(controllerState.visibility) {
+                    if (controllerState.visibility.bottomBar) {
+                        scope.launch {
+                            delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
+                            controllerState.toggleFullVisible(false)
+                        }
+                    }
+                }
+            }
             
             Box(
                 modifier
@@ -669,13 +680,6 @@ fun VideoGestureHost(
                                 focusManager.clearFocus()
                             }
                         }
-                    }
-                    .ifThen(family.autoHideController) {
-                        scope.launch {
-                            delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
-                            controllerState.toggleFullVisible(false)
-                        }
-                        this
                     }
                     .padding(top = 60.dp)
                     .combinedClickable(
@@ -689,12 +693,6 @@ fun VideoGestureHost(
                                 if (family.clickToToggleController) {
                                     focusManager.clearFocus()
                                     controllerState.toggleFullVisible()
-                                    if (family.autoHideController) {
-                                        scope.launch {
-                                            delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
-                                            controllerState.toggleFullVisible(false)
-                                        }
-                                    }
                                 }
                             }
                         },

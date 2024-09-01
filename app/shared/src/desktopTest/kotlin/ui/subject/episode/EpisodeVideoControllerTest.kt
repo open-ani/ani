@@ -286,8 +286,9 @@ class EpisodeVideoControllerTest {
         }
         // 等待隐藏
         mainClock.advanceTimeBy(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-        mainClock.advanceTimeUntil { topBar.doesNotExist() }
+        mainClock.autoAdvance = true
         runOnIdle {
+            mainClock.advanceTimeUntil { topBar.doesNotExist() }
             assertEquals(
                 NORMAL_INVISIBLE,
                 controllerState.visibility,
