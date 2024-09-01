@@ -51,6 +51,7 @@ import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
@@ -126,6 +127,7 @@ internal fun EpisodeVideoImpl(
     mediaSelectorPresentation: MediaSelectorPresentation,
     mediaSourceResultsPresentation: MediaSourceResultsPresentation,
     episodeSelectorState: EpisodeSelectorState,
+    mediaSourceInfoProvider: MediaSourceInfoProvider,
     leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
@@ -428,6 +430,7 @@ internal fun EpisodeVideoImpl(
                 EpisodeVideoMediaSelectorSideSheet(
                     mediaSelectorPresentation,
                     mediaSourceResultsPresentation,
+                    mediaSourceInfoProvider,
                     onDismissRequest = { isMediaSelectorVisible = false },
                 )
             }

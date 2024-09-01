@@ -3,7 +3,6 @@ package me.him188.ani.app.ui.settings.framework
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cancel
@@ -20,20 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.ui.settings.framework.components.SettingsScope
-import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
-import me.him188.ani.datasources.api.source.MediaSourceInfo
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
-import org.koin.mp.KoinPlatform
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.measureTimedValue
@@ -103,38 +94,6 @@ open class Tester<T>(
             }
         }
     }
-}
-
-@Composable
-fun SettingsScope.MediaSourceTesterView(
-    tester: ConnectionTester,
-    info: MediaSourceInfo? = kotlin.run { // shit
-        KoinPlatform.getKoin().get<MediaSourceManager>()
-            .findInfoByMediaSourceId(tester.id)
-    },
-    showTime: Boolean,
-    title: @Composable RowScope.() -> Unit = { Text(info?.displayName ?: "未知") },
-    description: (@Composable () -> Unit)? = if (tester.id == BangumiSubjectProvider.ID) {
-        { Text("提供观看记录数据") }
-    } else {
-        info?.description?.let {
-            { Text(it) }
-        }
-    },
-    icon: (@Composable () -> Unit)? = {
-        Box(Modifier.clip(MaterialTheme.shapes.extraSmall).size(48.dp)) {
-            MediaSourceIcon(info?.imageUrl)
-        }
-    },
-) {
-    TextItem(
-        description = description,
-        icon = icon,
-        action = {
-            ConnectionTesterResultIndicator(tester, showTime = showTime)
-        },
-        title = title,
-    )
 }
 
 @Composable

@@ -14,6 +14,8 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.datasources.acgrip.AcgRipMediaSource
+import me.him188.ani.datasources.api.source.FactoryId
+import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
@@ -21,72 +23,32 @@ import me.him188.ani.datasources.api.source.TestHttpMediaSource
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.dmhy.DmhyMediaSource
 import me.him188.ani.datasources.mikan.MikanMediaSource
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 
+@TestOnly
+fun createTestMediaSourceInstance(
+    instanceId: String, // uuid, to be persisted
+    factoryId: FactoryId,
+    isEnabled: Boolean,
+    config: MediaSourceConfig,
+    source: MediaSource,
+): MediaSourceInstance = MediaSourceInstance(
+    instanceId = instanceId,
+    factoryId = factoryId,
+    isEnabled = isEnabled,
+    config = config,
+    source = source,
+)
+
+@OptIn(TestOnly::class)
 @Preview
 @Composable
 private fun PreviewNetworkPreferenceTab() {
     ProvideCompositionLocalsForPreview(
         module = {
             single<MediaSourceManager> {
-                object : MediaSourceManager {
-                    override val allInstances = MutableStateFlow(
-                        listOf(
-                            MediaSourceInstance(
-                                "1",
-                                DmhyMediaSource.ID,
-                                true,
-                                MediaSourceConfig(),
-                                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true),
-                            ),
-
-                            MediaSourceInstance(
-                                "1",
-                                DmhyMediaSource.ID,
-                                true,
-                                MediaSourceConfig(),
-                                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true),
-                            ),
-
-                            MediaSourceInstance(
-                                "1",
-                                DmhyMediaSource.ID,
-                                true,
-                                MediaSourceConfig(),
-                                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true),
-                            ),
-
-                            MediaSourceInstance(
-                                "1",
-                                DmhyMediaSource.ID,
-                                true,
-                                MediaSourceConfig(),
-                                TestHttpMediaSource("local", randomConnectivity = true),
-                            ),
-                        ),
-                    )
-                    override val allFactories: List<MediaSourceFactory> = listOf(MikanMediaSource.Factory())
-                    override val allFactoryIds: List<String> = allInstances.value.map { it.mediaSourceId }
-                    override val allFactoryIdsExceptLocal: List<String>
-                        get() = allFactoryIds.filter { !isLocal(it) }
-                    override val mediaFetcher: Flow<MediaFetcher> get() = flowOf()
-
-                    override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig> {
-                        return MutableStateFlow(MediaSourceConfig())
-                    }
-
-                    override suspend fun addInstance(mediaSourceId: String, config: MediaSourceConfig) {
-                    }
-
-                    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
-                    }
-
-                    override suspend fun setEnabled(instanceId: String, enabled: Boolean) {
-                    }
-
-                    override suspend fun removeInstance(instanceId: String) {
-                    }
-                }
+                createTestMediaSourceManager()
             }
         },
     ) {
@@ -102,6 +64,70 @@ private fun PreviewNetworkPreferenceTab() {
     }
 }
 
+@TestOnly
+fun createTestMediaSourceManager() = object : MediaSourceManager {
+    override val allInstances = MutableStateFlow(
+        listOf(
+            createTestMediaSourceInstance(
+                "1",
+                FactoryId(DmhyMediaSource.ID),
+                true,
+                MediaSourceConfig(),
+                TestHttpMediaSource(AcgRipMediaSource.ID, randomConnectivity = true),
+            ),
+
+            createTestMediaSourceInstance(
+                "1",
+                FactoryId(DmhyMediaSource.ID),
+                true,
+                MediaSourceConfig(),
+                TestHttpMediaSource(DmhyMediaSource.ID, randomConnectivity = true),
+            ),
+
+            createTestMediaSourceInstance(
+                "1",
+                FactoryId(DmhyMediaSource.ID),
+                true,
+                MediaSourceConfig(),
+                TestHttpMediaSource(MikanMediaSource.ID, randomConnectivity = true),
+            ),
+
+            createTestMediaSourceInstance(
+                "1",
+                FactoryId(DmhyMediaSource.ID),
+                true,
+                MediaSourceConfig(),
+                TestHttpMediaSource("local", randomConnectivity = true),
+            ),
+        ),
+    )
+    override val allFactories: List<MediaSourceFactory> = listOf(MikanMediaSource.Factory())
+    override val allFactoryIds: List<FactoryId> = allInstances.value.map { it.factoryId }
+    override val allFactoryIdsExceptLocal: List<FactoryId>
+        get() = allFactoryIds.filter { !isLocal(it) }
+    override val mediaFetcher: Flow<MediaFetcher> get() = flowOf()
+
+    override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig> {
+        return MutableStateFlow(MediaSourceConfig())
+    }
+
+    override suspend fun addInstance(
+        mediaSourceId: String,
+        factoryId: FactoryId,
+        config: MediaSourceConfig
+    ) {
+    }
+
+    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
+    }
+
+    override suspend fun setEnabled(instanceId: String, enabled: Boolean) {
+    }
+
+    override suspend fun removeInstance(instanceId: String) {
+    }
+}
+
 @Preview
 @Composable
 private fun PreviewSelectMediaSourceTemplateLayout() {
@@ -110,14 +136,14 @@ private fun PreviewSelectMediaSourceTemplateLayout() {
             remember {
                 listOf(
                     MediaSourceTemplate(
-                        mediaSourceId = "1",
+                        factoryId = FactoryId("1"),
                         MediaSourceInfo(
                             "Test",
                         ),
                         parameters = MediaSourceParameters.Empty,
                     ),
                     MediaSourceTemplate(
-                        mediaSourceId = "123",
+                        factoryId = FactoryId("123"),
                         MediaSourceInfo(
                             "Test2",
                         ),

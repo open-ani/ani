@@ -50,7 +50,6 @@ import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeScreenshotRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepositoryImpl
-import me.him188.ani.app.data.repository.MediaSourceSaves
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
@@ -79,14 +78,12 @@ import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStor
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManagerImpl
 import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
-import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.data.source.session.BangumiSessionManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.platform.Platform.Companion.currentPlatform
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -97,10 +94,8 @@ import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
-import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import me.him188.ani.utils.platform.Uuid
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
 import kotlin.coroutines.CoroutineContext
@@ -226,50 +221,6 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
  */
 fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinApplication {
     koin.get<MediaAutoCacheService>().startRegularCheck(coroutineScope)
-
-
-    coroutineScope.launch {
-        // 迁移旧的 fallbackMediaSourceIds 到 MediaSourceInstance
-        val mediaSourceInstanceRepository = koin.get<MediaSourceInstanceRepository>()
-        val settingsRepository = koin.get<SettingsRepository>()
-        val mediaSourceManager = koin.get<MediaSourceManager>()
-        val mediaPreference = settingsRepository.defaultMediaPreference.flow.first()
-
-        val logger = logger("media-source-migration")
-
-        @Suppress("DEPRECATION")
-        val legacyIds = mediaPreference.fallbackMediaSourceIds
-        if (!legacyIds.isNullOrEmpty()) {
-            // 需要迁移
-            mediaSourceInstanceRepository.clear()
-            for (id in legacyIds) {
-                logger.info { "Migrating legacy media source $id" }
-                if (mediaSourceManager.isLocal(id)) {
-                    logger.info { "Migrating legacy media source $id: ignoring local" }
-                }
-                mediaSourceInstanceRepository.add(
-                    mediaSourceSave = MediaSourceSave(
-                        instanceId = Uuid.randomString(),
-                        mediaSourceId = id,
-                        isEnabled = true,
-                        config = MediaSourceConfig.Default,
-                    ),
-                )
-            }
-            // 把没启用的也添加上, 符合旧逻辑
-            for (instance in MediaSourceSaves.Default.instances) {
-                if (legacyIds.contains(instance.mediaSourceId)) {
-                    continue
-                }
-                mediaSourceInstanceRepository.add(
-                    mediaSourceSave = instance.copy(isEnabled = false),
-                )
-            }
-            settingsRepository.defaultMediaPreference.set(
-                mediaPreference.copy(fallbackMediaSourceIds = null),
-            )
-        }
-    }
 
     coroutineScope.launch {
         val manager = koin.get<MediaCacheManager>()

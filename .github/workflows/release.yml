@@ -38,7 +38,7 @@ jobs:
             ### 下载
             
             <details>
-            <summary>点击展开</summary>
+            <summary>>> <h3>点我展开下载列表</h3> <<</summary>
             
             [//]: # (注意, `checkLatestVersion` 有字符串处理, 修改标题和分隔符前务必查询)
             
@@ -133,6 +133,7 @@ jobs:
           - macos-12 # x86_64
           - macos-14 # aarch64
         include:
+          # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
             name: Windows x86_64
             uploadApk: false
@@ -140,32 +141,41 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
-          - os: macos-12
+            run_tests: true
+            gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
+          - os: macos-13
             name: macOS x86_64
-            uploadApk: false
+            uploadApk: true
             arch: x64
             anitorrent: true
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
+            run_tests: true
+            gradleArgs: >-
+              -Dorg.gradle.jvmargs=-Xmx4096m
+              -Dfile.encoding=UTF-8
+              -Dkotlin.daemon.jvm.options=-Xmx4096M
+              -Pani.build.framework=false
           - os: macos-14
             name: macOS aarch64
-            uploadApk: true
+            uploadApk: false
             arch: aarch64
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
+            run_tests: true
+            gradleArgs: >-
+              -Dorg.gradle.jvmargs=-Xmx4096m
+              -Dfile.encoding=UTF-8
+              -Dkotlin.daemon.jvm.options=-Xmx4096M
+              -Pani.build.framework=false
+              -Pani.android.abis=arm64-v8a
+            # 这台机器硬盘小, 不要构建其他安卓架构
     env:
-      enableLocalPublishingTest: 'false'
       gradleArgs: >-
         --scan
-        "-Dorg.gradle.jvmargs=-Xmx4096m" 
-        "-Dfile.encoding=UTF-8"
-        --no-daemon
-        --no-configuration-cache 
-        "-Pbangumi.oauth.client.android.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_ID }}" 
-        "-Pbangumi.oauth.client.android.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_ANDROID_SECRET }}"
-        "-Pbangumi.oauth.client.desktop.appId=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_ID }}" 
-        "-Pbangumi.oauth.client.desktop.secret=${{ secrets.BANGUMI_OAUTH_CLIENT_DESKTOP_SECRET }}"
+        "--no-configuration-cache"
+        ${{ matrix.gradleArgs }} 
         ${{ matrix.anitorrent == true && '"-Dani.enable.anitorrent=true"' || '' }}
         ${{ matrix.anitorrent == true && '"-DCMAKE_BUILD_TYPE=Release"' || '' }}
         ${{ startsWith(matrix.os, 'windows') && '"-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"' || '' }}
@@ -180,6 +190,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
+
+      - if: ${{ startsWith(matrix.os, 'macos') }}
+        name: Free space
+        run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
+        continue-on-error: true
 
       - name: Get Tag # usage:  ${{ steps.tag.outputs.tag }}
         id: tag
@@ -208,7 +223,7 @@ jobs:
 
       - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies
-        run: chmod +x ./ci-helper/install-deps-macos.sh && ./ci-helper/install-deps-macos.sh
+        run: chmod +x ./ci-helper/install-deps-macos-ci.sh && ./ci-helper/install-deps-macos-ci.sh
 
       - if: ${{ env.isWindows == 'true' }}
         name: Setup vcpkg cache
@@ -227,7 +242,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          cache-disabled: ${{ env.isWindows == 'true' }} # Windows 上这个缓存会花费 8 分钟, 还不如直接下载
+          cache-disabled: true # 缓存包含旧版本的, 太占位置了 
 
       - if: ${{ env.isUnix == 'true' }}
         run: chmod -R 777 *

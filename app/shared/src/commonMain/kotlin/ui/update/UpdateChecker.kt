@@ -7,7 +7,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.appendPathSegments
 import io.ktor.utils.io.core.use
 import kotlinx.coroutines.CancellationException
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseUpdatesDetailedResponse
@@ -15,7 +14,6 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.TimeFormatter
-import me.him188.ani.app.ui.profile.update.Release
 import me.him188.ani.utils.coroutines.withExceptionCollector
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -49,37 +47,6 @@ class UpdateChecker {
                     collect(exception)
                     client.getVersionFromAniServer("https://danmaku-cn.myani.org/", currentVersion, releaseClass).also {
                         logger.info { "Got latest version from CN server: ${it?.name}" }
-                    }
-                }.recoverCatching { exception ->
-                    collect(exception)
-                    val body = client.get("https://api.github.com/repos/him188/Ani/releases/latest").bodyAsText()
-                    val release = json.decodeFromString(Release.serializer(), body)
-                    val tag = release.tagName
-
-                    val distributionSuffix = getDistributionSuffix()
-                    val version = tag.substringAfter("v")
-                    val publishedAt = kotlin.runCatching {
-                        TimeFormatter().format(
-                            Instant.parse(release.publishedAt),
-                        )
-                    }.getOrElse { release.publishedAt }
-                    val downloadUrl = release.assets
-                        .firstOrNull { it.name.endsWith(distributionSuffix) }
-                        ?.browserDownloadUrl
-                        ?: ""
-                    NewVersion(
-                        name = version,
-                        changelogs = listOf(
-                            Changelog(
-                                version,
-                                publishedAt,
-                                release.body.substringBeforeLast("### 下载").substringBeforeLast("----").trim(),
-                            ),
-                        ),
-                        downloadUrlAlternatives = listOf(downloadUrl),
-                        publishedAt = publishedAt,
-                    ).also {
-                        logger.info { "Got latest version from Github: ${it.name}" }
                     }
                 }.onFailure { exception ->
                     collect(exception)

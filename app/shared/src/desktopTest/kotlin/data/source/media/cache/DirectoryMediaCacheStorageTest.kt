@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.TestScope
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonObjectBuilder
@@ -14,12 +16,12 @@ import kotlinx.serialization.json.put
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
 import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
+import me.him188.ani.app.data.source.media.createTestDefaultMedia
 import me.him188.ani.app.tools.torrent.TorrentEngine
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.app.torrent.anitorrent.session.AnitorrentDownloadSession
 import me.him188.ani.app.torrent.anitorrent.test.TestAnitorrentTorrentDownloader
-import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaCacheMetadata
 import me.him188.ani.datasources.api.MediaProperties
@@ -88,7 +90,7 @@ class DirectoryMediaCacheStorageTest {
         )
     }
 
-    private val media = DefaultMedia(
+    private val media = createTestDefaultMedia(
         mediaId = "dmhy.2",
         mediaSourceId = "dmhy",
         originalTitle = "夜晚的水母不会游泳 02 测试剧集",
@@ -130,6 +132,11 @@ class DirectoryMediaCacheStorageTest {
             metadataDir,
             engine.also { cacheEngine = it },
             this.coroutineContext,
+            clock = object : Clock {
+                override fun now(): Instant {
+                    return Instant.fromEpochMilliseconds(1725107383853)
+                }
+            },
         ).also {
             storages.add(it)
         }
@@ -359,6 +366,7 @@ class DirectoryMediaCacheStorageTest {
                         },
                         "episodeName": "测试剧集",
                         "extra": {
+                            "creationTime": "1725107383853",
                             "torrentData": "7b2264617461223a7b2274797065223a224d61676e6574557269222c22757269223a226d61676e65743a3f78743d75726e3a627469683a31227d2c2268747470546f7272656e7446696c6550617468223a6e756c6c7d",
                             "torrentCacheDir": "${dir.resolve("pieces/2071812470").absolutePath.replace("\\", "\\\\")}"
                         }

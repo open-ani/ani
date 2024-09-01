@@ -53,7 +53,7 @@ actual fun isInLandscapeMode(): Boolean =
     LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
 @Suppress("USELESS_CAST") // compiler bug
-actual fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean) {
+actual suspend fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean) {
     Log.i("setRequestFullScreen", "Requesting fullscreen: $fullscreen, context=$this")
     if (this is Activity) {
         if (fullscreen) {

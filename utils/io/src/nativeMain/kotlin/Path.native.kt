@@ -1,11 +1,13 @@
 package me.him188.ani.utils.io
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.toKString
+import kotlinx.cinterop.convert
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemTemporaryDirectory
 import me.him188.ani.utils.platform.Uuid
-import platform.posix.getenv
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSUserDomainMask
 
 actual fun SystemPath.length(): Long = SystemFileSystem.metadataOrNull(path)?.size ?: 0
 
@@ -32,10 +34,13 @@ private fun resolveImpl(parent: String, child: String): String {
 }
 
 @OptIn(ExperimentalForeignApi::class)
+val SystemDocumentDir
+    get() = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory.convert(), NSUserDomainMask.convert(), true)
+        .firstOrNull()?.toString() ?: error("Cannot get current working directory")
+
 actual val SystemPath.absolutePath: String
     get() {
-        val pwd = getenv("pwd")?.toKString() ?: error("Cannot get current working directory")
-        return resolveImpl(pwd, path.toString())
+        return resolveImpl(SystemDocumentDir, path.toString())
     }
 
 actual fun SystemPaths.createTempDirectory(

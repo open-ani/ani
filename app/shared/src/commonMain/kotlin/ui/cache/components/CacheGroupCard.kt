@@ -89,6 +89,8 @@ class CacheGroupState(
     val episodes = episodes.sortedBy { it.sort }
     val cacheId = episodes.firstOrNull()?.cacheId
 
+    val latestCreationTime = episodes.asSequence().mapNotNull { it.creationTime }.maxOfOrNull { it }
+
     private val allEpisodesFinished by derivedStateOf {
         episodes.all { it.isFinished }
     }

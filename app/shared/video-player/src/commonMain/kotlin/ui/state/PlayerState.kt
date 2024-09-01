@@ -241,12 +241,16 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
         }
     }.stateIn(backgroundScope, SharingStarted.WhileSubscribed(), staticMediaCacheProgressState(ChunkState.NONE))
 
+    protected open suspend fun cacheProgressLoop() {
+        while (true) {
+            cacheProgressFlow.value.update()
+            delay(1000)
+        }
+    }
+
     init {
         backgroundScope.launch {
-            while (true) {
-                cacheProgressFlow.value.update()
-                delay(1000)
-            }
+            cacheProgressLoop()
         }
     }
 
@@ -398,16 +402,18 @@ interface SupportsAudio {
     fun setVolume(volume: Float)
 
     @UiThread
-    fun volumeUp()
+    fun volumeUp(value: Float = 0.05f)
 
     @UiThread
-    fun volumeDown()
+    fun volumeDown(value: Float = 0.05f)
 }
 
 /**
  * For previewing
  */
-class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoroutineContext), SupportsAudio {
+class DummyPlayerState(
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
+) : AbstractPlayerState<AbstractPlayerState.Data>(parentCoroutineContext), SupportsAudio {
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PLAYING)
     override fun stopImpl() {
 
@@ -435,6 +441,11 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
 
     override suspend fun startPlayer(data: Data) {
         // no-op
+    }
+
+    override suspend fun cacheProgressLoop() {
+        // no-op
+        // 测试的时候 delay 会被直接跳过, 导致死循环
     }
 
     override val videoSource: MutableStateFlow<VideoSource<*>?> = MutableStateFlow(null)
@@ -493,12 +504,12 @@ class DummyPlayerState : AbstractPlayerState<AbstractPlayerState.Data>(EmptyCoro
         this.volume.value = volume
     }
 
-    override fun volumeUp() {
-        setVolume(volume.value + 0.05f)
+    override fun volumeUp(value: Float) {
+        setVolume(volume.value + value)
     }
 
-    override fun volumeDown() {
-        setVolume(volume.value - 0.05f)
+    override fun volumeDown(value: Float) {
+        setVolume(volume.value - value)
     }
 
     override fun saveScreenshotFile(filename: String) {

@@ -22,16 +22,14 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.datastore.preferences.core.mutablePreferencesOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -72,27 +70,24 @@ val LocalIsPreviewing = staticCompositionLocalOf {
     false
 }
 
-@Stable
-private val globalScope = CoroutineScope(SupervisorJob())
-
 @Composable
 fun ProvideCompositionLocalsForPreview(
-    playerStateFactory: PlayerStateFactory = PlayerStateFactory { _, _ ->
-        DummyPlayerState()
-    },
     module: Module.() -> Unit = {},
     colorScheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
     PlatformPreviewCompositionLocalProvider {
+        val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
         runCatching { stopKoin() }
         startKoin {
-            modules(getCommonKoinModule({ context }, globalScope))
+            modules(getCommonKoinModule({ context }, coroutineScope))
             modules(
                 module {
                     single<PlayerStateFactory> {
-                        playerStateFactory
+                        PlayerStateFactory { _, _ ->
+                            DummyPlayerState(coroutineScope.coroutineContext)
+                        }
                     }
                     single<SessionManager> { PreviewSessionManager }
                     factory<VideoSourceResolver> {
@@ -105,7 +100,7 @@ fun ProvideCompositionLocalsForPreview(
                     }
                     single<TorrentManager> {
                         DefaultTorrentManager.create(
-                            globalScope.coroutineContext,
+                            coroutineScope.coroutineContext,
                             get(),
                             baseSaveDir = { Path("preview-cache").inSystem },
                         )

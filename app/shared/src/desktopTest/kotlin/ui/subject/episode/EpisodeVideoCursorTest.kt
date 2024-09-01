@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -32,6 +33,7 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
+import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
@@ -53,7 +55,6 @@ import kotlin.time.Duration.Companion.seconds
 class EpisodeVideoCursorTest {
 
     private val controllerState = VideoControllerState(ControllerVisibility.Invisible)
-    private val playerState = DummyPlayerState()
     private var currentPositionMillis by mutableLongStateOf(0L)
     private val progressSliderState: MediaProgressSliderState = MediaProgressSliderState(
         { currentPositionMillis },
@@ -77,6 +78,10 @@ class EpisodeVideoCursorTest {
     @Composable
     private fun Player(gestureFamily: GestureFamily = GestureFamily.MOUSE) {
         ProvideCompositionLocalsForPreview(colorScheme = aniDarkColorTheme()) {
+            val scope = rememberCoroutineScope()
+            val playerState = remember {
+                DummyPlayerState(scope.coroutineContext)
+            }
             Row {
                 EpisodeVideoImpl(
                     playerState = playerState,
@@ -109,6 +114,7 @@ class EpisodeVideoCursorTest {
                     mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                     mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                     episodeSelectorState = rememberTestEpisodeSelectorState(),
+                    mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                     modifier = Modifier.weight(1f),
                 )
 

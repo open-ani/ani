@@ -88,7 +88,7 @@ fun EpisodeVideoLoadingIndicator(
 
                 is VideoLoadingState.DecodingData -> {
                     TextWithBorder(
-                        if (state.isBt) {
+                        if (!state.isBt) {
                             "资源解析成功, 正在准备视频"
                         } else {
                             "正在解析磁力链或查询元数据\n若 15 秒内未完成, 请尝试切换数据源或先缓存再看"
@@ -102,7 +102,8 @@ fun EpisodeVideoLoadingIndicator(
                         mutableStateOf(false)
                     }
                     val speed by remember { derivedStateOf(speedProvider) }
-                    if (speed == FileSize.Zero) {
+                    val speedIsZero by remember { derivedStateOf { speed == FileSize.Zero } }
+                    if (speedIsZero) {
                         LaunchedEffect(true) {
                             delay(15.seconds)
                             tooLong = true
@@ -121,9 +122,9 @@ fun EpisodeVideoLoadingIndicator(
                                 if (tooLong) {
                                     appendLine()
                                     if (state.isBt) {
-                                        append("BT 初始缓冲耗时稍长, 请耐心等待")
+                                        append("BT 初始缓冲耗时稍长, 请耐心等待 30 秒")
                                         appendLine()
-                                        append("若速度过慢, 可尝试切换数据源")
+                                        append("若持续没有速度, 可尝试切换数据源")
                                     } else {
                                         append("缓冲耗时过长, 可尝试切换数据源")
                                     }

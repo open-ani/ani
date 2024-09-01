@@ -4,6 +4,8 @@ import kotlinx.io.files.Path
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_add_info_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
+import me.him188.ani.app.torrent.anitorrent.toSessionSettings
+import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.utils.io.toNioPath
 import kotlin.io.path.absolutePathString
 
@@ -21,6 +23,10 @@ internal class SwigTorrentManagerSession(
     override fun createTorrentAddInfo(): SwigTorrentAddInfo = SwigTorrentAddInfo(torrent_add_info_t())
     override fun resume() {
         native.resume()
+    }
+
+    override fun applyConfig(config: TorrentDownloaderConfig) {
+        native.apply_settings(config.toSessionSettings())
     }
 }
 

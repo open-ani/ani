@@ -18,28 +18,19 @@ import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentManagerSession
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentResumeData
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentStats
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.logging.info
 import kotlin.coroutines.CoroutineContext
 
-internal actual fun createAnitorrentTorrentDownloader(
-    rootDataDirectory: SystemPath,
-    httpFileDownloader: HttpFileDownloader,
-    torrentDownloaderConfig: TorrentDownloaderConfig,
-    parentCoroutineContext: CoroutineContext
-): TorrentDownloader {
-    AnitorrentLibraryLoader.loadLibraries()
-    AnitorrentTorrentDownloader.logger.info { "Creating a new AnitorrentTorrentDownloader" }
-
-    val session = session_t()
-    val settings = session_settings_t().apply {
-        user_agent = torrentDownloaderConfig.userAgent
-        peer_fingerprint = torrentDownloaderConfig.peerFingerprint
-        handshake_client_version = torrentDownloaderConfig.handshakeClientVersion
-        download_rate_limit = torrentDownloaderConfig.downloadRateLimitBytes
-        upload_rate_limit = torrentDownloaderConfig.uploadRateLimitBytes
+internal fun TorrentDownloaderConfig.toSessionSettings(): session_settings_t {
+    val config = this
+    return session_settings_t().apply {
+        user_agent = config.userAgent
+        peer_fingerprint = config.peerFingerprint
+        handshake_client_version = config.handshakeClientVersion
+        download_rate_limit = config.downloadRateLimitBytes
+        upload_rate_limit = config.uploadRateLimitBytes
         listOf(
             "router.utorrent.com:6881",
             "router.bittorrent.com:6881",
@@ -49,6 +40,20 @@ internal actual fun createAnitorrentTorrentDownloader(
             dht_bootstrap_nodes_extra_add(it)
         }
     }
+
+}
+
+internal actual fun createAnitorrentTorrentDownloader(
+    rootDataDirectory: SystemPath,
+    httpFileDownloader: HttpFileDownloader,
+    torrentDownloaderConfig: TorrentDownloaderConfig,
+    parentCoroutineContext: CoroutineContext
+): AnitorrentTorrentDownloader<*, *> {
+    AnitorrentLibraryLoader.loadLibraries()
+    AnitorrentTorrentDownloader.logger.info { "Creating a new AnitorrentTorrentDownloader" }
+
+    val session = session_t()
+    val settings = torrentDownloaderConfig.toSessionSettings()
     try {
         session.start(settings)
     } finally {
@@ -83,9 +88,33 @@ internal class SwigAnitorrentTorrentDownloader(
             }
         }
 
+        /*
+2024-08-28 19:44:22,030 [INFO ] AnitorrentTorrentDownloader: [14167745] AnitorrentDownloadSession created, adding 29 trackers
+2024-08-28 19:44:22,030 [INFO ] AnitorrentTorrentDownloader: withHandleTaskQueue: executed 1 delayed tasks
+2024-08-28 19:44:23,307 [INFO ] AnitorrentDownloadSession: [14167745] onMetadataReceived
+2024-08-28 19:44:23,309 [INFO ] AnitorrentDownloadSession: [14167745] onTorrentFinished
+2024-08-28 19:44:23,309 [INFO ] AnitorrentDownloadSession: [14167745] onTorrentFinished
+2024-08-28 19:44:23,310 [INFO ] AnitorrentDownloadSession: [14167745] onTorrentChecked
+2024-08-28 19:44:23,310 [INFO ] AnitorrentDownloadSession: [14167745] reloadFiles
+2024-08-28 19:44:23,311 [INFO ] AnitorrentDownloadSession: initializeTorrentInfo
+2024-08-28 19:44:23,311 [INFO ] AnitorrentDownloadSession: [14167745] File '[ANi] 深夜 Punch - 08 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4' piece initialized, 778 pieces, index range: 0..777, offset range: Piece(0..524287)..Piece(407371776..407818747)
+2024-08-28 19:44:23,311 [INFO ] AnitorrentDownloadSession: [14167745] Got torrent info: TorrentInfo(name=[ANi] 深夜 Punch - 08 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4, numPieces=778, entries.size=1)
+2024-08-28 19:44:23,312 [INFO ] AnitorrentDownloadSession: [14167745] saving resume data to: /Users/him188/Library/Caches/me.Him188.Ani-debug/torrent-data2/anitorrent/pieces/917960765/fastresume
+2024-08-28 19:44:23,313 [INFO ] TorrentVideoSource: TorrentVideoSource selected file: [ANi] 深夜 Punch - 08 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4
+2024-08-28 19:44:23,313 [INFO ] AnitorrentEntry: [14167745] Set file priority to HIGH: [ANi] 深夜 Punch - 08 [1080P][Baha][WEB-DL][AAC AVC][CHT].mp4
+         */
+
+        // 新旧都会触发这个, 见上面的 log, 但似乎有时候会收不到这个事件
         override fun on_checked(handleId: Long) {
             dispatchToSession(handleId) {
                 it.onTorrentChecked()
+            }
+        }
+
+        // 看起来只有新资源才会触发这个, 见上面的 log
+        override fun on_metadata_received(handleId: Long) {
+            dispatchToSession(handleId) {
+                it.onMetadataReceived()
             }
         }
 
@@ -105,6 +134,7 @@ internal class SwigAnitorrentTorrentDownloader(
             state ?: return
             dispatchToSession(handleId) {
                 if (state == torrent_state_t.finished) {
+                    // 注意, 这可能会调用多次
                     it.onTorrentFinished()
                 }
             }

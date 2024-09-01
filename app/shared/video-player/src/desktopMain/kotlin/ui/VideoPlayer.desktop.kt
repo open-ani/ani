@@ -4,9 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.sun.jna.platform.win32.KnownFolders
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -44,6 +46,7 @@ import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
+import uk.co.caprica.vlcj.factory.MediaPlayerFactory
 import uk.co.caprica.vlcj.factory.discovery.NativeDiscovery
 import uk.co.caprica.vlcj.media.Media
 import uk.co.caprica.vlcj.media.MediaEventAdapter
@@ -54,9 +57,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter
 import uk.co.caprica.vlcj.player.component.CallbackMediaPlayerComponent
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
-import java.io.IOException
 import java.nio.file.Path
-import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -79,27 +80,24 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         }
     }
 
-    val component: ComposeMediaPlayerComponent
-
     //    val mediaPlayerFactory = MediaPlayerFactory(
 //        "--video-title=vlcj video output",
 //        "--no-snapshot-preview",
 //        "--intf=dummy",
 //        "-v"
 //    )
-    val player: EmbeddedMediaPlayer
 
-    init {
-        createPlayerLock.withLock {
-            component = run {
-                object : ComposeMediaPlayerComponent("-v") { //"-vv", "--avcodec-hw", "none"
-                }
-            }
-            player = component.mediaPlayer()
-        }
+    private val factory = MediaPlayerFactory("-v")
+
+    val player: EmbeddedMediaPlayer = createPlayerLock.withLock {
+        factory
+            .mediaPlayers()
+            .newEmbeddedMediaPlayer()
     }
-
-    var bitmap: ImageBitmap by component::composeImage
+    val surface = SkiaBitmapVideoSurface().apply {
+        player.videoSurface().set(this) // 只能 attach 一次
+        attach(player)
+    }
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
     override fun stopImpl() {
@@ -134,12 +132,6 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     ) : Data(videoSource, videoData, releaseResource)
 
     override suspend fun openSource(source: VideoSource<*>): VlcjData {
-//        if (source !is FileVideoSource) {
-//            throw VideoSourceOpenException(
-//                OpenFailures.UNSUPPORTED_VIDEO_SOURCE,
-//                IllegalStateException("Unsupported video source: $source")
-//            )
-//        }
         if (source is HttpStreamingVideoSource) {
             return VlcjData(
                 source,
@@ -182,7 +174,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun closeImpl() {
-        component.release()
+        player.release()
         lastMedia = null
     }
 
@@ -201,7 +193,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             player.controls().stop()
         }
         withContext(Dispatchers.Main) {
-            bitmap = ImageBitmap(1, 1) // 0, 0 会导致异常
+            surface.clearBitmap()
         }
     }
 
@@ -242,12 +234,12 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         player.audio().setVolume(volume.times(100).roundToInt())
     }
 
-    override fun volumeUp() {
-        setVolume(volume.value + 0.05f)
+    override fun volumeUp(value: Float) {
+        setVolume(volume.value + value)
     }
 
-    override fun volumeDown() {
-        setVolume(volume.value - 0.05f)
+    override fun volumeDown(value: Float) {
+        setVolume(volume.value - value)
     }
 
     init {
@@ -316,7 +308,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     state.value = PlaybackState.PAUSED
                 }
 
-                override fun stopped(mediaPlayer: MediaPlayer) {
+                override fun finished(mediaPlayer: MediaPlayer) {
                     state.value = PlaybackState.FINISHED
                 }
 
@@ -503,96 +495,76 @@ actual fun VideoPlayer(
     }
 //    DisposableEffect(Unit) { onDispose(mediaPlayer::release) }
 
-    Canvas(modifier) {
-        fun calculateImageSizeAndOffsetToFillFrame(
-            imageWidth: Int,
-            imageHeight: Int,
-            frameWidth: Int,
-            frameHeight: Int
-        ): Pair<IntSize, IntOffset> {
-            // 计算图片和画框的宽高比
-            val imageAspectRatio = imageWidth.toDouble() / imageHeight.toDouble()
-
-            // 初始化最终的宽度和高度
-            val finalWidth: Int = frameWidth
-            val finalHeight: Int = (frameWidth / imageAspectRatio).toInt()
-            if (finalHeight > frameHeight) {
-                // 如果高度超出了画框的高度，那么就使用高度来计算宽度
-                val finalHeight2 = frameHeight
-                val finalWidth2 = (frameHeight * imageAspectRatio).toInt()
-                return Pair(IntSize(finalWidth2, finalHeight2), IntOffset((frameWidth - finalWidth2) / 2, 0))
-            }
-
-            // 计算左上角的偏移量
-            val offsetX = 0
-            val offsetY = (frameHeight - finalHeight) / 2
-
-            return Pair(IntSize(finalWidth, finalHeight), IntOffset(offsetX, offsetY))
-        }
-
-        val bitmap = playerState.bitmap
-        val (dstSize, dstOffset) = calculateImageSizeAndOffsetToFillFrame(
-            bitmap.width, bitmap.height,
-            size.width.toInt(), size.height.toInt(),
-        )
-        drawImage(playerState.bitmap, dstSize = dstSize, dstOffset = dstOffset, filterQuality = FilterQuality.High)
+    val frameSizeCalculator = remember {
+        FrameSizeCalculator()
     }
-
-//    SwingPanel(
-//        factory = {
-//            playerState.component
-//        },
-//        background = Color.Transparent,
-//        modifier = modifier.fillMaxSize()
-//    )
-//    val surface = playerState.component.videoSurfaceComponent()
-//
-//    // 转发鼠标事件到 Compose
-//    DisposableEffect(surface) {
-//        val listener = object : MouseAdapter() {
-//            override fun mouseClicked(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mousePressed(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mouseReleased(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mouseEntered(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mouseExited(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mouseDragged(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mouseMoved(e: MouseEvent) = dispatchToCompose(e)
-//            override fun mouseWheelMoved(e: MouseWheelEvent) = dispatchToCompose(e)
-//
-//            fun dispatchToCompose(e: MouseEvent) {
-//                playerState.component.parent.dispatchEvent(e)
-//            }
-//        }
-//        surface.addMouseListener(listener)
-//        surface.addMouseMotionListener(listener)
-//        onDispose {
-//            surface.removeMouseListener(listener)
-//            surface.removeMouseMotionListener(listener)
-//        }
-//    }
-
-    // 转发键盘事件到 Compose
-//    DisposableEffect(surface) {
-//        val listener = object : KeyAdapter() {
-//            override fun keyPressed(p0: KeyEvent) = dispatchToCompose(p0)
-//            override fun keyReleased(p0: KeyEvent) = dispatchToCompose(p0)
-//            override fun keyTyped(p0: KeyEvent) = dispatchToCompose(p0)
-//            fun dispatchToCompose(e: KeyEvent) {
-//                playerState.component.parent.dispatchEvent(e)
-//            }
-//        }
-//        surface.addKeyListener(listener)
-//        onDispose {
-//            surface.removeKeyListener(listener)
-//        }
-//    }
+    Canvas(modifier) {
+        val bitmap = playerState.surface.bitmap ?: return@Canvas
+        frameSizeCalculator.calculate(
+            IntSize(bitmap.width, bitmap.height),
+            Size(size.width, size.height),
+        )
+        drawImage(
+            bitmap,
+            dstSize = frameSizeCalculator.dstSize,
+            dstOffset = frameSizeCalculator.dstOffset,
+            filterQuality = FilterQuality.High,
+        )
+    }
 }
 
-private fun isMacOS(): Boolean {
-    val os = System
-        .getProperty("os.name", "generic")
-        .lowercase(Locale.ENGLISH)
-    return "mac" in os || "darwin" in os
+private class FrameSizeCalculator {
+    private var lastImageSize: IntSize = IntSize.Zero
+    private var lastFrameSize: Size = Size.Zero
+
+    // no boxing
+    var dstSize: IntSize = IntSize.Zero
+    var dstOffset: IntOffset = IntOffset.Zero
+
+    private fun calculateImageSizeAndOffsetToFillFrame(
+        imageWidth: Int,
+        imageHeight: Int,
+        frameWidth: Float,
+        frameHeight: Float
+    ) {
+        // 计算图片和画框的宽高比
+        val imageAspectRatio = imageWidth.toFloat() / imageHeight.toFloat()
+
+        // 初始化最终的宽度和高度
+        val finalWidth = frameWidth
+        val finalHeight = frameWidth / imageAspectRatio
+        if (finalHeight > frameHeight) {
+            // 如果高度超出了画框的高度，那么就使用高度来计算宽度
+            val finalHeight2 = frameHeight
+            val finalWidth2 = frameHeight * imageAspectRatio
+            dstSize = IntSize(finalWidth2.roundToInt(), finalHeight2.roundToInt())
+            dstOffset = IntOffset(((frameWidth - finalWidth2) / 2).roundToInt(), 0)
+            return
+        }
+
+        // 计算左上角的偏移量
+        val offsetX = 0
+        val offsetY = (frameHeight - finalHeight) / 2
+
+        dstSize = IntSize(finalWidth.roundToInt(), finalHeight.roundToInt())
+        dstOffset = IntOffset(offsetX, offsetY.roundToInt())
+    }
+
+    fun calculate(
+        imageSize: IntSize,
+        frameSize: Size,
+    ) {
+        // 缓存上次计算结果, 因为这个函数会每帧绘制都调用
+        if (lastImageSize == imageSize && lastFrameSize == frameSize) {
+            return
+        }
+        calculateImageSizeAndOffsetToFillFrame(
+            imageWidth = imageSize.width, imageHeight = imageSize.height,
+            frameWidth = frameSize.width, frameHeight = frameSize.height,
+        )
+        lastImageSize = imageSize
+        lastFrameSize = frameSize
+    }
 }
 
 // add contract

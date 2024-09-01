@@ -70,6 +70,10 @@ public class torrent_handle_t {
     return anitorrentJNI.torrent_handle_t_is_valid(swigCPtr, this);
   }
 
+  public int get_state() {
+    return anitorrentJNI.torrent_handle_t_get_state(swigCPtr, this);
+  }
+
   public void post_status_updates() {
     anitorrentJNI.torrent_handle_t_post_status_updates(swigCPtr, this);
   }

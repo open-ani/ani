@@ -53,6 +53,10 @@ public class session_t {
     anitorrentJNI.session_t_start(swigCPtr, this, session_settings_t.getCPtr(settings), settings);
   }
 
+  public void apply_settings(session_settings_t settings) {
+    anitorrentJNI.session_t_apply_settings(swigCPtr, this, session_settings_t.getCPtr(settings), settings);
+  }
+
   public void resume() {
     anitorrentJNI.session_t_resume(swigCPtr, this);
   }

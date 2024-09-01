@@ -28,6 +28,7 @@ import me.him188.ani.datasources.api.paging.Paged
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.api.source.MediaSourceFactory
@@ -53,10 +54,9 @@ class AcgRipMediaSource(
     config: MediaSourceConfig,
 ) : TopicMediaSource() {
     class Factory : MediaSourceFactory {
-        override val mediaSourceId: String get() = ID
+        override val factoryId: FactoryId get() = FactoryId(ID)
         override val info: MediaSourceInfo get() = INFO
-
-        override fun create(config: MediaSourceConfig): MediaSource = AcgRipMediaSource(config)
+        override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource = AcgRipMediaSource(config)
     }
 
     companion object {
@@ -64,7 +64,8 @@ class AcgRipMediaSource(
         val INFO = MediaSourceInfo(
             "ACG.RIP",
             websiteUrl = "https://acg.rip",
-            imageUrl = "https://acg.rip/favicon.ico",
+            iconUrl = "https://acg.rip/favicon.ico",
+            iconResourceId = "acg-rip.png",
         )
     }
 

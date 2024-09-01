@@ -236,6 +236,7 @@ fun EpisodeDetails(
                             var showMediaSelector by rememberSaveable { mutableStateOf(false) }
                             PlayingEpisodeItemDefaults.MediaSource(
                                 media = originalMedia,
+                                mediaSourceInfo = videoStatistics.playingMediaSourceInfo,
                                 isLoading = videoStatistics.mediaSourceLoading,
                                 onClick = { showMediaSelector = !showMediaSelector },
                             )

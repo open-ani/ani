@@ -57,6 +57,7 @@ public class anitorrentJNI {
   public final static native int torrent_handle_t_kReloadFileSuccess_get();
   public final static native int torrent_handle_t_reload_file(long jarg1, torrent_handle_t jarg1_);
   public final static native boolean torrent_handle_t_is_valid(long jarg1, torrent_handle_t jarg1_);
+  public final static native int torrent_handle_t_get_state(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_post_status_updates(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_post_save_resume(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_post_file_progress(long jarg1, torrent_handle_t jarg1_);
@@ -110,6 +111,8 @@ public class anitorrentJNI {
   public final static native void delete_event_listener_t(long jarg1);
   public final static native void event_listener_t_on_checked(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_checkedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2);
+  public final static native void event_listener_t_on_metadata_received(long jarg1, event_listener_t jarg1_, long jarg2);
+  public final static native void event_listener_t_on_metadata_receivedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_torrent_added(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_torrent_addedSwigExplicitevent_listener_t(long jarg1, event_listener_t jarg1_, long jarg2);
   public final static native void event_listener_t_on_save_resume_data(long jarg1, event_listener_t jarg1_, long jarg2, long jarg3, torrent_resume_data_t jarg3_);
@@ -163,6 +166,7 @@ public class anitorrentJNI {
   public final static native void new_event_listener_t_director_connect(new_event_listener_t obj, long cptr, boolean mem_own, boolean weak_global);
   public final static native void new_event_listener_t_change_ownership(new_event_listener_t obj, long cptr, boolean take_or_release);
   public final static native void session_t_start(long jarg1, session_t jarg1_, long jarg2, session_settings_t jarg2_);
+  public final static native void session_t_apply_settings(long jarg1, session_t jarg1_, long jarg2, session_settings_t jarg2_);
   public final static native void session_t_resume(long jarg1, session_t jarg1_);
   public final static native boolean session_t_start_download(long jarg1, session_t jarg1_, long jarg2, torrent_handle_t jarg2_, long jarg3, torrent_add_info_t jarg3_, String jarg4);
   public final static native void session_t_release_handle(long jarg1, session_t jarg1_, long jarg2, torrent_handle_t jarg2_);
@@ -178,6 +182,9 @@ public class anitorrentJNI {
 
   public static void SwigDirector_event_listener_t_on_checked(event_listener_t jself, long handle_id) {
     jself.on_checked(handle_id);
+  }
+  public static void SwigDirector_event_listener_t_on_metadata_received(event_listener_t jself, long handle_id) {
+    jself.on_metadata_received(handle_id);
   }
   public static void SwigDirector_event_listener_t_on_torrent_added(event_listener_t jself, long handle_id) {
     jself.on_torrent_added(handle_id);

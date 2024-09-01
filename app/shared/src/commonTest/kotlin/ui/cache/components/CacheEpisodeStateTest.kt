@@ -66,6 +66,7 @@ class CacheEpisodeStateTest {
             cacheId = "1",
             sort = EpisodeSort(sort),
             displayName = displayName,
+            creationTime = 100,
             screenShots = stateOf(emptyList()),
             stats = stateOf(
                 CacheEpisodeState.Stats(

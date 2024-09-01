@@ -112,6 +112,9 @@ abstract class MediaCacheManager(
     }
 
     companion object {
+        /**
+         * 本地数据源不允许有多个示例. 必须是 Factory:MediaSource:Instance = 1:1:1 的关系.
+         */
         const val LOCAL_FS_MEDIA_SOURCE_ID = "local-file-system"
     }
 }

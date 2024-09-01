@@ -22,8 +22,8 @@ import me.him188.ani.app.tools.torrent.AbstractTorrentEngine
 import me.him188.ani.app.tools.torrent.TorrentEngineConfig
 import me.him188.ani.app.tools.torrent.TorrentEngineType
 import me.him188.ani.app.torrent.anitorrent.AnitorrentDownloaderFactory
+import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader
 import me.him188.ani.app.torrent.api.HttpFileDownloader
-import me.him188.ani.app.torrent.api.TorrentDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -62,7 +62,7 @@ class AnitorrentEngine(
     private val saveDir: SystemPath,
     parentCoroutineContext: CoroutineContext,
     private val anitorrentFactory: TorrentDownloaderFactory = AnitorrentDownloaderFactory()
-) : AbstractTorrentEngine<TorrentDownloader, AnitorrentConfig>(
+) : AbstractTorrentEngine<AnitorrentTorrentDownloader<*, *>, AnitorrentConfig>(
     type = TorrentEngineType.Anitorrent,
     config = config,
     parentCoroutineContext = parentCoroutineContext,
@@ -101,7 +101,7 @@ class AnitorrentEngine(
     override suspend fun newInstance(
         config: AnitorrentConfig,
         proxySettings: MediaSourceProxySettings
-    ): TorrentDownloader {
+    ): AnitorrentTorrentDownloader<*, *> {
         if (!isSupported.first()) {
             logger.error { "Anitorrent is disabled because it is not built. Read `/torrent/anitorrent/README.md` for more information." }
             throw UnsupportedOperationException("AnitorrentEngine is not supported")
@@ -109,15 +109,22 @@ class AnitorrentEngine(
         return anitorrentFactory.createDownloader(
             rootDataDirectory = saveDir,
             client.asHttpFileDownloader(),
-            TorrentDownloaderConfig(
-                peerFingerprint = computeTorrentFingerprint(),
-                userAgent = computeTorrentUserAgent(),
-                downloadRateLimitBytes = config.downloadRateLimit.toLibtorrentRate(),
-                uploadRateLimitBytes = config.uploadRateLimit.toLibtorrentRate(),
-            ),
+            config.toTorrentDownloaderConfig(),
             parentCoroutineContext = scope.coroutineContext,
         )
     }
+
+    override suspend fun AnitorrentTorrentDownloader<*, *>.applyConfig(config: AnitorrentConfig) {
+        this.applyConfig(config.toTorrentDownloaderConfig())
+    }
+
+    private fun AnitorrentConfig.toTorrentDownloaderConfig() =
+        TorrentDownloaderConfig(
+            peerFingerprint = computeTorrentFingerprint(),
+            userAgent = computeTorrentUserAgent(),
+            downloadRateLimitBytes = downloadRateLimit.toLibtorrentRate(),
+            uploadRateLimitBytes = uploadRateLimit.toLibtorrentRate(),
+        )
 }
 
 private fun FileSize.toLibtorrentRate(): Int = when (this) {

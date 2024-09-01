@@ -1,20 +1,20 @@
 package me.him188.ani.danmaku.api
 
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Test
 import kotlin.random.Random
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.fail
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-internal class DanmakuCollectionAlgorithmTest {
+internal class DanmakuSessionAlgorithmTest {
 
     private fun create(
         sequence: Sequence<Danmaku>,
         repopulateThreshold: Duration = 3.seconds,
-        repopulateDistance: Duration = 2.seconds
+        repopulateDistance: Duration = 2.seconds,
     ): DanmakuSessionAlgorithm {
         return DanmakuSessionAlgorithm(
             DanmakuSessionFlowState(
@@ -65,7 +65,15 @@ internal class DanmakuCollectionAlgorithmTest {
 
 
     private fun dummyDanmaku(timeSeconds: Double, text: String = "$timeSeconds") =
-        Danmaku(text, "dummy", (timeSeconds * 1000L).toLong(), text, DanmakuLocation.NORMAL, text, 0)
+        Danmaku(
+            text,
+            "dummy",
+            (timeSeconds * 1000L).toLong(),
+            text,
+            DanmakuLocation.NORMAL,
+            text,
+            0
+        )
 
     private fun dummyDanmaku(timeSeconds: Long, text: String = "$timeSeconds") =
         Danmaku(text, "dummy", timeSeconds * 1000, text, DanmakuLocation.NORMAL, text, 0)
@@ -360,7 +368,10 @@ internal class DanmakuCollectionAlgorithmTest {
             repopulateThreshold = 3.seconds,
             repopulateDistance = 2.seconds,
         )
-        assertEquals(listOf(7.0, 8.0), instance.at(8.seconds).tickRepopulateTime()) // 初次收集 repopulate
+        assertEquals(
+            listOf(7.0, 8.0),
+            instance.at(8.seconds).tickRepopulateTime()
+        ) // 初次收集 repopulate
         assertEquals(listOf(3.0, 4.0), instance.at(4.5.seconds).tickRepopulateTime())
     }
 
