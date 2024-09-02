@@ -40,7 +40,6 @@ data class StyledDanmaku(
             style.styleForText(
                 color = if (enableColor) {
                     Color(0xFF_00_00_00L or presentation.danmaku.color.toUInt().toLong())
-                        .copy(alpha = style.alpha)
                 } else Color.White,
             ),
         ),
