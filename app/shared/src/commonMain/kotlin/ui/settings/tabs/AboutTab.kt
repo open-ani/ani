@@ -24,6 +24,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -46,13 +48,11 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.isInDebugMode
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.profile.AniHelpSection
 import me.him188.ani.app.ui.profile.DebugInfo
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.utils.platform.annotations.TestOnly
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.mp.KoinPlatform
@@ -122,7 +122,7 @@ private const val MIKAN = "https://mikanime.tv/"
 @OptIn(DelicateCoroutinesApi::class, TestOnly::class)
 @Composable
 fun AboutTab(
-    vm: AboutTabViewModel = rememberViewModel { AboutTabViewModel() },
+    vm: AboutTabViewModel = viewModel { AboutTabViewModel() },
     modifier: Modifier = Modifier,
     onTriggerDebugMode: () -> Unit = { },
 ) {

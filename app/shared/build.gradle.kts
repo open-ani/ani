@@ -83,6 +83,10 @@ kotlin {
         api(compose.material3)
         api(compose.materialIconsExtended)
         api(compose.runtime)
+        api(libs.compose.lifecycle.viewmodel.compose)
+        api(libs.compose.lifecycle.runtime.compose)
+        api(libs.compose.navigation.compose)
+        api(libs.compose.navigation.runtime)
         implementation(compose.components.resources)
         implementation(libs.reorderable)
 
@@ -115,9 +119,6 @@ kotlin {
         api(libs.coil.network.ktor2)
         api(libs.datastore.core) // Data Persistence
         api(libs.datastore.preferences.core) // Preferences
-        api(libs.precompose) // Navigator
-        api(libs.precompose.koin) // Navigator
-        api(libs.precompose.viewmodel) // Navigator
         implementation(libs.androidx.room.runtime.get().toString()) {
             exclude("org.jetbrains.kotlinx", "atomicfu")
         } // multi-platform database
@@ -156,6 +157,7 @@ kotlin {
         api(libs.androidx.appcompat)
         api(libs.androidx.media)
         api(libs.androidx.core.ktx)
+        api(libs.androidx.activity.compose)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
 

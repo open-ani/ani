@@ -56,6 +56,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
@@ -65,6 +69,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -80,7 +85,6 @@ import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -99,9 +103,6 @@ import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import moe.tlaster.precompose.lifecycle.Lifecycle
-import moe.tlaster.precompose.navigation.BackHandler
 
 
 /**
@@ -133,7 +134,7 @@ private fun EpisodeSceneContent(
     val navigator = LocalNavigator.current
     BackHandler {
         vm.stopPlaying()
-        navigator.navigator.goBack()
+        navigator.popBackStack()
     }
 
     // 按返回退出全屏
@@ -520,10 +521,8 @@ private fun EpisodeVideo(
     val context by rememberUpdatedState(LocalContext.current)
 
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
-    OnLifecycleEvent {
-        if (it == Lifecycle.State.Active) {
-            videoControllerState.toggleFullVisible(false) // 每次切换全屏后隐藏
-        }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        videoControllerState.toggleFullVisible(false) // 每次切换全屏后隐藏
     }
     val videoDanmakuState = vm.danmaku
 
@@ -593,10 +592,6 @@ private fun EpisodeVideo(
             )
         },
         configProvider = remember(vm) { { vm.videoScaffoldConfig } },
-        modifier = modifier
-            .fillMaxWidth().background(Color.Black)
-            .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
-        maintainAspectRatio = maintainAspectRatio,
         onClickScreenshot = {
             val currentPositionMillis = vm.playerState.currentPositionMillis.value
             val min = currentPositionMillis / 60000
@@ -614,10 +609,10 @@ private fun EpisodeVideo(
                 enabled = false,
             )
         },
+        progressSliderState = progressSliderState,
         mediaSelectorPresentation = vm.mediaSelectorPresentation,
         mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
         episodeSelectorState = vm.episodeSelectorState,
-        progressSliderState = progressSliderState,
         mediaSourceInfoProvider = vm.mediaSourceInfoProvider,
         leftBottomTips = {
             AnimatedVisibility(
@@ -632,6 +627,10 @@ private fun EpisodeVideo(
                 )
             }
         },
+        modifier = modifier
+            .fillMaxWidth().background(Color.Black)
+            .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
+        maintainAspectRatio = maintainAspectRatio,
     )
 }
 
@@ -687,12 +686,11 @@ private fun EpisodeCommentColumn(
 @Composable
 private fun AutoPauseEffect(viewModel: EpisodeViewModel) {
     var pausedVideo by rememberSaveable { mutableStateOf(true) } // live after configuration change
-    val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
+    if (LocalIsPreviewing.current) return
 
     val autoPauseTasker = rememberUiMonoTasker()
     OnLifecycleEvent {
-        if (isPreviewing) return@OnLifecycleEvent
-        if (it == Lifecycle.State.InActive || it == Lifecycle.State.Destroyed) {
+        if (it == Lifecycle.Event.ON_STOP) {
             if (viewModel.playerState.state.value.isPlaying) {
                 pausedVideo = true
                 autoPauseTasker.launch {
@@ -704,12 +702,10 @@ private fun AutoPauseEffect(viewModel: EpisodeViewModel) {
                 // 如果不是正在播放, 则不操作暂停, 当下次切回前台时, 也不要恢复播放
                 pausedVideo = false
             }
-        } else if (it == Lifecycle.State.Active && pausedVideo) {
+        } else if (it == Lifecycle.Event.ON_START && pausedVideo) {
             autoPauseTasker.launch {
                 viewModel.playerState.resume() // 切回前台自动恢复, 当且仅当之前是自动暂停的
             }
-            pausedVideo = false
-        } else {
             pausedVideo = false
         }
     }
@@ -720,7 +716,7 @@ private fun AutoPauseEffect(viewModel: EpisodeViewModel) {
 private fun PreviewEpisodePageDesktop() {
     ProvideCompositionLocalsForPreview {
         val context = LocalContext.current
-        val vm = rememberViewModel<EpisodeViewModel> {
+        val vm = viewModel<EpisodeViewModel> {
             EpisodeViewModel(
                 initialSubjectId = 0,
                 initialEpisodeId = 0,

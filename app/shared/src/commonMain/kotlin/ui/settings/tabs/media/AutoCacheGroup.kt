@@ -15,9 +15,9 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import me.him188.ani.app.navigation.AniNavigator
-import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.data.models.preference.MediaCacheSettings
+import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.RowButtonItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
@@ -26,22 +26,20 @@ import kotlin.math.roundToInt
 
 @Composable
 internal fun SettingsScope.AutoCacheGroup(
-    vm: MediaSettingsViewModel,
-    navigator: AniNavigator
+    mediaCacheSettingsState: SettingsState<MediaCacheSettings>,
 ) {
     Group(
         title = { Text("自动缓存") },
         description = { Text("自动缓存 \"在看\" 分类中未观看的剧集") },
     ) {
-        val mediaCacheSettings by vm.mediaCacheSettings
+        val mediaCacheSettings by mediaCacheSettingsState
         SwitchItem(
             checked = mediaCacheSettings.enabled,
             onCheckedChange = {
-                vm.updateMediaCacheSettings(mediaCacheSettings.copy(enabled = it))
+                mediaCacheSettingsState.update(mediaCacheSettings.copy(enabled = it))
             },
             title = { Text("启用自动缓存") },
             description = { Text("启用后下面的设置才有效") },
-            modifier = Modifier.placeholder(vm.mediaCacheSettings.loading),
         )
 
         HorizontalDividerItem()
@@ -64,10 +62,9 @@ internal fun SettingsScope.AutoCacheGroup(
             Slider(
                 value = maxCount,
                 onValueChange = { maxCount = it },
-                Modifier.placeholder(vm.mediaCacheSettings.loading),
                 valueRange = 0f..10f,
                 onValueChangeFinished = {
-                    vm.updateMediaCacheSettings(mediaCacheSettings.copy(maxCountPerSubject = maxCount.roundToInt()))
+                    mediaCacheSettingsState.update(mediaCacheSettings.copy(maxCountPerSubject = maxCount.roundToInt()))
                 },
                 steps = 9,
             )
@@ -82,15 +79,9 @@ internal fun SettingsScope.AutoCacheGroup(
             checked = mostRecentOnly,
             onCheckedChange = {
                 mostRecentOnly = it
-                vm.updateMediaCacheSettings(mediaCacheSettings.copy(mostRecentOnly = it))
+                mediaCacheSettingsState.update(mediaCacheSettings.copy(mostRecentOnly = it))
             },
             title = { Text("仅缓存最近看过的番剧") },
-            Modifier.placeholder(vm.mediaCacheSettings.loading),
-//            description = {
-//                if (!mostRecentOnly) {
-//                    Text("当前设置: 总是缓存 \"在看\" 分类中的全部番剧")
-//                }
-//            },
         )
 
         AnimatedVisibility(mostRecentOnly) {
@@ -105,9 +96,8 @@ internal fun SettingsScope.AutoCacheGroup(
                     Slider(
                         value = mostRecentCount,
                         onValueChange = { mostRecentCount = it },
-                        Modifier.placeholder(vm.mediaCacheSettings.loading),
                         onValueChangeFinished = {
-                            vm.updateMediaCacheSettings(mediaCacheSettings.copy(mostRecentCount = mostRecentCount.roundToInt()))
+                            mediaCacheSettingsState.update(mediaCacheSettings.copy(mostRecentCount = mostRecentCount.roundToInt()))
                         },
                         valueRange = 0f..30f,
                         steps = 30 - 1,
@@ -118,6 +108,7 @@ internal fun SettingsScope.AutoCacheGroup(
 
         HorizontalDividerItem()
 
+        val navigator = LocalNavigator.current
         RowButtonItem(
             onClick = { navigator.navigateCaches() },
             icon = { Icon(Icons.Rounded.ArrowOutward, null) },

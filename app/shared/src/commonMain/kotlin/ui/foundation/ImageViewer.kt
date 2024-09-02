@@ -21,13 +21,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.annotation.ExperimentalCoilApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.him188.ani.app.imageviewer.zoomable.ZoomableGestureScope
 import me.him188.ani.app.imageviewer.zoomable.rememberZoomableState
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 interface ImageViewerHandler {
     val imageModel: StateFlow<Any?>

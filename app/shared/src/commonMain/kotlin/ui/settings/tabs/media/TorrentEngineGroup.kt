@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
+import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.datasources.api.topic.FileSize
@@ -17,22 +19,24 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.utils.platform.format1f
 
 @Composable
-internal fun SettingsScope.TorrentEngineGroup(vm: MediaSettingsViewModel) {
+internal fun SettingsScope.TorrentEngineGroup(
+    torrentSettingsState: SettingsState<AnitorrentConfig>
+) {
     Group({ Text("BT 设置") }) {
-        val torrentSettings by vm.torrentSettings
+        val torrentSettings by torrentSettingsState
 
         RateSliderItem(
             torrentSettings.downloadRateLimit,
             onValueChangeFinished = {
-                vm.torrentSettings.update(torrentSettings.copy(downloadRateLimit = it))
+                torrentSettingsState.update(torrentSettings.copy(downloadRateLimit = it))
             },
             title = { Text("下载速度限制") },
         )
 
         Group(
             title = { Text("分享设置") },
-            useThinHeader = true,
             description = { Text("BT 网络依赖用户间分享，你所看的视频均来自其他用户的分享。允许上传，共同维护健康的 BT 分享环境。") },
+            useThinHeader = true,
         ) {
 //            val allowUpload by remember {
 //                derivedStateOf {
@@ -71,7 +75,7 @@ internal fun SettingsScope.TorrentEngineGroup(vm: MediaSettingsViewModel) {
             RateSliderItem(
                 torrentSettings.uploadRateLimit,
                 onValueChangeFinished = {
-                    vm.torrentSettings.update(torrentSettings.copy(uploadRateLimit = it))
+                    torrentSettingsState.update(torrentSettings.copy(uploadRateLimit = it))
                 },
                 title = { Text("上传速度限制") },
             )

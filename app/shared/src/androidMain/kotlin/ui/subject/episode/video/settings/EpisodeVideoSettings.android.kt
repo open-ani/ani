@@ -10,17 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.rememberViewModel
 
 @Preview
 @Composable
 private fun PreviewEpisodeVideoSettings() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoSettings(
-            remember {
-                EpisodeVideoSettingsViewModel()
-            },
+            remember { EpisodeVideoSettingsViewModel() },
         )
     }
 }
@@ -30,9 +28,7 @@ private fun PreviewEpisodeVideoSettings() {
 private fun PreviewEpisodeVideoSettingsSmall() {
     ProvideCompositionLocalsForPreview {
         EpisodeVideoSettings(
-            remember {
-                EpisodeVideoSettingsViewModel()
-            },
+            remember { EpisodeVideoSettingsViewModel() },
         )
     }
 }
@@ -47,7 +43,7 @@ private fun PreviewEpisodeVideoSettingsSideSheet() = ProvideCompositionLocalsFor
             onDismissRequest = { showSettings = false },
         ) {
             EpisodeVideoSettings(
-                rememberViewModel { EpisodeVideoSettingsViewModel() },
+                remember { EpisodeVideoSettingsViewModel() },
                 Modifier.padding(8.dp),
             )
         }

@@ -25,7 +25,7 @@ import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.findActivity
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionElement
 import me.him188.ani.utils.io.deleteRecursively
 import me.him188.ani.utils.io.inSystem
@@ -46,11 +46,11 @@ const val DEFAULT_TORRENT_CACHE_DIR_NAME = "torrent-caches"
 
 class AndroidTorrentCacheViewModel(
     private val context: ContextMP,
-    private val mediaCacheSettings: AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>,
+    private val mediaCacheSettings: SettingsState<MediaCacheSettings>,
     private val permissionManager: PermissionManager,
 ) : AbstractViewModel(), KoinComponent {
     private val cacheManager: MediaCacheManager by inject()
-    
+
     private val defaultTorrentCacheDir by lazy {
         context.filesDir.resolve(DEFAULT_TORRENT_CACHE_DIR_NAME).absolutePath
     }
@@ -77,7 +77,7 @@ class AndroidTorrentCacheViewModel(
     var migrationStatus: MigrationStatus by mutableStateOf(MigrationStatus.Init)
         private set
     private var lastMigrationError: Throwable? = null
-    
+
     /**
      * 获取 [`内部私有存储`][android.content.Context.getFilesDir] 和 [`外部私有存储`][android.content.Context.getExternalFilesDir]
      * 的可用状态, 根据 [MediaCacheSettings.saveDir] 判断当前的的选择，并更新至 [torrentLocationPresentation] 和 [currentSelection] UI 状态。
@@ -191,7 +191,7 @@ class AndroidTorrentCacheViewModel(
             // 即使 BT 引擎的 onTorrentRemoved 被调用，它仍然可能持有文件句柄
             // 在此处额外等待一段时间来确保文件已经关闭
             // 此处人为增加等待是可以的，因为移动 BT 缓存目录是非常不常用的操作
-            delay(10000) 
+            delay(10000)
 
             withContext(Dispatchers.Main) { migrationStatus = MigrationStatus.Cache(null) }
             val prevCachePath = Path(prevPath).inSystem

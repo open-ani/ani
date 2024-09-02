@@ -24,9 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.update.InstallationFailureReason
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.text.toPercentageString
 
 @Composable
@@ -69,7 +69,7 @@ fun UpdateLogoIcon(state: UpdateLogoState) {
 
 @Composable
 fun TextButtonUpdateLogo(
-    state: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() },
+    state: AutoUpdateViewModel = viewModel { AutoUpdateViewModel() },
     modifier: Modifier = Modifier,
 ) {
     SideEffect {

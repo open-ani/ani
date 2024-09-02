@@ -26,14 +26,6 @@ private fun PreviewTab(
 
 @Preview
 @Composable
-private fun PreviewPreferencePage() {
-    ProvideCompositionLocalsForPreview {
-        SettingsPage()
-    }
-}
-
-@Preview
-@Composable
 private fun PreviewPreferenceScope() {
     ProvideCompositionLocalsForPreview {
         SettingsTab {

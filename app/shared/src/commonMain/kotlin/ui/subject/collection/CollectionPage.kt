@@ -69,6 +69,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -81,10 +85,8 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.rememberUiMonoTasker
-import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
@@ -94,8 +96,6 @@ import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.utils.platform.currentTimeMillis
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
-import moe.tlaster.precompose.lifecycle.Lifecycle
 import kotlin.time.Duration.Companion.minutes
 
 
@@ -120,7 +120,7 @@ fun CollectionPage(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val vm = rememberViewModel { MyCollectionsViewModel() }
+    val vm = viewModel { MyCollectionsViewModel() }
     vm.navigator = LocalNavigator.current
 
     val pagerState =
@@ -254,14 +254,12 @@ fun CollectionPage(
             }
 
             val autoUpdateScope = rememberUiMonoTasker()
-            OnLifecycleEvent {
-                if (it == Lifecycle.State.Active) {
-                    autoUpdateScope.launch {
-                        val lastUpdated = collection.cache.lastUpdated.first()
-                        if (currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
-                            collection.isAutoRefreshing = true
-                            pullToRefreshState.startRefresh()
-                        }
+            LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                autoUpdateScope.launch {
+                    val lastUpdated = collection.cache.lastUpdated.first()
+                    if (currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds) {
+                        collection.isAutoRefreshing = true
+                        pullToRefreshState.startRefresh()
                     }
                 }
             }

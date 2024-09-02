@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +22,6 @@ import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.videoplayer.ui.state.SubtitleTrack
 import me.him188.ani.app.videoplayer.ui.state.TrackGroup
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 
 @Stable
 class SubtitleTrackState(
