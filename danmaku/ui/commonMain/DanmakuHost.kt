@@ -60,6 +60,8 @@ fun DanmakuHost(
             coroutineScope {
                 launch {
                     snapshotFlow { screenWidth }.collect { state.hostWidth = it }
+                }
+                launch {
                     snapshotFlow { screenHeight }.debounce(1000 / 30).collect { state.hostHeight = it }
                 }
             }
