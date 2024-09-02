@@ -131,7 +131,7 @@ internal class FloatingDanmaku<T : SizeSpecifiedDanmaku>(
     /**
      * 弹幕在浮动轨道已滚动的距离, 是正数. 单位 px
      *
-     * 例如, 如果弹幕现在在左侧刚被放置, 则等于 `0`.
+     * 例如, 如果弹幕现在在右侧刚被放置, 则等于 `0`.
      * 如果左边已滑倒轨道最左侧, 则等于轨道长度.
      */
     var distanceX: Float = initialDistanceX
