@@ -443,7 +443,7 @@ class DanmakuHostState(
                 val floatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
 
                 var sendTrack: FloatingDanmakuTrack<StyledDanmaku>? = null
-                var maxDanmakuRight = Float.MIN_VALUE
+                var maxDanmakuRight = Float.NEGATIVE_INFINITY
 
                 floatingTrack.forEach { track ->
                     val lastDanmaku = track.getLastDanmaku() ?: kotlin.run {
