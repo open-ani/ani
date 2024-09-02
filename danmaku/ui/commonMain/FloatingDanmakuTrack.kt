@@ -34,8 +34,8 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
      * 无论如何弹幕都不可以放到轨道长度之外.
      */
     override fun canPlace(danmaku: T, placeTimeNanos: Long): Boolean {
-        check(placeTimeNanos >= DanmakuTrack.NOT_PLACED) {
-            "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
+        check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
+            "placeTimeNanos must be NOT_PLACED or non-negative, but had $placeTimeNanos"
         }
         // 弹幕轨道宽度为 0 一定不能放
         if (trackWidth.value <= 0) return false

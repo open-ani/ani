@@ -26,8 +26,8 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     private var currentDanmaku: FixedDanmaku<T>? = null
     
     override fun place(danmaku: T, placeTimeNanos: Long): FixedDanmaku<T> {
-        check(placeTimeNanos >= DanmakuTrack.NOT_PLACED) {
-            "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
+        check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
+            "placeTimeNanos must be NOT_PLACED or non-negative, but had $placeTimeNanos"
         }
         val upcomingDanmaku = FixedDanmaku(danmaku, placeTimeNanos, trackIndex, trackHeight, hostHeight, fromBottom)
         currentDanmaku?.let(onRemoveDanmaku)
@@ -39,8 +39,8 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
         danmaku: T,
         placeTimeNanos: Long
     ): Boolean {
-        check(placeTimeNanos >= DanmakuTrack.NOT_PLACED) {
-            "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
+        check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
+            "placeTimeNanos must be NOT_PLACED or non-negative, but had $placeTimeNanos"
         }
         // 当前如果有正在显示的弹幕则一定不可放置
         if (currentDanmaku != null) return false
