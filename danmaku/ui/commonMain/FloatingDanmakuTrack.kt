@@ -108,6 +108,13 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
         return true
     }
 
+    /**
+     * 获取最后一条弹幕(最新发送的弹幕)
+     */
+    internal fun getLastDanmaku(): FloatingDanmaku<T>? {
+        return danmakuList.lastOrNull()
+    }
+
     override fun toString(): String {
         return "FloatingTrack(index=${trackIndex}, danmakuCount=${danmakuList.size})"
     }

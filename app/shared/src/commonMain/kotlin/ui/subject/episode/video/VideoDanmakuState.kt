@@ -197,7 +197,7 @@ class VideoDanmakuStateImpl(
             try {
                 backgroundScope.launch {
                     // 如果用户此时暂停了视频, 这里就会一直挂起, 所以单独开一个
-                    danmakuHostState.trySend(DanmakuPresentation(danmaku, isSelf = true))
+                    danmakuHostState.send(DanmakuPresentation(danmaku, isSelf = true))
                 }
                 onHideController()
                 withContext(Dispatchers.Main) {

@@ -23,7 +23,10 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     private val onRemoveDanmaku: (FixedDanmaku<T>) -> Unit
 ) : DanmakuTrack<T, FixedDanmaku<T>> {
-    private var currentDanmaku: FixedDanmaku<T>? = null
+    internal var currentDanmaku: FixedDanmaku<T>? = null
+        private set
+    internal var pendingDanmaku: T? = null
+        private set
     
     override fun place(danmaku: T, placeTimeNanos: Long): FixedDanmaku<T> {
         check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
@@ -42,12 +45,23 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
         check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
             "placeTimeNanos must be NOT_PLACED or non-negative, but had $placeTimeNanos"
         }
-        // 当前如果有正在显示的弹幕则一定不可放置
-        if (currentDanmaku != null) return false
+        // 当前如果有正在显示的弹幕或者有等待显示的弹幕则一定不可发送
+        if (currentDanmaku != null || pendingDanmaku != null) return false
         // 未放置的弹幕一定可以放置
         if (placeTimeNanos == DanmakuTrack.NOT_PLACED) return true
         // 当前没有正在显示的弹幕并且弹幕可以被显示
         return frameTimeNanosState.value - placeTimeNanos < durationMillis.value
+    }
+
+    /**
+     * 设置待发送的弹幕. 当前弹幕显示完后一定显示这条弹幕.
+     * 
+     * 如果已经有 pending, 那已有 pending 会立刻替换 current.
+     */
+    internal fun setPending(danmaku: T) {
+        val pending = pendingDanmaku
+        if (pending != null) place(pending)
+        pendingDanmaku = danmaku
     }
 
     override fun clearAll() {
@@ -61,6 +75,12 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
         if (frameTimeNanosState.value - danmakuTime >= durationMillis.value * 1_000_000) {
             onRemoveDanmaku(current)
             currentDanmaku = null
+            
+            val pending = pendingDanmaku
+            if (pending != null) {
+                place(pending)
+                pendingDanmaku = null
+            }
         }
     }
 
