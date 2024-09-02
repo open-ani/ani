@@ -45,10 +45,12 @@ fun DanmakuHost(
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for removal of danmaku
-    LaunchedEffect(true) {
-        while (true) {
-            state.tick()
-            delay(1000 / 10) // 10 fps
+    LaunchedEffect(state.paused) {
+        if (!state.paused) {
+            while (true) {
+                state.tick()
+                delay(1000 / 10) // 10 fps
+            }
         }
     }
 
