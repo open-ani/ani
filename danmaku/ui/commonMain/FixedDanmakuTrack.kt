@@ -17,20 +17,19 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     val fromBottom: Boolean,
     private val frameTimeNanosState: LongState,
     private val trackHeight: IntState,
-    private val hostWidth: IntState,
     private val hostHeight: IntState,
     // 顶部或底部弹幕的显示时间，现在还不能自定义
     private val durationMillis: LongState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    private val onRemoveDanmaku: (PositionedDanmakuState<T>) -> Unit
-) : DanmakuTrack<T> {
-    private var currentDanmaku: FixedDanmaku? = null
+    private val onRemoveDanmaku: (FixedDanmaku<T>) -> Unit
+) : DanmakuTrack<T, FixedDanmaku<T>> {
+    private var currentDanmaku: FixedDanmaku<T>? = null
     
-    override fun place(danmaku: T, placeTimeNanos: Long): PositionedDanmakuState<T> {
-        check(placeTimeNanos >= PositionedDanmakuState.NOT_PLACED) {
+    override fun place(danmaku: T, placeTimeNanos: Long): FixedDanmaku<T> {
+        check(placeTimeNanos >= DanmakuTrack.NOT_PLACED) {
             "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
         }
-        val upcomingDanmaku = FixedDanmaku(danmaku, placeTimeNanos)
+        val upcomingDanmaku = FixedDanmaku(danmaku, placeTimeNanos, trackIndex, trackHeight, hostHeight, fromBottom)
         currentDanmaku?.let(onRemoveDanmaku)
         currentDanmaku = upcomingDanmaku
         return upcomingDanmaku
@@ -40,13 +39,13 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
         danmaku: T,
         placeTimeNanos: Long
     ): Boolean {
-        check(placeTimeNanos >= PositionedDanmakuState.NOT_PLACED) {
+        check(placeTimeNanos >= DanmakuTrack.NOT_PLACED) {
             "cannot set placeTimeNanos to negative since frameTimeNanos is always positive."
         }
         // 当前如果有正在显示的弹幕则一定不可放置
         if (currentDanmaku != null) return false
         // 未放置的弹幕一定可以放置
-        if (placeTimeNanos == PositionedDanmakuState.NOT_PLACED) return true
+        if (placeTimeNanos == DanmakuTrack.NOT_PLACED) return true
         // 当前没有正在显示的弹幕并且弹幕可以被显示
         return frameTimeNanosState.value - placeTimeNanos < durationMillis.value
     }
@@ -65,33 +64,36 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
         }
     }
 
-    @Stable
-    inner class FixedDanmaku(
-        override val danmaku: T,
-        override var placeFrameTimeNanos: Long,
-    ) : PositionedDanmakuState<T>() {
-        override fun calculatePosX(): Float {
-            return (hostWidth.value - danmaku.danmakuWidth.toFloat()) / 2
-        }
+    override fun toString(): String {
+        return "FixedTrack(index=${trackIndex}, " +
+                "placeTime=${currentDanmaku?.placeFrameTimeNanos?.div(1_000_000)})"
+    }
+}
 
-        override fun calculatePosY(): Float {
-            return if (fromBottom) {
-                hostHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()
-            } else {
-                trackIndex * trackHeight.value.toFloat()
-            }
-        }
-        
-        override fun toString(): String {
-            val duration = if (placeFrameTimeNanos == NOT_PLACED) null else {
-                placeFrameTimeNanos..(placeFrameTimeNanos + durationMillis.value)
-            }
-            return "FixedDanmaku(pos=[$x:$y], duration=${duration ?: "NOT_PLACED"})"
+@Stable
+internal class FixedDanmaku<T : SizeSpecifiedDanmaku>(
+    var danmaku: T,
+    var placeFrameTimeNanos: Long,
+    private val trackIndex: Int,
+    private val trackHeight: IntState,
+    private val hostHeight: IntState,
+    private val fromBottom: Boolean,
+) {
+    /**
+     * calculate pos y lazily in ui loop
+     */
+    var y: Float = Float.NaN
+        internal set
+
+    internal fun calculatePosY(): Float {
+        return if (fromBottom) {
+            hostHeight.value - (trackIndex + 1) * trackHeight.value.toFloat()
+        } else {
+            trackIndex * trackHeight.value.toFloat()
         }
     }
 
     override fun toString(): String {
-        return "FixedTrack(index=${trackIndex}, " +
-                "placeTime=${currentDanmaku?.placeFrameTimeNanos?.div(1_000_000)})"
+        return "FixedDanmaku(width=${danmaku.danmakuWidth}, y=$y)"
     }
 }

@@ -74,7 +74,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             while (true) {
                 emit(danmaku())
                 emitted++
-                delay(Random.nextLong(5, 5).milliseconds)
+                delay(Random.nextLong(5, 10).milliseconds)
             }
         }
     }

@@ -38,8 +38,8 @@ fun DanmakuHost(
         state.setUIContext(baseStyle, danmakuTextMeasurer, density)
     }
     
-    // observe screen size changes to calculate track height and track count
-    LaunchedEffect(trackStubMeasurer) { state.observeTrack(trackStubMeasurer) }
+    // observe config changes
+    LaunchedEffect(trackStubMeasurer) { state.observeConfig(trackStubMeasurer) }
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for removal of danmaku
@@ -63,19 +63,32 @@ fun DanmakuHost(
                 }
         }
         
+        // Canvas only subscribes `danmakuUpdateSubscription` and `hostHeight` to re-draw.
         Canvas(
             modifier = Modifier.fillMaxSize()
                 .clipToBounds()
                 .alpha(state.canvasAlpha)
         ) {
-            state.elapsedFrameTimeNanos // subscribe changes
-            for (danmaku in state.presentDanmaku) {
+            state.danmakuUpdateSubscription // subscribe changes
+            val hostWidth = screenWidth
+            
+            for (danmaku in state.presentFloatingDanmaku) {
                 // don't draw uninitialized danmaku
-                if (danmaku.x.isNaN() || danmaku.y.isNaN()) continue
+                if (danmaku.y.isNaN()) continue
                 
                 drawDanmakuText(
                     state = danmaku.danmaku,
-                    screenPosX = danmaku.x, 
+                    screenPosX = hostWidth - danmaku.distanceX, 
+                    screenPosY = danmaku.y
+                )
+            }
+            for (danmaku in state.presentFixedDanmaku) {
+                // don't draw uninitialized danmaku
+                if (danmaku.y.isNaN()) continue
+
+                drawDanmakuText(
+                    state = danmaku.danmaku,
+                    screenPosX = (hostWidth - danmaku.danmaku.danmakuWidth) / 2f,
                     screenPosY = danmaku.y
                 )
             }
@@ -87,7 +100,7 @@ fun DanmakuHost(
             Text("DanmakuHost state: ")
             Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
             Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
-            Text("  presentDanmakuCount: ${state.presentDanmaku.size}")
+            Text("  presentDanmakuCount: ${state.presentFixedDanmaku.size + state.presentFloatingDanmaku.size}")
             HorizontalDivider()
             Text("  floating tracks: ")
             for (track in state.floatingTrack) {

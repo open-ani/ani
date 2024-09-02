@@ -17,9 +17,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
@@ -58,7 +60,8 @@ class DanmakuHostState(
      * 已经过的帧时间, 在 [setPaused] 设置暂停时此帧时间也会暂停
      */
     internal var elapsedFrameTimeNanos by elapsedFrameTimeNanoState
-    // internal val avgFrameTimeNanos = FastLongSumQueue(120)
+    internal var danmakuUpdateSubscription by mutableLongStateOf(0L)
+        private set
 
     /**
      * 弹幕轨道
@@ -69,10 +72,11 @@ class DanmakuHostState(
     
     /**
      * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
-     * 在这里保留一个引用, 方便在 [invalidate] 的时候重新计算所有弹幕位置.
+     * 在这里保留一个引用, 方便在 [invalidatePresentDanmaku] 的时候重新计算所有弹幕位置.
      * 大部分弹幕是按时间排序的, 确保 [removeFirst] 操作能消耗较低的时间.
      */
-    internal val presentDanmaku: MutableList<PositionedDanmakuState<StyledDanmaku>> = mutableListOf()
+    internal val presentFloatingDanmaku: MutableList<FloatingDanmaku<StyledDanmaku>> = mutableListOf()
+    internal val presentFixedDanmaku: MutableList<FixedDanmaku<StyledDanmaku>> = mutableListOf()
     
     fun setUIContext(
         baseStyle: TextStyle,
@@ -83,45 +87,150 @@ class DanmakuHostState(
     }
     
     /**
-     * 监听 轨道数量, 轨道高度 和 弹幕配置项目 的变化
+     * 监听 [DanmakuConfig] 和 [hostHeight] 配置变化
      */
-    internal suspend fun observeTrack(measurer: TextMeasurer) {
-        combine(
-            snapshotFlow { danmakuConfig }.distinctUntilChanged(),
-            snapshotFlow { hostHeight }.distinctUntilChanged()
-        ) { config, height ->
-            val dummyTextLayout = 
-                dummyDanmaku(measurer, uiContext.getBaseStyle(), config.style, "哈哈哈哈").solidTextLayout
-            val verticalPadding = with(uiContext.getDensity()) { (danmakuTrackProperties.verticalPadding * 2).dp.toPx() }
+    @UiThread
+    internal suspend fun observeConfig(measurer: TextMeasurer) {
+        uiContext.await()
+        coroutineScope {
+            /**
+             * 以下配置变更将导致 DanmakuTrack 数量和属性的变化
+             * - [hostHeight] 屏幕高度
+             * - [DanmakuStyle.fontSize] in [DanmakuConfig.style] 弹幕字体大小
+             * - [DanmakuConfig.displayArea] 弹幕显示区域
+             * - [DanmakuConfig.enableTop], [DanmakuConfig.enableBottom] 和 [DanmakuConfig.enableFloating]
+             */
+            launch {
+                var lastFontSize = danmakuConfig.style.fontSize
+                // var lastSafeSeparation = danmakuConfig.safeSeparation
+                // var lastIsDebug = danmakuConfig.isDebug
+                
+                combine(
+                    snapshotFlow { hostHeight },
+                    snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
+                        old.style.fontSize == new.style.fontSize
+                                && old.displayArea == new.displayArea
+                                && old.enableTop == new.enableTop
+                                && old.enableFloating == new.enableFloating
+                                && old.enableBottom == new.enableBottom
+                        
+                    }
+                ) { newHeight, newConfig ->
+                    val dummyTextLayout = dummyDanmaku(
+                        measurer,
+                        uiContext.baseStyle, 
+                        newConfig.style, 
+                        "哈哈哈哈"
+                    ).solidTextLayout
+                    val verticalPadding = with(uiContext.density) { 
+                        (danmakuTrackProperties.verticalPadding * 2).dp.toPx() 
+                    }
 
-            val trackHeight = dummyTextLayout.size.height + verticalPadding
-            val trackCount = height / trackHeight * config.displayArea
-
-            Triple(
-                floor(trackCount).toInt().coerceAtLeast(1),
-                trackHeight.toInt(), /*Pair(trackHeight.toInt(), dummyTextLayout.size.width)*/
-                danmakuConfig,
-            )
-        }
-            .distinctUntilChanged()
-            .collect { (trackCount, trackHeight, config) ->
-                if (trackHeight != this@DanmakuHostState.trackHeight) {
-                    this@DanmakuHostState.trackHeight = trackHeight
+                    val trackHeight = (dummyTextLayout.size.height + verticalPadding).toInt()
+                    val trackCount = floor(newHeight / trackHeight * newConfig.displayArea)
+                        .coerceAtLeast(1f)
+                        .toInt()
+                    
+                    Triple(trackCount, trackHeight, newConfig)
                 }
-                updateTrack(trackCount, config)
+                    .distinctUntilChanged()
+                    .collect { (trackCount, trackHeight, newConfig) ->
+                        if (trackHeight != this@DanmakuHostState.trackHeight) {
+                            this@DanmakuHostState.trackHeight = trackHeight
+                        }
+
+                        updateTrackCount(trackCount, newConfig)
+                        // 如果弹幕字体大小变化了也会导致弹幕重置
+                        if (lastFontSize != newConfig.style.fontSize) {
+                            invalidatePresentDanmaku(elapsedFrameTimeNanos)
+                            lastFontSize = newConfig.style.fontSize
+                        }
+                        danmakuUpdateSubscription ++ // update subscription manually if paused
+                    }
             }
+            /**
+             * 以下变更将导致弹幕重新放置
+             * - [DanmakuConfig.safeSeparation] 弹幕最小间隔
+             * - [DanmakuConfig.isDebug] 是否开启调试模式, 将改变弹幕内容
+             * - 弹幕字体大小已在上面的 flow 中监听, 并且也会导致弹幕重新放置.
+             */
+            launch {
+                snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
+                    old.safeSeparation == new.safeSeparation && old.isDebug == new.isDebug
+                }.collect { newConfig -> 
+                    updateTrackProperties(newConfig)
+                    invalidatePresentDanmaku(elapsedFrameTimeNanos)
+                    danmakuUpdateSubscription ++ // update subscription manually if paused
+                }
+            }
+            /**
+             * 以下变会导致更新 DanmakuTrack 的静态属性
+             * - [DanmakuConfig.speed] 浮动弹幕的速度
+             * - 弹幕最小间隔已在上面的 flow 中监听, 并且也会更新 DanmakuTrack 属性.
+             */
+            launch {
+                snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
+                    old.speed == new.speed
+                }.collect { newConfig ->
+                    updateTrackProperties(newConfig)
+                    danmakuUpdateSubscription ++ // update subscription manually if paused
+                }
+            }
+            /**
+             * 以下变化将仅导致弹幕重新变更样式, 而不用重新计算静态位置
+             * 
+             * - [DanmakuStyle.alpha] in [DanmakuConfig.style]
+             * - [DanmakuStyle.fontWeight] in [DanmakuConfig.style]
+             * - [DanmakuStyle.shadow] in [DanmakuConfig.style]
+             * - [DanmakuStyle.strokeColor] in [DanmakuConfig.style]
+             * - [DanmakuStyle.strokeWidth] in [DanmakuConfig.style]
+             */
+            launch {
+                snapshotFlow { danmakuConfig }
+                    .distinctUntilChanged { old, new ->
+                        old.style.alpha == new.style.alpha &&
+                                old.style.fontWeight == new.style.fontWeight &&
+                                old.style.shadow == new.style.shadow &&
+                                old.style.strokeColor == new.style.strokeColor &&
+                                old.style.strokeWidth == new.style.strokeWidth &&
+                                old.enableColor == new.enableColor
+                    }
+                    .collect { newConfig ->
+                        fun StyledDanmaku.transform(): StyledDanmaku {
+                            return copy(
+                                baseStyle = uiContext.baseStyle,
+                                style = newConfig.style,
+                                enableColor = newConfig.enableColor
+                            )
+                        }
+                        
+                        for (danmaku in presentFloatingDanmaku) danmaku.danmaku = danmaku.danmaku.transform()
+                        for (danmaku in presentFixedDanmaku) danmaku.danmaku = danmaku.danmaku.transform()
+                        danmakuUpdateSubscription ++ // update subscription manually if paused
+                    }
+            }
+            /**
+             * 如果在暂停的时候屏幕高度和宽度有变化, 需要更新一次固定弹幕的位置
+             */
+            launch { 
+                snapshotFlow { hostWidth to hostHeight }.collect {
+                    if (!paused) return@collect
+                    for (danmaku in presentFixedDanmaku) danmaku.y = danmaku.calculatePosY()
+                    danmakuUpdateSubscription ++ // update subscription manually
+                }
+            }
+        }
     }
 
     /**
-     * 更新弹幕轨道信息, 更新完成后调用 [invalidate] 显示新的信息.
+     * 更新弹幕轨道数量, 同时也会更新轨道属性
      */
     @UiThread
-    private suspend fun updateTrack(
-        count: Int, 
-        config: DanmakuConfig,
-    ) {
-        val newFloatingTrackSpeed = with(uiContext.getDensity()) { danmakuConfig.speed.dp.toPx() }
-        val newFloatingTrackSafeSeparation = with(uiContext.getDensity()) { danmakuConfig.safeSeparation.toPx() }
+    private suspend fun updateTrackCount(count: Int, config: DanmakuConfig) {
+        uiContext.await()
+        // updateTrack 时 speed 和 safeSeparation 也可能变化, 也需要更新
+        val newFloatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
+        val newFloatingTrackSafeSeparation = with(uiContext.density) { danmakuConfig.safeSeparation.toPx() }
         floatingTrack.setTrackCountImpl(if (config.enableFloating) count else 0) { index ->
             FloatingDanmakuTrack(
                 trackIndex = index,
@@ -132,24 +241,18 @@ class DanmakuHostState(
                 safeSeparation = newFloatingTrackSafeSeparation,
                 // baseTextLength = floatingBaseTextLengthForSpeed,
                 // speedMultiplier = floatingSpeedMultiplierState,
-                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.danmaku == removed.danmaku } }
+                onRemoveDanmaku = { removed -> presentFloatingDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
-        }
-        floatingTrack.forEach {
-            it.speedPxPerSecond = newFloatingTrackSpeed
-            it.safeSeparation = newFloatingTrackSafeSeparation
-            // it.baseTextLength = floatingBaseTextLengthForSpeed
         }
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
                 trackIndex = index,
                 frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
-                hostWidth = hostWidthState,
                 hostHeight = hostHeightState,
                 fromBottom = false,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.danmaku == removed.danmaku } }
+                onRemoveDanmaku = { removed -> presentFixedDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
         }
         bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
@@ -157,44 +260,97 @@ class DanmakuHostState(
                 trackIndex = index,
                 frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
-                hostWidth = hostWidthState,
                 hostHeight = hostHeightState,
                 fromBottom = true,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> presentDanmaku.removeFirst { it.danmaku == removed.danmaku } }
+                onRemoveDanmaku = { removed -> presentFixedDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
         }
-        invalidate()
+    }
+
+    /**
+     * 更新一些 DanmakuTrack 的一些静态属性, 这些属性不是 State, 需要手动更新
+     * - [FloatingDanmakuTrack.speedPxPerSecond]
+     * - [FloatingDanmakuTrack.safeSeparation]
+     */
+    @UiThread
+    private suspend fun updateTrackProperties(config: DanmakuConfig) {
+        uiContext.await()
+        // updateTrack 时 speed 和 safeSeparation 也可能变化, 也需要更新
+        val newFloatingTrackSpeed = with(uiContext.density) { config.speed.dp.toPx() }
+        val newFloatingTrackSafeSeparation = with(uiContext.density) { config.safeSeparation.toPx() }
+
+        floatingTrack.forEach { 
+            it.safeSeparation = newFloatingTrackSafeSeparation
+            it.speedPxPerSecond = newFloatingTrackSpeed
+        }
+    }
+
+    /**
+     * 重新放置屏幕上弹幕的位置. 这也会导致样式和静态位置重置
+     */
+    @UiThread
+    private suspend fun invalidatePresentDanmaku(currentElapsedFrameTimeNanos: Long) {
+        uiContext.await()
+        val presentFloatingDanmakuCopied = presentFloatingDanmaku.toList()
+        val presentFixedDanmakuCopied = presentFixedDanmaku.toList()
+        
+        val floatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
+        
+        clearPresentDanmaku()
+        
+        presentFixedDanmakuCopied.forEach { trySend(it.danmaku.presentation, it.placeFrameTimeNanos) }
+        presentFloatingDanmakuCopied.forEach { 
+            val placeFrameTimeNanos = currentElapsedFrameTimeNanos - 
+                    ((it.distanceX / floatingTrackSpeed) * 1_000_000_000).toLong()
+            if (placeFrameTimeNanos >= 0) {
+                trySend(it.danmaku.presentation, placeFrameTimeNanos)
+            }
+        }
     }
 
     @UiThread
     internal suspend fun interpolateFrameLoop() {
-        var currentFrameTimeNanos = withFrameNanos {
-            // 使用了这一帧来获取时间, 需要补偿平均帧时间
-            // elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
-            it
-        }
+        uiContext.await()
+        coroutineScope { 
+            var currentFloatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
+            
+            launch { 
+                snapshotFlow { danmakuConfig.speed }.collect { 
+                    currentFloatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
+                }
+            }
+            
+            launch {
+                var currentFrameTimeNanos = withFrameNanos {
+                    // 使用了这一帧来获取时间, 需要补偿平均帧时间
+                    // elapsedFrameTimeNanos += avgFrameTimeNanos.avg()
+                    it
+                }
 
-        while (true) {
-            withFrameNanos { nanos ->
-                val delta = nanos - currentFrameTimeNanos
-                
-                elapsedFrameTimeNanos += delta
-                // avgFrameTimeNanos += delta
-                currentFrameTimeNanos = nanos
-                
-                for (danmaku in presentDanmaku) {
-                    if (danmaku.placeFrameTimeNanos == PositionedDanmakuState.NOT_PLACED) {
-                        // 没放置的弹幕要立即放置并计算位置
-                        danmaku.placeFrameTimeNanos = elapsedFrameTimeNanos
-                        danmaku.calculatePos()
-                    } else when (danmaku) {
-                        // 浮动弹幕只需要重新计算 X
-                        is FloatingDanmakuTrack.FloatingDanmaku -> 
-                            danmaku.calculatePos(calculateY = false)
-                        // 固定弹幕什么都不用重新计算
-                        is FixedDanmakuTrack.FixedDanmaku -> 
-                            danmaku.calculatePos(calculateX = false, calculateY = false)
+                while (true) {
+                    withFrameNanos { nanos ->
+                        val delta = nanos - currentFrameTimeNanos
+
+                        elapsedFrameTimeNanos += delta
+                        // avgFrameTimeNanos += delta
+                        currentFrameTimeNanos = nanos
+
+                        for (danmaku in presentFloatingDanmaku) {
+                            // calculate y once
+                            if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
+                            // always calculate distance x
+                            danmaku.distanceX += delta / 1_000_000_000f * currentFloatingTrackSpeed
+                        }
+                        for (danmaku in presentFixedDanmaku) {
+                            if (danmaku.placeFrameTimeNanos == DanmakuTrack.NOT_PLACED) {
+                                danmaku.placeFrameTimeNanos = elapsedFrameTimeNanos
+                            }
+                            // calculate y once
+                            if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
+                        }
+                        
+                        danmakuUpdateSubscription ++ // update subscription manually if paused
                     }
                 }
             }
@@ -212,31 +368,49 @@ class DanmakuHostState(
     }
 
     /**
-     * 发送弹幕到屏幕, 并将弹幕的引用加入 [presentDanmaku]
+     * 尝试发送弹幕到屏幕, 如果当前时间点已没有更多轨道可以使用则会发送失败.
+     * 
+     * 对于一定发送成功的版本, 请查看 [DanmakuHostState.send].
+     * 
+     * @return 如果发送成功则返回 true
+     * @see DanmakuHostState.send
      */
+    // 若是浮动弹幕则加入到 [presentFloatingDanmaku], 固定弹幕加到 [presentFixedDanmaku].
     suspend fun trySend(
         danmaku: DanmakuPresentation, 
-        placeFrameTimeNanos: Long = PositionedDanmakuState.NOT_PLACED
-    ): PositionedDanmakuState<StyledDanmaku>? {
-        val track = when (danmaku.danmaku.location) {
-            DanmakuLocation.NORMAL -> floatingTrack
-            DanmakuLocation.TOP -> topTrack
-            DanmakuLocation.BOTTOM -> bottomTrack
-        }
+        placeFrameTimeNanos: Long = DanmakuTrack.NOT_PLACED
+    ) : Boolean {
+        uiContext.await()
         val styledDanmaku = StyledDanmaku(
             presentation = danmaku,
-            measurer = uiContext.getTextMeasurer(),
-            baseStyle = uiContext.getBaseStyle(),
+            measurer = uiContext.textMeasurer,
+            baseStyle = uiContext.baseStyle,
             style = danmakuConfig.style,
             enableColor = danmakuConfig.enableColor,
             isDebug = danmakuConfig.isDebug,
         )
         
-        return withContext(Dispatchers.Main.immediate) { // avoid ConcurrentModificationException
-            val positionedDanmakuState = track.firstNotNullOfOrNull {
-                it.tryPlace(styledDanmaku, placeFrameTimeNanos)
+        return withContext(Dispatchers.Main.immediate) {
+            when (danmaku.danmaku.location) {
+                DanmakuLocation.NORMAL -> {
+                    val floatingDanmaku = floatingTrack.firstNotNullOfOrNull {
+                        it.tryPlace(styledDanmaku, placeFrameTimeNanos)
+                    }
+                    floatingDanmaku?.also(presentFloatingDanmaku::add) != null
+                }
+                DanmakuLocation.TOP -> {
+                    val floatingDanmaku = topTrack.firstNotNullOfOrNull {
+                        it.tryPlace(styledDanmaku, placeFrameTimeNanos)
+                    }
+                    floatingDanmaku?.also(presentFixedDanmaku::add) != null
+                }
+                DanmakuLocation.BOTTOM -> {
+                    val floatingDanmaku = bottomTrack.firstNotNullOfOrNull {
+                        it.tryPlace(styledDanmaku, placeFrameTimeNanos)
+                    }
+                    floatingDanmaku?.also(presentFixedDanmaku::add) != null
+                }
             }
-            positionedDanmakuState?.also(presentDanmaku::add)
         }
     }
 
@@ -265,6 +439,7 @@ class DanmakuHostState(
      */
     suspend fun repopulate(list: List<DanmakuPresentation>, timeOffsetMillis: Long = 0L) {
         if (list.isEmpty()) return
+        uiContext.await()
         
         withContext(Dispatchers.Main.immediate) { clearPresentDanmaku() }
         val currentElapsedFrameTimeNanos = elapsedFrameTimeNanos // take snapshot
@@ -280,7 +455,7 @@ class DanmakuHostState(
             val danmakuDurationMillis = list.last(isFloatingDanmaku).danmaku.playTimeMillis - firstDanmakuTimeMillis
             // 弹幕从左滑倒右边需要的时间(毫秒)
             val trackDurationMillis =
-                hostWidth / with(uiContext.getDensity()) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
+                hostWidth / with(uiContext.density) { danmakuConfig.speed.dp.toPx().toLong() } * 1_000
 
             val firstDanmakuPlaceTimeNanos = if (firstDanmakuTimeMillis <= trackDurationMillis) {
                 // repopulate 了最开始的弹幕, 要向后排列.
@@ -293,9 +468,11 @@ class DanmakuHostState(
             }
 
             floatingDanmaku.forEach { danmaku ->
-                val playTimeNanos = firstDanmakuPlaceTimeNanos +
+                val playFrameTimeNanos = firstDanmakuPlaceTimeNanos +
                         (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis) * 1_000_000L
-                trySend(danmaku, playTimeNanos + timeOffsetMillis * 1_000_000L)
+                if (playFrameTimeNanos >= 0) {
+                    trySend(danmaku, playFrameTimeNanos + timeOffsetMillis * 1_000_000L)
+                }
             }
         }
         
@@ -304,9 +481,11 @@ class DanmakuHostState(
             val lastDanmakuTimeMillis = fixedDanmaku.last().danmaku.playTimeMillis
             // 浮动弹幕倒序 place 进 presentDanmaku 里
             fixedDanmaku.asReversed().forEach { danmaku ->
-                val playTimeNanos = currentElapsedFrameTimeNanos -
+                val playFrameTimeNanos = currentElapsedFrameTimeNanos -
                         (lastDanmakuTimeMillis - danmaku.danmaku.playTimeMillis) * 1_000_000L
-                trySend(danmaku, playTimeNanos + timeOffsetMillis * 1_000_000L)
+                if (playFrameTimeNanos >= 0) {
+                    trySend(danmaku, playFrameTimeNanos + timeOffsetMillis * 1_000_000L)
+                }
             }
         }
     }
@@ -317,23 +496,11 @@ class DanmakuHostState(
         topTrack.forEach { it.clearAll() }
         bottomTrack.forEach { it.clearAll() }
 
-        check(presentDanmaku.size == 0) {
-            "presentDanmaku is not totally cleared after releasing track."
+        check(presentFloatingDanmaku.size == 0) {
+            "presentFloatingDanmaku is not totally cleared after releasing track."
         }
-    }
-
-    /**
-     * 重置当前弹幕样式属性
-     */
-    @UiThread
-    private suspend fun invalidate() {
-        if (presentDanmaku.isEmpty()) return
-        val presentDanmakuCopied = presentDanmaku.toList()
-        
-        clearPresentDanmaku()
-        
-        for (danmaku in presentDanmakuCopied) {
-            trySend(danmaku.danmaku.presentation, danmaku.placeFrameTimeNanos)
+        check(presentFixedDanmaku.size == 0) {
+            "presentFloatingDanmaku is not totally cleared after releasing track."
         }
     }
     
@@ -343,9 +510,9 @@ class DanmakuHostState(
     }
     
     private class UIContext {
-        private lateinit var baseStyle: TextStyle
-        private lateinit var textMeasurer: TextMeasurer
-        private lateinit var density: Density
+        lateinit var baseStyle: TextStyle
+        lateinit var textMeasurer: TextMeasurer
+        lateinit var density: Density
         
         private val setDeferred: CompletableDeferred<Unit> = CompletableDeferred()
         
@@ -356,34 +523,20 @@ class DanmakuHostState(
             
             setDeferred.complete(Unit)
         }
-        
-        suspend fun getBaseStyle(): TextStyle {
-            setDeferred.await()
-            return baseStyle
-        }
 
-        suspend fun getTextMeasurer(): TextMeasurer {
-            setDeferred.await()
-            return textMeasurer
-        }
-
-        suspend fun getDensity(): Density {
-            setDeferred.await()
-            return density
-        }
+        suspend fun await() = setDeferred.await()
     }
 }
 
 /**
- * 发送弹幕, 在发送成功之前一直挂起
- * 
- * TODO: 保证必须优先发送出去, 现在的实现会导致 trySend 和 delay 抢调度
+ * 发送弹幕, 在发送成功之前一直挂起.
  */
+// TODO: 保证必须优先发送出去, 现在的实现会导致 trySend 和 delay 抢调度
 suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
-    while (trySend(danmaku) == null) delay(50)
+    while (!trySend(danmaku)) delay(50)
 }
 
-private fun <D : SizeSpecifiedDanmaku, T : DanmakuTrack<D>> MutableList<T>.setTrackCountImpl(
+private fun <D : SizeSpecifiedDanmaku, TD, T : DanmakuTrack<D, TD>> MutableList<T>.setTrackCountImpl(
     count: Int,
     newInstance: (index: Int) -> T,
 ) {
