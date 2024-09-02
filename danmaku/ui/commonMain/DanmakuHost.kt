@@ -21,8 +21,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.launch
 
 @Composable
 fun DanmakuHost(
@@ -55,12 +57,12 @@ fun DanmakuHost(
         val screenHeight by rememberUpdatedState(constraints.maxHeight)
         
         LaunchedEffect(true) {
-            snapshotFlow { screenWidth to screenHeight }
-                .debounce(1000 / 30)
-                .collect { (width, height) ->
-                    state.hostWidth = width
-                    state.hostHeight = height
+            coroutineScope {
+                launch {
+                    snapshotFlow { screenWidth }.collect { state.hostWidth = it }
+                    snapshotFlow { screenHeight }.debounce(1000 / 30).collect { state.hostHeight = it }
                 }
+            }
         }
         
         // Canvas only subscribes `danmakuUpdateSubscription` and `hostHeight` to re-draw.

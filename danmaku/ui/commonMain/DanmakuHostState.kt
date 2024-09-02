@@ -39,7 +39,7 @@ class DanmakuHostState(
      * DanmakuHost 显示大小, 在显示时修改
      */
     private val hostWidthState = mutableIntStateOf(0)
-    internal var hostWidth by hostWidthState
+    internal var hostWidth by mutableIntStateOf(0)
     private val hostHeightState = mutableIntStateOf(0)
     internal var hostHeight by hostHeightState
 
