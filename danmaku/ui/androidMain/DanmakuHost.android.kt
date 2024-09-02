@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +33,6 @@ import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
-import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
@@ -97,17 +95,24 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             }
             VerticalDivider()
             EpisodeVideoSettings(
-                remember { TestEpisodeVideoSettingsViewModel(config) { config.value = it } },
-                Modifier.width(300.dp)
+                danmakuConfig = config.value,
+                setDanmakuConfig = { config.value = it },
+                modifier = Modifier.width(300.dp),
+                danmakuRegexFilterGroup = { }
             )
         }
     } else {
         Column {
-            DanmakuHost(state, Modifier.fillMaxWidth().height(360.dp),)
+            DanmakuHost(state,
+                Modifier
+                    .fillMaxWidth()
+                    .height(360.dp),)
             HorizontalDivider()
             Box(Modifier.weight(1f)) {
                 EpisodeVideoSettings(
-                    remember { TestEpisodeVideoSettingsViewModel(config) { config.value = it } }
+                    danmakuConfig = config.value, 
+                    setDanmakuConfig = { config.value = it },
+                    danmakuRegexFilterGroup = { }
                 )
             }
         }
