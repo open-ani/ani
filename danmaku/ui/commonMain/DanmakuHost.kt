@@ -49,7 +49,7 @@ fun DanmakuHost(
         if (!state.paused) {
             while (true) {
                 state.tick()
-                delay(1000 / 10) // 10 fps
+                delay(1000)
             }
         }
     }
