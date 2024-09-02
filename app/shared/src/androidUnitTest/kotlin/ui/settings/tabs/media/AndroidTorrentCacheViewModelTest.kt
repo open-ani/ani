@@ -6,7 +6,7 @@ import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.framework.takeSnapshot
-import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.SettingsState
 import org.junit.jupiter.api.Test
 import org.koin.test.KoinTest
 import org.mockito.kotlin.any
@@ -23,7 +23,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private typealias MediaCacheSettingsDelegation =
-        AbstractSettingsViewModel.Settings<MediaCacheSettings, MediaCacheSettings>
+        SettingsState<MediaCacheSettings>
 
 private val INTERNAL_PRIVATE_BASE by lazy { File("/data/data/me.him188.ani/files").absolutePath }
 private val EXTERNAL_PRIVATE_BASE by lazy {

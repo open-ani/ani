@@ -49,13 +49,13 @@ import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.icons.AniIcons
 import me.him188.ani.app.ui.foundation.icons.GithubMark
 import me.him188.ani.app.ui.foundation.icons.QqRoundedOutline
 import me.him188.ani.app.ui.foundation.icons.Telegram
 import me.him188.ani.app.ui.profile.AniHelpNavigator
-import moe.tlaster.precompose.navigation.BackHandler
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -82,7 +82,7 @@ fun WelcomeScene(
     val navigator = LocalNavigator.current
     val goBack = {
         vm.cancelRequest()
-        navigator.goBack()
+        navigator.popBackStack()
     }
     BackHandler(onBack = goBack)
     if (vm.authState.isKnownLoggedIn) {

@@ -7,6 +7,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
@@ -19,7 +20,6 @@ import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.tools.WeekFormatter
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.stateOf
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.coroutines.CoroutineContext
 
 // 在 VM 中创建

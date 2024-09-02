@@ -24,7 +24,7 @@ fun List<DanmakuSession>.merge(): DanmakuSession {
 }
 
 private object EmptyDanmakuSession : DanmakuSession {
-    override val events: Flow<DanmakuEvent> get() = flowOf(DanmakuEvent.Repopulate(emptyList()))
+    override val events: Flow<DanmakuEvent> get() = flowOf(DanmakuEvent.Repopulate(emptyList(), 0))
     override fun requestRepopulate() {
     }
 }

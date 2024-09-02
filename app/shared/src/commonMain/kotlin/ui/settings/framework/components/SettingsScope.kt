@@ -54,8 +54,8 @@ abstract class SettingsScope {
     @Composable
     fun Group(
         title: @Composable () -> Unit,
-        description: (@Composable () -> Unit)? = null,
         modifier: Modifier = Modifier,
+        description: (@Composable () -> Unit)? = null,
         useThinHeader: Boolean = false,
         actions: (@Composable RowScope.() -> Unit)? = null,
         content: @Composable ColumnScope.() -> Unit,

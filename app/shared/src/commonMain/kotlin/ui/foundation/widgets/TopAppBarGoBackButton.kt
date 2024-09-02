@@ -16,7 +16,7 @@ import me.him188.ani.app.navigation.LocalBackHandler
 fun TopAppBarGoBackButton() {
     val handler = LocalBackHandler.current
     TopAppBarGoBackButton {
-        handler.onBackPress()
+        handler.onBackPressed()
     }
 }
 

@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -67,11 +68,12 @@ import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
-import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
+import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.subject.collection.CollectionPage
@@ -103,7 +105,7 @@ fun HomeScene(modifier: Modifier = Modifier) {
 
 @Composable
 private fun UpdateCheckerItem(
-    vm: AutoUpdateViewModel = rememberViewModel { AutoUpdateViewModel() },
+    vm: AutoUpdateViewModel = viewModel { AutoUpdateViewModel() },
 ) {
     SideEffect {
         vm.startAutomaticCheckLatestVersion()
@@ -176,7 +178,7 @@ private fun HomeSceneLandscape(
                     NavigationRail(
                         Modifier.desktopTitleBarPadding().padding(top = 16.dp).weight(1f),
                         header = {
-                            val vm = rememberViewModel { AccountViewModel() }
+                            val vm = viewModel { AccountViewModel() }
                             if (vm.authState.isLoading || vm.authState.isKnownLoggedIn) {
                                 // 加载中时展示 placeholder
                                 AvatarImage(
@@ -261,6 +263,7 @@ private fun HomeSceneLandscape(
 
                 Surface(Modifier.height(16.dp).fillMaxWidth()) {}
 
+                val toaster = LocalToaster.current
                 VerticalPager(pagerState, userScrollEnabled = false) {
                     when (it) {
                         0 -> {
@@ -280,12 +283,15 @@ private fun HomeSceneLandscape(
                         )
 
                         2 -> CacheManagementPage(
-                            rememberViewModel { CacheManagementViewModel(navigator) },
+                            viewModel { CacheManagementViewModel(navigator) },
                             Modifier.fillMaxSize(),
                             contentWindowInsets = insets,
                         )
 
                         3 -> SettingsPage(
+                            viewModel {
+                                SettingsViewModel()
+                            },
                             Modifier.fillMaxSize(),
                             contentWindowInsets = insets,
                         )
@@ -306,7 +312,7 @@ private fun HomeScenePortrait(
     Scaffold(
         modifier.fillMaxSize(),
         bottomBar = {
-            val searchViewModel = rememberViewModel { SearchViewModel() }
+            val searchViewModel = viewModel { SearchViewModel() }
             fun closeSearch() {
                 searchViewModel.searchActive = false
             }

@@ -22,16 +22,22 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Stable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.datastore.preferences.core.mutablePreferencesOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -72,27 +78,24 @@ val LocalIsPreviewing = staticCompositionLocalOf {
     false
 }
 
-@Stable
-private val globalScope = CoroutineScope(SupervisorJob())
-
 @Composable
 fun ProvideCompositionLocalsForPreview(
-    playerStateFactory: PlayerStateFactory = PlayerStateFactory { _, _ ->
-        DummyPlayerState()
-    },
     module: Module.() -> Unit = {},
     colorScheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
     PlatformPreviewCompositionLocalProvider {
+        val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
         runCatching { stopKoin() }
         startKoin {
-            modules(getCommonKoinModule({ context }, globalScope))
+            modules(getCommonKoinModule({ context }, coroutineScope))
             modules(
                 module {
                     single<PlayerStateFactory> {
-                        playerStateFactory
+                        PlayerStateFactory { _, _ ->
+                            DummyPlayerState(coroutineScope.coroutineContext)
+                        }
                     }
                     single<SessionManager> { PreviewSessionManager }
                     factory<VideoSourceResolver> {
@@ -105,7 +108,7 @@ fun ProvideCompositionLocalsForPreview(
                     }
                     single<TorrentManager> {
                         DefaultTorrentManager.create(
-                            globalScope.coroutineContext,
+                            coroutineScope.coroutineContext,
                             get(),
                             baseSaveDir = { Path("preview-cache").inSystem },
                         )
@@ -138,9 +141,22 @@ fun ProvideCompositionLocalsForPreview(
                         }
                     }
                 },
+                LocalLifecycleOwner provides remember {
+                    object : LifecycleOwner {
+                        override val lifecycle: Lifecycle get() = GlobalLifecycle
+                    }
+                },
             ) {
-                AniApp(colorScheme = colorScheme) {
-                    content()
+                val navController = rememberNavController()
+                SideEffect {
+                    aniNavigator.setNavController(navController)
+                }
+                NavHost(navController, startDestination = "test") { // provide ViewModelStoreOwner
+                    composable("test") {
+                        AniApp(colorScheme = colorScheme) {
+                            content()
+                        }
+                    }
                 }
             }
         }
@@ -149,3 +165,25 @@ fun ProvideCompositionLocalsForPreview(
 
 @Composable
 expect fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Unit)
+
+private data object GlobalLifecycle : Lifecycle() {
+
+    private val owner = object : LifecycleOwner {
+        override val lifecycle get() = this@GlobalLifecycle
+    }
+
+    override val currentState get() = State.RESUMED
+
+    override fun addObserver(observer: LifecycleObserver) {
+//        require(observer is DefaultLifecycleObserver) {
+//            "$observer must implement androidx.lifecycle.DefaultLifecycleObserver."
+//        }
+//
+//        // Call the lifecycle methods in order and do not hold a reference to the observer.
+//        observer.onCreate(owner)
+//        observer.onStart(owner)
+//        observer.onResume(owner)
+    }
+
+    override fun removeObserver(observer: LifecycleObserver) {}
+}

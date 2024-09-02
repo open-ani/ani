@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -86,7 +87,6 @@ class EpisodeVideoControllerTest {
 
 
     private val controllerState = VideoControllerState(ControllerVisibility.Invisible)
-    private val playerState = DummyPlayerState()
     private var currentPositionMillis by mutableLongStateOf(0L)
     private val progressSliderState: MediaProgressSliderState = MediaProgressSliderState(
         { currentPositionMillis },
@@ -108,6 +108,10 @@ class EpisodeVideoControllerTest {
     @Composable
     private fun Player(gestureFamily: GestureFamily) {
         ProvideCompositionLocalsForPreview(colorScheme = aniDarkColorTheme()) {
+            val scope = rememberCoroutineScope()
+            val playerState = remember {
+                DummyPlayerState(scope.coroutineContext)
+            }
             EpisodeVideoImpl(
                 playerState = playerState,
                 expanded = true,
@@ -132,12 +136,13 @@ class EpisodeVideoControllerTest {
                         enabled = false,
                     )
                 },
-                leftBottomTips = {},
                 progressSliderState = progressSliderState,
                 mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                 mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
+                leftBottomTips = {},
+                danmakuFrozen = true,
                 gestureFamily = gestureFamily,
             )
         }

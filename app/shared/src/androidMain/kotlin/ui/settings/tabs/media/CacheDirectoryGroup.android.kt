@@ -18,11 +18,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SingleSelectionItem
@@ -76,16 +76,16 @@ private fun renderMigrationStatus(status: AndroidTorrentCacheViewModel.Migration
 private const val FEEDBACK_URL = "https://github.com/open-ani/ani/issues/new?labels=t%3A+bug%2CM&template=bug.yml"
 
 @Composable
-actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
+actual fun SettingsScope.CacheDirectoryGroup(state: CacheDirectoryGroupState) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val cacheVm = rememberViewModel {
-        AndroidTorrentCacheViewModel(context, vm.mediaCacheSettings, vm.permissionManager)
+    val cacheVm = viewModel {
+        AndroidTorrentCacheViewModel(context, state.mediaCacheSettingsState, state.permissionManager)
     }
 
     Group({ Text("存储设置") }) {
-        val loading = vm.mediaSelectorSettings.loading
+        val loading = state.mediaCacheSettingsState.isLoading
 
         LaunchedEffect(key1 = loading) {
             if (!loading) {

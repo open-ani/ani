@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
@@ -66,8 +67,9 @@ private fun PreviewVideoScaffoldImpl(
     expanded: Boolean,
     controllerVisibility: ControllerVisibility = ControllerVisibility.Visible
 ) = ProvideCompositionLocalsForPreview {
+    val scope = rememberCoroutineScope()
     val playerState = remember {
-        DummyPlayerState()
+        DummyPlayerState(scope.coroutineContext)
     }
 
     val controllerState = rememberVideoControllerState(initialVisibility = controllerVisibility)

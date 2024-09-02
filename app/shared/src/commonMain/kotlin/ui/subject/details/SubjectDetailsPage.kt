@@ -59,6 +59,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.ifThen
@@ -84,7 +85,6 @@ import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.subject.rating.EditableRating
-import moe.tlaster.precompose.navigation.BackHandler
 
 @Composable
 fun SubjectDetailsScene(
@@ -97,7 +97,7 @@ fun SubjectDetailsScene(
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val browserNavigator = LocalBrowserNavigator.current
-    
+
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
         EpisodeListDialog(
