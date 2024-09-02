@@ -74,7 +74,7 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
 internal class FixedDanmaku<T : SizeSpecifiedDanmaku>(
     var danmaku: T,
     var placeFrameTimeNanos: Long,
-    private val trackIndex: Int,
+    internal val trackIndex: Int,
     private val trackHeight: IntState,
     private val hostHeight: IntState,
     private val fromBottom: Boolean,
