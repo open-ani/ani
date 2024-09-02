@@ -52,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.coerceIn
@@ -585,43 +584,12 @@ private fun EpisodeVideo(
             }
         },
         danmakuEditor = {
-            val danmakuEditorRequester = remember { Any() }
-
-            /**
-             * 是否设置了暂停
-             */
-            var didSetPaused by rememberSaveable { mutableStateOf(false) }
-            DanmakuEditor(
-                text = videoDanmakuState.danmakuEditorText,
-                onTextChange = { videoDanmakuState.danmakuEditorText = it },
-                isSending = videoDanmakuState.isSending,
-                placeholderText = danmakuTextPlaceholder,
-                onSend = { text ->
-                    videoDanmakuState.danmakuEditorText = ""
-                    videoDanmakuState.sendAsync(
-                        DanmakuInfo(
-                            vm.playerState.getExactCurrentPositionMillis(),
-                            text = text,
-                            color = Color.White.toArgb(),
-                            location = DanmakuLocation.NORMAL,
-                        ),
-                    )
-                },
-                modifier = Modifier.onFocusChanged {
-                    if (it.isFocused) {
-                        if (vm.videoScaffoldConfig.pauseVideoOnEditDanmaku && vm.playerState.state.value.isPlaying) {
-                            didSetPaused = true
-                            vm.playerState.pause()
-                        }
-                        videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
-                    } else {
-                        if (didSetPaused) {
-                            didSetPaused = false
-                            vm.playerState.resume()
-                        }
-                        videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
-                    }
-                }.weight(1f),
+            EpisodeVideoDefaults.DanmakuEditor(
+                videoDanmakuState = videoDanmakuState,
+                danmakuTextPlaceholder = danmakuTextPlaceholder,
+                playerState = vm.playerState,
+                videoScaffoldConfig = vm.videoScaffoldConfig,
+                videoControllerState = videoControllerState,
             )
         },
         configProvider = remember(vm) { { vm.videoScaffoldConfig } },

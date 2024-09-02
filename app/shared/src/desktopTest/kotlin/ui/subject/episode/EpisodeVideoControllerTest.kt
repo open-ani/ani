@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
@@ -30,11 +29,11 @@ import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.framework.AniComposeUiTest
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
-import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -48,6 +47,8 @@ import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POP
 import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
+import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
@@ -115,6 +116,25 @@ class EpisodeVideoControllerTest {
             val playerState = remember {
                 DummyPlayerState(scope.coroutineContext)
             }
+            val danmakuState = VideoDanmakuStateImpl(
+                danmakuEnabled = stateOf(true),
+                danmakuConfig = stateOf(DanmakuConfig.Default),
+                onSend = {
+                    Danmaku(
+                        "",
+                        "dummy",
+                        0L, "1",
+                        DanmakuLocation.entries.random(),
+                        text = "",
+                        0,
+                    )
+                },
+                onSetEnabled = { },
+                onHideController = {
+                    videoControllerState.toggleFullVisible(false)
+                },
+                scope,
+            )
             EpisodeVideoImpl(
                 playerState = playerState,
                 expanded = true,
@@ -130,21 +150,13 @@ class EpisodeVideoControllerTest {
                 onClickFullScreen = {},
                 onExitFullscreen = {},
                 danmakuEditor = {
-                    val danmakuEditorRequester = remember { Any() }
-                    DanmakuEditor(
-                        text = "",
-                        onTextChange = {},
-                        isSending = false,
-                        placeholderText = "",
-                        onSend = {},
-                        modifier = Modifier.testTag(TAG_DANMAKU_EDITOR)
-                            .onFocusChanged {
-                                if (it.isFocused) {
-                                    videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, true)
-                                } else {
-                                    videoControllerState.setRequestAlwaysOn(danmakuEditorRequester, false)
-                                }
-                            }.weight(1f),
+                    EpisodeVideoDefaults.DanmakuEditor(
+                        videoDanmakuState = danmakuState,
+                        danmakuTextPlaceholder = "",
+                        playerState = playerState,
+                        videoScaffoldConfig = VideoScaffoldConfig.Default,
+                        videoControllerState = videoControllerState,
+                        modifier = Modifier.testTag(TAG_DANMAKU_EDITOR),
                     )
                 },
                 configProvider = { VideoScaffoldConfig.Default },

@@ -9,6 +9,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.offset
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -34,6 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -41,6 +46,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
@@ -50,10 +57,12 @@ import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.foundation.rememberViewModel
+import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
+import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
@@ -290,7 +299,6 @@ internal fun EpisodeVideoImpl(
         },
         leftBottomTips = leftBottomTips,
         bottomBar = {
-            
             PlayerControllerBar(
                 startActions = {
                     val isPlaying by remember(playerState) { playerState.state.map { it.isPlaying } }
@@ -443,3 +451,58 @@ internal fun EpisodeVideoImpl(
         },
     )
 }
+
+@Stable
+object EpisodeVideoDefaults
+
+@Composable
+fun EpisodeVideoDefaults.DanmakuEditor(
+    videoDanmakuState: VideoDanmakuState,
+    danmakuTextPlaceholder: String,
+    playerState: PlayerState,
+    videoScaffoldConfig: VideoScaffoldConfig,
+    videoControllerState: VideoControllerState,
+    modifier: Modifier = Modifier,
+) {
+    val danmakuEditorRequester = rememberAlwaysOnRequester(videoControllerState, "danmakuEditor")
+
+    /**
+     * 是否设置了暂停
+     */
+    var didSetPaused by rememberSaveable { mutableStateOf(false) }
+    Row(modifier = modifier) {
+        DanmakuEditor(
+            text = videoDanmakuState.danmakuEditorText,
+            onTextChange = { videoDanmakuState.danmakuEditorText = it },
+            isSending = videoDanmakuState.isSending,
+            placeholderText = danmakuTextPlaceholder,
+            onSend = { text ->
+                videoDanmakuState.danmakuEditorText = ""
+                videoDanmakuState.sendAsync(
+                    DanmakuInfo(
+                        playerState.getExactCurrentPositionMillis(),
+                        text = text,
+                        color = Color.White.toArgb(),
+                        location = DanmakuLocation.NORMAL,
+                    ),
+                )
+            },
+            modifier = Modifier.onFocusChanged {
+                if (it.isFocused) {
+                    if (videoScaffoldConfig.pauseVideoOnEditDanmaku && playerState.state.value.isPlaying) {
+                        didSetPaused = true
+                        playerState.pause()
+                    }
+                    danmakuEditorRequester.request()
+                } else {
+                    if (didSetPaused) {
+                        didSetPaused = false
+                        playerState.resume()
+                    }
+                    danmakuEditorRequester.cancelRequest()
+                }
+            }.weight(1f),
+        )
+    }
+}
+

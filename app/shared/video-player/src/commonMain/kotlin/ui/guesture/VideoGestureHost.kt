@@ -89,6 +89,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEE
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
+import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
@@ -658,15 +659,12 @@ fun VideoGestureHost(
 
             val indicatorTasker = rememberUiMonoTasker()
             val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
-            val scope = rememberUiMonoTasker()
 
             if (family.autoHideController) {
-                LaunchedEffect(controllerState.visibility) {
+                LaunchedEffect(controllerState.visibility, controllerState.alwaysOn) {
                     if (controllerState.visibility.bottomBar) {
-                        scope.launch {
-                            delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
-                            controllerState.toggleFullVisible(false)
-                        }
+                        delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
+                        controllerState.toggleFullVisible(false)
                     }
                 }
             }
@@ -708,19 +706,19 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek && enableSwipeToSeek) {
-                        val swipeToSeekRequester = remember { Any() }
+                        val swipeToSeekRequester = rememberAlwaysOnRequester(controllerState, "swipeToSeek")
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
                                 if (controllerState.visibility.bottomBar) {
-                                    controllerState.setRequestAlwaysOn(this, true)
+                                    swipeToSeekRequester.request()
                                 }
                                 controllerState.setRequestProgressBar(swipeToSeekRequester)
                             },
                             onDragStopped = {
                                 if (controllerState.visibility.bottomBar) {
-                                    controllerState.setRequestAlwaysOn(this, false)
+                                    swipeToSeekRequester.cancelRequest()
                                 }
                                 controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
                                 progressSliderState.finishPreview()
