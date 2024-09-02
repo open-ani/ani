@@ -69,6 +69,11 @@ kotlin {
 
         implementation(libs.slf4j.api)
     }
+    
+    sourceSets.commonTest.dependencies {
+        implementation(libs.kotlinx.coroutines.test)
+        implementation(projects.utils.testing)
+    }
 
     sourceSets.androidMain.dependencies {
         api(libs.kotlinx.coroutines.android)

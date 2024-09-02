@@ -45,7 +45,6 @@ import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POP
 import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
-import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -121,7 +120,6 @@ class EpisodeVideoControllerTest {
                 danmakuEnabled = false,
                 onToggleDanmaku = {},
                 videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
-                danmakuConfig = { DanmakuConfig.Default },
                 onClickFullScreen = {},
                 onExitFullscreen = {},
                 danmakuEditor = {},
@@ -141,7 +139,6 @@ class EpisodeVideoControllerTest {
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                 leftBottomTips = {},
-                danmakuFrozen = true,
                 gestureFamily = gestureFamily,
             )
         }
