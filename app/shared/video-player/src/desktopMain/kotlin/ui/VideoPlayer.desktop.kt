@@ -100,6 +100,15 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+
+    init {
+        backgroundScope.launch {
+            state.collect {
+                surface.enableRendering.value = it == PlaybackState.PLAYING
+            }
+        }
+    }
+
     override fun stopImpl() {
         player.submit {
             player.controls().stop()
