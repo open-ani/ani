@@ -35,27 +35,27 @@ fun DanmakuHost(
     val density = LocalDensity.current
     val trackStubMeasurer = rememberTextMeasurer(1)
     val danmakuTextMeasurer = rememberTextMeasurer(3000)
-    
-    SideEffect { 
+
+    SideEffect {
         state.setUIContext(baseStyle, danmakuTextMeasurer, density)
     }
-    
+
     // observe config changes
     LaunchedEffect(trackStubMeasurer) { state.observeConfig(trackStubMeasurer) }
     // calculate current play time on every frame
     LaunchedEffect(state.paused) { if (!state.paused) state.interpolateFrameLoop() }
     // logical tick for removal of danmaku
-    LaunchedEffect(true) { 
+    LaunchedEffect(true) {
         while (true) {
             state.tick()
             delay(1000 / 10) // 10 fps
         }
     }
-    
+
     BoxWithConstraints(modifier) {
         val screenWidth by rememberUpdatedState(constraints.maxWidth)
         val screenHeight by rememberUpdatedState(constraints.maxHeight)
-        
+
         LaunchedEffect(true) {
             coroutineScope {
                 launch {
@@ -66,24 +66,24 @@ fun DanmakuHost(
                 }
             }
         }
-        
+
         // Canvas only subscribes `danmakuUpdateSubscription` and `hostHeight` to re-draw.
         Canvas(
             modifier = Modifier.fillMaxSize()
                 .clipToBounds()
-                .alpha(state.canvasAlpha)
+                .alpha(state.canvasAlpha),
         ) {
             state.danmakuUpdateSubscription // subscribe changes
             val hostWidth = screenWidth
-            
+
             for (danmaku in state.presentFloatingDanmaku) {
                 // don't draw uninitialized danmaku
                 if (danmaku.y.isNaN()) continue
-                
+
                 drawDanmakuText(
                     state = danmaku.danmaku,
-                    screenPosX = hostWidth - danmaku.distanceX, 
-                    screenPosY = danmaku.y
+                    screenPosX = hostWidth - danmaku.distanceX,
+                    screenPosY = danmaku.y,
                 )
             }
             for (danmaku in state.presentFixedDanmaku) {
@@ -93,14 +93,14 @@ fun DanmakuHost(
                 drawDanmakuText(
                     state = danmaku.danmaku,
                     screenPosX = (hostWidth - danmaku.danmaku.danmakuWidth) / 2f,
-                    screenPosY = danmaku.y
+                    screenPosY = danmaku.y,
                 )
             }
         }
     }
-    
+
     if (state.isDebug) {
-        Column(modifier = Modifier.padding(4.dp).fillMaxSize()) { 
+        Column(modifier = Modifier.padding(4.dp).fillMaxSize()) {
             Text("DanmakuHost state: ")
             Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
             Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
