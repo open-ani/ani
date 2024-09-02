@@ -302,7 +302,7 @@ class DanmakuHostState(
         presentFixedDanmakuCopied.forEach { trySend(it.danmaku.presentation, it.placeFrameTimeNanos) }
         presentFloatingDanmakuCopied.forEach { 
             val placeFrameTimeNanos = currentElapsedFrameTimeNanos - 
-                    ((it.distanceX / floatingTrackSpeed) * 1_000_000_000).toLong()
+                    ((it.distanceX / floatingTrackSpeed) * 1_000_000_000f).toLong()
             if (placeFrameTimeNanos >= 0) {
                 trySend(it.danmaku.presentation, placeFrameTimeNanos)
             }
@@ -469,10 +469,8 @@ class DanmakuHostState(
 
             floatingDanmaku.forEach { danmaku ->
                 val playFrameTimeNanos = firstDanmakuPlaceTimeNanos +
-                        (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis) * 1_000_000L
-                if (playFrameTimeNanos >= 0) {
-                    trySend(danmaku, playFrameTimeNanos + timeOffsetMillis * 1_000_000L)
-                }
+                        (danmaku.danmaku.playTimeMillis - firstDanmakuTimeMillis - timeOffsetMillis) * 1_000_000L
+                if (playFrameTimeNanos >= 0) trySend(danmaku, playFrameTimeNanos)
             }
         }
         
@@ -482,10 +480,8 @@ class DanmakuHostState(
             // 浮动弹幕倒序 place 进 presentDanmaku 里
             fixedDanmaku.asReversed().forEach { danmaku ->
                 val playFrameTimeNanos = currentElapsedFrameTimeNanos -
-                        (lastDanmakuTimeMillis - danmaku.danmaku.playTimeMillis) * 1_000_000L
-                if (playFrameTimeNanos >= 0) {
-                    trySend(danmaku, playFrameTimeNanos + timeOffsetMillis * 1_000_000L)
-                }
+                        (lastDanmakuTimeMillis - danmaku.danmaku.playTimeMillis - timeOffsetMillis) * 1_000_000L
+                if (playFrameTimeNanos >= 0) trySend(danmaku, playFrameTimeNanos)
             }
         }
     }

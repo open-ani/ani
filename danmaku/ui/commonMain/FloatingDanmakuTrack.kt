@@ -43,7 +43,7 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
         
         // 如果指定了放置时间, 则需要计算划过的距离
         val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
-            (frameTimeNanosState.value - placeTimeNanos) / 1_000_000_000 * speedPxPerSecond
+            (frameTimeNanosState.value - placeTimeNanos) / 1_000_000_000f * speedPxPerSecond
         val upcoming = FloatingDanmaku(danmaku, upcomingDistanceX, trackIndex, trackHeight)
         
         // 弹幕缓存为空, 那就判断是否 gone 了, 如果 gone 了就不放置
@@ -55,7 +55,7 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
     
     override fun place(danmaku: T, placeTimeNanos: Long): FloatingDanmaku<T> {
         val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
-            (frameTimeNanosState.value - placeTimeNanos) / 1_000_000_000 * speedPxPerSecond
+            (frameTimeNanosState.value - placeTimeNanos) / 1_000_000_000f * speedPxPerSecond
         return FloatingDanmaku(danmaku, upcomingDistanceX, trackIndex, trackHeight)
             .also { danmakuList.add(it) }
     }
