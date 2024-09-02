@@ -170,6 +170,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             data,
             setPlay = {
                 val new = SeekableInputCallbackMedia(input)
+                player.controls().stop()
                 player.media().play(new)
                 lastMedia = new
             },
