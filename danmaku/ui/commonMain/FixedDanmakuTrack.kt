@@ -77,7 +77,7 @@ internal class FixedDanmaku<T : SizeSpecifiedDanmaku>(
     internal val trackIndex: Int,
     private val trackHeight: IntState,
     private val hostHeight: IntState,
-    private val fromBottom: Boolean,
+    internal val fromBottom: Boolean,
 ) {
     /**
      * calculate pos y lazily in ui loop

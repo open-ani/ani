@@ -22,9 +22,7 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
     // var baseTextLength: Int,
     // val speedMultiplier: FloatState,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
-    private val onRemoveDanmaku: (FloatingDanmaku<T>) -> Unit,
-    // 在逻辑帧中执行. 在当前轨道可以放置弹幕的时候调用.
-    private val onCanPlace: (index: Int) -> Unit,
+    private val onRemoveDanmaku: (FloatingDanmaku<T>) -> Unit
 ) : DanmakuTrack<T, FloatingDanmaku<T>> {
     private val danmakuList: MutableList<FloatingDanmaku<T>> = mutableListOf()
 
@@ -74,18 +72,15 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
         danmakuList.removeAll { danmaku ->
             danmaku.isGone().also { if (it) onRemoveDanmaku(danmaku) }
         }
-        if (danmakuList.isEmpty() || danmakuList.last().isFullyVisible()) {
-            onCanPlace(trackIndex)
-        }
     }
 
     private fun FloatingDanmaku<T>.isGone(): Boolean {
         return distanceX > trackWidth.value + danmaku.danmakuWidth
     }
 
-    private fun FloatingDanmaku<T>.isFullyVisible(): Boolean {
-        return distanceX >= danmaku.danmakuWidth + safeSeparation
-    }
+    // private fun FloatingDanmaku<T>.isFullyVisible(): Boolean {
+    //     return distanceX >= danmaku.danmakuWidth + safeSeparation
+    // }
 
     /**
      * [list] should be sorted increasingly by range left.

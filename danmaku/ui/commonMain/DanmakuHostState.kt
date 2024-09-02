@@ -211,9 +211,11 @@ class DanmakuHostState(
              * 如果在暂停的时候屏幕高度和宽度有变化, 需要更新一次固定弹幕的位置
              */
             launch { 
-                snapshotFlow { hostWidth to hostHeight }.collect {
+                snapshotFlow { hostHeight }.collect {
                     if (!paused) return@collect
-                    for (danmaku in presentFixedDanmaku) danmaku.y = danmaku.calculatePosY()
+                    for (danmaku in presentFixedDanmaku) {
+                        if (danmaku.fromBottom) danmaku.y = danmaku.calculatePosY()
+                    }
                     danmakuUpdateSubscription ++ // update subscription manually
                 }
             }
@@ -239,11 +241,7 @@ class DanmakuHostState(
                 safeSeparation = newFloatingTrackSafeSeparation,
                 // baseTextLength = floatingBaseTextLengthForSpeed,
                 // speedMultiplier = floatingSpeedMultiplierState,
-                onRemoveDanmaku = { removed ->
-                    presentFloatingDanmaku.removeFirst { it.danmaku == removed.danmaku } 
-                    floatingTrack.markAsPlaceable(removed.trackIndex)
-                },
-                onCanPlace = { trackIndex -> floatingTrack.markAsPlaceable(trackIndex) }
+                onRemoveDanmaku = { removed -> presentFloatingDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
         }
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
@@ -254,10 +252,7 @@ class DanmakuHostState(
                 hostHeight = hostHeightState,
                 fromBottom = false,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> 
-                    presentFixedDanmaku.removeFirst { it.danmaku == removed.danmaku }
-                    topTrack.markAsPlaceable(removed.trackIndex)
-                }
+                onRemoveDanmaku = { removed -> presentFixedDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
         }
         bottomTrack.setTrackCountImpl(if (config.enableBottom) count else 0) { index ->
@@ -268,10 +263,7 @@ class DanmakuHostState(
                 hostHeight = hostHeightState,
                 fromBottom = true,
                 durationMillis = fixedDanmakuPresentDuration,
-                onRemoveDanmaku = { removed -> 
-                    presentFixedDanmaku.removeFirst { it.danmaku == removed.danmaku }
-                    bottomTrack.markAsPlaceable(removed.trackIndex)
-                }
+                onRemoveDanmaku = { removed -> presentFixedDanmaku.removeFirst { it.danmaku == removed.danmaku } }
             )
         }
     }
@@ -542,9 +534,7 @@ suspend inline fun DanmakuHostState.send(danmaku: DanmakuPresentation) {
 internal class DanmakuTrackCollection<D : SizeSpecifiedDanmaku, DT, T : DanmakuTrack<D, DT>>(
     private val innerTrackList: MutableList<T>
 ) : MutableList<T> by innerTrackList {
-    // 第一个一定可以放置弹幕的浮动轨道, 用于加速 trySend 的索引, 减少执行 [DanmakuTrack.tryPlace] 的次数
-    private var firstPlaceableTrackIndex = 0
-
+    
     internal fun setTrackCountImpl(count: Int, newInstance: (index: Int) -> T) {
         when {
             size == count -> return
@@ -552,30 +542,20 @@ internal class DanmakuTrackCollection<D : SizeSpecifiedDanmaku, DT, T : DanmakuT
             count < size -> repeat(size - count) { removeLast().clearAll() }
             else -> addAll(List(count - size) { newInstance(size + it) })
         }
-        firstPlaceableTrackIndex = 0
     }
     
     internal fun tryPlace(danmaku: D, placeFrameTimeNanos: Long): DT? {
-        if (firstPlaceableTrackIndex > innerTrackList.size) {
-            // 如果 firstPlaceableTrackIndex 比轨道数量大, 那说明这个值无效, 重置即可
-            firstPlaceableTrackIndex = 0
-        }
-        for (index in (firstPlaceableTrackIndex..<innerTrackList.size)) {
-            val placed = innerTrackList[index].tryPlace(danmaku, placeFrameTimeNanos)
+        // TODO: 考虑加速这个 for 循环
+        // 如果在 repopulate 的时候调用了大量 tryPlace 会导致此方法的时间复杂度为 O(mn)
+        // 如果有一个变量可以记录第一个一定可以 tryPlace 成功的 track 索引, 
+        // 那此索引的轨道之前的轨道都可以不执行 trySend. 可以将时间复杂度优化为最优 O(mlogn)
+        for (track in innerTrackList) {
+            val placed = track.tryPlace(danmaku, placeFrameTimeNanos)
             if (placed != null) {
-                firstPlaceableTrackIndex = index + 1
                 return placed
             }
         }
         return null
-    }
-    
-    internal fun markAsPlaceable(trackIndex: Int) {
-        // 已经被移除的轨道不需要被 mark placeable
-        if (trackIndex > innerTrackList.size) return
-        // 如果前面有 placeable 的轨道也不需要 mark 后面的可用, 因为这个是 first placeable
-        if (trackIndex > firstPlaceableTrackIndex) return
-        firstPlaceableTrackIndex = trackIndex
     }
 }
 
