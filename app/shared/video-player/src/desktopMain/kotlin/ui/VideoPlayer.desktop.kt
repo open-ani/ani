@@ -325,15 +325,15 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     logger.error { "vlcj player error" }
                     state.value = PlaybackState.ERROR
                 }
+
+                override fun positionChanged(mediaPlayer: MediaPlayer?, newPosition: Float) {
+                    val properties = videoProperties.value
+                    if (properties != null) {
+                        currentPositionMillis.value = (newPosition * properties.durationMillis).toLong()
+                    }
+                }
             },
         )
-
-        backgroundScope.launch {
-            while (true) {
-                currentPositionMillis.value = player.status().time()
-                delay(0.1.seconds)
-            }
-        }
 
         backgroundScope.launch {
             var lastPosition = currentPositionMillis.value
