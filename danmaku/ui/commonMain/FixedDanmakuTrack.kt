@@ -20,6 +20,8 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     private val hostHeight: IntState,
     // 顶部或底部弹幕的显示时间，现在还不能自定义
     private val durationMillis: LongState,
+    // 在 tick pendingDanmaku 显示了会调用
+    private val onTickReplacePending: (FixedDanmaku<T>) -> Unit,
     // 某个弹幕需要消失, 必须调用此函数避免内存泄漏.
     private val onRemoveDanmaku: (FixedDanmaku<T>) -> Unit
 ) : DanmakuTrack<T, FixedDanmaku<T>> {
@@ -56,12 +58,12 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
     /**
      * 设置待发送的弹幕. 当前弹幕显示完后一定显示这条弹幕.
      * 
-     * 如果已经有 pending, 那已有 pending 会立刻替换 current.
+     * 如果已经有 pending, 那已有 pending 会立刻替换 current 并返回被放置的 pending 
      */
-    internal fun setPending(danmaku: T) {
-        val pending = pendingDanmaku
-        if (pending != null) place(pending)
+    internal fun setPending(danmaku: T): FixedDanmaku<T>? {
+        val lastPending = pendingDanmaku?.let { place(it) }
         pendingDanmaku = danmaku
+        return lastPending
     }
 
     override fun clearAll() {
@@ -78,7 +80,7 @@ internal class FixedDanmakuTrack<T : SizeSpecifiedDanmaku>(
             
             val pending = pendingDanmaku
             if (pending != null) {
-                place(pending)
+                onTickReplacePending(place(pending))
                 pendingDanmaku = null
             }
         }
