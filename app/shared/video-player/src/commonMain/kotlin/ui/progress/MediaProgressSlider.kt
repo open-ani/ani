@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.collections.immutable.ImmutableList
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
@@ -61,7 +62,6 @@ import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 

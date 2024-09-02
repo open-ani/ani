@@ -12,13 +12,13 @@ data class MediaCacheSettings(
     val mostRecentOnly: Boolean = false,
     val mostRecentCount: Int = 8,
 
-    @Transient val placeholder: Int = 0,
-
     /**
      * Use system default if `null`.
      * @since 3.4.0
      */
     val saveDir: String? = null,
+
+    @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {
         val Default = MediaCacheSettings()

@@ -36,10 +36,10 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
-import moe.tlaster.precompose.navigation.BackHandler
 import org.koin.mp.KoinPlatform
 
 @Composable
@@ -50,12 +50,12 @@ fun BangumiOAuthScene(
     val nav = LocalNavigator.current
     if (!vm.needAuth) {
         SideEffect {
-            nav.goBack()
+            nav.popBackStack()
         }
     }
     BackHandler {
         vm.onCancel("BangumiOAuthScene BackHandler")
-        nav.goBack()
+        nav.popBackStack()
     }
     BangumiOAuthPage(
         vm,

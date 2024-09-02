@@ -25,9 +25,13 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
+import me.him188.ani.app.ui.settings.framework.SettingsState
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
@@ -36,45 +40,32 @@ import me.him188.ani.danmaku.ui.DanmakuStyle
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.milliseconds
 
 @Stable
-interface EpisodeVideoSettingsViewModel {
-    val danmakuConfig: DanmakuConfig
-    val isLoading: Boolean
-    val danmakuFilterConfig: DanmakuFilterConfig
-
-    fun setDanmakuConfig(config: DanmakuConfig)
-
-    // 关闭/开启所有正则过滤器
-    fun switchDanmakuRegexFilterCompletely()
-}
-
-fun EpisodeVideoSettingsViewModel(
-): EpisodeVideoSettingsViewModel = EpisodeVideoSettingsViewModelImpl()
-
-private class EpisodeVideoSettingsViewModelImpl(
-) : EpisodeVideoSettingsViewModel, AbstractSettingsViewModel(),
-    KoinComponent {
+class EpisodeVideoSettingsViewModel : AbstractViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
 
-    val danmakuConfigSettings by settings(
-        settingsRepository.danmakuConfig,
-        DanmakuConfig(_placeholder = -1),
+    private val danmakuConfigState: SettingsState<DanmakuConfig> =
+        settingsRepository.danmakuConfig.stateInBackground(
+            placeholder = DanmakuConfig.Default,
+        )
+
+    private val danmakuFilterConfigState =
+        settingsRepository.danmakuFilterConfig.stateInBackground(
+            DanmakuFilterConfig.Default.copy(_placeholder = -1),
+        )
+
+    val danmakuConfig: DanmakuConfig by danmakuConfigState
+    val danmakuRegexFilterList: List<DanmakuRegexFilter> by danmakuRegexFilterRepository.flow.produceState(
+        initialValue = emptyList(),
     )
+    val danmakuFilterConfig: DanmakuFilterConfig by danmakuFilterConfigState
+    val isLoading: Boolean by derivedStateOf {
+        danmakuConfigState.isLoading || danmakuFilterConfigState.isLoading
+    }
 
-    val danmakuFilterConfigSetting by settings(
-        settingsRepository.danmakuFilterConfig,
-        DanmakuFilterConfig.Default.copy(_placeholder = -1),
-    )
-
-    override val danmakuConfig: DanmakuConfig by danmakuConfigSettings
-
-    override val danmakuFilterConfig: DanmakuFilterConfig by danmakuFilterConfigSetting
-    override val isLoading: Boolean get() = danmakuConfigSettings.loading
-
-    override fun setDanmakuConfig(config: DanmakuConfig) {
-        danmakuConfigSettings.updateDebounced(config, 100.milliseconds)
+    fun setDanmakuConfig(config: DanmakuConfig) {
+        danmakuConfigState.update(config)
     }
 
     override fun switchDanmakuRegexFilterCompletely() {

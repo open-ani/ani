@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.settings.tabs.network
+package me.him188.ani.app.ui.settings.framework
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable

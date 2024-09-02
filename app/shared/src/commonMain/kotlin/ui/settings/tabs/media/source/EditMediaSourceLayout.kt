@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.settings.tabs.network
+package me.him188.ani.app.ui.settings.tabs.media.source
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,7 +57,7 @@ sealed class EditType {
 }
 
 @Stable
-class EditMediaSourceState(
+class EditingMediaSource(
     val editingMediaSourceId: String?,
     val factoryId: FactoryId,
     val info: MediaSourceInfo,
@@ -155,7 +155,7 @@ class SimpleEnumArgumentState(
 
 @Composable
 internal fun EditMediaSourceDialog(
-    state: EditMediaSourceState,
+    state: EditingMediaSource,
     onConfirm: () -> Unit,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,

@@ -19,9 +19,9 @@ import java.awt.Desktop
 import java.io.File
 
 @Composable
-actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
+actual fun SettingsScope.CacheDirectoryGroup(state: CacheDirectoryGroupState) {
     Group({ Text("存储设置") }) {
-        val mediaCacheSettings by vm.mediaCacheSettings
+        val mediaCacheSettings by state.mediaCacheSettingsState
 
         val defaultSaveDir = remember { projectDirectories.torrentCacheDir.absolutePath }
         val currentSaveDir: String by remember {
@@ -33,7 +33,7 @@ actual fun SettingsScope.CacheDirectoryGroup(vm: MediaSettingsViewModel) {
             currentSaveDir,
             title = { Text("BT 视频缓存位置") },
             onValueChangeCompleted = {
-                vm.updateMediaCacheSettings(mediaCacheSettings.copy(saveDir = it))
+                state.mediaCacheSettingsState.update(mediaCacheSettings.copy(saveDir = it))
             },
             textFieldDescription = {
                 Text("修改后不会自动迁移数据，也不会自动删除旧数据。\n如需删除旧数据，请在修改之前点击 \"打开 BT 缓存目录\" 并删除该目录下的所有文件。\n\n重启生效")

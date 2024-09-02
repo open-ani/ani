@@ -110,65 +110,65 @@ import kotlin.time.Duration.Companion.milliseconds
 
 
 @Stable
-interface EpisodeViewModel : HasBackgroundScope {
-    val videoSourceResolver: VideoSourceResolver
+abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
+    abstract val videoSourceResolver: VideoSourceResolver
 
-    val subjectId: Int
-    val episodeId: StateFlow<Int>
+    abstract val subjectId: Int
+    abstract val episodeId: StateFlow<Int>
 
-    val subjectPresentation: SubjectPresentation // by state
-    val episodePresentation: EpisodePresentation // by state
+    abstract val subjectPresentation: SubjectPresentation // by state
+    abstract val episodePresentation: EpisodePresentation // by state
 
-    val authState: AuthState
+    abstract val authState: AuthState
 
-    val episodeDetailsState: EpisodeDetailsState
+    abstract val episodeDetailsState: EpisodeDetailsState
 
     /**
      * 剧集列表
      */
-    val episodeCarouselState: EpisodeCarouselState
+    abstract val episodeCarouselState: EpisodeCarouselState
 
-    val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState
+    abstract val editableSubjectCollectionTypeState: EditableSubjectCollectionTypeState
 
-    var isFullscreen: Boolean
+    abstract var isFullscreen: Boolean
 
-    val commentLazyListState: LazyListState
+    abstract val commentLazyListState: LazyListState
 
     /**
      * 播放器内切换剧集
      */
-    val episodeSelectorState: EpisodeSelectorState
+    abstract val episodeSelectorState: EpisodeSelectorState
 
     // Media Fetching
 
     /**
      * "数据源" bottom sheet 内容
      */
-    val mediaSelectorPresentation: MediaSelectorPresentation
+    abstract val mediaSelectorPresentation: MediaSelectorPresentation
 
     /**
      * "数据源" bottom sheet 中的每个数据源的结果
      */
-    val mediaSourceResultsPresentation: MediaSourceResultsPresentation
+    abstract val mediaSourceResultsPresentation: MediaSourceResultsPresentation
 
     /**
      * "视频统计" bottom sheet 显示内容
      */
-    val videoStatistics: VideoStatistics
+    abstract val videoStatistics: VideoStatistics
 
     // Media Selection
 
     /**
      * 是否显示数据源选择器
      */
-    var mediaSelectorVisible: Boolean
+    abstract var mediaSelectorVisible: Boolean
 
-    val mediaSourceInfoProvider: MediaSourceInfoProvider
+    abstract val mediaSourceInfoProvider: MediaSourceInfoProvider
 
 
     // Video
-    val videoControllerState: VideoControllerState
-    val videoScaffoldConfig: VideoScaffoldConfig
+    abstract val videoControllerState: VideoControllerState
+    abstract val videoScaffoldConfig: VideoScaffoldConfig
 
     // DanmakuRegexFilterState
     val danmakuRegexFilterState: DanmakuRegexFilterState
@@ -177,22 +177,22 @@ interface EpisodeViewModel : HasBackgroundScope {
     /**
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
      */
-    val playerState: PlayerState
+    abstract val playerState: PlayerState
 
     // Danmaku
 
-    val danmaku: VideoDanmakuState
+    abstract val danmaku: VideoDanmakuState
 
-    val danmakuStatistics: DanmakuStatistics
+    abstract val danmakuStatistics: DanmakuStatistics
 
-    val episodeCommentState: CommentState
+    abstract val episodeCommentState: CommentState
 
-    val commentEditorState: CommentEditorState
+    abstract val commentEditorState: CommentEditorState
 
-    val playerSkipOpEdState: PlayerSkipOpEdState
+    abstract val playerSkipOpEdState: PlayerSkipOpEdState
 
     @UiThread
-    fun stopPlaying()
+    abstract fun stopPlaying()
 }
 
 fun EpisodeViewModel(
@@ -209,7 +209,7 @@ private class EpisodeViewModelImpl(
     initialDanmakuId: Int,
     initialIsFullscreen: Boolean = false,
     context: Context,
-) : AbstractViewModel(), KoinComponent, EpisodeViewModel {
+) : KoinComponent, EpisodeViewModel() {
     override val episodeId: MutableStateFlow<Int> = MutableStateFlow(initialDanmakuId)
     private val playerStateFactory: PlayerStateFactory by inject()
     private val subjectManager: SubjectManager by inject()

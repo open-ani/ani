@@ -120,9 +120,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             }
             VerticalDivider()
             EpisodeVideoSettings(
-                remember {
-                    TestEpisodeVideoSettingsViewModel()
-                },
+                remember { EpisodeVideoSettingsViewModel() },
                 {},
             )
         }
@@ -151,9 +149,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             }
             HorizontalDivider()
             EpisodeVideoSettings(
-                remember {
-                    TestEpisodeVideoSettingsViewModel()
-                },
+                remember { EpisodeVideoSettingsViewModel() },
                 { },
             )
         }
@@ -172,21 +168,6 @@ private fun PreviewDanmakuText() {
                 style = DanmakuStyle(),
             )
         }
-    }
-}
-
-class TestEpisodeVideoSettingsViewModel() : EpisodeVideoSettingsViewModel {
-    override val danmakuConfig: DanmakuConfig = DanmakuConfig.Default
-    override val danmakuFilterConfig: DanmakuFilterConfig = DanmakuFilterConfig.Default
-    override val isLoading: Boolean = false
-
-    override fun setDanmakuConfig(config: DanmakuConfig) {
-        // Do nothing in preview
-    }
-
-    override fun switchDanmakuRegexFilterCompletely() {
-        //Do nothing in preview
-
     }
 }
 

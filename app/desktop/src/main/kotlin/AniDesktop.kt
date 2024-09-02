@@ -41,6 +41,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -73,6 +75,8 @@ import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isSystemInFullscreen
+import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
+import me.him188.ani.app.platform.navigation.SkikoOnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
@@ -85,7 +89,6 @@ import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.foundation.theme.AppTheme
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toast
@@ -102,7 +105,6 @@ import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -250,10 +252,12 @@ object AniDesktop {
         val navigator = AniNavigator()
 
         coroutineScope.launch {
-            navigator.awaitNavigator()
+            navigator.awaitNavController()
             val sessionManager by koin.koin.inject<SessionManager>()
             AppStartupTasks.verifySession(sessionManager, navigator)
         }
+
+        val backPressedDispatcherOwner = SkikoOnBackPressedDispatcherOwner(navigator)
 
         application {
             Window(
@@ -276,6 +280,7 @@ object AniDesktop {
                             windowHandle = window.windowHandle,
                         )
                     },
+                    LocalOnBackPressedDispatcherOwner provides backPressedDispatcherOwner,
                 ) {
                     // This actually runs only once since app is never changed.
                     val windowImmersed = true
@@ -324,7 +329,7 @@ private fun FrameWindowScope.MainWindowContent(
             Box(Modifier.fillMaxSize()) {
                 val paddingByWindowSize by animateDpAsState(0.dp)
 
-                val vm = rememberViewModel { ToastViewModel() }
+                val vm = viewModel { ToastViewModel() }
 
                 val showing by vm.showing.collectAsStateWithLifecycle()
                 val content by vm.content.collectAsStateWithLifecycle()

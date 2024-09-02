@@ -25,6 +25,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -55,7 +56,6 @@ import me.him188.ani.datasources.api.subject.Subject
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import me.him188.ani.utils.coroutines.update
-import moe.tlaster.precompose.viewmodel.viewModelScope
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext

@@ -4,16 +4,19 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * @see DanmakuCollectionAlgorithmTest
+ * @see DanmakuSessionAlgorithmTest
  */
-internal class TimeBasedDanmakuCollectionTest {
+internal class TimeBasedDanmakuSessionTest {
     suspend fun create(
         sequence: Sequence<Danmaku>,
         shiftMillis: Long = 0,

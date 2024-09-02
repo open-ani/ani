@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
@@ -57,6 +58,7 @@ constructor(
     val mediaSourceId: String? = null,
     @Deprecated("Only for migration") // since 3.1.0-beta03
     val fallbackMediaSourceIds: List<String>? = null,
+    @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     @OptIn(SerializationOnly::class)
     companion object {

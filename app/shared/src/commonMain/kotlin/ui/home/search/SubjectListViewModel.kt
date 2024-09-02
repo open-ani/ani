@@ -20,20 +20,28 @@ package me.him188.ani.app.ui.home.search
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.yield
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.datasources.api.paging.PagedSource
-import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
+import kotlin.coroutines.CoroutineContext
 
 @Stable
 class SubjectListViewModel(
     private val pagedSource: PagedSource<SubjectInfo>,
-) : AbstractViewModel(), KoinComponent {
+    parentCoroutineContext: CoroutineContext,
+) : KoinComponent {
+    // TODO: refactor SubjectListViewModel
+    private val backgroundScope = BackgroundScope(parentCoroutineContext)
+    fun close() {
+        backgroundScope.backgroundScope.cancel()
+    }
+
     private val _loading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val loading: StateFlow<Boolean> get() = _loading
 
@@ -44,16 +52,14 @@ class SubjectListViewModel(
     val hasMore: StateFlow<Boolean> get() = _hasMore
 
     fun loadMore() {
-        logger.info { "loadMore()" }
         if (_loading.value) return
         if (!hasMore.value) return
 
-        launchInBackground(start = CoroutineStart.UNDISPATCHED) {
+        backgroundScope.launchInBackground(start = CoroutineStart.UNDISPATCHED) {
             _loading.value = true
             yield()
 
             try {
-                logger.info { "Requesting next page" }
                 val nextPage = pagedSource.nextPageOrNull()
                 if (nextPage == null) {
                     _hasMore.value = false

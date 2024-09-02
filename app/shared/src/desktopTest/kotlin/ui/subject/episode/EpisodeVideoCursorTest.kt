@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -45,7 +46,6 @@ import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
-import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
@@ -55,7 +55,6 @@ import kotlin.time.Duration.Companion.seconds
 class EpisodeVideoCursorTest {
 
     private val controllerState = VideoControllerState(ControllerVisibility.Invisible)
-    private val playerState = DummyPlayerState()
     private var currentPositionMillis by mutableLongStateOf(0L)
     private val progressSliderState: MediaProgressSliderState = MediaProgressSliderState(
         { currentPositionMillis },
@@ -79,6 +78,10 @@ class EpisodeVideoCursorTest {
     @Composable
     private fun Player(gestureFamily: GestureFamily = GestureFamily.MOUSE) {
         ProvideCompositionLocalsForPreview(colorScheme = aniDarkColorTheme()) {
+            val scope = rememberCoroutineScope()
+            val playerState = remember {
+                DummyPlayerState(scope.coroutineContext)
+            }
             Row {
                 EpisodeVideoImpl(
                     playerState = playerState,
@@ -86,7 +89,7 @@ class EpisodeVideoCursorTest {
                     hasNextEpisode = true,
                     onClickNextEpisode = {},
                     videoControllerState = controllerState,
-                    title = { PlayerTopBar() },
+                    title = { Text("Title") },
                     danmakuHostState = remember { DanmakuHostState() },
                     danmakuEnabled = false,
                     onToggleDanmaku = {},
@@ -104,16 +107,16 @@ class EpisodeVideoCursorTest {
                             enabled = false,
                         )
                     },
-                    leftBottomTips = {},
                     progressSliderState = progressSliderState,
-                    danmakuFrozen = true,
-                    gestureFamily = gestureFamily,
                     mediaSelectorPresentation = rememberTestMediaSelectorPresentation(),
                     mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                     episodeSelectorState = rememberTestEpisodeSelectorState(),
                     mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
+                    leftBottomTips = {},
                     modifier = Modifier.weight(1f),
                     danmakuRegexFilterState = createDanmakuRegexFilterState(),
+                    danmakuFrozen = true,
+                    gestureFamily = gestureFamily,
                 )
 
                 Column(Modifier.fillMaxHeight().requiredWidth(100.dp)) {

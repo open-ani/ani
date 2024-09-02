@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui.settings.tabs.network
+package me.him188.ani.app.ui.settings.tabs.media.source
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -45,6 +45,10 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,52 +61,81 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
+import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
+import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
+import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
+import me.him188.ani.app.ui.settings.framework.DefaultConnectionTesterRunner
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
+import me.him188.ani.app.ui.settings.framework.rememberSorterState
+import me.him188.ani.datasources.api.source.ConnectionStatus
+import me.him188.ani.datasources.api.source.FactoryId
+import me.him188.ani.datasources.api.source.MediaSourceConfig
+import me.him188.ani.datasources.api.source.MediaSourceFactory
+import me.him188.ani.datasources.api.source.MediaSourceInfo
+import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.datasources.api.source.parameter.isEmpty
+import me.him188.ani.utils.coroutines.childScope
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.reorderable
+import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
-internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
+internal fun SettingsScope.MediaSourceGroup(
+    state: MediaSourceGroupState,
+    edit: EditMediaSourceState,
+) {
     var showAdd by remember { mutableStateOf(false) }
     if (showAdd) {
         // 选一个数据源来添加
         SelectMediaSourceTemplateDialog(
-            templates = vm.availableMediaSourceTemplates,
+            templates = state.availableMediaSourceTemplates,
             onClick = {
                 if (it.parameters.list.isEmpty()) {
                     // 没有参数, 直接添加
-                    vm.confirmEdit(vm.startAdding(it))
+                    edit.confirmEdit(edit.startAdding(it))
                     showAdd = false
                     return@SelectMediaSourceTemplateDialog
                 }
-                vm.startAdding(it)
+                edit.startAdding(it)
             },
             onDismissRequest = { showAdd = false },
         )
     }
 
-    vm.editMediaSourceState?.let {
+    edit.editMediaSourceState?.let {
         // 准备添加这个数据源, 需要配置
         BasicAlertDialog(
-            onDismissRequest = { vm.cancelEdit() },
+            onDismissRequest = { edit.cancelEdit() },
         ) {
             EditMediaSourceDialog(
                 it,
                 onConfirm = {
-                    vm.confirmEdit(it)
+                    edit.confirmEdit(it)
                     showAdd = false
                 },
                 onDismissRequest = {
-                    vm.cancelEdit()
+                    edit.cancelEdit()
                     showAdd = false
                 },
             )
@@ -110,7 +143,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
     }
 
     val sorter = rememberSorterState<MediaSourcePresentation>(
-        onComplete = { list -> vm.reorderMediaSources(newOrder = list.map { it.instanceId }) },
+        onComplete = { list -> state.reorderMediaSources(newOrder = list.map { it.instanceId }) },
     )
     Group(
         title = { Text("数据源管理") },
@@ -131,7 +164,7 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                 Row {
                     IconButton(
                         {
-                            vm.cancelEdit()
+                            edit.cancelEdit()
                             showAdd = true
                         },
                     ) {
@@ -151,8 +184,8 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                 } else {
                     IconButton(
                         {
-                            vm.cancelEdit()
-                            sorter.start(vm.mediaSources)
+                            edit.cancelEdit()
+                            sorter.start(state.mediaSources)
                         },
                     ) {
                         Icon(Icons.AutoMirrored.Rounded.Sort, contentDescription = "排序")
@@ -166,9 +199,9 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                 Modifier
                     .ifThen(sorter.isSorting) { alpha(0f) }
                     .wrapContentHeight()
-                    .placeholder(vm.isCompletingReorder),
+                    .placeholder(state.isCompletingReorder),
             ) {
-                vm.mediaSources.forEachIndexed { index, item ->
+                state.mediaSources.forEachIndexed { index, item ->
                     if (index != 0) {
                         HorizontalDividerItem()
                     }
@@ -176,19 +209,19 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
                         item,
                         Modifier.combinedClickable(
                             onClickLabel = "编辑",
-                            onLongClick = { sorter.start(vm.mediaSources) },
+                            onLongClick = { sorter.start(state.mediaSources) },
                             onLongClickLabel = "开始排序",
                         ) {
-                            vm.startEditing(
+                            edit.startEditing(
                                 item,
                             )
                         },
                     ) {
                         NormalMediaSourceItemAction(
                             item,
-                            onEdit = { vm.startEditing(item) },
-                            onDelete = { vm.deleteMediaSource(item) },
-                            onEnabledChange = { vm.toggleMediaSourceEnabled(item, it) },
+                            onEdit = { edit.startEditing(item) },
+                            onDelete = { edit.deleteMediaSource(item) },
+                            onEnabledChange = { edit.toggleMediaSourceEnabled(item, it) },
                         )
                     }
                 }
@@ -237,12 +270,12 @@ internal fun SettingsScope.MediaSourceGroup(vm: NetworkSettingsViewModel) {
 
         TextButtonItem(
             onClick = {
-                vm.mediaSourceTesters.toggleTest()
+                state.mediaSourceTesters.toggleTest()
             },
             Modifier.ifThen(sorter.isSorting) { alpha(0f) },
             enabled = !sorter.isSorting,
             title = {
-                if (vm.mediaSourceTesters.anyTesting) {
+                if (state.mediaSourceTesters.anyTesting) {
                     Text("终止测试")
                 } else {
                     Text("开始测试")
@@ -260,31 +293,6 @@ internal fun SettingsScope.MediaSourceItem(
     item: MediaSourcePresentation,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = item.isEnabled,
-    title: @Composable () -> Unit = {
-        val name = if (!isEnabled) {
-            item.info.displayName + "（已禁用）"
-        } else {
-            item.info.displayName
-        }
-        Text(
-            name,
-            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
-        )
-    },
-    description: (@Composable () -> Unit)? =
-        item.info.description?.let {
-            {
-                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
-            }
-        },
-    icon: (@Composable () -> Unit)? = {
-        Box(
-            Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            MediaSourceIcon(item.info, Modifier.size(48.dp))
-        }
-    },
     action: @Composable () -> Unit,
 ) {
 //    ListItem(
@@ -295,10 +303,31 @@ internal fun SettingsScope.MediaSourceItem(
 //    )
     TextItem(
         modifier = modifier,
-        description = description,
-        icon = icon,
+        description = item.info.description?.let {
+            {
+                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
+            }
+        },
+        icon = {
+            Box(
+                Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) }.clip(MaterialTheme.shapes.extraSmall).size(48.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                MediaSourceIcon(item.info, Modifier.size(48.dp))
+            }
+        },
         action = action,
-        title = { title() },
+        title = {
+            val name = if (!isEnabled) {
+                item.info.displayName + "（已禁用）"
+            } else {
+                item.info.displayName
+            }
+            Text(
+                name,
+                Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
+            )
+        },
     )
 }
 

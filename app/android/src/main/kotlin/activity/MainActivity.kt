@@ -95,7 +95,7 @@ class MainActivity : AniComponentActivity() {
         }
         setContent {
             AniApp {
-//                val viewModel = rememberViewModel { AniAppViewModel() }
+//                val viewModel = viewModel { AniAppViewModel() }
 //                when (viewModel.themeKind) {
 //                    null -> {}
 //                    ThemeKind.AUTO -> {

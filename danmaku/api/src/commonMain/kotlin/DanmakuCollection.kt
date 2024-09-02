@@ -50,8 +50,11 @@ sealed class DanmakuEvent {
 
     /**
      * 清空屏幕并以这些弹幕填充. 常见于快进/快退时
+     *
+     * @param list 顺序为由距离当前时间近到远.
+     * @param playTimeMillis 当前播放器的时间
      */
-    class Repopulate(val list: List<Danmaku>) : DanmakuEvent()
+    data class Repopulate(val list: List<Danmaku>, val playTimeMillis: Long) : DanmakuEvent()
 }
 
 fun emptyDanmakuCollection(): DanmakuCollection {
@@ -73,6 +76,7 @@ class TimeBasedDanmakuSession private constructor(
     private val flowCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuCollection {
     override val totalCount: Flow<Int?> = flowOf(list.size)
+
     companion object {
         fun create(
             sequence: Sequence<Danmaku>,
@@ -261,9 +265,9 @@ internal class DanmakuSessionAlgorithm(
     val state: DanmakuSessionFlowState,
 ) {
     /**
-     * 对于每一个时间已经到达的弹幕
+     * 对于每一个时间已经到达的弹幕, 并更新 [DanmakuSessionFlowState.lastIndex]
      */
-    private inline fun foreachDanmaku(block: (Danmaku) -> Unit) {
+    private inline fun useEachDanmaku(block: (Danmaku) -> Unit) {
         var i = state.lastIndex + 1
         val list = state.list
         try {
@@ -325,18 +329,21 @@ internal class DanmakuSessionAlgorithm(
                 val curTimeMillis = curTime.inWholeMilliseconds
                 sendEvent(
                     DanmakuEvent.Repopulate(
-                        buildList {
-                            foreachDanmaku { item ->
+                        buildList seq@{
+                            var emitted = 0
+                            useEachDanmaku { item ->
                                 if (curTimeMillis < item.playTimeMillis) {
                                     // 还没有达到弹幕发送时间, 因为 list 是排序的, 这也说明后面的弹幕都还没到时间
-                                    return@buildList
+                                    return@seq
                                 }
-                                if (size >= state.repopulateMaxCount) {
-                                    return@buildList
+                                if (emitted >= state.repopulateMaxCount) {
+                                    return@seq
                                 }
                                 add(item)
+                                emitted++
                             }
                         },
+                        curTimeMillis,
                     ),
                 )
                 return
@@ -347,7 +354,7 @@ internal class DanmakuSessionAlgorithm(
 
         val curTimeMillis = curTime.inWholeMilliseconds
 
-        foreachDanmaku { item ->
+        useEachDanmaku { item ->
             if (curTimeMillis < item.playTimeMillis) {
                 // 还没有达到弹幕发送时间, 因为 list 是排序的, 这也说明后面的弹幕都还没到时间
                 return
