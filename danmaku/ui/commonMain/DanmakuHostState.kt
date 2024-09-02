@@ -70,7 +70,7 @@ class DanmakuHostState(
     
     /**
      * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
-     * 在这里保留一个引用, 方便在 [invalidatePresentDanmaku] 的时候重新计算所有弹幕位置.
+     * 在这里保留一个引用, 方便在 [recalculatePresentDanmakuPositions] 的时候重新计算所有弹幕位置.
      * 大部分弹幕是按时间排序的, 确保 [removeFirst] 操作能消耗较低的时间.
      */
     internal val presentFloatingDanmaku: MutableList<FloatingDanmaku<StyledDanmaku>> = mutableListOf()
@@ -140,7 +140,7 @@ class DanmakuHostState(
                         updateTrackCount(trackCount, newConfig)
                         // 如果弹幕字体大小变化了也会导致弹幕重置
                         if (lastFontSize != newConfig.style.fontSize) {
-                            invalidatePresentDanmaku(elapsedFrameTimeNanos)
+                            recalculatePresentDanmakuPositions(elapsedFrameTimeNanos)
                             lastFontSize = newConfig.style.fontSize
                         }
                         danmakuUpdateSubscription ++ // update subscription manually if paused
@@ -157,7 +157,7 @@ class DanmakuHostState(
                     old.safeSeparation == new.safeSeparation && old.isDebug == new.isDebug
                 }.collect { newConfig -> 
                     updateTrackProperties(newConfig)
-                    invalidatePresentDanmaku(elapsedFrameTimeNanos)
+                    recalculatePresentDanmakuPositions(elapsedFrameTimeNanos)
                     danmakuUpdateSubscription ++ // update subscription manually if paused
                 }
             }
@@ -295,10 +295,12 @@ class DanmakuHostState(
     }
 
     /**
-     * 重新放置屏幕上弹幕的位置. 这也会导致样式和静态位置重置
+     * 重新放置屏幕上弹幕的位置. 这也会导致样式和静态位置重置.
+     * 
+     * 此方法的行为与 [repopulate] 相同, 但是具有更高的执行效率.
      */
     @UiThread
-    private suspend fun invalidatePresentDanmaku(currentElapsedFrameTimeNanos: Long) {
+    private suspend fun recalculatePresentDanmakuPositions(currentElapsedFrameTimeNanos: Long) {
         uiContext.await()
         val presentFloatingDanmakuCopied = presentFloatingDanmaku.toList()
         val presentFixedDanmakuCopied = presentFixedDanmaku.toList()
