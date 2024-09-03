@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import kotlin.math.absoluteValue
 import kotlin.math.floor
 
 @Stable
@@ -470,7 +471,7 @@ class DanmakuHostState(
 
                 val track = sendTrack
                 checkNotNull(track) { "danmaku track must be found when sending danmaku." }
-                val placeTimeNanos = (maxDanmakuRight / floatingTrackSpeed * 1_000_000_000f).toLong()
+                val placeTimeNanos = (maxDanmakuRight.absoluteValue / floatingTrackSpeed * 1_000_000_000f).toLong()
                 track.place(styledDanmaku, currentElapsedFrameTimeNanos + placeTimeNanos)
                     .also(presentFloatingDanmaku::add)
             } else {
