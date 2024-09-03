@@ -3,10 +3,11 @@ package me.him188.ani.danmaku.ui
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -20,9 +21,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,8 +34,10 @@ import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
@@ -39,6 +45,7 @@ import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.random.Random
 import kotlin.random.nextInt
+import kotlin.random.nextLong
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -46,12 +53,23 @@ import kotlin.time.Duration.Companion.milliseconds
 @Preview(showBackground = true, device = Devices.TABLET)
 internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     var emitted by remember { mutableIntStateOf(0) }
-    val config = remember { mutableStateOf(DanmakuConfig(displayArea = 1.0f, isDebug = true)) }
+    val config = remember { mutableStateOf(
+        DanmakuConfig(
+            displayArea = 1.0f, 
+            isDebug = true,
+            style = DanmakuStyle.Default.copy(
+                strokeWidth = 2f,
+                strokeColor = Color.DarkGray,
+                fontWeight = FontWeight.Normal
+            )
+        )
+    ) }
+
+    val startTime = remember { currentTimeMillis() }
     
     val data = remember {
         flow {
             var counter = 0
-            val startTime = currentTimeMillis()
             
             fun danmaku() =
                 Danmaku(
@@ -61,7 +79,7 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     "1",
                     DanmakuLocation.entries.random(),
                     text = LoremIpsum(Random.nextInt(1..5)).values.first(),
-                    0xffffff,
+                    Color.Black.value.toInt(),
                 )
             
             emit(danmaku())
@@ -77,21 +95,58 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     
     val state = remember { DanmakuHostState(config) }
     
+    var editingText by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    
     LaunchedEffect(true) {
         data.collect {
             state.trySend(
                 DanmakuPresentation(
                     it,
-                    isSelf = Random.nextBoolean(),
+                    isSelf = false,
                 ),
             )
         }
     }
+    
+    @Composable
+    fun Editor(modifier: Modifier) {
+        DanmakuEditor(
+            text = editingText,
+            modifier = modifier,
+            onTextChange = { editingText = it },
+            isSending = false,
+            placeholderText = "placeholder of DanmakuEditor",
+            onSend = {
+                scope.launch {
+                    val text = editingText
+                    editingText = ""
+                    state.send(
+                        DanmakuPresentation(
+                            Danmaku(
+                                "self${Random.Default.nextLong(100000000L..999999999L)}",
+                                "dummy sender",
+                                currentTimeMillis() - startTime,
+                                "2",
+                                DanmakuLocation.entries.random(),
+                                text = text,
+                                0xfe1010,
+                            ),
+                            isSelf = true
+                        )
+                    )
+                }
+            }
+        )
+    }
 
     if (isInLandscapeMode()) {
         Row {
-            Box(Modifier.weight(1f)) {
-                DanmakuHost(state, Modifier.fillMaxHeight(),)
+            Column(modifier = Modifier.weight(1f)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    DanmakuHost(state, Modifier.fillMaxSize().background(Color.Transparent))
+                }
+                Editor(Modifier.fillMaxWidth().height(64.dp))
             }
             VerticalDivider()
             EpisodeVideoSettings(
@@ -103,18 +158,14 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         }
     } else {
         Column {
-            DanmakuHost(state,
-                Modifier
-                    .fillMaxWidth()
-                    .height(360.dp),)
+            DanmakuHost(state, Modifier.fillMaxWidth().height(360.dp).background(Color.Transparent))
             HorizontalDivider()
-            Box(Modifier.weight(1f)) {
-                EpisodeVideoSettings(
-                    danmakuConfig = config.value, 
-                    setDanmakuConfig = { config.value = it },
-                    danmakuRegexFilterGroup = { }
-                )
-            }
+            EpisodeVideoSettings(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                danmakuConfig = config.value,
+                setDanmakuConfig = { config.value = it },
+                danmakuRegexFilterGroup = { }
+            )
         }
     }
 }
