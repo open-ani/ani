@@ -427,6 +427,7 @@ class DanmakuHostState(
      */
     suspend fun send(danmaku: DanmakuPresentation) {
         uiContext.await()
+        
         withContext(Dispatchers.Main.immediate) {
             val currentElapsedFrameTimeNanos = elapsedFrameTimeNanos
             val styledDanmaku = StyledDanmaku(
@@ -439,6 +440,9 @@ class DanmakuHostState(
             )
 
             if (danmaku.danmaku.location == DanmakuLocation.NORMAL) {
+                // 没开启就没办法发送, 因为轨道数量为 0
+                if (!danmakuConfig.enableFloating) return@withContext
+                
                 val safeSeparation = with(uiContext.density) { danmakuConfig.safeSeparation.toPx() }
                 val floatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
 
@@ -470,7 +474,15 @@ class DanmakuHostState(
                 track.place(styledDanmaku, currentElapsedFrameTimeNanos + placeTimeNanos)
                     .also(presentFloatingDanmaku::add)
             } else {
-                val tracks = if (danmaku.danmaku.location == DanmakuLocation.TOP) topTrack else bottomTrack
+                val tracks = if (danmaku.danmaku.location == DanmakuLocation.TOP) {
+                    // 没开启就没办法发送, 因为轨道数量为 0
+                    if (!danmakuConfig.enableTop) return@withContext
+                    topTrack
+                } else {
+                    // 没开启就没办法发送, 因为轨道数量为 0
+                    if (!danmakuConfig.enableBottom) return@withContext
+                    bottomTrack
+                }
                 var sendTrack: FixedDanmakuTrack<StyledDanmaku>? = null
                 var minDanmakuTime = Long.MAX_VALUE
 
