@@ -41,7 +41,6 @@ import me.him188.ani.danmaku.api.emptyDanmakuCollection
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.danmaku.ui.DanmakuTrackProperties
-import me.him188.ani.danmaku.ui.send
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -151,7 +150,6 @@ class DanmakuLoaderImpl(
 @Stable
 interface VideoDanmakuState {
     val danmakuHostState: DanmakuHostState
-    val config: DanmakuConfig
 
     val enabled: Boolean
     val isSettingEnabled: Boolean
@@ -173,8 +171,9 @@ class VideoDanmakuStateImpl(
     private val backgroundScope: CoroutineScope,
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
-    override val danmakuHostState: DanmakuHostState = DanmakuHostState(danmakuTrackProperties)
-
+    override val danmakuHostState: DanmakuHostState = 
+        DanmakuHostState(danmakuConfig, danmakuTrackProperties)
+    
     override val enabled: Boolean by danmakuEnabled
     override val isSettingEnabled: Boolean get() = setEnabledTasker.isRunning
     private val setEnabledTasker = MonoTasker(backgroundScope)
@@ -185,8 +184,6 @@ class VideoDanmakuStateImpl(
     }
 
     override var danmakuEditorText: String by mutableStateOf("")
-
-    override val config by danmakuConfig
 
     private val sendDanmakuTasker = MonoTasker(backgroundScope)
     override val isSending: Boolean get() = sendDanmakuTasker.isRunning

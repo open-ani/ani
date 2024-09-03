@@ -2,14 +2,17 @@ package me.him188.ani.danmaku.ui
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.content.res.Configuration.UI_MODE_TYPE_NORMAL
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,62 +22,61 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
-import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.api.DanmakuPresentation
+import me.him188.ani.utils.platform.currentTimeMillis
 import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * Note, use "Run Preview" to preview on your phone or the emulator if you only see the initial danmaku-s.
- */
 @Composable
-@Preview(showBackground = true, device = Devices.TABLET)
 @Preview(showBackground = true)
+@Preview(showBackground = true, device = Devices.TABLET)
 internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
-    var emitted by remember {
-        mutableIntStateOf(0)
-    }
-    var config by remember {
-        mutableStateOf(DanmakuConfig())
-    }
+    var emitted by remember { mutableIntStateOf(0) }
+    val config = remember { mutableStateOf(DanmakuConfig(displayArea = 1.0f, isDebug = true)) }
+    
     val data = remember {
         flow {
             var counter = 0
+            val startTime = currentTimeMillis()
+            
             fun danmaku() =
                 Danmaku(
                     counter++.toString(),
                     "dummy",
-                    0L, "1",
+                    currentTimeMillis() - startTime, 
+                    "1",
                     DanmakuLocation.entries.random(),
                     text = LoremIpsum(Random.nextInt(1..5)).values.first(),
-                    0,
+                    0xffffff,
                 )
-
+            
             emit(danmaku())
             emit(danmaku())
             emit(danmaku())
             while (true) {
                 emit(danmaku())
                 emitted++
-                delay(Random.nextLong(20, 500).milliseconds)
+                delay(Random.nextLong(5, 10).milliseconds)
             }
         }
     }
-    val state = remember {
-        DanmakuHostState()
-    }
+    
+    val state = remember { DanmakuHostState(config) }
+    
     LaunchedEffect(true) {
         data.collect {
             state.trySend(
@@ -89,68 +91,31 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
     if (isInLandscapeMode()) {
         Row {
             Box(Modifier.weight(1f)) {
-                DanmakuHost(
-                    state,
-                    { config },
-                    Modifier.fillMaxHeight(),
-                )
-                Column {
-                    Text("Emitted: $emitted")
-                    state.topTracks.forEachIndexed { index, danmakuTrackState ->
-                        Text(
-                            "track top$index: visible=${danmakuTrackState.visibleDanmaku}",
-                        )
-                    }
-                    HorizontalDivider()
-                    state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
-                        Text(
-                            "track floating$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
-                                    "visible=${danmakuTrackState.visibleDanmaku.size}, " +
-                                    "starting=${danmakuTrackState.startingDanmaku.size}",
-                        )
-                    }
-                    HorizontalDivider()
-                    state.bottomTracks.forEachIndexed { index, danmakuTrackState ->
-                        Text(
-                            "track bottom$index: visible=${danmakuTrackState.visibleDanmaku}",
-                        )
-                    }
-                }
+                DanmakuHost(state, Modifier.fillMaxHeight(),)
             }
             VerticalDivider()
             EpisodeVideoSettings(
-                remember { EpisodeVideoSettingsViewModel() },
+                danmakuConfig = config.value,
+                setDanmakuConfig = { config.value = it },
+                modifier = Modifier.width(300.dp),
+                danmakuRegexFilterGroup = { }
             )
         }
     } else {
         Column {
-            Box(
+            DanmakuHost(state,
                 Modifier
-                    .weight(1f),
-            ) {
-                DanmakuHost(
-                    state,
-                    { config },
-                    Modifier.fillMaxWidth(),
-                )
-                Column {
-                    Text("Emitted: $emitted")
-                    state.floatingTracks.forEachIndexed { index, danmakuTrackState ->
-                        Text(
-                            "track$index: offset=${danmakuTrackState.trackOffset.toInt()}, " +
-                                    "visible=${danmakuTrackState.visibleDanmaku.size}, " +
-                                    "starting=${danmakuTrackState.startingDanmaku.size}",
-                        )
-                    }
-                }
-
-            }
+                    .fillMaxWidth()
+                    .height(360.dp),)
             HorizontalDivider()
-            EpisodeVideoSettings(
-                remember { EpisodeVideoSettingsViewModel() },
-            )
+            Box(Modifier.weight(1f)) {
+                EpisodeVideoSettings(
+                    danmakuConfig = config.value, 
+                    setDanmakuConfig = { config.value = it },
+                    danmakuRegexFilterGroup = { }
+                )
+            }
         }
-
     }
 }
 
@@ -159,12 +124,18 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
 @Preview("Dark", showBackground = true, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
 private fun PreviewDanmakuText() {
     ProvideCompositionLocalsForPreview {
-        Surface(color = Color.White) {
-            DanmakuText(
-                DummyDanmakuState,
-                style = DanmakuStyle(),
-            )
+        val measurer = rememberTextMeasurer()
+        val baseStyle = MaterialTheme.typography.bodyMedium
+        val density = LocalDensity.current
+        val iter = (0..360 step 36).map { with(density) { it.dp.toPx() } }
+        Canvas(modifier = Modifier.size(width = 450.dp, height = 360.dp)) {
+            iter.forEach { off ->
+                drawDanmakuText(
+                    dummyDanmaku(measurer, baseStyle, DanmakuStyle.Default),
+                    screenPosX = Random.nextFloat() * 100,
+                    screenPosY = off
+                )
+            }
         }
     }
 }
-

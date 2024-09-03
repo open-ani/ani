@@ -45,7 +45,6 @@ import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
-import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -93,7 +92,6 @@ class EpisodeVideoCursorTest {
                     danmakuEnabled = false,
                     onToggleDanmaku = {},
                     videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
-                    danmakuConfig = { DanmakuConfig.Default },
                     onClickFullScreen = {},
                     onExitFullscreen = {},
                     danmakuEditor = {},
@@ -113,7 +111,6 @@ class EpisodeVideoCursorTest {
                     mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                     leftBottomTips = {},
                     modifier = Modifier.weight(1f),
-                    danmakuFrozen = true,
                     gestureFamily = gestureFamily,
                 )
 

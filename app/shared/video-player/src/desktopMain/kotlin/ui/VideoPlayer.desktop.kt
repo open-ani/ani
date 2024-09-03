@@ -100,6 +100,15 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override val state: MutableStateFlow<PlaybackState> = MutableStateFlow(PlaybackState.PAUSED_BUFFERING)
+
+    init {
+        backgroundScope.launch {
+            state.collect {
+                surface.enableRendering.value = it == PlaybackState.PLAYING
+            }
+        }
+    }
+
     override fun stopImpl() {
         player.submit {
             player.controls().stop()
@@ -161,6 +170,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             data,
             setPlay = {
                 val new = SeekableInputCallbackMedia(input)
+                player.controls().stop()
                 player.media().play(new)
                 lastMedia = new
             },
@@ -316,15 +326,15 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     logger.error { "vlcj player error" }
                     state.value = PlaybackState.ERROR
                 }
+
+                override fun positionChanged(mediaPlayer: MediaPlayer?, newPosition: Float) {
+                    val properties = videoProperties.value
+                    if (properties != null) {
+                        currentPositionMillis.value = (newPosition * properties.durationMillis).toLong()
+                    }
+                }
             },
         )
-
-        backgroundScope.launch {
-            while (true) {
-                currentPositionMillis.value = player.status().time()
-                delay(0.1.seconds)
-            }
-        }
 
         backgroundScope.launch {
             var lastPosition = currentPositionMillis.value

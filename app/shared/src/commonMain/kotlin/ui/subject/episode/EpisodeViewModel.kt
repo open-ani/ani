@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -571,24 +570,13 @@ private class EpisodeViewModelImpl(
     init {
         launchInMain { // state changes must be in main thread
             playerState.state.collect {
-                if (it.isPlaying) {
-                    danmaku.danmakuHostState.resume()
-                } else {
-                    danmaku.danmakuHostState.pause()
-                }
-            }
-        }
-        launchInBackground {
-            settingsRepository.danmakuConfig.flow.drop(1).collectLatest {
-                logger.info { "Danmaku config changed, repopulating" }
-                danmakuLoader.requestRepopulate()
+                danmaku.danmakuHostState.setPaused(!it.isPlaying)
             }
         }
 
         launchInBackground {
             cancellableCoroutineScope {
                 val selfId = selfUserId.stateIn(this)
-                val danmakuConfig = settingsRepository.danmakuConfig.flow.stateIn(this)
                 danmakuLoader.eventFlow.collect { event ->
                     when (event) {
                         is DanmakuEvent.Add -> {
@@ -603,7 +591,6 @@ private class EpisodeViewModelImpl(
                                 event.list.map {
                                     createDanmakuPresentation(it, selfId.value)
                                 },
-                                danmakuConfig.value.style,
                             )
 
                         }

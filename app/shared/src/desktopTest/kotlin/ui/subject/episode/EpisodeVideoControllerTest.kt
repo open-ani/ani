@@ -146,7 +146,6 @@ class EpisodeVideoControllerTest {
                 danmakuEnabled = false,
                 onToggleDanmaku = {},
                 videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
-                danmakuConfig = { DanmakuConfig.Default },
                 onClickFullScreen = {},
                 onExitFullscreen = {},
                 danmakuEditor = {
@@ -175,7 +174,6 @@ class EpisodeVideoControllerTest {
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                 leftBottomTips = {},
-                danmakuFrozen = true,
                 gestureFamily = gestureFamily,
             )
         }

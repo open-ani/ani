@@ -153,17 +153,17 @@ class EpisodeCacheStateTest {
     }
 
     @Test
-    fun `canCache is false for DONE`() = runTest {
+    fun `canCache is true for DONE`() = runTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.DONE)
         val state = createEpisodeCacheState()
-        assertEquals(false, state.canCache)
+        assertEquals(true, state.canCache)
     }
 
     @Test
-    fun `canCache is false for DROPPED`() = runTest {
+    fun `canCache is true for DROPPED`() = runTest {
         infoFlow.value = infoFlow.value.copy(watchStatus = UnifiedCollectionType.DROPPED)
         val state = createEpisodeCacheState()
-        assertEquals(false, state.canCache)
+        assertEquals(true, state.canCache)
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -562,7 +562,6 @@ private fun EpisodeVideo(
         danmakuEnabled = videoDanmakuState.enabled,
         onToggleDanmaku = { videoDanmakuState.setEnabled(!videoDanmakuState.enabled) },
         videoLoadingState = { vm.videoStatistics.videoLoadingState },
-        danmakuConfig = { videoDanmakuState.config },
         onClickFullScreen = {
             if (vm.isFullscreen) {
                 scope.launch {
