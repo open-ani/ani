@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -102,23 +104,25 @@ fun DanmakuHost(
     }
 
     if (state.isDebug) {
-        Column(modifier = Modifier.padding(4.dp).fillMaxSize()) {
-            Text("DanmakuHost state: ")
-            Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
-            Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
-            Text("  presentDanmakuCount: ${state.presentFixedDanmaku.size + state.presentFloatingDanmaku.size}")
-            HorizontalDivider()
-            Text("  floating tracks: ")
-            for (track in state.floatingTrack) {
-                Text("    $track")
-            }
-            Text("  top tracks: ")
-            for (track in state.topTrack) {
-                Text("    $track")
-            }
-            Text("  bottom tracks: ")
-            for (track in state.bottomTrack) {
-                Text("    $track")
+        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+            Column(modifier = Modifier.padding(4.dp).fillMaxSize()) {
+                Text("DanmakuHost state: ")
+                Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
+                Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
+                Text("  presentDanmakuCount: ${state.presentFixedDanmaku.size + state.presentFloatingDanmaku.size}")
+                HorizontalDivider()
+                Text("  floating tracks: ")
+                for (track in state.floatingTrack) {
+                    Text("    $track")
+                }
+                Text("  top tracks: ")
+                for (track in state.topTrack) {
+                    Text("    $track")
+                }
+                Text("  bottom tracks: ")
+                for (track in state.bottomTrack) {
+                    Text("    $track")
+                }
             }
         }
     }
