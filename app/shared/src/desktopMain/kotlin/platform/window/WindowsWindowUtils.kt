@@ -72,9 +72,9 @@ class WindowsWindowUtils : AwtWindowUtils() {
 
         val hwnd = HWND(Pointer.createConstant(window.windowHandle))
         if (undecorated) {
-            // Remove window borders and title bar
             val maximised = extendedUser32.IsZoomed(hwnd)
             if (maximised) {
+                // 解除最大化，以便获取原始窗口大小
                 extendedUser32.SendMessage(
                     hwnd,
                     User32.WM_SYSCOMMAND,
@@ -82,6 +82,7 @@ class WindowsWindowUtils : AwtWindowUtils() {
                     WinDef.LPARAM(0),
                 )
             }
+            // Remove window borders and title bar
             val currentStyle = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE)
             if (currentStyle and WinUser.WS_CAPTION == 0) {
                 // 目前没有标题, 说明已经是全屏了
