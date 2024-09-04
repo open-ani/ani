@@ -20,6 +20,7 @@ import com.sun.jna.ptr.IntByReference
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.MONITOR_DEFAULTTONEAREST
+import me.him188.ani.app.platform.window.ExtendedUser32.Companion.SC_RESTORE
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.SWP_NOACTIVATE
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.WS_EX_CLIENTEDGE
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.WS_EX_DLGMODALFRAME
@@ -72,6 +73,15 @@ class WindowsWindowUtils : AwtWindowUtils() {
         val hwnd = HWND(Pointer.createConstant(window.windowHandle))
         if (undecorated) {
             // Remove window borders and title bar
+            val maximised = extendedUser32.IsZoomed(hwnd)
+            if (maximised) {
+                extendedUser32.SendMessage(
+                    hwnd,
+                    User32.WM_SYSCOMMAND,
+                    WinDef.WPARAM(SC_RESTORE.toLong()),
+                    WinDef.LPARAM(0),
+                )
+            }
             val currentStyle = User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_STYLE)
             if (currentStyle and WinUser.WS_CAPTION == 0) {
                 // 目前没有标题, 说明已经是全屏了
@@ -85,7 +95,7 @@ class WindowsWindowUtils : AwtWindowUtils() {
                 rect = WinDef.RECT().apply {
                     User32.INSTANCE.GetWindowRect(hwnd, this)
                 }.toComposeRect(),
-                maximized = extendedUser32.IsZoomed(hwnd),
+                maximized = maximised,
             )
 
             User32.INSTANCE.SetWindowLong(
