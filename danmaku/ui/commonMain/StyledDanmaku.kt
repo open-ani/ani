@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
@@ -41,7 +42,7 @@ data class StyledDanmaku(
                 color = if (enableColor) {
                     Color(0xFF_00_00_00L or presentation.danmaku.color.toUInt().toLong())
                 } else Color.White,
-            ),
+            ).copy(textDecoration = if (presentation.isSelf) TextDecoration.Underline else null),
         ),
         overflow = TextOverflow.Clip,
         maxLines = 1,
@@ -50,7 +51,8 @@ data class StyledDanmaku(
     
     private val borderTextLayout = measurer.measure(
         text = danmakuText,
-        style = baseStyle.merge(style.styleForBorder()),
+        style = baseStyle.merge(style.styleForBorder())
+            .copy(textDecoration = if (presentation.isSelf) TextDecoration.Underline else null),
         overflow = TextOverflow.Clip,
         maxLines = 1,
         softWrap = false,
