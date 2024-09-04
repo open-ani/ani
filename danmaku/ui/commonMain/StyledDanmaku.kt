@@ -4,11 +4,11 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import me.him188.ani.danmaku.api.Danmaku
 import me.him188.ani.danmaku.api.DanmakuLocation
@@ -34,7 +34,7 @@ data class StyledDanmaku(
         if (isDebug) "$text (${floor((seconds / 60)).toInt()}:${String.format2f(seconds % 60)})" else text
     }
     
-    val solidTextLayout = measurer.measure(
+    private val solidTextLayout = measurer.measure(
         text = danmakuText,
         style = baseStyle.merge(
             style.styleForText(
@@ -48,7 +48,7 @@ data class StyledDanmaku(
         softWrap = false,
     )
     
-    val borderTextLayout = measurer.measure(
+    private val borderTextLayout = measurer.measure(
         text = danmakuText,
         style = baseStyle.merge(style.styleForBorder()),
         overflow = TextOverflow.Clip,
@@ -56,26 +56,26 @@ data class StyledDanmaku(
         softWrap = false,
     )
     
-    override val danmakuWidth = solidTextLayout.size.width
+    internal val imageBitmap = createDanmakuImageBitmap(solidTextLayout, borderTextLayout)
+    
+    override val danmakuWidth: Int = solidTextLayout.size.width
     override val danmakuHeight: Int = solidTextLayout.size.height
 }
 
 /**
- * draw text
+ * Create image snapshot of danmaku text.
  */
-fun DrawScope.drawDanmakuText(
+internal expect fun createDanmakuImageBitmap(
+    solidTextLayout: TextLayoutResult,
+    borderTextLayout: TextLayoutResult,
+): ImageBitmap
+
+internal fun DrawScope.drawDanmakuText(
     state: StyledDanmaku,
     screenPosX: Float,
     screenPosY: Float,
 ) {
-    val offset = Offset(screenPosX, screenPosY)
-    // draw black bolder first, then solid text
-    drawText(textLayoutResult = state.borderTextLayout, topLeft = offset)
-    drawText(
-        textLayoutResult = state.solidTextLayout,
-        topLeft = offset,
-        textDecoration = if (state.presentation.isSelf) TextDecoration.Underline else null
-    )
+    drawImage(state.imageBitmap, Offset(screenPosX, screenPosY))
 }
 
 internal fun dummyDanmaku(

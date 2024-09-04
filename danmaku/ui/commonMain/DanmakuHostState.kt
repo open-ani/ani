@@ -118,16 +118,16 @@ class DanmakuHostState(
                     },
                 ) { newHeight, newConfig ->
                     val dummyTextLayout = dummyDanmaku(
-                        measurer,
-                        uiContext.baseStyle,
-                        newConfig.style,
-                        "哈哈哈哈",
-                    ).solidTextLayout
+                        measurer = measurer,
+                        baseStyle = uiContext.baseStyle,
+                        style = newConfig.style,
+                        dummyText = "哈哈哈哈"
+                    )
                     val verticalPadding = with(uiContext.density) {
                         (danmakuTrackProperties.verticalPadding * 2).dp.toPx()
                     }
 
-                    val trackHeight = (dummyTextLayout.size.height + verticalPadding).toInt()
+                    val trackHeight = (dummyTextLayout.danmakuHeight + verticalPadding).toInt()
                     val trackCount = floor(newHeight / trackHeight * newConfig.displayArea)
                         .coerceAtLeast(1f)
                         .toInt()

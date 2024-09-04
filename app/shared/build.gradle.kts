@@ -266,6 +266,9 @@ kotlin {
                 getByName("iosMain") {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/ios/"))
                 }
+                getByName("skikoMain") {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/skikoMain"))
+                }
             } else {
                 sourceSets.all {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
