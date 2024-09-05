@@ -8,6 +8,7 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.appendPathSegments
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.models.runApiRequest
@@ -24,9 +25,7 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.TopicMediaSource
-import me.him188.ani.datasources.api.source.get
-import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
-import me.him188.ani.datasources.api.source.parameter.MediaSourceParametersBuilder
+import me.him188.ani.datasources.api.source.deserializeArgumentsOrNull
 import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
@@ -40,45 +39,68 @@ import me.him188.ani.datasources.api.topic.titles.toTopicDetails
 import me.him188.ani.utils.ktor.toSource
 import me.him188.ani.utils.xml.Xml
 
+@Serializable
+class RssMediaSourceArguments(
+    val name: String,
+    val description: String,
+    val searchUrl: String,
+    val iconUrl: String,
+) {
+    companion object {
+        val Default = RssMediaSourceArguments(
+            name = "RSS",
+            description = "",
+            searchUrl = "",
+            iconUrl = "https://rss.com/blog/wp-content/uploads/2019/10/social_style_3_rss-512-1.png",
+        )
+    }
+}
+
 class RssMediaSource(
     override val mediaSourceId: String,
     config: MediaSourceConfig,
     override val kind: MediaSourceKind = MediaSourceKind.BitTorrent,
 ) : TopicMediaSource() {
-    object Parameters : MediaSourceParametersBuilder() {
-        val name = string(
-            "name",
-            defaultProvider = { "RSS" },
-            description = "设置显示在列表中的名称",
-        )
-        val description = string(
-            "description",
-            defaultProvider = { "" },
-            description = "可留空",
-        )
-        val searchUrl = string(
-            "searchUrl",
-            description = """
-                替换规则:
-                {keyword} 替换为条目 (番剧) 名称
-                {page} 替换为页码, 如果不需要分页则忽略
-            """.trimIndent(),
-            placeholder = "例如  https://acg.rip/page/{page}.xml?term={keyword}",
-        )
-        val iconUrl = string("iconUrl")
+    companion object {
+        val FactoryId = FactoryId("rss")
     }
 
-    private val name = config[Parameters.name]
-    private val description = config[Parameters.description]
-    private val searchUrl: String = config[Parameters.searchUrl]
-    private val iconUrl: String = config[Parameters.iconUrl]
+//    object Parameters : MediaSourceParametersBuilder() {
+//        val name = string(
+//            "name",
+//            defaultProvider = { "RSS" },
+//            description = "设置显示在列表中的名称",
+//        )
+//        val description = string(
+//            "description",
+//            defaultProvider = { "" },
+//            description = "可留空",
+//        )
+//        val searchUrl = string(
+//            "searchUrl",
+//            description = """
+//                替换规则:
+//                {keyword} 替换为条目 (番剧) 名称
+//                {page} 替换为页码, 如果不需要分页则忽略
+//            """.trimIndent(),
+//            placeholder = "例如  https://acg.rip/page/{page}.xml?term={keyword}",
+//        )
+//        val iconUrl = string("iconUrl")
+//    }
 
-    private val usePaging = searchUrl.contains("{page}")
+    private val arguments = config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer()) ?: RssMediaSourceArguments.Default
+
+//    private val name = config[Parameters.name]
+//    private val description = config[Parameters.description]
+//    private val searchUrl: String = config[Parameters.searchUrl]
+//    private val iconUrl: String = config[Parameters.iconUrl]
+
+    private val usePaging = arguments.searchUrl.contains("{page}")
 
     private val client by lazy { useHttpClient(config) }
 
     class Factory : MediaSourceFactory {
-        override val factoryId: FactoryId get() = FactoryId("rss")
+        override val factoryId: FactoryId get() = FactoryId
 
         override val info: MediaSourceInfo = MediaSourceInfo(
             displayName = "RSS",
@@ -88,7 +110,6 @@ class RssMediaSource(
         )
 
         override val allowMultipleInstances: Boolean get() = true
-        override val parameters: MediaSourceParameters = Parameters.build()
         override fun create(mediaSourceId: String, config: MediaSourceConfig): MediaSource =
             RssMediaSource(mediaSourceId, config)
     }
@@ -96,7 +117,7 @@ class RssMediaSource(
     override suspend fun checkConnection(): ConnectionStatus {
         return kotlin.runCatching {
             runApiRequest {
-                client.get(searchUrl) // 提交一个请求, 只要它不是因为网络错误就行
+                client.get(arguments.searchUrl) // 提交一个请求, 只要它不是因为网络错误就行
             }.fold(
                 onSuccess = { ConnectionStatus.SUCCESS },
                 onKnownFailure = {
@@ -114,10 +135,10 @@ class RssMediaSource(
     }
 
     override val info: MediaSourceInfo = MediaSourceInfo(
-        displayName = name,
-        description = description,
-        websiteUrl = searchUrl,
-        iconUrl = iconUrl,
+        displayName = arguments.name,
+        description = arguments.description,
+        websiteUrl = arguments.searchUrl,
+        iconUrl = arguments.iconUrl,
     )
 
     // https://garden.breadio.wiki/feed.xml?filter=[{"search":["樱trick"]}]
@@ -128,7 +149,7 @@ class RssMediaSource(
 
             val document = try {
                 client.get(
-                    searchUrl
+                    arguments.searchUrl
                         .replace("{keyword}", encodeUrl(query))
                         .replace("{page}", page.toString()),
                 ).let { resp ->

@@ -21,6 +21,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -30,7 +31,6 @@ import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
 import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
-import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
 import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
@@ -40,12 +40,16 @@ import me.him188.ani.app.ui.profile.auth.WelcomeScene
 import me.him188.ani.app.ui.profile.auth.WelcomeViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceMode
+import me.him188.ani.app.ui.settings.tabs.media.source.EditRssMediaSourcePage
+import me.him188.ani.app.ui.settings.tabs.media.source.EditRssMediaSourceViewModel
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
 import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModelImpl
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodeScene
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
+import me.him188.ani.datasources.api.source.FactoryId
 import kotlin.math.roundToInt
 
 @Composable
@@ -244,6 +248,36 @@ fun AniAppContentPortrait(
                 // Don't use rememberViewModel to save memory
                 val vm = remember(subjectId) { SubjectCacheViewModelImpl(subjectId) }
                 SubjectCacheScene(vm, Modifier.desktopTitleBarPadding())
+            }
+            composable(
+                "/settings/media-source/edit/{factoryId}?existingMediaSourceInstanceId={existingMediaSourceInstanceId}",
+                arguments = listOf(
+                    navArgument("factoryId") { type = NavType.StringType },
+                    navArgument("existingMediaSourceInstanceId") { type = NavType.StringType },
+                ),
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
+            ) { backStackEntry ->
+                val factoryId = backStackEntry.arguments?.getString("factoryId") ?: kotlin.run {
+                    navController.popBackStack()
+                    return@composable
+                }
+                val mediaSourceInstanceId = backStackEntry.arguments?.getString("existingMediaSourceInstanceId")
+                when (FactoryId(factoryId)) {
+                    RssMediaSource.FactoryId -> EditRssMediaSourcePage(
+                        viewModel<EditRssMediaSourceViewModel>(key = mediaSourceInstanceId) {
+                            EditRssMediaSourceViewModel(
+                                if (mediaSourceInstanceId == null) EditMediaSourceMode.Add
+                                else EditMediaSourceMode.Edit(instanceId = mediaSourceInstanceId),
+                            )
+                        },
+                        Modifier.desktopTitleBarPadding()
+                    )
+
+                    else -> error("Unknown factoryId: $factoryId")
+                }
             }
         }
     }

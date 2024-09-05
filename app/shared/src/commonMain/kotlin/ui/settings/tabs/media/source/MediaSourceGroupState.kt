@@ -141,7 +141,8 @@ class EditMediaSourceState(
             info = template.info,
             parameters = template.parameters,
             persistedArguments = flowOf(MediaSourceConfig()),
-            editType = EditType.Add,
+            editMediaSourceMode = EditMediaSourceMode.Add,
+            onSave = { confirmEdit(it) },
             backgroundScope.coroutineContext, // TODO: this can be a memory leak
         )
         editMediaSourceState = state
@@ -156,7 +157,12 @@ class EditMediaSourceState(
             info = presentation.info,
             parameters = presentation.parameters,
             persistedArguments = getConfigFlow(presentation.instanceId),
-            editType = EditType.Edit(presentation.instanceId),
+            editMediaSourceMode = EditMediaSourceMode.Edit(presentation.instanceId),
+            onSave = {
+                editTasker.launch {
+                    confirmEditImpl(it)
+                }.join()
+            },
             backgroundScope.coroutineContext, // TODO: this can be a memory leak
         )
     }
@@ -164,25 +170,27 @@ class EditMediaSourceState(
     private val editTasker = MonoTasker(backgroundScope)
 
     fun confirmEdit(state: EditingMediaSource) {
-        when (state.editType) {
-            EditType.Add -> {
-                editTasker.launch {
-                    onAdd(
-                        state.factoryId,
-                        state.createConfig(),
-                    )
-                    withContext(Dispatchers.Main) { cancelEdit() }
-                }
+        editTasker.launch {
+            confirmEditImpl(state)
+        }
+    }
+
+    private suspend fun confirmEditImpl(state: EditingMediaSource) {
+        when (state.editMediaSourceMode) {
+            EditMediaSourceMode.Add -> {
+                onAdd(
+                    state.factoryId,
+                    state.createConfig(),
+                )
+                withContext(Dispatchers.Main) { cancelEdit() }
             }
 
-            is EditType.Edit -> {
-                editTasker.launch {
-                    onEdit(
-                        state.editType.instanceId,
-                        state.createConfig(),
-                    )
-                    withContext(Dispatchers.Main) { cancelEdit() }
-                }
+            is EditMediaSourceMode.Edit -> {
+                onEdit(
+                    state.editMediaSourceMode.instanceId,
+                    state.createConfig(),
+                )
+                withContext(Dispatchers.Main) { cancelEdit() }
             }
         }
     }

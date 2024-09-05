@@ -1,7 +1,11 @@
 package me.him188.ani.datasources.api.source
 
 import io.ktor.client.HttpClientConfig
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameter
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.utils.ktor.ClientProxyConfig
@@ -65,8 +69,16 @@ data class MediaSourceConfig(
     val userAgent: String? = null,
     /**
      * 用户为数据源配置的参数列表. 一定包含 [MediaSourceFactory.parameters] 中的所有参数, 但如果数据源更新了更多参数, 则可能不会包含.
+     *
+     * @suppress 此属性已弃用. 只有 Jellyfin, Emby 和 Ikaros 才会使用. 新版本查看 [serializedArguments].
      */
-    val arguments: Map<String, String?> = mapOf(),
+    val arguments: Map<String, String?> = mapOf(), // TODO: completely remove this
+    /**
+     * 新版本的参数列表, 各个数据源可以自己决定该数据的格式. 要使用此类型参数, 数据源必须拥有单独的配置 UI 界面.
+     *
+     * 用户为数据源配置的参数列表.
+     */
+    val serializedArguments: JsonElement? = null,
 ) {
     companion object {
         val Default = MediaSourceConfig()
@@ -82,3 +94,20 @@ fun HttpClientConfig<*>.applyMediaSourceConfig(
     config.proxy?.let { proxy(it) }
     config.userAgent?.let { userAgent(it) }
 }
+
+
+private val parametersJson = Json {
+    ignoreUnknownKeys = true
+}
+
+fun <T> MediaSourceConfig.deserializeArgumentsOrNull(
+    deserializationStrategy: DeserializationStrategy<T>,
+    json: Json = parametersJson,
+): T? = serializedArguments?.let { json.decodeFromJsonElement(deserializationStrategy, it) }
+
+fun <T> MediaSourceConfig.Companion.serializeArguments(
+    serializationStrategy: SerializationStrategy<T>,
+    value: T,
+    json: Json = parametersJson,
+): JsonElement = json.encodeToJsonElement(serializationStrategy, value)
+
