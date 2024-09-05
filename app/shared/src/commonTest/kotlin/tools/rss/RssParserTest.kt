@@ -250,6 +250,160 @@ class RssParserTest {
             """.trimIndent(),
         )
     }
+    
+    @Test
+    fun nyaa_si() {
+        test(
+            """
+                {
+                    "title": "Nyaa - \"关于我\" - Torrent File RSS",
+                    "description": "RSS Feed for \"关于我\"",
+                    "link": "https://nyaa.si/",
+                    "items": [
+                        {
+                            "title": "[LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 20(68) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]",
+                            "description": "<a href=\"https://nyaa.si/view/1867076\">#1867076 | [LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 20(68) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]</a> | 460.9 MiB | Anime - Non-English-translated | f28bdc98fbebef1e329e11b2fd97595b9cb63e0e",
+                            "pubDate": "2024-08-31T07:02:18",
+                            "link": "https://nyaa.si/download/1867076.torrent",
+                            "guid": "https://nyaa.si/view/1867076",
+                            "enclosure": null
+                        },
+                        {
+                            "title": "[LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 19(67) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]",
+                            "description": "<a href=\"https://nyaa.si/view/1863934\">#1863934 | [LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 19(67) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]</a> | 498.4 MiB | Anime - Non-English-translated | 25616ddf2a1848f3d3ff9e2ace88c137c3bd7825",
+                            "pubDate": "2024-08-24T04:57:54",
+                            "link": "https://nyaa.si/download/1863934.torrent",
+                            "guid": "https://nyaa.si/view/1863934",
+                            "enclosure": null
+                        }
+                    ]
+                }
+            """.trimIndent(),
+            """
+                <rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:nyaa="https://nyaa.si/xmlns/nyaa" version="2.0">
+                <channel>
+                <title>Nyaa - "关于我" - Torrent File RSS</title>
+                <description>RSS Feed for "关于我"</description>
+                <link>https://nyaa.si/</link>
+                <atom:link href="https://nyaa.si/?page=rss" rel="self" type="application/rss+xml"/>
+                <item>
+                <title>[LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 20(68) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]</title>
+                <link>https://nyaa.si/download/1867076.torrent</link>
+                <guid isPermaLink="true">https://nyaa.si/view/1867076</guid>
+                <pubDate>Sat, 31 Aug 2024 07:02:18 -0000</pubDate>
+                <nyaa:seeders>188</nyaa:seeders>
+                <nyaa:leechers>4</nyaa:leechers>
+                <nyaa:downloads>2306</nyaa:downloads>
+                <nyaa:infoHash>f28bdc98fbebef1e329e11b2fd97595b9cb63e0e</nyaa:infoHash>
+                <nyaa:categoryId>1_3</nyaa:categoryId>
+                <nyaa:category>Anime - Non-English-translated</nyaa:category>
+                <nyaa:size>460.9 MiB</nyaa:size>
+                <nyaa:comments>0</nyaa:comments>
+                <nyaa:trusted>No</nyaa:trusted>
+                <nyaa:remake>No</nyaa:remake>
+                <description>
+                <![CDATA[ <a href="https://nyaa.si/view/1867076">#1867076 | [LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 20(68) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]</a> | 460.9 MiB | Anime - Non-English-translated | f28bdc98fbebef1e329e11b2fd97595b9cb63e0e ]]>
+                </description>
+                </item>
+                <item>
+                <title>[LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 19(67) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]</title>
+                <link>https://nyaa.si/download/1863934.torrent</link>
+                <guid isPermaLink="true">https://nyaa.si/view/1863934</guid>
+                <pubDate>Sat, 24 Aug 2024 04:57:54 -0000</pubDate>
+                <nyaa:seeders>146</nyaa:seeders>
+                <nyaa:leechers>25</nyaa:leechers>
+                <nyaa:downloads>2819</nyaa:downloads>
+                <nyaa:infoHash>25616ddf2a1848f3d3ff9e2ace88c137c3bd7825</nyaa:infoHash>
+                <nyaa:categoryId>1_3</nyaa:categoryId>
+                <nyaa:category>Anime - Non-English-translated</nyaa:category>
+                <nyaa:size>498.4 MiB</nyaa:size>
+                <nyaa:comments>0</nyaa:comments>
+                <nyaa:trusted>No</nyaa:trusted>
+                <nyaa:remake>No</nyaa:remake>
+                <description>
+                <![CDATA[ <a href="https://nyaa.si/view/1863934">#1863934 | [LoliHouse] 关于我转生变成史莱姆这档事 第三季 / Tensei Shitara Slime Datta Ken 3rd Season - 19(67) [WebRip 1080p HEVC-10bit AAC][简繁内封字幕]</a> | 498.4 MiB | Anime - Non-English-translated | 25616ddf2a1848f3d3ff9e2ace88c137c3bd7825 ]]>
+                </description>
+                </item>
+            """.trimIndent(),
+        )
+    }
+    
+    @Test
+    fun nyaa_si_gbc() {
+        test(
+            """
+                {
+                    "title": "Nyaa - \"GIRLS BAND CRY\" - Torrent File RSS",
+                    "description": "RSS Feed for \"GIRLS BAND CRY\"",
+                    "link": "https://nyaa.si/",
+                    "items": [
+                        {
+                            "title": "[Lazy] Girls Band Cry - 04-05 (BDRemux 1080p AVC FLAC) | BD Remux",
+                            "description": "<a href=\"https://nyaa.si/view/1865935\">#1865935 | [Lazy] Girls Band Cry - 04-05 (BDRemux 1080p AVC FLAC) | BD Remux</a> | 13.1 GiB | Anime - English-translated | c8f0841f1cbcfcb6d63db2a828b6b8c3a1aa9bec",
+                            "pubDate": "2024-08-28T23:11:37",
+                            "link": "https://nyaa.si/download/1865935.torrent",
+                            "guid": "https://nyaa.si/view/1865935",
+                            "enclosure": null
+                        },
+                        {
+                            "title": "[北宇治字幕组] GIRLS BAND CRY [01-13 修正合集][WebRip][HEVC_AAC][简繁内封]",
+                            "description": "<a href=\"https://nyaa.si/view/1863557\">#1863557 | [北宇治字幕组] GIRLS BAND CRY [01-13 修正合集][WebRip][HEVC_AAC][简繁内封]</a> | 6.2 GiB | Anime - Non-English-translated | 01b175bfb675360a36318700c7d86346350bb4fc",
+                            "pubDate": "2024-08-23T07:08:19",
+                            "link": "https://nyaa.si/download/1863557.torrent",
+                            "guid": "https://nyaa.si/view/1863557",
+                            "enclosure": null
+                        }
+                    ]
+                }
+            """.trimIndent(),
+            """
+                <rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:nyaa="https://nyaa.si/xmlns/nyaa" version="2.0">
+                <channel>
+                <title>Nyaa - "GIRLS BAND CRY" - Torrent File RSS</title>
+                <description>RSS Feed for "GIRLS BAND CRY"</description>
+                <link>https://nyaa.si/</link>
+                <atom:link href="https://nyaa.si/?page=rss" rel="self" type="application/rss+xml"/>
+                <item>
+                <title>[Lazy] Girls Band Cry - 04-05 (BDRemux 1080p AVC FLAC) | BD Remux</title>
+                <link>https://nyaa.si/download/1865935.torrent</link>
+                <guid isPermaLink="true">https://nyaa.si/view/1865935</guid>
+                <pubDate>Wed, 28 Aug 2024 23:11:37 -0000</pubDate>
+                <nyaa:seeders>57</nyaa:seeders>
+                <nyaa:leechers>2</nyaa:leechers>
+                <nyaa:downloads>321</nyaa:downloads>
+                <nyaa:infoHash>c8f0841f1cbcfcb6d63db2a828b6b8c3a1aa9bec</nyaa:infoHash>
+                <nyaa:categoryId>1_2</nyaa:categoryId>
+                <nyaa:category>Anime - English-translated</nyaa:category>
+                <nyaa:size>13.1 GiB</nyaa:size>
+                <nyaa:comments>0</nyaa:comments>
+                <nyaa:trusted>No</nyaa:trusted>
+                <nyaa:remake>No</nyaa:remake>
+                <description>
+                <![CDATA[ <a href="https://nyaa.si/view/1865935">#1865935 | [Lazy] Girls Band Cry - 04-05 (BDRemux 1080p AVC FLAC) | BD Remux</a> | 13.1 GiB | Anime - English-translated | c8f0841f1cbcfcb6d63db2a828b6b8c3a1aa9bec ]]>
+                </description>
+                </item>
+                <item>
+                <title>[北宇治字幕组] GIRLS BAND CRY [01-13 修正合集][WebRip][HEVC_AAC][简繁内封]</title>
+                <link>https://nyaa.si/download/1863557.torrent</link>
+                <guid isPermaLink="true">https://nyaa.si/view/1863557</guid>
+                <pubDate>Fri, 23 Aug 2024 07:08:19 -0000</pubDate>
+                <nyaa:seeders>29</nyaa:seeders>
+                <nyaa:leechers>23</nyaa:leechers>
+                <nyaa:downloads>282</nyaa:downloads>
+                <nyaa:infoHash>01b175bfb675360a36318700c7d86346350bb4fc</nyaa:infoHash>
+                <nyaa:categoryId>1_3</nyaa:categoryId>
+                <nyaa:category>Anime - Non-English-translated</nyaa:category>
+                <nyaa:size>6.2 GiB</nyaa:size>
+                <nyaa:comments>1</nyaa:comments>
+                <nyaa:trusted>No</nyaa:trusted>
+                <nyaa:remake>No</nyaa:remake>
+                <description>
+                <![CDATA[ <a href="https://nyaa.si/view/1863557">#1863557 | [北宇治字幕组] GIRLS BAND CRY [01-13 修正合集][WebRip][HEVC_AAC][简繁内封]</a> | 6.2 GiB | Anime - Non-English-translated | 01b175bfb675360a36318700c7d86346350bb4fc ]]>
+                </description>
+                </item>
+            """.trimIndent()
+        )
+    }
 
     private fun test(
         @Language("json")

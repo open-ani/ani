@@ -88,7 +88,8 @@ class RssMediaSource(
 //        val iconUrl = string("iconUrl")
 //    }
 
-    private val arguments = config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer()) ?: RssMediaSourceArguments.Default
+    private val arguments =
+        config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer()) ?: RssMediaSourceArguments.Default
 
 //    private val name = config[Parameters.name]
 //    private val description = config[Parameters.description]
@@ -169,7 +170,17 @@ class RssMediaSource(
                 null,
                 hasMore = channel.items.isNotEmpty(),
                 page = channel.items.mapNotNull { item ->
-                    if (item.enclosure == null) return@mapNotNull null
+                    val downloadLink = when {
+                        item.enclosure != null -> item.enclosure.url
+                        item.link.isNotBlank() -> item.link
+                        else -> return@mapNotNull null
+                    }
+                    val size = when {
+                        item.enclosure != null && item.enclosure.length > 1 // 有的源会返回 1
+                        -> item.enclosure.length.bytes
+
+                        else -> Unspecified
+                    }
 
                     val details = RawTitleParser.getDefault().parse(item.title, null)
 
@@ -180,9 +191,8 @@ class RssMediaSource(
                         category = TopicCategory.ANIME,
                         rawTitle = item.title,
                         commentsCount = 0,
-                        downloadLink = guessResourceLocation(item.enclosure.url),
-                        size = if (item.enclosure.length <= 1L) Unspecified // 有的源会返回 1
-                        else item.enclosure.length.bytes,
+                        downloadLink = guessResourceLocation(downloadLink),
+                        size = size,
                         alliance = item.title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[")
                             .removePrefix("【").trim(),
                         author = null,
