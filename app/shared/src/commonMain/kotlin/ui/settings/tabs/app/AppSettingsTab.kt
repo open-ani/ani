@@ -419,12 +419,11 @@ private fun SettingsScope.PlayerGroup(
         if (currentPlatform.isDesktop()) {
             HorizontalDividerItem()
             SwitchItem(
-                checked = config.autoSkipOpEdExperimental,
+                checked = config.autoSkipOpEd,
                 onCheckedChange = {
-                    videoScaffoldConfig.update(config.copy(autoSkipOpEdExperimental = it))
+                    videoScaffoldConfig.update(config.copy(autoSkipOpEd = it))
                 },
                 title = { Text("自动跳过 OP 和 ED") },
-                description = { Text("实验性功能") },
             )
         }
     }

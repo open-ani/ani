@@ -659,7 +659,7 @@ private class EpisodeViewModelImpl(
         // 跳过 OP 和 ED
         launchInBackground {
             settingsRepository.videoScaffoldConfig.flow
-                .map { it.autoSkipOpEdExperimental }
+                .map { it.autoSkipOpEd }
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->

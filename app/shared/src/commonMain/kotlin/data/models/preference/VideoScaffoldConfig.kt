@@ -4,8 +4,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isMobile
 
 @Immutable
 enum class FullscreenSwitchMode {
@@ -57,7 +55,7 @@ data class VideoScaffoldConfig(
     /**
      * 跳过 OP 和 ED
      */
-    val autoSkipOpEdExperimental: Boolean = false,
+    val autoSkipOpEd: Boolean = true,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {
