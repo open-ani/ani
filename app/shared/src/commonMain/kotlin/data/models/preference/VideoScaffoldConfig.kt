@@ -37,7 +37,7 @@ data class VideoScaffoldConfig(
      * 在编辑弹幕时暂停视频.
      * @since 3.2.0-beta01
      */
-    val pauseVideoOnEditDanmaku: Boolean = currentPlatform.isMobile(),
+    val pauseVideoOnEditDanmaku: Boolean = true,
     /**
      * 在观看到 90% 进度后, 自动标记看过
      */
