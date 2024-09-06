@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Slider
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -196,7 +196,11 @@ fun MediaProgressSlider(
             .testTag(TAG_PROGRESS_SLIDER),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Box(Modifier.fillMaxWidth().height(6.dp).padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp))) {
+        Box(
+            Modifier.fillMaxWidth().height(6.dp)
+                .padding(horizontal = 2.dp) // half thumb width
+                .clip(CircleShape),
+        ) {
             Canvas(Modifier.matchParentSize()) {
                 // draw track
                 drawRect(
@@ -238,10 +242,32 @@ fun MediaProgressSlider(
 
             Canvas(Modifier.matchParentSize()) {
                 // draw play progress
+                val xPlay = size.width * state.displayPositionRatio
+
+                val thumbWidth = 4.dp.toPx()
+                val gapWidthEach = 3.dp.toPx() // thumb width + gap
+
+                val actualXPlay = (xPlay - (gapWidthEach + thumbWidth / 2)).fastCoerceAtLeast(0f)
                 drawRect(
                     trackProgressColor,
                     topLeft = Offset(0f, 0f),
-                    size = Size(size.width * state.displayPositionRatio, size.height),
+                    size = Size(actualXPlay, size.height),
+                )
+                val drawBackgroundWidth = xPlay - actualXPlay
+                if (drawBackgroundWidth != 0f) {
+                    // 画上背景, 覆盖掉加载中颜色
+                    drawRect(
+                        trackBackgroundColor,
+                        topLeft = Offset(actualXPlay, 0f),
+                        size = Size(drawBackgroundWidth, size.height),
+                        blendMode = BlendMode.Src, // override
+                    )
+                }
+                drawRect(
+                    trackBackgroundColor,
+                    topLeft = Offset(xPlay, 0f),
+                    size = Size(gapWidthEach + thumbWidth / 2, size.height),
+                    blendMode = BlendMode.Src, // override
                 )
             }
 
@@ -332,7 +358,7 @@ fun MediaProgressSlider(
                         thumbWidth = it.width
                     },
                 )
-                
+
                 // 仅在 detached slider 上显示
                 if (state.isPreviewing && showPreviewTimeTextOnThumb) {
                     ProgressSliderPreviewPopup(
