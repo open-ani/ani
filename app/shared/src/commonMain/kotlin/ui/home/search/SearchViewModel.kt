@@ -73,10 +73,10 @@ class SubjectSearcher(
             getKey = { it.id },
             debugName = "SubjectSearcher.ldc",
         )
-    }.shareInBackground()
+    }.shareInBackground(started = SharingStarted.Lazily)
 
     val list = ldc.flatMapLatest { it?.cachedDataFlow ?: flowOf(emptyList()) }
-    val hasMore = ldc.flatMapLatest { it?.isCompleted ?: flowOf(false) }
+    val hasMore = ldc.flatMapLatest { it?.isCompleted ?: flowOf(true) }
         .map { !it }
 
     suspend fun requestMore() = ldc.first()?.requestMore()

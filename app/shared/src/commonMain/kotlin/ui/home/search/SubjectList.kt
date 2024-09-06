@@ -73,9 +73,6 @@ class SubjectPreviewListState(
 ) {
     val items by items
 
-    //    var hasMore by mutableStateOf(true)
-    val hasMore by hasMore
-
     private val loadMoreTasker = MonoTasker(backgroundScope)
     val isLoading by loadMoreTasker::isRunning
 
@@ -148,10 +145,8 @@ fun SubjectPreviewColumn(
         }
 
         item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
-            if (state.hasMore) {
-                SideEffect {
-                    state.loadMore()
-                }
+            SideEffect {
+                state.loadMore()
             }
             if (state.isLoading) {
                 Row(
