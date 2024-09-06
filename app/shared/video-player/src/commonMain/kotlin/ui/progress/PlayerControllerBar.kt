@@ -212,14 +212,23 @@ object PlayerControllerDefaults {
                                     text = volume.times(100).roundToInt().toString(),
                                     modifier = Modifier.padding(8.dp),
                                 )
+                                val colors = SliderDefaults.colors(
+                                    inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
+                                )
                                 VerticalSlider(
                                     value = volume,
                                     onValueChange = onchange,
                                     modifier = Modifier.width(96.dp),
                                     thumb = {},
-                                    colors = SliderDefaults.colors(
-                                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
-                                    ),
+                                    colors = colors,
+                                    track = { sliderState ->
+                                        SliderDefaults.Track(
+                                            colors = colors,
+                                            enabled = true,
+                                            sliderState = sliderState,
+                                            thumbTrackGapSize = 0.dp,
+                                        )
+                                    },
                                     valueRange = 0f..maxValue,
                                 )
                             }
