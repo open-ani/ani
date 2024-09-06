@@ -84,8 +84,8 @@ internal class AniComposeUiTestImpl(override val composeUiTest: ComposeUiTest) :
     override fun waitForIdle() = composeUiTest.waitForIdle()
     override suspend fun awaitIdle() = composeUiTest.awaitIdle()
 
-    override fun waitUntil(timeoutMillis: Long, condition: () -> Boolean) =
-        composeUiTest.waitUntil(timeoutMillis, condition)
+    override fun waitUntil(conditionDescription: String?, timeoutMillis: Long, condition: () -> Boolean) =
+        composeUiTest.waitUntil(conditionDescription, timeoutMillis, condition)
 
     override fun registerIdlingResource(idlingResource: IdlingResource) =
         composeUiTest.registerIdlingResource(idlingResource)
@@ -103,6 +103,9 @@ internal class AniComposeUiTestImpl(override val composeUiTest: ComposeUiTest) :
 }
 
 // body copied from ComposeUiTest
+/**
+ * @see ComposeUiTest
+ */
 interface AniComposeUiTest : SemanticsNodeInteractionsProvider {
     val composeUiTest: ComposeUiTest
 
@@ -113,8 +116,48 @@ interface AniComposeUiTest : SemanticsNodeInteractionsProvider {
     fun waitForIdle()
     suspend fun awaitIdle()
 
+
+    /**
+     * Blocks until the given [condition] is satisfied.
+     *
+     * If [auto advancement][MainTestClock.autoAdvance] is enabled on the [mainClock], this method
+     * will actively advance the clock to process any pending composition, invalidation and
+     * animation. If auto advancement is not enabled, the clock will not be advanced actively
+     * which usually means that the Compose UI appears to be frozen. This is ideal for testing
+     * animations in a deterministic way. In either case, this method will wait for all
+     * [IdlingResource]s to become idle.
+     *
+     * Note that some processes are driven by the host operating system and will therefore still
+     * execute when auto advancement is disabled. For example, on Android measure, layout and draw
+     * can still happen if the host view is invalidated by other parts of the View hierarchy.
+     *
+     * Compared to [MainTestClock.advanceTimeUntil], [waitUntil] sleeps after every iteration to
+     * give the host operating system the opportunity to do measure/layout/draw passes. This gives
+     * [waitUntil] a better integration with the host, but it is less preferred from a performance
+     * viewpoint. Therefore, we recommend that you try using [MainTestClock.advanceTimeUntil]
+     * before resorting to [waitUntil].
+     *
+     * @param timeoutMillis The time after which this method throws an exception if the given
+     * condition is not satisfied. This observes wall clock time, not [frame time][mainClock].
+     * @param conditionDescription An optional human-readable description of [condition] that will
+     * be included in the timeout exception if thrown.
+     * @param condition Condition that must be satisfied in order for this method to successfully
+     * finish.
+     *
+     * @throws androidx.compose.ui.test.ComposeTimeoutException If the condition is not satisfied
+     * after [timeoutMillis] (in wall clock time).
+     */
+    fun waitUntil(
+        conditionDescription: String? = null,
+        timeoutMillis: Long = 5000L,
+        condition: () -> Boolean
+    )
+
     // 默认 timeoutMillis 更长, 否则 CI 上有概率失败
-    fun waitUntil(timeoutMillis: Long = 5000L, condition: () -> Boolean)
+    fun waitUntil(timeoutMillis: Long = 5000L, condition: () -> Boolean) {
+        waitUntil(null, timeoutMillis, condition)
+    }
+
     fun registerIdlingResource(idlingResource: IdlingResource)
     fun unregisterIdlingResource(idlingResource: IdlingResource)
     fun setContent(composable: @Composable () -> Unit)
