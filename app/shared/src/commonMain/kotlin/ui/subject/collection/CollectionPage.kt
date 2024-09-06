@@ -109,7 +109,6 @@ val COLLECTION_TABS_SORTED = listOf(
     UnifiedCollectionType.DONE,
 )
 
-
 /**
  * My collections
  */
@@ -131,7 +130,7 @@ fun CollectionPage(
     val showSessionErrorInList by remember(vm) {
         derivedStateOf {
             val collection = vm.collectionsByType(COLLECTION_TABS_SORTED[pagerState.currentPage])
-            collection.subjectCollectionColumnState.isKnownEmpty
+            collection.subjectCollectionColumnState.isKnownAuthorizedAndEmpty
         }
     }
 
@@ -270,36 +269,63 @@ fun CollectionPage(
                 start = 0.dp,
                 end = 0.dp,
             )
-            if (vm.authState.isKnownLoggedOut && showSessionErrorInList) {
-                SessionTipsArea(
-                    vm.authState,
-                    guest = { GuestTips(vm.authState) },
-                    Modifier.padding(top = 32.dp)
-                        .padding(horizontal = 16.dp)
-                        .padding(tabContentPadding),
-                )
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    TabContent(
-                        collection.subjectCollectionColumnState,
-                        vm = vm,
-                        type = type,
-                        contentPadding = tabContentPadding,
-                        modifier = Modifier
-                            .nestedScroll(pullToRefreshState.nestedScrollConnection)
-                            .fillMaxSize(),
-                        enableAnimation = vm.myCollectionsSettings.enableListAnimation,
-                        allowProgressIndicator = vm.authState.isKnownLoggedIn,
-                    )
-                    PullToRefreshContainer(
-                        pullToRefreshState,
-                        Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(topBarPaddings.calculateTopPadding()),
-                    )
 
+            Box(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                when {
+                    // 假设没登录, 但是有缓存, 需要展示缓存
+                    vm.authState.isKnownGuest && showSessionErrorInList -> {
+                        SessionTipsArea(
+                            vm.authState,
+                            guest = { GuestTips(vm.authState) },
+                            Modifier.padding(top = 32.dp)
+                                .padding(horizontal = 16.dp)
+                                .padding(tabContentPadding),
+                        )
+                    }
+
+                    collection.subjectCollectionColumnState.isKnownAuthorizedAndEmpty -> {
+                        Column(
+                            modifier.padding(top = 32.dp).padding(tabContentPadding).padding(horizontal = 16.dp)
+                                .fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            SideEffect {
+                                collection.subjectCollectionColumnState.requestMore()
+                            }
+
+                            Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
+
+                            val navigator = LocalNavigator.current
+                            Button({ navigator.navigateSearch() }, Modifier.fillMaxWidth()) {
+                                Icon(Icons.Rounded.Search, null)
+                                Text("搜索", Modifier.padding(start = 8.dp))
+                            }
+                        }
+                    }
+
+                    else -> {
+                        TabContent(
+                            collection.subjectCollectionColumnState,
+                            vm = vm,
+                            type = type,
+                            contentPadding = tabContentPadding,
+                            modifier = Modifier
+                                .nestedScroll(pullToRefreshState.nestedScrollConnection)
+                                .fillMaxSize(),
+                            enableAnimation = vm.myCollectionsSettings.enableListAnimation,
+                            allowProgressIndicator = vm.authState.isKnownLoggedIn,
+                        )
+                        PullToRefreshContainer(
+                            pullToRefreshState,
+                            Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(topBarPaddings.calculateTopPadding()),
+                        )
+
+                    }
                 }
             }
         }
@@ -380,25 +406,6 @@ private fun TabContent(
                     }
                 },
             )
-        },
-        onEmpty = {
-            Column(
-                Modifier.padding(top = 32.dp).padding(contentPadding).padding(horizontal = 16.dp).fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                SideEffect {
-                    state.requestMore()
-                }
-
-                Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
-
-                val navigator = LocalNavigator.current
-                Button({ navigator.navigateSearch() }, Modifier.fillMaxWidth()) {
-                    Icon(Icons.Rounded.Search, null)
-                    Text("搜索", Modifier.padding(start = 8.dp))
-                }
-            }
         },
         modifier,
         contentPadding = contentPadding,

@@ -170,9 +170,7 @@ fun SessionTipsArea(
                 RetryButton(onRetry)
             }
 
-            SessionStatus.Guest -> TextButton(onLogin) {
-                Text("游客模式，点击登录")
-            }
+            SessionStatus.Guest -> guest()
         }
     }
 }

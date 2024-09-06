@@ -253,7 +253,7 @@ class SubjectManagerImpl(
                     val resp = sessionManager.userInfoAsApiResponse.first()
                     resp.map { userInfo ->
                         bangumiSubjectRepository.getSubjectCollections(
-                            userInfo.username!!,
+                            userInfo.username ?: error("Self username is null"),
                             subjectType = BangumiSubjectType.Anime,
                             subjectCollectionType = type.toSubjectCollectionType(),
                         ).mapNotNull {

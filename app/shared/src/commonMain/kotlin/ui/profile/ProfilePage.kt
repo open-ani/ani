@@ -70,7 +70,7 @@ fun ProfilePage(
         topBar = {
             SelfInfo(
                 viewModel.authState,
-                viewModel.authState.isKnownLoggedOut,
+                viewModel.authState.isKnownLoggedOut || viewModel.authState.isKnownGuest,
                 onClickSettings,
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)

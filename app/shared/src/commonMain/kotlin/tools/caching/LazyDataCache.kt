@@ -385,7 +385,7 @@ private class LazyDataCacheImpl<T>(
     // Writes must be under lock
     private val currentSourceInfo: MutableStateFlow<SourceInfo<T>?> = MutableStateFlow(null)
     private val currentSource get() = currentSourceInfo.map { (it as? SourceInfo.Success)?.source }
-    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(false) }
+    private val sourceCompleted = currentSource.flatMapLatest { it?.finished ?: flowOf(true) }
     private val persistentData = persistentStore.data.flowOn(Dispatchers.Default) // 别在 UI 算
 
     override val cachedDataFlow: Flow<List<T>> = persistentData.map {
@@ -592,6 +592,9 @@ private class LazyDataCacheImpl<T>(
     }
 
     // Unsafe, must be used under lock.
+    /**
+     * @return `null` means failed - maybe due to unauthorized or network error
+     */
     private suspend inline fun LazyDataCacheImpl<T>.getSourceOrCreate(orderPolicy: RefreshOrderPolicy): PagedSource<T>? {
         (currentSourceInfo.value as? SourceInfo.Success)?.source?.let { return it }
         return (try {

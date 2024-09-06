@@ -61,7 +61,7 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
             SubjectCollectionColumnState(
                 cachedData = cache.cachedDataFlow.produceState(emptyList()),
                 hasMore = cache.isCompleted.map { !it }.produceState(true),
-                isKnownEmpty = cache.isCompleted.combine(cache.cachedDataFlow) { completed, data ->
+                isKnownAuthorizedAndEmpty = combine(cache.isCompleted, cache.cachedDataFlow) { completed, data ->
                     completed && data.isEmpty()
                 }.produceState(false),
                 onRequestMore = { cache.requestMore() },

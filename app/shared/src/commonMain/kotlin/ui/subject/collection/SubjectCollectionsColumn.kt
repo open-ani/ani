@@ -64,7 +64,7 @@ private inline val spacedBy get() = 16.dp
 class SubjectCollectionColumnState(
     cachedData: State<List<SubjectCollection>>,
     hasMore: State<Boolean>,
-    isKnownEmpty: State<Boolean>,
+    isKnownAuthorizedAndEmpty: State<Boolean>,
     private val onRequestMore: suspend () -> Unit,
     backgroundScope: CoroutineScope,
 ) {
@@ -72,7 +72,11 @@ class SubjectCollectionColumnState(
 
     val cachedData: List<SubjectCollection> by cachedData
     val hasMore by hasMore
-    val isKnownEmpty by isKnownEmpty
+
+    /**
+     * 如果未登录, 此属性会一直未 false
+     */
+    val isKnownAuthorizedAndEmpty by isKnownAuthorizedAndEmpty
 
     internal val gridState = LazyGridState()
 
@@ -97,17 +101,11 @@ class SubjectCollectionColumnState(
 fun SubjectCollectionsColumn(
     state: SubjectCollectionColumnState,
     item: @Composable (item: SubjectCollection) -> Unit,
-    onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
 ) {
-    if (state.isKnownEmpty) {
-        onEmpty()
-        return
-    }
-
     val layoutDirection = LocalLayoutDirection.current
     val contentPaddingState by rememberUpdatedState(contentPadding)
     val gridContentPadding by remember(layoutDirection) {
