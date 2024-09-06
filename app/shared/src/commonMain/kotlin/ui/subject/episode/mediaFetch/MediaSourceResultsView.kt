@@ -30,7 +30,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -73,7 +72,7 @@ fun MediaSourceResultsView(
     sourceSelected: (String) -> Boolean,
     onClickEnabled: (mediaSourceId: String) -> Unit,
     modifier: Modifier = Modifier,
-) = Surface {
+) {
     Column(modifier) {
         var isShowDetails by rememberSaveable { mutableStateOf(false) }
         Row(

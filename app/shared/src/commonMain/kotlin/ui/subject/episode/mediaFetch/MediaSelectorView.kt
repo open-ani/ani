@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -63,7 +62,7 @@ fun MediaSelectorView(
     onClickItem: ((Media) -> Unit) = { state.select(it) },
     bottomActions: (@Composable RowScope.() -> Unit)? = null,
     singleLineFilter: Boolean = false,
-) = Surface {
+) {
     Column(modifier) {
         val lazyListState = rememberLazyListState()
         LazyColumn(
@@ -82,33 +81,26 @@ fun MediaSelectorView(
                         lazyListState.firstVisibleItemIndex == 2
                     }
                 }
-                Surface(
-//                    tonalElevation = if (isStuck) 3.dp else 0.dp,
-                    Modifier.animateItem(),
+                Column(
+                    Modifier.animateItem().padding(bottom = 12.dp).fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Column {
-                        Column(
-                            Modifier.padding(bottom = 12.dp).fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                remember(state.filteredCandidates.size, state.mediaList.size) {
-                                    "筛选到 ${state.filteredCandidates.size}/${state.mediaList.size} 条资源"
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                            )
+                    Text(
+                        remember(state.filteredCandidates.size, state.mediaList.size) {
+                            "筛选到 ${state.filteredCandidates.size}/${state.mediaList.size} 条资源"
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                    )
 
-                            MediaSelectorFilters(
-                                resolution = state.resolution,
-                                subtitleLanguageId = state.subtitleLanguageId,
-                                alliance = state.alliance,
-                                singleLine = singleLineFilter,
-                            )
-                        }
-                        if (isStuck) {
-                            HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
-                        }
-                    }
+                    MediaSelectorFilters(
+                        resolution = state.resolution,
+                        subtitleLanguageId = state.subtitleLanguageId,
+                        alliance = state.alliance,
+                        singleLine = singleLineFilter,
+                    )
+                }
+                if (isStuck) {
+                    HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
                 }
             }
 
