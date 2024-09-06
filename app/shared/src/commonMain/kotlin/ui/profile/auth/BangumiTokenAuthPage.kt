@@ -67,7 +67,7 @@ fun BangumiTokenAuthPage(
     val navigator = LocalNavigator.current
     BackHandler {
         vm.onCancel("BangumiTokenAuthPage BackHandler")
-        navigator.popBackStack()
+        navigator.popUntilNotAuth()
     }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Scaffold(
@@ -135,7 +135,7 @@ fun BangumiTokenAuthPage(
                         vm.launchInBackground {
                             authByToken(token)
                             withContext(Dispatchers.Main) {
-                                navigator.popBackStack()
+                                navigator.popUntilNotAuth()
                             }
                         }
                     },
