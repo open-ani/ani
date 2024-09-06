@@ -618,7 +618,9 @@ fun PlayerControllerBar(
                         Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        progressSlider()
+                        MaterialTheme(aniDarkColorTheme()) {
+                            progressSlider()
+                        }
                     }
                 }
             }
@@ -639,12 +641,14 @@ fun PlayerControllerBar(
                 Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (expanded) {
-                    ProvideTextStyle(MaterialTheme.typography.labelSmall) {
-                        danmakuEditor()
+                MaterialTheme(aniDarkColorTheme()) {
+                    if (expanded) {
+                        ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                            danmakuEditor()
+                        }
+                    } else {
+                        progressSlider()
                     }
-                } else {
-                    progressSlider()
                 }
             }
 

@@ -220,7 +220,9 @@ fun VideoScaffold(
                             exit = fadeOut(),
                         ) {
                             Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
-                                detachedProgressSlider()
+                                MaterialTheme(aniDarkColorTheme()) {
+                                    detachedProgressSlider()
+                                }
                             }
                         }
                     }
