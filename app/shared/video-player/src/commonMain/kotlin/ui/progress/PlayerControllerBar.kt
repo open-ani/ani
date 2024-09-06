@@ -527,12 +527,11 @@ object PlayerControllerDefaults {
         progressSliderState: MediaProgressSliderState,
         cacheProgressState: MediaCacheProgressState,
         modifier: Modifier = Modifier,
-        downloadColor: Color = Color.Yellow,
         enabled: Boolean = true,
         showPreviewTimeTextOnThumb: Boolean = true,
     ) {
-        MediaProgressSlider(
-            progressSliderState, cacheProgressState, downloadingColor = downloadColor,
+        me.him188.ani.app.videoplayer.ui.progress.MediaProgressSlider(
+            progressSliderState, cacheProgressState,
             enabled = enabled,
             showPreviewTimeTextOnThumb = showPreviewTimeTextOnThumb,
             modifier = modifier,

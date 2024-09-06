@@ -18,6 +18,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -54,7 +55,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.collections.immutable.ImmutableList
 import me.him188.ani.app.platform.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
-import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.videoplayer.ui.state.Chapter
@@ -164,6 +164,45 @@ fun rememberMediaProgressSliderState(
     }
 }
 
+object MediaProgressSliderDefaults {
+    @Composable
+    fun colors(
+        trackBackgroundColor: Color = MaterialTheme.colorScheme.surface,
+        trackProgressColor: Color = MaterialTheme.colorScheme.primary,
+        thumbColor: Color = MaterialTheme.colorScheme.primary,
+        cachedProgressColor: Color = MaterialTheme.colorScheme.onSurface.weaken(),
+        downloadingColor: Color = Color.Yellow,
+        notAvailableColor: Color = MaterialTheme.colorScheme.error.slightlyWeaken(),
+        chapterColor: Color = MaterialTheme.colorScheme.onSurface,
+        previewTimeBackgroundColor: Color = MaterialTheme.colorScheme.surface,
+        previewTimeTextColor: Color = MaterialTheme.colorScheme.onSurface,
+    ): MediaProgressSliderColors {
+        return MediaProgressSliderColors(
+            trackBackgroundColor,
+            trackProgressColor,
+            thumbColor,
+            cachedProgressColor,
+            downloadingColor,
+            notAvailableColor,
+            chapterColor,
+            previewTimeBackgroundColor,
+            previewTimeTextColor,
+        )
+    }
+}
+
+@Immutable
+class MediaProgressSliderColors(
+    val trackBackgroundColor: Color,
+    val trackProgressColor: Color,
+    val thumbColor: Color,
+    val cachedProgressColor: Color,
+    val downloadingColor: Color,
+    val notAvailableColor: Color,
+    val chapterColor: Color,
+    val previewTimeBackgroundColor: Color,
+    val previewTimeTextColor: Color,
+)
 
 /**
  * 视频播放器的进度条, 支持拖动调整播放位置, 支持显示缓冲进度.
@@ -172,15 +211,7 @@ fun rememberMediaProgressSliderState(
 fun MediaProgressSlider(
     state: MediaProgressSliderState,
     cacheState: MediaCacheProgressState,
-    trackBackgroundColor: Color = aniDarkColorTheme().surface,
-    trackProgressColor: Color = aniDarkColorTheme().primary,
-    thumbColor: Color = MaterialTheme.colorScheme.primary,
-    cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
-    downloadingColor: Color = Color.Yellow,
-    notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
-    chapterColor: Color = aniDarkColorTheme().onSurface,
-    previewTimeBackgroundColor: Color = aniDarkColorTheme().surface,
-    previewTimeTextColor: Color = aniDarkColorTheme().onSurface,
+    colors: MediaProgressSliderColors = MediaProgressSliderDefaults.colors(),
     enabled: Boolean = true,
     showPreviewTimeTextOnThumb: Boolean = true,
 //    drawThumb: @Composable DrawScope.() -> Unit = {
@@ -205,7 +236,7 @@ fun MediaProgressSlider(
             Canvas(Modifier.matchParentSize()) {
                 // draw track
                 drawRect(
-                    trackBackgroundColor,
+                    colors.trackBackgroundColor,
                     topLeft = Offset(0f, 0f),
                     size = Size(size.width, size.height),
                 )
@@ -222,9 +253,9 @@ fun MediaProgressSlider(
                 forEachConsecutiveChunk(cacheState.chunks) { state, weight ->
                     val color = when (state) {
                         ChunkState.NONE -> Color.Unspecified
-                        ChunkState.DOWNLOADING -> downloadingColor
-                        ChunkState.DONE -> cachedProgressColor
-                        ChunkState.NOT_AVAILABLE -> notAvailableColor
+                        ChunkState.DOWNLOADING -> colors.downloadingColor
+                        ChunkState.DONE -> colors.cachedProgressColor
+                        ChunkState.NOT_AVAILABLE -> colors.notAvailableColor
                     }
                     if (color != Color.Unspecified) {
                         val size = Size(
@@ -246,7 +277,7 @@ fun MediaProgressSlider(
                 val xPlay = size.width * state.displayPositionRatio
 
                 drawRect(
-                    trackProgressColor,
+                    colors.trackProgressColor,
                     topLeft = Offset(0f, 0f),
                     size = Size(xPlay, size.height),
                 )
@@ -283,7 +314,7 @@ fun MediaProgressSlider(
                 state.chapters.forEach {
                     val percent = it.offsetMillis.toFloat().div(state.totalDurationMillis)
                     drawCircle(
-                        color = chapterColor,
+                        color = colors.chapterColor,
                         radius = 2.dp.toPx(),
                         center = Offset(size.width * percent, this.center.y),
                         blendMode = BlendMode.Src, // override background
@@ -342,9 +373,9 @@ fun MediaProgressSlider(
         if (showPreviewTime) {
             ProgressSliderPreviewPopup(
                 offsetX = { mousePosX.roundToInt() },
-                previewTimeBackgroundColor = previewTimeBackgroundColor,
+                previewTimeBackgroundColor = colors.previewTimeBackgroundColor,
             ) {
-                PreviewTimeText(previewTimeText, previewTimeTextColor)
+                PreviewTimeText(previewTimeText, colors.previewTimeTextColor)
             }
         }
         // draw thumb
@@ -357,7 +388,7 @@ fun MediaProgressSlider(
             thumb = {
                 Canvas(Modifier.width(12.dp).height(24.dp)) {
                     drawCircle(
-                        thumbColor,
+                        colors.thumbColor,
                         radius = 8.dp.toPx(),
                     )
                 }
@@ -377,9 +408,9 @@ fun MediaProgressSlider(
                 if (state.isPreviewing && showPreviewTimeTextOnThumb) {
                     ProgressSliderPreviewPopup(
                         offsetX = { thumbWidth / 2 },
-                        previewTimeBackgroundColor = previewTimeBackgroundColor,
+                        previewTimeBackgroundColor = colors.previewTimeBackgroundColor,
                     ) {
-                        PreviewTimeText(previewTimeOnThumb, previewTimeTextColor)
+                        PreviewTimeText(previewTimeOnThumb, colors.previewTimeTextColor)
                     }
                 }
             },
