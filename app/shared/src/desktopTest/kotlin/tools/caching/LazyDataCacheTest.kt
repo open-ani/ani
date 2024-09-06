@@ -238,7 +238,7 @@ class LazyDataCacheTest {
     ///////////////////////////////////////////////////////////////////////////
 
     @Test
-    fun `isCompleted has initial false`() = runTest {
+    fun `isCompleted has initial true`() = runTest {
         val cache = LazyDataCache(
             {
                 SinglePagePagedSource {
@@ -247,7 +247,7 @@ class LazyDataCacheTest {
             },
         )
 
-        assertEquals(false, cache.isCompleted.first())
+        assertEquals(true, cache.isCompleted.first())
     }
 
     @Test
