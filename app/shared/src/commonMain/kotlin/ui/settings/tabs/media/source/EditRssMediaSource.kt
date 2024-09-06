@@ -80,7 +80,7 @@ class EditRssMediaSourceViewModel(
                     EditRssMediaSourceState(
                         arguments = RssMediaSourceArguments.Default,
                         editMediaSourceMode = mode,
-                        mediaSourceId = instanceId,
+                        instanceId = instanceId,
                         onSave = { onSave(instanceId, it) },
                         backgroundScope,
                     ),
@@ -95,7 +95,7 @@ class EditRssMediaSourceViewModel(
                             arguments = config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer())
                                 ?: RssMediaSourceArguments.Default,
                             editMediaSourceMode = mode,
-                            mediaSourceId = instanceId,
+                            instanceId = instanceId,
                             onSave = { onSave(instanceId, it) },
                             backgroundScope,
                         )
@@ -113,11 +113,11 @@ class EditRssMediaSourceViewModel(
 class EditRssMediaSourceState(
     val arguments: RssMediaSourceArguments,
     val editMediaSourceMode: EditMediaSourceMode,
-    mediaSourceId: String,
+    instanceId: String,
     private val onSave: suspend (RssMediaSourceArguments) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    var mediaSourceId by mutableStateOf(mediaSourceId)
+    var instanceId by mutableStateOf(instanceId)
 
     var displayName by mutableStateOf(arguments.name)
     val displayNameIsError by derivedStateOf { displayName.isBlank() }
@@ -204,7 +204,7 @@ fun EditRssMediaSourcePage(
                 },
                 navigationIcon = { TopAppBarGoBackButton() },
                 actions = {
-                    IconButton({ state.save() }) {
+                    IconButton({ state.save() }, enabled = state.isChanged) {
                         Icon(Icons.Rounded.Save, contentDescription = "保存")
                     }
                 },
@@ -219,8 +219,8 @@ fun EditRssMediaSourcePage(
                 ) {
                     if (isInDebugMode()) {
                         ListItem(
-                            headlineContent = { Text("ID") },
-                            supportingContent = { Text(state.mediaSourceId) },
+                            headlineContent = { Text("[debug] instanceId") },
+                            supportingContent = { Text(state.instanceId) },
                         )
                     }
                     ListItem(
