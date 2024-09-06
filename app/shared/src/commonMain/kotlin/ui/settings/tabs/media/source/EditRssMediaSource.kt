@@ -123,7 +123,16 @@ class EditRssMediaSourceState(
     val displayNameIsError by derivedStateOf { displayName.isBlank() }
 
     var iconUrl by mutableStateOf(arguments.iconUrl)
-    var searchUrl by mutableStateOf(arguments.searchUrl)
+
+    private var _searchUrl by mutableStateOf(arguments.searchUrl)
+    var searchUrl
+        get() = _searchUrl
+        set(value) {
+            _searchUrl = value
+            everEditedSearchUrl = true
+        }
+    private var everEditedSearchUrl by mutableStateOf(false)
+    val searchUrlIsError by derivedStateOf { everEditedSearchUrl && searchUrl.isBlank() }
 
     var dismissChanges by mutableStateOf(false)
     val isChanged by derivedStateOf {
@@ -132,7 +141,11 @@ class EditRssMediaSourceState(
 
     private val saveTasker = MonoTasker(backgroundScope)
 
-    fun save() {
+    fun save(): Boolean {
+        if (searchUrl.isBlank()) {
+            everEditedSearchUrl = true
+            return false
+        }
         saveTasker.launch {
             onSave(
                 RssMediaSourceArguments(
@@ -143,6 +156,7 @@ class EditRssMediaSourceState(
                 ),
             )
         }
+        return true
     }
 }
 
@@ -258,6 +272,7 @@ fun EditRssMediaSourcePage(
                                     Modifier.fillMaxWidth().padding(top = 8.dp),
                                     placeholder = { Text("例如  https://acg.rip/page/{page}.xml?term={keyword}") },
                                     supportingText = { Text("必填") },
+                                    isError = state.searchUrlIsError,
                                 )
                             }
                         },
