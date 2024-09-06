@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -47,7 +48,6 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -174,6 +174,7 @@ fun MediaProgressSlider(
     cacheState: MediaCacheProgressState,
     trackBackgroundColor: Color = aniDarkColorTheme().surface,
     trackProgressColor: Color = aniDarkColorTheme().primary,
+    thumbColor: Color = MaterialTheme.colorScheme.primary,
     cachedProgressColor: Color = aniDarkColorTheme().onSurface.weaken(),
     downloadingColor: Color = Color.Yellow,
     notAvailableColor: Color = aniDarkColorTheme().error.slightlyWeaken(),
@@ -244,31 +245,37 @@ fun MediaProgressSlider(
                 // draw play progress
                 val xPlay = size.width * state.displayPositionRatio
 
-                val thumbWidth = 4.dp.toPx()
-                val gapWidthEach = 3.dp.toPx() // thumb width + gap
-
-                val actualXPlay = (xPlay - (gapWidthEach + thumbWidth / 2)).fastCoerceAtLeast(0f)
                 drawRect(
                     trackProgressColor,
                     topLeft = Offset(0f, 0f),
-                    size = Size(actualXPlay, size.height),
+                    size = Size(xPlay, size.height),
                 )
-                val drawBackgroundWidth = xPlay - actualXPlay
-                if (drawBackgroundWidth != 0f) {
-                    // 画上背景, 覆盖掉加载中颜色
-                    drawRect(
-                        trackBackgroundColor,
-                        topLeft = Offset(actualXPlay, 0f),
-                        size = Size(drawBackgroundWidth, size.height),
-                        blendMode = BlendMode.Src, // override
-                    )
-                }
-                drawRect(
-                    trackBackgroundColor,
-                    topLeft = Offset(xPlay, 0f),
-                    size = Size(gapWidthEach + thumbWidth / 2, size.height),
-                    blendMode = BlendMode.Src, // override
-                )
+
+                // 下面的是有 gap 的视线, 但是会抖动, 不知道为什么
+//                val thumbWidth = 4.dp.toPx()
+//                val gapWidthEach = 3.dp.toPx() // thumb width + gap
+//                val actualXPlay = (xPlay - (gapWidthEach + thumbWidth / 2)).fastCoerceAtLeast(0f)
+//                drawRect(
+//                    trackProgressColor,
+//                    topLeft = Offset(0f, 0f),
+//                    size = Size(actualXPlay, size.height),
+//                )
+//                val drawBackgroundWidth = xPlay - actualXPlay
+//                if (drawBackgroundWidth != 0f) {
+//                    // 画上背景, 覆盖掉加载中颜色
+//                    drawRect(
+//                        trackBackgroundColor,
+//                        topLeft = Offset(actualXPlay, 0f),
+//                        size = Size(drawBackgroundWidth, size.height),
+//                        blendMode = BlendMode.Src, // override
+//                    )
+//                }
+//                drawRect(
+//                    trackBackgroundColor,
+//                    topLeft = Offset(xPlay, 0f),
+//                    size = Size(gapWidthEach + thumbWidth / 2, size.height),
+//                    blendMode = BlendMode.Src, // override
+//                )
             }
 
             Canvas(Modifier.matchParentSize()) {
@@ -348,16 +355,23 @@ fun MediaProgressSlider(
             onValueChange = { state.previewPositionRatio(it) },
             interactionSource = interactionSource,
             thumb = {
-                SliderDefaults.Thumb(
-                    interactionSource = interactionSource,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                    ),
-                    enabled = true,
-                    modifier = Modifier.onSizeChanged {
-                        thumbWidth = it.width
-                    },
-                )
+                Canvas(Modifier.width(12.dp).height(24.dp)) {
+                    drawCircle(
+                        thumbColor,
+                        radius = 8.dp.toPx(),
+                    )
+                }
+//                SliderDefaults.Thumb(
+//                    interactionSource = interactionSource,
+//                    colors = SliderDefaults.colors(
+//                        thumbColor = MaterialTheme.colorScheme.primary,
+//                    ),
+//                    enabled = true,
+//                    modifier = Modifier.onSizeChanged {
+//                        thumbWidth = it.width
+//                    },
+//                    thumbSize = DpSize(6.dp, 32.dp)
+//                )
 
                 // 仅在 detached slider 上显示
                 if (state.isPreviewing && showPreviewTimeTextOnThumb) {
