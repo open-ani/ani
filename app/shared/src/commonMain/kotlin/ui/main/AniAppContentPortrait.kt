@@ -182,7 +182,7 @@ fun AniAppContentPortrait(
             composable(
                 "/settings?tab={tab}&back={back}",
                 arguments = listOf(
-                    navArgument("tab") { type = NavType.StringType },
+                    navArgument("tab") { type = NavType.IntType },
                     navArgument("back") { type = NavType.BoolType },
                 ),
                 enterTransition = enterTransition,
