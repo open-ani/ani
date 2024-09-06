@@ -83,22 +83,24 @@ fun DanmakuHost(
             for (danmaku in state.presentFloatingDanmaku) {
                 // don't draw uninitialized danmaku
                 if (danmaku.y.isNaN()) continue
-
-                drawDanmakuText(
-                    state = danmaku.danmaku,
-                    screenPosX = hostWidth - danmaku.distanceX,
-                    screenPosY = danmaku.y,
-                )
+                
+                with(danmaku.danmaku) {
+                    draw(
+                        screenPosX = hostWidth - danmaku.distanceX,
+                        screenPosY = danmaku.y,
+                    )
+                }
             }
             for (danmaku in state.presentFixedDanmaku) {
                 // don't draw uninitialized danmaku
                 if (danmaku.y.isNaN()) continue
-
-                drawDanmakuText(
-                    state = danmaku.danmaku,
-                    screenPosX = (hostWidth - danmaku.danmaku.danmakuWidth) / 2f,
-                    screenPosY = danmaku.y,
-                )
+                
+                with(danmaku.danmaku) {
+                    draw(
+                        screenPosX = (hostWidth - danmaku.danmaku.danmakuWidth) / 2f,
+                        screenPosY = danmaku.y,
+                    )
+                }
             }
         }
     }

@@ -144,9 +144,15 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         Row {
             Column(modifier = Modifier.weight(1f)) {
                 Box(modifier = Modifier.weight(1f)) {
-                    DanmakuHost(state, Modifier.fillMaxSize().background(Color.Transparent))
+                    DanmakuHost(state,
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Transparent))
                 }
-                Editor(Modifier.fillMaxWidth().height(64.dp))
+                Editor(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(64.dp))
             }
             VerticalDivider()
             EpisodeVideoSettings(
@@ -158,10 +164,16 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
         }
     } else {
         Column {
-            DanmakuHost(state, Modifier.fillMaxWidth().height(360.dp).background(Color.Transparent))
+            DanmakuHost(state,
+                Modifier
+                    .fillMaxWidth()
+                    .height(360.dp)
+                    .background(Color.Transparent))
             HorizontalDivider()
             EpisodeVideoSettings(
-                modifier = Modifier.fillMaxWidth().weight(1f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 danmakuConfig = config.value,
                 setDanmakuConfig = { config.value = it },
                 danmakuRegexFilterGroup = { }
@@ -178,14 +190,17 @@ private fun PreviewDanmakuText() {
         val measurer = rememberTextMeasurer()
         val baseStyle = MaterialTheme.typography.bodyMedium
         val density = LocalDensity.current
-        val iter = (0..360 step 36).map { with(density) { it.dp.toPx() } }
+        val iter = remember { (0..360 step 36).map { with(density) { it.dp.toPx() } } }
+        val danmaku = remember { dummyDanmaku(measurer, baseStyle, DanmakuStyle.Default) }
+        
         Canvas(modifier = Modifier.size(width = 450.dp, height = 360.dp)) {
             iter.forEach { off ->
-                drawDanmakuText(
-                    dummyDanmaku(measurer, baseStyle, DanmakuStyle.Default),
-                    screenPosX = Random.nextFloat() * 100,
-                    screenPosY = off
-                )
+                with(danmaku) {
+                    draw(
+                        screenPosX = Random.nextFloat() * 100,
+                        screenPosY = off
+                    )
+                }
             }
         }
     }
