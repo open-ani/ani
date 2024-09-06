@@ -14,8 +14,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.testTag
 import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.roundToLong
+
+internal const val TAG_MEDIA_PROGRESS_INDICATOR_TEXT = "MediaProgressIndicatorText"
 
 /**
  * "88:88:88 / 88:88:88"
@@ -54,7 +57,10 @@ fun MediaProgressIndicatorText(
                 ),
             ),
         ) // border
-        Text(text = text)
+        Text(
+            text = text,
+            Modifier.testTag(TAG_MEDIA_PROGRESS_INDICATOR_TEXT),
+        )
     }
 }
 
