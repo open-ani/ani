@@ -1,10 +1,10 @@
 package me.him188.ani.app.ui.settings.framework.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -22,14 +22,23 @@ fun SettingsScope.TextButtonItem(
     title: @Composable () -> Unit,
 ) {
     Item(
-        modifier.clickable(onClick = onClick),
-        action = {
-            TextButton(onClick, enabled = enabled) {
-                title()
+        headlineContent = {
+
+        },
+        trailingContent = {
+            TextButton(
+                onClick = onClick,
+                enabled = enabled,
+            ) {
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
+                    title()
+                }
             }
         },
-    ) {
-    }
+        modifier = modifier
+            .minimumInteractiveComponentSize()
+            .clickable(enabled = enabled, onClick = onClick),
+    )
 }
 
 /**
@@ -45,14 +54,14 @@ fun SettingsScope.RowButtonItem(
     icon: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
     color: Color = MaterialTheme.colorScheme.primary,
-    title: @Composable RowScope.() -> Unit,
+    title: @Composable () -> Unit,
 ) {
     TextItem(
         modifier = modifier,
         description = description,
         icon = icon?.let {
             @Composable {
-                CompositionLocalProvider(LocalContentColor providesDefault color) {
+                CompositionLocalProvider(LocalContentColor provides color) {
                     icon()
                 }
             }

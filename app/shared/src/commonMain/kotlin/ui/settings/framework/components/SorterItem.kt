@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -14,8 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Reorder
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,8 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.foundation.widgets.RichDialogLayout
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -67,7 +65,7 @@ fun <T> SettingsScope.SorterItem(
     dialogItemDescription: @Composable ((T) -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
     onConfirm: (() -> Unit)? = null,
-    title: @Composable (RowScope.() -> Unit),
+    title: @Composable () -> Unit,
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -94,71 +92,79 @@ fun <T> SettingsScope.SorterItem(
                         }
                     },
                 )
-                BasicAlertDialog(onDismissRequest = { showDialog = false }) {
-                    RichDialogLayout(
-                        title = { title() },
-                        description = dialogDescription?.let { { it() } },
-                        buttons = {
-                            TextButton({ showDialog = false }) {
-                                Text("取消")
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { title() },
+                    text = {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
+                                dialogDescription?.let {
+                                    it()
+                                }
                             }
-                            Button(
-                                {
-                                    showDialog = false
-                                    onConfirm?.invoke()
-                                    onSort(sortingData)
-                                },
+                            LazyColumn(
+                                state = state.listState,
+                                modifier = Modifier
+                                    .reorderable(state)
+                                    .detectReorderAfterLongPress(state),
                             ) {
-                                Text("完成")
-                            }
-                        },
-                    ) {
-                        LazyColumn(
-                            state = state.listState,
-                            modifier = Modifier
-                                .reorderable(state)
-                                .detectReorderAfterLongPress(state),
-                        ) {
-                            itemsIndexed(sortingData, key = { _, it -> key(it.item) }) { index, item ->
-                                ReorderableItem(state, key = key(item.item)) { isDragging ->
-                                    val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
-                                    Row(
-                                        modifier = Modifier
-                                            .shadow(elevation.value)
-                                            .background(MaterialTheme.colorScheme.surfaceVariant) // match card background
-                                            .fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Checkbox(
-                                            checked = item.selected,
-                                            onCheckedChange = {
-                                                sortingData = sortingData.toMutableList().apply {
-                                                    set(index, SelectableItem(item.item, it))
-                                                }
-                                            },
-                                            modifier = Modifier.padding(end = 4.dp),
-                                        )
+                                itemsIndexed(sortingData, key = { _, it -> key(it.item) }) { index, item ->
+                                    ReorderableItem(state, key = key(item.item)) { isDragging ->
+                                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                                        Row(
+                                            modifier = Modifier
+                                                .shadow(elevation.value)
+                                                .background(Color.Transparent) // match card background
+                                                .fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Checkbox(
+                                                checked = item.selected,
+                                                onCheckedChange = {
+                                                    sortingData = sortingData.toMutableList().apply {
+                                                        set(index, SelectableItem(item.item, it))
+                                                    }
+                                                },
+                                                modifier = Modifier.padding(end = 4.dp),
+                                            )
 
-                                        Row(Modifier.weight(1f)) {
-                                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                item(item.item)
-                                                ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                                                    dialogItemDescription?.invoke(item.item)
+                                            Row(Modifier.weight(1f)) {
+                                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                    item(item.item)
+                                                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                                                        dialogItemDescription?.invoke(item.item)
+                                                    }
                                                 }
                                             }
-                                        }
 
-                                        Icon(
-                                            Icons.Rounded.Reorder,
-                                            "长按排序",
-                                            Modifier.detectReorder(state),
-                                        )
+                                            Icon(
+                                                Icons.Rounded.Reorder,
+                                                "长按排序",
+                                                Modifier.detectReorder(state),
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDialog = false
+                                onConfirm?.invoke()
+                                onSort(sortingData)
+                            },
+                        ) {
+                            Text("保存")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton({ showDialog = false }) {
+                            Text("取消")
+                        }
+                    },
+                )
             }
         },
         title = title,

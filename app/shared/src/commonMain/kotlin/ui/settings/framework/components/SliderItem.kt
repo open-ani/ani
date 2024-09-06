@@ -3,9 +3,11 @@ package me.him188.ani.app.ui.settings.framework.components
 import androidx.annotation.IntRange
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Slider
@@ -33,26 +35,30 @@ fun SettingsScope.SliderItem(
     valueLabel: @Composable (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    Item(modifier) {
-        Column {
-            Row(
-                Modifier,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                ItemHeader(title, description, Modifier.weight(1f))
+    Item(
+        headlineContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    title()
+                }
 
-                valueLabel?.let {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                if (valueLabel != null) {
+                    Box(Modifier.padding(start = 16.dp)) {
+                        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
                             valueLabel()
                         }
                     }
                 }
             }
-            content()
-        }
-    }
+        },
+        modifier = modifier,
+        supportingContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                description?.invoke()
+                content()
+            }
+        },
+    )
 }
 
 @SettingsDsl

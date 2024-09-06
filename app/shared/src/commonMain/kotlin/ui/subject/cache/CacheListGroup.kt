@@ -6,6 +6,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -283,23 +284,25 @@ fun SettingsScope.EpisodeCacheItem(
             }
         },
         title = {
-            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Text(episode.info.title, Modifier.weight(1f), overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
+                    Text(episode.info.title, Modifier.weight(1f), overflow = TextOverflow.Ellipsis)
 
-                when (episode.info.watchStatus) {
-                    UnifiedCollectionType.DONE -> {
-                        Label(Modifier.padding(start = 8.dp)) {
-                            Text("看过")
+                    when (episode.info.watchStatus) {
+                        UnifiedCollectionType.DONE -> {
+                            Label(Modifier.padding(start = 8.dp)) {
+                                Text("看过")
+                            }
                         }
-                    }
 
-                    UnifiedCollectionType.DROPPED -> {
-                        Label(Modifier.padding(start = 8.dp)) {
-                            Text("抛弃")
+                        UnifiedCollectionType.DROPPED -> {
+                            Label(Modifier.padding(start = 8.dp)) {
+                                Text("抛弃")
+                            }
                         }
-                    }
 
-                    else -> {}
+                        else -> {}
+                    }
                 }
             }
         },
