@@ -48,9 +48,9 @@ import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroup
 import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
 import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
 import me.him188.ani.app.ui.settings.tabs.media.VideoResolverGroup
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
 import me.him188.ani.app.ui.settings.tabs.network.DanmakuGroup
 import me.him188.ani.app.ui.settings.tabs.network.GlobalProxyGroup
-import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
 import me.him188.ani.app.ui.settings.tabs.network.OtherTestGroup
 
 /**
@@ -156,7 +156,7 @@ fun SettingsPage(
                     Column(Modifier.fillMaxSize().padding(contentPadding)) {
                         when (type) {
                             SettingsTab.MEDIA -> {
-                                SettingsTab(modifier) {
+                                SettingsTab(Modifier.fillMaxSize()) {
                                     VideoResolverGroup(vm.videoResolverSettingsState)
                                     AutoCacheGroup(vm.mediaCacheSettingsState)
 
