@@ -52,7 +52,7 @@ fun ConfirmDiscardChangeDialog(
     if (state.isVisible) {
         AlertDialog(
             onDismissRequest = state::dismissDialog,
-            text = { Text("是否舍弃更改?") },
+            title = { Text("舍弃更改?") },
             confirmButton = {
                 TextButton(onClick = state::confirmDiscard) {
                     Text("舍弃", color = MaterialTheme.colorScheme.error)

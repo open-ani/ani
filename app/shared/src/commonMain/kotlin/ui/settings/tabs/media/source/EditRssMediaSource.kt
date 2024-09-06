@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.settings.tabs.media.source
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,7 +9,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.BottomSheetDefaults
@@ -34,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +56,7 @@ import me.him188.ani.app.navigation.LocalBackHandler
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.source.deserializeArgumentsOrNull
@@ -177,8 +184,8 @@ fun EditRssMediaSourcePage(
 ) {
     val backHandler = LocalBackHandler.current
     val confirmDiscardDialog = rememberConfirmDiscardChangeDialogState {
-        state.dismissChanges = false
-        backHandler.onBackPressed()
+        state.dismissChanges = true
+        backHandler.onBackPressed() // TODO: 这没用, 因为 composition 还没来得及更新
     }
     LaunchedEffect(true) {
         snapshotFlow { state.isChanged }.collect {
@@ -212,7 +219,7 @@ fun EditRssMediaSourcePage(
         },
     ) { paddingValues ->
         Surface {
-            Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().focusGroup()) {
                 Column(
                     Modifier.align(Alignment.TopCenter).fillMaxHeight().widthIn(max = BottomSheetDefaults.SheetMaxWidth)
                         .padding(paddingValues),
@@ -220,7 +227,13 @@ fun EditRssMediaSourcePage(
                     if (isInDebugMode()) {
                         ListItem(
                             headlineContent = { Text("[debug] instanceId") },
-                            supportingContent = { Text(state.instanceId) },
+                            supportingContent = {
+                                if (state.instanceId.isNotEmpty()) {
+                                    SelectionContainer {
+                                        Text(state.instanceId)
+                                    }
+                                }
+                            },
                         )
                     }
                     ListItem(
@@ -228,29 +241,34 @@ fun EditRssMediaSourcePage(
                         supportingContent = {
                             OutlinedTextField(
                                 state.displayName, { state.displayName = it.trim() },
-                                Modifier.fillMaxWidth().padding(top = 8.dp),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
                                 placeholder = { Text("设置显示在列表中的名称") },
                                 isError = state.displayNameIsError,
                                 supportingText = { Text("必填") },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             )
                         },
                     )
-//            ListItem(
-//                headlineContent = { Text("备注") },
-//                supportingContent = {
-//                    OutlinedTextField(
-//                        state.description, { state.description = it },
-//                        placeholder = { Text("可留空") },
-//                    )
-//                },
-//            )
                     ListItem(
                         headlineContent = { Text("图标 URL") },
                         supportingContent = {
                             OutlinedTextField(
                                 state.iconUrl, { state.iconUrl = it },
-                                Modifier.fillMaxWidth().padding(top = 8.dp),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
                                 supportingText = { Text("可留空") },
+                                maxLines = 1,
+                                trailingIcon = {
+                                    AsyncImage(
+                                        state.iconUrl,
+                                        contentDescription = null,
+                                        Modifier.size(24.dp).clip(MaterialTheme.shapes.small),
+                                    )
+                                },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             )
                         },
                     )
@@ -269,10 +287,13 @@ fun EditRssMediaSourcePage(
                                 }
                                 OutlinedTextField(
                                     state.searchUrl, { state.searchUrl = it },
-                                    Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 8.dp),
                                     placeholder = { Text("例如  https://acg.rip/page/{page}.xml?term={keyword}") },
                                     supportingText = { Text("必填") },
                                     isError = state.searchUrlIsError,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                                 )
                             }
                         },
