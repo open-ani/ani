@@ -58,10 +58,17 @@ data class StyledDanmaku(
         softWrap = false,
     )
     
-    internal val imageBitmap = createDanmakuImageBitmap(solidTextLayout, borderTextLayout)
+    internal var imageBitmap: ImageBitmap? = null
     
     override val danmakuWidth: Int = solidTextLayout.size.width
     override val danmakuHeight: Int = solidTextLayout.size.height
+    
+    internal fun DrawScope.draw(screenPosX: Float, screenPosY: Float) {
+        val cachedImage = imageBitmap ?: createDanmakuImageBitmap(solidTextLayout, borderTextLayout)
+            .also { imageBitmap = it }
+        
+        drawImage(cachedImage, Offset(screenPosX, screenPosY))
+    }
 }
 
 /**
@@ -71,14 +78,6 @@ internal expect fun createDanmakuImageBitmap(
     solidTextLayout: TextLayoutResult,
     borderTextLayout: TextLayoutResult,
 ): ImageBitmap
-
-internal fun DrawScope.drawDanmakuText(
-    state: StyledDanmaku,
-    screenPosX: Float,
-    screenPosY: Float,
-) {
-    drawImage(state.imageBitmap, Offset(screenPosX, screenPosY))
-}
 
 internal fun dummyDanmaku(
     measurer: TextMeasurer,
