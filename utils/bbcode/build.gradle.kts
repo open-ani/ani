@@ -44,8 +44,6 @@ idea {
 }
 
 val generateBBCodeGrammarSource = tasks.register<AntlrKotlinTask>("generateBBCodeGrammarSource") {
-    dependsOn(cleanBBCodeGrammarSource)
-
     source = fileTree(layout.projectDirectory) {
         include("BBCode.g4")
     }
@@ -54,10 +52,6 @@ val generateBBCodeGrammarSource = tasks.register<AntlrKotlinTask>("generateBBCod
     arguments = listOf("-visitor")
 
     outputDirectory = generatedRoot
-}
-
-val cleanBBCodeGrammarSource = tasks.register<Delete>("cleanBBCodeGrammarSource") {
-    delete(generatedRoot)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool> {
