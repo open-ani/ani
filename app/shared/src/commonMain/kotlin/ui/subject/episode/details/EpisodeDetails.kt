@@ -257,6 +257,7 @@ fun EpisodeDetails(
                                 ModalBottomSheet(
                                     { showMediaSelector = false },
                                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                                    contentWindowInsets = { WindowInsets.desktopTitleBar() },
                                 ) {
                                     EpisodePlayMediaSelector(
                                         mediaSelectorPresentation,
