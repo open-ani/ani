@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +28,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -74,6 +76,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.desktopTitleBar
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -403,6 +406,7 @@ private fun EpisodeSceneContentPhone(
         }
         ModalBottomSheet(
             onDismissRequest = dismiss,
+            contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
         ) {
             DetachedDanmakuEditorLayout(
                 vm.danmaku,

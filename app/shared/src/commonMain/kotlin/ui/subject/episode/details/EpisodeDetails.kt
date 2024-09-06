@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -19,6 +20,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.ExpandCircleDown
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -130,7 +132,7 @@ fun EpisodeDetails(
             ModalBottomSheet(
                 { showSubjectDetails = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
-                contentWindowInsets = { WindowInsets.desktopTitleBar() },
+                contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
             ) {
                 SubjectDetailsScene(
                     subjectDetailsViewModel,
@@ -147,7 +149,7 @@ fun EpisodeDetails(
         ModalBottomSheet(
             { state.showEpisodes = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
-            contentWindowInsets = { WindowInsets.desktopTitleBar() },
+            contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
         ) {
             EpisodeCarousel(
                 episodeCarouselState,
@@ -257,7 +259,7 @@ fun EpisodeDetails(
                                 ModalBottomSheet(
                                     { showMediaSelector = false },
                                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
-                                    contentWindowInsets = { WindowInsets.desktopTitleBar() },
+                                    contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
                                 ) {
                                     EpisodePlayMediaSelector(
                                         mediaSelectorPresentation,
