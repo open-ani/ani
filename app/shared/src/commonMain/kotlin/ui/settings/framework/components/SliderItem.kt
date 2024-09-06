@@ -155,7 +155,7 @@ fun SettingsScope.ThinSliderItem(
             track = { sliderState ->
                 SliderDefaults.Track(
                     colors = colors, enabled = enabled, sliderState = sliderState,
-                    thumbTrackGapSize = 3.dp,
+                    thumbTrackGapSize = 6.dp,
                     drawTick = drawTick,
                 )
             },

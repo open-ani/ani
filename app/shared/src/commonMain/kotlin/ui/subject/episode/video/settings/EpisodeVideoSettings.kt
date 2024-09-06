@@ -200,6 +200,7 @@ fun EpisodeVideoSettings(
 //                steps = ((3f - 0.50f) / 0.05f).toInt() - 1,
                 title = { Text("弹幕字号") },
                 valueLabel = { Text(remember(fontSize) { "${(fontSize * 100).roundToInt()}%" }) },
+                useThinSlider = useThinSlider,
             )
 
             val alpha by remember(danmakuConfig) {
@@ -217,7 +218,7 @@ fun EpisodeVideoSettings(
 //                steps = ((1f - 0f) / 0.05f).toInt() - 1,
                 title = { Text("不透明度") },
                 valueLabel = { Text(remember(alpha) { "${(alpha * 100).roundToInt()}%" }) },
-                useThinSlider = true,
+                useThinSlider = useThinSlider,
             )
 
             val strokeWidth by remember(danmakuConfig) {
@@ -235,7 +236,7 @@ fun EpisodeVideoSettings(
 //                steps = ((2f - 0f) / 0.1f).toInt() - 1,
                 title = { Text("描边宽度") },
                 valueLabel = { Text(remember(strokeWidth) { "${(strokeWidth * 100).roundToInt()}%" }) },
-                useThinSlider = true,
+                useThinSlider = useThinSlider,
             )
 
             val fontWeight by remember(danmakuConfig) {
@@ -257,7 +258,7 @@ fun EpisodeVideoSettings(
 //                steps = ((900 - 100) / 100) - 1,
                 title = { Text("弹幕字重") },
                 valueLabel = { Text(remember(fontWeight) { "${fontWeight.toInt()}" }) },
-                useThinSlider = true,
+                useThinSlider = useThinSlider,
             )
 
             val speed by remember(danmakuConfig) {
@@ -279,7 +280,7 @@ fun EpisodeVideoSettings(
                 title = { Text("弹幕速度") },
                 description = { Text("弹幕速度不会跟随视频倍速变化") },
                 valueLabel = { Text(remember(speed) { "${(speed * 100).roundToInt()}%" }) },
-                useThinSlider = true,
+                useThinSlider = useThinSlider,
             )
 
             val displayDensityRange = remember {
@@ -319,7 +320,7 @@ fun EpisodeVideoSettings(
                         in 0..3 -> Text("稀疏")
                     }
                 },
-                useThinSlider = true,
+                useThinSlider = useThinSlider,
             )
 
 
@@ -367,7 +368,7 @@ fun EpisodeVideoSettings(
                         5f -> Text("全屏")
                     }
                 },
-                useThinSlider = true,
+                useThinSlider = useThinSlider,
             )
 
             val debugViewModel = rememberDebugSettingsViewModel()
