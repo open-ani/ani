@@ -352,7 +352,6 @@ fun SubjectDetailsPage(
                                 Tab(
                                     selected = pagerState.currentPage == index,
                                     onClick = {
-                                        println("click")
                                         scope.launch { pagerState.animateScrollToPage(index) }
                                     },
                                     text = {

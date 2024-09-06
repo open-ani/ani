@@ -54,7 +54,6 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.window.desktopTitleBar
-import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeDialogsHost
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
@@ -131,7 +130,7 @@ fun EpisodeDetails(
             ModalBottomSheet(
                 { showSubjectDetails = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
-                windowInsets = WindowInsets.desktopTitleBar(),
+                contentWindowInsets = { WindowInsets.desktopTitleBar() },
             ) {
                 SubjectDetailsScene(
                     subjectDetailsViewModel,
@@ -148,7 +147,7 @@ fun EpisodeDetails(
         ModalBottomSheet(
             { state.showEpisodes = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
-            windowInsets = WindowInsets.desktopTitleBar(),
+            contentWindowInsets = { WindowInsets.desktopTitleBar() },
         ) {
             EpisodeCarousel(
                 episodeCarouselState,

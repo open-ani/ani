@@ -104,6 +104,8 @@ internal fun rememberTestSubjectCollectionColumnState(
         hasMore = mutableStateOf(hasMore),
         isKnownAuthorizedAndEmpty = mutableStateOf(isKnownEmpty),
         onRequestMore = {},
+        onAutoRefresh = {},
+        onManualRefresh = {},
         backgroundScope = PreviewScope,
     )
 }
