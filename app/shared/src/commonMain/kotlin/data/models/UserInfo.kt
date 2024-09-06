@@ -5,6 +5,9 @@ package me.him188.ani.app.data.models
  */
 data class UserInfo(
     val id: Int,
+    /**
+     * 对于自己, 一定有
+     */
     val username: String?,
     val nickname: String? = null,
     val avatarUrl: String? = null,

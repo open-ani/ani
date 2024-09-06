@@ -6,6 +6,7 @@ import me.him188.ani.app.data.source.session.SessionStatus.Refreshing
 import me.him188.ani.app.data.source.session.SessionStatus.VerificationFailed
 import me.him188.ani.app.data.source.session.SessionStatus.Verified
 import me.him188.ani.app.data.source.session.SessionStatus.Verifying
+import kotlin.contracts.contract
 
 /**
  * 表示登录会话的状态.
@@ -28,19 +29,24 @@ sealed interface SessionStatus {
     /**
      * 表示正在加载中的中间状态. [Refreshing] 或者 [Verifying].
      */
-    sealed interface Loading : SessionStatus
+    sealed class Loading : SessionStatus
+
+    /**
+     * 完成的状态
+     */
+    sealed class Final : SessionStatus
 
     /**
      * 正在使用 refresh token 换取新的 access token
      */
-    data object Refreshing : SessionStatus, Loading
+    data object Refreshing : SessionStatus, Loading()
 
     /**
      * 正在进行初次登录, 或者正在验证 access token 的有效性.
      */
     data class Verifying(
         override val accessTokenMaybeUnverified: String,
-    ) : HasAccessToken, Loading
+    ) : HasAccessToken, Loading()
 
     /**
      * 登录完全成功. 这意味着已经连接到服务器测试过 token 是有效的.
@@ -48,41 +54,41 @@ sealed interface SessionStatus {
     data class Verified(
         override val accessTokenMaybeUnverified: String,
         val userInfo: UserInfo,
-    ) : SessionStatus, HasAccessToken {
+    ) : SessionStatus, HasAccessToken, Final() {
         val accessToken get() = accessTokenMaybeUnverified
     }
 
     /**
      * 用户希望以游客身份登录
      */
-    data object Guest : SessionStatus
+    data object Guest : SessionStatus, Final()
 
     /**
      * 有 token, 但是验证失败
      */
-    sealed interface VerificationFailed : SessionStatus
+    sealed class VerificationFailed : SessionStatus, Final()
 
     /**
      * 有 token, 但是验证失败, 因为 token 过期了.
      *
      * 仅当同时没有 refresh token, 或者使用 refresh token 也失败了才会有此状态.
      */
-    data object Expired : VerificationFailed
+    data object Expired : VerificationFailed()
 
     /**
      * 有 token, 但是验证失败, 因为网络问题
      */
-    data object NetworkError : VerificationFailed
+    data object NetworkError : VerificationFailed()
 
     /**
      * 有 token, 但是验证失败, 因为服务器炸了
      */
-    data object ServiceUnavailable : VerificationFailed
+    data object ServiceUnavailable : VerificationFailed()
 
     /**
      * 没有 (保存的) token
      */
-    data object NoToken : VerificationFailed
+    data object NoToken : VerificationFailed()
 }
 
 /**
@@ -102,3 +108,10 @@ val SessionStatus.userInfoOrNull: UserInfo? get() = (this as? Verified)?.userInf
  * 获取当前经过验证的登录用户的用户名. 如果用户未登录, 则返回 `null`.
  */
 val SessionStatus.usernameOrNull: String? get() = userInfoOrNull?.username
+
+fun SessionStatus.isFinal(): Boolean {
+    contract {
+        returns(true) implies (this@isFinal is SessionStatus.Final)
+    }
+    return this is SessionStatus.Final
+}
