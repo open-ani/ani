@@ -82,7 +82,7 @@ fun WelcomeScene(
     val navigator = LocalNavigator.current
     val goBack = {
         vm.cancelRequest()
-        navigator.popBackStack()
+        navigator.popUntilNotWelcome()
     }
     BackHandler(onBack = goBack)
     if (vm.authState.isKnownLoggedIn) {

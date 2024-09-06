@@ -36,6 +36,17 @@ interface AniNavigator {
         navigator.popBackStack()
     }
 
+//    fun popBackStack(
+//        route: String,
+//        inclusive: Boolean,
+//    ) {
+//        navigator.popBackStackIfExist(route, inclusive = true)
+//    }
+
+    fun popUntilNotWelcome() {
+        navigator.popBackStack("/welcome", inclusive = true)
+    }
+    
     fun popUntilNotAuth() {
         navigator.popBackStack("/bangumi-token-oauth", inclusive = true)
         navigator.popBackStack("/bangumi-oauth", inclusive = true)
