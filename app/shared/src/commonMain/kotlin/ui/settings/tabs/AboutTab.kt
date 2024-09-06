@@ -189,7 +189,7 @@ fun AboutTab(
                 Text(
                     buildAnnotatedString {
                         pushLink(
-                            LinkAnnotation.Url(GITHUB_REPO, TextLinkStyles()) {
+                            LinkAnnotation.Url(BANGUMI, TextLinkStyles()) {
                                 vm.browserNavigator.openBrowser(context, GITHUB_REPO)
                             },
                         )
