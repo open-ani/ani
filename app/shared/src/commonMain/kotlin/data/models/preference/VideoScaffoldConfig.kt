@@ -30,7 +30,7 @@ data class VideoScaffoldConfig(
     /**
      * 在小屏 (竖屏) 模式下也在右下角显示全屏按钮.
      */
-    val fullscreenSwitchMode: FullscreenSwitchMode = FullscreenSwitchMode.AUTO_HIDE_FLOATING,
+    val fullscreenSwitchMode: FullscreenSwitchMode = FullscreenSwitchMode.ALWAYS_SHOW_FLOATING,
     /**
      * 在编辑弹幕时暂停视频.
      * @since 3.2.0-beta01
