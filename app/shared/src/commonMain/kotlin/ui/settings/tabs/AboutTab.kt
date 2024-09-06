@@ -112,7 +112,7 @@ private const val BANGUMI = "https://bangumi.tv"
 private const val DANDANPLAY = "https://www.dandanplay.com/"
 
 @Stable
-private const val DMHY = "https://dmhy.b168.net/"
+private const val DMHY = "https://dmhy.org/"
 
 @Stable
 private const val ACG_RIP = "https://acg.rip/"
