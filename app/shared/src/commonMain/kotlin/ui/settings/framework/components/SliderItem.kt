@@ -79,19 +79,37 @@ fun SettingsScope.SliderItem(
         Text(value.toString())
     },
     description: @Composable (() -> Unit)? = null,
+    useThinSlider: Boolean = false,
 ) {
-    SliderItem(title, modifier, description, valueLabel) {
-        Slider(
+    if (useThinSlider) {
+        ThinSliderItem(
             value,
             onValueChange,
-            Modifier,
+            title,
+            modifier,
             enabled,
             valueRange,
             steps,
             onValueChangeFinished,
             colors,
             interactionSource,
+            valueLabel,
+            description,
         )
+    } else {
+        SliderItem(title, modifier, description, valueLabel) {
+            Slider(
+                value,
+                onValueChange,
+                Modifier,
+                enabled,
+                valueRange,
+                steps,
+                onValueChangeFinished,
+                colors,
+                interactionSource,
+            )
+        }
     }
 }
 
@@ -131,7 +149,7 @@ fun SettingsScope.ThinSliderItem(
                     interactionSource = interactionSource,
                     colors = colors,
                     enabled = enabled,
-                    thumbSize = DpSize(4.dp, 22.dp),
+                    thumbSize = DpSize(4.dp, 36.dp),
                 )
             },
             track = { sliderState ->
