@@ -250,7 +250,7 @@ fun AniAppContentPortrait(
                 SubjectCacheScene(vm, Modifier.desktopTitleBarPadding())
             }
             composable(
-                "/settings/media-source/edit/{factoryId}?existingMediaSourceInstanceId={existingMediaSourceInstanceId}",
+                "/settings/media-source/edit?factoryId={factoryId}&existingMediaSourceInstanceId={existingMediaSourceInstanceId}",
                 arguments = listOf(
                     navArgument("factoryId") { type = NavType.StringType },
                     navArgument("existingMediaSourceInstanceId") { type = NavType.StringType },

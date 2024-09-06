@@ -46,7 +46,7 @@ interface AniNavigator {
     fun popUntilNotWelcome() {
         navigator.popBackStack("/welcome", inclusive = true)
     }
-    
+
     fun popUntilNotAuth() {
         navigator.popBackStack("/bangumi-token-oauth", inclusive = true)
         navigator.popBackStack("/bangumi-oauth", inclusive = true)
@@ -109,10 +109,10 @@ interface AniNavigator {
     ) {
         navigator.navigate(
             buildString {
-                append("/settings/media-source/edit/")
+                append("/settings/media-source/edit?factoryId=")
                 append(factoryId.value)
+                append("&existingMediaSourceInstanceId=")
                 existingMediaSourceInstanceId?.let {
-                    append("?existingMediaSourceInstanceId=")
                     append(it)
                 }
             },
