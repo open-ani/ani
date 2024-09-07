@@ -36,6 +36,7 @@ import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
+import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.platform.Uuid
@@ -46,7 +47,7 @@ import org.koin.core.component.inject
 class SettingsViewModel : AbstractViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
     private val permissionManager: PermissionManager by inject()
-    private val bangumiSubjectProvider: BangumiSubjectProvider by inject()
+    private val bangumiSubjectProvider: SubjectProvider by inject()
 
     private val mediaSourceManager: MediaSourceManager by inject()
     private val mediaSourceInstanceRepository: MediaSourceInstanceRepository by inject()
