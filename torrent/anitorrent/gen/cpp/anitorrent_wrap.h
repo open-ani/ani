@@ -35,6 +35,21 @@ protected:
     Swig::BoolArray<11> swig_override;
 };
 
+class SwigDirector_peer_filter_t : public anilt::peer_filter_t, public Swig::Director {
+
+public:
+    void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
+    SwigDirector_peer_filter_t(JNIEnv *jenv);
+    virtual ~SwigDirector_peer_filter_t();
+    virtual bool on_filter(anilt::peer_info_t const &arg0);
+public:
+    bool swig_overrides(int n) {
+      return (n < 1 ? swig_override[n] : false);
+    }
+protected:
+    Swig::BoolArray<1> swig_override;
+};
+
 class SwigDirector_new_event_listener_t : public anilt::new_event_listener_t, public Swig::Director {
 
 public:
