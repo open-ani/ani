@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -61,7 +59,6 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.ImageViewer
-import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
@@ -157,25 +154,15 @@ fun SubjectDetailsScene(
             )
         },
         commentsTab = {
-            CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
-                SubjectDetailsDefaults.SubjectCommentColumn(
-                    state = vm.subjectCommentState,
-                    onClickUrl = {
-                        RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
-                    },
-                    modifier = Modifier
-                        .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
-                        .fillMaxHeight()
-                        .ifThen(currentPlatform.isDesktop()) {
-                            nestedScrollWorkaround(
-                                vm.commentTabLazyListState,
-                                connectedScrollState.nestedScrollConnection,
-                            )
-                        }
-                        .nestedScroll(connectedScrollState.nestedScrollConnection),
-                    listState = vm.commentTabLazyListState,
-                )
-            }
+            SubjectDetailsDefaults.SubjectCommentColumn(
+                state = vm.subjectCommentState,
+                onClickUrl = {
+                    RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                },
+                onClickImage = { imageViewer.viewImage(it) },
+                connectedScrollState,
+                lazyListState = vm.commentTabLazyListState,
+            )
         },
         discussionsTab = {
             LazyColumn(Modifier.fillMaxSize().nestedScroll(connectedScrollState.nestedScrollConnection)) {

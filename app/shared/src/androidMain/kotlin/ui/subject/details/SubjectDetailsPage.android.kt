@@ -1,8 +1,6 @@
 package me.him188.ani.app.ui.subject.details
 
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,11 +17,7 @@ import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectRelation
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.stateOf
@@ -204,13 +198,9 @@ internal fun PreviewSubjectDetails() {
                 SubjectDetailsDefaults.SubjectCommentColumn(
                     state = rememberTestCommentState(commentList = generateUiComment(10)),
                     onClickUrl = { },
-                    modifier = Modifier
-                        .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
-                        .ifThen(currentPlatform.isDesktop()) {
-                            nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
-                        }
-                        .nestedScroll(connectedScrollState.nestedScrollConnection),
-                    listState = lazyListState,
+                    onClickImage = {},
+                    connectedScrollState = connectedScrollState,
+                    lazyListState = lazyListState,
                 )
             },
             discussionsTab = {},
