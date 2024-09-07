@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 
-interface EpisodeHistoryRepository : Repository {
+interface EpisodePlayHistoryRepository : Repository {
     val flow: Flow<List<EpisodeHistory>>
 
     suspend fun clear()
@@ -30,9 +30,9 @@ data class EpisodeHistories(
     }
 }
 
-class EpisodeHistoryRepositoryImpl(
+class EpisodePlayHistoryRepositoryImpl(
     private val dataStore: DataStore<EpisodeHistories>
-) : EpisodeHistoryRepository {
+) : EpisodePlayHistoryRepository {
     override val flow: Flow<List<EpisodeHistory>> = dataStore.data.map { it.histories }
 
     override suspend fun clear() {

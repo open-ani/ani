@@ -3,7 +3,7 @@ package me.him188.ani.app.ui.subject.episode.video
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.Flow
-import me.him188.ani.app.data.repository.EpisodeHistoryRepository
+import me.him188.ani.app.data.repository.EpisodePlayHistoryRepository
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -12,7 +12,7 @@ import kotlin.coroutines.CoroutineContext
 
 @Stable
 class EpisodeHistoryState(
-    val repository: EpisodeHistoryRepository,
+    val repository: EpisodePlayHistoryRepository,
     val playerState: PlayerState,
     currentEpisodeId: Flow<Int>,
     parentCoroutineContext: CoroutineContext,

@@ -44,8 +44,8 @@ import me.him188.ani.app.data.repository.BangumiSubjectRepository
 import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
-import me.him188.ani.app.data.repository.EpisodeHistoryRepository
-import me.him188.ani.app.data.repository.EpisodeHistoryRepositoryImpl
+import me.him188.ani.app.data.repository.EpisodePlayHistoryRepository
+import me.him188.ani.app.data.repository.EpisodePlayHistoryRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
@@ -135,8 +135,8 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<MediaSourceInstanceRepository> {
         MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)
     }
-    single<EpisodeHistoryRepository> {
-        EpisodeHistoryRepositoryImpl(getContext().dataStores.episodeHistoryStore)
+    single<EpisodePlayHistoryRepository> {
+        EpisodePlayHistoryRepositoryImpl(getContext().dataStores.episodeHistoryStore)
     }
     single<ProfileRepository> { ProfileRepository() }
     single<SubjectSearchRepository> {

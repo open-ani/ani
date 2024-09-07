@@ -12,7 +12,11 @@ import me.him188.ani.datasources.api.Media
  */
 interface MediaSelectorEvents {
     val onSelect: Flow<SelectEvent>
-    val onPreSelect: Flow<SelectEvent>
+
+    /**
+     * 此事件会在 media 切换前 emit
+     */
+    val onBeforeSelect: Flow<SelectEvent>
 
     /**
      * 用户偏好发生变化, 这可能是 [MediaSelector.select], 也可能是 [MediaPreferenceItem.prefer].
@@ -34,7 +38,7 @@ class MutableMediaSelectorEvents(
 ) : MediaSelectorEvents {
     override val onSelect: MutableSharedFlow<SelectEvent> =
         MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)
-    override val onPreSelect: MutableSharedFlow<SelectEvent> =
+    override val onBeforeSelect: MutableSharedFlow<SelectEvent> =
         MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)
     override val onChangePreference: MutableSharedFlow<MediaPreference> =
         MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)

@@ -258,6 +258,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
                     if (newStatus == MediaParsedStatus.DONE) {
                         videoProperties.value = createVideoProperties()
+                        state.value = PlaybackState.READY
                     }
                 }
             },
@@ -268,7 +269,6 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     videoProperties.value = videoProperties.value?.copy(
                         durationMillis = newLength,
                     )
-                    state.value = PlaybackState.READY
                 }
 
                 override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {

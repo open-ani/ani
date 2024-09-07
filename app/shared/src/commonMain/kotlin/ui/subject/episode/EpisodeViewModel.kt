@@ -39,7 +39,7 @@ import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
-import me.him188.ani.app.data.repository.EpisodeHistoryRepository
+import me.him188.ani.app.data.repository.EpisodePlayHistoryRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
@@ -219,7 +219,7 @@ private class EpisodeViewModelImpl(
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val commentRepository: CommentRepository by inject()
-    private val episodeHistoryRepository: EpisodeHistoryRepository by inject()
+    private val episodePlayHistoryRepository: EpisodePlayHistoryRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -412,8 +412,6 @@ private class EpisodeViewModelImpl(
                 }?.second ?: EpisodeCacheStatus.NotCached
             },
             onSelect = {
-                // 切换 ep 前保存播放进度
-                episodeHistoryState.saveProgress()
                 switchEpisode(it.episode.id)
             },
             onChangeCollectionType = { episode, it ->
@@ -455,6 +453,7 @@ private class EpisodeViewModelImpl(
     override val commentLazyListState: LazyListState = LazyListState()
 
     fun switchEpisode(episodeId: Int) {
+        episodeHistoryState.saveProgress() // 切换 ep 前保存播放进度
         episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
         mediaSelector.unselect() // 否则不会自动选择
         playerState.stop()
@@ -465,8 +464,6 @@ private class EpisodeViewModelImpl(
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
         onSelect = {
-            // 切换 ep 前保存播放进度
-            episodeHistoryState.saveProgress()
             switchEpisode(it.episodeId)
         },
         currentEpisodeId = episodeId,
@@ -572,7 +569,7 @@ private class EpisodeViewModelImpl(
     )
 
     override val episodeHistoryState: EpisodeHistoryState = EpisodeHistoryState(
-        repository = episodeHistoryRepository,
+        repository = episodePlayHistoryRepository,
         playerState = playerState,
         currentEpisodeId = episodeId,
         parentCoroutineContext = backgroundScope.coroutineContext,
@@ -698,7 +695,7 @@ private class EpisodeViewModelImpl(
         }
 
         launchInBackground {
-            mediaSelector.events.onPreSelect.collectLatest {
+            mediaSelector.events.onBeforeSelect.collectLatest {
                 // 切换 数据源 前保存播放进度
                 episodeHistoryState.saveProgress()
             }
