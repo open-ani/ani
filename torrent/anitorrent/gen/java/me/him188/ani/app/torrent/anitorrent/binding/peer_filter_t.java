@@ -65,7 +65,7 @@ public class peer_filter_t {
   }
 
   public boolean on_filter(peer_info_t arg0) {
-    return (getClass() == peer_filter_t.class) ? anitorrentJNI.peer_filter_t_on_filter(swigCPtr, this, peer_info_t.getCPtr(arg0), arg0) : anitorrentJNI.peer_filter_t_on_filterSwigExplicitpeer_filter_t(swigCPtr, this, peer_info_t.getCPtr(arg0), arg0);
+    return anitorrentJNI.peer_filter_t_on_filter(swigCPtr, this, peer_info_t.getCPtr(arg0), arg0);
   }
 
   public peer_filter_t() {

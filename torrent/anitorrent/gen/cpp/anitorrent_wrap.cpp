@@ -1840,7 +1840,8 @@ bool SwigDirector_peer_filter_t::on_filter(anilt::peer_info_t const &arg0) {
   jlong jarg0 = 0 ;
   
   if (!swig_override[0]) {
-    return anilt::peer_filter_t::on_filter(arg0);
+    SWIG_JavaThrowException(JNIEnvWrapper(this).getJNIEnv(), SWIG_JavaDirectorPureVirtual, "Attempted to invoke pure virtual method anilt::peer_filter_t::on_filter.");
+    return c_result;
   }
   swigjobj = swig_get_self(jenv);
   if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
@@ -3918,28 +3919,6 @@ SWIGEXPORT jboolean JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_an
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1filter_1t_1on_1filterSwigExplicitpeer_1filter_1t(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
-  jboolean jresult = 0 ;
-  anilt::peer_filter_t *arg1 = (anilt::peer_filter_t *) 0 ;
-  anilt::peer_info_t *arg2 = 0 ;
-  bool result;
-  
-  (void)jenv;
-  (void)jcls;
-  (void)jarg1_;
-  (void)jarg2_;
-  arg1 = *(anilt::peer_filter_t **)&jarg1; 
-  arg2 = *(anilt::peer_info_t **)&jarg2;
-  if (!arg2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "anilt::peer_info_t const & is null");
-    return 0;
-  } 
-  result = (bool)(arg1)->anilt::peer_filter_t::on_filter((anilt::peer_info_t const &)*arg2);
-  jresult = (jboolean)result; 
-  return jresult;
-}
-
-
 SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1peer_1filter_1t(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   anilt::peer_filter_t *result = 0 ;
@@ -3967,6 +3946,48 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
   if (director) {
     director->swig_java_change_ownership(jenv, jself, jtake_or_release ? true : false);
   }
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_parse_1peer_1info(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  jlong jresult = 0 ;
+  lt::peer_info *arg1 = 0 ;
+  SwigValueWrapper< std::shared_ptr< anilt::peer_info_t > > result;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(lt::peer_info **)&jarg1;
+  if (!arg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "lt::peer_info const & is null");
+    return 0;
+  } 
+  result = anilt::parse_peer_info((lt::peer_info const &)*arg1);
+  *(std::shared_ptr< anilt::peer_info_t > **)&jresult = new std::shared_ptr< anilt::peer_info_t >(result); 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_create_1peer_1filter(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
+  jlong jresult = 0 ;
+  lt::torrent_handle *arg1 = 0 ;
+  std::function< bool (anilt::peer_info_t *) > *arg2 = 0 ;
+  std::shared_ptr< lt::torrent_plugin > result;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(lt::torrent_handle **)&jarg1;
+  if (!arg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "lt::torrent_handle const & is null");
+    return 0;
+  } 
+  arg2 = *(std::function< bool (anilt::peer_info_t *) > **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::function< bool (anilt::peer_info_t *) > const & is null");
+    return 0;
+  } 
+  result = anilt::create_peer_filter((lt::torrent_handle const &)*arg1,(std::function< bool (anilt::peer_info_t *) > const &)*arg2);
+  *(std::shared_ptr< lt::torrent_plugin > **)&jresult = new std::shared_ptr< lt::torrent_plugin >(result); 
+  return jresult;
 }
 
 

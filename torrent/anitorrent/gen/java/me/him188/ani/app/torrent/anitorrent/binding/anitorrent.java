@@ -14,6 +14,14 @@ public class anitorrent {
     anitorrentJNI.call_listener(SWIGTYPE_p_lt__alert.getCPtr(alert), SWIGTYPE_p_libtorrent__session.getCPtr(session), event_listener_t.getCPtr(listener), listener);
   }
 
+  public static SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t parse_peer_info(SWIGTYPE_p_lt__peer_info info) {
+    return new SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t(anitorrentJNI.parse_peer_info(SWIGTYPE_p_lt__peer_info.getCPtr(info)), true);
+  }
+
+  public static SWIGTYPE_p_std__shared_ptrT_lt__torrent_plugin_t create_peer_filter(SWIGTYPE_p_lt__torrent_handle th, SWIGTYPE_p_std__functionT_bool_fanilt__peer_info_t_pF_t filter) {
+    return new SWIGTYPE_p_std__shared_ptrT_lt__torrent_plugin_t(anitorrentJNI.create_peer_filter(SWIGTYPE_p_lt__torrent_handle.getCPtr(th), SWIGTYPE_p_std__functionT_bool_fanilt__peer_info_t_pF_t.getCPtr(filter)), true);
+  }
+
   public static String lt_version() {
     return anitorrentJNI.lt_version();
   }

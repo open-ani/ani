@@ -146,10 +146,11 @@ public class anitorrentJNI {
   public final static native void delete_peer_info_t(long jarg1);
   public final static native void delete_peer_filter_t(long jarg1);
   public final static native boolean peer_filter_t_on_filter(long jarg1, peer_filter_t jarg1_, long jarg2, peer_info_t jarg2_);
-  public final static native boolean peer_filter_t_on_filterSwigExplicitpeer_filter_t(long jarg1, peer_filter_t jarg1_, long jarg2, peer_info_t jarg2_);
   public final static native long new_peer_filter_t();
   public final static native void peer_filter_t_director_connect(peer_filter_t obj, long cptr, boolean mem_own, boolean weak_global);
   public final static native void peer_filter_t_change_ownership(peer_filter_t obj, long cptr, boolean take_or_release);
+  public final static native long parse_peer_info(long jarg1);
+  public final static native long create_peer_filter(long jarg1, long jarg2);
   public final static native void session_settings_t_download_rate_limit_set(long jarg1, session_settings_t jarg1_, int jarg2);
   public final static native int session_settings_t_download_rate_limit_get(long jarg1, session_settings_t jarg1_);
   public final static native void session_settings_t_upload_rate_limit_set(long jarg1, session_settings_t jarg1_, int jarg2);
