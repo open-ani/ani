@@ -64,7 +64,6 @@ import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createDirectories
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
 
 @Stable
@@ -269,6 +268,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                     videoProperties.value = videoProperties.value?.copy(
                         durationMillis = newLength,
                     )
+                    state.value = PlaybackState.READY
                 }
 
                 override fun elementaryStreamAdded(mediaPlayer: MediaPlayer?, type: TrackType?, id: Int) {

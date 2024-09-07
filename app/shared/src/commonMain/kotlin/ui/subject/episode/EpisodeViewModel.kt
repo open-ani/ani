@@ -39,6 +39,7 @@ import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
+import me.him188.ani.app.data.repository.EpisodeHistoryRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
@@ -80,6 +81,7 @@ import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
+import me.him188.ani.app.ui.subject.episode.video.EpisodeHistoryState
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
@@ -185,6 +187,8 @@ abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
 
     abstract val playerSkipOpEdState: PlayerSkipOpEdState
 
+    abstract val episodeHistoryState: EpisodeHistoryState
+
     @UiThread
     abstract fun stopPlaying()
 }
@@ -215,6 +219,7 @@ private class EpisodeViewModelImpl(
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val commentRepository: CommentRepository by inject()
+    private val episodeHistoryRepository: EpisodeHistoryRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -407,6 +412,8 @@ private class EpisodeViewModelImpl(
                 }?.second ?: EpisodeCacheStatus.NotCached
             },
             onSelect = {
+                // 切换 ep 前保存播放进度
+                episodeHistoryState.saveProgress()
                 switchEpisode(it.episode.id)
             },
             onChangeCollectionType = { episode, it ->
@@ -458,6 +465,8 @@ private class EpisodeViewModelImpl(
     override val episodeSelectorState: EpisodeSelectorState = EpisodeSelectorState(
         itemsFlow = episodeCollectionsFlow.map { list -> list.map { it.toPresentation() } },
         onSelect = {
+            // 切换 ep 前保存播放进度
+            episodeHistoryState.saveProgress()
             switchEpisode(it.episodeId)
         },
         currentEpisodeId = episodeId,
@@ -552,6 +561,7 @@ private class EpisodeViewModelImpl(
         },
         backgroundScope = backgroundScope,
     )
+
     override val playerSkipOpEdState: PlayerSkipOpEdState = PlayerSkipOpEdState(
         chapters = playerState.chapters.produceState(),
         onSkip = {
@@ -561,7 +571,16 @@ private class EpisodeViewModelImpl(
             .produceState(0.milliseconds),
     )
 
+    override val episodeHistoryState: EpisodeHistoryState = EpisodeHistoryState(
+        repository = episodeHistoryRepository,
+        playerState = playerState,
+        currentEpisodeId = episodeId,
+        parentCoroutineContext = backgroundScope.coroutineContext,
+    )
+
     override fun stopPlaying() {
+        // 退出播放页前保存播放进度
+        episodeHistoryState.saveProgress()
         playerState.stop()
     }
 
@@ -676,6 +695,27 @@ private class EpisodeViewModelImpl(
                         playerSkipOpEdState.update(pos)
                     }.collect()
                 }
+        }
+
+        launchInBackground {
+            mediaSelector.events.onPreSelect.collectLatest {
+                // 切换 数据源 前保存播放进度
+                episodeHistoryState.saveProgress()
+            }
+        }
+
+        launchInBackground {
+            playerState.state.collectLatest {
+                when (it) {
+                    PlaybackState.READY ->
+                        episodeHistoryState.loadProgress()
+
+                    PlaybackState.FINISHED ->
+                        episodeHistoryState.clearProgress()
+
+                    else -> Unit
+                }
+            }
         }
     }
 
