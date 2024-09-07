@@ -19,7 +19,7 @@ expect fun runAniComposeUiTest(
     testBody: AniComposeUiTest.() -> Unit
 )
 
-internal class AniComposeUiTestImpl(override val composeUiTest: ComposeUiTest) : AniComposeUiTest {
+internal abstract class AbstractAniComposeUiTest(override val composeUiTest: ComposeUiTest) : AniComposeUiTest {
     override val density: Density
         get() = composeUiTest.density
     override val mainClock: MainTestClock
@@ -30,8 +30,8 @@ internal class AniComposeUiTestImpl(override val composeUiTest: ComposeUiTest) :
     override fun waitForIdle() = composeUiTest.waitForIdle()
     override suspend fun awaitIdle() = composeUiTest.awaitIdle()
 
-    override fun waitUntil(conditionDescription: String?, timeoutMillis: Long, condition: () -> Boolean) =
-        composeUiTest.waitUntil(conditionDescription, timeoutMillis, condition)
+    // 安卓没有这个, 所以得在具体平台实现
+    abstract override fun waitUntil(conditionDescription: String?, timeoutMillis: Long, condition: () -> Boolean)
 
     override fun registerIdlingResource(idlingResource: IdlingResource) =
         composeUiTest.registerIdlingResource(idlingResource)
