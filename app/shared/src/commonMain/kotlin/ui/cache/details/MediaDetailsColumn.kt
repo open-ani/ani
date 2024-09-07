@@ -47,6 +47,7 @@ fun MediaDetailsColumn(
     media: Media,
     sourceInfo: MediaSourceInfo?,
     modifier: Modifier = Modifier,
+    showSourceInfo: Boolean = true,
 ) {
     val browser = LocalBrowserNavigator.current
     val context = LocalContext.current
@@ -90,36 +91,38 @@ fun MediaDetailsColumn(
                 }
             },
         )
-        ListItem(
-            headlineContent = { Text("数据源") },
-            leadingContent = { MediaSourceIcon(sourceInfo, Modifier.size(24.dp)) },
-            supportingContent = {
-                val kind = when (media.kind) {
-                    MediaSourceKind.WEB -> "在线"
-                    MediaSourceKind.BitTorrent -> "BT"
-                    MediaSourceKind.LocalCache -> "本地"
-                }
-                SelectionContainer { Text("[$kind] ${sourceInfo?.displayName ?: "未知"}") }
-            },
-            trailingContent = kotlin.run {
-                val originalUrl by rememberUpdatedState(media.originalUrl)
-                val isUrlLegal by remember {
-                    derivedStateOf {
-                        originalUrl.startsWith("http://", ignoreCase = true)
-                                || originalUrl.startsWith("https://", ignoreCase = true)
+        if (showSourceInfo) {
+            ListItem(
+                headlineContent = { Text("数据源") },
+                leadingContent = { MediaSourceIcon(sourceInfo, Modifier.size(24.dp)) },
+                supportingContent = {
+                    val kind = when (media.kind) {
+                        MediaSourceKind.WEB -> "在线"
+                        MediaSourceKind.BitTorrent -> "BT"
+                        MediaSourceKind.LocalCache -> "本地"
                     }
-                }
-                if (isUrlLegal) {
-                    {
-                        browseContent(originalUrl)
+                    SelectionContainer { Text("[$kind] ${sourceInfo?.displayName ?: "未知"}") }
+                },
+                trailingContent = kotlin.run {
+                    val originalUrl by rememberUpdatedState(media.originalUrl)
+                    val isUrlLegal by remember {
+                        derivedStateOf {
+                            originalUrl.startsWith("http://", ignoreCase = true)
+                                    || originalUrl.startsWith("https://", ignoreCase = true)
+                        }
                     }
-                } else {
-                    {
-                        copyContent { originalUrl }
+                    if (isUrlLegal) {
+                        {
+                            browseContent(originalUrl)
+                        }
+                    } else {
+                        {
+                            copyContent { originalUrl }
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
+        }
         ListItem(
             headlineContent = { Text("字幕组") },
             leadingContent = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },

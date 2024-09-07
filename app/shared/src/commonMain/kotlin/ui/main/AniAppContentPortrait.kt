@@ -41,8 +41,8 @@ import me.him188.ani.app.ui.profile.auth.WelcomeViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceMode
-import me.him188.ani.app.ui.settings.tabs.media.source.EditRssMediaSourcePage
-import me.him188.ani.app.ui.settings.tabs.media.source.EditRssMediaSourceViewModel
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourcePage
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceViewModel
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
 import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModelImpl
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene

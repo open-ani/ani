@@ -1,13 +1,13 @@
 package me.him188.ani.app.tools.rss
 
+import androidx.compose.runtime.Immutable
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 
-/**
- * @sample me.him188.ani.app.tools.rss.RssParserTest.dmhy
- */
+// See  me.him188.ani.app.tools.rss.RssParserTest.dmhy
 @Serializable
+@Immutable
 data class RssChannel(
     val title: String,
     val description: String = "",
@@ -18,6 +18,7 @@ data class RssChannel(
 )
 
 @Serializable
+@Immutable
 data class RssItem(
     val title: String,
     val description: String = "",
@@ -28,6 +29,7 @@ data class RssItem(
 )
 
 @Serializable
+@Immutable
 data class RssEnclosure(
     val url: String,
     val length: Long = 0,
