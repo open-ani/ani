@@ -12,7 +12,7 @@
 #include "libtorrent/magnet_uri.hpp"
 #include "libtorrent/read_resume_data.hpp"
 #include "torrent_handle_t.hpp"
-#include "peer_filter.cpp"
+#include "peer_filter.hpp"
 
 namespace anilt {
 static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_info> &ti) {
