@@ -1,48 +1,47 @@
 package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.models.subject.RelatedCharacterInfo
 import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.ui.foundation.BackgroundScope
-import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
-import kotlin.coroutines.CoroutineContext
 
+/**
+ * 条目详情页 UI 状态. 所有属性 null 都表示正在加载中.
+ */
 @Stable
 class SubjectDetailsState(
-    // TODO: maybe refactor 
-    subjectInfo: Flow<SubjectInfo>,
-    coverImageUrl: Flow<String>,
-    selfCollectionType: Flow<UnifiedCollectionType>,
-    persons: Flow<List<RelatedPersonInfo>>,
-    characters: Flow<List<RelatedCharacterInfo>>,
-    relatedSubjects: Flow<List<RelatedSubjectInfo>>,
+    // headers 信息, 如果这些非 null, 就直接显示, 没有渐入动画
+    subjectInfoState: State<SubjectInfo?>,
+    selfCollectionTypeState: State<UnifiedCollectionType?>,
+    personsState: State<List<RelatedPersonInfo>?>,
+
+    // 附加信息
+    charactersState: State<List<RelatedCharacterInfo>?>,
+    relatedSubjectsState: State<List<RelatedSubjectInfo>?>,
     val airingLabelState: AiringLabelState,
-    parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
-    val info by subjectInfo.produceState<SubjectInfo>(SubjectInfo.Empty)
+) {
+    val info by derivedStateOf { subjectInfoState.value ?: SubjectInfo.Empty }
 
-    private val coverImageUrlOrNull by coverImageUrl.produceState(null)
-    val coverImageUrl by derivedStateOf { coverImageUrlOrNull ?: "" }
+    val coverImageUrl by derivedStateOf { info.imageLarge }
 
-    private val selfCollectionTypeOrNull by selfCollectionType.produceState(null)
+    private val selfCollectionTypeOrNull by selfCollectionTypeState
     val selfCollectionType by derivedStateOf { selfCollectionTypeOrNull ?: UnifiedCollectionType.WISH }
 
     val selfCollected by derivedStateOf { this.selfCollectionType != UnifiedCollectionType.NOT_COLLECTED }
 
-    private val charactersOrNull by characters.produceState(null)
+    private val charactersOrNull by charactersState
     val characters by derivedStateOf { charactersOrNull ?: emptyList() }
 
-    private val personsOrNull by persons.produceState(null)
+    private val personsOrNull by personsState
     val persons by derivedStateOf { personsOrNull ?: emptyList() }
 
-    private val relatedSubjectsOrNull by relatedSubjects.produceState(null)
+    private val relatedSubjectsOrNull by relatedSubjectsState
     val relatedSubjects by derivedStateOf { relatedSubjectsOrNull ?: emptyList() }
 
     /**

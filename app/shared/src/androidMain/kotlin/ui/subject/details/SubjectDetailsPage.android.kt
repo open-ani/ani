@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import kotlinx.coroutines.flow.MutableStateFlow
 import me.him188.ani.app.data.models.subject.CharacterType
 import me.him188.ani.app.data.models.subject.Images
 import me.him188.ani.app.data.models.subject.PersonCareer
@@ -27,6 +26,7 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeButton
 import me.him188.ani.app.ui.subject.collection.TestSelfRatingInfo
 import me.him188.ani.app.ui.subject.details.components.CollectionData
@@ -153,17 +153,14 @@ fun rememberTestEditableRatingState(): EditableRatingState {
 @Composable
 internal fun PreviewSubjectDetails() {
     ProvideCompositionLocalsForPreview {
-        val backgroundScope = rememberBackgroundScope()
         val state = remember {
             SubjectDetailsState(
-                subjectInfo = MutableStateFlow(TestSubjectInfo),
-                coverImageUrl = MutableStateFlow("https://ui-avatars.com/api/?name=John+Doe"),
-                selfCollectionType = MutableStateFlow(UnifiedCollectionType.WISH),
+                subjectInfoState = stateOf(TestSubjectInfo),
+                selfCollectionTypeState = stateOf(UnifiedCollectionType.WISH),
                 airingLabelState = createTestAiringLabelState(),
-                characters = MutableStateFlow(TestSubjectCharacterList),
-                persons = MutableStateFlow(emptyList()),
-                relatedSubjects = MutableStateFlow(TestRelatedSubjects),
-                parentCoroutineContext = backgroundScope.backgroundScope.coroutineContext,
+                charactersState = stateOf(TestSubjectCharacterList),
+                personsState = stateOf(emptyList()),
+                relatedSubjectsState = stateOf(TestRelatedSubjects),
             )
         }
         val connectedScrollState = rememberConnectedScrollState()
