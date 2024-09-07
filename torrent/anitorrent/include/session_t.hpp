@@ -7,6 +7,7 @@
 #include "torrent_add_info_t.hpp"
 #include "torrent_handle_t.hpp"
 #include "torrent_info_t.hpp"
+#include "peer_filter.hpp"
 
 namespace anilt {
 extern "C" {
@@ -44,6 +45,9 @@ struct session_settings_t final {
 
     /// libtorrent::settings_pack::max_peerlist_size
     int max_peerlist_size = 1500;
+    
+    // libtorrent::settings_pack::share_ratio_limit
+    int share_ratio_limit = 110;
 
     /// libtorrent::settings_pack::handshake_client_version
     std::string handshake_client_version{};
@@ -81,6 +85,8 @@ class session_t final {
 
     void remove_listener() const;
 
+    void set_peer_filter(anilt::peer_filter_t *filter);
+
     /// blocks
     void wait_for_alert(int timeout_seconds) const;
 
@@ -88,6 +94,7 @@ class session_t final {
 
   private:
     std::shared_ptr<libtorrent::session> session_;
+    peer_filter_t * peer_filter_ = nullptr;
     static bool compute_add_torrent_params(const torrent_add_info_t &info, lt::add_torrent_params &params);
 };
 }

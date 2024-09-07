@@ -81,6 +81,10 @@ public class session_t {
     anitorrentJNI.session_t_remove_listener(swigCPtr, this);
   }
 
+  public void set_peer_filter(SWIGTYPE_p_anilt__peer_filter_t filter) {
+    anitorrentJNI.session_t_set_peer_filter(swigCPtr, this, SWIGTYPE_p_anilt__peer_filter_t.getCPtr(filter));
+  }
+
   public void wait_for_alert(int timeout_seconds) {
     anitorrentJNI.session_t_wait_for_alert(swigCPtr, this, timeout_seconds);
   }

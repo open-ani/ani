@@ -134,6 +134,14 @@ public class session_settings_t {
     return anitorrentJNI.session_settings_t_max_peerlist_size_get(swigCPtr, this);
   }
 
+  public void setShare_ratio_limit(int value) {
+    anitorrentJNI.session_settings_t_share_ratio_limit_set(swigCPtr, this, value);
+  }
+
+  public int getShare_ratio_limit() {
+    return anitorrentJNI.session_settings_t_share_ratio_limit_get(swigCPtr, this);
+  }
+
   public void setHandshake_client_version(String value) {
     anitorrentJNI.session_settings_t_handshake_client_version_set(swigCPtr, this, value);
   }

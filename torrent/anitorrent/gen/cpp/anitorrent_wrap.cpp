@@ -3995,6 +3995,34 @@ SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1settings_1t_1share_1ratio_1limit_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  anilt::session_settings_t *arg1 = (anilt::session_settings_t *) 0 ;
+  int arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::session_settings_t **)&jarg1; 
+  arg2 = (int)jarg2; 
+  if (arg1) (arg1)->share_ratio_limit = arg2;
+}
+
+
+SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1settings_1t_1share_1ratio_1limit_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  anilt::session_settings_t *arg1 = (anilt::session_settings_t *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::session_settings_t **)&jarg1; 
+  result = (int) ((arg1)->share_ratio_limit);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1settings_1t_1handshake_1client_1version_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   anilt::session_settings_t *arg1 = (anilt::session_settings_t *) 0 ;
   std::string *arg2 = 0 ;
@@ -4258,6 +4286,19 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
   (void)jarg1_;
   arg1 = *(anilt::session_t **)&jarg1; 
   ((anilt::session_t const *)arg1)->remove_listener();
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_session_1t_1set_1peer_1filter(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::session_t *arg1 = (anilt::session_t *) 0 ;
+  anilt::peer_filter_t *arg2 = (anilt::peer_filter_t *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::session_t **)&jarg1; 
+  arg2 = *(anilt::peer_filter_t **)&jarg2; 
+  (arg1)->set_peer_filter(arg2);
 }
 
 

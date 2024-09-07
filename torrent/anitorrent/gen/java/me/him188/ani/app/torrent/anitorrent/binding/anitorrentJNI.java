@@ -155,6 +155,8 @@ public class anitorrentJNI {
   public final static native int session_settings_t_connections_limit_get(long jarg1, session_settings_t jarg1_);
   public final static native void session_settings_t_max_peerlist_size_set(long jarg1, session_settings_t jarg1_, int jarg2);
   public final static native int session_settings_t_max_peerlist_size_get(long jarg1, session_settings_t jarg1_);
+  public final static native void session_settings_t_share_ratio_limit_set(long jarg1, session_settings_t jarg1_, int jarg2);
+  public final static native int session_settings_t_share_ratio_limit_get(long jarg1, session_settings_t jarg1_);
   public final static native void session_settings_t_handshake_client_version_set(long jarg1, session_settings_t jarg1_, String jarg2);
   public final static native String session_settings_t_handshake_client_version_get(long jarg1, session_settings_t jarg1_);
   public final static native long new_session_settings_t();
@@ -173,6 +175,7 @@ public class anitorrentJNI {
   public final static native boolean session_t_set_new_event_listener(long jarg1, session_t jarg1_, long jarg2, new_event_listener_t jarg2_);
   public final static native void session_t_process_events(long jarg1, session_t jarg1_, long jarg2, event_listener_t jarg2_);
   public final static native void session_t_remove_listener(long jarg1, session_t jarg1_);
+  public final static native void session_t_set_peer_filter(long jarg1, session_t jarg1_, long jarg2);
   public final static native void session_t_wait_for_alert(long jarg1, session_t jarg1_, int jarg2);
   public final static native void session_t_post_session_stats(long jarg1, session_t jarg1_);
   public final static native long new_session_t();
