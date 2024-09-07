@@ -206,14 +206,14 @@ internal fun PreviewSubjectDetails() {
 
                 SubjectDetailsDefaults.SubjectCommentColumn(
                     state = rememberTestCommentState(commentList = generateUiComment(10)),
-                    listState = lazyListState,
+                    onClickUrl = { },
                     modifier = Modifier
                         .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
                         .ifThen(currentPlatform.isDesktop()) {
                             nestedScrollWorkaround(lazyListState, connectedScrollState.nestedScrollConnection)
                         }
                         .nestedScroll(connectedScrollState.nestedScrollConnection),
-                    onClickUrl = { },
+                    listState = lazyListState,
                 )
             },
             discussionsTab = {},

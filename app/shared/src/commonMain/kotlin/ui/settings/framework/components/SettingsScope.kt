@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -25,7 +25,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
-import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.theme.weaken
+
+object SettingsDefaults {
+    @Composable
+    fun ItemIcon(
+        modifier: Modifier = Modifier,
+        content: @Composable () -> Unit,
+    ) {
+        Box(modifier.size(28.dp), contentAlignment = Alignment.Center) {
+            CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface) {
+                content()
+            }
+        }
+    }
+}
 
 /**
  * 设置页的组件
@@ -69,7 +83,7 @@ abstract class SettingsScope {
                             .padding(bottom = 8.dp)
                             .weight(1f)
                             .heightIn(min = if (description != null) 48.dp else 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         ProvideTextStyleContentColor(
                             MaterialTheme.typography.titleMedium,
@@ -80,8 +94,8 @@ abstract class SettingsScope {
 
                         description?.let {
                             ProvideTextStyleContentColor(
-                                MaterialTheme.typography.labelMedium,
-                                LocalContentColor.current.copy(labelAlpha),
+                                MaterialTheme.typography.bodyMedium,
+                                ListItemDefaults.colors().supportingTextColor,
                             ) {
                                 Row(Modifier.padding()) { it() }
                             }
@@ -107,36 +121,6 @@ abstract class SettingsScope {
     }
 
     @Composable
-    fun ItemHeader(
-        title: @Composable RowScope.() -> Unit,
-        description: @Composable (() -> Unit)?,
-        modifier: Modifier = Modifier,
-    ) {
-        Column(
-            modifier.padding(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            CompositionLocalProvider(
-                LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface,
-            ) {
-                ProvideTextStyle(
-                    MaterialTheme.typography.bodyLarge,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) { title() }
-                }
-            }
-            ProvideTextStyleContentColor(
-                MaterialTheme.typography.labelMedium,
-                LocalContentColor.current.copy(labelAlpha),
-            ) {
-                description?.let {
-                    Row(verticalAlignment = Alignment.CenterVertically) { it() }
-                }
-            }
-        }
-    }
-
-    @Composable
     inline fun SubGroup(
         content: () -> Unit,
     ) {
@@ -147,52 +131,43 @@ abstract class SettingsScope {
 
     @Composable
     fun Item(
+        headlineContent: @Composable () -> Unit,
         modifier: Modifier = Modifier,
-        icon: @Composable (() -> Unit)? = null,
-        action: @Composable (() -> Unit)? = null,
-        content: @Composable () -> Unit = {},
+        overlineContent: @Composable (() -> Unit)? = null,
+        supportingContent: @Composable (() -> Unit)? = null,
+        leadingContent: @Composable (() -> Unit)? = null,
+        trailingContent: @Composable (() -> Unit)? = null,
     ) {
-        Row(
-            modifier
-                .padding(horizontal = itemHorizontalPadding)
-                .fillMaxWidth()
-                .heightIn(min = 48.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (icon != null) {
-                Box(Modifier.padding(end = 8.dp).size(28.dp), contentAlignment = Alignment.Center) {
-                    CompositionLocalProvider(LocalContentColor providesDefault MaterialTheme.colorScheme.onSurface) {
-                        icon()
+        ListItem(
+            headlineContent = headlineContent,
+            modifier,
+            overlineContent,
+            supportingContent = supportingContent?.let {
+                {
+                    Column(Modifier.padding(top = 6.dp)) {
+                        it()
                     }
                 }
-            }
-
-            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                content()
-            }
-
-            action?.let {
-                Box(
-                    Modifier.padding(start = 16.dp)
-                        .widthIn(min = 48.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
+            },
+            leadingContent,
+            trailingContent = trailingContent?.let {
+                {
                     ProvideTextStyleContentColor(
-                        MaterialTheme.typography.labelLarge,
-                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.typography.labelMedium,
+                        ListItemDefaults.colors().supportingTextColor,
                     ) {
                         it()
                     }
                 }
-            }
-        }
+            },
+        )
     }
 
     @SettingsDsl
     @Composable
     fun HorizontalDividerItem(
         modifier: Modifier = Modifier,
-        color: Color = MaterialTheme.colorScheme.outlineVariant.stronglyWeaken()
+        color: Color = MaterialTheme.colorScheme.outlineVariant.weaken()
     ) {
         Row(
             modifier

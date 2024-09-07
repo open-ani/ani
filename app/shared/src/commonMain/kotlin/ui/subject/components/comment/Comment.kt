@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.isInDebugMode
@@ -178,11 +180,17 @@ class CommentState(
     /**
      * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
      */
-    suspend fun reload() {
-        freshLoaded = false
-        onReload()
-        freshLoaded = true
-        loadedOnce = true
+    fun reload() {
+        reloadTasker.launch {
+            withContext(Dispatchers.Main) {
+                freshLoaded = false
+            }
+            onReload()
+            withContext(Dispatchers.Main) {
+                freshLoaded = true
+                loadedOnce = true
+            }
+        }
     }
 
     fun loadMore() {

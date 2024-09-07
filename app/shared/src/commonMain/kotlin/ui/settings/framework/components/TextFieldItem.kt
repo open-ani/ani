@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.settings.framework.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -62,93 +63,95 @@ fun SettingsScope.TextFieldItem(
     extra: @Composable ColumnScope.(editingValue: MutableState<String>) -> Unit = {}
 ) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
-    Item(
-        modifier.clickable(onClick = { showDialog = true }),
-        icon = icon,
-    ) {
-        Row(
-            Modifier,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // 保存了的值
-            val valueText = @Composable {
-                if (placeholder != null && value.isEmpty()) {
-                    placeholder()
+
+    // 保存了的值
+    val valueText = @Composable {
+        if (placeholder != null && value.isEmpty()) {
+            placeholder()
+        } else {
+            exposedItem(value)
+        }
+    }
+    Box {
+        Item(
+            headlineContent = {
+                if (inverseTitleDescription) {
+                    valueText()
                 } else {
-                    exposedItem(value)
+                    title()
+                }
+            },
+            modifier.clickable(onClick = { showDialog = true }),
+            leadingContent = icon?.let {
+                {
+                    SettingsDefaults.ItemIcon {
+                        it()
+                    }
+                }
+            },
+            supportingContent = {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    if (inverseTitleDescription) {
+                        title()
+                    } else {
+                        valueText()
+                    }
+                }
+            },
+            trailingContent = {
+                IconButton({ showDialog = true }) {
+                    Icon(Icons.Rounded.Edit, "编辑", tint = MaterialTheme.colorScheme.primary)
+                }
+            },
+        )
+
+        if (showDialog) {
+            // 正在编辑的值
+            val editingValueState = rememberSaveable(value) {
+                mutableStateOf(value)
+            }
+            var editingValue by editingValueState
+            val error by remember(isErrorProvider) {
+                derivedStateOf {
+                    isErrorProvider(editingValue)
                 }
             }
-            ItemHeader(
-                title = {
-                    if (inverseTitleDescription) {
-                        valueText()
-                    } else {
-                        title()
-                    }
-
-                },
-                description = {
-                    if (inverseTitleDescription) {
-                        title()
-                    } else {
-                        valueText()
-                    }
-                },
-                Modifier.weight(1f),
-            )
-
-            IconButton({ showDialog = true }) {
-                Icon(Icons.Rounded.Edit, "编辑", tint = MaterialTheme.colorScheme.primary)
+            val onConfirm = remember(onValueChangeCompleted) {
+                {
+                    onValueChangeCompleted(editingValue)
+                    showDialog = false
+                }
             }
 
-            if (showDialog) {
-                // 正在编辑的值
-                val editingValueState = rememberSaveable(value) {
-                    mutableStateOf(value)
-                }
-                var editingValue by editingValueState
-                val error by remember(isErrorProvider) {
-                    derivedStateOf {
-                        isErrorProvider(editingValue)
-                    }
-                }
-                val onConfirm = remember(onValueChangeCompleted) {
-                    {
-                        onValueChangeCompleted(editingValue)
-                        showDialog = false
-                    }
-                }
-
-                TextFieldDialog(
-                    onDismissRequest = { showDialog = false },
-                    onConfirm = onConfirm,
-                    title = title,
-                    confirmEnabled = !error,
-                    description = { textFieldDescription?.invoke(editingValue) },
-                    extra = { extra(editingValueState) },
-                ) {
-                    OutlinedTextField(
-                        value = editingValue,
-                        onValueChange = { editingValue = sanitizeValue(it) },
-                        shape = MaterialTheme.shapes.medium,
-                        keyboardActions = KeyboardActions {
+            TextFieldDialog(
+                onDismissRequest = { showDialog = false },
+                onConfirm = onConfirm,
+                title = title,
+                confirmEnabled = !error,
+                description = { textFieldDescription?.invoke(editingValue) },
+                extra = { extra(editingValueState) },
+            ) {
+                OutlinedTextField(
+                    value = editingValue,
+                    onValueChange = { editingValue = sanitizeValue(it) },
+                    shape = MaterialTheme.shapes.medium,
+                    keyboardActions = KeyboardActions {
+                        if (!error) {
+                            onConfirm()
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                        .defaultFocus()
+                        .onKey(Key.Enter) {
                             if (!error) {
                                 onConfirm()
                             }
                         },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done,
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                            .defaultFocus()
-                            .onKey(Key.Enter) {
-                                if (!error) {
-                                    onConfirm()
-                                }
-                            },
-                        isError = error,
-                    )
-                }
+                    isError = error,
+                )
             }
         }
     }

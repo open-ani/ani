@@ -66,9 +66,12 @@ class SubjectCollectionColumnState(
     hasMore: State<Boolean>,
     isKnownAuthorizedAndEmpty: State<Boolean>,
     private val onRequestMore: suspend () -> Unit,
+    private val onAutoRefresh: suspend () -> Unit,
+    private val onManualRefresh: suspend () -> Unit,
     backgroundScope: CoroutineScope,
 ) {
     private val requestMoreTasker = MonoTasker(backgroundScope)
+    private val refreshTasker = MonoTasker(backgroundScope)
 
     val cachedData: List<SubjectCollection> by cachedData
     val hasMore by hasMore
@@ -85,6 +88,22 @@ class SubjectCollectionColumnState(
         requestMoreTasker.launch {
             onRequestMore()
         }
+    }
+
+    val isRefreshing get() = refreshTasker.isRunning
+
+    fun startAutoRefresh() {
+        requestMoreTasker.cancel()
+        refreshTasker.launch {
+            onAutoRefresh()
+        }
+    }
+
+    suspend fun manualRefresh() {
+        requestMoreTasker.cancel()
+        refreshTasker.launch {
+            onManualRefresh()
+        }.join()
     }
 }
 
@@ -132,7 +151,7 @@ fun SubjectCollectionsColumn(
         item(span = { GridItemSpan(maxLineSpan) }) {}
 
         items(state.cachedData, key = { it.subjectId }) { collection ->
-            Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
+            Box(Modifier.ifThen(enableAnimation) { animateItem() }) {
                 item(collection)
             }
         }

@@ -26,7 +26,7 @@ fun Modifier.nestedScrollWorkaround(
                     nestedScrollConnection.onPostScroll(
                         Offset.Zero,
                         -scrollDelta * 2f * density.density,
-                        NestedScrollSource.Wheel,
+                        NestedScrollSource.UserInput,
                     )
                 }
             }

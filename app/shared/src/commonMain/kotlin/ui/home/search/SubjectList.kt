@@ -38,12 +38,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
@@ -72,9 +72,6 @@ class SubjectPreviewListState(
     backgroundScope: CoroutineScope,
 ) {
     val items by items
-
-    //    var hasMore by mutableStateOf(true)
-    val hasMore by hasMore
 
     private val loadMoreTasker = MonoTasker(backgroundScope)
     val isLoading by loadMoreTasker::isRunning
@@ -143,15 +140,13 @@ fun SubjectPreviewColumn(
                 title = subject.displayName,
                 imageUrl = remember(subject.id) { subject.imageCommon },
                 onClick = { navigator.navigateSubjectDetails(subject.id) },
-                Modifier.animateItemPlacement().height(180.dp),
+                Modifier.animateItem().height(180.dp),
             )
         }
 
         item("loading", span = { GridItemSpan(maxLineSpan) }, contentType = "loading") {
-            if (state.hasMore) {
-                SideEffect {
-                    state.loadMore()
-                }
+            SideEffect {
+                state.loadMore()
             }
             if (state.isLoading) {
                 Row(
@@ -194,7 +189,7 @@ fun SubjectPreviewCard(
             .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(),
+                indication = ripple(),
                 onClick = onClick,
             ),
         shape = shape,

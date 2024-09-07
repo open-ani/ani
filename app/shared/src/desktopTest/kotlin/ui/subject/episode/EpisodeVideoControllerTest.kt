@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
@@ -42,6 +43,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_C
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.TAG_MEDIA_PROGRESS_INDICATOR_TEXT
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
@@ -57,6 +59,7 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val TAG_DETACHED_PROGRESS_SLIDER = "detachedProgressSlider"
 private const val TAG_DANMAKU_EDITOR = "danmakuEditor"
+
 /**
  * 测试显示/隐藏进度条和 [GestureFamily]
  */
@@ -398,6 +401,7 @@ class EpisodeVideoControllerTest {
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
+
     /**
      * @see GestureFamily.swipeToSeek
      */
@@ -509,7 +513,8 @@ class EpisodeVideoControllerTest {
             }
         }
         runOnIdle {
-            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            waitUntil { onNodeWithTag(TAG_MEDIA_PROGRESS_INDICATOR_TEXT, useUnmergedTree = true).exists() }
+            onNodeWithTag(TAG_MEDIA_PROGRESS_INDICATOR_TEXT, useUnmergedTree = true).assertTextEquals("00:48 / 01:40")
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
@@ -521,7 +526,7 @@ class EpisodeVideoControllerTest {
         }
 
         runOnIdle {
-            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            waitUntil { onNodeWithText("00:48 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
@@ -550,7 +555,7 @@ class EpisodeVideoControllerTest {
                 }
             }
             runOnIdle {
-                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                waitUntil { onNodeWithText("00:48 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
             }
 
@@ -562,14 +567,14 @@ class EpisodeVideoControllerTest {
             }
 
             runOnIdle {
-                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                waitUntil { onNodeWithText("00:48 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
             }
 
             currentPositionMillis += 5000L // 播放 5 秒
 
             runOnIdle {
-                waitUntil { onNodeWithText("00:51 / 01:40").exists() }
+                waitUntil { onNodeWithText("00:53 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
             }
         }

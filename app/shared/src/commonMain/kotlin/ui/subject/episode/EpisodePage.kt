@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,18 +28,17 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -74,6 +74,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.desktopTitleBar
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -289,7 +290,7 @@ private fun TabRow(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surface,
 ) {
-    SecondaryScrollableTabRow(
+    ScrollableTabRow(
         selectedTabIndex = pagerState.currentPage,
         modifier,
         indicator = @Composable { tabPositions ->
@@ -403,6 +404,7 @@ private fun EpisodeSceneContentPhone(
         }
         ModalBottomSheet(
             onDismissRequest = dismiss,
+            contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
         ) {
             DetachedDanmakuEditorLayout(
                 vm.danmaku,
@@ -645,7 +647,6 @@ private fun EpisodeCommentColumn(
     pauseOnPlaying: () -> Unit,
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState(),
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
@@ -654,17 +655,11 @@ private fun EpisodeCommentColumn(
     EpisodeCommentColumn(
         state = commentState,
         editCommentStubText = commentEditorState.content,
-        modifier = modifier.fillMaxSize(),
-        lazyListState = lazyListState,
-        pullToRefreshState = pullToRefreshState,
         onClickReply = {
             setShowEditCommentSheet(true)
             commentEditorState.startEdit(CommentContext.Reply(it))
             pauseOnPlaying()
 
-        },
-        onClickUrl = {
-            RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
         },
         onClickEditCommentStub = {
             commentEditorState.startEdit(
@@ -679,6 +674,11 @@ private fun EpisodeCommentColumn(
             commentEditorState.toggleStickerPanelState(true)
             setShowEditCommentSheet(true)
         },
+        onClickUrl = {
+            RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+        },
+        modifier = modifier.fillMaxSize(),
+        lazyListState = lazyListState,
     )
 }
 

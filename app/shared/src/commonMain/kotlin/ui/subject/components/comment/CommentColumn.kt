@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.subject.components.comment
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,16 +14,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -36,7 +31,6 @@ fun CommentColumn(
     modifier: Modifier = Modifier,
     hasDividerLine: Boolean = true,
     listState: LazyListState = rememberLazyListState(),
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState(),
     commentItem: @Composable LazyItemScope.(index: Int, item: UIComment) -> Unit
 ) {
     LaunchedEffect(true) {
@@ -45,31 +39,24 @@ fun CommentColumn(
                 .collectLatest {
                     if (state.sourceVersionEquals()) return@collectLatest
                     state.sourceVersion = it
-                    pullToRefreshState.startRefresh()
                 }
-        }
-        launch {
-            snapshotFlow { pullToRefreshState.isRefreshing }.collectLatest { refreshing ->
-                if (!refreshing) return@collectLatest
-                state.reload()
-                pullToRefreshState.endRefresh()
-            }
         }
     }
 
-    Box(
-        modifier = modifier.clipToBounds(),
+    PullToRefreshBox(
+        isRefreshing = state.isLoading,
+        onRefresh = { state.reload() },
+        modifier = modifier,
         contentAlignment = Alignment.TopCenter,
     ) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(pullToRefreshState.nestedScrollConnection),
+                .fillMaxSize(),
             state = listState,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             item("spacer header") { Spacer(Modifier.height(1.dp)) }
-            
+
             itemsIndexed(items = state.list, key = { _, item -> item.id }) { index, item ->
                 commentItem(index, item)
 
@@ -80,20 +67,19 @@ fun CommentColumn(
                     )
                 }
             }
-            
-            if (state.hasMore) {
-                item("dummy loader") {
+
+            item("dummy loader") {
+                if (state.hasMore) { // 刚开始的时候, hasMore 为 false
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         CircularProgressIndicator()
                     }
-
-                    LaunchedEffect(true) { state.loadMore() }
+                } else {
+                    Spacer(Modifier.height(1.dp)) // 可能 lazy column bug, 如果有一个空的 item, 会导致滚动很卡
                 }
+
+                // 总是请求, 是为了在刚刚进入时请求一下. 因为是 lazy 的, 不请求列表就一直是空的
+                LaunchedEffect(true) { state.loadMore() }
             }
         }
-        PullToRefreshContainer(
-            state = pullToRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter),
-        )
     }
 }

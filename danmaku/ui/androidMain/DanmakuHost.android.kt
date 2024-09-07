@@ -171,12 +171,12 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
                     .background(Color.Transparent))
             HorizontalDivider()
             EpisodeVideoSettings(
+                danmakuConfig = config.value,
+                setDanmakuConfig = { config.value = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                danmakuConfig = config.value,
-                setDanmakuConfig = { config.value = it },
-                danmakuRegexFilterGroup = { }
+                danmakuRegexFilterGroup = { },
             )
         }
     }

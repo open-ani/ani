@@ -31,10 +31,8 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.material)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.material3.window.size.class0)
     implementation(libs.androidx.browser)
 
     implementation(libs.androidx.compose.ui)

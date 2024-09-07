@@ -11,6 +11,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -28,7 +29,7 @@ fun IconButton(
     enabled: Boolean = true,
     colors: IconButtonColors = IconButtonDefaults.iconButtonColors(),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    indication: Indication? = androidx.compose.material.ripple.rememberRipple(
+    indication: Indication? = ripple(
         bounded = false,
         radius = 20.dp, /* IconButtonTokens.StateLayerSize / 2 */
     ),

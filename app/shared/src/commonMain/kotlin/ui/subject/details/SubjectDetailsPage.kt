@@ -27,13 +27,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -111,7 +110,6 @@ fun SubjectDetailsScene(
     }
     val connectedScrollState = rememberConnectedScrollState()
 
-    val commentPullToRefreshState = rememberPullToRefreshState()
     // image viewer
     val imageViewer = rememberImageViewerHandler()
     BackHandler(enabled = imageViewer.viewing.value) { imageViewer.clear() }
@@ -162,10 +160,12 @@ fun SubjectDetailsScene(
             CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
                 SubjectDetailsDefaults.SubjectCommentColumn(
                     state = vm.subjectCommentState,
-                    listState = vm.commentTabLazyListState,
-                    pullToRefreshState = commentPullToRefreshState,
+                    onClickUrl = {
+                        RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                    },
                     modifier = Modifier
                         .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
+                        .fillMaxHeight()
                         .ifThen(currentPlatform.isDesktop()) {
                             nestedScrollWorkaround(
                                 vm.commentTabLazyListState,
@@ -173,9 +173,7 @@ fun SubjectDetailsScene(
                             )
                         }
                         .nestedScroll(connectedScrollState.nestedScrollConnection),
-                    onClickUrl = {
-                        RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
-                    },
+                    listState = vm.commentTabLazyListState,
                 )
             }
         },
@@ -335,7 +333,7 @@ fun SubjectDetailsPage(
                             if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
                             tween(),
                         )
-                        SecondaryScrollableTabRow(
+                        ScrollableTabRow(
                             selectedTabIndex = pagerState.currentPage,
                             indicator = @Composable { tabPositions ->
                                 TabRowDefaults.PrimaryIndicator(
@@ -343,13 +341,16 @@ fun SubjectDetailsPage(
                                 )
                             },
                             containerColor = tabContainerColor,
+                            contentColor = TabRowDefaults.secondaryContentColor,
                             divider = {},
                             modifier = Modifier,
                         ) {
                             SubjectDetailsTab.entries.forEachIndexed { index, tabId ->
                                 Tab(
                                     selected = pagerState.currentPage == index,
-                                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                                    onClick = {
+                                        scope.launch { pagerState.animateScrollToPage(index) }
+                                    },
                                     text = {
                                         Text(text = renderSubjectDetailsTab(tabId))
                                     },
