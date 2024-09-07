@@ -8,8 +8,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
@@ -36,8 +34,7 @@ fun EpisodeCommentColumn(
     onClickEditCommentStubEmoji: () -> Unit,
     onClickUrl: (url: String) -> Unit,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState(),
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()
+    lazyListState: LazyListState = rememberLazyListState()
 ) {
     val imageViewer = LocalImageViewerHandler.current
 
@@ -45,7 +42,6 @@ fun EpisodeCommentColumn(
         CommentColumn(
             state = state,
             listState = lazyListState,
-            pullToRefreshState = pullToRefreshState,
             modifier = Modifier.weight(1f).fillMaxSize()
         ) { _, comment ->
             EpisodeComment(

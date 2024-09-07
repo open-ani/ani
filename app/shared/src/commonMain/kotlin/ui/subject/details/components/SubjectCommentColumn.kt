@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -26,15 +24,13 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
     state: CommentState,
     onClickUrl: (url: String) -> Unit,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState(),
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState()
+    listState: LazyListState = rememberLazyListState()
 ) {
     val imageViewer = LocalImageViewerHandler.current
     
     CommentColumn(
         state = state,
         listState = listState,
-        pullToRefreshState = pullToRefreshState,
         modifier = modifier
     ) { _, comment ->
         SubjectComment(

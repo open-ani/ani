@@ -33,7 +33,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -111,7 +110,6 @@ fun SubjectDetailsScene(
     }
     val connectedScrollState = rememberConnectedScrollState()
 
-    val commentPullToRefreshState = rememberPullToRefreshState()
     // image viewer
     val imageViewer = rememberImageViewerHandler()
     BackHandler(enabled = imageViewer.viewing.value) { imageViewer.clear() }
@@ -162,8 +160,9 @@ fun SubjectDetailsScene(
             CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
                 SubjectDetailsDefaults.SubjectCommentColumn(
                     state = vm.subjectCommentState,
-                    listState = vm.commentTabLazyListState,
-                    pullToRefreshState = commentPullToRefreshState,
+                    onClickUrl = {
+                        RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                    },
                     modifier = Modifier
                         .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
                         .fillMaxHeight()
@@ -174,9 +173,7 @@ fun SubjectDetailsScene(
                             )
                         }
                         .nestedScroll(connectedScrollState.nestedScrollConnection),
-                    onClickUrl = {
-                        RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
-                    },
+                    listState = vm.commentTabLazyListState,
                 )
             }
         },

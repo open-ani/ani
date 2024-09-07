@@ -39,8 +39,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -649,7 +647,6 @@ private fun EpisodeCommentColumn(
     pauseOnPlaying: () -> Unit,
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
-    pullToRefreshState: PullToRefreshState = rememberPullToRefreshState(),
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
@@ -658,17 +655,11 @@ private fun EpisodeCommentColumn(
     EpisodeCommentColumn(
         state = commentState,
         editCommentStubText = commentEditorState.content,
-        modifier = modifier.fillMaxSize(),
-        lazyListState = lazyListState,
-        pullToRefreshState = pullToRefreshState,
         onClickReply = {
             setShowEditCommentSheet(true)
             commentEditorState.startEdit(CommentContext.Reply(it))
             pauseOnPlaying()
 
-        },
-        onClickUrl = {
-            RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
         },
         onClickEditCommentStub = {
             commentEditorState.startEdit(
@@ -683,6 +674,11 @@ private fun EpisodeCommentColumn(
             commentEditorState.toggleStickerPanelState(true)
             setShowEditCommentSheet(true)
         },
+        onClickUrl = {
+            RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+        },
+        modifier = modifier.fillMaxSize(),
+        lazyListState = lazyListState,
     )
 }
 
