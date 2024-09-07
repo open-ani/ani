@@ -142,7 +142,13 @@ class CommentState(
     private val onSubmitCommentReaction: suspend (commentId: Int, reactionId: Int) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    val sourceVersion: Any? by sourceVersion
+    private val currentSourceVersion: Any? by sourceVersion
+    private var lastSourceVersion: Any? = null
+    
+    var sourceVersion: Any?
+        get() = currentSourceVersion
+        set(value) { lastSourceVersion = value }
+    
     val list: List<UIComment> by list
 
     /**
@@ -164,7 +170,11 @@ class CommentState(
     val isLoading get() = reloadTasker.isRunning
 
     private val reactionSubmitTasker = MonoTasker(backgroundScope)
-
+    
+    fun sourceVersionEquals(): Boolean {
+        return lastSourceVersion == currentSourceVersion
+    }
+    
     /**
      * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
      */

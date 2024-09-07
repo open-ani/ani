@@ -27,7 +27,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 
@@ -43,8 +42,9 @@ fun CommentColumn(
     LaunchedEffect(true) {
         launch {
             snapshotFlow { state.sourceVersion }
-                .distinctUntilChanged()
                 .collectLatest {
+                    if (state.sourceVersionEquals()) return@collectLatest
+                    state.sourceVersion = it
                     pullToRefreshState.startRefresh()
                 }
         }
