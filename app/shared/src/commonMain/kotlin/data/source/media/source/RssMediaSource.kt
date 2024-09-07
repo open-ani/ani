@@ -37,6 +37,7 @@ import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
 import me.him188.ani.datasources.api.topic.titles.toTopicDetails
 import me.him188.ani.utils.ktor.toSource
+import me.him188.ani.utils.xml.Document
 import me.him188.ani.utils.xml.Xml
 
 @Serializable
@@ -47,13 +48,19 @@ class RssMediaSourceArguments(
     val iconUrl: String,
 ) {
     companion object {
+        const val DEFAULT_ICON_URL = "https://rss.com/blog/wp-content/uploads/2019/10/social_style_3_rss-512-1.png"
+
         val Default = RssMediaSourceArguments(
             name = "RSS",
             description = "",
             searchUrl = "",
-            iconUrl = "https://rss.com/blog/wp-content/uploads/2019/10/social_style_3_rss-512-1.png",
+            iconUrl = DEFAULT_ICON_URL,
         )
     }
+}
+
+interface RssMediaSourceEngine {
+    suspend fun search(keyword: String): Document
 }
 
 class RssMediaSource(
@@ -65,35 +72,8 @@ class RssMediaSource(
         val FactoryId = FactoryId("rss")
     }
 
-//    object Parameters : MediaSourceParametersBuilder() {
-//        val name = string(
-//            "name",
-//            defaultProvider = { "RSS" },
-//            description = "设置显示在列表中的名称",
-//        )
-//        val description = string(
-//            "description",
-//            defaultProvider = { "" },
-//            description = "可留空",
-//        )
-//        val searchUrl = string(
-//            "searchUrl",
-//            description = """
-//                替换规则:
-//                {keyword} 替换为条目 (番剧) 名称
-//                {page} 替换为页码, 如果不需要分页则忽略
-//            """.trimIndent(),
-//            placeholder = "例如  https://acg.rip/page/{page}.xml?term={keyword}",
-//        )
-//        val iconUrl = string("iconUrl")
-//    }
-
-    private val arguments = config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer()) ?: RssMediaSourceArguments.Default
-
-//    private val name = config[Parameters.name]
-//    private val description = config[Parameters.description]
-//    private val searchUrl: String = config[Parameters.searchUrl]
-//    private val iconUrl: String = config[Parameters.iconUrl]
+    private val arguments =
+        config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer()) ?: RssMediaSourceArguments.Default
 
     private val usePaging = arguments.searchUrl.contains("{page}")
 
