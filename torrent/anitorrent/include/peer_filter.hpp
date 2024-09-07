@@ -19,8 +19,8 @@ extern "C" {
     class peer_filter_t {
     public:
         virtual ~peer_filter_t() = default;
-    
-        virtual bool on_filter(const peer_info_t &);
+
+        virtual bool on_filter(const peer_info_t &) = 0;
 
     private:
         friend class session_t;
