@@ -1,5 +1,14 @@
-package me.him188.ani.app.ui.subject.collection
+package me.him188.ani.app.ui.subject.collection.components
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.TaskAlt
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -8,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,6 +61,10 @@ class EditableSubjectCollectionTypeState(
     }
 }
 
+/**
+ * 展示当前收藏状态的按钮, 点击弹出 [EditCollectionTypeDropDown].
+ * 当设置为 "看过" 时, 还会弹出 [SetAllEpisodeDoneDialog].
+ */
 @Composable
 fun EditableSubjectCollectionTypeButton(
     state: EditableSubjectCollectionTypeState,
@@ -69,6 +83,13 @@ fun EditableSubjectCollectionTypeButton(
     )
 }
 
+/**
+ * 用于显示 "同时设置所有剧集为看过" 的对话框.
+ *
+ * [EditableSubjectCollectionTypeButton] 已经包含了这个 dialog, 所以一般来说不需要单独使用这个.
+ *
+ * @see EditableSubjectCollectionTypeButton
+ */
 @Composable
 fun EditableSubjectCollectionTypeDialogsHost(
     state: EditableSubjectCollectionTypeState,
@@ -86,3 +107,25 @@ fun EditableSubjectCollectionTypeDialogsHost(
     }
 }
 
+@Composable
+private fun SetAllEpisodeDoneDialog(
+    isWorking: Boolean,
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        icon = { Icon(Icons.Rounded.TaskAlt, null) },
+        text = { Text("要同时设置所有剧集为看过吗？") },
+        confirmButton = {
+            TextButton(onConfirm) { Text("设置") }
+
+            if (isWorking) {
+                CircularProgressIndicator(Modifier.padding(start = 8.dp).size(24.dp))
+            }
+        },
+        dismissButton = { TextButton(onDismissRequest) { Text("忽略") } },
+        modifier = modifier,
+    )
+}
