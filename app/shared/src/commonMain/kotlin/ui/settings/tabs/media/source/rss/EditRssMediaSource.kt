@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
@@ -24,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.platform.navigation.BackHandler
+import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssDetailPane
@@ -135,7 +135,7 @@ fun EditRssMediaSourcePage(
                 }
             },
             listPane = {
-                AnimatedPane {
+                AnimatedPane1 {
                     RssEditPane(
                         state = state,
                         onClickTest = { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) },
@@ -146,7 +146,7 @@ fun EditRssMediaSourcePage(
                 }
             },
             detailPane = {
-                AnimatedPane {
+                AnimatedPane1 {
                     RssTestPane(
                         testState,
                         { navigator.navigateTo(ListDetailPaneScaffoldRole.Extra) },
@@ -157,7 +157,7 @@ fun EditRssMediaSourcePage(
             },
             Modifier.materialWindowMarginPadding(),
             extraPane = {
-                AnimatedPane {
+                AnimatedPane1 {
                     Crossfade(testState.viewingItem) { item ->
                         item ?: return@Crossfade
                         if (navigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
@@ -187,3 +187,4 @@ fun EditRssMediaSourcePage(
         )
     }
 }
+
