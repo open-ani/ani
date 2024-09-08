@@ -47,6 +47,7 @@ includeProject(":utils:testing", "utils/testing")
 includeProject(":utils:xml")
 includeProject(":utils:bbcode", "utils/bbcode")
 includeProject(":utils:bbcode:test-codegen")
+includeProject(":utils:ip-parser", "utils/ip-parser")
 
 
 // TODO: add torrent modules back when kotlin has fixed

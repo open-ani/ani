@@ -2,10 +2,13 @@ package me.him188.ani.app.tools.torrent
 
 import me.him188.ani.app.torrent.api.peer.PeerFilter
 import me.him188.ani.app.torrent.api.peer.PeerInfo
+import me.him188.ani.utils.ipparser.IpSeqRange
 
-class PeerIpFilter(private val pattern: String) : PeerFilter {
+class PeerIpFilter(pattern: String) : PeerFilter {
+    private val parser = IpSeqRange.parse(pattern)
+    
     override fun onFilter(info: PeerInfo): Boolean {
-        TODO("Not yet implemented")
+        return parser.contains(info.ipAddr)
     }
 }
 
