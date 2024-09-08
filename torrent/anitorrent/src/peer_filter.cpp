@@ -1,7 +1,3 @@
-//
-// Created by StageGuard on 9/7/2024.
-//
-
 #include "peer_filter.hpp"
 
 

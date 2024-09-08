@@ -1,6 +1,3 @@
-//
-// Created by StageGuard on 9/7/2024.
-//
 #ifndef PEER_FILTER_H
 #define PEER_FILTER_H
 
@@ -11,10 +8,10 @@ namespace anilt {
     extern "C" {
 
     struct peer_info_t final {
-        std::string peer_id;
-        std::string client;
-        std::string ip_addr;
-        unsigned short ip_port;
+        std::string peer_id{};
+        std::string client{};
+        std::string ip_addr{};
+        unsigned short ip_port = 0;
     };
 
     class peer_filter_t {

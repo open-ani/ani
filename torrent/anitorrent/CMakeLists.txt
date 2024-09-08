@@ -127,6 +127,7 @@ add_library(anitorrent
         src/global_lock.cpp
         include/global_lock.h
         include/plugin/peer_filter_plugin.h
+        src/plugin/peer_filter_plugin.cpp
         include/peer_filter.hpp
         src/peer_filter.cpp
 )
