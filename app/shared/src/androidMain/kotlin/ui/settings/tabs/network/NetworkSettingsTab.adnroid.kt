@@ -106,18 +106,20 @@ fun createTestMediaSourceManager() = object : MediaSourceManager {
         get() = allFactoryIds.filter { !isLocal(it) }
     override val mediaFetcher: Flow<MediaFetcher> get() = flowOf()
 
-    override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig> {
+    override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig?> {
         return MutableStateFlow(MediaSourceConfig())
     }
 
     override suspend fun addInstance(
+        instanceId: String,
         mediaSourceId: String,
         factoryId: FactoryId,
         config: MediaSourceConfig
     ) {
     }
 
-    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
+    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig): Boolean {
+        return false
     }
 
     override suspend fun setEnabled(instanceId: String, enabled: Boolean) {

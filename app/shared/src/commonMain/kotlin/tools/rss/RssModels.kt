@@ -2,12 +2,15 @@ package me.him188.ani.app.tools.rss
 
 import androidx.compose.runtime.Immutable
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.xml.Element
 
 
 // See  me.him188.ani.app.tools.rss.RssParserTest.dmhy
 @Immutable
+@Serializable // for testing
 data class RssChannel(
     val title: String,
     val description: String = "",
@@ -17,11 +20,11 @@ data class RssChannel(
     /**
      * 原始 XML. 仅在测试时才有值, 其他时候为 `null` 以避免保持内存占用.
      */
-    val origin: Element? = null,
-    // language
+    @Transient val origin: Element? = null,
 )
 
 @Immutable
+@Serializable // for testing
 data class RssItem(
     val title: String,
     val description: String = "",
@@ -32,7 +35,7 @@ data class RssItem(
     /**
      * 原始 XML. 仅在测试时才有值, 其他时候为 `null` 以避免保持内存占用.
      */
-    val origin: Element? = null,
+    @Transient val origin: Element? = null,
 )
 
 fun RssItem.guessResourceLocation(): ResourceLocation? {
@@ -45,6 +48,7 @@ fun RssItem.guessResourceLocation(): ResourceLocation? {
 }
 
 @Immutable
+@Serializable // for testing
 data class RssEnclosure(
     val url: String,
     val length: Long = 0,

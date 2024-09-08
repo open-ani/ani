@@ -30,7 +30,7 @@ import me.him188.ani.datasources.api.source.useHttpClient
 import me.him188.ani.datasources.api.topic.TopicCategory
 
 @Serializable
-class RssMediaSourceArguments(
+data class RssMediaSourceArguments(
     val name: String,
     val description: String,
     val searchUrl: String,

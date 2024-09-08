@@ -17,12 +17,12 @@ interface MediaSourceInstanceRepository : Repository {
     suspend fun remove(instanceId: String)
     suspend fun add(mediaSourceSave: MediaSourceSave)
 
-    suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave)
+    suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave): Boolean
     suspend fun reorder(newOrder: List<String>)
 }
 
-suspend inline fun MediaSourceInstanceRepository.updateConfig(instanceId: String, config: MediaSourceConfig) {
-    updateSave(instanceId) {
+suspend inline fun MediaSourceInstanceRepository.updateConfig(instanceId: String, config: MediaSourceConfig): Boolean {
+    return updateSave(instanceId) {
         copy(config = config)
     }
 }
@@ -79,22 +79,32 @@ class MediaSourceInstanceRepositoryImpl(
 
     override suspend fun add(mediaSourceSave: MediaSourceSave) {
         dataStore.updateData { current ->
+            if (current.instances.any { it.instanceId == mediaSourceSave.instanceId }) {
+                error("Attempting to add a duplicated MediaSourceSave: $mediaSourceSave")
+            }
             current.copy(instances = current.instances + mediaSourceSave)
         }
     }
 
-    override suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave) {
+    override suspend fun updateSave(instanceId: String, config: MediaSourceSave.() -> MediaSourceSave): Boolean {
+        var found = false
         dataStore.updateData { current ->
-            current.copy(
-                instances = current.instances.map { save ->
-                    if (save.instanceId == instanceId) {
-                        save.run(config)
-                    } else {
-                        save
-                    }
-                },
-            )
+            found = current.instances.any { it.instanceId == instanceId }
+            if (found) {
+                current.copy(
+                    instances = current.instances.map { save ->
+                        if (save.instanceId == instanceId) {
+                            save.run(config)
+                        } else {
+                            save
+                        }
+                    },
+                )
+            } else {
+                current
+            }
         }
+        return found
     }
 
     override suspend fun reorder(newOrder: List<String>) {

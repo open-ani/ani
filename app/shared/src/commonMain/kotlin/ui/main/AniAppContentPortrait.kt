@@ -40,7 +40,6 @@ import me.him188.ani.app.ui.profile.auth.WelcomeScene
 import me.him188.ani.app.ui.profile.auth.WelcomeViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceMode
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceViewModel
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
@@ -250,30 +249,26 @@ fun AniAppContentPortrait(
                 SubjectCacheScene(vm, Modifier.desktopTitleBarPadding())
             }
             composable(
-                "/settings/media-source/edit?factoryId={factoryId}&existingMediaSourceInstanceId={existingMediaSourceInstanceId}",
+                "/settings/media-source/edit?factoryId={factoryId}&mediaSourceInstanceId={mediaSourceInstanceId}",
                 arguments = listOf(
                     navArgument("factoryId") { type = NavType.StringType },
-                    navArgument("existingMediaSourceInstanceId") { type = NavType.StringType },
+                    navArgument("mediaSourceInstanceId") { type = NavType.StringType },
                 ),
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { backStackEntry ->
-                val factoryId = backStackEntry.arguments?.getString("factoryId") ?: kotlin.run {
-                    navController.popBackStack()
-                    return@composable
-                }
-                val mediaSourceInstanceId = backStackEntry.arguments?.getString("existingMediaSourceInstanceId")
-                when (FactoryId(factoryId)) {
+                val factoryIdString = backStackEntry.arguments?.getString("factoryId") ?: error("factoryId is required")
+                val factoryId = FactoryId(factoryIdString)
+                val mediaSourceInstanceId = backStackEntry.arguments?.getString("mediaSourceInstanceId")
+                    ?: error("mediaSourceInstanceId is required")
+                when (factoryId) {
                     RssMediaSource.FactoryId -> EditRssMediaSourcePage(
                         viewModel<EditRssMediaSourceViewModel>(key = mediaSourceInstanceId) {
-                            EditRssMediaSourceViewModel(
-                                if (mediaSourceInstanceId == null) EditMediaSourceMode.Add
-                                else EditMediaSourceMode.Edit(instanceId = mediaSourceInstanceId),
-                            )
+                            EditRssMediaSourceViewModel(mediaSourceInstanceId)
                         },
-                        Modifier.desktopTitleBarPadding()
+                        Modifier.desktopTitleBarPadding(),
                     )
 
                     else -> error("Unknown factoryId: $factoryId")

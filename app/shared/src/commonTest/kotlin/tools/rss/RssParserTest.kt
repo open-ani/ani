@@ -263,6 +263,7 @@ class RssParserTest {
                 RssChannel.serializer(),
                 parser.parse(
                     Xml.parse(xml),
+                    includeOrigin = true,
                 ),
             ),
         )

@@ -13,7 +13,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
@@ -40,7 +39,6 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -54,7 +52,10 @@ import kotlin.coroutines.CoroutineContext
 
 
 sealed class EditMediaSourceMode {
-    data object Add : EditMediaSourceMode()
+    data class Add(
+        val factoryId: FactoryId,
+    ) : EditMediaSourceMode()
+
     data class Edit(
         val instanceId: String,
     ) : EditMediaSourceMode()
@@ -62,7 +63,10 @@ sealed class EditMediaSourceMode {
 
 @Stable
 class EditingMediaSource(
-    val editingMediaSourceId: String?,
+    /**
+     * 新的 (random) 或者已有的
+     */
+    val editingMediaSourceId: String,
     val factoryId: FactoryId,
     val info: MediaSourceInfo,
     val parameters: MediaSourceParameters,
@@ -71,12 +75,6 @@ class EditingMediaSource(
     private val onSave: suspend (EditingMediaSource) -> Unit, // background
     parentCoroutineContext: CoroutineContext,
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext), Closeable {
-    init {
-        check(if (editMediaSourceMode is EditMediaSourceMode.Edit) editingMediaSourceId != null else editingMediaSourceId == null) {
-            "Invalid edit type and editingMediaSourceId: $editMediaSourceMode, $editingMediaSourceId"
-        }
-    }
-
     val arguments = parameters.list.map { param ->
         when (param) {
             is BooleanParameter -> BooleanArgumentState(param)
@@ -259,7 +257,7 @@ internal fun EditMediaSourceDialog(
                 }
             }
             when (state.editMediaSourceMode) {
-                EditMediaSourceMode.Add -> Button({ state.save() }, enabled = canSave) { Text("添加") }
+                is EditMediaSourceMode.Add -> Button({ state.save() }, enabled = canSave) { Text("添加") }
                 is EditMediaSourceMode.Edit -> Button({ state.save() }, enabled = canSave) { Text("保存") }
             }
         },

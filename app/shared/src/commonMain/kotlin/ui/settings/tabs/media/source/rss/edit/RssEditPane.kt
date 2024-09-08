@@ -89,7 +89,6 @@ fun RssEditPane(
                                 .fillMaxWidth(),
                             label = { Text("[debug] instanceId") },
                             placeholder = { Text("设置显示在列表中的名称") },
-                            isError = state.displayNameIsError,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             readOnly = true,
                             shape = textFieldShape,

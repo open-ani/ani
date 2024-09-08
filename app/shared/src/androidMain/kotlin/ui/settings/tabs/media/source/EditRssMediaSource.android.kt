@@ -20,10 +20,12 @@ import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
 import me.him188.ani.app.tools.rss.RssParser
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceState
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
+import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.topic.toTopicCriteria
 import me.him188.ani.utils.platform.annotations.TestOnly
 import me.him188.ani.utils.xml.Xml
@@ -119,10 +121,13 @@ internal fun rememberTestEditRssMediaSourceStateAndRssTestPaneState(): Pair<Edit
 @Composable
 internal fun rememberTestEditRssMediaSourceState(scope: CoroutineScope) = remember {
     EditRssMediaSourceState(
-        arguments = RssMediaSourceArguments.Default,
-        editMediaSourceMode = EditMediaSourceMode.Add,
+        argumentsState = stateOf(RssMediaSourceArguments.Default),
         instanceId = "test-id",
         onSave = {},
-        backgroundScope = scope,
+        isSavingState = stateOf(false),
     )
 }
+
+@TestOnly
+internal val TestEditMediaSourceModeAdd get() = EditMediaSourceMode.Add(FactoryId("RSS"))
+
