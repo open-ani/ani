@@ -7,7 +7,7 @@ interface PeerFilter {
     /**
      * determine if this peer should be filtered out.
      * 
-     * @return `true` if want to reject connection to the peer.
+     * @return `true` if want to drop connection to the peer.
      */
     fun onFilter(info: PeerInfo): Boolean
 }

@@ -86,7 +86,7 @@ internal class SwigAnitorrentTorrentDownloader(
     private val nativePeerFilter = object : peer_filter_t() {
         override fun on_filter(info: peer_info_t?): Boolean {
             if (info == null) return false
-            val filter = peerFilter ?: return false
+            val filter = filter ?: return false
             return filter.onFilter(SwigPeerInfo(info))
         }
     }

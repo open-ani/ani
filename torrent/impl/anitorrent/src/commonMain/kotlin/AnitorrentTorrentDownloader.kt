@@ -78,7 +78,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader, SynchronizedObject() {
     protected abstract val native: TorrentManagerSession<THandle, TAddInfo> // must hold reference. 
-    protected var peerFilter: PeerFilter? = null
+    protected var filter: PeerFilter? = null
 
     companion object {
         private const val FAST_RESUME_FILENAME = "fastresume"
@@ -324,7 +324,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
     }
 
     override fun setPeerFilter(filter: PeerFilter) {
-        peerFilter = filter
+        this.filter = filter
     }
 
     override fun getSaveDirForTorrent(data: EncodedTorrentInfo): SystemPath =
