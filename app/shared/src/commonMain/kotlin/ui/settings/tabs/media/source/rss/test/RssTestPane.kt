@@ -32,7 +32,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,9 +59,6 @@ fun RssTestPane(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        state.observeChangeLoop()
-    }
     Column(
         modifier
             .padding(contentPadding),

@@ -130,6 +130,10 @@ fun EditRssMediaSourcePage(
         confirmDiscardDialog.show()
     }
 
+    LaunchedEffect(Unit) {
+        testState.observeChangeLoop()
+    }
+
     Scaffold(
         modifier
             .fillMaxSize(),
