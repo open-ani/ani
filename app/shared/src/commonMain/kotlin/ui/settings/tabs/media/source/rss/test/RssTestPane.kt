@@ -35,6 +35,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,6 +43,8 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.layout.connectedScroll
+import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
 
@@ -63,53 +66,55 @@ fun RssTestPane(
         modifier
             .padding(contentPadding),
     ) {
-        Text("测试数据源", style = MaterialTheme.typography.headlineSmall)
+        val connectedScrollState = rememberConnectedScrollState()
+        Column(Modifier.connectedScroll(connectedScrollState)) {
+            Text("测试数据源", style = MaterialTheme.typography.headlineSmall)
 
-        EditTestDataCard(
-            state,
-            Modifier
-                .padding(top = 20.dp)
-                .fillMaxWidth(),
-        )
+            EditTestDataCard(
+                state,
+                Modifier
+                    .padding(top = 20.dp)
+                    .fillMaxWidth(),
+            )
 
-        Row(Modifier.padding(top = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("查询结果", style = MaterialTheme.typography.headlineSmall)
+            Row(Modifier.padding(top = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("查询结果", style = MaterialTheme.typography.headlineSmall)
 
-            IconButton({ state.restartCurrentSearch() }) {
-                Icon(Icons.Rounded.RestartAlt, contentDescription = "刷新")
-            }
+                IconButton({ state.restartCurrentSearch() }) {
+                    Icon(Icons.Rounded.RestartAlt, contentDescription = "刷新")
+                }
 
-            val searchResult = state.searchResult
-            AnimatedVisibility(searchResult is RssTestResult.Failed) {
-                if (searchResult !is RssTestResult.Failed) return@AnimatedVisibility
-                TextButton(
-                    onClick = {
-                        state.restartCurrentSearch() // TODO: see error detail 
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
-                ) {
-                    Icon(Icons.Rounded.Error, null, Modifier.align(Alignment.CenterVertically))
-                    Text(
-                        when (searchResult) {
-                            is RssTestResult.ApiError -> {
-                                when (searchResult.reason) {
-                                    ApiFailure.NetworkError -> "网络错误"
-                                    ApiFailure.ServiceUnavailable -> "服务器错误"
-                                    ApiFailure.Unauthorized -> "未授权"
-                                }
-                            }
-
-                            is RssTestResult.UnknownError -> "未知错误: ${searchResult.exception}"
+                val searchResult = state.searchResult
+                AnimatedVisibility(searchResult is RssTestResult.Failed) {
+                    if (searchResult !is RssTestResult.Failed) return@AnimatedVisibility
+                    TextButton(
+                        onClick = {
+                            state.restartCurrentSearch() // TODO: see error detail 
                         },
-                        Modifier.padding(start = 8.dp).align(Alignment.CenterVertically),
-                    )
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                    ) {
+                        Icon(Icons.Rounded.Error, null, Modifier.align(Alignment.CenterVertically))
+                        Text(
+                            when (searchResult) {
+                                is RssTestResult.ApiError -> {
+                                    when (searchResult.reason) {
+                                        ApiFailure.NetworkError -> "网络错误"
+                                        ApiFailure.ServiceUnavailable -> "服务器错误"
+                                        ApiFailure.Unauthorized -> "未授权"
+                                    }
+                                }
+
+                                is RssTestResult.UnknownError -> "未知错误: ${searchResult.exception}"
+                            },
+                            Modifier.padding(start = 8.dp).align(Alignment.CenterVertically),
+                        )
+                    }
                 }
             }
-        }
 
-        Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
 //            androidx.compose.animation.AnimatedVisibility(
 //                state.isSearching,
 //                enter = expandVertically(tween(300, easing = StandardDecelerate)),
@@ -118,9 +123,9 @@ fun RssTestPane(
 //                LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 4.dp))
 //            }
 
-            FastLinearProgressIndicator(state.isSearching, delayMillis = 0, minimumDurationMillis = 300)
+                FastLinearProgressIndicator(state.isSearching, delayMillis = 0, minimumDurationMillis = 300)
+            }
         }
-
         val tabs = RssTestPaneTab.entries
         val pagerState = state.pagerState
 
@@ -153,11 +158,12 @@ fun RssTestPane(
                 verticalAlignment = Alignment.Top,
             ) { pageIndex ->
                 if (result !is RssTestResult.Success) return@HorizontalPager
-                
+
                 when (RssTestPaneTab.entries[pageIndex]) {
                     RssTestPaneTab.Overview -> {
                         RssTestPaneDefaults.OverviewTab(
                             result,
+                            Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                             state = state.overallTabGridState,
                         )
                     }
@@ -172,6 +178,7 @@ fun RssTestPane(
                             selectedItemProvider = {
                                 (state.viewingItem as? RssViewingItem.ViewingRssItem)?.value
                             },
+                            Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                             lazyStaggeredGridState = state.rssTabGridState,
                         )
                     }
@@ -186,6 +193,7 @@ fun RssTestPane(
                             selectedItemProvider = {
                                 (state.viewingItem as? RssViewingItem.ViewingMedia)?.value
                             },
+                            Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
                             lazyGridState = state.finalResultsTabGridState,
                         )
                     }

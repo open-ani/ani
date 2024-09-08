@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.settings.tabs.media.source.rss.test
 
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -35,13 +34,12 @@ fun RssTestPaneDefaults.OverviewTab(
     modifier: Modifier = Modifier,
     state: LazyGridState = rememberLazyGridState(),
 ) {
-    Column(modifier) {
-        RssOverviewCard(
-            result,
-            contentPadding = PaddingValues(16.dp),
-            state = state,
-        )
-    }
+    RssOverviewCard(
+        result,
+        modifier,
+        contentPadding = PaddingValues(16.dp),
+        state = state,
+    )
 }
 
 
