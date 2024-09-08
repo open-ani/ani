@@ -146,13 +146,14 @@ fun RssTestPane(
         }
 
         Crossfade(state.searchResult, Modifier.padding(top = 20.dp)) { result ->
-            if (result !is RssTestResult.Success) return@Crossfade
 
             HorizontalPager(
                 pagerState,
                 userScrollEnabled = false,
                 verticalAlignment = Alignment.Top,
             ) { pageIndex ->
+                if (result !is RssTestResult.Success) return@HorizontalPager
+                
                 when (RssTestPaneTab.entries[pageIndex]) {
                     RssTestPaneTab.Overview -> {
                         RssTestPaneDefaults.OverviewTab(
