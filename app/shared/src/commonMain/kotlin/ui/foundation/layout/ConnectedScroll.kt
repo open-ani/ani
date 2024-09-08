@@ -58,9 +58,8 @@ class ConnectedScrollState(
             // |  LazyColumn   |
             // |---------------|
 
-            val diff = available.coerceAtLeast(-scrollableHeight - scrollableOffset)
-            scrollableOffset += diff
-            return@ScrollableState diff
+
+            return@ScrollableState scrollScope.scrollBy(available)
         }
         0f
     }
@@ -77,7 +76,7 @@ class ConnectedScrollState(
 
     val scrollScope = object : ScrollScope {
         override fun scrollBy(pixels: Float): Float {
-            val diff = pixels.coerceAtMost(-scrollableOffset)
+            val diff = pixels.coerceIn(-scrollableHeight - scrollableOffset, -scrollableOffset)
             scrollableOffset += diff
             return diff
         }
@@ -103,6 +102,10 @@ class ConnectedScrollState(
             )
         }
 
+        override suspend fun onPreFling(available: Velocity): Velocity {
+            return super.onPreFling(available)
+        }
+
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
             if (available.y > 0) { // 手指往下
                 with(flingBehavior) {
@@ -120,9 +123,7 @@ class ConnectedScrollState(
             if (available.y > 0) {
                 // 手指往下, 让 header 显示
                 // scrollableOffset 是负的
-                val diff = available.y.coerceAtMost(-scrollableOffset)
-                scrollableOffset += diff
-                return consumed + Offset(0f, diff)
+                return Offset(0f, scrollScope.scrollBy(available.y))
             }
             return super.onPostScroll(consumed, available, source)
         }
