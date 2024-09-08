@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -115,15 +116,19 @@ fun MediaCacheDetailsPage(
                         exit = fadeOut(snap()),
                     ) {
                         media?.let {
-                            MediaDetailsColumn(
-                                it,
-                                sourceInfo = sourceInfo,
+                            Surface(
                                 Modifier
                                     .verticalScroll(rememberScrollState())
                                     .padding(horizontal = 16.dp)
-                                    .padding(vertical = 16.dp)
-                                    .fillMaxHeight(),
-                            )
+                                    .padding(vertical = 16.dp),
+                                color = ListItemDefaults.containerColor, // fill gap between items
+                            ) {
+                                MediaDetailsColumn(
+                                    it,
+                                    sourceInfo = sourceInfo,
+                                    Modifier.fillMaxHeight(),
+                                )
+                            }
                         }
                     }
                 }

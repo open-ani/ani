@@ -15,6 +15,7 @@ import me.him188.ani.app.tools.rss.RssEnclosure
 import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PreviewTabletLightDark
+import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @TestOnly
@@ -60,6 +61,11 @@ internal val TestRssItemPresentations
                 guid = "GUID",
                 enclosure = RssEnclosure("https://example.com", type = "application/x-bittorrent"),
             ),
+            parsed = ParsedTopicTitle(),
+            tags = listOf(
+                RssItemPresentation.Tag("01..02", isMatch = false),
+                RssItemPresentation.Tag("1080P"),
+            ),
         ),
         RssItemPresentation(
             RssItem(
@@ -69,6 +75,11 @@ internal val TestRssItemPresentations
                 link = "Link",
                 guid = "GUID",
                 enclosure = RssEnclosure("https://example.com", type = "application/x-bittorrent"),
+            ),
+            parsed = ParsedTopicTitle(),
+            tags = listOf(
+                RssItemPresentation.Tag("01..02", isMatch = false),
+                RssItemPresentation.Tag("1080P"),
             ),
         ),
     )
@@ -86,6 +97,7 @@ private fun PreviewOverviewTab() = ProvideCompositionLocalsForPreview {
                     TestRssChannel,
                     TestRssItemPresentations,
                     TestMediaList,
+                    null,
                 )
             },
         )

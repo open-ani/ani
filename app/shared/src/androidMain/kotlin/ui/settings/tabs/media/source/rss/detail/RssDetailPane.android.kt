@@ -12,6 +12,18 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 @Composable
 @PreviewLightDark
 @PreviewTabletLightDark
+fun PreviewRssDetailPaneRssItemShowTopBar() = ProvideCompositionLocalsForPreview {
+    RssDetailPane(
+        RssViewingItem.ViewingRssItem(
+            TestRssItemPresentations[0],
+        ),
+    )
+}
+
+@OptIn(TestOnly::class)
+@Composable
+@PreviewLightDark
+@PreviewTabletLightDark
 fun PreviewRssDetailPaneRssItem() = ProvideCompositionLocalsForPreview {
     RssDetailPane(
         RssViewingItem.ViewingRssItem(

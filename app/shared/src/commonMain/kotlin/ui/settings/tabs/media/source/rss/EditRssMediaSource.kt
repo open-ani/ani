@@ -1,8 +1,8 @@
 package me.him188.ani.app.ui.settings.tabs.media.source.rss
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -36,6 +36,7 @@ import me.him188.ani.app.ui.settings.tabs.media.source.ConfirmDiscardChangeDialo
 import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceMode
 import me.him188.ani.app.ui.settings.tabs.media.source.rememberConfirmDiscardChangeDialogState
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssDetailPane
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.SideSheetPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.edit.RssEditPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
@@ -108,7 +109,6 @@ fun EditRssMediaSourcePage(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun EditRssMediaSourcePage(
     state: EditRssMediaSourceState,
@@ -194,13 +194,29 @@ fun EditRssMediaSourcePage(
             Modifier.materialWindowMarginPadding(),
             extraPane = {
                 AnimatedPane {
-                    Crossfade(testState.viewingItem) {
-                        RssDetailPane(
-                            it ?: return@Crossfade,
-                            Modifier
-                                .fillMaxSize(),
-                            contentPadding = paddingValues,
-                        )
+                    Crossfade(testState.viewingItem) { item ->
+                        item ?: return@Crossfade
+                        if (navigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
+                            || navigator.scaffoldValue.secondary == PaneAdaptedValue.Expanded
+                        ) {
+                            SideSheetPane(
+                                onClose = { navigator.navigateBack() },
+                                Modifier.padding(paddingValues),
+                            ) {
+                                RssDetailPane(
+                                    item,
+                                    Modifier
+                                        .fillMaxSize(),
+                                )
+                            }
+                        } else {
+                            RssDetailPane(
+                                item,
+                                Modifier
+                                    .fillMaxSize(),
+                                contentPadding = paddingValues,
+                            )
+                        }
                     }
                 }
             },
