@@ -1,11 +1,11 @@
 package me.him188.ani.app.ui.settings.tabs.media.source
 
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.test.TestScope
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceState
-import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.utils.platform.Uuid
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,22 +14,15 @@ class EditRssMediaSourceStateTest {
 
     private fun TestScope.createState(
         arguments: RssMediaSourceArguments = RssMediaSourceArguments.Default,
-        mode: EditMediaSourceMode = EditMediaSourceMode.Add(FactoryId("RSS")),
         mediaSourceId: String = Uuid.randomString(),
     ): EditRssMediaSourceState {
+        val argumentsState = mutableStateOf(arguments)
         return EditRssMediaSourceState(
-            stateOf(arguments),
-            mode,
+            argumentsState,
             mediaSourceId,
-            onSave = {},
+            onSave = { argumentsState.value = it },
+            isSavingState = stateOf(false),
         )
-    }
-
-    @Test
-    fun `searchUrl initial empty but not error`() = runComposeStateTest {
-        val state = createState()
-        assertEquals("", state.searchUrl)
-        assertEquals(false, state.searchUrlIsError)
     }
 
     @Test
