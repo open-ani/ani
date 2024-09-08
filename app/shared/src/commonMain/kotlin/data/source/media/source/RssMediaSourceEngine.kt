@@ -79,8 +79,6 @@ abstract class RssMediaSourceEngine {
             mediaSourceId: String,
             criteria: TopicCriteria,
         ): Media? {
-            val enclosure = item.enclosure ?: return null
-
             val details = RawTitleParser.getDefault().parse(item.title, null)
 
             return DefaultMedia(
@@ -96,8 +94,8 @@ abstract class RssMediaSourceEngine {
                     resolution = details.resolution?.toString() ?: Resolution.R1080P.toString(),
                     alliance = item.title.trim().split("]", "】").getOrNull(0).orEmpty().removePrefix("[")
                         .removePrefix("【").trim(),
-                    size = if (enclosure.length <= 1L) Unspecified // 有的源会返回 1
-                    else enclosure.length.bytes,
+                    size = if (item.enclosure == null || item.enclosure.length <= 1L) Unspecified // 有的源会返回 1
+                    else item.enclosure.length.bytes,
                     subtitleKind = details.subtitleKind,
                 ),
                 episodeRange = details.episodeRange,

@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.QuestionMark
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,7 +34,10 @@ import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.tools.rss.guessResourceLocation
 import me.him188.ani.app.ui.cache.details.MediaDetailsRenderer
 import me.him188.ani.app.ui.foundation.OutlinedTag
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.datasources.api.topic.contains
+import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
 
@@ -52,7 +57,6 @@ fun RssTestPaneDefaults.RssInfoTab(
         StaggeredGridCells.Adaptive(minSize = 300.dp),
         modifier,
         state = lazyStaggeredGridState,
-//                            verticalArrangement = Arrangement.spacedBy(20.dp),
         verticalItemSpacing = 20.dp,
         horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {
@@ -72,67 +76,66 @@ fun RssTestPaneDefaults.RssInfoTab(
 @Immutable
 class RssItemPresentation(
     val rss: RssItem,
+    val parsed: ParsedTopicTitle,
+    val tags: List<Tag>,
 ) {
     class Tag(
         val value: String,
-        val isError: Boolean,
+        val isError: Boolean = false,
+        val isMatch: Boolean? = null,
     )
 
-    val parsed = RawTitleParser.getDefault().parse(rss.title)
-
-    val subtitleLanguageRendered = MediaDetailsRenderer.renderSubtitleLanguages(
+    val subtitleLanguageRendered: String = MediaDetailsRenderer.renderSubtitleLanguages(
         parsed.subtitleKind,
         parsed.subtitleLanguages.map { it.displayName },
     )
 
-    val tags: List<Tag> = kotlin.run {
-        parsed.run {
-            buildList {
-                fun add(value: String) {
-                    add(Tag(value, false))
-                }
+    companion object {
+        fun compute(rss: RssItem, requestedSort: EpisodeSort): RssItemPresentation {
+            val parsed = RawTitleParser.getDefault().parse(rss.title)
+            val tags: List<Tag> = parsed.run {
+                buildList {
+                    fun add(
+                        value: String,
+                        isError: Boolean = false,
+                        isMatch: Boolean? = null,
+                    ): Boolean = add(Tag(value, isError, isMatch))
 
-                fun addError(value: String) {
-                    add(Tag(value, true))
-                }
+                    episodeRange?.let {
+                        add(it.toString(), isMatch = requestedSort in it)
+                    } ?: kotlin.run {
+                        add("EP", isError = true)
+                    }
 
-                episodeRange?.let {
-                    add(it.toString())
-                } ?: kotlin.run {
-                    addError("EP")
-                }
+                    val resourceLocation = rss.guessResourceLocation()
+                    when (resourceLocation) {
+                        is ResourceLocation.HttpStreamingFile -> add("Streaming")
+                        is ResourceLocation.HttpTorrentFile -> add("Torrent")
+                        is ResourceLocation.LocalFile -> add("Local")
+                        is ResourceLocation.MagnetLink -> add("Magnet")
+                        is ResourceLocation.WebVideo -> add("WEB")
+                        null -> add("Download", isError = true)
+                    }
 
-                val resourceLocation = rss.guessResourceLocation()
-                when (resourceLocation) {
-                    is ResourceLocation.HttpStreamingFile -> add("Streaming")
-                    is ResourceLocation.HttpTorrentFile -> add("Torrent")
-                    is ResourceLocation.LocalFile -> add("Local")
-                    is ResourceLocation.MagnetLink -> add("Magnet")
-                    is ResourceLocation.WebVideo -> add("WEB")
-                    null -> addError("Download")
-                }
+                    if (subtitleLanguages.isEmpty()) {
+                        add("Subtitle", isError = true)
+                    } else {
+                        for (subtitleLanguage in subtitleLanguages) {
+                            add(subtitleLanguage.displayName)
+                        }
+                    }
 
-                resolution?.displayName?.let(::add)
+                    resolution?.displayName?.let(::add)
 
-                if (subtitleLanguages.isEmpty()) {
-                    addError("Subtitle")
-                } else {
-                    for (subtitleLanguage in subtitleLanguages) {
-                        add(subtitleLanguage.displayName)
+                    subtitleKind?.let {
+                        add(MediaDetailsRenderer.renderSubtitleKind(it) + "字幕")
                     }
                 }
-
-                subtitleKind?.let {
-                    add(MediaDetailsRenderer.renderSubtitleKind(it) + "字幕")
-                }
             }
+
+            return RssItemPresentation(rss, parsed, tags)
         }
     }
-}
-
-enum class RssItemLinkType {
-    MAGNET,
-    TORRENT,
 }
 
 @Composable
@@ -160,13 +163,31 @@ fun RssTestResultRssItem(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     for (tag in item.tags) {
-                        if (tag.isError) {
-                            OutlinedTag(
-                                leadingIcon = { Icon(Icons.Rounded.QuestionMark, null) },
-                                contentColor = MaterialTheme.colorScheme.error,
-                            ) { Text(tag.value) }
-                        } else {
-                            OutlinedTag { Text(tag.value) }
+                        when {
+                            tag.isMatch == true -> {
+                                OutlinedTag(
+                                    leadingIcon = { Icon(Icons.Rounded.Check, "符合匹配") },
+                                    contentColor = MaterialTheme.colorScheme.primary,
+                                ) { Text(tag.value) }
+                            }
+
+                            tag.isMatch == false -> {
+                                OutlinedTag(
+                                    leadingIcon = { Icon(Icons.Rounded.Close, "不符合匹配") },
+                                    contentColor = MaterialTheme.colorScheme.tertiary,
+                                ) { Text(tag.value) }
+                            }
+
+                            tag.isError -> {
+                                OutlinedTag(
+                                    leadingIcon = { Icon(Icons.Rounded.QuestionMark, "缺失") },
+                                    contentColor = MaterialTheme.colorScheme.error,
+                                ) { Text(tag.value) }
+                            }
+
+                            else -> {
+                                OutlinedTag { Text(tag.value) }
+                            }
                         }
                     }
                     item.rss.pubDate?.let {

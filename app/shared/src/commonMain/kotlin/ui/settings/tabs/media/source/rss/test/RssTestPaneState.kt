@@ -145,7 +145,7 @@ class RssTestPaneState(
             encodedUrl.toString(),
             channel,
             channel.items.map {
-                RssItemPresentation(it)
+                RssItemPresentation.compute(it, result.query.episodeSort ?: EpisodeSort(""))
             },
             matchedMediaList,
             origin = document,

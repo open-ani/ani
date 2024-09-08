@@ -14,6 +14,9 @@ data class RssChannel(
     val link: String = "",
     val ttl: Int = 0,
     val items: List<RssItem>,
+    /**
+     * 原始 XML. 仅在测试时才有值, 其他时候为 `null` 以避免保持内存占用.
+     */
     val origin: Element? = null,
     // language
 )
@@ -26,6 +29,9 @@ data class RssItem(
     val link: String,
     val guid: String,
     val enclosure: RssEnclosure?,
+    /**
+     * 原始 XML. 仅在测试时才有值, 其他时候为 `null` 以避免保持内存占用.
+     */
     val origin: Element? = null,
 )
 

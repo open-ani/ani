@@ -15,6 +15,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +54,7 @@ fun RssOverviewCard(
 ) {
     val channel = result.channel
     val encodedUrl = result.encodedUrl
-    Card(modifier, colors = colors) {
+    Card(modifier, colors = colors, shape = MaterialTheme.shapes.large) {
         val toaster = LocalToaster.current
         val clipboard = LocalClipboardManager.current
         val copy = { str: String ->
