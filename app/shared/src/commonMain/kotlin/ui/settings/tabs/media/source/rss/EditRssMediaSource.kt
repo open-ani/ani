@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.settings.tabs.media.source.rss
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -9,6 +10,7 @@ import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
@@ -106,6 +108,7 @@ fun EditRssMediaSourcePage(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun EditRssMediaSourcePage(
     state: EditRssMediaSourceState,
@@ -155,15 +158,25 @@ fun EditRssMediaSourcePage(
 
         ListDetailPaneScaffold(
             navigator.scaffoldDirective,
-            navigator.scaffoldValue,
+            navigator.scaffoldValue.let { value ->
+                if (value.tertiary == PaneAdaptedValue.Expanded && value.secondary == PaneAdaptedValue.Expanded) {
+                    // 手机上三级导航, PC 上将 detail pane (test) 移动到左边, 隐藏 list (edit)
+                    ThreePaneScaffoldValue(
+                        primary = PaneAdaptedValue.Expanded, // detail
+                        secondary = PaneAdaptedValue.Hidden, // list
+                        tertiary = PaneAdaptedValue.Expanded,
+                    )
+                } else {
+                    value
+                }
+            },
             listPane = {
                 AnimatedPane {
                     RssEditPane(
                         state = state,
                         onClickTest = { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) },
                         showTestButton = navigator.scaffoldValue.primary == PaneAdaptedValue.Hidden,
-                        Modifier
-                            .fillMaxSize(),
+                        Modifier.fillMaxSize(),
                         contentPadding = paddingValues,
                     )
                 }
@@ -173,8 +186,7 @@ fun EditRssMediaSourcePage(
                     RssTestPane(
                         testState,
                         { navigator.navigateTo(ListDetailPaneScaffoldRole.Extra) },
-                        Modifier
-                            .fillMaxSize(),
+                        Modifier.fillMaxSize(),
                         contentPadding = paddingValues,
                     )
                 }
