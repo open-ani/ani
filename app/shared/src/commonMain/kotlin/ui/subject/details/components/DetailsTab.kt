@@ -49,7 +49,7 @@ import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.window.desktopTitleBar
-import me.him188.ani.app.ui.foundation.OutlinedTag
+import me.him188.ani.app.ui.foundation.Tag
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
@@ -202,7 +202,7 @@ private fun TagsList(
                 }
             }
             presentTags.forEach { tag ->
-                OutlinedTag(
+                Tag(
                     Modifier
                         .clickable {}
                         .height(40.dp)
