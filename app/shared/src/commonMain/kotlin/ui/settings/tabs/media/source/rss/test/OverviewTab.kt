@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -151,12 +152,14 @@ fun RssOverviewCard(
                             Text("不可用")
                         } else {
                             OutlinedTextField(
-                                value = result.originString,
+                                value = remember(result.originString) {
+                                    result.originString.lineSequence().take(4).joinToString("\n")
+                                },
                                 onValueChange = {},
                                 Modifier.padding(vertical = 8.dp),
                                 readOnly = true,
                                 minLines = 1,
-                                maxLines = 8,
+                                maxLines = 4,
                             )
                         }
                     },
