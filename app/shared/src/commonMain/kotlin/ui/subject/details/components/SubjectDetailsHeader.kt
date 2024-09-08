@@ -1,6 +1,5 @@
 package me.him188.ani.app.ui.subject.details.components
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -33,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -42,9 +39,9 @@ import me.him188.ani.app.data.models.seasonMonth
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
+import me.him188.ani.app.ui.foundation.OutlinedTag
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
-import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 
@@ -290,29 +287,6 @@ fun SubjectDetailsHeaderWide(
     }
 }
 
-
-// 一个标签, 例如 "2023年10月", "漫画改"
-@Composable
-fun OutlinedTag(
-    modifier: Modifier = Modifier,
-    shape: Shape = MaterialTheme.shapes.small,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-    label: @Composable RowScope.() -> Unit,
-) {
-    Box(
-        modifier
-            .border(1.dp, MaterialTheme.colorScheme.outline.weaken(), shape)
-            .clip(shape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Row(
-            Modifier.padding(contentPadding),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            label()
-        }
-    }
-}
 
 @Stable
 fun renderSubjectSeason(date: PackedDate): String {
