@@ -5,14 +5,14 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -203,21 +203,27 @@ private fun EditTestDataCard(
         modifier,
         shape = MaterialTheme.shapes.large,
     ) {
-        LazyVerticalGrid(
-            GridCells.Adaptive(minSize = 300.dp),
-            Modifier.padding(all = 16.dp).padding(bottom = 4.dp).focusGroup(),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            horizontalArrangement = if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
-                Arrangement.spacedBy(16.dp)
-            } else {
-                Arrangement.spacedBy(24.dp)
-            },
-        ) {
-            item {
+        BoxWithConstraints {
+            val isCompact =
+                currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
+            FlowRow(
+                Modifier.padding(all = 16.dp).padding(bottom = 4.dp).focusGroup(),
+                verticalArrangement = if (isCompact) {
+                    Arrangement.spacedBy(16.dp)
+                } else {
+                    Arrangement.spacedBy(20.dp)
+                },
+                horizontalArrangement = if (isCompact) {
+                    Arrangement.spacedBy(16.dp)
+                } else {
+                    Arrangement.spacedBy(24.dp)
+                },
+                maxItemsInEachRow = (constraints.maxWidth / 300f).toInt().coerceAtLeast(1),
+            ) {
                 TextField(
                     value = state.searchKeyword,
                     onValueChange = { state.searchKeyword = it.trim() },
-                    Modifier.animateItem().fillMaxWidth(),
+                    Modifier.weight(1f),
                     label = { Text("关键词") },
                     placeholder = {
                         Text(
@@ -233,25 +239,22 @@ private fun EditTestDataCard(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                 )
-            }
-            item {
                 TextField(
                     value = state.sort,
                     onValueChange = { state.sort = it.trim() },
-                    Modifier.animateItem().fillMaxWidth(),
+                    Modifier.weight(1f),
                     label = { Text("剧集序号") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next,
                     ),
                 )
-            }
-            if (state.showPage) {
-                item {
+
+                if (state.showPage) {
                     TextField(
                         value = state.pageString,
                         onValueChange = { state.pageString = it.trim() },
-                        Modifier.animateItem().fillMaxWidth(),
+                        Modifier.weight(1f),
                         label = { Text("页码") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -262,6 +265,7 @@ private fun EditTestDataCard(
                     )
                 }
             }
+
         }
     }
 }
