@@ -323,7 +323,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
         }
     }
 
-    override fun setPeerFilter(filter: PeerFilter) {
+    fun setPeerFilter(filter: PeerFilter) {
         this.filter = filter
     }
 

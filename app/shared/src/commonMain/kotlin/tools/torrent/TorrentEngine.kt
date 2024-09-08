@@ -4,6 +4,7 @@ import androidx.annotation.CallSuper
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
@@ -15,7 +16,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
+import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.torrent.api.TorrentDownloader
+import me.him188.ani.app.torrent.api.peer.PeerFilter
+import me.him188.ani.app.torrent.api.peer.PeerInfo
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.onReplacement
@@ -80,6 +84,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
     final override val type: TorrentEngineType,
     protected val config: Flow<Config>,
     protected val proxySettings: Flow<MediaSourceProxySettings>,
+    protected val peerFilterSettings: Flow<TorrentPeerConfig>,
     parentCoroutineContext: CoroutineContext,
 ) : TorrentEngine {
     protected val logger = logger(this::class)
@@ -115,11 +120,18 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
                 downloader.value?.applyConfig(it)
             }
         }
+        scope.launch { 
+            peerFilterSettings.collectLatest { 
+                downloader.value?.applyPeerFilter(createPeerFilter(it))
+            }
+        }
     }
 
     protected abstract suspend fun newInstance(config: Config, proxySettings: MediaSourceProxySettings): Downloader
 
     protected abstract suspend fun Downloader.applyConfig(config: Config)
+    
+    protected abstract suspend fun Downloader.applyPeerFilter(filter: PeerFilter)
 
     @CallSuper
     protected open fun closeInstance(downloader: Downloader) {
@@ -139,6 +151,27 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
             throw e
         } catch (e: Throwable) {
             throw TorrentDownloaderInitializationException(cause = e)
+        }
+    }
+}
+
+
+private fun createPeerFilter(config: TorrentPeerConfig): PeerFilter {
+    return object : PeerFilter {
+        private val correspondingFilters = buildList {
+            if (config.enableIdFilter) {
+                addAll(config.idRegexFilters.map(::PeerIdFilter))
+            }
+            if (config.enableClientFilter) {
+                addAll(config.clientRegexFilters.map(::PeerClientFilter))
+            }
+            if (config.enableIpFilter) {
+                addAll(config.ipFilters.map(::PeerIpFilter))
+            }
+        }
+
+        override fun onFilter(info: PeerInfo): Boolean {
+            return correspondingFilters.any { it.onFilter(info) }
         }
     }
 }
