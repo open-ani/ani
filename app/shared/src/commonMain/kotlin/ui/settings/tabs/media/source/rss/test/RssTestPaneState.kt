@@ -160,7 +160,7 @@ class RssTestPaneState(
             while (true) {
                 snapshotFlow { testData }
                     .distinctUntilChanged()
-                    .debounce(1.seconds)
+                    .debounce(0.5.seconds)
                     .collect {
                         restartSearch(it)
                     }
