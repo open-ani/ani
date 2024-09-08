@@ -2,22 +2,22 @@ package me.him188.ani.app.tools.rss
 
 import androidx.compose.runtime.Immutable
 import kotlinx.datetime.LocalDateTime
-import kotlinx.serialization.Serializable
+import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.xml.Element
 
 
 // See  me.him188.ani.app.tools.rss.RssParserTest.dmhy
-@Serializable
 @Immutable
 data class RssChannel(
     val title: String,
     val description: String = "",
     val link: String = "",
     val ttl: Int = 0,
-    val items: List<RssItem>
+    val items: List<RssItem>,
+    val origin: Element? = null,
     // language
 )
 
-@Serializable
 @Immutable
 data class RssItem(
     val title: String,
@@ -25,10 +25,19 @@ data class RssItem(
     val pubDate: LocalDateTime?,
     val link: String,
     val guid: String,
-    val enclosure: RssEnclosure?
+    val enclosure: RssEnclosure?,
+    val origin: Element? = null,
 )
 
-@Serializable
+fun RssItem.guessResourceLocation(): ResourceLocation? {
+    val url = this.enclosure?.url ?: return null
+    return if (url.startsWith("magnet:")) {
+        ResourceLocation.MagnetLink(url)
+    } else {
+        ResourceLocation.HttpTorrentFile(url)
+    }
+}
+
 @Immutable
 data class RssEnclosure(
     val url: String,

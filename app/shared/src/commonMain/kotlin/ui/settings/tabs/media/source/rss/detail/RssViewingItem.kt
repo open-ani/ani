@@ -1,7 +1,7 @@
 package me.him188.ani.app.ui.settings.tabs.media.source.rss.detail
 
 import androidx.compose.runtime.Immutable
-import me.him188.ani.app.tools.rss.RssItem
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssItemPresentation
 import me.him188.ani.datasources.api.Media
 
 /**
@@ -15,5 +15,5 @@ sealed class RssViewingItem {
     class ViewingMedia(override val value: Media) : RssViewingItem()
 
     @Immutable
-    class ViewingRssItem(override val value: RssItem) : RssViewingItem()
+    class ViewingRssItem(override val value: RssItemPresentation) : RssViewingItem()
 }

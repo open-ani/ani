@@ -56,7 +56,7 @@ internal object TestRssMediaSourceEngine : RssMediaSourceEngine() {
         mediaSourceId: String
     ): ApiResponse<Result> {
         return runApiRequest {
-            val channel = RssParser.parse(parsed)
+            val channel = RssParser.parse(parsed, includeOrigin = true)
 
             Result(
                 finalUrl,

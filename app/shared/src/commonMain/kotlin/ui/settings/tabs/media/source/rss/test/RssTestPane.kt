@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Error
@@ -30,6 +29,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,10 +39,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
 
 @Serializable
 data class RssTestData(
@@ -56,7 +58,6 @@ fun RssTestPane(
     state: RssTestPaneState,
     onNavigateToDetails: () -> Unit,
     modifier: Modifier = Modifier,
-    initialTab: RssTestPaneTab = RssTestPaneTab.Overview,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     LaunchedEffect(Unit) {
@@ -125,7 +126,7 @@ fun RssTestPane(
         }
 
         val tabs = RssTestPaneTab.entries
-        val pagerState = rememberPagerState(tabs.indexOf(initialTab)) { RssTestPaneTab.entries.size }
+        val pagerState = state.pagerState
 
         val switchTabTasker = rememberUiMonoTasker()
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -166,22 +167,29 @@ fun RssTestPane(
 
                     RssTestPaneTab.RssInfo -> {
                         RssTestPaneDefaults.RssInfoTab(
-                            state,
-                            result.channel,
-                            { item ->
+                            result.rssItems,
+                            onViewDetails = { item ->
                                 state.viewDetails(item)
                                 onNavigateToDetails()
                             },
+                            selectedItemProvider = {
+                                (state.viewingItem as? RssViewingItem.ViewingRssItem)?.value
+                            },
+                            lazyStaggeredGridState = state.rssTabGridState,
                         )
                     }
 
                     RssTestPaneTab.FinalResult -> {
                         RssTestPaneDefaults.FinalResultTab(
-                            state, result,
-                            { item ->
+                            result,
+                            onViewDetails = { item ->
                                 state.viewDetails(item)
                                 onNavigateToDetails()
                             },
+                            selectedItemProvider = {
+                                (state.viewingItem as? RssViewingItem.ViewingMedia)?.value
+                            },
+                            lazyGridState = state.finalResultsTabGridState,
                         )
                     }
                 }
@@ -193,7 +201,7 @@ fun RssTestPane(
 @Composable
 private fun EditTestDataCard(
     state: RssTestPaneState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier,
@@ -201,9 +209,13 @@ private fun EditTestDataCard(
     ) {
         LazyVerticalGrid(
             GridCells.Adaptive(minSize = 300.dp),
-            Modifier.padding(all = 16.dp).focusGroup(),
+            Modifier.padding(all = 16.dp).padding(bottom = 4.dp).focusGroup(),
             verticalArrangement = Arrangement.spacedBy(20.dp),
-            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+                Arrangement.spacedBy(16.dp)
+            } else {
+                Arrangement.spacedBy(24.dp)
+            },
         ) {
             item {
                 TextField(

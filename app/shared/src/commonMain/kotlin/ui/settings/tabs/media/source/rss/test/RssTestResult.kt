@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rss.RssChannel
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.utils.xml.Element
 
 @Immutable
 sealed class RssTestResult { // for ui
@@ -14,8 +15,12 @@ sealed class RssTestResult { // for ui
     data class Success(
         val encodedUrl: String,
         val channel: RssChannel,
-        val mediaList: List<Media>
-    ) : RssTestResult()
+        val rssItems: List<RssItemPresentation>,
+        val mediaList: List<Media>,
+        val origin: Element?,
+    ) : RssTestResult() {
+        val originString = origin.toString()
+    }
 
     sealed class Failed : RssTestResult()
 

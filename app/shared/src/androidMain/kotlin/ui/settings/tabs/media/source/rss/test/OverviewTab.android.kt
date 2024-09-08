@@ -48,6 +48,31 @@ internal val TestRssItems
         ),
     )
 
+@TestOnly
+internal val TestRssItemPresentations
+    get() = listOf(
+        RssItemPresentation(
+            RssItem(
+                title = "Title",
+                description = "Description",
+                pubDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                link = "Link",
+                guid = "GUID",
+                enclosure = RssEnclosure("https://example.com", type = "application/x-bittorrent"),
+            ),
+        ),
+        RssItemPresentation(
+            RssItem(
+                title = "Title",
+                description = "Description",
+                pubDate = LocalDateTime(2024, 7, 1, 1, 1, 1),
+                link = "Link",
+                guid = "GUID",
+                enclosure = RssEnclosure("https://example.com", type = "application/x-bittorrent"),
+            ),
+        ),
+    )
+
 @OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
@@ -59,6 +84,7 @@ private fun PreviewOverviewTab() = ProvideCompositionLocalsForPreview {
                 RssTestResult.Success(
                     "https://example.com",
                     TestRssChannel,
+                    TestRssItemPresentations,
                     TestMediaList,
                 )
             },

@@ -17,6 +17,7 @@ import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.tools.rss.RssChannel
 import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.tools.rss.RssParser
+import me.him188.ani.app.tools.rss.guessResourceLocation
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaProperties
@@ -26,7 +27,6 @@ import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
 import me.him188.ani.datasources.api.topic.Resolution
-import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.TopicCriteria
 import me.him188.ani.datasources.api.topic.matches
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
@@ -74,14 +74,6 @@ abstract class RssMediaSourceEngine {
         URLBuilder().appendPathSegments(query.keywords).encodedPathSegments.first()
 
     protected companion object {
-        private fun guessResourceLocation(url: String): ResourceLocation {
-            return if (url.startsWith("magnet:")) {
-                ResourceLocation.MagnetLink(url)
-            } else {
-                ResourceLocation.HttpTorrentFile(url)
-            }
-        }
-
         fun convertItemToMedia(
             item: RssItem,
             mediaSourceId: String,
@@ -95,7 +87,7 @@ abstract class RssMediaSourceEngine {
                 mediaId = "$mediaSourceId.${item.guid}",
                 mediaSourceId = mediaSourceId,
                 originalUrl = item.link.takeIf { it.isNotBlank() } ?: item.guid,
-                download = guessResourceLocation(enclosure.url),
+                download = item.guessResourceLocation() ?: return null,
                 originalTitle = item.title,
                 publishedTime = item.pubDate?.toInstant(TimeZone.currentSystemDefault())
                     ?.toEpochMilliseconds() ?: 0,
@@ -118,6 +110,7 @@ abstract class RssMediaSourceEngine {
 
 class DefaultRssMediaSourceEngine(
     private val client: Flow<HttpClient>,
+    private val parser: RssParser = RssParser(includeOrigin = false),
 ) : RssMediaSourceEngine() {
     override suspend fun searchImpl(
         finalUrl: Url,
@@ -143,7 +136,7 @@ class DefaultRssMediaSourceEngine(
             throw e
         }
 
-        val channel = RssParser.parse(document)
+        val channel = parser.parse(document)
 
         Result(
             finalUrl,

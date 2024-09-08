@@ -15,6 +15,7 @@ import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.data.source.media.fetch.updateMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.DefaultRssMediaSourceEngine
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.app.tools.rss.RssParser
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceMode
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
@@ -104,7 +105,7 @@ class EditRssMediaSourceViewModel(
     val testState: RssTestPaneState = RssTestPaneState(
         searchUrlState = arguments.map { it.searchUrl }.debounce(1000)
             .produceState(""),
-        engine = DefaultRssMediaSourceEngine(client),
+        engine = DefaultRssMediaSourceEngine(client, parser = RssParser(includeOrigin = true)),
         backgroundScope,
     )
 

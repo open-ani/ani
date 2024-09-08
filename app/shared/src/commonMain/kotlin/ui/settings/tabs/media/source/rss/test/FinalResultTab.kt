@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.InputChip
@@ -19,9 +21,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
@@ -29,22 +35,29 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
 
 @Composable
+@Suppress("UnusedReceiverParameter")
 fun RssTestPaneDefaults.FinalResultTab(
-    state: RssTestPaneState,
     result: RssTestResult.Success,
     onViewDetails: (item: Media) -> Unit,
+    selectedItemProvider: () -> Media?,
     modifier: Modifier = Modifier,
+    lazyGridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    itemSpacing: Dp = 20.dp,
 ) {
-    LazyVerticalGrid(
-        GridCells.Adaptive(minSize = 300.dp),
+    val selectedItem by remember(selectedItemProvider) {
+        derivedStateOf(selectedItemProvider)
+    }
+    LazyVerticalStaggeredGrid(
+        StaggeredGridCells.Adaptive(minSize = 300.dp),
         modifier,
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        state = lazyGridState,
+        verticalItemSpacing = itemSpacing,
+        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
     ) {
         items(result.mediaList, key = { it.mediaId }) { item ->
             RssTestResultMediaItem(
                 item,
-                isSelected = state.viewingItem?.value == item,
+                isSelected = selectedItem == item,
                 onClick = {
                     onViewDetails(item)
                 },

@@ -3,7 +3,9 @@ package me.him188.ani.app.ui.settings.tabs.media.source.rss.test
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -13,6 +15,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,6 +27,7 @@ import me.him188.ani.app.ui.foundation.interaction.onRightClickIfSupported
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 
 @Composable
+@Suppress("UnusedReceiverParameter")
 fun RssTestPaneDefaults.OverviewTab(
     result: RssTestResult.Success,
     modifier: Modifier = Modifier,
@@ -47,6 +51,8 @@ fun RssOverviewCard(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     state: LazyGridState = rememberLazyGridState(),
 ) {
+    val channel = result.channel
+    val encodedUrl = result.encodedUrl
     Card(modifier, colors = colors) {
         val toaster = LocalToaster.current
         val clipboard = LocalClipboardManager.current
@@ -77,18 +83,18 @@ fun RssOverviewCard(
             item {
                 ListItem(
                     headlineContent = { Text("Encoded Query URL") },
-                    Modifier.weight(1f)
-                        .copyable { result.encodedUrl },
-                    supportingContent = { Text(result.encodedUrl) },
+                    Modifier
+                        .copyable { encodedUrl },
+                    supportingContent = { Text(encodedUrl) },
                     colors = listItemColors,
                 )
             }
             item {
-                val url = result.encodedUrl.runCatching { decodeURLQueryComponent() }
-                    .getOrElse { result.encodedUrl }
+                val url = encodedUrl.runCatching { decodeURLQueryComponent() }
+                    .getOrElse { encodedUrl }
                 ListItem(
                     headlineContent = { Text("Query URL") },
-                    Modifier.weight(1f)
+                    Modifier
                         .copyable { url },
                     supportingContent = { Text(url) },
                     colors = listItemColors,
@@ -97,43 +103,62 @@ fun RssOverviewCard(
             item {
                 ListItem(
                     headlineContent = { Text("Title") },
-                    Modifier.weight(1f)
-                        .copyable { result.channel.title },
-                    supportingContent = { Text(result.channel.title) },
+                    Modifier.copyable { channel.title },
+                    supportingContent = { Text(channel.title) },
                     colors = listItemColors,
                 )
             }
             item {
                 ListItem(
                     headlineContent = { Text("Description") },
-                    Modifier.weight(1f)
-                        .copyable { result.channel.description },
-                    supportingContent = { Text(result.channel.description) },
+                    Modifier.copyable { channel.description },
+                    supportingContent = { Text(channel.description) },
                     colors = listItemColors,
                 )
             }
             item {
                 ListItem(
                     headlineContent = { Text("Link") },
-                    Modifier.weight(1f)
-                        .copyable { result.channel.link },
-                    supportingContent = { Text(result.channel.link) },
+                    Modifier
+                        .copyable { channel.link },
+                    supportingContent = { Text(channel.link) },
                     colors = listItemColors,
                 )
             }
             item {
                 ListItem(
                     headlineContent = { Text("RSS Item Count") },
-                    Modifier.weight(1f),
-                    supportingContent = { SelectionContainer { Text(result.channel.items.size.toString()) } },
+                    Modifier,
+                    supportingContent = { SelectionContainer { Text(channel.items.size.toString()) } },
                     colors = listItemColors,
                 )
             }
             item {
                 ListItem(
                     headlineContent = { Text("Parsed Media Count") },
-                    Modifier.weight(1f),
+                    Modifier,
                     supportingContent = { SelectionContainer { Text(result.mediaList.size.toString()) } },
+                    colors = listItemColors,
+                )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                ListItem(
+                    headlineContent = { Text("原始 XML") },
+                    Modifier.copyable { result.originString },
+                    supportingContent = {
+                        if (result.origin == null) {
+                            Text("不可用")
+                        } else {
+                            OutlinedTextField(
+                                value = result.originString,
+                                onValueChange = {},
+                                Modifier.padding(vertical = 8.dp),
+                                readOnly = true,
+                                minLines = 1,
+                                maxLines = 8,
+                            )
+                        }
+                    },
                     colors = listItemColors,
                 )
             }

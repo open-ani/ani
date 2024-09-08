@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.settings.tabs.media.source.rss.test
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -17,7 +18,6 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
@@ -53,7 +53,8 @@ class RssTestPaneState(
         searchKeywordPlaceholder = newRandom
         searchKeyword = newRandom
     }
-    
+
+    val pagerState = PagerState(RssTestPaneTab.Overview.ordinal) { RssTestPaneTab.entries.size }
     val overallTabGridState = LazyGridState()
     val rssTabGridState = LazyStaggeredGridState()
     val finalResultsTabGridState = LazyStaggeredGridState()
@@ -72,7 +73,7 @@ class RssTestPaneState(
         viewingItem = RssViewingItem.ViewingMedia(media)
     }
 
-    fun viewDetails(rssItem: RssItem) {
+    fun viewDetails(rssItem: RssItemPresentation) {
         viewingItem = RssViewingItem.ViewingRssItem(rssItem)
     }
 
@@ -143,7 +144,11 @@ class RssTestPaneState(
         return RssTestResult.Success(
             encodedUrl.toString(),
             channel,
+            channel.items.map {
+                RssItemPresentation(it)
+            },
             matchedMediaList,
+            origin = document,
         )
     }
 

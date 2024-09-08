@@ -1,7 +1,8 @@
 package me.him188.ani.app.ui.cache.details
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
@@ -16,6 +17,8 @@ import androidx.compose.material.icons.rounded.VideoFile
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -41,6 +44,47 @@ import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.isSingleEpisode
+import kotlin.jvm.JvmName
+
+object MediaDetailsRenderer {
+    @JvmName("renderSubtitleKindNotNull")
+    fun renderSubtitleKind(subtitleKind: SubtitleKind): String = renderSubtitleKind(subtitleKind as SubtitleKind?)!!
+
+    fun renderSubtitleKind(
+        subtitleKind: SubtitleKind?
+    ): String? {
+        return when (subtitleKind) {
+            SubtitleKind.EMBEDDED -> "内嵌"
+            SubtitleKind.CLOSED -> "内封"
+            SubtitleKind.EXTERNAL_PROVIDED -> "外挂"
+            SubtitleKind.EXTERNAL_DISCOVER -> "未知"
+            SubtitleKind.CLOSED_OR_EXTERNAL_DISCOVER -> "内封或未知"
+            null -> null
+        }
+    }
+
+    fun renderSubtitleLanguages(
+        subtitleKind: SubtitleKind?,
+        subtitleLanguageIds: List<String>
+    ): String = buildString {
+        if (subtitleKind != null) {
+            append("[")
+            append(renderSubtitleKind(subtitleKind))
+            append("] ")
+        } else {
+            if (subtitleLanguageIds.isEmpty()) {
+                append("未知")
+            }
+        }
+
+        for ((index, subtitleLanguageId) in subtitleLanguageIds.withIndex()) {
+            append(renderSubtitleLanguage(subtitleLanguageId))
+            if (index != subtitleLanguageIds.size - 1) {
+                append(" ")
+            }
+        }
+    }
+}
 
 @Composable
 fun MediaDetailsColumn(
@@ -53,176 +97,180 @@ fun MediaDetailsColumn(
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
 
-    Column(modifier) {
-        val copyContent = @Composable { value: () -> String ->
-            val toaster = LocalToaster.current
-            IconButton(
-                {
-                    clipboard.setText(AnnotatedString(value()))
-                    toaster.toast("已复制")
-                },
-            ) {
-                Icon(Icons.Rounded.ContentCopy, contentDescription = "复制")
-            }
-        }
-        val browseContent = @Composable { url: String ->
-            IconButton({ browser.openBrowser(context, url) }) {
-                Icon(Icons.Rounded.ArrowOutward, contentDescription = "打开链接")
-            }
-        }
 
-        ListItem(
-            headlineContent = { SelectionContainer { Text(media.originalTitle) } },
-            trailingContent = { copyContent { media.originalTitle } },
-        )
-        ListItem(
-            headlineContent = { Text("剧集范围") },
-            leadingContent = { Icon(Icons.Rounded.Layers, contentDescription = null) },
-            supportingContent = {
-                val range = media.episodeRange
-                SelectionContainer {
-                    Text(
-                        when {
-                            range == null -> "未知"
-                            range.isSingleEpisode() -> range.knownSorts.firstOrNull().toString()
-                            else -> range.toString()
-                        },
-                    )
+    Surface(
+        color = ListItemDefaults.containerColor, // fill gap between items
+    ) {
+        LazyVerticalGrid(
+            GridCells.Adaptive(minSize = 300.dp),
+            modifier = modifier,
+        ) {
+            val copyContent = @Composable { value: () -> String ->
+                val toaster = LocalToaster.current
+                IconButton(
+                    {
+                        clipboard.setText(AnnotatedString(value()))
+                        toaster.toast("已复制")
+                    },
+                ) {
+                    Icon(Icons.Rounded.ContentCopy, contentDescription = "复制")
                 }
-            },
-        )
-        if (showSourceInfo) {
-            ListItem(
-                headlineContent = { Text("数据源") },
-                leadingContent = { MediaSourceIcon(sourceInfo, Modifier.size(24.dp)) },
-                supportingContent = {
-                    val kind = when (media.kind) {
-                        MediaSourceKind.WEB -> "在线"
-                        MediaSourceKind.BitTorrent -> "BT"
-                        MediaSourceKind.LocalCache -> "本地"
-                    }
-                    SelectionContainer { Text("[$kind] ${sourceInfo?.displayName ?: "未知"}") }
-                },
-                trailingContent = kotlin.run {
-                    val originalUrl by rememberUpdatedState(media.originalUrl)
-                    val isUrlLegal by remember {
-                        derivedStateOf {
-                            originalUrl.startsWith("http://", ignoreCase = true)
-                                    || originalUrl.startsWith("https://", ignoreCase = true)
-                        }
-                    }
-                    if (isUrlLegal) {
-                        {
-                            browseContent(originalUrl)
-                        }
-                    } else {
-                        {
-                            copyContent { originalUrl }
-                        }
-                    }
-                },
-            )
-        }
-        ListItem(
-            headlineContent = { Text("字幕组") },
-            leadingContent = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },
-            supportingContent = { SelectionContainer { Text(media.properties.alliance) } },
-            trailingContent = { copyContent { media.properties.alliance } },
-        )
-        ListItem(
-            headlineContent = { Text("字幕语言") },
-            leadingContent = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },
-            supportingContent = {
-                SelectionContainer {
-                    Text(
-                        remember(media) {
-                            buildString {
-                                val subtitleKind = media.properties.subtitleKind
-                                if (subtitleKind != null) {
-                                    append("[")
-                                    append(
-                                        when (subtitleKind) {
-                                            SubtitleKind.EMBEDDED -> "内嵌"
-                                            SubtitleKind.CLOSED -> "内封"
-                                            SubtitleKind.EXTERNAL_PROVIDED -> "外挂"
-                                            SubtitleKind.EXTERNAL_DISCOVER -> "未知"
-                                            SubtitleKind.CLOSED_OR_EXTERNAL_DISCOVER -> "内封或未知"
-                                        },
-                                    )
-                                    append("] ")
-                                } else {
-                                    if (media.properties.subtitleLanguageIds.isEmpty()) {
-                                        append("未知")
-                                    }
-                                }
+            }
+            val browseContent = @Composable { url: String ->
+                IconButton({ browser.openBrowser(context, url) }) {
+                    Icon(Icons.Rounded.ArrowOutward, contentDescription = "打开链接")
+                }
+            }
 
-                                for ((index, subtitleLanguageId) in media.properties.subtitleLanguageIds.withIndex()) {
-                                    append(renderSubtitleLanguage(subtitleLanguageId))
-                                    if (index != media.properties.subtitleLanguageIds.size - 1) {
-                                        append(" ")
-                                    }
+            item {
+                ListItem(
+                    headlineContent = { SelectionContainer { Text(media.originalTitle) } },
+                    trailingContent = { copyContent { media.originalTitle } },
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("剧集范围") },
+                    leadingContent = { Icon(Icons.Rounded.Layers, contentDescription = null) },
+                    supportingContent = {
+                        val range = media.episodeRange
+                        SelectionContainer {
+                            Text(
+                                when {
+                                    range == null -> "未知"
+                                    range.isSingleEpisode() -> range.knownSorts.firstOrNull().toString()
+                                    else -> range.toString()
+                                },
+                            )
+                        }
+                    },
+                )
+            }
+            if (showSourceInfo) {
+                item {
+                    ListItem(
+                        headlineContent = { Text("数据源") },
+                        leadingContent = { MediaSourceIcon(sourceInfo, Modifier.size(24.dp)) },
+                        supportingContent = {
+                            val kind = when (media.kind) {
+                                MediaSourceKind.WEB -> "在线"
+                                MediaSourceKind.BitTorrent -> "BT"
+                                MediaSourceKind.LocalCache -> "本地"
+                            }
+                            SelectionContainer { Text("[$kind] ${sourceInfo?.displayName ?: "未知"}") }
+                        },
+                        trailingContent = kotlin.run {
+                            val originalUrl by rememberUpdatedState(media.originalUrl)
+                            val isUrlLegal by remember {
+                                derivedStateOf {
+                                    originalUrl.startsWith("http://", ignoreCase = true)
+                                            || originalUrl.startsWith("https://", ignoreCase = true)
+                                }
+                            }
+                            if (isUrlLegal) {
+                                {
+                                    browseContent(originalUrl)
+                                }
+                            } else {
+                                {
+                                    copyContent { originalUrl }
                                 }
                             }
                         },
                     )
                 }
-            },
-        )
-        ListItem(
-            headlineContent = { Text("发布时间") },
-            leadingContent = { Icon(Icons.Rounded.Event, contentDescription = null) },
-            supportingContent = { SelectionContainer { Text(formatDateTime(media.publishedTime)) } },
-        )
-        ListItem(
-            headlineContent = { Text("分辨率") },
-            leadingContent = { Icon(Icons.Rounded.Hd, contentDescription = null) },
-            supportingContent = { SelectionContainer { Text(media.properties.resolution) } },
-        )
-        ListItem(
-            headlineContent = { Text("文件大小") },
-            leadingContent = { Icon(Icons.Rounded.Description, contentDescription = null) },
-            supportingContent = {
-                SelectionContainer {
-                    if (media.properties.size == FileSize.Unspecified) {
-                        Text("未知")
-                    } else {
-                        Text(media.properties.size.toString())
-                    }
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("字幕组") },
+                    leadingContent = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },
+                    supportingContent = { SelectionContainer { Text(media.properties.alliance) } },
+                    trailingContent = { copyContent { media.properties.alliance } },
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("字幕语言") },
+                    leadingContent = { Icon(Icons.Rounded.Subtitles, contentDescription = null) },
+                    supportingContent = {
+                        SelectionContainer {
+                            Text(
+                                remember(media) {
+                                    MediaDetailsRenderer.renderSubtitleLanguages(
+                                        media.properties.subtitleKind,
+                                        media.properties.subtitleLanguageIds,
+                                    )
+                                },
+                            )
+                        }
+                    },
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("发布时间") },
+                    leadingContent = { Icon(Icons.Rounded.Event, contentDescription = null) },
+                    supportingContent = { SelectionContainer { Text(formatDateTime(media.publishedTime)) } },
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("分辨率") },
+                    leadingContent = { Icon(Icons.Rounded.Hd, contentDescription = null) },
+                    supportingContent = { SelectionContainer { Text(media.properties.resolution) } },
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("文件大小") },
+                    leadingContent = { Icon(Icons.Rounded.Description, contentDescription = null) },
+                    supportingContent = {
+                        SelectionContainer {
+                            if (media.properties.size == FileSize.Unspecified) {
+                                Text("未知")
+                            } else {
+                                Text(media.properties.size.toString())
+                            }
+                        }
+                    },
+                )
+            }
+            item {
+                ListItem(
+                    headlineContent = { Text("原始下载方式") },
+                    leadingContent = { Icon(Icons.Rounded.VideoFile, contentDescription = null) },
+                    supportingContent = {
+                        SelectionContainer {
+                            Text(media.download.contentUri, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        }
+                    },
+                    trailingContent = { copyContent { media.download.contentUri } },
+                )
+            }
+            media.extraFiles.subtitles.forEachIndexed { index, subtitle ->
+                item {
+                    ListItem(
+                        headlineContent = {
+                            SelectionContainer {
+                                Text(
+                                    remember(subtitle) {
+                                        buildString {
+                                            append("外挂字幕 ${index + 1}")
+                                            subtitle.language?.let {
+                                                append(": ")
+                                                append(it)
+                                            }
+                                        }
+                                    },
+                                )
+                            }
+                        },
+                        leadingContent = { Icon(Icons.Rounded.FilePresent, contentDescription = null) },
+                        supportingContent = { SelectionContainer { Text(subtitle.uri) } },
+                        trailingContent = { browseContent(subtitle.uri) },
+                    )
                 }
-            },
-        )
-        ListItem(
-            headlineContent = { Text("原始下载方式") },
-            leadingContent = { Icon(Icons.Rounded.VideoFile, contentDescription = null) },
-            supportingContent = {
-                SelectionContainer {
-                    Text(media.download.contentUri, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                }
-            },
-            trailingContent = { copyContent { media.download.contentUri } },
-        )
-
-        media.extraFiles.subtitles.forEachIndexed { index, subtitle ->
-            ListItem(
-                headlineContent = {
-                    SelectionContainer {
-                        Text(
-                            remember(subtitle) {
-                                buildString {
-                                    append("外挂字幕 ${index + 1}")
-                                    subtitle.language?.let {
-                                        append(": ")
-                                        append(it)
-                                    }
-                                }
-                            },
-                        )
-                    }
-                },
-                leadingContent = { Icon(Icons.Rounded.FilePresent, contentDescription = null) },
-                supportingContent = { SelectionContainer { Text(subtitle.uri) } },
-                trailingContent = { browseContent(subtitle.uri) },
-            )
+            }
         }
     }
 }
