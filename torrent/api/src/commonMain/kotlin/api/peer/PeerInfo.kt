@@ -8,8 +8,7 @@ interface PeerInfo {
      * Sometimes it can tell you which client the peer is using.
      * 
      * For anitorrent, the value is calculated by
-     * [computeTorrentFingerprint][me.him188.ani.app.tools.torrent.engines.computeTorrentFingerprint]
-     * and [computeTorrentUserAgent][me.him188.ani.app.tools.torrent.engines.computeTorrentUserAgent].
+     * [computeTorrentFingerprint][me.him188.ani.app.tools.torrent.engines.computeTorrentFingerprint].
      */
     val id: String
 
@@ -18,6 +17,9 @@ interface PeerInfo {
      * In some cases this information is not available, then it will contain a string 
      * that may give away something about which software is running in the other end. 
      * In the case of a web seed, the server type and version will be a part of this string.
+     * 
+     * For anitorrent, the value is calculated by
+     * [computeTorrentUserAgent][me.him188.ani.app.tools.torrent.engines.computeTorrentUserAgent].
      */
     val client: String
     

@@ -116,6 +116,10 @@ class TorrentDownloaderConfig(
      * 0 means unlimited
      */
     val uploadRateLimitBytes: Int = 0,
+    /**
+     * share ratio limit, 100 = 1.0
+     */
+    val shareRatioLimit: Int = 110,
 ) {
     companion object {
         val Default: TorrentDownloaderConfig = TorrentDownloaderConfig()

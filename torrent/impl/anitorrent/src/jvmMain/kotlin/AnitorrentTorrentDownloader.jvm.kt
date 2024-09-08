@@ -34,6 +34,7 @@ internal fun TorrentDownloaderConfig.toSessionSettings(): session_settings_t {
         handshake_client_version = config.handshakeClientVersion
         download_rate_limit = config.downloadRateLimitBytes
         upload_rate_limit = config.uploadRateLimitBytes
+        share_ratio_limit = config.shareRatioLimit
         listOf(
             "router.utorrent.com:6881",
             "router.bittorrent.com:6881",
