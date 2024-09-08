@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.peer.PeerFilter
 import me.him188.ani.utils.io.SystemPath
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -71,6 +72,13 @@ interface TorrentDownloader : AutoCloseable {
         parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
         overrideSaveDir: SystemPath? = null,
     ): TorrentSession
+
+    /**
+     * set peer connection filter to this session of downloader.
+     * 
+     * It is valid at the whole lifecycle until the downloader is closed.
+     */
+    fun setPeerFilter(filter: PeerFilter)
 
     fun getSaveDirForTorrent(
         data: EncodedTorrentInfo,

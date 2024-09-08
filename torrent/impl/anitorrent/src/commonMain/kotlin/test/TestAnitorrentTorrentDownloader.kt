@@ -17,6 +17,7 @@ import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
 import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.peer.PeerInfo
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.writeBytes
@@ -106,6 +107,14 @@ class TestTorrentDescriptor(
     override val fileCount: Int get() = files.size
     override fun fileAtOrNull(index: Int): TorrentFileInfo? = files.getOrNull(index)
 }
+
+@TestOnly
+class TestPeerInfo(
+    override val id: String,
+    override val client: String,
+    override val ipAddr: String,
+    override val ipPort: Int
+) : PeerInfo
 
 @TestOnly
 data class TestTorrentFileInfo(

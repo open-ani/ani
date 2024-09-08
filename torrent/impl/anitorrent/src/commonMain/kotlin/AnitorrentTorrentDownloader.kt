@@ -29,6 +29,7 @@ import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentLibInfo
 import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.app.torrent.api.files.EncodedTorrentInfo
+import me.him188.ani.app.torrent.api.peer.PeerFilter
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.SystemPaths
 import me.him188.ani.utils.io.absolutePath
@@ -77,6 +78,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
     parentCoroutineContext: CoroutineContext,
 ) : TorrentDownloader, SynchronizedObject() {
     protected abstract val native: TorrentManagerSession<THandle, TAddInfo> // must hold reference. 
+    protected var peerFilter: PeerFilter? = null
 
     companion object {
         private const val FAST_RESUME_FILENAME = "fastresume"
@@ -319,6 +321,10 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
             }
             native.resume()
         }
+    }
+
+    override fun setPeerFilter(filter: PeerFilter) {
+        peerFilter = filter
     }
 
     override fun getSaveDirForTorrent(data: EncodedTorrentInfo): SystemPath =

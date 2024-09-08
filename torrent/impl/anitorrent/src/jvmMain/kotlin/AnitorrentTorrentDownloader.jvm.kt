@@ -7,11 +7,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.torrent.anitorrent.binding.event_listener_t
 import me.him188.ani.app.torrent.anitorrent.binding.new_event_listener_t
+import me.him188.ani.app.torrent.anitorrent.binding.peer_filter_t
+import me.him188.ani.app.torrent.anitorrent.binding.peer_info_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_settings_t
 import me.him188.ani.app.torrent.anitorrent.binding.session_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_resume_data_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_state_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_stats_t
+import me.him188.ani.app.torrent.anitorrent.session.SwigPeerInfo
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentAddInfo
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentHandle
 import me.him188.ani.app.torrent.anitorrent.session.SwigTorrentManagerSession
@@ -79,6 +82,14 @@ internal class SwigAnitorrentTorrentDownloader(
     httpFileDownloader,
     parentCoroutineContext,
 ) {
+    // native peer filter is always created
+    private val nativePeerFilter = object : peer_filter_t() {
+        override fun on_filter(info: peer_info_t?): Boolean {
+            if (info == null) return false
+            val filter = peerFilter ?: return false
+            return filter.onFilter(SwigPeerInfo(info))
+        }
+    }
 
     private val eventListener = object : event_listener_t() {
         override fun on_save_resume_data(handleId: Long, data: torrent_resume_data_t?) {
@@ -183,6 +194,7 @@ internal class SwigAnitorrentTorrentDownloader(
 
     init {
         native.native.set_new_event_listener(newEventListener)
+        native.native.set_peer_filter(nativePeerFilter)
         scope.launch(Dispatchers.IO) {
             while (isActive) {
                 eventSignal.receive() // await new events
@@ -193,6 +205,7 @@ internal class SwigAnitorrentTorrentDownloader(
 
     override fun close() {
         native.native.remove_listener() // must remove, before gc-ing this object
+        native.native.set_peer_filter(null) // clear filter
         super.close()
     }
 }
