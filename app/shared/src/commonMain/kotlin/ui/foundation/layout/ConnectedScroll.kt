@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.foundation.layout
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -39,6 +40,31 @@ fun rememberConnectedScrollState(
 class ConnectedScrollState(
     val flingBehavior: FlingBehavior,
 ) {
+    private val scrollableState = ScrollableState { available ->
+        if (scrollableOffset == 0f && available > 0) {
+            return@ScrollableState 0f
+        }
+
+        if (available < 0) {
+            // 手指往上, 首先让 header 隐藏
+            //
+            //                   y
+            // |---------------| 0
+            // |    TopAppBar  |
+            // |  图片    标题  |  -scrollableHeight
+            // |               |
+            // |    收藏数据    |  scrollableOffset
+            // |     TAB       |
+            // |  LazyColumn   |
+            // |---------------|
+
+            val diff = available.coerceAtLeast(-scrollableHeight - scrollableOffset)
+            scrollableOffset += diff
+            return@ScrollableState diff
+        }
+        0f
+    }
+
     /**
      * 仅在第一个 measurement pass 后更新
      */
@@ -71,29 +97,10 @@ class ConnectedScrollState(
             source: NestedScrollSource
         ): Offset {
             // 手指往下, available.y > 0
-
-            if (scrollableOffset == 0f && available.y > 0) {
-                return Offset.Zero
-            }
-
-            if (available.y < 0) {
-                // 手指往上, 首先让 header 隐藏
-                //
-                //                   y
-                // |---------------| 0
-                // |    TopAppBar  |
-                // |  图片    标题  |  -scrollableHeight
-                // |               |
-                // |    收藏数据    |  scrollableOffset
-                // |     TAB       |
-                // |  LazyColumn   |
-                // |---------------|
-
-                val diff = available.y.coerceAtLeast(-scrollableHeight - scrollableOffset)
-                scrollableOffset += diff
-                return Offset(0f, diff)
-            }
-            return Offset.Zero
+            return Offset(
+                0f,
+                scrollableState.dispatchRawDelta(available.y),
+            )
         }
 
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
