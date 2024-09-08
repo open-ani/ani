@@ -139,7 +139,7 @@ fun RssEditPane(
                         supportingText = {
                             Text(
                                 """
-                                    替换规则: 
+                                    替换规则：
                                     {keyword} 替换为条目 (番剧) 名称
                                     {page} 替换为页码, 如果不需要分页则忽略
                                 """.trimIndent(),
@@ -149,6 +149,15 @@ fun RssEditPane(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = textFieldShape,
                     )
+                }
+
+                Row(Modifier.align(Alignment.End).padding(top = 20.dp, bottom = 12.dp)) {
+                    ProvideTextStyleContentColor(
+                        MaterialTheme.typography.labelMedium,
+                        MaterialTheme.colorScheme.outline,
+                    ) {
+                        Text("提示：修改自动保存")
+                    }
                 }
             }
         }
