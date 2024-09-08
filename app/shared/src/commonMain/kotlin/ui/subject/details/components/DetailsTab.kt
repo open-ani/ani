@@ -213,12 +213,13 @@ private fun TagsList(
                     ) {
                         Text(
                             tag.name,
+                            Modifier.align(Alignment.CenterVertically),
                             maxLines = 1,
                         )
 
                         Text(
                             tag.count.toString(),
-                            Modifier.padding(start = 6.dp),
+                            Modifier.padding(start = 6.dp).align(Alignment.CenterVertically),
                             maxLines = 1,
                             color = MaterialTheme.colorScheme.secondary,
                         )
