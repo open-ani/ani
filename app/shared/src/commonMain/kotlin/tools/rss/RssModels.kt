@@ -30,7 +30,7 @@ data class RssItem(
 )
 
 fun RssItem.guessResourceLocation(): ResourceLocation? {
-    val url = this.enclosure?.url ?: return null
+    val url = this.enclosure?.url ?: this.link.takeIf { it.isNotBlank() } ?: return null
     return if (url.startsWith("magnet:")) {
         ResourceLocation.MagnetLink(url)
     } else {
