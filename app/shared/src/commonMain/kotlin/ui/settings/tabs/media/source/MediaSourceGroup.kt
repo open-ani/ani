@@ -47,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
@@ -82,29 +84,35 @@ internal fun SettingsScope.MediaSourceGroup(
     edit: EditMediaSourceState,
 ) {
     val navigator = LocalNavigator.current
+    val uiScope = rememberCoroutineScope()
     var showSelectTemplate by remember { mutableStateOf(false) }
     if (showSelectTemplate) {
         // 选一个数据源来添加
         SelectMediaSourceTemplateDialog(
             templates = state.availableMediaSourceTemplates,
-            onClick = {
+            onClick = { template ->
                 showSelectTemplate = false
 
                 // 一些数据源要用单独编辑页面
                 when {
-                    it.factoryId in MediaSourcesUsingNewSettings -> {
-                        navigator.navigateEditMediaSource(it.factoryId, null)
+                    template.factoryId in MediaSourcesUsingNewSettings -> {
+                        val editing = edit.startAdding(template)
+                        val job = edit.confirmEdit(editing)
+                        uiScope.launch {
+                            job.join()
+                            navigator.navigateEditMediaSource(template.factoryId, editing.editingMediaSourceId)
+                        }
                         return@SelectMediaSourceTemplateDialog
                     }
 
                     // 旧的数据源类型, 仍然使用旧的对话框形式添加
-                    it.parameters.list.isEmpty() -> {
+                    template.parameters.list.isEmpty() -> {
                         // 没有参数, 直接添加
-                        edit.confirmEdit(edit.startAdding(it))
+                        edit.confirmEdit(edit.startAdding(template))
                         return@SelectMediaSourceTemplateDialog
                     }
 
-                    else -> edit.startAdding(it)
+                    else -> edit.startAdding(template)
                 }
             },
             onDismissRequest = { showSelectTemplate = false },

@@ -34,6 +34,7 @@ plugins {
     `ani-mpp-lib-targets`
 
     kotlin("plugin.serialization")
+    kotlin("plugin.parcelize")
     id("org.jetbrains.kotlinx.atomicfu")
     id("com.google.devtools.ksp")
     id("androidx.room")
@@ -70,6 +71,7 @@ kotlin {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
         api(libs.kotlinx.serialization.json.io)
+        api(libs.kotlinx.serialization.protobuf)
         implementation(libs.atomicfu) // room runtime
         api(libs.kotlinx.datetime)
         api(libs.kotlinx.io.core)

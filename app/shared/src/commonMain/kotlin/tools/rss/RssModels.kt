@@ -1,33 +1,54 @@
 package me.him188.ani.app.tools.rss
 
+import androidx.compose.runtime.Immutable
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.xml.Element
 
 
-/**
- * @sample me.him188.ani.app.tools.rss.RssParserTest.dmhy
- */
-@Serializable
+// See  me.him188.ani.app.tools.rss.RssParserTest.dmhy
+@Immutable
+@Serializable // for testing
 data class RssChannel(
     val title: String,
     val description: String = "",
     val link: String = "",
     val ttl: Int = 0,
-    val items: List<RssItem>
-    // language
+    val items: List<RssItem>,
+    /**
+     * 原始 XML. 仅在测试时才有值, 其他时候为 `null` 以避免保持内存占用.
+     */
+    @Transient val origin: Element? = null,
 )
 
-@Serializable
+@Immutable
+@Serializable // for testing
 data class RssItem(
     val title: String,
     val description: String = "",
     val pubDate: LocalDateTime?,
     val link: String,
     val guid: String,
-    val enclosure: RssEnclosure?
+    val enclosure: RssEnclosure?,
+    /**
+     * 原始 XML. 仅在测试时才有值, 其他时候为 `null` 以避免保持内存占用.
+     */
+    @Transient val origin: Element? = null,
 )
 
-@Serializable
+fun RssItem.guessResourceLocation(): ResourceLocation? {
+    val url = this.enclosure?.url ?: this.link.takeIf { it.isNotBlank() } ?: return null
+    return if (url.startsWith("magnet:")) {
+        ResourceLocation.MagnetLink(url)
+    } else {
+        ResourceLocation.HttpTorrentFile(url)
+    }
+}
+
+@Immutable
+@Serializable // for testing
 data class RssEnclosure(
     val url: String,
     val length: Long = 0,
