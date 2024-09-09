@@ -15,7 +15,6 @@ import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -32,55 +31,38 @@ import me.him188.ani.app.ui.settings.tabs.media.source.rss.edit.RssEditPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
 
-
 /**
  * @see RssMediaSource
  */
 @Stable
 class EditRssMediaSourceState(
-    argumentsState: State<RssMediaSourceArguments?>,
+    argumentsStorage: SaveableStorage<RssMediaSourceArguments>,
     val instanceId: String,
-    /**
-     * 必须立即反映到 [argumentsState]
-     */
-    private val onSave: (RssMediaSourceArguments) -> Unit,
-    isSavingState: State<Boolean>,
 ) {
-    private val arguments by argumentsState
+    private val arguments by argumentsStorage.containerState
     val isLoading by derivedStateOf { arguments == null }
-    val isSaving by isSavingState
+    val isSaving by argumentsStorage.isSavingState
 
-    var displayName
-        get() = arguments?.name ?: ""
-        set(value) {
-            val arguments = arguments ?: return
-            save(arguments.copy(name = value))
-        }
+    var displayName by argumentsStorage.prop(
+        RssMediaSourceArguments::name, { copy(name = it) },
+        "",
+    )
 
     val displayNameIsError by derivedStateOf { displayName.isBlank() }
 
-    var iconUrl
-        get() = arguments?.iconUrl ?: ""
-        set(value) {
-            val arguments = arguments ?: return
-            save(arguments.copy(iconUrl = value))
-        }
+    var iconUrl by argumentsStorage.prop(
+        RssMediaSourceArguments::iconUrl, { copy(iconUrl = it) },
+        "",
+    )
     val displayIconUrl by derivedStateOf {
         iconUrl.ifBlank { RssMediaSourceArguments.DEFAULT_ICON_URL }
     }
 
-    var searchUrl
-        get() = arguments?.searchUrl ?: ""
-        set(value) {
-            val arguments = arguments ?: return
-            save(arguments.copy(searchUrl = value))
-        }
+    var searchUrl by argumentsStorage.prop(
+        RssMediaSourceArguments::searchUrl, { copy(searchUrl = it) },
+        "",
+    )
     val searchUrlIsError by derivedStateOf { searchUrl.isBlank() }
-
-    private fun save(newArguments: RssMediaSourceArguments): Boolean {
-        onSave(newArguments)
-        return true
-    }
 }
 
 @Composable

@@ -13,7 +13,6 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.ktor.http.Url
-import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
@@ -23,6 +22,7 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceState
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
 import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.FactoryId
@@ -107,7 +107,7 @@ fun PreviewEditRssMediaSourcePageLaptop() = ProvideCompositionLocalsForPreview {
 @Composable
 internal fun rememberTestEditRssMediaSourceStateAndRssTestPaneState(): Pair<EditRssMediaSourceState, RssTestPaneState> {
     val scope = rememberCoroutineScope()
-    val edit = rememberTestEditRssMediaSourceState(scope)
+    val edit = rememberTestEditRssMediaSourceState()
     return edit to remember {
         RssTestPaneState(
             derivedStateOf { edit.searchUrl },
@@ -119,12 +119,14 @@ internal fun rememberTestEditRssMediaSourceStateAndRssTestPaneState(): Pair<Edit
 
 @TestOnly
 @Composable
-internal fun rememberTestEditRssMediaSourceState(scope: CoroutineScope) = remember {
+internal fun rememberTestEditRssMediaSourceState() = remember {
     EditRssMediaSourceState(
-        argumentsState = stateOf(RssMediaSourceArguments.Default),
+        argumentsStorage = SaveableStorage(
+            stateOf(RssMediaSourceArguments.Default),
+            {},
+            stateOf(false),
+        ),
         instanceId = "test-id",
-        onSave = {},
-        isSavingState = stateOf(false),
     )
 }
 

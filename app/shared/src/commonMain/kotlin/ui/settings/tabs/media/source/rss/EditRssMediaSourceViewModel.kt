@@ -65,20 +65,22 @@ class EditRssMediaSourceViewModel(
             }
             emit(
                 EditRssMediaSourceState(
-                    argumentsState = arguments,
+                    argumentsStorage = SaveableStorage(
+                        arguments,
+                        onSave = {
+                            arguments.value = it
+                            saveTasker.launch {
+                                kotlinx.coroutines.delay(500)
+                                mediaSourceManager.updateMediaSourceArguments(
+                                    instanceId,
+                                    RssMediaSourceArguments.serializer(),
+                                    it,
+                                )
+                            }
+                        },
+                        isSavingState = derivedStateOf { saveTasker.isRunning },
+                    ),
                     instanceId = instanceId,
-                    onSave = {
-                        arguments.value = it
-                        saveTasker.launch {
-                            kotlinx.coroutines.delay(500)
-                            mediaSourceManager.updateMediaSourceArguments(
-                                instanceId,
-                                RssMediaSourceArguments.serializer(),
-                                it,
-                            )
-                        }
-                    },
-                    isSavingState = derivedStateOf { saveTasker.isRunning },
                 ),
             )
         }

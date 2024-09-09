@@ -6,6 +6,7 @@ import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceState
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
 import me.him188.ani.utils.platform.Uuid
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,10 +19,12 @@ class EditRssMediaSourceStateTest {
     ): EditRssMediaSourceState {
         val argumentsState = mutableStateOf(arguments)
         return EditRssMediaSourceState(
-            argumentsState,
+            SaveableStorage(
+                argumentsState,
+                onSave = { argumentsState.value = it },
+                isSavingState = stateOf(false),
+            ),
             mediaSourceId,
-            onSave = { argumentsState.value = it },
-            isSavingState = stateOf(false),
         )
     }
 
