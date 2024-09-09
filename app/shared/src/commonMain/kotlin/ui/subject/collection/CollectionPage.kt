@@ -18,6 +18,7 @@
 
 package me.him188.ani.app.ui.subject.collection
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +26,10 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -39,6 +42,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +54,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.runtime.Composable
@@ -80,6 +85,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
@@ -108,7 +114,7 @@ fun CollectionPage(
     onClickCaches: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val vm = viewModel { MyCollectionsViewModel() }
     vm.navigator = LocalNavigator.current
@@ -128,6 +134,7 @@ fun CollectionPage(
     Scaffold(
         modifier,
         topBar = {
+            val topAppBarColors = AniThemeDefaults.topAppBarColors()
             Column(modifier = Modifier.fillMaxWidth()) {
                 TopAppBar(
                     title = { Text("我的追番") },
@@ -163,6 +170,8 @@ fun CollectionPage(
                             }
                         }
                     },
+                    colors = topAppBarColors,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 )
 
                 ScrollableTabRow(
@@ -172,8 +181,9 @@ fun CollectionPage(
                             Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
                         )
                     },
-                    containerColor = TabRowDefaults.secondaryContainerColor,
-                    contentColor = TabRowDefaults.secondaryContentColor,
+                    containerColor = topAppBarColors.containerColor,
+                    contentColor = MaterialTheme.colorScheme.contentColorFor(topAppBarColors.containerColor),
+                    divider = {},
                     modifier = Modifier.fillMaxWidth().alpha(0.97f),
                 ) {
                     COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
@@ -197,13 +207,14 @@ fun CollectionPage(
                         )
                     }
                 }
+                HorizontalDivider()
             }
         },
-        contentWindowInsets = contentWindowInsets,
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { topBarPaddings ->
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
             userScrollEnabled = Platform.currentPlatform.isMobile(),
             verticalAlignment = Alignment.Top,
         ) { index ->
@@ -371,6 +382,7 @@ private fun TabContent(
                         }
                     }
                 },
+                colors = AniThemeDefaults.primaryCardColors(),
             )
         },
         modifier,

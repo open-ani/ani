@@ -12,6 +12,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.ScrollableTabRow
@@ -36,6 +37,7 @@ import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.SettingsViewModel
@@ -80,6 +82,7 @@ fun SettingsPage(
     allowBack: Boolean = !isShowLandscapeUI(),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
+    val appBarColors = AniThemeDefaults.topAppBarColors()
     Scaffold(
         modifier,
         topBar = {
@@ -90,6 +93,8 @@ fun SettingsPage(
                         TopAppBarGoBackButton()
                     }
                 },
+                colors = appBarColors,
+                windowInsets = contentWindowInsets,
             )
         },
         contentWindowInsets = contentWindowInsets,
@@ -115,9 +120,10 @@ fun SettingsPage(
                         Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
                     )
                 },
-                contentColor = TabRowDefaults.secondaryContentColor,
-                containerColor = TabRowDefaults.secondaryContainerColor,
+                containerColor = appBarColors.containerColor,
+                contentColor = appBarColors.titleContentColor,
                 modifier = Modifier.fillMaxWidth(),
+                divider = {},
             ) {
                 val tabs by remember {
                     derivedStateOf {
@@ -135,6 +141,7 @@ fun SettingsPage(
                     )
                 }
             }
+            HorizontalDivider()
 
             OverrideNavigation(
                 remember(scope, pagerState) {

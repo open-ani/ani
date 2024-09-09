@@ -2,6 +2,7 @@ package me.him188.ani.app.ui.profile.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -13,6 +14,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -38,6 +40,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
@@ -62,6 +65,7 @@ class BangumiTokenAuthViewModel : AbstractViewModel(), KoinComponent {
 fun BangumiTokenAuthPage(
     vm: BangumiTokenAuthViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     var token by rememberSaveable { mutableStateOf("") }
     val navigator = LocalNavigator.current
@@ -78,8 +82,11 @@ fun BangumiTokenAuthPage(
                     navigationIcon = {
                         TopAppBarGoBackButton()
                     },
+                    colors = AniThemeDefaults.topAppBarColors(),
+                    windowInsets = windowInsets,
                 )
             },
+            contentWindowInsets = windowInsets,
         ) { contentPadding ->
             Column(
                 Modifier.padding(contentPadding).padding(16.dp).widthIn(max = 600.dp),

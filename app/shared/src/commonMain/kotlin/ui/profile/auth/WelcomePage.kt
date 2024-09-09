@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -78,6 +80,7 @@ class WelcomeViewModel : AbstractViewModel(), KoinComponent {
 fun WelcomeScene(
     vm: WelcomeViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val navigator = LocalNavigator.current
     val goBack = {
@@ -98,6 +101,7 @@ fun WelcomeScene(
             }
         },
         modifier = modifier,
+        windowInsets = windowInsets,
     )
 }
 
@@ -106,6 +110,7 @@ fun WelcomePage(
     onClickLogin: () -> Unit,
     onClickGuest: () -> Unit,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     var showDetails by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -141,6 +146,7 @@ fun WelcomePage(
                     }
                 }
             },
+            contentWindowInsets = windowInsets,
         ) { contentPadding ->
             var isContentReady by rememberSaveable {
                 mutableStateOf(false)

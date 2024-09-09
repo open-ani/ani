@@ -141,6 +141,7 @@ internal fun EpisodeVideoImpl(
     maintainAspectRatio: Boolean = !expanded,
     danmakuRegexFilterState: DanmakuRegexFilterState,
     gestureFamily: GestureFamily = currentPlatform.mouseFamily,
+    contentWindowInsets: WindowInsets = WindowInsets(0.dp),
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
@@ -166,6 +167,7 @@ internal fun EpisodeVideoImpl(
         modifier = modifier
             .hoverable(videoInteractionSource)
             .cursorVisibility(showCursor),
+        contentWindowInsets = contentWindowInsets,
         maintainAspectRatio = maintainAspectRatio,
         controllerState = videoControllerState,
         gestureLocked = { isLocked },
@@ -187,6 +189,7 @@ internal fun EpisodeVideoImpl(
                         Icon(Icons.Rounded.Settings, contentDescription = "设置")
                     }
                 },
+                windowInsets = contentWindowInsets,
             )
         },
         video = {
@@ -297,7 +300,6 @@ internal fun EpisodeVideoImpl(
                 GestureLock(isLocked = isLocked, onClick = { isLocked = !isLocked })
             }
         },
-        leftBottomTips = leftBottomTips,
         bottomBar = {
             PlayerControllerBar(
                 startActions = {
@@ -467,6 +469,7 @@ internal fun EpisodeVideoImpl(
                 )
             }
         },
+        leftBottomTips = leftBottomTips,
     )
 }
 

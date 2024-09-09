@@ -35,7 +35,10 @@ data class ThemeSettings(
 
 @Serializable
 enum class ThemeKind {
-    LIGHT, DARK, AUTO
+    LIGHT, DARK, AUTO,
+
+    // Only on android
+    DYNAMIC
 }
 
 @Serializable

@@ -1,6 +1,7 @@
 package me.him188.ani.app.videoplayer.ui.top
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -33,6 +34,7 @@ fun PlayerTopBar(
     title: @Composable() (() -> Unit)? = null,
     actions: @Composable() (RowScope.() -> Unit) = {},
     color: Color = aniDarkColorTheme().onBackground,
+    windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
 ) {
     TopAppBar(
         title = {
@@ -70,6 +72,7 @@ fun PlayerTopBar(
                 actions()
             }
         },
+        windowInsets = windowInsets,
     )
 }
 

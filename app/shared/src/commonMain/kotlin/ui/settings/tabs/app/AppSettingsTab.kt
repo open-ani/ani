@@ -7,6 +7,7 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.HdrAuto
 import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Verified
@@ -36,6 +37,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
@@ -93,21 +95,29 @@ fun AppSettingsTab(
     }
 }
 
+@Stable
+private val themesSupportedByPlatform = if (Platform.currentPlatform.isDesktop()) {
+    listOf(ThemeKind.AUTO, ThemeKind.LIGHT, ThemeKind.DARK)
+} else {
+    listOf(ThemeKind.AUTO, ThemeKind.DYNAMIC)
+}
+
 @Composable
 private fun SettingsScope.UISettingsGroup(
     state: SettingsState<UISettings>,
 ) {
     val uiSettings by state
     Group(title = { Text("通用") }) {
-        if (Platform.currentPlatform.isDesktop()) {
+        if (Platform.currentPlatform.isDesktop() || Platform.currentPlatform.isAndroid()) {
             DropdownItem(
                 selected = { uiSettings.theme.kind },
-                values = { ThemeKind.entries },
+                values = { themesSupportedByPlatform },
                 itemText = {
                     when (it) {
                         ThemeKind.AUTO -> Text("自动")
                         ThemeKind.LIGHT -> Text("浅色")
                         ThemeKind.DARK -> Text("深色")
+                        ThemeKind.DYNAMIC -> Text("动态")
                     }
                 },
                 onSelect = {
@@ -122,11 +132,17 @@ private fun SettingsScope.UISettingsGroup(
                         ThemeKind.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
                         ThemeKind.LIGHT -> Icon(Icons.Rounded.LightMode, null)
                         ThemeKind.DARK -> Icon(Icons.Rounded.DarkMode, null)
+                        ThemeKind.DYNAMIC -> Icon(Icons.Rounded.Palette, null)
                     }
                 },
                 description = {
-                    if (uiSettings.theme.kind == ThemeKind.AUTO) {
-                        Text("根据系统设置自动切换")
+                    when (uiSettings.theme.kind) {
+                        ThemeKind.AUTO -> {
+                            Text("根据系统设置自动切换")
+                        }
+
+                        ThemeKind.DYNAMIC -> Text("根据壁纸动态配色")
+                        else -> {}
                     }
                 },
                 title = { Text("主题") },

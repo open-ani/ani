@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -38,6 +40,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.feedback.ErrorDialogHost
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
 import org.koin.mp.KoinPlatform
@@ -46,6 +49,7 @@ import org.koin.mp.KoinPlatform
 fun BangumiOAuthScene(
     vm: BangumiOAuthViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val nav = LocalNavigator.current
     if (!vm.needAuth) {
@@ -63,6 +67,7 @@ fun BangumiOAuthScene(
             nav.navigateBangumiTokenAuth()
         },
         modifier,
+        windowInsets = windowInsets,
     )
 }
 
@@ -93,6 +98,7 @@ fun BangumiOAuthPage(
     vm: BangumiOAuthViewModel,
     onClickTokenAuth: () -> Unit,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     Scaffold(
         modifier
@@ -103,8 +109,11 @@ fun BangumiOAuthPage(
                 navigationIcon = { TopAppBarGoBackButton() },
                 actions = {},
                 title = { Text(text = "Bangumi 授权") },
+                colors = AniThemeDefaults.topAppBarColors(),
+                windowInsets = windowInsets,
             )
         },
+        contentWindowInsets = windowInsets,
     ) { contentPadding ->
         var showHelp by rememberSaveable {
             mutableStateOf(false)

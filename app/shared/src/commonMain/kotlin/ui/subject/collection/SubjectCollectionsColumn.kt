@@ -25,6 +25,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -188,11 +190,13 @@ fun SubjectCollectionItem(
     modifier: Modifier = Modifier,
     height: Dp = 148.dp,
     shape: RoundedCornerShape = RoundedCornerShape(8.dp),
+    colors: CardColors = CardDefaults.cardColors(),
 ) {
     Card(
         onClick,
         modifier.clip(shape).fillMaxWidth().height(height),
         shape = shape,
+        colors = colors,
     ) {
         Row(Modifier.weight(1f, fill = false)) {
             AsyncImage(

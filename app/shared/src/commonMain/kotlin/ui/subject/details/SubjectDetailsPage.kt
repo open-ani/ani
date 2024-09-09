@@ -66,6 +66,7 @@ import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -174,7 +175,7 @@ fun SubjectDetailsScene(
                 }
             }
         },
-        modifier,
+        modifier, 
         showTopBar = showTopBar,
         showBlurredBackground = showBlurredBackground,
         windowInsets = windowInsets,
@@ -235,7 +236,7 @@ fun SubjectDetailsPage(
                                 Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                        colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
                         windowInsets = windowInsets,
                     )
 
@@ -249,7 +250,7 @@ fun SubjectDetailsPage(
                                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                                 }
                             },
-                            colors = TopAppBarDefaults.topAppBarColors(),
+                            colors = AniThemeDefaults.topAppBarColors(),
                             windowInsets = windowInsets,
                         )
                     }
@@ -257,7 +258,7 @@ fun SubjectDetailsPage(
             }
         },
         modifier = modifier,
-        contentWindowInsets = WindowInsets(0.dp),
+        contentWindowInsets = windowInsets,
     ) { scaffoldPadding ->
         FastLinearProgressIndicator(
             indicatorState,

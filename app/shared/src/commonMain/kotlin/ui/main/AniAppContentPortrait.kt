@@ -9,12 +9,18 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
@@ -25,7 +31,7 @@ import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.window.desktopTitleBarPadding
+import me.him188.ani.app.platform.window.desktopTitleBar
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
@@ -58,7 +64,22 @@ fun AniAppContentPortrait(
 ) {
     val navController = aniNavigator.navigator
     CompositionLocalProvider(LocalNavigator provides aniNavigator) {
-        NavHost(navController, startDestination = "/home", modifier) {
+
+        // 必须传给所有 Scaffold 和 TopAppBar. 注意, 如果你不传, 你的 UI 很可能会在 macOS 不工作.
+        val windowInsets = ScaffoldDefaults.contentWindowInsets
+            .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
+
+        val density = LocalDensity.current
+        NavHost(
+            navController, startDestination = "/home",
+            modifier.consumeWindowInsets(
+                PaddingValues(
+                    top = -with(density) {
+                        WindowInsets.desktopTitleBar().getTop(density).toDp()
+                    }, // add insets
+                ),
+            ),
+        ) {
             // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#e5b958f0-435d-4e84-aed4-8d1ea395fa5c
             val enterDuration = 500
             val exitDuration = 200
@@ -95,7 +116,7 @@ fun AniAppContentPortrait(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { // 由 SessionManager.requireAuthorize 跳转到
-                WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.desktopTitleBarPadding().fillMaxSize())
+                WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.fillMaxSize(), windowInsets)
             }
             composable(
                 "/home",
@@ -104,7 +125,7 @@ fun AniAppContentPortrait(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) {
-                HomeScene()
+                HomeScene(windowInsets = windowInsets)
             }
             composable(
                 "/bangumi-oauth",
@@ -113,7 +134,7 @@ fun AniAppContentPortrait(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) {
-                BangumiOAuthScene(viewModel { BangumiOAuthViewModel() }, Modifier.desktopTitleBarPadding())
+                BangumiOAuthScene(viewModel { BangumiOAuthViewModel() }, windowInsets = windowInsets)
             }
             composable(
                 "/bangumi-token-auth",
@@ -124,7 +145,8 @@ fun AniAppContentPortrait(
             ) {
                 BangumiTokenAuthPage(
                     viewModel { BangumiTokenAuthViewModel() },
-                    Modifier.desktopTitleBarPadding().fillMaxSize(),
+                    Modifier.fillMaxSize(),
+                    windowInsets,
                 )
             }
             composable(
@@ -141,7 +163,7 @@ fun AniAppContentPortrait(
                 }
                 val vm = viewModel<SubjectDetailsViewModel> { SubjectDetailsViewModel(subjectId) }
                 SideEffect { vm.navigator = aniNavigator }
-                SubjectDetailsScene(vm, Modifier.desktopTitleBarPadding())
+                SubjectDetailsScene(vm, windowInsets = windowInsets)
             }
             composable(
                 "/subjects/{subjectId}/episodes/{episodeId}?fullscreen={fullscreen}",
@@ -176,7 +198,7 @@ fun AniAppContentPortrait(
                         context,
                     )
                 }
-                EpisodeScene(vm, Modifier.desktopTitleBarPadding())
+                EpisodeScene(vm, Modifier.fillMaxSize(), windowInsets)
             }
             composable(
                 "/settings?tab={tab}&back={back}",
@@ -197,9 +219,10 @@ fun AniAppContentPortrait(
                     viewModel {
                         SettingsViewModel()
                     },
-                    Modifier.desktopTitleBarPadding().fillMaxSize(),
+                    Modifier.fillMaxSize(),
                     initialTab = initialTab,
                     allowBack = backStackEntry.arguments?.getBoolean("back") ?: false,
+                    contentWindowInsets = windowInsets,
                 )
             }
             composable(
@@ -211,8 +234,9 @@ fun AniAppContentPortrait(
             ) {
                 CacheManagementPage(
                     viewModel { CacheManagementViewModel(aniNavigator) },
-                    Modifier.desktopTitleBarPadding().fillMaxSize(),
+                    Modifier.fillMaxSize(),
                     showBack = true,
+                    windowInsets = windowInsets,
                 )
             }
             composable(
@@ -229,7 +253,8 @@ fun AniAppContentPortrait(
                 }
                 MediaCacheDetailsPage(
                     viewModel(key = cacheId) { MediaCacheDetailsPageViewModel(cacheId) },
-                    Modifier.desktopTitleBarPadding().fillMaxSize(),
+                    Modifier.fillMaxSize(),
+                    windowInsets = windowInsets,
                 )
             }
             composable(
@@ -246,7 +271,7 @@ fun AniAppContentPortrait(
                 }
                 // Don't use rememberViewModel to save memory
                 val vm = remember(subjectId) { SubjectCacheViewModelImpl(subjectId) }
-                SubjectCacheScene(vm, Modifier.desktopTitleBarPadding())
+                SubjectCacheScene(vm, Modifier.fillMaxSize(), windowInsets)
             }
             composable(
                 "/settings/media-source/edit?factoryId={factoryId}&mediaSourceInstanceId={mediaSourceInstanceId}",
@@ -268,7 +293,8 @@ fun AniAppContentPortrait(
                         viewModel<EditRssMediaSourceViewModel>(key = mediaSourceInstanceId) {
                             EditRssMediaSourceViewModel(mediaSourceInstanceId)
                         },
-                        Modifier.desktopTitleBarPadding(),
+                        Modifier,
+                        windowInsets,
                     )
 
                     else -> error("Unknown factoryId: $factoryId")

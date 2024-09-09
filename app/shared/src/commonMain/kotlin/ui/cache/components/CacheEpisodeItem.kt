@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -201,9 +203,11 @@ enum class CacheEpisodePaused {
 @Composable
 fun CacheEpisodeItem(
     state: CacheEpisodeState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     var showDropdown by remember { mutableStateOf(false) }
+    val listItemColors = ListItemDefaults.colors(containerColor = containerColor)
     ListItem(
         headlineContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -340,6 +344,7 @@ fun CacheEpisodeItem(
                 state,
             )
         },
+        colors = listItemColors,
     )
 }
 

@@ -1,9 +1,11 @@
 package me.him188.ani.app.ui.settings.tabs.media.source.rss
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -27,6 +29,7 @@ import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssDetailPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.SideSheetPane
@@ -91,9 +94,10 @@ class EditRssMediaSourceState(
 fun EditRssMediaSourcePage(
     viewModel: EditRssMediaSourceViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     viewModel.state.collectAsStateWithLifecycle(null).value?.let {
-        EditRssMediaSourcePage(it, viewModel.testState, modifier)
+        EditRssMediaSourcePage(it, viewModel.testState, modifier, windowInsets = windowInsets)
     }
 }
 
@@ -102,7 +106,8 @@ fun EditRssMediaSourcePage(
     state: EditRssMediaSourceState,
     testState: RssTestPaneState,
     modifier: Modifier = Modifier,
-    navigator: ThreePaneScaffoldNavigator<Nothing> = rememberListDetailPaneScaffoldNavigator()
+    navigator: ThreePaneScaffoldNavigator<Nothing> = rememberListDetailPaneScaffoldNavigator(),
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     LaunchedEffect(Unit) {
         testState.observeChangeLoop()
@@ -117,6 +122,8 @@ fun EditRssMediaSourcePage(
                     Text(state.displayName.ifEmpty { "新建数据源" })
                 },
                 navigationIcon = { TopAppBarGoBackButton() },
+                colors = AniThemeDefaults.topAppBarColors(),
+                windowInsets = windowInsets,
             )
         },
     ) { paddingValues ->

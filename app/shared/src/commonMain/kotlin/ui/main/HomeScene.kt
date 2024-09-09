@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -27,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -60,15 +60,13 @@ import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.platform.window.desktopTitleBar
-import me.him188.ani.app.platform.window.desktopTitleBarPadding
-import me.him188.ani.app.platform.window.plus
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
-import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
@@ -87,7 +85,10 @@ import me.him188.ani.app.ui.update.handleClickLogo
 
 
 @Composable
-fun HomeScene(modifier: Modifier = Modifier) {
+fun HomeScene(
+    modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets, // Compose for Desktop 目前不会考虑这个
+) {
     if (currentPlatform.isAndroid()) {
         val context = LocalContext.current
         val window = LocalPlatformWindow.current
@@ -97,9 +98,9 @@ fun HomeScene(modifier: Modifier = Modifier) {
     }
 
     if (isShowLandscapeUI()) {
-        HomeSceneLandscape(modifier)
+        HomeSceneLandscape(windowInsets, modifier)
     } else {
-        HomeScenePortrait(modifier)
+        HomeScenePortrait(windowInsets, modifier)
     }
 }
 
@@ -145,7 +146,8 @@ private fun UpdateCheckerItem(
 
 @Composable
 private fun HomeSceneLandscape(
-    modifier: Modifier = Modifier
+    windowInsets: WindowInsets,
+    modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState(1) { 4 }
     val uiScope = rememberCoroutineScope()
@@ -172,129 +174,126 @@ private fun HomeSceneLandscape(
         },
     ) {
         Row(modifier) {
-            Surface {
-                Column {
-                    // NavigationRail 宽度至少为 80.dp
-                    NavigationRail(
-                        Modifier.desktopTitleBarPadding().padding(top = 16.dp).weight(1f),
-                        header = {
-                            val vm = viewModel { AccountViewModel() }
-                            if (vm.authState.isLoading || vm.authState.isKnownLoggedIn) {
-                                // 加载中时展示 placeholder
-                                AvatarImage(
-                                    url = vm.selfInfo?.avatarUrl,
-                                    Modifier.size(48.dp).clip(CircleShape).placeholder(vm.selfInfo == null),
-                                )
-                            } else {
-                                if (vm.authState.isKnownGuest) {
-                                    val navigator = LocalNavigator.current
-                                    TextButton({ vm.authState.launchAuthorize(navigator) }) {
-                                        Text("登录")
-                                    }
-                                } else {
-                                    SessionTipsIcon(vm.authState, showLabel = false)
+            Column {
+                // NavigationRail 宽度至少为 80.dp
+                NavigationRail(
+                    Modifier.weight(1f),
+                    header = {
+                        val vm = viewModel { AccountViewModel() }
+                        if (vm.authState.isLoading || vm.authState.isKnownLoggedIn) {
+                            // 加载中时展示 placeholder
+                            AvatarImage(
+                                url = vm.selfInfo?.avatarUrl,
+                                Modifier.size(48.dp).clip(CircleShape).placeholder(vm.selfInfo == null),
+                            )
+                        } else {
+                            if (vm.authState.isKnownGuest) {
+                                val navigator = LocalNavigator.current
+                                TextButton({ vm.authState.launchAuthorize(navigator) }) {
+                                    Text("登录")
                                 }
+                            } else {
+                                SessionTipsIcon(vm.authState, showLabel = false)
                             }
-                        },
-                    ) {
-                        Column(
-                            Modifier
-                                .padding(bottom = 8.dp)
-                                .fillMaxHeight(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            NavigationRailItem(
-                                pagerState.currentPage == 0,
-                                onClick = {
-                                    uiScope.launch {
-                                        pagerState.scrollToPage(0)
-                                    }
-                                },
-                                icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                                label = { Text(text = "找番") },
-                            )
-                            NavigationRailItem(
-                                pagerState.currentPage == 1,
-                                onClick = {
-                                    uiScope.launch {
-                                        pagerState.scrollToPage(1)
-                                    }
-                                },
-                                icon = { Icon(Icons.Rounded.Star, null) },
-                                label = { Text(text = "追番") },
-                            )
-                            NavigationRailItem(
-                                pagerState.currentPage == 2,
-                                onClick = {
-                                    uiScope.launch {
-                                        pagerState.scrollToPage(2)
-                                    }
-                                },
-                                icon = { Icon(Icons.Rounded.DownloadDone, null) },
-                                label = { Text(text = "缓存") },
-                            )
-
-                            UpdateCheckerItem()
-
-                            Spacer(Modifier.weight(1f))
-
-                            NavigationRailItem(
-                                pagerState.currentPage == 3,
-                                onClick = {
-                                    uiScope.launch {
-                                        pagerState.scrollToPage(3)
-                                    }
-                                },
-                                icon = { Icon(Icons.Rounded.Settings, null) },
-                                label = { Text(text = "设置") },
-                            )
                         }
+                    },
+                    windowInsets = NavigationRailDefaults.windowInsets
+                        .add(WindowInsets.desktopTitleBar())
+                        .add(WindowInsets(top = 16.dp)),
+                    containerColor = AniThemeDefaults.navigationContainerColor,
+                ) {
+                    Column(
+                        Modifier
+                            .padding(bottom = 8.dp)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        NavigationRailItem(
+                            pagerState.currentPage == 0,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(0)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.TravelExplore, null) },
+                            label = { Text(text = "找番") },
+                        )
+                        NavigationRailItem(
+                            pagerState.currentPage == 1,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(1)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.Star, null) },
+                            label = { Text(text = "追番") },
+                        )
+                        NavigationRailItem(
+                            pagerState.currentPage == 2,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(2)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.DownloadDone, null) },
+                            label = { Text(text = "缓存") },
+                        )
+
+                        UpdateCheckerItem()
+
+                        Spacer(Modifier.weight(1f))
+
+                        NavigationRailItem(
+                            pagerState.currentPage == 3,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(3)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.Settings, null) },
+                            label = { Text(text = "设置") },
+                        )
                     }
                 }
             }
 
             VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant) // 画到 title bar 里面
 
-            Column(Modifier.fillMaxHeight().weight(1f)) {
-                val navigator by rememberUpdatedState(LocalNavigator.current)
-                val insets =
-                    ScaffoldDefaults.contentWindowInsets
-                        .plus(WindowInsets.desktopTitleBar())
+            Surface(color = AniThemeDefaults.appContentPaneColor) {
+                Column(Modifier.fillMaxHeight().weight(1f)) {
+                    val navigator by rememberUpdatedState(LocalNavigator.current)
+                    VerticalPager(pagerState, userScrollEnabled = false) {
+                        when (it) {
+                            0 -> {
+                                HomePage(
+                                    Modifier.fillMaxSize(),
+                                    searchBarFocusRequester = searchBarFocusRequester,
+                                    contentWindowInsets = windowInsets,
+                                )
+                            }
 
-                Surface(Modifier.height(16.dp).fillMaxWidth()) {}
-
-                val toaster = LocalToaster.current
-                VerticalPager(pagerState, userScrollEnabled = false) {
-                    when (it) {
-                        0 -> {
-                            HomePage(
+                            1 -> CollectionPage(
+                                onClickCaches = {
+                                    navigator.navigateCaches()
+                                },
                                 Modifier.fillMaxSize(),
-                                searchBarFocusRequester = searchBarFocusRequester,
-                                contentWindowInsets = insets,
+                                windowInsets = windowInsets,
+                            )
+
+                            2 -> CacheManagementPage(
+                                viewModel { CacheManagementViewModel(navigator) },
+                                Modifier.fillMaxSize(),
+                                windowInsets = windowInsets,
+                            )
+
+                            3 -> SettingsPage(
+                                viewModel {
+                                    SettingsViewModel()
+                                },
+                                Modifier.fillMaxSize(),
+                                contentWindowInsets = windowInsets,
                             )
                         }
-
-                        1 -> CollectionPage(
-                            onClickCaches = {
-                                navigator.navigateCaches()
-                            },
-                            Modifier.fillMaxSize(),
-                            contentWindowInsets = insets,
-                        )
-
-                        2 -> CacheManagementPage(
-                            viewModel { CacheManagementViewModel(navigator) },
-                            Modifier.fillMaxSize(),
-                            contentWindowInsets = insets,
-                        )
-
-                        3 -> SettingsPage(
-                            viewModel {
-                                SettingsViewModel()
-                            },
-                            Modifier.fillMaxSize(),
-                            contentWindowInsets = insets,
-                        )
                     }
                 }
             }
@@ -304,6 +303,7 @@ private fun HomeSceneLandscape(
 
 @Composable
 private fun HomeScenePortrait(
+    windowInsets: WindowInsets,
     modifier: Modifier = Modifier,
 ) {
     val pagerState = rememberPagerState(1) { 3 }
@@ -321,7 +321,9 @@ private fun HomeScenePortrait(
                 Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
                     HorizontalDivider(thickness = 1.dp)
 
-                    NavigationBar {
+                    NavigationBar(
+                        containerColor = AniThemeDefaults.navigationContainerColor,
+                    ) {
                         NavigationBarItem(
                             pagerState.currentPage == 0,
                             onClick = {
@@ -359,8 +361,8 @@ private fun HomeScenePortrait(
                 }
             }
         },
-        contentWindowInsets = WindowInsets.desktopTitleBar(), // no systemBars
-    ) { contentPadding -> // only contains padding of bottom bottom appbar
+        contentWindowInsets = windowInsets,
+    ) { contentPadding ->
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
         OverrideNavigation(

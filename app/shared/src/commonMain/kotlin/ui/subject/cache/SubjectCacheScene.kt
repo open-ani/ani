@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -53,6 +55,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -223,6 +226,7 @@ class SubjectCacheViewModelImpl(
 fun SubjectCacheScene(
     vm: SubjectCacheViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     SubjectCachePageScaffold(
         title = {
@@ -250,6 +254,7 @@ fun SubjectCacheScene(
             )
         },
         modifier,
+        windowInsets = windowInsets,
     )
 }
 
@@ -266,6 +271,7 @@ fun SubjectCachePageScaffold(
     autoCacheGroup: @Composable SettingsScope.() -> Unit,
     cacheListGroup: @Composable SettingsScope.() -> Unit,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     Scaffold(
         modifier,
@@ -277,8 +283,11 @@ fun SubjectCachePageScaffold(
                 navigationIcon = {
                     TopAppBarGoBackButton()
                 },
+                colors = AniThemeDefaults.topAppBarColors(),
+                windowInsets = windowInsets,
             )
         },
+        contentWindowInsets = windowInsets,
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Surface(Modifier.fillMaxWidth()) {

@@ -106,6 +106,7 @@ fun SubjectSearchBar(
     modifier: Modifier = Modifier,
     initialActive: Boolean = false,
     initialSearchText: String = "",
+    windowInsets: WindowInsets = SearchBarDefaults.windowInsets,
 ) {
     var isActive by remember { mutableStateOf(initialActive) }
     var searchText by remember { mutableStateOf(initialSearchText) }
@@ -199,6 +200,7 @@ fun SubjectSearchBar(
             }
             .focusRequester(focusRequester)
             .then(modifier),
+        windowInsets = windowInsets,
     ) {
 
         var fabRotateAngle by remember { mutableStateOf(0f) }

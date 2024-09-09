@@ -66,24 +66,11 @@ fun aniColorScheme(
 @Stable
 fun aniDarkColorTheme(): ColorScheme {
     PaletteTokens.run {
-        return darkColorScheme(
-            background = Neutral10,
-            surface = Neutral20,
-            surfaceVariant = NeutralVariant20,
-        )
+        return darkColorScheme()
     }
 }
 
 
 @Stable
 fun aniLightColorTheme(): ColorScheme = lightColorScheme(
-    background = Color(0xfff1f2f4),
-    surface = Color.White,
-    surfaceVariant = Color.White,
-    surfaceContainer = Color.White,
-    // TODO: We should use respect material design instead of overriding them as white
-    surfaceContainerLow = Color.White,
-    surfaceContainerHigh = Color.White,
-    surfaceContainerLowest = Color.White,
-    surfaceContainerHighest = Color.White,
 )

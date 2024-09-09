@@ -14,12 +14,16 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -70,6 +74,7 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 fun VideoScaffold(
     expanded: Boolean,
     modifier: Modifier = Modifier,
+    contentWindowInsets: WindowInsets = WindowInsets.safeContent, // TODO: 目前只对部分元素有效
     maintainAspectRatio: Boolean = !expanded,
     controllerState: VideoControllerState,
     gestureLocked: () -> Boolean = { false },
@@ -108,14 +113,20 @@ fun VideoScaffold(
             Box(
                 Modifier
                     .background(Color.Transparent)
-                    .matchParentSize(),
+                    .matchParentSize(), // no window insets for video
             ) {
                 video()
                 Box(Modifier.matchParentSize()) // 防止点击事件传播到 video 里
             }
 
             // 弹幕
-            Box(Modifier.matchParentSize().fillMaxWidth().padding(vertical = 8.dp)) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .windowInsetsPadding(contentWindowInsets),
+            ) {
                 CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
                     danmakuHost()
                 }
@@ -126,7 +137,7 @@ fun VideoScaffold(
                 gestureHost()
             }
 
-            Box {
+            Box(Modifier) {
                 Column(Modifier.fillMaxSize().background(Color.Transparent)) {
                     // 顶部控制栏: 返回键, 标题, 设置
                     AnimatedVisibility(
@@ -150,10 +161,13 @@ fun VideoScaffold(
                             Column(
                                 Modifier
                                     .hoverToRequestAlwaysOn(alwaysOnRequester)
-                                    .fillMaxWidth()
-                                    .statusBarsPadding(),
+                                    .fillMaxWidth(),
                             ) {
-                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    Modifier.fillMaxWidth()
+                                        .windowInsetsPadding(contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
                                     CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground) {
                                         topBar()
                                     }
@@ -166,7 +180,7 @@ fun VideoScaffold(
 
                     Box(Modifier.weight(1f, fill = true).fillMaxWidth())
 
-                    Column { 
+                    Column {
                         // 底部控制栏: 播放/暂停, 进度条, 切换全屏
                         AnimatedVisibility(
                             visible = controllerState.visibility.bottomBar && !gestureLockedState,
@@ -202,7 +216,8 @@ fun VideoScaffold(
                             ) {
                                 Spacer(Modifier.height(if (expanded) 12.dp else 6.dp))
                                 Row(
-                                    Modifier.fillMaxWidth(),
+                                    Modifier.fillMaxWidth()
+                                        .windowInsetsPadding(contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     MaterialTheme(aniDarkColorTheme()) {
@@ -219,7 +234,10 @@ fun VideoScaffold(
                             enter = fadeIn(),
                             exit = fadeOut(),
                         ) {
-                            Row(Modifier.padding(horizontal = 4.dp, vertical = 12.dp)) {
+                            Row(
+                                Modifier.padding(horizontal = 4.dp, vertical = 12.dp)
+                                    .windowInsetsPadding(contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
+                            ) {
                                 MaterialTheme(aniDarkColorTheme()) {
                                     detachedProgressSlider()
                                 }
@@ -234,7 +252,8 @@ fun VideoScaffold(
                     exit = fadeOut(),
                 ) {
                     Row(
-                        Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                        Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            .windowInsetsPadding(contentWindowInsets.only(WindowInsetsSides.End)),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End,
                     ) {
@@ -246,7 +265,10 @@ fun VideoScaffold(
                     }
                 }
             }
-            Column(Modifier.fillMaxSize().background(Color.Transparent)) {
+            Column(
+                Modifier.fillMaxSize().background(Color.Transparent)
+                    .windowInsetsPadding(contentWindowInsets.only(WindowInsetsSides.End)),
+            ) {
                 Box(Modifier.weight(1f, fill = true).fillMaxWidth()) {
                     Column(
                         Modifier.padding(end = 16.dp).align(Alignment.CenterEnd),
@@ -273,7 +295,7 @@ fun VideoScaffold(
             }
 
             Box(Modifier.matchParentSize()) {
-                Column {
+                Column(Modifier.windowInsetsPadding(contentWindowInsets)) {
                     Box(Modifier.weight(0.5f))
                     Row(
                         Modifier.weight(0.5f),
@@ -284,7 +306,10 @@ fun VideoScaffold(
                 }
             }
             // 悬浮消息, 例如正在缓冲
-            Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier.matchParentSize().windowInsetsPadding(contentWindowInsets),
+                contentAlignment = Alignment.Center,
+            ) {
                 ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                     CompositionLocalProvider(LocalContentColor provides aniDarkColorTheme().onBackground.slightlyWeaken()) {
                         floatingMessage()
@@ -293,7 +318,7 @@ fun VideoScaffold(
             }
 
             // 右侧 sheet
-            Box(Modifier.matchParentSize()) {
+            Box(Modifier.matchParentSize().windowInsetsPadding(contentWindowInsets)) {
                 rhsSheet()
             }
         }
