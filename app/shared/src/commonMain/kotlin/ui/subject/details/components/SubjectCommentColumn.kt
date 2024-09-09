@@ -13,10 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.tools.formatDateTime
-import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.richtext.RichText
@@ -42,12 +39,7 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
         modifier = modifier
             .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
             .fillMaxHeight()
-            .ifThen(currentPlatform.isDesktop()) {
-                nestedScrollWorkaround(
-                    lazyListState,
-                    connectedScrollState.nestedScrollConnection,
-                )
-            }
+            .nestedScrollWorkaround(lazyListState, connectedScrollState)
             .nestedScroll(connectedScrollState.nestedScrollConnection),
     ) { _, comment ->
         SubjectComment(
