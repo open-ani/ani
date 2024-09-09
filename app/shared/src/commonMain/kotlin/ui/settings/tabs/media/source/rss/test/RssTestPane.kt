@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.connectedScroll
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
@@ -155,7 +156,9 @@ fun RssTestPane(
                     RssTestPaneTab.Overview -> {
                         RssTestPaneDefaults.OverviewTab(
                             result,
-                            Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
+                            Modifier
+                                .nestedScrollWorkaround(state.overallTabGridState, connectedScrollState)
+                                .nestedScroll(connectedScrollState.nestedScrollConnection),
                             state = state.overallTabGridState,
                         )
                     }
@@ -170,7 +173,9 @@ fun RssTestPane(
                             selectedItemProvider = {
                                 (state.viewingItem as? RssViewingItem.ViewingRssItem)?.value
                             },
-                            Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
+                            Modifier
+                                .nestedScrollWorkaround(state.rssTabGridState, connectedScrollState)
+                                .nestedScroll(connectedScrollState.nestedScrollConnection),
                             lazyStaggeredGridState = state.rssTabGridState,
                         )
                     }
@@ -185,7 +190,9 @@ fun RssTestPane(
                             selectedItemProvider = {
                                 (state.viewingItem as? RssViewingItem.ViewingMedia)?.value
                             },
-                            Modifier.nestedScroll(connectedScrollState.nestedScrollConnection),
+                            Modifier
+                                .nestedScrollWorkaround(state.finalResultsTabGridState, connectedScrollState)
+                                .nestedScroll(connectedScrollState.nestedScrollConnection),
                             lazyGridState = state.finalResultsTabGridState,
                         )
                     }
