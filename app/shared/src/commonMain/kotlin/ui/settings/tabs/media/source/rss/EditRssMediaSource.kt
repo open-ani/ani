@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
@@ -19,6 +20,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
@@ -34,7 +36,7 @@ import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
 
 /**
  * 整个编辑 RSS 数据源页面的状态. 对于测试部分: [RssTestPaneState]
- * 
+ *
  * @see RssMediaSource
  */
 @Stable
@@ -162,9 +164,7 @@ fun EditRssMediaSourcePage(
                 AnimatedPane1 {
                     Crossfade(testState.viewingItem) { item ->
                         item ?: return@Crossfade
-                        if (navigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
-                            || navigator.scaffoldValue.secondary == PaneAdaptedValue.Expanded
-                        ) {
+                        if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT) {
                             SideSheetPane(
                                 onClose = { navigator.navigateBack() },
                                 Modifier.padding(paddingValues),
