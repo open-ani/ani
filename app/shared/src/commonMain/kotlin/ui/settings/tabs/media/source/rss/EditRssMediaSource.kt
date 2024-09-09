@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
@@ -32,6 +33,8 @@ import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
 
 /**
+ * 整个编辑 RSS 数据源页面的状态. 对于测试部分: [RssTestPaneState]
+ * 
  * @see RssMediaSource
  */
 @Stable
@@ -59,10 +62,27 @@ class EditRssMediaSourceState(
     }
 
     var searchUrl by argumentsStorage.prop(
-        RssMediaSourceArguments::searchUrl, { copy(searchUrl = it) },
+        { it.searchConfig.searchUrl }, { copy(searchConfig = searchConfig.copy(searchUrl = it)) },
         "",
     )
     val searchUrlIsError by derivedStateOf { searchUrl.isBlank() }
+
+    var filterByEpisodeSort by argumentsStorage.prop(
+        { it.searchConfig.filterByEpisodeSort }, { copy(searchConfig = searchConfig.copy(filterByEpisodeSort = it)) },
+        true,
+    )
+    var filterBySubjectName by argumentsStorage.prop(
+        { it.searchConfig.filterBySubjectName }, { copy(searchConfig = searchConfig.copy(filterBySubjectName = it)) },
+        true,
+    )
+
+    val searchConfig by derivedStateOf {
+        RssSearchConfig(
+            searchUrl = searchUrl,
+            filterByEpisodeSort = filterByEpisodeSort,
+            filterBySubjectName = filterBySubjectName,
+        )
+    }
 }
 
 @Composable

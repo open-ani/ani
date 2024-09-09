@@ -15,20 +15,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
+import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.data.source.media.source.RssSearchQuery
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceState
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * 测试功能的状态
+ *
+ * @see EditRssMediaSourceState
+ * @see RssTestResult
+ * @see RssTestData
+ * @see RssItemPresentation.compute
+ */
 @Stable
 class RssTestPaneState(
-//    private val tester: RssMediaSourceTester,
-    private val searchUrlState: State<String>,
+    private val searchConfigState: State<RssSearchConfig>,
     private val engine: RssMediaSourceEngine,
     backgroundScope: CoroutineScope,
 ) {
@@ -38,7 +48,7 @@ class RssTestPaneState(
     var sort: String by mutableStateOf("1")
 
     val showPage by derivedStateOf {
-        searchUrlState.value.contains("{page}")
+        searchConfigState.value.searchUrl.contains("{page}")
     }
     var pageString: String by mutableStateOf("0")
     private val page by derivedStateOf {
@@ -54,6 +64,7 @@ class RssTestPaneState(
         searchKeyword = newRandom
     }
 
+    // 持有 state 以保证切换页面时仍然有滚动状态
     val pagerState = PagerState(RssTestPaneTab.Overview.ordinal) { RssTestPaneTab.entries.size }
     val overallTabGridState = LazyGridState()
     val rssTabGridState = LazyStaggeredGridState()
@@ -82,11 +93,11 @@ class RssTestPaneState(
      */
     private val testData by derivedStateOf {
         val finalKeyword = searchKeyword.ifEmpty { searchKeywordPlaceholder }
-        val searchUrl = searchUrlState.value
+        val searchUrl = searchConfigState.value
         RssTestData(
-            searchUrl = searchUrl,
             page = page,
             keyword = finalKeyword,
+            searchUrl,
         )
     }
 
@@ -95,8 +106,8 @@ class RssTestPaneState(
     }
 
     private fun restartSearch(testData: RssTestData) {
-        val query = DownloadSearchQuery(
-            keywords = testData.keyword,
+        val query = RssSearchQuery(
+            subjectName = testData.keyword,
             episodeSort = EpisodeSort(sort),
         )
         searchResult = null
@@ -110,13 +121,14 @@ class RssTestPaneState(
         }
     }
 
+    // 只会抛出 CancellationException
     private suspend fun doSearch(
         testData: RssTestData,
-        query: DownloadSearchQuery
+        query: RssSearchQuery,
     ): RssTestResult {
         try {
             val res = engine.search(
-                testData.searchUrl, query, testData.page,
+                testData.searchConfig, query, testData.page,
                 mediaSourceId = "test",
             )
 
@@ -136,7 +148,7 @@ class RssTestPaneState(
     }
 
     private fun convertResult(result: RssMediaSourceEngine.Result): RssTestResult {
-        val (encodedUrl, _, document, channel, matchedMediaList) = result
+        val (encodedUrl, query, document, channel, matchedMediaList) = result
         document ?: return RssTestResult.EmptyResult
         channel ?: return RssTestResult.EmptyResult
         matchedMediaList ?: return RssTestResult.EmptyResult
@@ -145,7 +157,7 @@ class RssTestPaneState(
             encodedUrl.toString(),
             channel,
             channel.items.map {
-                RssItemPresentation.compute(it, result.query.episodeSort ?: EpisodeSort(""))
+                RssItemPresentation.compute(it, searchConfigState.value, query)
             },
             matchedMediaList,
             origin = document,
@@ -168,6 +180,16 @@ class RssTestPaneState(
         }
     }
 }
+
+/**
+ * 用于测试的数据
+ */
+@Serializable
+private data class RssTestData(
+    val page: Int?,
+    val keyword: String,
+    val searchConfig: RssSearchConfig,
+)
 
 @Stable
 private val SampleKeywords
