@@ -81,7 +81,6 @@ import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuLoaderImpl
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
 import me.him188.ani.app.ui.subject.episode.video.DelegateDanmakuStatistics
-import me.him188.ani.app.ui.subject.episode.video.EpisodeHistoryState
 import me.him188.ani.app.ui.subject.episode.video.LoadDanmakuRequest
 import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
@@ -186,8 +185,6 @@ abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
     abstract val commentEditorState: CommentEditorState
 
     abstract val playerSkipOpEdState: PlayerSkipOpEdState
-
-    abstract val episodeHistoryState: EpisodeHistoryState
 
     @UiThread
     abstract fun stopPlaying()
@@ -338,11 +335,25 @@ private class EpisodeViewModelImpl(
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
+    private fun savePlayProgress() {
+        val positionMillis = playerState.getExactCurrentPositionMillis()
+        val epId = episodeId.value
+        if (positionMillis > 0) {
+            launchInBackground {
+                episodePlayHistoryRepository.saveOrUpdate(epId, positionMillis)
+            }
+        }
+    }
+    
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
         mediaSelector, videoSourceResolver, playerState, mediaSourceInfoProvider,
         episodeInfo,
         mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it },
         backgroundScope.coroutineContext,
+        onBeforeSelectedChange = {
+            // 保存播放进度
+            savePlayProgress()
+        },
     )
 
     override val videoStatistics: VideoStatistics get() = playerLauncher.videoStatistics
@@ -453,7 +464,6 @@ private class EpisodeViewModelImpl(
     override val commentLazyListState: LazyListState = LazyListState()
 
     fun switchEpisode(episodeId: Int) {
-        episodeHistoryState.saveProgress() // 切换 ep 前保存播放进度
         episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
         mediaSelector.unselect() // 否则不会自动选择
         playerState.stop()
@@ -568,16 +578,9 @@ private class EpisodeViewModelImpl(
             .produceState(0.milliseconds),
     )
 
-    override val episodeHistoryState: EpisodeHistoryState = EpisodeHistoryState(
-        repository = episodePlayHistoryRepository,
-        playerState = playerState,
-        currentEpisodeId = episodeId,
-        parentCoroutineContext = backgroundScope.coroutineContext,
-    )
-
     override fun stopPlaying() {
         // 退出播放页前保存播放进度
-        episodeHistoryState.saveProgress()
+        savePlayProgress()
         playerState.stop()
     }
 
@@ -695,20 +698,19 @@ private class EpisodeViewModelImpl(
         }
 
         launchInBackground {
-            mediaSelector.events.onBeforeSelect.collectLatest {
-                // 切换 数据源 前保存播放进度
-                episodeHistoryState.saveProgress()
-            }
-        }
-
-        launchInBackground {
-            playerState.state.collectLatest {
+            playerState.state.collect {
                 when (it) {
-                    PlaybackState.READY ->
-                        episodeHistoryState.loadProgress()
+                    // 加载播放进度
+                    PlaybackState.READY -> {
+                        val positionMillis =
+                            episodePlayHistoryRepository.getPositionMillisByEpisodeId(episodeId = episodeId.value)
+                        positionMillis?.let {
+                            playerState.seekTo(positionMillis)
+                        }
+                    }
 
                     PlaybackState.FINISHED ->
-                        episodeHistoryState.clearProgress()
+                        episodePlayHistoryRepository.remove(episodeId.value)
 
                     else -> Unit
                 }

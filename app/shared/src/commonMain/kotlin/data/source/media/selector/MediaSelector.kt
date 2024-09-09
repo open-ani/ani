@@ -331,7 +331,6 @@ class DefaultMediaSelector(
     override val events = MutableMediaSelectorEvents()
 
     override suspend fun select(candidate: Media): Boolean {
-        events.onBeforeSelect.emit(SelectEvent(candidate, null))
         if (selected.value == candidate) return false
         selected.value = candidate
 

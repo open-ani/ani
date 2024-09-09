@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.logging.logger
 
 interface EpisodePlayHistoryRepository : Repository {
     val flow: Flow<List<EpisodeHistory>>
@@ -33,6 +35,7 @@ data class EpisodeHistories(
 class EpisodePlayHistoryRepositoryImpl(
     private val dataStore: DataStore<EpisodeHistories>
 ) : EpisodePlayHistoryRepository {
+    private val logger = logger(this::class)
     override val flow: Flow<List<EpisodeHistory>> = dataStore.data.map { it.histories }
 
     override suspend fun clear() {
@@ -50,6 +53,7 @@ class EpisodePlayHistoryRepositoryImpl(
             episodeId = episodeId,
             positionMillis = positionMillis,
         )
+        logger.info { "save or update play progress $episodeHistory" }
         dataStore.updateData { current ->
             val history = current.histories.find { it.episodeId == episodeId }
             return@updateData if (history == null) {
@@ -71,6 +75,8 @@ class EpisodePlayHistoryRepositoryImpl(
     override suspend fun getPositionMillisByEpisodeId(episodeId: Int): Long? {
         return dataStore.data.map { current ->
             current.histories.find { it.episodeId == episodeId }?.positionMillis
-        }.firstOrNull()
+        }.firstOrNull()?.also {
+            logger.info { "load play progress for episode $episodeId: positionMillis=$it" }
+        }
     }
 }

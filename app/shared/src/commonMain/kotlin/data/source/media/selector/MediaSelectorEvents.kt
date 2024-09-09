@@ -14,11 +14,6 @@ interface MediaSelectorEvents {
     val onSelect: Flow<SelectEvent>
 
     /**
-     * 此事件会在 media 切换前 emit
-     */
-    val onBeforeSelect: Flow<SelectEvent>
-
-    /**
      * 用户偏好发生变化, 这可能是 [MediaSelector.select], 也可能是 [MediaPreferenceItem.prefer].
      *
      * flow 的值为新的用户设置
@@ -37,8 +32,6 @@ class MutableMediaSelectorEvents(
     onBufferOverflow: BufferOverflow = BufferOverflow.DROP_OLDEST,
 ) : MediaSelectorEvents {
     override val onSelect: MutableSharedFlow<SelectEvent> =
-        MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)
-    override val onBeforeSelect: MutableSharedFlow<SelectEvent> =
         MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)
     override val onChangePreference: MutableSharedFlow<MediaPreference> =
         MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow)

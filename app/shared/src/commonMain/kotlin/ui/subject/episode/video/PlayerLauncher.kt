@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.displayName
@@ -50,6 +51,7 @@ class PlayerLauncher(
     episodeInfo: Flow<EpisodeInfo?>,
     mediaSourceLoading: Flow<Boolean>,
     parentCoroutineContext: CoroutineContext,
+    onBeforeSelectedChange: () -> Unit = {}
 ) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private companion object {
         val logger = logger<PlayerLauncher>()
@@ -68,7 +70,9 @@ class PlayerLauncher(
     )
 
     init {
-        mediaSelector.selected.transformLatest { media ->
+        mediaSelector.selected.onEach {
+            onBeforeSelectedChange()
+        }.transformLatest { media ->
             videoLoadingStateFlow.value = VideoLoadingState.Initial // 避免一直显示已取消 (.Cancelled)
             playerState.clearVideoSource() // 只要 media 换了就清空
             if (media == null) {
