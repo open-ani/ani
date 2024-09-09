@@ -33,8 +33,8 @@ import me.him188.ani.datasources.api.topic.TopicCategory
 data class RssMediaSourceArguments(
     val name: String,
     val description: String,
-    val searchUrl: String,
     val iconUrl: String,
+    val searchUrl: String,
 ) {
     companion object {
         const val DEFAULT_ICON_URL = "https://rss.com/blog/wp-content/uploads/2019/10/social_style_3_rss-512-1.png"
@@ -42,8 +42,8 @@ data class RssMediaSourceArguments(
         val Default = RssMediaSourceArguments(
             name = "RSS",
             description = "",
-            searchUrl = "",
             iconUrl = DEFAULT_ICON_URL,
+            searchUrl = "",
         )
     }
 }
