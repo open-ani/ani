@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.collection.components.SubjectCollectionTypeButton
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 
@@ -19,7 +20,6 @@ fun PreviewCollectionActionButton() = ProvideCompositionLocalsForPreview {
                 SubjectCollectionTypeButton(
                     type = entry,
                     onEdit = {},
-                    collected = entry != UnifiedCollectionType.NOT_COLLECTED,
                 )
             }
         }

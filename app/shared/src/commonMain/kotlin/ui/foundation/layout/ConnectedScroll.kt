@@ -3,6 +3,7 @@ package me.him188.ani.app.ui.foundation.layout
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -39,6 +40,30 @@ fun rememberConnectedScrollState(
 class ConnectedScrollState(
     val flingBehavior: FlingBehavior,
 ) {
+    private val scrollableState = ScrollableState { available ->
+        if (scrollableOffset == 0f && available > 0) {
+            return@ScrollableState 0f
+        }
+
+        if (available < 0) {
+            // 手指往上, 首先让 header 隐藏
+            //
+            //                   y
+            // |---------------| 0
+            // |    TopAppBar  |
+            // |  图片    标题  |  -scrollableHeight
+            // |               |
+            // |    收藏数据    |  scrollableOffset
+            // |     TAB       |
+            // |  LazyColumn   |
+            // |---------------|
+
+
+            return@ScrollableState scrollScope.scrollBy(available)
+        }
+        0f
+    }
+
     /**
      * 仅在第一个 measurement pass 后更新
      */
@@ -51,7 +76,7 @@ class ConnectedScrollState(
 
     val scrollScope = object : ScrollScope {
         override fun scrollBy(pixels: Float): Float {
-            val diff = pixels.coerceAtMost(-scrollableOffset)
+            val diff = pixels.coerceIn(-scrollableHeight - scrollableOffset, -scrollableOffset)
             scrollableOffset += diff
             return diff
         }
@@ -71,29 +96,14 @@ class ConnectedScrollState(
             source: NestedScrollSource
         ): Offset {
             // 手指往下, available.y > 0
+            return Offset(
+                0f,
+                scrollableState.dispatchRawDelta(available.y),
+            )
+        }
 
-            if (scrollableOffset == 0f && available.y > 0) {
-                return Offset.Zero
-            }
-
-            if (available.y < 0) {
-                // 手指往上, 首先让 header 隐藏
-                //
-                //                   y
-                // |---------------| 0
-                // |    TopAppBar  |
-                // |  图片    标题  |  -scrollableHeight
-                // |               |
-                // |    收藏数据    |  scrollableOffset
-                // |     TAB       |
-                // |  LazyColumn   |
-                // |---------------|
-
-                val diff = available.y.coerceAtLeast(-scrollableHeight - scrollableOffset)
-                scrollableOffset += diff
-                return Offset(0f, diff)
-            }
-            return Offset.Zero
+        override suspend fun onPreFling(available: Velocity): Velocity {
+            return super.onPreFling(available)
         }
 
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
@@ -113,9 +123,7 @@ class ConnectedScrollState(
             if (available.y > 0) {
                 // 手指往下, 让 header 显示
                 // scrollableOffset 是负的
-                val diff = available.y.coerceAtMost(-scrollableOffset)
-                scrollableOffset += diff
-                return consumed + Offset(0f, diff)
+                return Offset(0f, scrollScope.scrollBy(available.y))
             }
             return super.onPostScroll(consumed, available, source)
         }

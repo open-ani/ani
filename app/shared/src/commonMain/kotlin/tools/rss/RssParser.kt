@@ -5,7 +5,23 @@ import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import me.him188.ani.utils.xml.Element
 
-object RssParser {
+class RssParser(
+    private val includeOrigin: Boolean,
+) {
+    companion object {
+        private val parserWithOrigin = RssParser(true)
+        private val parserWithoutOrigin = RssParser(true)
+
+        fun parse(document: Element, includeOrigin: Boolean): RssChannel {
+            val parser = if (includeOrigin) {
+                parserWithOrigin
+            } else {
+                parserWithoutOrigin
+            }
+            return parser.parse(document)
+        }
+    }
+
     fun parse(document: Element): RssChannel {
         if (document.tagName() == "#root") {
             document.getElementsByTag("channel").firstOrNull()?.let {
@@ -32,6 +48,7 @@ object RssParser {
             link = children.findTagText("link").orEmpty(),
             ttl = children.findTagText("ttl")?.toIntOrNull() ?: 0,
             items = children.filter { it.tagName() == "item" }.map { parseItem(it) }.toList(),
+            origin = if (includeOrigin) element else null,
         )
     }
 
@@ -47,6 +64,7 @@ object RssParser {
             link = children.findTagText("link").orEmpty(),
             guid = children.findTagText("guid").orEmpty(),
             enclosure = children.find { it.tagName() == "enclosure" }?.let { parseEnclosure(it) },
+            origin = if (includeOrigin) element else null,
         )
     }
 

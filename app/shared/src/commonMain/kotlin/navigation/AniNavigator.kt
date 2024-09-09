@@ -105,16 +105,14 @@ interface AniNavigator {
 
     fun navigateEditMediaSource(
         factoryId: FactoryId,
-        existingMediaSourceInstanceId: String?,
+        mediaSourceInstanceId: String,
     ) {
         navigator.navigate(
             buildString {
                 append("/settings/media-source/edit?factoryId=")
                 append(factoryId.value)
-                append("&existingMediaSourceInstanceId=")
-                existingMediaSourceInstanceId?.let {
-                    append(it)
-                }
+                append("&mediaSourceInstanceId=")
+                append(mediaSourceInstanceId)
             },
         )
     }

@@ -29,8 +29,8 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.stateOf
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListStateFactory
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressState
@@ -82,23 +82,21 @@ class SubjectDetailsViewModel(
 
     val subjectDetailsState = kotlin.run {
         SubjectDetailsState(
-            subjectInfo = subjectInfo,
-            coverImageUrl = subjectInfo.map { it.imageLarge },
-            selfCollectionType = subjectCollectionFlow.map { it.collectionType },
+            subjectInfoState = subjectInfo.produceState(null),
+            selfCollectionTypeState = subjectCollectionFlow.map { it.collectionType }.produceState(null),
             airingLabelState = AiringLabelState(
                 subjectCollectionFlow.map { it.airingInfo }.produceState(null),
                 subjectProgressInfoState,
             ),
-            persons = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
+            personsState = bangumiRelatedCharactersRepository.relatedPersonsFlow(subjectId).map {
                 RelatedPersonInfo.sortList(it)
-            }.onCompletion { if (it != null) emit(emptyList()) },
-            characters = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
+            }.onCompletion { if (it != null) emit(emptyList()) }.produceState(null),
+            charactersState = bangumiRelatedCharactersRepository.relatedCharactersFlow(subjectId).map {
                 RelatedCharacterInfo.sortList(it)
-            },
-            relatedSubjects = bangumiRelatedCharactersRepository.relatedSubjectsFlow(subjectId).map {
+            }.produceState(null),
+            relatedSubjectsState = bangumiRelatedCharactersRepository.relatedSubjectsFlow(subjectId).map {
                 RelatedSubjectInfo.sortList(it)
-            },
-            parentCoroutineContext = backgroundScope.coroutineContext,
+            }.produceState(null),
         )
     }
 

@@ -9,6 +9,8 @@ import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.SubjectCollectionActions
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 object SubjectCollectionTypeSuggestions {

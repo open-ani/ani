@@ -40,7 +40,6 @@ import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.platform.Uuid
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
@@ -77,7 +76,8 @@ interface MediaSourceManager { // available by inject
         return mediaSourceId == LOCAL_FS_MEDIA_SOURCE_ID
     }
 
-    fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig>
+    // null means not found
+    fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig?>
 
     fun findInfoByFactoryId(factoryId: FactoryId): MediaSourceInfo? {
         return allFactories.find { it.factoryId == factoryId }?.info
@@ -101,24 +101,43 @@ interface MediaSourceManager { // available by inject
     }
 
     suspend fun addInstance(
+        instanceId: String,
         mediaSourceId: String,
         factoryId: FactoryId,
         config: MediaSourceConfig
     )
 
-
     /**
      * deprecated.
      */
-    suspend fun updateConfig(instanceId: String, config: MediaSourceConfig)
+    suspend fun updateConfig(instanceId: String, config: MediaSourceConfig): Boolean
     suspend fun setEnabled(instanceId: String, enabled: Boolean)
     suspend fun removeInstance(instanceId: String)
 }
 
+suspend fun <T> MediaSourceManager.addInstance(
+    instanceId: String,
+    mediaSourceId: String,
+    factoryId: FactoryId,
+    serializer: SerializationStrategy<T>,
+    arguments: T
+) = addInstance(
+    instanceId,
+    mediaSourceId,
+    factoryId,
+    MediaSourceConfig(serializedArguments = MediaSourceConfig.serializeArguments(serializer, arguments)),
+)
+
 suspend fun MediaSourceManager.updateMediaSourceArguments(
     instanceId: String,
     arguments: JsonElement
-) = updateConfig(instanceId, instanceConfigFlow(instanceId).first().copy(serializedArguments = arguments))
+): Boolean {
+    val config = instanceConfigFlow(instanceId).first() ?: return false
+    return updateConfig(
+        instanceId,
+        config.copy(serializedArguments = arguments),
+    )
+}
 
 suspend fun <T> MediaSourceManager.updateMediaSourceArguments(
     instanceId: String,
@@ -213,15 +232,20 @@ class MediaSourceManagerImpl(
         )
     }
 
-    override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig> {
+    override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig?> {
         return instances.flow.map { list ->
-            list.find { it.instanceId == instanceId }?.config ?: MediaSourceConfig.Default
+            list.find { it.instanceId == instanceId }?.config
         }
     }
 
-    override suspend fun addInstance(mediaSourceId: String, factoryId: FactoryId, config: MediaSourceConfig) {
+    override suspend fun addInstance(
+        instanceId: String,
+        mediaSourceId: String,
+        factoryId: FactoryId,
+        config: MediaSourceConfig
+    ) {
         val save = MediaSourceSave(
-            instanceId = Uuid.randomString(),
+            instanceId = instanceId,
             mediaSourceId = mediaSourceId,
             factoryId = factoryId,
             isEnabled = true,
@@ -230,8 +254,8 @@ class MediaSourceManagerImpl(
         instances.add(save)
     }
 
-    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig) {
-        instances.updateConfig(instanceId, config)
+    override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig): Boolean {
+        return instances.updateConfig(instanceId, config)
     }
 
     override suspend fun setEnabled(instanceId: String, enabled: Boolean) {

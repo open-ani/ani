@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,7 @@ import me.him188.ani.datasources.api.source.MediaSourceFactory
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
 import me.him188.ani.utils.coroutines.childScope
+import me.him188.ani.utils.platform.Uuid
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
@@ -136,12 +138,12 @@ class EditMediaSourceState(
     fun startAdding(template: MediaSourceTemplate): EditingMediaSource {
         cancelEdit()
         val state = EditingMediaSource(
-            editingMediaSourceId = null,
+            editingMediaSourceId = Uuid.randomString(),
             factoryId = template.factoryId,
             info = template.info,
             parameters = template.parameters,
             persistedArguments = flowOf(MediaSourceConfig()),
-            editMediaSourceMode = EditMediaSourceMode.Add,
+            editMediaSourceMode = EditMediaSourceMode.Add(template.factoryId),
             onSave = { confirmEdit(it) },
             backgroundScope.coroutineContext, // TODO: this can be a memory leak
         )
@@ -169,15 +171,15 @@ class EditMediaSourceState(
 
     private val editTasker = MonoTasker(backgroundScope)
 
-    fun confirmEdit(state: EditingMediaSource) {
-        editTasker.launch {
+    fun confirmEdit(state: EditingMediaSource): Job {
+        return editTasker.launch {
             confirmEditImpl(state)
         }
     }
 
     private suspend fun confirmEditImpl(state: EditingMediaSource) {
         when (state.editMediaSourceMode) {
-            EditMediaSourceMode.Add -> {
+            is EditMediaSourceMode.Add -> {
                 onAdd(
                     state.factoryId,
                     state.createConfig(),

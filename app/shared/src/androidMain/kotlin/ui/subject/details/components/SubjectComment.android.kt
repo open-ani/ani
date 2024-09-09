@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.foundation.richtext.UIRichElement
 import me.him188.ani.app.ui.subject.components.comment.CommentState
@@ -39,6 +40,8 @@ private fun PreviewSubjectCommentColumn() {
         SubjectDetailsDefaults.SubjectCommentColumn(
             state = rememberTestCommentState(generateUiComment(4)),
             onClickUrl = { },
+            onClickImage = {},
+            connectedScrollState = rememberConnectedScrollState(),
         )
     }
 }

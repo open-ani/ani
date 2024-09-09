@@ -1,16 +1,24 @@
 package me.him188.ani.app.ui.subject.details.components
 
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.tools.formatDateTime
-import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
+import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
+import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.richtext.RichText
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentColumn
@@ -23,20 +31,29 @@ import me.him188.ani.app.ui.subject.rating.FiveRatingStars
 fun SubjectDetailsDefaults.SubjectCommentColumn(
     state: CommentState,
     onClickUrl: (url: String) -> Unit,
+    onClickImage: (String) -> Unit,
+    connectedScrollState: ConnectedScrollState,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState()
+    lazyListState: LazyListState = rememberLazyListState()
 ) {
-    val imageViewer = LocalImageViewerHandler.current
-    
     CommentColumn(
         state = state,
-        listState = listState,
+        listState = lazyListState,
         modifier = modifier
+            .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
+            .fillMaxHeight()
+            .ifThen(currentPlatform.isDesktop()) {
+                nestedScrollWorkaround(
+                    lazyListState,
+                    connectedScrollState.nestedScrollConnection,
+                )
+            }
+            .nestedScroll(connectedScrollState.nestedScrollConnection),
     ) { _, comment ->
         SubjectComment(
             comment = comment,
             modifier = Modifier.fillMaxWidth().padding(12.dp),
-            onClickImage = { imageViewer.viewImage(it) },
+            onClickImage = onClickImage,
             onClickUrl = onClickUrl,
             onClickReaction = { commentId, reactionId ->
                 state.submitReaction(commentId, reactionId)
