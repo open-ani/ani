@@ -40,20 +40,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
-import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.layout.connectedScroll
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
-
-@Serializable
-data class RssTestData(
-    val searchUrl: String,
-    val page: Int?,
-    val keyword: String,
-)
 
 @Composable
 fun RssTestPane(

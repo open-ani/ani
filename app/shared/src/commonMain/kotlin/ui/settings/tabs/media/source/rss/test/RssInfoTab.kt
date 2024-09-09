@@ -29,14 +29,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.source.media.source.MediaListFilter
+import me.him188.ani.app.data.source.media.source.MediaListFilters
+import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.data.source.media.source.RssSearchQuery
+import me.him188.ani.app.data.source.media.source.toFilterContext
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.tools.rss.guessResourceLocation
 import me.him188.ani.app.ui.cache.details.MediaDetailsRenderer
 import me.him188.ani.app.ui.foundation.Tag
-import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.datasources.api.topic.contains
 import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
 import me.him188.ani.datasources.api.topic.titles.RawTitleParser
 import me.him188.ani.datasources.api.topic.titles.parse
@@ -81,7 +85,16 @@ class RssItemPresentation(
 ) {
     class Tag(
         val value: String,
-        val isError: Boolean = false,
+        /**
+         * 该标签表示一个缺失的项目. 例如缺失 EP.
+         */
+        val isMissing: Boolean = false,
+        /**
+         * 该标签是否匹配了用户的搜索条件.
+         * - `true`: 满足了一个条件. UI 显示为紫色的 check
+         * - `false`: 不满足条件. UI 显示为红色的 close
+         * - `null`: 这不是一个搜索条件. UI 不会特别高亮此标签.
+         */
         val isMatch: Boolean? = null,
     )
 
@@ -91,50 +104,93 @@ class RssItemPresentation(
     )
 
     companion object {
-        fun compute(rss: RssItem, requestedSort: EpisodeSort): RssItemPresentation {
+        fun compute(
+            rss: RssItem,
+            config: RssSearchConfig,
+            query: RssSearchQuery,
+        ): RssItemPresentation {
             val parsed = RawTitleParser.getDefault().parse(rss.title)
-            val tags: List<Tag> = parsed.run {
-                buildList {
-                    fun add(
-                        value: String,
-                        isError: Boolean = false,
-                        isMatch: Boolean? = null,
-                    ): Boolean = add(Tag(value, isError, isMatch))
+            val tags = computeTags(rss, parsed, query, config)
+            return RssItemPresentation(rss, parsed, tags)
+        }
 
-                    episodeRange?.let {
-                        add(it.toString(), isMatch = requestedSort in it)
-                    } ?: kotlin.run {
-                        add("EP", isError = true)
-                    }
+        /**
+         * 计算出用于标记该资源与 [RssSearchQuery] 的匹配情况的 tags. 例如标题成功匹配、缺失 EP 等.
+         */
+        private fun computeTags(
+            rss: RssItem,
+            title: ParsedTopicTitle,
+            query: RssSearchQuery,
+            config: RssSearchConfig,
+        ): List<Tag> = buildList {
+            fun emit(
+                value: String,
+                isMissing: Boolean = false,
+                isMatch: Boolean? = null,
+            ): Boolean = add(Tag(value, isMissing, isMatch))
 
-                    val resourceLocation = rss.guessResourceLocation()
-                    when (resourceLocation) {
-                        is ResourceLocation.HttpStreamingFile -> add("Streaming")
-                        is ResourceLocation.HttpTorrentFile -> add("Torrent")
-                        is ResourceLocation.LocalFile -> add("Local")
-                        is ResourceLocation.MagnetLink -> add("Magnet")
-                        is ResourceLocation.WebVideo -> add("WEB")
-                        null -> add("Download", isError = true)
-                    }
+            with(query.toFilterContext()) {
+                val candidate = rss.asCandidate(title)
 
-                    if (subtitleLanguages.isEmpty()) {
-                        add("Subtitle", isError = true)
+                if (config.filterByEpisodeSort) {
+                    val episodeRange = title.episodeRange
+                    if (episodeRange == null) {
+                        // 期望使用 EP 过滤但是没有 EP 信息, 属于为缺失
+                        emit("EP", isMissing = true)
                     } else {
-                        for (subtitleLanguage in subtitleLanguages) {
-                            add(subtitleLanguage.displayName)
-                        }
+                        emit(
+                            episodeRange.toString(),
+                            isMatch = MediaListFilters.ContainsEpisodeSort.applyOn(candidate),
+                        )
                     }
-
-                    resolution?.displayName?.let(::add)
-
-                    subtitleKind?.let {
-                        add(MediaDetailsRenderer.renderSubtitleKind(it) + "字幕")
+                } else {
+                    // 不需要用 EP 过滤也展示 EP 信息
+                    title.episodeRange?.let {
+                        emit(it.toString())
                     }
+                }
+
+                if (config.filterBySubjectName) {
+                    emit(
+                        "标题",
+                        isMatch = MediaListFilters.ContainsSubjectName.applyOn(candidate),
+                    )
                 }
             }
 
-            return RssItemPresentation(rss, parsed, tags)
+            val resourceLocation = rss.guessResourceLocation()
+            when (resourceLocation) {
+                is ResourceLocation.HttpStreamingFile -> emit("Streaming")
+                is ResourceLocation.HttpTorrentFile -> emit("Torrent")
+                is ResourceLocation.LocalFile -> emit("Local")
+                is ResourceLocation.MagnetLink -> emit("Magnet")
+                is ResourceLocation.WebVideo -> emit("WEB")
+                null -> emit("Download", isMissing = true)
+            }
+
+            // 以下为普通 tags
+
+            if (title.subtitleLanguages.isEmpty()) {
+                emit("Subtitle", isMissing = true)
+            } else {
+                for (subtitleLanguage in title.subtitleLanguages) {
+                    emit(subtitleLanguage.displayName)
+                }
+            }
+
+            title.resolution?.displayName?.let(::emit)
+
+            title.subtitleKind?.let {
+                emit(MediaDetailsRenderer.renderSubtitleKind(it) + "字幕")
+            }
         }
+    }
+}
+
+private fun RssItem.asCandidate(parsed: ParsedTopicTitle): MediaListFilter.Candidate {
+    return object : MediaListFilter.Candidate {
+        override val originalTitle: String get() = title
+        override val episodeRange: EpisodeRange? get() = parsed.episodeRange
     }
 }
 
@@ -178,7 +234,7 @@ fun RssTestResultRssItem(
                                 ) { Text(tag.value) }
                             }
 
-                            tag.isError -> {
+                            tag.isMissing -> {
                                 Tag(
                                     leadingIcon = { Icon(Icons.Rounded.QuestionMark, "缺失") },
                                     contentColor = MaterialTheme.colorScheme.error,

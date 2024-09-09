@@ -15,8 +15,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -54,6 +58,7 @@ fun RssEditPane(
             Modifier.weight(1f).verticalScroll(rememberScrollState()),
         ) {
             val headlineStyle = computeRssHeadlineStyle()
+            // 大图标和标题
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 AsyncImage(
                     state.displayIconUrl,
@@ -81,6 +86,8 @@ fun RssEditPane(
                     .fillMaxHeight()
                     .padding(vertical = 16.dp),
             ) {
+                val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                
                 Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                     if (isInDebugMode()) {
                         OutlinedTextField(
@@ -148,6 +155,20 @@ fun RssEditPane(
                         isError = state.searchUrlIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = textFieldShape,
+                    )
+
+                    ListItem(
+                        headlineContent = { Text("使用剧集序号过滤") },
+                        supportingContent = { Text("要求资源标题包含剧集序号。适用于数据源可能搜到无关内容的情况") },
+                        trailingContent = { Switch(state.filterByEpisodeSort, { state.filterByEpisodeSort = it }) },
+                        colors = listItemColors,
+                    )
+
+                    ListItem(
+                        headlineContent = { Text("使用条目名称过滤") },
+                        supportingContent = { Text("要求资源标题包含条目名称。适用于数据源可能搜到无关内容的情况") },
+                        trailingContent = { Switch(state.filterBySubjectName, { state.filterBySubjectName = it }) },
+                        colors = listItemColors,
                     )
                 }
 
