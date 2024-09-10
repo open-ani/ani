@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.tools.MonoTasker
@@ -61,8 +63,6 @@ import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.collection.components.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
-
-private inline val spacedBy get() = 16.dp
 
 @Stable
 class SubjectCollectionColumnState(
@@ -129,13 +129,16 @@ fun SubjectCollectionsColumn(
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
 ) {
+    val isCompact = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
+    val spacedBy = if (isCompact) 16.dp else 24.dp
+
     val layoutDirection = LocalLayoutDirection.current
     val contentPaddingState by rememberUpdatedState(contentPadding)
     val gridContentPadding by remember(layoutDirection) {
         derivedStateOf {
             PaddingValues(
                 // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
-                // 这个高度是可以滚到上面的, 所以它
+                // 这个高度是可以滚到上面的
                 top = (contentPaddingState.calculateTopPadding() + spacedBy).coerceAtLeast(0.dp),
                 bottom = (contentPaddingState.calculateBottomPadding() + spacedBy).coerceAtLeast(0.dp),
                 start = contentPaddingState.calculateStartPadding(layoutDirection),
@@ -146,11 +149,11 @@ fun SubjectCollectionsColumn(
 
     LazyVerticalGrid(
         GridCells.Adaptive(360.dp),
-        modifier.padding(horizontal = 12.dp).padding(vertical = 0.dp),
+        modifier,
         state.gridState,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
-        contentPadding = contentPaddingState,
+        contentPadding = contentPadding,
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {}
 

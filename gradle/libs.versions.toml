@@ -45,7 +45,7 @@ compose-material3 = "1.3.0"
 jetpack-compose = "1.7.0"
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.7.0-beta01"
+compose-multiplatform = "1.7.0-dev1809"
 compose-lifecycle = "2.8.1"
 compose-navigation = "2.8.0-alpha09"
 compose-material3-adaptive = "1.0.0-alpha02"
@@ -167,7 +167,7 @@ compose-navigation-compose = { module = "org.jetbrains.androidx.navigation:navig
 compose-navigation-runtime = { module = "org.jetbrains.androidx.navigation:navigation-runtime", version.ref = "compose-navigation" }
 compose-material3-adaptive-core = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "compose-material3-adaptive" }
 compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "compose-material3-adaptive" }
-compose-material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "compose-material3-adaptive" }
+compose-material3-adaptive-navigation0 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "compose-material3-adaptive" }
 
 # Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.

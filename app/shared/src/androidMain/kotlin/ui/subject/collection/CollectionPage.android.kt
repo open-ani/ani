@@ -37,7 +37,7 @@ private fun PreviewCollectionPage() {
         }
 
         WindowInsets.ime
-        CollectionPage(
+        CollectionPane(
             onClickCaches = {},
             contentPadding = PaddingValues(0.dp),
         )

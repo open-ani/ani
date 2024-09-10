@@ -9,10 +9,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
@@ -20,7 +18,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
@@ -69,17 +66,7 @@ fun AniAppContentPortrait(
         val windowInsets = ScaffoldDefaults.contentWindowInsets
             .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
 
-        val density = LocalDensity.current
-        NavHost(
-            navController, startDestination = "/home",
-            modifier.consumeWindowInsets(
-                PaddingValues(
-                    top = -with(density) {
-                        WindowInsets.desktopTitleBar().getTop(density).toDp()
-                    }, // add insets
-                ),
-            ),
-        ) {
+        NavHost(navController, startDestination = "/home", modifier) {
             // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#e5b958f0-435d-4e84-aed4-8d1ea395fa5c
             val enterDuration = 500
             val exitDuration = 200
