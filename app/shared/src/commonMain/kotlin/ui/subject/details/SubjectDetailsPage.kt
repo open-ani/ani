@@ -157,6 +157,7 @@ fun SubjectDetailsScene(
                 },
                 onClickImage = { imageViewer.viewImage(it) },
                 connectedScrollState,
+                Modifier.fillMaxSize(),
                 lazyListState = vm.commentTabLazyListState,
             )
         },

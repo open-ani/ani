@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.details.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +10,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
@@ -33,24 +35,26 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState()
 ) {
-    CommentColumn(
-        state = state,
-        listState = lazyListState,
-        modifier = modifier
-            .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
-            .fillMaxHeight()
-            .nestedScrollWorkaround(lazyListState, connectedScrollState)
-            .nestedScroll(connectedScrollState.nestedScrollConnection),
-    ) { _, comment ->
-        SubjectComment(
-            comment = comment,
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            onClickImage = onClickImage,
-            onClickUrl = onClickUrl,
-            onClickReaction = { commentId, reactionId ->
-                state.submitReaction(commentId, reactionId)
-            },
-        )
+    Box(modifier, contentAlignment = Alignment.TopCenter) {
+        CommentColumn(
+            state = state,
+            listState = lazyListState,
+            modifier = Modifier
+                .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
+                .fillMaxHeight()
+                .nestedScrollWorkaround(lazyListState, connectedScrollState)
+                .nestedScroll(connectedScrollState.nestedScrollConnection),
+        ) { _, comment ->
+            SubjectComment(
+                comment = comment,
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                onClickImage = onClickImage,
+                onClickUrl = onClickUrl,
+                onClickReaction = { commentId, reactionId ->
+                    state.submitReaction(commentId, reactionId)
+                },
+            )
+        }
     }
 }
 
