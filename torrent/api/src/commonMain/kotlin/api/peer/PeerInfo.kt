@@ -1,7 +1,11 @@
 package me.him188.ani.app.torrent.api.peer
 
+import me.him188.ani.app.torrent.anitorrent.HandleId
+import me.him188.ani.datasources.api.topic.FileSize
+
 // peer_info_t
 interface PeerInfo {
+    val handle: HandleId // corresponding torrent handle
     /**
      * The peer's id as used in the bittorrent protocol. 
      * This id can be used to extract 'fingerprints' from the peer. 
@@ -26,4 +30,22 @@ interface PeerInfo {
     val ipAddr: String
     
     val ipPort: Int
+
+    /**
+     * The progress of the peer in the range [0, 1].
+     */
+    val progress: Float
+
+    /**
+     * The total number of bytes downloaded from and uploaded to this peer.
+     */
+    val totalDownload: FileSize
+    
+    val totalUpload: FileSize
+
+    /**
+     * Tells you in which state the peer is in. It is set to
+     * any combination of the peer_flags_t flags above.
+     */
+    val flags: Long
 }

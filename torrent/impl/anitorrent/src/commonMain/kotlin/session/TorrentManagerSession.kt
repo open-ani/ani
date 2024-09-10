@@ -4,6 +4,7 @@ import kotlinx.io.files.Path
 import me.him188.ani.app.torrent.anitorrent.HandleId
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.peer.PeerInfo
 
 /**
  * libtorrent 的 session_t, 用来管理多个 torrent 任务
@@ -36,6 +37,8 @@ interface TorrentHandle {
 
     fun getState(): TorrentHandleState
     fun reloadFile(): TorrentDescriptor
+
+    fun getPeers(): List<PeerInfo>
 
     fun setPieceDeadline(index: Int, deadline: Int)
     fun clearPieceDeadlines()

@@ -49,6 +49,14 @@ public class peer_info_t {
     }
   }
 
+  public void setTorrent_handle_id(long value) {
+    anitorrentJNI.peer_info_t_torrent_handle_id_set(swigCPtr, this, value);
+  }
+
+  public long getTorrent_handle_id() {
+    return anitorrentJNI.peer_info_t_torrent_handle_id_get(swigCPtr, this);
+  }
+
   public void setPeer_id(String value) {
     anitorrentJNI.peer_info_t_peer_id_set(swigCPtr, this, value);
   }
@@ -79,6 +87,38 @@ public class peer_info_t {
 
   public int getIp_port() {
     return anitorrentJNI.peer_info_t_ip_port_get(swigCPtr, this);
+  }
+
+  public void setProgress(float value) {
+    anitorrentJNI.peer_info_t_progress_set(swigCPtr, this, value);
+  }
+
+  public float getProgress() {
+    return anitorrentJNI.peer_info_t_progress_get(swigCPtr, this);
+  }
+
+  public void setTotal_download(long value) {
+    anitorrentJNI.peer_info_t_total_download_set(swigCPtr, this, value);
+  }
+
+  public long getTotal_download() {
+    return anitorrentJNI.peer_info_t_total_download_get(swigCPtr, this);
+  }
+
+  public void setTotal_upload(long value) {
+    anitorrentJNI.peer_info_t_total_upload_set(swigCPtr, this, value);
+  }
+
+  public long getTotal_upload() {
+    return anitorrentJNI.peer_info_t_total_upload_get(swigCPtr, this);
+  }
+
+  public void setFlags(long value) {
+    anitorrentJNI.peer_info_t_flags_set(swigCPtr, this, value);
+  }
+
+  public long getFlags() {
+    return anitorrentJNI.peer_info_t_flags_get(swigCPtr, this);
   }
 
   public peer_info_t() {

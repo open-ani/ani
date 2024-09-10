@@ -2,6 +2,7 @@ package me.him188.ani.app.torrent.api
 
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.torrent.api.files.TorrentFileEntry
+import me.him188.ani.app.torrent.api.peer.PeerInfo
 
 /**
  * 表示一整个 BT 资源的下载任务, 对应一个磁力链或 .torrent 文件.
@@ -70,6 +71,10 @@ interface TorrentSession {
      */
     suspend fun getFiles(): List<TorrentFileEntry>
 
+    /**
+     * 获取该 BT 任务的连接对象.
+     */
+    fun getPeers(): List<PeerInfo>
 
     /**
      * 关闭该下载任务, 释放资源. 将会等待 native 线程结束.

@@ -9,22 +9,22 @@
 
 package me.him188.ani.app.torrent.anitorrent.binding;
 
-public class SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t {
+public class SWIGTYPE_p_peer_info_t {
   private transient long swigCPtr;
 
-  protected SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t(long cPtr, @SuppressWarnings("unused") boolean futureUse) {
+  protected SWIGTYPE_p_peer_info_t(long cPtr, @SuppressWarnings("unused") boolean futureUse) {
     swigCPtr = cPtr;
   }
 
-  protected SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t() {
+  protected SWIGTYPE_p_peer_info_t() {
     swigCPtr = 0;
   }
 
-  protected static long getCPtr(SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t obj) {
+  protected static long getCPtr(SWIGTYPE_p_peer_info_t obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 
-  protected static long swigRelease(SWIGTYPE_p_std__shared_ptrT_anilt__peer_info_t_t obj) {
+  protected static long swigRelease(SWIGTYPE_p_peer_info_t obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 }

@@ -855,6 +855,83 @@ template <typename T> T SwigValueInit() {
 #include <stdexcept>
 
 
+/* Check for overflow converting to Java int (always signed 32-bit) from (unsigned variable-bit) size_t */
+SWIGINTERN jint SWIG_JavaIntFromSize_t(size_t size) {
+  static const jint JINT_MAX = 0x7FFFFFFF;
+  return (size > (size_t)JINT_MAX) ? -1 : (jint)size;
+}
+
+
+SWIGINTERN jint SWIG_VectorSize(size_t size) {
+  jint sz = SWIG_JavaIntFromSize_t(size);
+  if (sz == -1)
+    throw std::out_of_range("vector size is too large to fit into a Java int");
+  return sz;
+}
+
+SWIGINTERN std::vector< anilt::peer_info_t > *new_std_vector_Sl_anilt_peer_info_t_Sg___SWIG_2(jint count,anilt::peer_info_t const &value){
+        if (count < 0)
+          throw std::out_of_range("vector count must be positive");
+        return new std::vector< anilt::peer_info_t >(static_cast<std::vector< anilt::peer_info_t >::size_type>(count), value);
+      }
+SWIGINTERN jint std_vector_Sl_anilt_peer_info_t_Sg__doCapacity(std::vector< anilt::peer_info_t > *self){
+        return SWIG_VectorSize(self->capacity());
+      }
+SWIGINTERN void std_vector_Sl_anilt_peer_info_t_Sg__doReserve(std::vector< anilt::peer_info_t > *self,jint n){
+        if (n < 0)
+          throw std::out_of_range("vector reserve size must be positive");
+        self->reserve(n);
+      }
+SWIGINTERN jint std_vector_Sl_anilt_peer_info_t_Sg__doSize(std::vector< anilt::peer_info_t > const *self){
+        return SWIG_VectorSize(self->size());
+      }
+SWIGINTERN void std_vector_Sl_anilt_peer_info_t_Sg__doAdd__SWIG_0(std::vector< anilt::peer_info_t > *self,std::vector< anilt::peer_info_t >::value_type const &x){
+        self->push_back(x);
+      }
+SWIGINTERN void std_vector_Sl_anilt_peer_info_t_Sg__doAdd__SWIG_1(std::vector< anilt::peer_info_t > *self,jint index,std::vector< anilt::peer_info_t >::value_type const &x){
+        jint size = static_cast<jint>(self->size());
+        if (0 <= index && index <= size) {
+          self->insert(self->begin() + index, x);
+        } else {
+          throw std::out_of_range("vector index out of range");
+        }
+      }
+SWIGINTERN std::vector< anilt::peer_info_t >::value_type std_vector_Sl_anilt_peer_info_t_Sg__doRemove(std::vector< anilt::peer_info_t > *self,jint index){
+        jint size = static_cast<jint>(self->size());
+        if (0 <= index && index < size) {
+          anilt::peer_info_t const old_value = (*self)[index];
+          self->erase(self->begin() + index);
+          return old_value;
+        } else {
+          throw std::out_of_range("vector index out of range");
+        }
+      }
+SWIGINTERN std::vector< anilt::peer_info_t >::value_type const &std_vector_Sl_anilt_peer_info_t_Sg__doGet(std::vector< anilt::peer_info_t > *self,jint index){
+        jint size = static_cast<jint>(self->size());
+        if (index >= 0 && index < size)
+          return (*self)[index];
+        else
+          throw std::out_of_range("vector index out of range");
+      }
+SWIGINTERN std::vector< anilt::peer_info_t >::value_type std_vector_Sl_anilt_peer_info_t_Sg__doSet(std::vector< anilt::peer_info_t > *self,jint index,std::vector< anilt::peer_info_t >::value_type const &val){
+        jint size = static_cast<jint>(self->size());
+        if (index >= 0 && index < size) {
+          anilt::peer_info_t const old_value = (*self)[index];
+          (*self)[index] = val;
+          return old_value;
+        }
+        else
+          throw std::out_of_range("vector index out of range");
+      }
+SWIGINTERN void std_vector_Sl_anilt_peer_info_t_Sg__doRemoveRange(std::vector< anilt::peer_info_t > *self,jint fromIndex,jint toIndex){
+        jint size = static_cast<jint>(self->size());
+        if (0 <= fromIndex && fromIndex <= toIndex && toIndex <= size) {
+          self->erase(self->begin() + fromIndex, self->begin() + toIndex);
+        } else {
+          throw std::out_of_range("vector index out of range");
+        }
+      }
+
 #include <stdint.h>		// Use the C99 official header
 
 
@@ -1938,6 +2015,296 @@ void SwigDirector_new_event_listener_t::swig_connect_director(JNIEnv *jenv, jobj
 extern "C" {
 #endif
 
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1PeerInfoList_1_1SWIG_10(JNIEnv *jenv, jclass jcls) {
+  jlong jresult = 0 ;
+  std::vector< anilt::peer_info_t > *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (std::vector< anilt::peer_info_t > *)new std::vector< anilt::peer_info_t >();
+  *(std::vector< anilt::peer_info_t > **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1PeerInfoList_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = 0 ;
+  std::vector< anilt::peer_info_t > *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1;
+  if (!arg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::vector< anilt::peer_info_t > const & is null");
+    return 0;
+  } 
+  result = (std::vector< anilt::peer_info_t > *)new std::vector< anilt::peer_info_t >((std::vector< anilt::peer_info_t > const &)*arg1);
+  *(std::vector< anilt::peer_info_t > **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1isEmpty(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jboolean jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  result = (bool)((std::vector< anilt::peer_info_t > const *)arg1)->empty();
+  jresult = (jboolean)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1clear(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  (arg1)->clear();
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1PeerInfoList_1_1SWIG_12(JNIEnv *jenv, jclass jcls, jint jarg1, jlong jarg2, jobject jarg2_) {
+  jlong jresult = 0 ;
+  jint arg1 ;
+  anilt::peer_info_t *arg2 = 0 ;
+  std::vector< anilt::peer_info_t > *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg2_;
+  arg1 = jarg1; 
+  arg2 = *(anilt::peer_info_t **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "anilt::peer_info_t const & is null");
+    return 0;
+  } 
+  try {
+    result = (std::vector< anilt::peer_info_t > *)new_std_vector_Sl_anilt_peer_info_t_Sg___SWIG_2(SWIG_STD_MOVE(arg1),(anilt::peer_info_t const &)*arg2);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  *(std::vector< anilt::peer_info_t > **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doCapacity(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  try {
+    result = std_vector_Sl_anilt_peer_info_t_Sg__doCapacity(arg1);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doReserve(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = jarg2; 
+  try {
+    std_vector_Sl_anilt_peer_info_t_Sg__doReserve(arg1,SWIG_STD_MOVE(arg2));
+  } catch(std::length_error &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  }
+}
+
+
+SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  try {
+    result = std_vector_Sl_anilt_peer_info_t_Sg__doSize((std::vector< anilt::peer_info_t > const *)arg1);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doAdd_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  std::vector< anilt::peer_info_t >::value_type *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg2_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = *(std::vector< anilt::peer_info_t >::value_type **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::vector< anilt::peer_info_t >::value_type const & is null");
+    return ;
+  } 
+  std_vector_Sl_anilt_peer_info_t_Sg__doAdd__SWIG_0(arg1,(anilt::peer_info_t const &)*arg2);
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doAdd_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jlong jarg3, jobject jarg3_) {
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint arg2 ;
+  std::vector< anilt::peer_info_t >::value_type *arg3 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg3_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = jarg2; 
+  arg3 = *(std::vector< anilt::peer_info_t >::value_type **)&jarg3;
+  if (!arg3) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::vector< anilt::peer_info_t >::value_type const & is null");
+    return ;
+  } 
+  try {
+    std_vector_Sl_anilt_peer_info_t_Sg__doAdd__SWIG_1(arg1,SWIG_STD_MOVE(arg2),(anilt::peer_info_t const &)*arg3);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  }
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doRemove(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  jlong jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint arg2 ;
+  std::vector< anilt::peer_info_t >::value_type result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = jarg2; 
+  try {
+    result = std_vector_Sl_anilt_peer_info_t_Sg__doRemove(arg1,SWIG_STD_MOVE(arg2));
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  *(std::vector< anilt::peer_info_t >::value_type **)&jresult = new std::vector< anilt::peer_info_t >::value_type(result); 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doGet(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  jlong jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint arg2 ;
+  std::vector< anilt::peer_info_t >::value_type *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = jarg2; 
+  try {
+    result = (std::vector< anilt::peer_info_t >::value_type *) &std_vector_Sl_anilt_peer_info_t_Sg__doGet(arg1,SWIG_STD_MOVE(arg2));
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  *(std::vector< anilt::peer_info_t >::value_type **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doSet(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jlong jarg3, jobject jarg3_) {
+  jlong jresult = 0 ;
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint arg2 ;
+  std::vector< anilt::peer_info_t >::value_type *arg3 = 0 ;
+  std::vector< anilt::peer_info_t >::value_type result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg3_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = jarg2; 
+  arg3 = *(std::vector< anilt::peer_info_t >::value_type **)&jarg3;
+  if (!arg3) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::vector< anilt::peer_info_t >::value_type const & is null");
+    return 0;
+  } 
+  try {
+    result = std_vector_Sl_anilt_peer_info_t_Sg__doSet(arg1,SWIG_STD_MOVE(arg2),(anilt::peer_info_t const &)*arg3);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  *(std::vector< anilt::peer_info_t >::value_type **)&jresult = new std::vector< anilt::peer_info_t >::value_type(result); 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_PeerInfoList_1doRemoveRange(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  jint arg2 ;
+  jint arg3 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  arg2 = jarg2; 
+  arg3 = jarg3; 
+  try {
+    std_vector_Sl_anilt_peer_info_t_Sg__doRemoveRange(arg1,SWIG_STD_MOVE(arg2),SWIG_STD_MOVE(arg3));
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  }
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_delete_1PeerInfoList(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  std::vector< anilt::peer_info_t > *arg1 = (std::vector< anilt::peer_info_t > *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  delete arg1;
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1file_1t_1index_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
   anilt::torrent_file_t *arg1 = (anilt::torrent_file_t *) 0 ;
   unsigned int arg2 ;
@@ -2784,6 +3151,24 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
   arg2 = (int)jarg2; 
   arg3 = (uint8_t)jarg3; 
   ((anilt::torrent_handle_t const *)arg1)->set_file_priority(arg2,arg3);
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_torrent_1handle_1t_1get_1peers(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+  anilt::torrent_handle_t *arg1 = (anilt::torrent_handle_t *) 0 ;
+  std::vector< anilt::peer_info_t > *arg2 = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  (void)jarg2_;
+  arg1 = *(anilt::torrent_handle_t **)&jarg1; 
+  arg2 = *(std::vector< anilt::peer_info_t > **)&jarg2;
+  if (!arg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::vector< anilt::peer_info_t > & is null");
+    return ;
+  } 
+  ((anilt::torrent_handle_t const *)arg1)->get_peers(*arg2);
 }
 
 
@@ -3729,6 +4114,34 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1torrent_1handle_1id_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  uint32_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  arg2 = (uint32_t)jarg2; 
+  if (arg1) (arg1)->torrent_handle_id = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1torrent_1handle_1id_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  uint32_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  result = (uint32_t) ((arg1)->torrent_handle_id);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1peer_1id_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
   anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
   std::string *arg2 = 0 ;
@@ -3865,6 +4278,118 @@ SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1progress_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jfloat jarg2) {
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  float arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  arg2 = (float)jarg2; 
+  if (arg1) (arg1)->progress = arg2;
+}
+
+
+SWIGEXPORT jfloat JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1progress_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jfloat jresult = 0 ;
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  float result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  result = (float) ((arg1)->progress);
+  jresult = (jfloat)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1total_1download_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->total_download = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1total_1download_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  result = (int64_t) ((arg1)->total_download);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1total_1upload_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  int64_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  arg2 = (int64_t)jarg2; 
+  if (arg1) (arg1)->total_upload = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1total_1upload_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  int64_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  result = (int64_t) ((arg1)->total_upload);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1flags_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  uint32_t arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  arg2 = (uint32_t)jarg2; 
+  if (arg1) (arg1)->flags = arg2;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1flags_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
+  uint32_t result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(anilt::peer_info_t **)&jarg1; 
+  result = (uint32_t) ((arg1)->flags);
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
 SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1peer_1info_1t(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   anilt::peer_info_t *result = 0 ;
@@ -3949,20 +4474,26 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
 }
 
 
-SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_parse_1peer_1info(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_parse_1peer_1info(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2) {
   jlong jresult = 0 ;
-  lt::peer_info *arg1 = 0 ;
-  SwigValueWrapper< std::shared_ptr< anilt::peer_info_t > > result;
+  lt::torrent_handle *arg1 = 0 ;
+  lt::peer_info *arg2 = 0 ;
+  anilt::peer_info_t result;
   
   (void)jenv;
   (void)jcls;
-  arg1 = *(lt::peer_info **)&jarg1;
+  arg1 = *(lt::torrent_handle **)&jarg1;
   if (!arg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "lt::torrent_handle const & is null");
+    return 0;
+  } 
+  arg2 = *(lt::peer_info **)&jarg2;
+  if (!arg2) {
     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "lt::peer_info const & is null");
     return 0;
   } 
-  result = anilt::parse_peer_info((lt::peer_info const &)*arg1);
-  *(std::shared_ptr< anilt::peer_info_t > **)&jresult = new std::shared_ptr< anilt::peer_info_t >(result); 
+  result = anilt::parse_peer_info((lt::torrent_handle const &)*arg1,(lt::peer_info const &)*arg2);
+  *(anilt::peer_info_t **)&jresult = new anilt::peer_info_t(result); 
   return jresult;
 }
 

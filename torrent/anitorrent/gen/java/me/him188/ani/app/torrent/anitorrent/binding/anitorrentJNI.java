@@ -10,6 +10,21 @@
 package me.him188.ani.app.torrent.anitorrent.binding;
 
 public class anitorrentJNI {
+  public final static native long new_PeerInfoList__SWIG_0();
+  public final static native long new_PeerInfoList__SWIG_1(long jarg1, PeerInfoList jarg1_);
+  public final static native boolean PeerInfoList_isEmpty(long jarg1, PeerInfoList jarg1_);
+  public final static native void PeerInfoList_clear(long jarg1, PeerInfoList jarg1_);
+  public final static native long new_PeerInfoList__SWIG_2(int jarg1, long jarg2, peer_info_t jarg2_);
+  public final static native int PeerInfoList_doCapacity(long jarg1, PeerInfoList jarg1_);
+  public final static native void PeerInfoList_doReserve(long jarg1, PeerInfoList jarg1_, int jarg2);
+  public final static native int PeerInfoList_doSize(long jarg1, PeerInfoList jarg1_);
+  public final static native void PeerInfoList_doAdd__SWIG_0(long jarg1, PeerInfoList jarg1_, long jarg2, peer_info_t jarg2_);
+  public final static native void PeerInfoList_doAdd__SWIG_1(long jarg1, PeerInfoList jarg1_, int jarg2, long jarg3, peer_info_t jarg3_);
+  public final static native long PeerInfoList_doRemove(long jarg1, PeerInfoList jarg1_, int jarg2);
+  public final static native long PeerInfoList_doGet(long jarg1, PeerInfoList jarg1_, int jarg2);
+  public final static native long PeerInfoList_doSet(long jarg1, PeerInfoList jarg1_, int jarg2, long jarg3, peer_info_t jarg3_);
+  public final static native void PeerInfoList_doRemoveRange(long jarg1, PeerInfoList jarg1_, int jarg2, int jarg3);
+  public final static native void delete_PeerInfoList(long jarg1);
   public final static native void torrent_file_t_index_set(long jarg1, torrent_file_t jarg1_, long jarg2);
   public final static native long torrent_file_t_index_get(long jarg1, torrent_file_t jarg1_);
   public final static native void torrent_file_t_name_set(long jarg1, torrent_file_t jarg1_, String jarg2);
@@ -69,6 +84,7 @@ public class anitorrentJNI {
   public final static native void torrent_handle_t_resume(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_ignore_all_files(long jarg1, torrent_handle_t jarg1_);
   public final static native void torrent_handle_t_set_file_priority(long jarg1, torrent_handle_t jarg1_, int jarg2, short jarg3);
+  public final static native void torrent_handle_t_get_peers(long jarg1, torrent_handle_t jarg1_, long jarg2, PeerInfoList jarg2_);
   public final static native String torrent_handle_t_make_magnet_uri(long jarg1, torrent_handle_t jarg1_);
   public final static native long new_torrent_handle_t();
   public final static native void delete_torrent_handle_t(long jarg1);
@@ -134,6 +150,8 @@ public class anitorrentJNI {
   public final static native long new_event_listener_t();
   public final static native void event_listener_t_director_connect(event_listener_t obj, long cptr, boolean mem_own, boolean weak_global);
   public final static native void event_listener_t_change_ownership(event_listener_t obj, long cptr, boolean take_or_release);
+  public final static native void peer_info_t_torrent_handle_id_set(long jarg1, peer_info_t jarg1_, long jarg2);
+  public final static native long peer_info_t_torrent_handle_id_get(long jarg1, peer_info_t jarg1_);
   public final static native void peer_info_t_peer_id_set(long jarg1, peer_info_t jarg1_, String jarg2);
   public final static native String peer_info_t_peer_id_get(long jarg1, peer_info_t jarg1_);
   public final static native void peer_info_t_client_set(long jarg1, peer_info_t jarg1_, String jarg2);
@@ -142,6 +160,14 @@ public class anitorrentJNI {
   public final static native String peer_info_t_ip_addr_get(long jarg1, peer_info_t jarg1_);
   public final static native void peer_info_t_ip_port_set(long jarg1, peer_info_t jarg1_, int jarg2);
   public final static native int peer_info_t_ip_port_get(long jarg1, peer_info_t jarg1_);
+  public final static native void peer_info_t_progress_set(long jarg1, peer_info_t jarg1_, float jarg2);
+  public final static native float peer_info_t_progress_get(long jarg1, peer_info_t jarg1_);
+  public final static native void peer_info_t_total_download_set(long jarg1, peer_info_t jarg1_, long jarg2);
+  public final static native long peer_info_t_total_download_get(long jarg1, peer_info_t jarg1_);
+  public final static native void peer_info_t_total_upload_set(long jarg1, peer_info_t jarg1_, long jarg2);
+  public final static native long peer_info_t_total_upload_get(long jarg1, peer_info_t jarg1_);
+  public final static native void peer_info_t_flags_set(long jarg1, peer_info_t jarg1_, long jarg2);
+  public final static native long peer_info_t_flags_get(long jarg1, peer_info_t jarg1_);
   public final static native long new_peer_info_t();
   public final static native void delete_peer_info_t(long jarg1);
   public final static native void delete_peer_filter_t(long jarg1);
@@ -149,7 +175,7 @@ public class anitorrentJNI {
   public final static native long new_peer_filter_t();
   public final static native void peer_filter_t_director_connect(peer_filter_t obj, long cptr, boolean mem_own, boolean weak_global);
   public final static native void peer_filter_t_change_ownership(peer_filter_t obj, long cptr, boolean take_or_release);
-  public final static native long parse_peer_info(long jarg1);
+  public final static native long parse_peer_info(long jarg1, long jarg2);
   public final static native long create_peer_filter(long jarg1, long jarg2);
   public final static native void session_settings_t_download_rate_limit_set(long jarg1, session_settings_t jarg1_, int jarg2);
   public final static native int session_settings_t_download_rate_limit_get(long jarg1, session_settings_t jarg1_);

@@ -14,6 +14,9 @@
 %include <std_vector.i>  // Include support for std::vector
 
 %feature("director") event_listener_t;
+%feature("director") peer_filter_t;
+
+%template(PeerInfoList) std::vector<anilt::peer_info_t>;
 
 %include stdint.i
 %include "arrays_java.i"

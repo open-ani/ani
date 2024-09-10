@@ -1,9 +1,11 @@
 package me.him188.ani.app.torrent.anitorrent.session
 
 import me.him188.ani.app.torrent.anitorrent.HandleId
+import me.him188.ani.app.torrent.anitorrent.binding.PeerInfoList
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_handle_t
 import me.him188.ani.app.torrent.anitorrent.binding.torrent_info_t
 import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.peer.PeerInfo
 
 class SwigTorrentHandle(
     internal val native: torrent_handle_t,
@@ -44,6 +46,12 @@ class SwigTorrentHandle(
         return SwigTorrentDescriptor(
             info ?: throw IllegalStateException("Failed to get info view, native get_info_view returned null"),
         )
+    }
+
+    override fun getPeers(): List<PeerInfo> {
+        val peerInfoList = PeerInfoList()
+        native.get_peers(peerInfoList)
+        return peerInfoList.map { SwigPeerInfo(it) }
     }
 
     override fun setPieceDeadline(index: Int, deadline: Int) {

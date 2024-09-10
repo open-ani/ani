@@ -11,13 +11,18 @@ namespace anilt {
                           lt::disconnect_severity_t{0});
     }
 
-    std::shared_ptr<peer_info_t> parse_peer_info(const lt::peer_info &info) {
-        const std::shared_ptr<peer_info_t> info_t = std::make_shared<peer_info_t>();
-
-        info_t->peer_id = info.pid.data();
-        info_t->client = info.client;
-        info_t->ip_addr = info.ip.address().to_string();
-        info_t->ip_port = info.ip.port();
+    peer_info_t parse_peer_info(const lt::torrent_handle &th, const lt::peer_info &info) {
+        const peer_info_t info_t = {
+            th.id(),
+            info.pid.data(),
+            info.client,
+            info.ip.address().to_string(),
+            info.ip.port(),
+            info.progress,
+            info.total_download,
+            info.total_upload,
+            static_cast<uint32_t>(info.flags)
+        };
 
         return info_t;
     }
@@ -29,11 +34,11 @@ namespace anilt {
         if (th.torrent_file() && th.torrent_file()->priv())
             return nullptr;
 
-        plugin::filter_function raw_filter = [filter](const lt::peer_info &info,
+        plugin::filter_function raw_filter = [filter, th](const lt::peer_info &info,
                                                       const bool handshake, bool *stop_filtering) {
-            const auto peer_info = parse_peer_info(info);
+            peer_info_t peer_info = parse_peer_info(th, info);
 
-            bool matched = filter(peer_info.get());
+            const bool matched = filter(&peer_info);
             *stop_filtering = !handshake && !matched;
 
             return matched;

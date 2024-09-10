@@ -466,6 +466,8 @@ class AnitorrentDownloadSession(
 
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
 
+    override fun getPeers() = handle.getPeers()
+    
     @Volatile
     private var closed = false
 

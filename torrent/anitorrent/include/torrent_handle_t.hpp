@@ -3,6 +3,7 @@
 #define TORRENT_HANDLE_T_H
 
 #include "libtorrent/torrent.hpp"
+#include "peer_filter.hpp"
 #include "torrent_info_t.hpp"
 
 namespace anilt {
@@ -48,6 +49,8 @@ class torrent_handle_t final {
     void ignore_all_files() const;
 
     void set_file_priority(int index, uint8_t priority) const;
+
+    void get_peers(std::vector<anilt::peer_info_t> &peers) const;
 
     // Return empty string if handle is not valid
     std::string make_magnet_uri();
