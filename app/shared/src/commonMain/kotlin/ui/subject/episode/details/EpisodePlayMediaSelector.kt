@@ -12,6 +12,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsView
+import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheetDefaults
 import me.him188.ani.datasources.api.Media
 
 /**
@@ -33,6 +34,7 @@ fun EpisodePlayMediaSelector(
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .navigationBarsPadding(),
+        stickyHeaderBackgroundColor = EpisodeVideoSettingsSideSheetDefaults.containerColor,
         itemProgressBar = {},
         onClickItem = {
             mediaSelector.select(it)

@@ -185,8 +185,13 @@ private fun EpisodeSceneContent(
         }
         CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
             when {
-                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
-                else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
+                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(
+                    vm,
+                    Modifier.fillMaxSize(),
+                    windowInsets,
+                )
+
+                else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize(), windowInsets)
             }
         }
         ImageViewer(imageViewer) { imageViewer.clear() }
@@ -238,8 +243,8 @@ private fun EpisodeSceneTabletVeryWide(
                 windowInsets = if (vm.isFullscreen) {
                     windowInsets
                 } else {
-                    // 非全屏底下还有东西
-                    windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+                    // 非全屏右边还有东西
+                    windowInsets.only(WindowInsetsSides.Left + WindowInsetsSides.Top)
                 },
             )
 
@@ -256,7 +261,7 @@ private fun EpisodeSceneTabletVeryWide(
                         width = (maxWidth * 0.25f)
                             .coerceIn(340.dp, 460.dp),
                     )
-                    .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Bottom))
+                    .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Right + WindowInsetsSides.Bottom))
                     .background(MaterialTheme.colorScheme.background), // scrollable background
             ) {
                 TabRow(
