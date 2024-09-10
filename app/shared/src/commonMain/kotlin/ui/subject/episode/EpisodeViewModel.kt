@@ -336,7 +336,7 @@ private class EpisodeViewModelImpl(
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
     private fun savePlayProgress() {
-        val positionMillis = playerState.getExactCurrentPositionMillis()
+        val positionMillis = playerState.currentPositionMillis.value
         val epId = episodeId.value
         if (positionMillis > 0) {
             launchInBackground {
