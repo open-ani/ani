@@ -18,7 +18,7 @@ class DanmakuRegexFilterState(
     val list by list
 }
 
-internal fun createDanmakuRegexFilterState(): DanmakuRegexFilterState {
+fun createDanmakuRegexFilterState(): DanmakuRegexFilterState {
     val localListState = mutableStateOf(
         listOf(
             DanmakuRegexFilter(

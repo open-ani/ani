@@ -15,7 +15,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,16 +22,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
-import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -43,8 +40,6 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.foundation.isInDebugMode
-import me.him188.ani.app.ui.foundation.launchInBackground
-import me.him188.ani.app.ui.foundation.rememberViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.SingleTester
@@ -82,12 +77,18 @@ fun AppSettingsTab(
     softwareUpdateGroupState: SoftwareUpdateGroupState,
     uiSettings: SettingsState<UISettings>,
     videoScaffoldConfig: SettingsState<VideoScaffoldConfig>,
+    danmakuFilterConfig: SettingsState<DanmakuFilterConfig>,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
     modifier: Modifier = Modifier
 ) {
     SettingsTab(modifier) {
         SoftwareUpdateGroup(softwareUpdateGroupState)
         UISettingsGroup(uiSettings)
-        PlayerGroup(videoScaffoldConfig)
+        PlayerGroup(
+            videoScaffoldConfig,
+            danmakuFilterConfig,
+            danmakuRegexFilterState,
+        )
         AppSettingsTabPlatform()
     }
 }
@@ -363,6 +364,8 @@ private fun SettingsScope.SoftwareUpdateGroup(
 @Composable
 private fun SettingsScope.PlayerGroup(
     videoScaffoldConfig: SettingsState<VideoScaffoldConfig>,
+    danmakuFilterConfig: SettingsState<DanmakuFilterConfig>,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
 ) {
     Group(title = { Text("播放器") }) {
         val config by videoScaffoldConfig
@@ -386,17 +389,15 @@ private fun SettingsScope.PlayerGroup(
         )
         HorizontalDividerItem()
         SwitchItem(
-            vm.danmakuRegexEnabled,
+            danmakuFilterConfig.value.enableRegexFilter,
             onCheckedChange = {
-                vm.switchAllDanmakuRegexFilter()
+                danmakuFilterConfig.update(danmakuFilterConfig.value.copy(enableRegexFilter = it))
             },
             title = { Text("启用正则弹幕过滤器") },
-            modifier = Modifier.placeholder(vm.uiSettings.loading),
         )
         HorizontalDividerItem()
         DanmakuRegexFilterGroup(
-            state = vm.danmakuRegexFilterState,
-            isLoadingState = vm.uiSettings.loading,
+            state = danmakuRegexFilterState,
         )
         HorizontalDividerItem()
         SwitchItem(

@@ -170,7 +170,7 @@ abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
     abstract val videoScaffoldConfig: VideoScaffoldConfig
 
     // DanmakuRegexFilterState
-    val danmakuRegexFilterState: DanmakuRegexFilterState
+    abstract val danmakuRegexFilterState: DanmakuRegexFilterState
 
 
     /**

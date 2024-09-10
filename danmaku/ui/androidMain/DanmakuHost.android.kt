@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
@@ -34,7 +33,6 @@ import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
-import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
@@ -158,11 +156,13 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             VerticalDivider()
             EpisodeVideoSettings(
                 danmakuConfig = config.value,
+                enableRegexFilter = false,
                 setDanmakuConfig = { config.value = it },
-                modifier = Modifier.width(300.dp),
-                danmakuRegexFilterGroup = { }
-                remember { EpisodeVideoSettingsViewModel() },
-                {},
+                onManageRegexFilters = {},
+                switchDanmakuRegexFilterCompletely = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
         }
     } else {
@@ -175,11 +175,13 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             HorizontalDivider()
             EpisodeVideoSettings(
                 danmakuConfig = config.value,
+                enableRegexFilter = false,
                 setDanmakuConfig = { config.value = it },
+                onManageRegexFilters = {},
+                switchDanmakuRegexFilterCompletely = {},
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                danmakuRegexFilterGroup = { },
             )
         }
     }

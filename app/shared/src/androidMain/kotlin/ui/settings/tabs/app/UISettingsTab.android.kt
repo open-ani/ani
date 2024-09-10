@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
@@ -32,6 +33,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.createTestSettingsState
 import me.him188.ani.app.ui.settings.framework.rememberTestSettingsState
+import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
 import me.him188.ani.app.ui.update.TestNewVersion
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.random.Random
@@ -46,6 +48,8 @@ private fun PreviewAppSettingsTab() {
             softwareUpdateGroupState = rememberTestSoftwareUpdateGroupState(),
             uiSettings = rememberTestSettingsState(UISettings.Default),
             videoScaffoldConfig = rememberTestSettingsState(VideoScaffoldConfig.Default),
+            danmakuFilterConfig = rememberTestSettingsState(DanmakuFilterConfig.Default),
+            danmakuRegexFilterState = createDanmakuRegexFilterState(),
         )
     }
 }

@@ -43,7 +43,6 @@ import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
-import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.utils.platform.Uuid
@@ -60,7 +59,6 @@ fun isValidRegex(pattern: String): Boolean {
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
     state: DanmakuRegexFilterState,
-    isLoadingState: Boolean
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
 
@@ -89,7 +87,7 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         },
     ) {
         FlowRow(
-            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(16.dp),
+            Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             state.list.forEach { item ->

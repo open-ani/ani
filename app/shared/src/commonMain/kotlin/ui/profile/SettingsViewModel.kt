@@ -7,6 +7,7 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.DanmakuSettings
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
@@ -16,6 +17,7 @@ import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
@@ -24,6 +26,7 @@ import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.DefaultConnectionTesterRunner
@@ -35,6 +38,7 @@ import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceState
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroupState
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
 import me.him188.ani.datasources.api.subject.SubjectProvider
@@ -49,6 +53,7 @@ class SettingsViewModel : AbstractViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
     private val permissionManager: PermissionManager by inject()
     private val bangumiSubjectProvider: SubjectProvider by inject()
+    private val danmakuRegexFilterRepository: DanmakuRegexFilterRepository by inject()
 
     private val mediaSourceManager: MediaSourceManager by inject()
     private val mediaSourceInstanceRepository: MediaSourceInstanceRepository by inject()
@@ -108,6 +113,29 @@ class SettingsViewModel : AbstractViewModel(), KoinComponent {
 
     val danmakuSettingsState =
         settingsRepository.danmakuSettings.stateInBackground(placeholder = DanmakuSettings(_placeholder = -1))
+
+    val danmakuFilterConfigState =
+        settingsRepository.danmakuFilterConfig.stateInBackground(DanmakuFilterConfig.Default.copy(_placeholder = -1))
+
+    val danmakuRegexFilterState = DanmakuRegexFilterState(
+        list = danmakuRegexFilterRepository.flow.produceState(emptyList()),
+        add = {
+            launchInBackground { danmakuRegexFilterRepository.add(it) }
+        },
+        edit = { regex, filter ->
+            launchInBackground {
+                danmakuRegexFilterRepository.update(filter.id, filter.copy(regex = regex))
+            }
+        },
+        remove = {
+            launchInBackground { danmakuRegexFilterRepository.remove(it) }
+        },
+        switch = {
+            launchInBackground {
+                danmakuRegexFilterRepository.update(it.id, it.copy(enabled = !it.enabled))
+            }
+        },
+    )
 
     val danmakuServerTesters = DefaultConnectionTesterRunner(
         AniBangumiSeverBaseUrls.list.map {
