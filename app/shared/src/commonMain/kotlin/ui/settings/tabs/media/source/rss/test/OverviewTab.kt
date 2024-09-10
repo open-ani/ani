@@ -49,8 +49,8 @@ fun RssOverviewCard(
     result: RssTestResult.Success,
     modifier: Modifier = Modifier,
     colors: CardColors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerLow),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
     ),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     state: LazyGridState = rememberLazyGridState(),

@@ -38,7 +38,7 @@ import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.tools.rss.guessResourceLocation
 import me.him188.ani.app.ui.cache.details.MediaDetailsRenderer
-import me.him188.ani.app.ui.foundation.Tag
+import me.him188.ani.app.ui.foundation.OutlinedTag
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.titles.ParsedTopicTitle
@@ -221,33 +221,33 @@ fun RssTestResultRssItem(
                     for (tag in item.tags) {
                         when {
                             tag.isMatch == true -> {
-                                Tag(
+                                OutlinedTag(
                                     leadingIcon = { Icon(Icons.Rounded.Check, "符合匹配") },
                                     contentColor = MaterialTheme.colorScheme.primary,
                                 ) { Text(tag.value) }
                             }
 
                             tag.isMatch == false -> {
-                                Tag(
+                                OutlinedTag(
                                     leadingIcon = { Icon(Icons.Rounded.Close, "不符合匹配") },
                                     contentColor = MaterialTheme.colorScheme.tertiary,
                                 ) { Text(tag.value) }
                             }
 
                             tag.isMissing -> {
-                                Tag(
+                                OutlinedTag(
                                     leadingIcon = { Icon(Icons.Rounded.QuestionMark, "缺失") },
                                     contentColor = MaterialTheme.colorScheme.error,
                                 ) { Text(tag.value) }
                             }
 
                             else -> {
-                                Tag { Text(tag.value) }
+                                OutlinedTag { Text(tag.value) }
                             }
                         }
                     }
                     item.rss.pubDate?.let {
-                        Tag { Text(formatDateTime(it)) }
+                        OutlinedTag { Text(formatDateTime(it)) }
                     }
                 }
             },
