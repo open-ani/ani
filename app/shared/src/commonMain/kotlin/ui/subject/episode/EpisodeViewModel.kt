@@ -350,10 +350,6 @@ private class EpisodeViewModelImpl(
         episodeInfo,
         mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it },
         backgroundScope.coroutineContext,
-        onBeforeSelectedChange = {
-            // 保存播放进度
-            savePlayProgress()
-        },
     )
 
     override val videoStatistics: VideoStatistics get() = playerLauncher.videoStatistics
@@ -464,6 +460,7 @@ private class EpisodeViewModelImpl(
     override val commentLazyListState: LazyListState = LazyListState()
 
     fun switchEpisode(episodeId: Int) {
+        savePlayProgress()
         episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
         mediaSelector.unselect() // 否则不会自动选择
         playerState.stop()
@@ -697,6 +694,12 @@ private class EpisodeViewModelImpl(
                 }
         }
 
+        launchInBackground {
+            mediaSelector.events.onBeforeSelect.collect {
+                // 切换 数据源 前保存播放进度
+                savePlayProgress()
+            }
+        }
         launchInBackground {
             playerState.state.collect {
                 when (it) {
