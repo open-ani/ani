@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.ExpandCircleDown
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -31,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -211,7 +214,13 @@ fun EpisodeDetails(
                 }
             }
             episodeCarouselState.playingEpisode?.let { episode ->
-                Card(Modifier.padding(innerPadding).animateContentSize()) {
+                Card(
+                    Modifier.padding(innerPadding).animateContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
+                    ),
+                ) {
                     PlayingEpisodeItem(
                         episodeSort = { Text(episode.episodeInfo.sort.toString()) },
                         title = { Text(episode.episodeInfo.displayName) },
@@ -299,6 +308,10 @@ fun EpisodeDetails(
                     expanded = expandDanmakuStatistics,
                     Modifier.padding(innerPadding),
                     itemSpacing = 16.dp,
+                    cardColors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
+                    ),
                 )
             }
         },
@@ -369,7 +382,9 @@ fun EpisodeDetailsScaffold(
         }
     }
 
-    Column(modifier.padding(top = topPadding, bottom = bottomPadding)) {
+    Column(
+        modifier.padding(top = topPadding, bottom = bottomPadding).background(MaterialTheme.colorScheme.background),
+    ) {
         // header
         Column(
             Modifier.padding(horizontalPaddingValues),

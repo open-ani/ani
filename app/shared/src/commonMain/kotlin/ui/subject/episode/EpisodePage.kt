@@ -261,7 +261,7 @@ private fun EpisodeSceneTabletVeryWide(
             ) {
                 TabRow(
                     pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth(),
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
@@ -512,9 +512,12 @@ fun EpisodeSceneContentPhoneScaffold(
         val scope = rememberCoroutineScope()
 
         Column(Modifier.fillMaxSize()) {
-            Surface {
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
                 Row {
-                    TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
+                    TabRow(
+                        pagerState, scope, commentCount, Modifier.weight(1f),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    )
                     Box(
                         modifier = Modifier.weight(0.618f) // width
                             .height(48.dp)
