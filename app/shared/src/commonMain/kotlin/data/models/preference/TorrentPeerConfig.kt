@@ -11,6 +11,10 @@ data class TorrentPeerConfig(
      */
     val ipFilters: List<String> = emptyList(),
     val enableIpFilter: Boolean = false,
+    /**
+     * ip 黑名单. 不经过 [ipFilters] 的匹配, 直接拒绝与此 peer 的连接.
+     */
+    val ipBlackList: List<String> = emptyList(),
 
     /**
      * 使用正则表达式过滤 [PeerInfo.client].

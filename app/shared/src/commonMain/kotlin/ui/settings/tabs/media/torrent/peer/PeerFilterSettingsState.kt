@@ -3,56 +3,58 @@ package me.him188.ani.app.ui.settings.tabs.media.torrent.peer
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
+import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
 
 @Immutable
 data class PeerFilterItemState(
     val enabled: Boolean,
-    val content: List<String>
+    val content: String
 ) {
     companion object {
         @Stable
-        val Default = PeerFilterItemState(false, emptyList())
+        val Default = PeerFilterItemState(false, "")
     }
 }
 
 @Stable
 class PeerFilterSettingsState(
     configState: State<TorrentPeerConfig?>,
-    private val onSave: (TorrentPeerConfig) -> Unit,
+    onSave: (TorrentPeerConfig) -> Unit,
+    isSavingState: State<Boolean>,
 ) {
-    private val config by configState
+    private val storage = SaveableStorage(
+        containerState = configState,
+        onSave = onSave,
+        isSavingState = stateOf(false)
+    )
     
-    private val ipFilterState by derivedStateOf { 
-        config?.let { PeerFilterItemState(it.enableIpFilter, it.ipFilters) } 
-    }
-    private val idFilterState by derivedStateOf {
-        config?.let { PeerFilterItemState(it.enableIdFilter, it.idRegexFilters) }
-    }
-    private val clientFilterState by derivedStateOf {
-        config?.let { PeerFilterItemState(it.enableClientFilter, it.clientRegexFilters) }
-    }
+    var editingIpBlockList by mutableStateOf(false)
     
-    var ipFilter: PeerFilterItemState
-        get() = ipFilterState ?: PeerFilterItemState.Default
-        set(value) {
-            val originalConfig = config ?: return
-            onSave(originalConfig.copy(enableIpFilter = value.enabled, ipFilters = value.content))
-        }
-
-    var idFilter: PeerFilterItemState
-        get() = idFilterState ?: PeerFilterItemState.Default
-        set(value) {
-            val originalConfig = config ?: return
-            onSave(originalConfig.copy(enableIdFilter = value.enabled, idRegexFilters = value.content))
-        }
-
-    var clientFilter: PeerFilterItemState
-        get() = clientFilterState ?: PeerFilterItemState.Default
-        set(value) {
-            val originalConfig = config ?: return
-            onSave(originalConfig.copy(enableClientFilter = value.enabled, clientRegexFilters = value.content))
-        }
+    var ipBlackList by storage.prop({ it.ipBlackList }, { copy(ipBlackList = it) }, emptyList())
+    
+    var ipFilterEnabled by storage.prop({ it.enableIpFilter }, { copy(enableIpFilter = it) }, false)
+    var ipFilters by storage.prop(
+        get = { it.ipFilters.joinToString("\n") }, 
+        copy = { copy(ipFilters = it.split('\n')) }, 
+        default = ""
+    )
+    
+    var idFilterEnabled by storage.prop({ it.enableIdFilter }, { copy(enableIdFilter = it) }, false)
+    var idFilters by storage.prop(
+        get = { it.idRegexFilters.joinToString("\n") },
+        copy = { copy(idRegexFilters = it.split('\n')) },
+        default = ""
+    )
+    
+    var clientFilterEnabled by storage.prop({ it.enableClientFilter }, { copy(enableClientFilter = it) }, false)
+    var clientFilters by storage.prop(
+        get = { it.idRegexFilters.joinToString("\n") },
+        copy = { copy(idRegexFilters = it.split('\n')) },
+        default = ""
+    )
 }

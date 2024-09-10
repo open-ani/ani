@@ -277,14 +277,17 @@ fun AniAppContentPortrait(
                 }
             }
             composable(
-                "/settings/torrent-peer-config/edit",
+                "/settings/torrent-peer/edit",
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { 
                 val viewModel = viewModel { PeerFilterSettingsViewModel() }
-                PeerFilterSettingsPage(viewModel.state)
+                PeerFilterSettingsPage(
+                    viewModel.state,
+                    Modifier.desktopTitleBarPadding()
+                )
             }
         }
     }
