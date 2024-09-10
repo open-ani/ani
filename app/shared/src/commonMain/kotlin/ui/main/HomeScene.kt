@@ -34,7 +34,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuite
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -175,9 +174,6 @@ private fun HomeSceneLandscape(
     ) {
         Row(modifier.background(AniThemeDefaults.navigationContainerColor)) {
             // NavigationRail 宽度至少为 80.dp, 没有 horizontal padding
-            NavigationSuite {
-
-            }
             NavigationRail(
                 Modifier.fillMaxHeight(),
                 header = { UserAvatarInNavigation() },
@@ -255,7 +251,7 @@ private fun HomeSceneLandscape(
                             onClickCaches = {
                                 navigator.navigateCaches()
                             },
-                            Modifier.fillMaxSize().padding(),
+                            Modifier,
                             windowInsets = windowInsets,
                         )
 
@@ -389,6 +385,7 @@ private fun HomeScenePortrait(
                         onClickCaches = {
                             navigator.navigateCaches()
                         },
+                        Modifier,
                         contentPadding = contentPadding,
                     )
 

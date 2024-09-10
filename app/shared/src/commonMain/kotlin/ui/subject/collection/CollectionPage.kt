@@ -52,7 +52,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -82,7 +81,6 @@ import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
-import me.him188.ani.app.ui.foundation.layout.panePadding
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
@@ -215,7 +213,7 @@ fun CollectionPane(
         Surface(
             Modifier.padding(topBarPaddings),
             color = MaterialTheme.colorScheme.background,
-            shape = MaterialTheme.shapes.extraLarge,
+//            shape = MaterialTheme.shapes.extraLarge,
         ) {
             HorizontalPager(
                 state = pagerState,
@@ -238,15 +236,9 @@ fun CollectionPane(
                     }
                 }
 
-                val tabContentPadding = PaddingValues(
-                    top = topBarPaddings.calculateTopPadding() + contentPadding.calculateTopPadding(),
-                    bottom = contentPadding.calculateBottomPadding(),
-                    start = 0.dp,
-                    end = 0.dp,
-                )
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     when {
                         // 假设没登录, 但是有缓存, 需要展示缓存
@@ -255,14 +247,13 @@ fun CollectionPane(
                                 vm.authState,
                                 guest = { GuestTips(vm.authState) },
                                 Modifier.padding(top = 32.dp)
-                                    .padding(horizontal = 16.dp)
-                                    .padding(tabContentPadding),
+                                    .padding(horizontal = 16.dp),
                             )
                         }
 
                         collection.subjectCollectionColumnState.isKnownAuthorizedAndEmpty -> {
                             Column(
-                                modifier.padding(top = 32.dp).padding(tabContentPadding).padding(horizontal = 16.dp)
+                                modifier.padding(top = 32.dp).padding(horizontal = 16.dp)
                                     .fillMaxSize(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -300,7 +291,6 @@ fun CollectionPane(
                                     collection.subjectCollectionColumnState,
                                     vm = vm,
                                     type = type,
-                                    contentPadding = currentWindowAdaptiveInfo().windowSizeClass.panePadding,
                                     enableAnimation = vm.myCollectionsSettings.enableListAnimation,
                                     allowProgressIndicator = vm.authState.isKnownLoggedIn,
                                 )
@@ -322,7 +312,6 @@ private fun TabContent(
     state: SubjectCollectionColumnState,
     vm: MyCollectionsViewModel,
     type: UnifiedCollectionType,
-    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
@@ -390,7 +379,6 @@ private fun TabContent(
             )
         },
         modifier,
-        contentPadding = contentPadding,
         enableAnimation = enableAnimation,
         allowProgressIndicator = allowProgressIndicator,
     )

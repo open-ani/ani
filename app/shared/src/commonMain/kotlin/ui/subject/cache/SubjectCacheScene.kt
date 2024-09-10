@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -284,10 +286,10 @@ fun SubjectCachePageScaffold(
                     TopAppBarGoBackButton()
                 },
                 colors = AniThemeDefaults.topAppBarColors(),
-                windowInsets = windowInsets,
+                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
-        contentWindowInsets = windowInsets,
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Surface(Modifier.fillMaxWidth()) {

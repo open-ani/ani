@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
@@ -237,7 +239,7 @@ fun SubjectDetailsPage(
                             }
                         },
                         colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
-                        windowInsets = windowInsets,
+                        windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                     )
 
                     // 有背景, 仅在滚动一段距离后使用
@@ -251,14 +253,14 @@ fun SubjectDetailsPage(
                                 }
                             },
                             colors = AniThemeDefaults.topAppBarColors(),
-                            windowInsets = windowInsets,
+                            windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                         )
                     }
                 }
             }
         },
         modifier = modifier,
-        contentWindowInsets = windowInsets,
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { scaffoldPadding ->
         FastLinearProgressIndicator(
             indicatorState,

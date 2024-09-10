@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
@@ -278,15 +277,12 @@ fun CacheManagementPage(
                 color = appBarColors.containerColor,
                 contentColor = contentColorFor(appBarColors.containerColor),
             ) {
-                Column {
-                    CacheManagementOverallStats(
-                        { state.overallStats },
-                        Modifier
-                            .padding(horizontal = 16.dp).padding(bottom = 16.dp)
-                            .fillMaxWidth(),
-                    )
-                    HorizontalDivider()
-                }
+                CacheManagementOverallStats(
+                    { state.overallStats },
+                    Modifier
+                        .padding(horizontal = 16.dp).padding(bottom = 16.dp)
+                        .fillMaxWidth(),
+                )
             }
 
             CacheGroupColumn(

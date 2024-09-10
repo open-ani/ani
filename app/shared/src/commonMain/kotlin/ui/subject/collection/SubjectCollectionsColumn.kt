@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,24 +35,19 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.stateOf
@@ -114,38 +107,20 @@ class SubjectCollectionColumnState(
 /**
  * Lazy column of [item]s, designed for My Collections.
  *
+ * 自带一圈 padding
+ *
  * @param item composes each item. See [SubjectCollection]
- * @param onEmpty content to be displayed when [LazyDataCache.cachedDataFlow] is empty.
- * @param contentPadding 要求该 column 的内容必须保持的 padding.
- * [SubjectCollectionsColumn] 将会允许元素渲染到这些区域, 但会在列表首尾添加 padding.
- * 这样可以让列表渲染到 bottom bar 的下面 (bottom bar 设置 alpha 0.97), 而用户又能正常地滑动到列表尾部并完整显示最后一个元素.
  */
 @Composable
 fun SubjectCollectionsColumn(
     state: SubjectCollectionColumnState,
     item: @Composable (item: SubjectCollection) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
 ) {
     val isCompact = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
     val spacedBy = if (isCompact) 16.dp else 24.dp
-
-    val layoutDirection = LocalLayoutDirection.current
-    val contentPaddingState by rememberUpdatedState(contentPadding)
-    val gridContentPadding by remember(layoutDirection) {
-        derivedStateOf {
-            PaddingValues(
-                // 每两个 item 之间有 spacedBy dp, 这里再上补充 contentPadding 要求的高度, 这样顶部的总留空就是 contentPadding 要求的高度
-                // 这个高度是可以滚到上面的
-                top = (contentPaddingState.calculateTopPadding() + spacedBy).coerceAtLeast(0.dp),
-                bottom = (contentPaddingState.calculateBottomPadding() + spacedBy).coerceAtLeast(0.dp),
-                start = contentPaddingState.calculateStartPadding(layoutDirection),
-                end = contentPaddingState.calculateEndPadding(layoutDirection),
-            )
-        }
-    }
 
     LazyVerticalGrid(
         GridCells.Adaptive(360.dp),
@@ -153,9 +128,9 @@ fun SubjectCollectionsColumn(
         state.gridState,
         verticalArrangement = Arrangement.spacedBy(spacedBy),
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
-        contentPadding = contentPadding,
+        contentPadding = PaddingValues(horizontal = spacedBy),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {}
+        item(span = { GridItemSpan(maxLineSpan) }) {} // 添加新 item 时保持到顶部
 
         items(state.cachedData, key = { it.subjectId }) { collection ->
             Box(Modifier.ifThen(enableAnimation) { animateItem() }) {

@@ -3,7 +3,9 @@ package me.him188.ani.app.ui.profile.auth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
@@ -83,10 +85,10 @@ fun BangumiTokenAuthPage(
                         TopAppBarGoBackButton()
                     },
                     colors = AniThemeDefaults.topAppBarColors(),
-                    windowInsets = windowInsets,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 )
             },
-            contentWindowInsets = windowInsets,
+            contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
         ) { contentPadding ->
             Column(
                 Modifier.padding(contentPadding).padding(16.dp).widthIn(max = 600.dp),

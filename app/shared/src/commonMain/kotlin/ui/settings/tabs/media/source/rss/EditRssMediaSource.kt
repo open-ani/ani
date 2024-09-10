@@ -2,7 +2,9 @@ package me.him188.ani.app.ui.settings.tabs.media.source.rss
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -123,9 +125,10 @@ fun EditRssMediaSourcePage(
                 },
                 navigationIcon = { TopAppBarGoBackButton() },
                 colors = AniThemeDefaults.topAppBarColors(),
-                windowInsets = windowInsets,
+                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         BackHandler(navigator.canNavigateBack()) {
             navigator.navigateBack()

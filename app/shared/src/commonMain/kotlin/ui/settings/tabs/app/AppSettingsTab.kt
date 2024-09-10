@@ -12,7 +12,6 @@ import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -367,7 +366,7 @@ private fun SettingsScope.SoftwareUpdateGroup(
                     || autoUpdate.hasUpdate, // 在主页自动检查的
         ) {
             HorizontalDividerItem()
-            ListItem(
+            Item(
                 headlineContent = {},
                 trailingContent = {
                     TextButtonUpdateLogo(autoUpdate)

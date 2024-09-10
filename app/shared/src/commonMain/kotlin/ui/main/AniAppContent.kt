@@ -1,7 +1,9 @@
 package me.him188.ani.app.ui.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -28,7 +30,7 @@ fun AniAppContent(aniNavigator: AniNavigator) {
         aniNavigator.setNavController(navigator)
     }
 
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         val isLandscape by rememberUpdatedState(showTabletUI())
         val size by rememberUpdatedState(
             with(LocalDensity.current) {

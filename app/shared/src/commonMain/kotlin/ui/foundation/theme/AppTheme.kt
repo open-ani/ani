@@ -67,7 +67,7 @@ object AniThemeDefaults {
     @Composable
     fun primaryCardColors(): CardColors =
         CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerHigh),
         )
 }
