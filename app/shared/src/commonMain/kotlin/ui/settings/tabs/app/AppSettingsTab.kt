@@ -147,7 +147,7 @@ private fun SettingsScope.UISettingsGroup(
                         else -> {}
                     }
                 },
-                title = { Text("主题") },
+                title = { Text("深色模式") },
             )
         }
 
