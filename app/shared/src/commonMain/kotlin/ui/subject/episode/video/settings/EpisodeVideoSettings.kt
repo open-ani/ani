@@ -21,17 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.SettingsState
-import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
@@ -44,6 +43,7 @@ import kotlin.math.roundToInt
 @Stable
 class EpisodeVideoSettingsViewModel : AbstractViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
+    private val danmakuRegexFilterRepository by inject<DanmakuRegexFilterRepository>()
 
     private val danmakuConfigState: SettingsState<DanmakuConfig> =
         settingsRepository.danmakuConfig.stateInBackground(
@@ -68,8 +68,8 @@ class EpisodeVideoSettingsViewModel : AbstractViewModel(), KoinComponent {
         danmakuConfigState.update(config)
     }
 
-    override fun switchDanmakuRegexFilterCompletely() {
-        danmakuFilterConfigSetting.update(
+    fun switchDanmakuRegexFilterCompletely() {
+        danmakuFilterConfigState.update(
             danmakuFilterConfig.copy(enableRegexFilter = !danmakuFilterConfig.enableRegexFilter),
         )
     }
@@ -101,8 +101,7 @@ fun EpisodeVideoSettings(
     onManageRegexFilters: () -> Unit,
     switchDanmakuRegexFilterCompletely: () -> Unit,
     modifier: Modifier = Modifier,
-    useThinSlider: Boolean = true,
-    danmakuRegexFilterGroup: @Composable (SettingsScope.() -> Unit),
+    useThinSlider: Boolean = true
 ) {
     SettingsTab(modifier) {
         Column {
@@ -344,12 +343,11 @@ fun EpisodeVideoSettings(
                     switchDanmakuRegexFilterCompletely()
                 },
                 title = { Text("启用正则弹幕过滤器") },
-                modifier = Modifier.placeholder(isLoadingState),
             )
 
             TextItem(
                 onClick = { onManageRegexFilters() },
-                modifier = Modifier.placeholder(isLoadingState).padding(bottom = 8.dp, top = 8.dp),
+                modifier = Modifier.padding(bottom = 8.dp, top = 8.dp),
             ) {
                 Text("管理正则弹幕过滤器")
             }
