@@ -172,7 +172,7 @@ compose-material3-adaptive-navigation0 = { module = "org.jetbrains.compose.mater
 # Android-only libraries
 # Each library has its own version, so we don't use `Versions` here.
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.13.1" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.1" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.2" }
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version = "1.9.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 androidx-material = { module = "com.google.android.material:material", version = "1.12.0" }

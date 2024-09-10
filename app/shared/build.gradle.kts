@@ -170,6 +170,7 @@ kotlin {
         api(libs.androidx.media)
         api(libs.androidx.core.ktx)
         api(libs.androidx.activity.compose)
+        api(libs.androidx.activity.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
 

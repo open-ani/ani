@@ -7,7 +7,6 @@ import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.HdrAuto
 import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Verified
@@ -25,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.preference.DarkMode
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
-import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
@@ -94,53 +93,57 @@ fun AppSettingsTab(
     }
 }
 
-@Stable
-private val themesSupportedByPlatform = if (Platform.currentPlatform.isDesktop()) {
-    listOf(ThemeKind.AUTO, ThemeKind.LIGHT, ThemeKind.DARK)
-} else {
-    listOf(ThemeKind.AUTO, ThemeKind.DYNAMIC)
-}
-
 @Composable
 private fun SettingsScope.UISettingsGroup(
     state: SettingsState<UISettings>,
 ) {
     val uiSettings by state
     Group(title = { Text("通用") }) {
-        if (Platform.currentPlatform.isDesktop() || Platform.currentPlatform.isAndroid()) {
+        if (Platform.currentPlatform.isAndroid()) {
+            SwitchItem(
+                uiSettings.theme.dynamicTheme,
+                {
+                    state.update(
+                        uiSettings.copy(
+                            theme = uiSettings.theme.copy(dynamicTheme = !uiSettings.theme.dynamicTheme),
+                        ),
+                    )
+                },
+                title = { Text("动态主题") },
+                description = { Text("根据桌面壁纸定制主题") },
+            )
+        }
+        AnimatedVisibility(
+            Platform.currentPlatform.isDesktop()
+                    || (Platform.currentPlatform.isAndroid() && uiSettings.theme.dynamicTheme),
+        ) {
             DropdownItem(
-                selected = { uiSettings.theme.kind },
-                values = { themesSupportedByPlatform },
+                selected = { uiSettings.theme.darkMode },
+                values = { DarkMode.entries },
                 itemText = {
                     when (it) {
-                        ThemeKind.AUTO -> Text("自动")
-                        ThemeKind.LIGHT -> Text("浅色")
-                        ThemeKind.DARK -> Text("深色")
-                        ThemeKind.DYNAMIC -> Text("动态")
+                        DarkMode.AUTO -> Text("自动")
+                        DarkMode.LIGHT -> Text("浅色")
+                        DarkMode.DARK -> Text("深色")
                     }
                 },
                 onSelect = {
                     state.update(
                         uiSettings.copy(
-                            theme = uiSettings.theme.copy(kind = it),
+                            theme = uiSettings.theme.copy(darkMode = it),
                         ),
                     )
                 },
                 itemIcon = {
                     when (it) {
-                        ThemeKind.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
-                        ThemeKind.LIGHT -> Icon(Icons.Rounded.LightMode, null)
-                        ThemeKind.DARK -> Icon(Icons.Rounded.DarkMode, null)
-                        ThemeKind.DYNAMIC -> Icon(Icons.Rounded.Palette, null)
+                        DarkMode.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
+                        DarkMode.LIGHT -> Icon(Icons.Rounded.LightMode, null)
+                        DarkMode.DARK -> Icon(Icons.Rounded.DarkMode, null)
                     }
                 },
                 description = {
-                    when (uiSettings.theme.kind) {
-                        ThemeKind.AUTO -> {
-                            Text("根据系统设置自动切换")
-                        }
-
-                        ThemeKind.DYNAMIC -> Text("根据壁纸动态配色")
+                    when (uiSettings.theme.darkMode) {
+                        DarkMode.AUTO -> Text("根据系统设置自动切换")
                         else -> {}
                     }
                 },

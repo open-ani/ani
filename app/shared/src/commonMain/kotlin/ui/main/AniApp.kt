@@ -20,7 +20,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.models.preference.ThemeKind
+import me.him188.ani.app.data.models.preference.DarkMode
+import me.him188.ani.app.data.models.preference.ThemeSettings
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.LocalTimeFormatter
 import me.him188.ani.app.tools.TimeFormatter
@@ -33,13 +34,13 @@ import org.koin.core.component.inject
 @Stable
 class AniAppViewModel : AbstractViewModel(), KoinComponent {
     private val settings: SettingsRepository by inject()
-    val themeKind: ThemeKind? by settings.uiSettings.flow.map { it.theme.kind }.produceState(null)
+    val themeSettings: ThemeSettings? by settings.uiSettings.flow.map { it.theme }.produceState(null)
 }
 
 @Composable
 fun AniApp(
     modifier: Modifier = Modifier,
-    colorScheme: ColorScheme? = null,
+    overrideColorTheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
     val coilContext = LocalPlatformContext.current
@@ -58,10 +59,11 @@ fun AniApp(
 
         val viewModel = viewModel { AniAppViewModel() }
 
+        // 主题读好再进入 APP, 防止黑白背景闪烁
+        val theme = viewModel.themeSettings ?: return@CompositionLocalProvider
+
         MaterialTheme(
-            colorScheme ?: currentPlatformColorTheme(
-                viewModel.themeKind ?: return@CompositionLocalProvider, // 主题读好再进入 APP, 防止黑白背景闪烁
-            ),
+            overrideColorTheme ?: currentPlatformColorTheme(theme.darkMode, theme.dynamicTheme),
         ) {
             Box(
                 modifier = modifier
@@ -83,4 +85,7 @@ fun AniApp(
 }
 
 @Composable
-internal expect fun currentPlatformColorTheme(themeKind: ThemeKind): ColorScheme
+internal expect fun currentPlatformColorTheme(
+    darkMode: DarkMode,
+    useDynamicTheme: Boolean
+): ColorScheme

@@ -24,7 +24,11 @@ data class UISettings(
 @Serializable
 @Immutable
 data class ThemeSettings(
-    val kind: ThemeKind = ThemeKind.AUTO,
+    val darkMode: DarkMode = DarkMode.AUTO,
+    /**
+     * Only on Android
+     */
+    val dynamicTheme: Boolean = false,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     companion object {
@@ -34,11 +38,8 @@ data class ThemeSettings(
 }
 
 @Serializable
-enum class ThemeKind {
+enum class DarkMode {
     LIGHT, DARK, AUTO,
-
-    // Only on android
-    DYNAMIC
 }
 
 @Serializable
