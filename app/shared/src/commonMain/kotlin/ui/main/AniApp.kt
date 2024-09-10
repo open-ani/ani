@@ -58,7 +58,11 @@ fun AniApp(
 
         val viewModel = viewModel { AniAppViewModel() }
 
-        MaterialTheme(colorScheme ?: currentPlatformColorTheme(viewModel.themeKind)) {
+        MaterialTheme(
+            colorScheme ?: currentPlatformColorTheme(
+                viewModel.themeKind ?: return@CompositionLocalProvider, // 主题读好再进入 APP, 防止黑白背景闪烁
+            ),
+        ) {
             Box(
                 modifier = modifier
                     .focusable(false)
@@ -79,4 +83,4 @@ fun AniApp(
 }
 
 @Composable
-internal expect fun currentPlatformColorTheme(themeKind: ThemeKind?): ColorScheme
+internal expect fun currentPlatformColorTheme(themeKind: ThemeKind): ColorScheme

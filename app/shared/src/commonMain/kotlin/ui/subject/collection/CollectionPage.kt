@@ -21,7 +21,6 @@ package me.him188.ani.app.ui.subject.collection
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -110,7 +109,6 @@ val COLLECTION_TABS_SORTED = listOf(
 fun CollectionPane(
     onClickCaches: () -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp), // bottom bar + window insets
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val vm = viewModel { MyCollectionsViewModel() }

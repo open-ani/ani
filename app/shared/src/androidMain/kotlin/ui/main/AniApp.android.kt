@@ -11,7 +11,7 @@ import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.ui.foundation.theme.aniColorScheme
 
 @Composable
-internal actual fun currentPlatformColorTheme(themeKind: ThemeKind?): ColorScheme {
+internal actual fun currentPlatformColorTheme(themeKind: ThemeKind): ColorScheme {
     val isDark = isSystemInDarkTheme()
     return when (themeKind) {
         ThemeKind.DYNAMIC -> {

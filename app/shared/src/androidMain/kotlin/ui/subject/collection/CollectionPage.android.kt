@@ -1,11 +1,9 @@
 package me.him188.ani.app.ui.subject.collection
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
@@ -39,7 +37,6 @@ private fun PreviewCollectionPage() {
         WindowInsets.ime
         CollectionPane(
             onClickCaches = {},
-            contentPadding = PaddingValues(0.dp),
         )
     }
 }

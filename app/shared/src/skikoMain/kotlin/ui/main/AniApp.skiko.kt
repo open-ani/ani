@@ -9,7 +9,7 @@ import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 
 @Composable
-internal actual fun currentPlatformColorTheme(themeKind: ThemeKind?): ColorScheme {
+internal actual fun currentPlatformColorTheme(themeKind: ThemeKind): ColorScheme {
     return when (themeKind) {
         ThemeKind.LIGHT -> aniLightColorTheme()
         ThemeKind.DARK -> aniDarkColorTheme()

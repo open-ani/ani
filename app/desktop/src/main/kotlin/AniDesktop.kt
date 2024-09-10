@@ -266,6 +266,10 @@ object AniDesktop {
                 undecorated = context.extraWindowProperties.undecorated,
             ) {
                 SideEffect {
+                    // 防止闪眼
+                    window.background = java.awt.Color.BLACK
+                    window.contentPane.background = java.awt.Color.BLACK
+                    
                     logger.info {
                         "renderApi: " + this.window.renderApi
                     }

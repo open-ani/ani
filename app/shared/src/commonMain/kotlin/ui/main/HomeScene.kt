@@ -386,7 +386,6 @@ private fun HomeScenePortrait(
                             navigator.navigateCaches()
                         },
                         Modifier,
-                        contentPadding = contentPadding,
                     )
 
                     2 -> {
