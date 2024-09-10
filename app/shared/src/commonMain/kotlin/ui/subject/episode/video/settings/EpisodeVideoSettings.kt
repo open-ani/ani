@@ -86,9 +86,6 @@ fun EpisodeVideoSettings(
         setDanmakuConfig = remember(vm) {
             vm::setDanmakuConfig
         },
-        isLoading = remember(vm) {
-            { vm.isLoading }
-        },
         modifier = modifier,
         onManageRegexFilters = onManageRegexFilters,
         enableRegexFilter = vm.danmakuFilterConfig.enableRegexFilter,
@@ -96,23 +93,17 @@ fun EpisodeVideoSettings(
     )
 }
 
-@Stable
-private val LOADING_FALSE = { false }
-
 @Composable
 fun EpisodeVideoSettings(
     danmakuConfig: DanmakuConfig,
     setDanmakuConfig: (config: DanmakuConfig) -> Unit,
-    isLoading: () -> Boolean = LOADING_FALSE,
     enableRegexFilter: Boolean,
     onManageRegexFilters: () -> Unit,
     switchDanmakuRegexFilterCompletely: () -> Unit,
     modifier: Modifier = Modifier,
+    useThinSlider: Boolean = true,
+    danmakuRegexFilterGroup: @Composable (SettingsScope.() -> Unit),
 ) {
-    val isLoadingState by remember(isLoading) {
-        derivedStateOf(isLoading)
-    }
-
     SettingsTab(modifier) {
         Column {
             FlowRow(
@@ -127,7 +118,6 @@ fun EpisodeVideoSettings(
                         else Icon(Icons.Rounded.Close, contentDescription = null)
                     },
                     label = { Text("顶部", maxLines = 1) },
-                    modifier = Modifier.placeholder(isLoadingState),
                 )
                 ElevatedFilterChip(
                     selected = danmakuConfig.enableFloating,
@@ -137,7 +127,6 @@ fun EpisodeVideoSettings(
                         if (danmakuConfig.enableFloating) Icon(Icons.Rounded.Check, contentDescription = null)
                         else Icon(Icons.Rounded.Close, contentDescription = null)
                     },
-                    modifier = Modifier.placeholder(isLoadingState),
                 )
                 ElevatedFilterChip(
                     selected = danmakuConfig.enableBottom,
@@ -147,7 +136,6 @@ fun EpisodeVideoSettings(
                         if (danmakuConfig.enableBottom) Icon(Icons.Rounded.Check, contentDescription = null)
                         else Icon(Icons.Rounded.Close, contentDescription = null)
                     },
-                    modifier = Modifier.placeholder(isLoadingState),
                 )
                 ElevatedFilterChip(
                     selected = danmakuConfig.enableColor,
@@ -161,7 +149,6 @@ fun EpisodeVideoSettings(
                         else Icon(Icons.Rounded.Close, contentDescription = null)
                     },
                     label = { Text("彩色", maxLines = 1) },
-                    modifier = Modifier.placeholder(isLoadingState),
                 )
             }
 
@@ -177,10 +164,10 @@ fun EpisodeVideoSettings(
                     )
                 },
                 valueRange = 0.50f..3f,
-                steps = ((3f - 0.50f) / 0.05f).toInt() - 1,
+//                steps = ((3f - 0.50f) / 0.05f).toInt() - 1,
                 title = { Text("弹幕字号") },
                 valueLabel = { Text(remember(fontSize) { "${(fontSize * 100).roundToInt()}%" }) },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
             val alpha by remember(danmakuConfig) {
@@ -189,15 +176,16 @@ fun EpisodeVideoSettings(
             SliderItem(
                 value = alpha,
                 onValueChange = {
+                    // 故意每次改都更新, 可以即时预览
                     setDanmakuConfig(
                         danmakuConfig.copy(style = danmakuConfig.style.copy(alpha = it)),
                     )
                 },
                 valueRange = 0f..1f,
-                steps = ((1f - 0f) / 0.05f).toInt() - 1,
+//                steps = ((1f - 0f) / 0.05f).toInt() - 1,
                 title = { Text("不透明度") },
                 valueLabel = { Text(remember(alpha) { "${(alpha * 100).roundToInt()}%" }) },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
             val strokeWidth by remember(danmakuConfig) {
@@ -206,15 +194,16 @@ fun EpisodeVideoSettings(
             SliderItem(
                 value = strokeWidth,
                 onValueChange = {
+                    // 故意每次改都更新, 可以即时预览
                     setDanmakuConfig(
                         danmakuConfig.copy(style = danmakuConfig.style.copy(strokeWidth = it * DanmakuStyle.Default.strokeWidth)),
                     )
                 },
                 valueRange = 0f..2f,
-                steps = ((2f - 0f) / 0.1f).toInt() - 1,
+//                steps = ((2f - 0f) / 0.1f).toInt() - 1,
                 title = { Text("描边宽度") },
                 valueLabel = { Text(remember(strokeWidth) { "${(strokeWidth * 100).roundToInt()}%" }) },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
             val fontWeight by remember(danmakuConfig) {
@@ -226,39 +215,39 @@ fun EpisodeVideoSettings(
                 value = fontWeight,
                 onValueChange = {
                     if (it != fontWeight) {
+                        // 故意每次改都更新, 可以即时预览
                         setDanmakuConfig(
                             danmakuConfig.copy(style = danmakuConfig.style.copy(fontWeight = FontWeight(it.toInt()))),
                         )
                     }
                 },
                 valueRange = 100f..900f,
-                steps = ((900 - 100) / 100) - 1,
+//                steps = ((900 - 100) / 100) - 1,
                 title = { Text("弹幕字重") },
                 valueLabel = { Text(remember(fontWeight) { "${fontWeight.toInt()}" }) },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
-            var speed by remember(danmakuConfig) {
+            val speed by remember(danmakuConfig) {
                 mutableFloatStateOf(
                     danmakuConfig.speed / DanmakuConfig.Default.speed,
                 )
             }
             SliderItem(
                 value = speed,
-                onValueChange = { speed = it },
-                valueRange = 0.2f..3f,
-                steps = ((3f - 0.2f) / 0.1f).toInt() - 1,
-                title = { Text("弹幕速度") },
-                description = { Text("弹幕速度不会跟随视频倍速变化") },
-                onValueChangeFinished = {
+                onValueChange = {
                     setDanmakuConfig(
                         danmakuConfig.copy(
-                            speed = speed * DanmakuConfig.Default.speed,
+                            speed = it * DanmakuConfig.Default.speed,
                         ),
                     )
                 },
+                valueRange = 0.2f..3f,
+//                steps = ((3f - 0.2f) / 0.1f).toInt() - 1,
+                title = { Text("弹幕速度") },
+                description = { Text("弹幕速度不会跟随视频倍速变化") },
                 valueLabel = { Text(remember(speed) { "${(speed * 100).roundToInt()}%" }) },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
             val displayDensityRange = remember {
@@ -278,6 +267,7 @@ fun EpisodeVideoSettings(
                 onValueChange = {
                     displayDensity = it
                 },
+                // 这个会导致 repopulate, 所以改完了才更新
                 onValueChangeFinished = {
                     setDanmakuConfig(
                         danmakuConfig.copy(
@@ -297,7 +287,7 @@ fun EpisodeVideoSettings(
                         in 0..3 -> Text("稀疏")
                     }
                 },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
 
@@ -318,6 +308,7 @@ fun EpisodeVideoSettings(
                 onValueChange = {
                     displayArea = it
                 },
+                // 这个会导致 repopulate, 所以改完了才更新
                 onValueChangeFinished = {
                     setDanmakuConfig(
                         danmakuConfig.copy(
@@ -344,7 +335,7 @@ fun EpisodeVideoSettings(
                         5f -> Text("全屏")
                     }
                 },
-                modifier = Modifier.placeholder(isLoadingState),
+                useThinSlider = useThinSlider,
             )
 
             SwitchItem(
@@ -374,7 +365,6 @@ fun EpisodeVideoSettings(
                         )
                     },
                     title = { Text("弹幕调试模式") },
-                    modifier = Modifier.placeholder(isLoadingState),
                 )
 
                 val debugSettings by debugViewModel.debugSettings

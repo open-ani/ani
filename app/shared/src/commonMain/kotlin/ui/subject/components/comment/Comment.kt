@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.isInDebugMode
@@ -142,7 +144,13 @@ class CommentState(
     private val onSubmitCommentReaction: suspend (commentId: Int, reactionId: Int) -> Unit,
     backgroundScope: CoroutineScope,
 ) {
-    val sourceVersion: Any? by sourceVersion
+    private val currentSourceVersion: Any? by sourceVersion
+    private var lastSourceVersion: Any? = null
+    
+    var sourceVersion: Any?
+        get() = currentSourceVersion
+        set(value) { lastSourceVersion = value }
+    
     val list: List<UIComment> by list
 
     /**
@@ -164,15 +172,25 @@ class CommentState(
     val isLoading get() = reloadTasker.isRunning
 
     private val reactionSubmitTasker = MonoTasker(backgroundScope)
-
+    
+    fun sourceVersionEquals(): Boolean {
+        return lastSourceVersion == currentSourceVersion
+    }
+    
     /**
      * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
      */
-    suspend fun reload() {
-        freshLoaded = false
-        onReload()
-        freshLoaded = true
-        loadedOnce = true
+    fun reload() {
+        reloadTasker.launch {
+            withContext(Dispatchers.Main) {
+                freshLoaded = false
+            }
+            onReload()
+            withContext(Dispatchers.Main) {
+                freshLoaded = true
+                loadedOnce = true
+            }
+        }
     }
 
     fun loadMore() {

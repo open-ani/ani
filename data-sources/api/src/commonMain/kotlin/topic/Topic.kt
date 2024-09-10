@@ -74,11 +74,7 @@ class TopicDetails(
 )
 
 fun DownloadSearchQuery.matches(topic: Topic, allowEpMatch: Boolean): Boolean {
-    return TopicCriteria(
-        episodeSort = episodeSort,
-        episodeEp = episodeEp,
-        fallback = allowAny,
-    ).matches(topic, allowEpMatch)
+    return toTopicCriteria().matches(topic, allowEpMatch)
 }
 
 @Serializable

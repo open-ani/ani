@@ -14,7 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.SecondaryScrollableTabRow
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
@@ -48,9 +48,9 @@ import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroup
 import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
 import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
 import me.him188.ani.app.ui.settings.tabs.media.VideoResolverGroup
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
 import me.him188.ani.app.ui.settings.tabs.network.DanmakuGroup
 import me.him188.ani.app.ui.settings.tabs.network.GlobalProxyGroup
-import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
 import me.him188.ani.app.ui.settings.tabs.network.OtherTestGroup
 
 /**
@@ -108,13 +108,15 @@ fun SettingsPage(
 
         // Pager with TabRow
         Column(Modifier.padding(topBarPaddings).fillMaxSize()) {
-            SecondaryScrollableTabRow(
+            ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 indicator = @Composable { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
                     )
                 },
+                contentColor = TabRowDefaults.secondaryContentColor,
+                containerColor = TabRowDefaults.secondaryContainerColor,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 val tabs by remember {
@@ -156,7 +158,7 @@ fun SettingsPage(
                     Column(Modifier.fillMaxSize().padding(contentPadding)) {
                         when (type) {
                             SettingsTab.MEDIA -> {
-                                SettingsTab(modifier) {
+                                SettingsTab(Modifier.fillMaxSize()) {
                                     VideoResolverGroup(vm.videoResolverSettingsState)
                                     AutoCacheGroup(vm.mediaCacheSettingsState)
 

@@ -34,6 +34,8 @@ abstract class HttpMediaSource : MediaSource {
         super.close()
         this.closeables.forEach { it.close() }
     }
+
+    companion object
 }
 
 /**
@@ -47,36 +49,45 @@ fun HttpMediaSource.useHttpClient(
     basicAuth: BasicAuthCredentials? = null,
     clientConfig: HttpClientConfig<*>.() -> Unit = {},
 ): HttpClient {
-    return createDefaultHttpClient {
+    return HttpMediaSource.createHttpClient(timeoutMillis, bearerTokens, basicAuth) {
         applyMediaSourceConfig(mediaSourceConfig)
-        install(HttpTimeout) {
-            requestTimeoutMillis = timeoutMillis
-        }
-        if (bearerTokens != null) {
-            Auth {
-                bearer {
-                    loadTokens { bearerTokens }
-                }
-            }
-        }
-        if (basicAuth != null) {
-            Auth {
-                basic {
-                    credentials { basicAuth }
-                }
-            }
-        }
-        expectSuccess = true
-        install(ContentNegotiation) {
-            val xmlConverter = getXmlConverter()
-            register(ContentType.Text.Xml, xmlConverter)
-            register(ContentType.Text.Html, xmlConverter)
-        }
-
         clientConfig()
     }.apply {
         registerLogging(logger)
     }.also { addCloseable(it.asAutoCloseable()) }
+}
+
+fun HttpMediaSource.Companion.createHttpClient(
+    timeoutMillis: Long = 30_000,
+    bearerTokens: BearerTokens? = null,
+    basicAuth: BasicAuthCredentials? = null,
+    clientConfig: HttpClientConfig<*>.() -> Unit
+) = createDefaultHttpClient {
+    install(HttpTimeout) {
+        requestTimeoutMillis = timeoutMillis
+    }
+    if (bearerTokens != null) {
+        Auth {
+            bearer {
+                loadTokens { bearerTokens }
+            }
+        }
+    }
+    if (basicAuth != null) {
+        Auth {
+            basic {
+                credentials { basicAuth }
+            }
+        }
+    }
+    expectSuccess = true
+    install(ContentNegotiation) {
+        val xmlConverter = getXmlConverter()
+        register(ContentType.Text.Xml, xmlConverter)
+        register(ContentType.Text.Html, xmlConverter)
+    }
+
+    clientConfig()
 }
 
 internal expect fun getXmlConverter(): ContentConverter

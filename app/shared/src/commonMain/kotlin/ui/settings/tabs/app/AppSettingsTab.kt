@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.settings.tabs.app
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.DarkMode
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -84,9 +86,7 @@ fun AppSettingsTab(
 ) {
     SettingsTab(modifier) {
         SoftwareUpdateGroup(softwareUpdateGroupState)
-        if (Platform.currentPlatform.isDesktop()) {
-            UISettingsGroup(uiSettings)
-        }
+        UISettingsGroup(uiSettings)
         PlayerGroup(videoScaffoldConfig)
         AppSettingsTabPlatform()
     }
@@ -98,40 +98,41 @@ private fun SettingsScope.UISettingsGroup(
 ) {
     val uiSettings by state
     Group(title = { Text("通用") }) {
-        DropdownItem(
-            selected = { uiSettings.theme.kind },
-            values = { ThemeKind.entries },
-            itemText = {
-                when (it) {
-                    ThemeKind.AUTO -> Text("自动")
-                    ThemeKind.LIGHT -> Text("浅色")
-                    ThemeKind.DARK -> Text("深色")
-                }
-            },
-            onSelect = {
-                state.update(
-                    uiSettings.copy(
-                        theme = uiSettings.theme.copy(kind = it),
-                    ),
-                )
-            },
-            itemIcon = {
-                when (it) {
-                    ThemeKind.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
-                    ThemeKind.LIGHT -> Icon(Icons.Rounded.LightMode, null)
-                    ThemeKind.DARK -> Icon(Icons.Rounded.DarkMode, null)
-                }
-            },
-            description = {
-                if (uiSettings.theme.kind == ThemeKind.AUTO) {
-                    Text("根据系统设置自动切换")
-                }
-            },
-            title = { Text("主题") },
-        )
+        if (Platform.currentPlatform.isDesktop()) {
+            DropdownItem(
+                selected = { uiSettings.theme.kind },
+                values = { ThemeKind.entries },
+                itemText = {
+                    when (it) {
+                        ThemeKind.AUTO -> Text("自动")
+                        ThemeKind.LIGHT -> Text("浅色")
+                        ThemeKind.DARK -> Text("深色")
+                    }
+                },
+                onSelect = {
+                    state.update(
+                        uiSettings.copy(
+                            theme = uiSettings.theme.copy(kind = it),
+                        ),
+                    )
+                },
+                itemIcon = {
+                    when (it) {
+                        ThemeKind.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
+                        ThemeKind.LIGHT -> Icon(Icons.Rounded.LightMode, null)
+                        ThemeKind.DARK -> Icon(Icons.Rounded.DarkMode, null)
+                    }
+                },
+                description = {
+                    if (uiSettings.theme.kind == ThemeKind.AUTO) {
+                        Text("根据系统设置自动切换")
+                    }
+                },
+                title = { Text("主题") },
+            )
+        }
 
-        SubGroup {
-            TextItem { Text("搜索") }
+        Group(title = { Text("搜索") }, useThinHeader = true) {
             SwitchItem(
                 checked = uiSettings.searchSettings.enableNewSearchSubjectApi,
                 onCheckedChange = {
@@ -148,8 +149,7 @@ private fun SettingsScope.UISettingsGroup(
             )
         }
 
-        SubGroup {
-            TextItem { Text("我的追番") }
+        Group(title = { Text("我的追番") }, useThinHeader = true) {
             SwitchItem(
                 checked = uiSettings.myCollections.enableListAnimation,
                 onCheckedChange = {
@@ -166,8 +166,7 @@ private fun SettingsScope.UISettingsGroup(
             )
         }
 
-        SubGroup {
-            TextItem { Text("选集播放") }
+        Group(title = { Text("选集播放") }, useThinHeader = true) {
             val episode by remember { derivedStateOf { uiSettings.episodeProgress } }
             SwitchItem(
                 checked = episode.theme == EpisodeListProgressTheme.LIGHT_UP,
@@ -293,14 +292,16 @@ private fun SettingsScope.SoftwareUpdateGroup(
         )
         if (currentPlatform.supportsInAppUpdate) {
             AnimatedVisibility(updateSettings.inAppDownload) {
-                HorizontalDividerItem()
-                SwitchItem(
-                    updateSettings.autoDownloadUpdate,
-                    { state.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
-                    title = { Text("自动下载更新") },
-                    description = { Text("下载完成后会提示，确认后才会安装") },
-                    enabled = updateSettings.autoCheckUpdate,
-                )
+                Column {
+                    HorizontalDividerItem()
+                    SwitchItem(
+                        updateSettings.autoDownloadUpdate,
+                        { state.updateSettings.update(updateSettings.copy(autoDownloadUpdate = it)) },
+                        title = { Text("自动下载更新") },
+                        description = { Text("下载完成后会提示，确认后才会安装") },
+                        enabled = updateSettings.autoCheckUpdate,
+                    )
+                }
             }
         }
         HorizontalDividerItem()
@@ -349,8 +350,9 @@ private fun SettingsScope.SoftwareUpdateGroup(
                     || autoUpdate.hasUpdate, // 在主页自动检查的
         ) {
             HorizontalDividerItem()
-            Item(
-                action = {
+            ListItem(
+                headlineContent = {},
+                trailingContent = {
                     TextButtonUpdateLogo(autoUpdate)
                 },
             )
@@ -441,12 +443,11 @@ private fun SettingsScope.PlayerGroup(
         if (currentPlatform.isDesktop()) {
             HorizontalDividerItem()
             SwitchItem(
-                checked = config.autoSkipOpEdExperimental,
+                checked = config.autoSkipOpEd,
                 onCheckedChange = {
-                    videoScaffoldConfig.update(config.copy(autoSkipOpEdExperimental = it))
+                    videoScaffoldConfig.update(config.copy(autoSkipOpEd = it))
                 },
                 title = { Text("自动跳过 OP 和 ED") },
-                description = { Text("实验性功能") },
             )
         }
     }

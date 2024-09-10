@@ -89,6 +89,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.SEE
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.VOLUME
 import me.him188.ani.app.videoplayer.ui.guesture.SwipeSeekerState.Companion.swipeToSeek
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
+import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
@@ -369,12 +370,13 @@ enum class GestureFamily(
     val swipeRhsForVolume: Boolean,
     val swipeLhsForBrightness: Boolean,
     val longPressForFastSkip: Boolean,
+    val scrollForVolume: Boolean,
+    val autoHideController: Boolean,
     val keyboardSpaceForPauseResume: Boolean = true,
     val keyboardUpDownForVolume: Boolean = true,
     val keyboardLeftRightToSeek: Boolean = true,
     val mouseHoverForController: Boolean = true, // not supported on mobile
     val escToExitFullscreen: Boolean = true,
-    val scrollForVolume: Boolean,
 ) {
     TOUCH(
         useDesktopGestureLayoutWorkaround = false,
@@ -388,6 +390,7 @@ enum class GestureFamily(
         longPressForFastSkip = true,
         mouseHoverForController = false,
         scrollForVolume = false,
+        autoHideController = true,
     ),
     MOUSE(
         useDesktopGestureLayoutWorkaround = true,
@@ -400,10 +403,12 @@ enum class GestureFamily(
         swipeLhsForBrightness = false,
         longPressForFastSkip = false,
         scrollForVolume = true,
+        autoHideController = false,
     )
 }
 
 internal val VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION = 3.seconds
+internal val VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION = 3.seconds
 
 @Composable
 fun VideoGestureHost(
@@ -655,6 +660,15 @@ fun VideoGestureHost(
             val indicatorTasker = rememberUiMonoTasker()
             val focusManager by rememberUpdatedState(LocalFocusManager.current) // workaround for #288
 
+            if (family.autoHideController) {
+                LaunchedEffect(controllerState.visibility, controllerState.alwaysOn) {
+                    if (controllerState.visibility.bottomBar) {
+                        delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
+                        controllerState.toggleFullVisible(false)
+                    }
+                }
+            }
+            
             Box(
                 modifier
                     .testTag("VideoGestureHost")
@@ -692,14 +706,20 @@ fun VideoGestureHost(
                         },
                     )
                     .ifThen(family.swipeToSeek && enableSwipeToSeek) {
-                        val swipeToSeekRequester = remember { Any() }
+                        val swipeToSeekRequester = rememberAlwaysOnRequester(controllerState, "swipeToSeek")
                         swipeToSeek(
                             seekerState,
                             Orientation.Horizontal,
                             onDragStarted = {
+                                if (controllerState.visibility.bottomBar) {
+                                    swipeToSeekRequester.request()
+                                }
                                 controllerState.setRequestProgressBar(swipeToSeekRequester)
                             },
                             onDragStopped = {
+                                if (controllerState.visibility.bottomBar) {
+                                    swipeToSeekRequester.cancelRequest()
+                                }
                                 controllerState.cancelRequestProgressBarVisible(swipeToSeekRequester)
                                 progressSliderState.finishPreview()
                             },

@@ -49,9 +49,9 @@ private fun PreviewEpisodeCommentColumn() {
             state = rememberTestCommentState(commentList = generateUiComment(4)),
             editCommentStubText = TextFieldValue("this is my new pending comment"),
             onClickReply = { },
-            onClickUrl = { },
             onClickEditCommentStub = { },
             onClickEditCommentStubEmoji = { },
+            onClickUrl = { },
         )
     }
 }

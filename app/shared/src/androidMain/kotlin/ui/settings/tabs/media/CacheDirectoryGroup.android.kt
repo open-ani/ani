@@ -10,6 +10,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -105,9 +106,9 @@ actual fun SettingsScope.CacheDirectoryGroup(state: CacheDirectoryGroupState) {
             selected = cacheVm.currentSelectionIndex,
             key = { it.javaClass.name },
             listItem = {
-                ItemHeader(
-                    title = { Text(text = renderTorrentCacheLocationName(it)) },
-                    description = { Text(text = renderTorrentCacheLocationDescription(it)) },
+                ListItem(
+                    headlineContent = { Text(text = renderTorrentCacheLocationName(it)) },
+                    supportingContent = { Text(text = renderTorrentCacheLocationDescription(it)) },
                 )
             },
             onOpenDialog = {

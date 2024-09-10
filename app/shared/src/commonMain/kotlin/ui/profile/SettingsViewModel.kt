@@ -6,6 +6,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.DanmakuSettings
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
@@ -36,6 +37,7 @@ import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
+import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.platform.Uuid
@@ -46,7 +48,7 @@ import org.koin.core.component.inject
 class SettingsViewModel : AbstractViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
     private val permissionManager: PermissionManager by inject()
-    private val bangumiSubjectProvider: BangumiSubjectProvider by inject()
+    private val bangumiSubjectProvider: SubjectProvider by inject()
 
     private val mediaSourceManager: MediaSourceManager by inject()
     private val mediaSourceInstanceRepository: MediaSourceInstanceRepository by inject()
@@ -146,8 +148,15 @@ class SettingsViewModel : AbstractViewModel(), KoinComponent {
     )
 
     val editMediaSourceState = EditMediaSourceState(
-        getConfigFlow = { mediaSourceManager.instanceConfigFlow(it) },
-        onAdd = { factoryId, config -> mediaSourceManager.addInstance(Uuid.randomString(), factoryId, config) },
+        getConfigFlow = { id ->
+            mediaSourceManager.instanceConfigFlow(id).map {
+                checkNotNull(it) { "Could not find MediaSourceConfig for id $id" }
+            }
+        },
+        onAdd = { factoryId, config ->
+            val instanceId = Uuid.randomString()
+            mediaSourceManager.addInstance(instanceId, instanceId, factoryId, config)
+        },
         onEdit = { instanceId, config -> mediaSourceManager.updateConfig(instanceId, config) },
         onDelete = { instanceId -> mediaSourceManager.removeInstance(instanceId) },
         onSetEnabled = { instanceId, enabled -> mediaSourceManager.setEnabled(instanceId, enabled) },

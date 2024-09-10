@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
@@ -211,14 +212,23 @@ object PlayerControllerDefaults {
                                     text = volume.times(100).roundToInt().toString(),
                                     modifier = Modifier.padding(8.dp),
                                 )
+                                val colors = SliderDefaults.colors(
+                                    inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
+                                )
                                 VerticalSlider(
                                     value = volume,
                                     onValueChange = onchange,
                                     modifier = Modifier.width(96.dp),
                                     thumb = {},
-                                    colors = SliderDefaults.colors(
-                                        inactiveTrackColor = MaterialTheme.colorScheme.onSurface,
-                                    ),
+                                    colors = colors,
+                                    track = { sliderState ->
+                                        SliderDefaults.Track(
+                                            colors = colors,
+                                            enabled = true,
+                                            sliderState = sliderState,
+                                            thumbTrackGapSize = 0.dp,
+                                        )
+                                    },
                                     valueRange = 0f..maxValue,
                                 )
                             }
@@ -401,11 +411,11 @@ object PlayerControllerDefaults {
                         leadingIcon = leadingIcon,
                         trailingIcon = trailingIcon,
                         container = {
-                            OutlinedTextFieldDefaults.ContainerBox(
-                                enabled,
-                                isError,
-                                interactionSource,
-                                colors,
+                            Container(
+                                enabled = enabled,
+                                isError = isError,
+                                interactionSource = interactionSource,
+                                colors = colors,
                                 shape = shape,
                             )
                         },
@@ -526,12 +536,11 @@ object PlayerControllerDefaults {
         progressSliderState: MediaProgressSliderState,
         cacheProgressState: MediaCacheProgressState,
         modifier: Modifier = Modifier,
-        downloadColor: Color = Color.Yellow,
         enabled: Boolean = true,
         showPreviewTimeTextOnThumb: Boolean = true,
     ) {
-        MediaProgressSlider(
-            progressSliderState, cacheProgressState, downloadingColor = downloadColor,
+        me.him188.ani.app.videoplayer.ui.progress.MediaProgressSlider(
+            progressSliderState, cacheProgressState,
             enabled = enabled,
             showPreviewTimeTextOnThumb = showPreviewTimeTextOnThumb,
             modifier = modifier,
@@ -609,7 +618,9 @@ fun PlayerControllerBar(
                         Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        progressSlider()
+                        MaterialTheme(aniDarkColorTheme()) {
+                            progressSlider()
+                        }
                     }
                 }
             }
@@ -630,12 +641,14 @@ fun PlayerControllerBar(
                 Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (expanded) {
-                    ProvideTextStyle(MaterialTheme.typography.labelSmall) {
-                        danmakuEditor()
+                MaterialTheme(aniDarkColorTheme()) {
+                    if (expanded) {
+                        ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                            danmakuEditor()
+                        }
+                    } else {
+                        progressSlider()
                     }
-                } else {
-                    progressSlider()
                 }
             }
 

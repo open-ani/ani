@@ -92,7 +92,7 @@ class VideoControllerStateTest {
         progressBarVisible: Boolean,
         fullVisible: Boolean
     ): VideoControllerState {
-        val state = VideoControllerState(ControllerVisibility.Visible)
+        val state = VideoControllerState(ControllerVisibility.Invisible)
         val requester = Any()
         state.setRequestAlwaysOn(requester, alwaysOn)
         if (progressBarVisible)

@@ -24,9 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.external.placeholder.placeholder
-import me.him188.ani.app.ui.subject.collection.EditCollectionTypeDropDown
-import me.him188.ani.app.ui.subject.collection.SubjectCollectionAction
-import me.him188.ani.app.ui.subject.collection.SubjectCollectionActions
+import me.him188.ani.app.ui.subject.collection.components.EditCollectionTypeDropDown
+import me.him188.ani.app.ui.subject.collection.components.SubjectCollectionAction
+import me.him188.ani.app.ui.subject.collection.components.SubjectCollectionActions
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 
 

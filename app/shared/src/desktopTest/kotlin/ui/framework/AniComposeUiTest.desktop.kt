@@ -43,3 +43,8 @@ actual fun runAniComposeUiTest(testBody: AniComposeUiTest.() -> Unit) {
         job.cancel()
     }
 }
+
+internal class AniComposeUiTestImpl(composeUiTest: ComposeUiTest) : AbstractAniComposeUiTest(composeUiTest) {
+    override fun waitUntil(conditionDescription: String?, timeoutMillis: Long, condition: () -> Boolean) =
+        composeUiTest.waitUntil(conditionDescription, timeoutMillis, condition)
+}

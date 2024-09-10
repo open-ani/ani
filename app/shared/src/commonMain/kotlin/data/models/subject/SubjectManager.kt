@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -22,13 +21,12 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transform
-import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.episode.EpisodeCollection
 import me.him188.ani.app.data.models.episode.EpisodeCollections
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
 import me.him188.ani.app.data.models.episode.episode
-import me.him188.ani.app.data.models.unauthorized
+import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.persistent.dataStores
 import me.him188.ani.app.data.repository.BangumiEpisodeRepository
 import me.him188.ani.app.data.repository.BangumiSubjectRepository
@@ -41,9 +39,8 @@ import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
-import me.him188.ani.app.data.source.session.username
+import me.him188.ani.app.data.source.session.userInfoAsApiResponse
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.ReplaceFileCorruptionHandler
 import me.him188.ani.app.platform.create
@@ -253,18 +250,15 @@ class SubjectManagerImpl(
         UnifiedCollectionType.entries.associateWith { type ->
             LazyDataCache(
                 createSource = {
-                    @OptIn(OpaqueSession::class)
-                    val username =
-                        sessionManager.username.filterNotNull().firstOrNull()
-                            ?: return@LazyDataCache ApiResponse.unauthorized()
-                    bangumiSubjectRepository.getSubjectCollections(
-                        username,
-                        subjectType = BangumiSubjectType.Anime,
-                        subjectCollectionType = type.toSubjectCollectionType(),
-                    ).mapNotNull {
-                        it.fetchToSubjectCollection()
-                    }.let {
-                        ApiResponse.success(it)
+                    val resp = sessionManager.userInfoAsApiResponse.first()
+                    resp.map { userInfo ->
+                        bangumiSubjectRepository.getSubjectCollections(
+                            userInfo.username ?: error("Self username is null"),
+                            subjectType = BangumiSubjectType.Anime,
+                            subjectCollectionType = type.toSubjectCollectionType(),
+                        ).mapNotNull {
+                            it.fetchToSubjectCollection()
+                        }
                     }
                 },
                 getKey = { it.subjectId },

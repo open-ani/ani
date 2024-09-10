@@ -5,6 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 
 
 /**
@@ -22,6 +25,19 @@ fun formatDateTime(
     return remember(timestamp, showTime) {
         if (timestamp == 0L) ""
         else formatter.format(timestamp, showTime)
+    }
+}
+
+@Composable
+fun formatDateTime(
+    dateTime: LocalDateTime,
+    showTime: Boolean = true,
+): String {
+    val formatter by rememberUpdatedState(LocalTimeFormatter.current)
+    return remember(dateTime, showTime) {
+        val instant = dateTime.toInstant(TimeZone.currentSystemDefault())
+        if (instant.toEpochMilliseconds() == 0L) ""
+        else formatter.format(instant, showTime)
     }
 }
 

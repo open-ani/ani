@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -18,6 +20,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.ExpandCircleDown
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,12 +55,13 @@ import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.platform.window.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeDialogsHost
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeDialogsHost
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
@@ -125,7 +129,11 @@ fun EpisodeDetails(
             viewModel(key = state.subjectId.toString()) { SubjectDetailsViewModel(state.subjectId) }
         subjectDetailsViewModel.navigator = LocalNavigator.current
         if (showSubjectDetails) {
-            ModalBottomSheet({ showSubjectDetails = false }) {
+            ModalBottomSheet(
+                { showSubjectDetails = false },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
+            ) {
                 SubjectDetailsScene(
                     subjectDetailsViewModel,
                     showTopBar = false,
@@ -138,7 +146,11 @@ fun EpisodeDetails(
     var expandDanmakuStatistics by rememberSaveable { mutableStateOf(false) }
 
     if (state.showEpisodes) {
-        ModalBottomSheet({ state.showEpisodes = false }) {
+        ModalBottomSheet(
+            { state.showEpisodes = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+            contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
+        ) {
             EpisodeCarousel(
                 episodeCarouselState,
                 contentPadding = PaddingValues(all = 16.dp),
@@ -247,6 +259,7 @@ fun EpisodeDetails(
                                 ModalBottomSheet(
                                     { showMediaSelector = false },
                                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                                    contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
                                 ) {
                                     EpisodePlayMediaSelector(
                                         mediaSelectorPresentation,

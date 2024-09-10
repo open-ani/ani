@@ -12,9 +12,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.episode.EpisodeVideoImpl
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
@@ -29,6 +32,7 @@ import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.utils.platform.annotations.TestOnly
+import kotlin.time.Duration.Companion.milliseconds
 
 @Preview("Landscape Fullscreen - Light", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_NO)
 @Preview("Landscape Fullscreen - Dark", device = PHONE_LANDSCAPE, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
@@ -96,13 +100,10 @@ private fun PreviewVideoScaffoldImpl(
                 "葬送的芙莉莲",
             )
         },
-        danmakuHostState = remember {
-            DanmakuHostState()
-        },
+        danmakuHostState = remember { DanmakuHostState() },
         danmakuEnabled = danmakuEnabled,
         onToggleDanmaku = { danmakuEnabled = !danmakuEnabled },
         videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
-        danmakuConfig = { DanmakuConfig.Default },
         onClickFullScreen = { },
         onExitFullscreen = { },
         danmakuEditor = {

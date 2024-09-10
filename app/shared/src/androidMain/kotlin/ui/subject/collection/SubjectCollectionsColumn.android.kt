@@ -102,8 +102,10 @@ internal fun rememberTestSubjectCollectionColumnState(
     SubjectCollectionColumnState(
         cachedData = mutableStateOf(cachedData),
         hasMore = mutableStateOf(hasMore),
-        isKnownEmpty = mutableStateOf(isKnownEmpty),
+        isKnownAuthorizedAndEmpty = mutableStateOf(isKnownEmpty),
         onRequestMore = {},
+        onAutoRefresh = {},
+        onManualRefresh = {},
         backgroundScope = PreviewScope,
     )
 }
@@ -130,7 +132,6 @@ private fun PreviewSubjectCollectionsColumnPhone() {
         SubjectCollectionsColumn(
             state = rememberTestSubjectCollectionColumnState(),
             item = { TestSubjectCollectionItem(it) },
-            onEmpty = {},
         )
     }
 }
@@ -146,7 +147,6 @@ private fun PreviewSubjectCollectionsColumnEmptyButLoading() {
                 isKnownEmpty = false,
             ),
             item = { TestSubjectCollectionItem(it) },
-            onEmpty = {},
             Modifier.fillMaxWidth(),
         )
     }
@@ -163,7 +163,6 @@ private fun PreviewSubjectCollectionsColumnEmpty() {
                 isKnownEmpty = true,
             ),
             item = { TestSubjectCollectionItem(it) },
-            onEmpty = {},
             Modifier.fillMaxWidth(),
         )
     }
@@ -205,7 +204,6 @@ private fun PreviewSubjectCollectionsColumnDesktopLarge() {
         SubjectCollectionsColumn(
             rememberTestSubjectCollectionColumnState(),
             item = { TestSubjectCollectionItem(it) },
-            onEmpty = {},
         )
     }
 }

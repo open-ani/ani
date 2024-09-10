@@ -70,7 +70,7 @@ fun ProfilePage(
         topBar = {
             SelfInfo(
                 viewModel.authState,
-                viewModel.authState.isKnownLoggedOut,
+                viewModel.authState.isKnownLoggedOut || viewModel.authState.isKnownGuest,
                 onClickSettings,
                 modifier = Modifier
                     .windowInsetsPadding(TopAppBarDefaults.windowInsets)
@@ -122,14 +122,14 @@ fun AniHelpSection(modifier: Modifier = Modifier) {
                 var showOpenDropdown by remember { mutableStateOf(false) }
                 DropdownMenu(showOpenDropdown, { showOpenDropdown = false }) {
                     DropdownMenuItem(
-                        text = { Text("GitHub 开源仓库") },
+                        text = { Text("GitHub") },
                         onClick = {
-                            KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER)
+                            KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME)
                         },
                     )
                     DropdownMenuItem(
                         text = { Text("反馈问题") },
-                        onClick = { KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME) },
+                        onClick = { KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) },
                     )
                     DropdownMenuItem(
                         text = { Text("Ani 官网") },

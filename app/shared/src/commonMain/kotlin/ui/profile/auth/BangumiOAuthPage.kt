@@ -50,12 +50,12 @@ fun BangumiOAuthScene(
     val nav = LocalNavigator.current
     if (!vm.needAuth) {
         SideEffect {
-            nav.popBackStack()
+            nav.popUntilNotAuth()
         }
     }
     BackHandler {
         vm.onCancel("BangumiOAuthScene BackHandler")
-        nav.popBackStack()
+        nav.popUntilNotAuth()
     }
     BangumiOAuthPage(
         vm,
@@ -121,7 +121,7 @@ fun BangumiOAuthPage(
         ) {
             item {
                 Column(
-                    Modifier.animateItemPlacement(),
+                    Modifier.animateItem(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
@@ -184,7 +184,7 @@ fun BangumiOAuthPage(
             if (showHelp) {
                 item {
                     Column(
-                        Modifier.animateItemPlacement(),
+                        Modifier.animateItem(),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         HorizontalDivider()

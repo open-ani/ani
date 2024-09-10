@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CompletableDeferred
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.datasources.api.source.FactoryId
 import org.koin.core.component.KoinComponent
 import org.koin.mp.KoinPlatform
 
@@ -33,6 +34,17 @@ interface AniNavigator {
 
     fun popBackStack() {
         navigator.popBackStack()
+    }
+
+//    fun popBackStack(
+//        route: String,
+//        inclusive: Boolean,
+//    ) {
+//        navigator.popBackStackIfExist(route, inclusive = true)
+//    }
+
+    fun popUntilNotWelcome() {
+        navigator.popBackStack("/welcome", inclusive = true)
     }
 
     fun popUntilNotAuth() {
@@ -89,6 +101,20 @@ interface AniNavigator {
 
     fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
         navigator.navigate("/settings?tab=${tab.ordinal}&back=true")
+    }
+
+    fun navigateEditMediaSource(
+        factoryId: FactoryId,
+        mediaSourceInstanceId: String,
+    ) {
+        navigator.navigate(
+            buildString {
+                append("/settings/media-source/edit?factoryId=")
+                append(factoryId.value)
+                append("&mediaSourceInstanceId=")
+                append(mediaSourceInstanceId)
+            },
+        )
     }
 
     fun navigateCaches() {

@@ -6,9 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
@@ -46,6 +48,8 @@ import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.platform.window.desktopTitleBar
+import me.him188.ani.app.ui.foundation.Tag
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
@@ -198,24 +202,24 @@ private fun TagsList(
                 }
             }
             presentTags.forEach { tag ->
-                OutlinedTag(
+                Tag(
                     Modifier
                         .clickable {}
                         .height(40.dp)
                         .padding(vertical = 4.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                 ) {
                     ProvideTextStyleContentColor(
                         MaterialTheme.typography.labelMedium,
                     ) {
                         Text(
                             tag.name,
+                            Modifier.align(Alignment.CenterVertically),
                             maxLines = 1,
                         )
 
                         Text(
                             tag.count.toString(),
-                            Modifier.padding(start = 6.dp),
+                            Modifier.padding(start = 6.dp).align(Alignment.CenterVertically),
                             maxLines = 1,
                             color = MaterialTheme.colorScheme.secondary,
                         )
@@ -285,7 +289,10 @@ private fun <T> PersonCardList(
         }
 
         if (showSheet) {
-            ModalBottomSheet({ showSheet = false }) {
+            ModalBottomSheet(
+                { showSheet = false },
+                contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
+            ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     ProvideTextStyle(MaterialTheme.typography.titleLarge) {
                         Row { sheetTitle() }

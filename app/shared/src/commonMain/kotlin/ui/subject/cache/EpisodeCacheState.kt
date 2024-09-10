@@ -21,7 +21,6 @@ import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaCacheMetadata
-import me.him188.ani.datasources.api.topic.isDoneOrDropped
 
 
 /**
@@ -59,10 +58,7 @@ class EpisodeCacheState(
     /**
      * 是否允许缓存该剧集
      */
-    val canCache: Boolean by derivedStateOf {
-        // 没看过的剧集才能缓存
-        !this.info.watchStatus.isDoneOrDropped()
-    }
+    val canCache: Boolean get() = true
 
     /**
      * 是否正在进行添加缓存或删除缓存等有进度的操作

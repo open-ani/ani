@@ -34,6 +34,7 @@ plugins {
     `ani-mpp-lib-targets`
 
     kotlin("plugin.serialization")
+    kotlin("plugin.parcelize")
     id("org.jetbrains.kotlinx.atomicfu")
     id("com.google.devtools.ksp")
     id("androidx.room")
@@ -70,6 +71,7 @@ kotlin {
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
         api(libs.kotlinx.serialization.json.io)
+        api(libs.kotlinx.serialization.protobuf)
         implementation(libs.atomicfu) // room runtime
         api(libs.kotlinx.datetime)
         api(libs.kotlinx.io.core)
@@ -87,6 +89,15 @@ kotlin {
         api(libs.compose.lifecycle.runtime.compose)
         api(libs.compose.navigation.compose)
         api(libs.compose.navigation.runtime)
+        api(libs.compose.material3.adaptive.core.get().toString()) {
+            exclude("androidx.window.core", "window-core")
+        }
+        api(libs.compose.material3.adaptive.layout.get().toString()) {
+            exclude("androidx.window.core", "window-core")
+        }
+        api(libs.compose.material3.adaptive.navigation.get().toString()) {
+            exclude("androidx.window.core", "window-core")
+        }
         implementation(compose.components.resources)
         implementation(libs.reorderable)
 
@@ -266,6 +277,9 @@ kotlin {
                 getByName("iosMain") {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/ios/"))
                 }
+                getByName("skikoMain") {
+                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/skikoMain"))
+                }
             } else {
                 sourceSets.all {
                     kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
@@ -293,6 +307,16 @@ idea {
     module {
         generatedSourceDirs.add(generatedResourcesDir.resolve("commonMainResourceAccessors"))
         generatedSourceDirs.add(generatedResourcesDir.resolve("commonResClass"))
+    }
+}
+
+// Jetpack compose bug since 1.7.0-beta03
+afterEvaluate {
+    tasks.named("generateReleaseLintVitalModel") {
+        dependsOn("releaseAssetsCopyForAGP")
+    }
+    tasks.named("lintVitalAnalyzeRelease") {
+        dependsOn("releaseAssetsCopyForAGP")
     }
 }
 

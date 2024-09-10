@@ -3,12 +3,11 @@ package me.him188.ani.app.ui.subject.collection
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.episode.type
@@ -24,17 +23,21 @@ import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.LazyDataCache
+import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.tools.caching.getCachedData
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.progress.EpisodeListStateFactory
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressStateFactory
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.utils.logging.info
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.time.Duration.Companion.minutes
 
 @Stable
 class CollectionsByType(
@@ -42,8 +45,12 @@ class CollectionsByType(
     val cache: LazyDataCache<SubjectCollection>,
     val subjectCollectionColumnState: SubjectCollectionColumnState,
 ) {
-    var isAutoRefreshing by mutableStateOf(false)
-    var pullToRefreshState: PullToRefreshState? by mutableStateOf(null)
+    val pullToRefreshState: PullToRefreshState = PullToRefreshState()
+
+    suspend fun shouldDoAutoRefresh(): Boolean {
+        val lastUpdated = cache.lastUpdated.first()
+        return currentTimeMillis() - lastUpdated > 60.minutes.inWholeMilliseconds
+    }
 }
 
 @Stable
@@ -61,10 +68,12 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
             SubjectCollectionColumnState(
                 cachedData = cache.cachedDataFlow.produceState(emptyList()),
                 hasMore = cache.isCompleted.map { !it }.produceState(true),
-                isKnownEmpty = cache.isCompleted.combine(cache.cachedDataFlow) { completed, data ->
+                isKnownAuthorizedAndEmpty = combine(cache.isCompleted, cache.cachedDataFlow) { completed, data ->
                     completed && data.isEmpty()
                 }.produceState(false),
                 onRequestMore = { cache.requestMore() },
+                onAutoRefresh = { cache.refresh(RefreshOrderPolicy.REPLACE) },
+                onManualRefresh = { cache.refresh(RefreshOrderPolicy.KEEP_ORDER_APPEND_LAST) },
                 backgroundScope,
             ),
         )

@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.onFirst
@@ -34,18 +35,23 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceIn
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
+import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION
+import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.TAG_MEDIA_PROGRESS_INDICATOR_TEXT
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
+import me.him188.ani.danmaku.api.Danmaku
+import me.him188.ani.danmaku.api.DanmakuLocation
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import kotlin.test.Test
@@ -53,6 +59,7 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 private const val TAG_DETACHED_PROGRESS_SLIDER = "detachedProgressSlider"
+private const val TAG_DANMAKU_EDITOR = "danmakuEditor"
 
 /**
  * 测试显示/隐藏进度条和 [GestureFamily]
@@ -103,29 +110,58 @@ class EpisodeVideoControllerTest {
         get() = onNodeWithTag(TAG_PROGRESS_SLIDER_PREVIEW_POPUP, useUnmergedTree = true)
     private val SemanticsNodeInteractionsProvider.progressSlider
         get() = onNodeWithTag(TAG_PROGRESS_SLIDER, useUnmergedTree = true)
+    private val SemanticsNodeInteractionsProvider.danmakuEditor
+        get() = onNodeWithTag(TAG_DANMAKU_EDITOR, useUnmergedTree = true)
 
     @Composable
-    private fun Player(gestureFamily: GestureFamily) {
+    private fun Player(gestureFamily: GestureFamily, videoControllerState: VideoControllerState = controllerState) {
         ProvideCompositionLocalsForPreview(colorScheme = aniDarkColorTheme()) {
             val scope = rememberCoroutineScope()
             val playerState = remember {
                 DummyPlayerState(scope.coroutineContext)
             }
+            val danmakuState = VideoDanmakuStateImpl(
+                danmakuEnabled = stateOf(true),
+                danmakuConfig = stateOf(DanmakuConfig.Default),
+                onSend = {
+                    Danmaku(
+                        "",
+                        "dummy",
+                        0L, "1",
+                        DanmakuLocation.entries.random(),
+                        text = "",
+                        0,
+                    )
+                },
+                onSetEnabled = { },
+                onHideController = {
+                    videoControllerState.toggleFullVisible(false)
+                },
+                scope,
+            )
             EpisodeVideoImpl(
                 playerState = playerState,
                 expanded = true,
                 hasNextEpisode = true,
                 onClickNextEpisode = {},
-                videoControllerState = controllerState,
+                videoControllerState = videoControllerState,
                 title = { PlayerTopBar() },
                 danmakuHostState = remember { DanmakuHostState() },
                 danmakuEnabled = false,
                 onToggleDanmaku = {},
                 videoLoadingState = { VideoLoadingState.Succeed(isBt = true) },
-                danmakuConfig = { DanmakuConfig.Default },
                 onClickFullScreen = {},
                 onExitFullscreen = {},
-                danmakuEditor = {},
+                danmakuEditor = {
+                    EpisodeVideoDefaults.DanmakuEditor(
+                        videoDanmakuState = danmakuState,
+                        danmakuTextPlaceholder = "",
+                        playerState = playerState,
+                        videoScaffoldConfig = VideoScaffoldConfig.Default,
+                        videoControllerState = videoControllerState,
+                        modifier = Modifier.testTag(TAG_DANMAKU_EDITOR),
+                    )
+                },
                 configProvider = { VideoScaffoldConfig.Default },
                 onClickScreenshot = {},
                 detachedProgressSlider = {
@@ -142,7 +178,6 @@ class EpisodeVideoControllerTest {
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
                 leftBottomTips = {},
-                danmakuFrozen = true,
                 gestureFamily = gestureFamily,
                 danmakuRegexFilterState = createDanmakuRegexFilterState(),
             )
@@ -165,8 +200,10 @@ class EpisodeVideoControllerTest {
             )
         }
 
+        mainClock.autoAdvance = false
         onRoot().performClick()
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             assertEquals(
                 NORMAL_VISIBLE,
@@ -188,16 +225,182 @@ class EpisodeVideoControllerTest {
         }
 
         val root = onAllNodes(isRoot()).onFirst()
+        mainClock.autoAdvance = false
         root.performClick()
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
         root.performClick()
         runOnIdle {
+            mainClock.advanceTimeUntil { topBar.doesNotExist() }
             waitUntil { topBar.doesNotExist() }
             assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+        }
+    }
+
+    private fun AniComposeUiTest.testClickAndWaitForHide() {
+        // 点击来显示控制器
+        runOnIdle {
+            mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
+            onRoot().performClick()
+        }
+        runOnIdle {
+            mainClock.advanceTimeBy(1000L)
+            waitUntil { topBar.exists() }
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        }
+
+        // 等待隐藏
+        runOnIdle {
+            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+            mainClock.autoAdvance = true
+        }
+        runOnIdle {
+            waitUntil { topBar.doesNotExist() }
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+    }
+
+    /**
+     * @see GestureFamily.autoHideController
+     */
+    @Test
+    fun `touch - autoHideController - wait for hide`() = runAniComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        runOnIdle {
+            assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+        }
+
+        testClickAndWaitForHide()
+        testClickAndWaitForHide()
+    }
+
+    /**
+     * @see GestureFamily.autoHideController
+     */
+    @Test
+    fun `touch - autoHideController - default show controller`() = runAniComposeUiTest {
+        val controllerState = VideoControllerState(ControllerVisibility.Visible)
+        mainClock.autoAdvance = false
+        setContent {
+            Player(GestureFamily.TOUCH, controllerState)
+        }
+        runOnIdle {
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+        // 等待隐藏
+        mainClock.advanceTimeBy(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
+        mainClock.autoAdvance = true
+        runOnIdle {
+            mainClock.advanceTimeUntil { topBar.doesNotExist() }
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+    }
+
+    /**
+     * 用户点击屏幕显示控制器, 然后用户点击隐藏, 过了 1 秒用户又点击显示,
+     * advance 时间 2.5 秒, 控制器仍然显示,
+     * 再经过 0.5 秒, 也就是达到 VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION, 才会隐藏控制器
+     * @see GestureFamily.autoHideController
+     */
+    @Test
+    fun `touch - autoHideController - the timer starts with each click`() = runAniComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        runOnIdle {
+            assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+        }
+
+        val root = onAllNodes(isRoot()).onFirst()
+
+        mainClock.autoAdvance = false // 三秒后会自动隐藏, 这里不能让他自动前进时间
+        root.performClick()
+        mainClock.advanceTimeUntil { topBar.exists() }
+        runOnIdle {
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        }
+
+        root.performClick()
+        mainClock.advanceTimeUntil { topBar.doesNotExist() }
+        runOnIdle {
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+        // 过了 1 秒用户又点击显示
+        mainClock.advanceTimeBy(1000L)
+        root.performClick()
+        mainClock.advanceTimeUntil { topBar.exists() }
+        runOnIdle {
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        }
+        // advance 时间 2.5 秒, 控制器仍然显示
+        mainClock.advanceTimeBy(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION.inWholeMilliseconds - 500L)
+        mainClock.advanceTimeUntil { topBar.exists() }
+        runOnIdle {
+            assertEquals(
+                NORMAL_VISIBLE,
+                controllerState.visibility,
+            )
+        }
+        // 再经过 0.5 秒, 也就是达到 VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION, 才会隐藏控制器
+        mainClock.advanceTimeBy(500L)
+        mainClock.advanceTimeUntil { topBar.doesNotExist() }
+        runOnIdle {
+            assertEquals(
+                NORMAL_INVISIBLE,
+                controllerState.visibility,
+            )
+        }
+    }
+
+    /**
+     * @see GestureFamily.autoHideController
+     */
+    @Test
+    fun `touch - autoHideController - edit danmaku`() = runAniComposeUiTest {
+        setContent {
+            Player(GestureFamily.TOUCH)
+        }
+        runOnIdle {
+            assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+            danmakuEditor.assertDoesNotExist()
+        }
+        val root = onAllNodes(isRoot()).onFirst()
+
+        mainClock.autoAdvance = false
+        root.performClick()
+        mainClock.advanceTimeUntil { danmakuEditor.exists() }
+        runOnIdle {
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+        }
+        danmakuEditor.performClick()
+        mainClock.advanceTimeBy((VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION + 1.seconds).inWholeMilliseconds)
+        mainClock.advanceTimeUntil { danmakuEditor.exists() }
+        runOnIdle {
+            assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
 
@@ -253,9 +456,11 @@ class EpisodeVideoControllerTest {
         val root = onAllNodes(isRoot()).onFirst()
 
         runOnUiThread {
+            mainClock.autoAdvance = false
             root.performClick() // 显示全部控制器 
         }
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             detachedProgressSlider.assertDoesNotExist()
         }
@@ -293,9 +498,11 @@ class EpisodeVideoControllerTest {
         val root = onAllNodes(isRoot()).onFirst()
 
         runOnUiThread {
+            mainClock.autoAdvance = false
             root.performClick()// 显示全部控制器
         }
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             detachedProgressSlider.assertDoesNotExist()
         }
@@ -308,7 +515,8 @@ class EpisodeVideoControllerTest {
             }
         }
         runOnIdle {
-            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            waitUntil { onNodeWithTag(TAG_MEDIA_PROGRESS_INDICATOR_TEXT, useUnmergedTree = true).exists() }
+            onNodeWithTag(TAG_MEDIA_PROGRESS_INDICATOR_TEXT, useUnmergedTree = true).assertTextEquals("00:48 / 01:40")
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
 
@@ -318,12 +526,9 @@ class EpisodeVideoControllerTest {
                 up()
             }
         }
+
         runOnIdle {
-            mainClock.autoAdvance = true
-            mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-        }
-        runOnIdle {
-            waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+            waitUntil { onNodeWithText("00:48 / 01:40").exists() }
             assertEquals(NORMAL_VISIBLE, controllerState.visibility)
         }
     }
@@ -337,13 +542,14 @@ class EpisodeVideoControllerTest {
             waitForIdle()
             val root = onAllNodes(isRoot()).onFirst()
 
+            mainClock.autoAdvance = false
             root.performClick() // 显示全部控制器
             runOnIdle {
+                mainClock.advanceTimeBy(1000L)
                 waitUntil { topBar.exists() }
                 detachedProgressSlider.assertDoesNotExist()
             }
 
-            mainClock.autoAdvance = false
             runOnUiThread {
                 progressSlider.performTouchInput {
                     down(centerLeft)
@@ -351,7 +557,7 @@ class EpisodeVideoControllerTest {
                 }
             }
             runOnIdle {
-                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                waitUntil { onNodeWithText("00:48 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
             }
 
@@ -361,19 +567,16 @@ class EpisodeVideoControllerTest {
                     up()
                 }
             }
+
             runOnIdle {
-                mainClock.autoAdvance = true
-                mainClock.advanceTimeBy(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION.inWholeMilliseconds)
-            }
-            runOnIdle {
-                waitUntil { onNodeWithText("00:46 / 01:40").exists() }
+                waitUntil { onNodeWithText("00:48 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
             }
 
             currentPositionMillis += 5000L // 播放 5 秒
 
             runOnIdle {
-                waitUntil { onNodeWithText("00:51 / 01:40").exists() }
+                waitUntil { onNodeWithText("00:53 / 01:40").exists() }
                 assertEquals(NORMAL_VISIBLE, controllerState.visibility)
             }
         }
@@ -423,13 +626,45 @@ class EpisodeVideoControllerTest {
         }
 
         currentPositionMillis += 5000L // 播放 5 秒
+
+        mainClock.autoAdvance = false
         root.performClick()
         runOnIdle {
+            mainClock.advanceTimeBy(1000L)
             waitUntil { topBar.exists() }
             assertEquals(0.52f, progressSliderState.displayPositionRatio)
         }
     }
 
+    @Test
+    fun `touch - hover to always on - danmaku settings sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `touch - hover to always on - media selector sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
+
+    @Test
+    fun `touch - hover to always on - episode selector sheet`() = runAniComposeUiTest {
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
+        )
+    }
     ///////////////////////////////////////////////////////////////////////////
     // mouse
     ///////////////////////////////////////////////////////////////////////////
@@ -524,6 +759,7 @@ class EpisodeVideoControllerTest {
                     moveTo(bottomCenter) // 肯定在 bottomBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = true,
         )
     }
@@ -541,6 +777,7 @@ class EpisodeVideoControllerTest {
                     moveTo(topCenter) // 肯定在 topBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = true,
         )
     }
@@ -550,6 +787,7 @@ class EpisodeVideoControllerTest {
     /////////////////////////////////////////////////////////////////////////// 
 
     private fun AniComposeUiTest.testSideSheetRequestAlwaysOn(
+        gestureFamily: GestureFamily,
         openSideSheet: () -> Unit,
         waitForSideSheetOpen: () -> Unit,
         waitForSideSheetClose: () -> Unit,
@@ -566,6 +804,7 @@ class EpisodeVideoControllerTest {
                     assertEquals(true, controllerState.alwaysOn)
                 }
             },
+            gestureFamily = gestureFamily,
             expectAlwaysOn = true,
         )
         // 点击外部, 关闭 side sheet
@@ -595,6 +834,7 @@ class EpisodeVideoControllerTest {
     @Test
     fun `mouse - hover to always on - danmaku settings sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
             openSideSheet = { onNodeWithTag(TAG_SHOW_SETTINGS).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).exists() } },
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_DANMAKU_SETTINGS_SHEET).doesNotExist() } },
@@ -604,6 +844,7 @@ class EpisodeVideoControllerTest {
     @Test
     fun `mouse - hover to always on - media selector sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
             openSideSheet = { onNodeWithTag(TAG_SHOW_MEDIA_SELECTOR).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).exists() } },
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_MEDIA_SELECTOR_SHEET).doesNotExist() } },
@@ -613,6 +854,7 @@ class EpisodeVideoControllerTest {
     @Test
     fun `mouse - hover to always on - episode selector sheet`() = runAniComposeUiTest {
         testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
             openSideSheet = { onNodeWithTag(TAG_SELECT_EPISODE_ICON_BUTTON).performClick() },
             waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).exists() } },
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
@@ -636,6 +878,7 @@ class EpisodeVideoControllerTest {
                     click(bottomCenter) // 肯定在 bottomBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = false,
         )
     }
@@ -653,6 +896,7 @@ class EpisodeVideoControllerTest {
                     click(topCenter) // 肯定在 topBar 区域内
                 }
             },
+            gestureFamily = GestureFamily.MOUSE,
             expectAlwaysOn = false,
         )
     }
@@ -665,10 +909,11 @@ class EpisodeVideoControllerTest {
      */
     private fun AniComposeUiTest.testRequestAlwaysOn(
         performGesture: () -> Unit,
+        gestureFamily: GestureFamily,
         expectAlwaysOn: Boolean = false,
     ) {
         setContent {
-            Player(GestureFamily.MOUSE)
+            Player(gestureFamily)
         }
         runOnIdle {
             assertEquals(
@@ -682,11 +927,15 @@ class EpisodeVideoControllerTest {
         runOnUiThread {
             mainClock.autoAdvance = false
             root.performTouchInput {
-                swipe(centerLeft, center)
+                if (gestureFamily == GestureFamily.MOUSE) {
+                    swipe(centerLeft, center)
+                } else {
+                    click()
+                }
             }
         }
         runOnIdle {
-            waitUntil { topBar.exists() }
+            mainClock.advanceTimeUntil { topBar.exists() }
             assertEquals(
                 NORMAL_VISIBLE,
                 controllerState.visibility,

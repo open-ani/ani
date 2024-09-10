@@ -33,7 +33,6 @@ import androidx.compose.material.icons.rounded.Reorder
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -45,13 +44,10 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,85 +57,72 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
-import me.him188.ani.app.tools.MonoTasker
+import kotlinx.coroutines.launch
+import me.him188.ani.app.data.source.media.source.RssMediaSource
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
-import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
-import me.him188.ani.app.ui.settings.framework.DefaultConnectionTesterRunner
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.app.ui.settings.framework.rememberSorterState
-import me.him188.ani.datasources.api.source.ConnectionStatus
-import me.him188.ani.datasources.api.source.FactoryId
-import me.him188.ani.datasources.api.source.MediaSourceConfig
-import me.him188.ani.datasources.api.source.MediaSourceFactory
-import me.him188.ani.datasources.api.source.MediaSourceInfo
-import me.him188.ani.datasources.api.source.parameter.MediaSourceParameters
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.parameter.isEmpty
-import me.him188.ani.utils.coroutines.childScope
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.reorderable
-import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.seconds
+
+internal val MediaSourcesUsingNewSettings = listOf(
+    RssMediaSource.FactoryId,
+)
 
 @Composable
 internal fun SettingsScope.MediaSourceGroup(
     state: MediaSourceGroupState,
     edit: EditMediaSourceState,
 ) {
-    var showAdd by remember { mutableStateOf(false) }
-    if (showAdd) {
+    val navigator = LocalNavigator.current
+    val uiScope = rememberCoroutineScope()
+    var showSelectTemplate by remember { mutableStateOf(false) }
+    if (showSelectTemplate) {
         // 选一个数据源来添加
         SelectMediaSourceTemplateDialog(
             templates = state.availableMediaSourceTemplates,
-            onClick = {
-                if (it.parameters.list.isEmpty()) {
-                    // 没有参数, 直接添加
-                    edit.confirmEdit(edit.startAdding(it))
-                    showAdd = false
-                    return@SelectMediaSourceTemplateDialog
+            onClick = { template ->
+                showSelectTemplate = false
+
+                // 一些数据源要用单独编辑页面
+                when {
+                    template.factoryId in MediaSourcesUsingNewSettings -> {
+                        val editing = edit.startAdding(template)
+                        val job = edit.confirmEdit(editing)
+                        uiScope.launch {
+                            job.join()
+                            navigator.navigateEditMediaSource(template.factoryId, editing.editingMediaSourceId)
+                        }
+                        return@SelectMediaSourceTemplateDialog
+                    }
+
+                    // 旧的数据源类型, 仍然使用旧的对话框形式添加
+                    template.parameters.list.isEmpty() -> {
+                        // 没有参数, 直接添加
+                        edit.confirmEdit(edit.startAdding(template))
+                        return@SelectMediaSourceTemplateDialog
+                    }
+
+                    else -> edit.startAdding(template)
                 }
-                edit.startAdding(it)
             },
-            onDismissRequest = { showAdd = false },
+            onDismissRequest = { showSelectTemplate = false },
         )
     }
 
     edit.editMediaSourceState?.let {
         // 准备添加这个数据源, 需要配置
-        BasicAlertDialog(
-            onDismissRequest = { edit.cancelEdit() },
-        ) {
-            EditMediaSourceDialog(
-                it,
-                onConfirm = {
-                    edit.confirmEdit(it)
-                    showAdd = false
-                },
-                onDismissRequest = {
-                    edit.cancelEdit()
-                    showAdd = false
-                },
-            )
-        }
+        // TODO: replace with a separate page
+        EditMediaSourceDialog(it, onDismissRequest = { edit.cancelEdit() })
     }
 
     val sorter = rememberSorterState<MediaSourcePresentation>(
@@ -165,7 +148,7 @@ internal fun SettingsScope.MediaSourceGroup(
                     IconButton(
                         {
                             edit.cancelEdit()
-                            showAdd = true
+                            showSelectTemplate = true
                         },
                     ) {
                         Icon(Icons.Rounded.Add, contentDescription = "添加数据源")
@@ -205,21 +188,25 @@ internal fun SettingsScope.MediaSourceGroup(
                     if (index != 0) {
                         HorizontalDividerItem()
                     }
+                    val startEditing = {
+                        if (item.factoryId in MediaSourcesUsingNewSettings) {
+                            navigator.navigateEditMediaSource(item.factoryId, item.instanceId)
+                        } else {
+                            edit.startEditing(item)
+                        }
+                    }
                     MediaSourceItem(
                         item,
                         Modifier.combinedClickable(
                             onClickLabel = "编辑",
                             onLongClick = { sorter.start(state.mediaSources) },
                             onLongClickLabel = "开始排序",
-                        ) {
-                            edit.startEditing(
-                                item,
-                            )
-                        },
+                            onClick = startEditing,
+                        ),
                     ) {
                         NormalMediaSourceItemAction(
                             item,
-                            onEdit = { edit.startEditing(item) },
+                            onEdit = startEditing,
                             onDelete = { edit.deleteMediaSource(item) },
                             onEnabledChange = { edit.toggleMediaSourceEnabled(item, it) },
                         )

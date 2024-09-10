@@ -6,6 +6,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +20,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -55,6 +59,7 @@ import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.platform.window.desktopTitleBar
 import me.him188.ani.app.tools.getOrZero
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
@@ -143,6 +148,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                 },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                 modifier = Modifier,
+                contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
             ) {
                 val selectorPresentation =
                     rememberMediaSelectorPresentation(mediaSourceInfoProvider) { task.mediaSelector }
@@ -283,23 +289,25 @@ fun SettingsScope.EpisodeCacheItem(
             }
         },
         title = {
-            CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
-                Text(episode.info.title, Modifier.weight(1f), overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CompositionLocalProvider(LocalContentColor provides colorByWatchStatus) {
+                    Text(episode.info.title, Modifier.weight(1f), overflow = TextOverflow.Ellipsis)
 
-                when (episode.info.watchStatus) {
-                    UnifiedCollectionType.DONE -> {
-                        Label(Modifier.padding(start = 8.dp)) {
-                            Text("看过")
+                    when (episode.info.watchStatus) {
+                        UnifiedCollectionType.DONE -> {
+                            Label(Modifier.padding(start = 8.dp)) {
+                                Text("看过")
+                            }
                         }
-                    }
 
-                    UnifiedCollectionType.DROPPED -> {
-                        Label(Modifier.padding(start = 8.dp)) {
-                            Text("抛弃")
+                        UnifiedCollectionType.DROPPED -> {
+                            Label(Modifier.padding(start = 8.dp)) {
+                                Text("抛弃")
+                            }
                         }
-                    }
 
-                    else -> {}
+                        else -> {}
+                    }
                 }
             }
         },

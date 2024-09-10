@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
@@ -53,6 +54,7 @@ fun MediaSelectorView(
     state: MediaSelectorPresentation,
     sourceResults: @Composable LazyItemScope.() -> Unit,
     modifier: Modifier = Modifier,
+    stickyHeaderBackgroundColor: Color = Color.Unspecified,
     itemProgressBar: @Composable RowScope.(Media) -> Unit = {
         FastLinearProgressIndicator(
             state.selected == it,
@@ -63,7 +65,7 @@ fun MediaSelectorView(
     onClickItem: ((Media) -> Unit) = { state.select(it) },
     bottomActions: (@Composable RowScope.() -> Unit)? = null,
     singleLineFilter: Boolean = false,
-) = Surface {
+) {
     Column(modifier) {
         val lazyListState = rememberLazyListState()
         LazyColumn(
@@ -82,33 +84,27 @@ fun MediaSelectorView(
                         lazyListState.firstVisibleItemIndex == 2
                     }
                 }
-                Surface(
-//                    tonalElevation = if (isStuck) 3.dp else 0.dp,
-                    Modifier.animateItemPlacement(),
+                Column(
+                    Modifier.animateItem().background(stickyHeaderBackgroundColor).padding(bottom = 12.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Column {
-                        Column(
-                            Modifier.padding(bottom = 12.dp).fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                remember(state.filteredCandidates.size, state.mediaList.size) {
-                                    "筛选到 ${state.filteredCandidates.size}/${state.mediaList.size} 条资源"
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                            )
+                    Text(
+                        remember(state.filteredCandidates.size, state.mediaList.size) {
+                            "筛选到 ${state.filteredCandidates.size}/${state.mediaList.size} 条资源"
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                    )
 
-                            MediaSelectorFilters(
-                                resolution = state.resolution,
-                                subtitleLanguageId = state.subtitleLanguageId,
-                                alliance = state.alliance,
-                                singleLine = singleLineFilter,
-                            )
-                        }
-                        if (isStuck) {
-                            HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
-                        }
-                    }
+                    MediaSelectorFilters(
+                        resolution = state.resolution,
+                        subtitleLanguageId = state.subtitleLanguageId,
+                        alliance = state.alliance,
+                        singleLine = singleLineFilter,
+                    )
+                }
+                if (isStuck) {
+                    HorizontalDivider(Modifier.fillMaxWidth(), thickness = 2.dp)
                 }
             }
 
@@ -121,7 +117,7 @@ fun MediaSelectorView(
                         state,
                         onClick = { onClickItem(item) },
                         Modifier
-                            .animateItemPlacement()
+                            .animateItem()
                             .fillMaxWidth(),
                     )
                     Row(Modifier.height(8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

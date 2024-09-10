@@ -21,9 +21,17 @@ package me.him188.ani.app.data.source.session
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import me.him188.ani.app.data.models.ApiFailure
+import me.him188.ani.app.data.models.ApiResponse
+import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.data.models.networkError
+import me.him188.ani.app.data.models.serviceUnavailable
+import me.him188.ani.app.data.models.unauthorized
 import me.him188.ani.app.data.repository.Session
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -120,6 +128,12 @@ interface SessionManager { // For unit tests, see BangumiSessionManagerTest
     }
 }
 
+/**
+ * 获取去除加载中 [SessionStatus.Loading] 的最终授权状态.
+ */
+val SessionManager.finalState: Flow<SessionStatus.Final>
+    get() = state.filterIsInstance()
+
 @RequiresOptIn(
     "该接口将所有失败状态都归为一类, 这通常会导致问题, 例如忽略了因为网路错误导致的临时性失败. " +
             "当网络错误时, UI 应当提示网络错误, 并提供按钮允许重试. " +
@@ -145,6 +159,21 @@ val SessionManager.userInfo get() = state.map { it.userInfoOrNull }
 
 @OpaqueSession
 val SessionManager.username get() = state.map { it.usernameOrNull }
+
+/**
+ * 获取会考虑网络状态的 [UserInfo].
+ */
+val SessionManager.userInfoAsApiResponse
+    get() = finalState.mapNotNull {
+        when (it) {
+            SessionStatus.Guest -> ApiResponse.unauthorized()
+            is SessionStatus.Verified -> ApiResponse.success(it.userInfo)
+            SessionStatus.Expired -> ApiResponse.unauthorized()
+            SessionStatus.NetworkError -> ApiResponse.networkError()
+            SessionStatus.NoToken -> ApiResponse.unauthorized()
+            SessionStatus.ServiceUnavailable -> ApiResponse.serviceUnavailable()
+        }
+    }
 
 @OpaqueSession
 val SessionManager.verifiedAccessToken: Flow<String?>

@@ -41,19 +41,19 @@ fun HelpDropdown(
     val context = LocalContext.current
     DropdownMenu(expanded, onDismissRequest, modifier) {
         DropdownMenuItem(
-            text = { Text("加入 QQ 群 927170241") },
+            text = { Text("QQ") },
             onClick = {
                 AniHelpNavigator.openJoinQQGroup(context)
             },
         )
         DropdownMenuItem(
-            text = { Text("加入 Telegram 群 openani") },
+            text = { Text("Telegram") },
             onClick = {
                 AniHelpNavigator.openTelegram(context)
             },
         )
         DropdownMenuItem(
-            text = { Text("GitHub 开源仓库") },
+            text = { Text("GitHub") },
             onClick = { AniHelpNavigator.openGitHubHome(context) },
         )
         DropdownMenuItem(

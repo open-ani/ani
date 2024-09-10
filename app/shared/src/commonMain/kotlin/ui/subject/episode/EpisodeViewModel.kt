@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -66,8 +65,8 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
-import me.him188.ani.app.ui.subject.collection.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.components.comment.CommentContext
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentState
@@ -596,24 +595,13 @@ private class EpisodeViewModelImpl(
     init {
         launchInMain { // state changes must be in main thread
             playerState.state.collect {
-                if (it.isPlaying) {
-                    danmaku.danmakuHostState.resume()
-                } else {
-                    danmaku.danmakuHostState.pause()
-                }
-            }
-        }
-        launchInBackground {
-            settingsRepository.danmakuConfig.flow.drop(1).collectLatest {
-                logger.info { "Danmaku config changed, repopulating" }
-                danmakuLoader.requestRepopulate()
+                danmaku.danmakuHostState.setPaused(!it.isPlaying)
             }
         }
 
         launchInBackground {
             cancellableCoroutineScope {
                 val selfId = selfUserId.stateIn(this)
-                val danmakuConfig = settingsRepository.danmakuConfig.flow.stateIn(this)
                 danmakuLoader.eventFlow.collect { event ->
                     when (event) {
                         is DanmakuEvent.Add -> {
@@ -628,7 +616,6 @@ private class EpisodeViewModelImpl(
                                 event.list.map {
                                     createDanmakuPresentation(it, selfId.value)
                                 },
-                                danmakuConfig.value.style,
                             )
 
                         }
@@ -697,7 +684,7 @@ private class EpisodeViewModelImpl(
         // 跳过 OP 和 ED
         launchInBackground {
             settingsRepository.videoScaffoldConfig.flow
-                .map { it.autoSkipOpEdExperimental }
+                .map { it.autoSkipOpEd }
                 .distinctUntilChanged()
                 .debounce(1000)
                 .collectLatest { enabled ->

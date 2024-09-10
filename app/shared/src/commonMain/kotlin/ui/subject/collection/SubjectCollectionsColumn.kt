@@ -56,6 +56,8 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
+import me.him188.ani.app.ui.subject.collection.components.EditCollectionTypeDropDown
+import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
 
 private inline val spacedBy get() = 16.dp
@@ -64,15 +66,22 @@ private inline val spacedBy get() = 16.dp
 class SubjectCollectionColumnState(
     cachedData: State<List<SubjectCollection>>,
     hasMore: State<Boolean>,
-    isKnownEmpty: State<Boolean>,
+    isKnownAuthorizedAndEmpty: State<Boolean>,
     private val onRequestMore: suspend () -> Unit,
+    private val onAutoRefresh: suspend () -> Unit,
+    private val onManualRefresh: suspend () -> Unit,
     backgroundScope: CoroutineScope,
 ) {
     private val requestMoreTasker = MonoTasker(backgroundScope)
+    private val refreshTasker = MonoTasker(backgroundScope)
 
     val cachedData: List<SubjectCollection> by cachedData
     val hasMore by hasMore
-    val isKnownEmpty by isKnownEmpty
+
+    /**
+     * 如果未登录, 此属性会一直未 false
+     */
+    val isKnownAuthorizedAndEmpty by isKnownAuthorizedAndEmpty
 
     internal val gridState = LazyGridState()
 
@@ -81,6 +90,22 @@ class SubjectCollectionColumnState(
         requestMoreTasker.launch {
             onRequestMore()
         }
+    }
+
+    val isRefreshing get() = refreshTasker.isRunning
+
+    fun startAutoRefresh() {
+        requestMoreTasker.cancel()
+        refreshTasker.launch {
+            onAutoRefresh()
+        }
+    }
+
+    suspend fun manualRefresh() {
+        requestMoreTasker.cancel()
+        refreshTasker.launch {
+            onManualRefresh()
+        }.join()
     }
 }
 
@@ -97,17 +122,11 @@ class SubjectCollectionColumnState(
 fun SubjectCollectionsColumn(
     state: SubjectCollectionColumnState,
     item: @Composable (item: SubjectCollection) -> Unit,
-    onEmpty: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
 ) {
-    if (state.isKnownEmpty) {
-        onEmpty()
-        return
-    }
-
     val layoutDirection = LocalLayoutDirection.current
     val contentPaddingState by rememberUpdatedState(contentPadding)
     val gridContentPadding by remember(layoutDirection) {
@@ -134,7 +153,7 @@ fun SubjectCollectionsColumn(
         item(span = { GridItemSpan(maxLineSpan) }) {}
 
         items(state.cachedData, key = { it.subjectId }) { collection ->
-            Box(Modifier.ifThen(enableAnimation) { animateItemPlacement() }) {
+            Box(Modifier.ifThen(enableAnimation) { animateItem() }) {
                 item(collection)
             }
         }

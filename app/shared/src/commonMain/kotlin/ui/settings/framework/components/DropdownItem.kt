@@ -1,7 +1,6 @@
 package me.him188.ani.app.ui.settings.framework.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.LocalContentColor
@@ -32,7 +31,7 @@ fun <T> SettingsScope.DropdownItem(
     itemIcon: @Composable ((T) -> Unit)? = null,
     description: @Composable (() -> Unit)? = null,
     icon: @Composable (() -> Unit)? = null,
-    title: @Composable (RowScope.() -> Unit),
+    title: @Composable () -> Unit,
     exposedItemText: @Composable (T) -> Unit = itemText,
     enabled: Boolean = true,
 ) {

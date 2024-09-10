@@ -68,6 +68,7 @@ val optInAnnotations = arrayOf(
     "androidx.compose.ui.ExperimentalComposeUiApi",
     "org.jetbrains.compose.resources.ExperimentalResourceApi",
     "kotlin.ExperimentalStdlibApi",
+    "androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
 )
 
 val testLanguageFeatures: List<String> = listOf(

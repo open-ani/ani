@@ -133,35 +133,55 @@ fun SubjectSearchBar(
     }
 
     SearchBar(
-        query = searchText,
-        active = isActive,
-        placeholder = {
-            Text(
-                when (searchMode) {
-                    SearchMode.KEYWORD -> "搜索"
-                    SearchMode.EXPLORE -> "发现"
+        inputField = {
+            SearchBarDefaults.InputField(
+                modifier = Modifier.fillMaxWidth(),
+                query = searchText,
+                onQueryChange = {
+                    if (searchMode == SearchMode.KEYWORD) {
+                        searchText = it
+                    }
+                },
+                onSearch = {
+                    if (!editingTagMode) {
+                        toggleActive(false)
+                        onSearch(it, false)
+                    }
+                    keyboard?.hide()
+                },
+                expanded = isActive,
+                onExpandedChange = { toggleActive(it) },
+                placeholder = {
+                    Text(
+                        when (searchMode) {
+                            SearchMode.KEYWORD -> "搜索"
+                            SearchMode.EXPLORE -> "发现"
+                        },
+                    )
+                },
+                leadingIcon = {
+                    IconButton({ toggleActive() }) {
+                        Icon(
+                            if (isActive) {
+                                Icons.AutoMirrored.Outlined.ArrowBack
+                            } else {
+                                Icons.Outlined.Search
+                            },
+                            null,
+                        )
+                    }
+                },
+                trailingIcon = {
+                    if (searchText.isNotEmpty()) {
+                        IconButton({ searchText = "" }) {
+                            Icon(Icons.Outlined.Close, null)
+                        }
+                    }
                 },
             )
         },
-        leadingIcon = {
-            IconButton({ toggleActive() }) {
-                Icon(
-                    if (isActive) {
-                        Icons.AutoMirrored.Outlined.ArrowBack
-                    } else {
-                        Icons.Outlined.Search
-                    },
-                    null,
-                )
-            }
-        },
-        trailingIcon = {
-            if (searchText.isNotEmpty()) {
-                IconButton({ searchText = "" }) {
-                    Icon(Icons.Outlined.Close, null)
-                }
-            }
-        },
+        expanded = isActive,
+        onExpandedChange = { toggleActive(it) },
         colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
         tonalElevation = SearchBarDefaults.TonalElevation,
         shape = RoundedCornerShape(shapeSize),
@@ -179,19 +199,6 @@ fun SubjectSearchBar(
             }
             .focusRequester(focusRequester)
             .then(modifier),
-        onActiveChange = { toggleActive(it) },
-        onQueryChange = {
-            if (searchMode == SearchMode.KEYWORD) {
-                searchText = it
-            }
-        },
-        onSearch = {
-            if (!editingTagMode) {
-                toggleActive(false)
-                onSearch(it, false)
-            }
-            keyboard?.hide()
-        },
     ) {
 
         var fabRotateAngle by remember { mutableStateOf(0f) }
@@ -366,7 +373,7 @@ private fun SearchHistoryList(
                                 .clickable { onClickItem(history.id) }
                                 .padding(vertical = 12.dp)
                                 .padding(start = 16.dp, end = 8.dp)
-                                .animateItemPlacement(),
+                                .animateItem(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -418,7 +425,7 @@ private fun SearchFilterPage(
     }
 
     DatePicker(datePickerState)
-    
+
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,

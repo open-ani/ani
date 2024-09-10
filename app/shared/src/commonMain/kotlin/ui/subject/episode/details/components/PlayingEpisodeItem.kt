@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.ui.foundation.icons.PlayingIcon
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
@@ -71,7 +73,11 @@ fun PlayingEpisodeItem(
     mediaSource: @Composable RowScope.() -> Unit,
     actions: @Composable RowScope.() -> Unit = {},
     modifier: Modifier = Modifier,
-    playingIcon: @Composable () -> Unit = { PlayingIcon() },
+    playingIcon: @Composable () -> Unit = {
+        if (currentPlatform.isAndroid()) {
+            PlayingIcon() // 这个动画跑满帧率, 在渲染效率低的 PC 上会跑满 CPU
+        }
+    },
     rowSpacing: Dp = 16.dp,
     horizontalPadding: Dp = 20.dp,
 ) {

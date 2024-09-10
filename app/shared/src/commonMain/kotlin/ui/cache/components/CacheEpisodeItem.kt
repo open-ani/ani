@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -57,6 +56,7 @@ import me.him188.ani.app.tools.getOrZero
 import me.him188.ani.app.tools.toPercentageOrZero
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.interaction.clickableAndMouseRightClick
+import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.datasources.api.EpisodeSort
@@ -296,51 +296,49 @@ fun CacheEpisodeItem(
             }
         },
         trailingContent = {
-            BoxWithConstraints {
-                // 仅当有足够宽度时, 才展示当前状态下的推荐操作
-                val showPrimaryAction by remember {
-                    derivedStateOf { maxWidth >= 320.dp }
-                }
-                Row(horizontalArrangement = Arrangement.aligned(Alignment.End)) {
-                    // 当前状态下的推荐操作
-                    AnimatedVisibility(showPrimaryAction) {
-                        if (state.isActionInProgress) {
-                            IconButton(
-                                onClick = {
-                                    // no-op
-                                },
-                                enabled = false,
-                                colors = IconButtonDefaults.iconButtonColors().run {
-                                    copy(disabledContainerColor = containerColor, disabledContentColor = contentColor)
-                                },
-                            ) {
-                                CircularProgressIndicator(Modifier.size(24.dp))
-                            }
-                        } else {
-                            if (!state.isFinished) {
-                                if (state.isPaused) {
-                                    IconButton({ state.resume() }) {
-                                        Icon(Icons.Rounded.Restore, "继续下载")
-                                    }
-                                } else {
-                                    IconButton({ state.pause() }) {
-                                        Icon(Icons.Rounded.Pause, "暂停下载", Modifier.size(28.dp))
-                                    }
+            // 仅当有足够宽度时, 才展示当前状态下的推荐操作
+            // TODO 原本是  derivedStateOf { maxWidth >= 320.dp },
+            //  但 Compose 1.7 后不允许 LazyGrid 里使用 BoxWithConstraints 了
+            val showPrimaryAction = LocalLayoutMode.current.showLandscapeUI
+            Row(horizontalArrangement = Arrangement.aligned(Alignment.End)) {
+                // 当前状态下的推荐操作
+                AnimatedVisibility(showPrimaryAction) {
+                    if (state.isActionInProgress) {
+                        IconButton(
+                            onClick = {
+                                // no-op
+                            },
+                            enabled = false,
+                            colors = IconButtonDefaults.iconButtonColors().run {
+                                copy(disabledContainerColor = containerColor, disabledContentColor = contentColor)
+                            },
+                        ) {
+                            CircularProgressIndicator(Modifier.size(24.dp))
+                        }
+                    } else {
+                        if (!state.isFinished) {
+                            if (state.isPaused) {
+                                IconButton({ state.resume() }) {
+                                    Icon(Icons.Rounded.Restore, "继续下载")
+                                }
+                            } else {
+                                IconButton({ state.pause() }) {
+                                    Icon(Icons.Rounded.Pause, "暂停下载", Modifier.size(28.dp))
                                 }
                             }
                         }
                     }
-
-                    // 总是展示的更多操作. 实际上点击整个 ListItem 都能展示 dropdown, 但留有这个按钮避免用户无法发现点击 list 能展开.
-                    IconButton({ showDropdown = true }) {
-                        Icon(Icons.Rounded.MoreVert, "管理此项")
-                    }
                 }
-                Dropdown(
-                    showDropdown, { showDropdown = false },
-                    state,
-                )
+
+                // 总是展示的更多操作. 实际上点击整个 ListItem 都能展示 dropdown, 但留有这个按钮避免用户无法发现点击 list 能展开.
+                IconButton({ showDropdown = true }) {
+                    Icon(Icons.Rounded.MoreVert, "管理此项")
+                }
             }
+            Dropdown(
+                showDropdown, { showDropdown = false },
+                state,
+            )
         },
     )
 }
