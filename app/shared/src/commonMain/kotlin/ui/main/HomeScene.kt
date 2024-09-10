@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -179,7 +180,8 @@ private fun HomeSceneLandscape(
                 header = { UserAvatarInNavigation() },
                 windowInsets = windowInsets.only(WindowInsetsSides.Vertical + WindowInsetsSides.Start)
                     .add(WindowInsets(top = 16.dp)), // 稍微多一点好看点
-                containerColor = MaterialTheme.colorScheme.surfaceDim,
+                containerColor = AniThemeDefaults.navigationContainerColor,
+                contentColor = contentColorFor(AniThemeDefaults.navigationContainerColor),
             ) {
                 Column(
                     Modifier
