@@ -280,6 +280,7 @@ fun EpisodeDetails(
                                         mediaSourceResultsPresentation,
                                         onDismissRequest = { showMediaSelector = false },
                                         onSelected = { showMediaSelector = false },
+                                        stickyHeaderBackgroundColor = BottomSheetDefaults.ContainerColor,
                                     )
                                 }
                             }
