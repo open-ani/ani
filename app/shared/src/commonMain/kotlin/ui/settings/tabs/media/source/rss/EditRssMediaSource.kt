@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
@@ -15,13 +16,14 @@ import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
@@ -32,54 +34,56 @@ import me.him188.ani.app.ui.settings.tabs.media.source.rss.edit.RssEditPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPane
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
 
-
 /**
+ * 整个编辑 RSS 数据源页面的状态. 对于测试部分: [RssTestPaneState]
+ *
  * @see RssMediaSource
  */
 @Stable
 class EditRssMediaSourceState(
-    argumentsState: State<RssMediaSourceArguments?>,
+    argumentsStorage: SaveableStorage<RssMediaSourceArguments>,
     val instanceId: String,
-    /**
-     * 必须立即反映到 [argumentsState]
-     */
-    private val onSave: (RssMediaSourceArguments) -> Unit,
-    isSavingState: State<Boolean>,
 ) {
-    private val arguments by argumentsState
+    private val arguments by argumentsStorage.containerState
     val isLoading by derivedStateOf { arguments == null }
-    val isSaving by isSavingState
+    val isSaving by argumentsStorage.isSavingState
 
-    var displayName
-        get() = arguments?.name ?: ""
-        set(value) {
-            val arguments = arguments ?: return
-            save(arguments.copy(name = value))
-        }
+    var displayName by argumentsStorage.prop(
+        RssMediaSourceArguments::name, { copy(name = it) },
+        "",
+    )
 
     val displayNameIsError by derivedStateOf { displayName.isBlank() }
 
-    var iconUrl
-        get() = arguments?.iconUrl ?: ""
-        set(value) {
-            val arguments = arguments ?: return
-            save(arguments.copy(iconUrl = value))
-        }
+    var iconUrl by argumentsStorage.prop(
+        RssMediaSourceArguments::iconUrl, { copy(iconUrl = it) },
+        "",
+    )
     val displayIconUrl by derivedStateOf {
         iconUrl.ifBlank { RssMediaSourceArguments.DEFAULT_ICON_URL }
     }
 
-    var searchUrl
-        get() = arguments?.searchUrl ?: ""
-        set(value) {
-            val arguments = arguments ?: return
-            save(arguments.copy(searchUrl = value))
-        }
+    var searchUrl by argumentsStorage.prop(
+        { it.searchConfig.searchUrl }, { copy(searchConfig = searchConfig.copy(searchUrl = it)) },
+        "",
+    )
     val searchUrlIsError by derivedStateOf { searchUrl.isBlank() }
 
-    private fun save(newArguments: RssMediaSourceArguments): Boolean {
-        onSave(newArguments)
-        return true
+    var filterByEpisodeSort by argumentsStorage.prop(
+        { it.searchConfig.filterByEpisodeSort }, { copy(searchConfig = searchConfig.copy(filterByEpisodeSort = it)) },
+        true,
+    )
+    var filterBySubjectName by argumentsStorage.prop(
+        { it.searchConfig.filterBySubjectName }, { copy(searchConfig = searchConfig.copy(filterBySubjectName = it)) },
+        true,
+    )
+
+    val searchConfig by derivedStateOf {
+        RssSearchConfig(
+            searchUrl = searchUrl,
+            filterByEpisodeSort = filterByEpisodeSort,
+            filterBySubjectName = filterBySubjectName,
+        )
     }
 }
 
@@ -160,9 +164,7 @@ fun EditRssMediaSourcePage(
                 AnimatedPane1 {
                     Crossfade(testState.viewingItem) { item ->
                         item ?: return@Crossfade
-                        if (navigator.scaffoldValue.primary == PaneAdaptedValue.Expanded
-                            || navigator.scaffoldValue.secondary == PaneAdaptedValue.Expanded
-                        ) {
+                        if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT) {
                             SideSheetPane(
                                 onClose = { navigator.navigateBack() },
                                 Modifier.padding(paddingValues),

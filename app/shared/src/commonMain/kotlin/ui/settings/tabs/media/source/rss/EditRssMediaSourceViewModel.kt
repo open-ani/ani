@@ -22,6 +22,7 @@ import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.data.source.media.fetch.updateMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.DefaultRssMediaSourceEngine
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.rss.RssParser
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -65,20 +66,22 @@ class EditRssMediaSourceViewModel(
             }
             emit(
                 EditRssMediaSourceState(
-                    argumentsState = arguments,
+                    argumentsStorage = SaveableStorage(
+                        arguments,
+                        onSave = {
+                            arguments.value = it
+                            saveTasker.launch {
+                                kotlinx.coroutines.delay(500)
+                                mediaSourceManager.updateMediaSourceArguments(
+                                    instanceId,
+                                    RssMediaSourceArguments.serializer(),
+                                    it,
+                                )
+                            }
+                        },
+                        isSavingState = derivedStateOf { saveTasker.isRunning },
+                    ),
                     instanceId = instanceId,
-                    onSave = {
-                        arguments.value = it
-                        saveTasker.launch {
-                            kotlinx.coroutines.delay(500)
-                            mediaSourceManager.updateMediaSourceArguments(
-                                instanceId,
-                                RssMediaSourceArguments.serializer(),
-                                it,
-                            )
-                        }
-                    },
-                    isSavingState = derivedStateOf { saveTasker.isRunning },
                 ),
             )
         }
@@ -94,7 +97,8 @@ class EditRssMediaSourceViewModel(
     }.shareInBackground(started = SharingStarted.Lazily)
 
     val testState: RssTestPaneState = RssTestPaneState(
-        searchUrlState = arguments.map { it.searchUrl }.produceState(""),
+        // 这里用的是序列化之后的配置, 也就是只有保存成功之后, 才会更新测试 (和触发重新查询)
+        searchConfigState = arguments.map { it.searchConfig }.produceState(RssSearchConfig.Empty),
         engine = DefaultRssMediaSourceEngine(client, parser = RssParser(includeOrigin = true)),
         backgroundScope,
     )

@@ -54,8 +54,6 @@ import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -146,9 +144,7 @@ fun SubjectDetailsScene(
                 characters = vm.subjectDetailsState.characters,
                 relatedSubjects = vm.subjectDetailsState.relatedSubjects,
                 Modifier
-                    .ifThen(currentPlatform.isDesktop()) {
-                        nestedScrollWorkaround(vm.detailsTabLazyListState, connectedScrollState.nestedScrollConnection)
-                    }
+                    .nestedScrollWorkaround(vm.detailsTabLazyListState, connectedScrollState)
                     .nestedScroll(connectedScrollState.nestedScrollConnection),
                 vm.detailsTabLazyListState,
             )
@@ -165,7 +161,11 @@ fun SubjectDetailsScene(
             )
         },
         discussionsTab = {
-            LazyColumn(Modifier.fillMaxSize().nestedScroll(connectedScrollState.nestedScrollConnection)) {
+            LazyColumn(
+                Modifier.fillMaxSize()
+                    // TODO: Add nestedScrollWorkaround when we implement this tab
+                    .nestedScroll(connectedScrollState.nestedScrollConnection),
+            ) {
                 item {
                     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text("即将上线, 敬请期待", Modifier.padding(16.dp))

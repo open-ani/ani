@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.models.runApiRequest
+import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
@@ -13,7 +14,6 @@ import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.datasources.api.paging.merge
 import me.him188.ani.datasources.api.source.ConnectionStatus
-import me.him188.ani.datasources.api.source.DownloadSearchQuery
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.MatchKind
@@ -27,14 +27,18 @@ import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.source.deserializeArgumentsOrNull
 import me.him188.ani.datasources.api.source.useHttpClient
-import me.him188.ani.datasources.api.topic.TopicCategory
 
+/**
+ * [RssMediaSource] 的用户侧配置, 用于创建 [RssMediaSource] 实例.
+ *
+ * @since 3.9
+ */
 @Serializable
 data class RssMediaSourceArguments(
     val name: String,
     val description: String,
-    val searchUrl: String,
     val iconUrl: String,
+    val searchConfig: RssSearchConfig = RssSearchConfig.Empty,
 ) {
     companion object {
         const val DEFAULT_ICON_URL = "https://rss.com/blog/wp-content/uploads/2019/10/social_style_3_rss-512-1.png"
@@ -42,12 +46,17 @@ data class RssMediaSourceArguments(
         val Default = RssMediaSourceArguments(
             name = "RSS",
             description = "",
-            searchUrl = "",
             iconUrl = DEFAULT_ICON_URL,
+            searchConfig = RssSearchConfig(
+                searchUrl = "",
+            ),
         )
     }
 }
 
+/**
+ * 用于对接 [MediaSource] 和 [RssMediaSourceEngine]
+ */
 class RssMediaSource(
     override val mediaSourceId: String,
     config: MediaSourceConfig,
@@ -59,8 +68,9 @@ class RssMediaSource(
 
     private val arguments =
         config.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer()) ?: RssMediaSourceArguments.Default
+    private val searchConfig = arguments.searchConfig
 
-    private val usePaging = arguments.searchUrl.contains("{page}")
+    private val usePaging = searchConfig.searchUrl.contains("{page}")
 
     private val client by lazy { useHttpClient(config) }
     private val engine by lazy { DefaultRssMediaSourceEngine(flowOf(client)) }
@@ -85,7 +95,7 @@ class RssMediaSource(
     override suspend fun checkConnection(): ConnectionStatus {
         return kotlin.runCatching {
             runApiRequest {
-                client.get(arguments.searchUrl) // 提交一个请求, 只要它不是因为网络错误就行
+                client.get(searchConfig.searchUrl) // 提交一个请求, 只要它不是因为网络错误就行
             }.fold(
                 onSuccess = { ConnectionStatus.SUCCESS },
                 onKnownFailure = {
@@ -105,17 +115,17 @@ class RssMediaSource(
     override val info: MediaSourceInfo = MediaSourceInfo(
         displayName = arguments.name,
         description = arguments.description,
-        websiteUrl = arguments.searchUrl,
+        websiteUrl = searchConfig.searchUrl,
         iconUrl = arguments.iconUrl,
     )
 
     // https://garden.breadio.wiki/feed.xml?filter=[{"search":["樱trick"]}]
     // https://acg.rip/page/2.xml?term=%E9%AD%94%E6%B3%95%E5%B0%91%E5%A5%B3
-    private fun startSearch(query: DownloadSearchQuery): SizedSource<Media> {
+    private fun startSearch(query: RssSearchQuery): SizedSource<Media> {
         return PageBasedPagedSource { page ->
             if (!usePaging && page != 0) return@PageBasedPagedSource null
 
-            val result = engine.search(arguments.searchUrl, query, page, mediaSourceId)
+            val result = engine.search(searchConfig, query, page, mediaSourceId)
                 .getOrThrow()
 
             // 404 Not Found
@@ -134,11 +144,9 @@ class RssMediaSource(
         return query.subjectNames
             .map { name ->
                 startSearch(
-                    DownloadSearchQuery(
-                        keywords = name,
-                        category = TopicCategory.ANIME,
+                    RssSearchQuery(
+                        subjectName = name,
                         episodeSort = query.episodeSort,
-                        episodeEp = query.episodeEp,
                     ),
                 ).map {
                     MediaMatch(it, MatchKind.FUZZY)
@@ -146,3 +154,13 @@ class RssMediaSource(
             }.merge()
     }
 }
+
+data class RssSearchQuery(
+    val subjectName: String,
+    val episodeSort: EpisodeSort,
+)
+
+fun RssSearchQuery.toFilterContext() = MediaListFilterContext(
+    subjectNames = setOf(subjectName),
+    episodeSort = episodeSort,
+)
