@@ -179,7 +179,7 @@ private fun HomeSceneLandscape(
                 header = { UserAvatarInNavigation() },
                 windowInsets = windowInsets.only(WindowInsetsSides.Vertical + WindowInsetsSides.Start)
                     .add(WindowInsets(top = 16.dp)), // 稍微多一点好看点
-                containerColor = AniThemeDefaults.navigationContainerColor,
+                containerColor = MaterialTheme.colorScheme.surfaceDim,
             ) {
                 Column(
                     Modifier
