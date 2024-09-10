@@ -1,26 +1,21 @@
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -233,7 +228,10 @@ fun SubjectCacheScene(
     SubjectCachePageScaffold(
         title = {
             val title = vm.subjectTitle
-            Text(title.orEmpty(), Modifier.placeholder(title == null))
+            Text(
+                title.orEmpty(), Modifier.placeholder(title == null),
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
         },
         autoCacheGroup = {
             val navigator = LocalNavigator.current
@@ -269,36 +267,37 @@ fun SubjectCacheScene(
  */
 @Composable
 fun SubjectCachePageScaffold(
-    title: @Composable RowScope.() -> Unit,
+    title: @Composable () -> Unit,
     autoCacheGroup: @Composable SettingsScope.() -> Unit,
     cacheListGroup: @Composable SettingsScope.() -> Unit,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
+    val appBarColors = AniThemeDefaults.topAppBarColors()
     Scaffold(
         modifier,
         topBar = {
             TopAppBar(
                 title = {
-                    Text("缓存管理")
+                    title()
                 },
                 navigationIcon = {
                     TopAppBarGoBackButton()
                 },
-                colors = AniThemeDefaults.topAppBarColors(),
+                colors = appBarColors,
                 windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
-            Surface(Modifier.fillMaxWidth()) {
-                Row(Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
-                    ProvideTextStyle(MaterialTheme.typography.titleMedium) {
-                        title()
-                    }
-                }
-            }
+//            Surface(Modifier.fillMaxWidth(), color = appBarColors.containerColor) {
+//                Row(Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
+//                    ProvideTextStyle(MaterialTheme.typography.titleMedium) {
+//                        title()
+//                    }
+//                }
+//            }
 
             SettingsTab {
                 Spacer(Modifier.fillMaxWidth()) // tab has spacedBy arrangement

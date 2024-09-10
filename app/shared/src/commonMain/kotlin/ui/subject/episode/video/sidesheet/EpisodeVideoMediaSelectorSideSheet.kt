@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,6 +19,7 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsView
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
+import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheetDefaults
 
 @Composable
 fun EpisodeVideoMediaSelectorSideSheet(
@@ -47,7 +47,7 @@ fun EpisodeVideoMediaSelectorSideSheet(
             modifier.padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .navigationBarsPadding(),
-            stickyHeaderBackgroundColor = MaterialTheme.colorScheme.surface,
+            stickyHeaderBackgroundColor = EpisodeVideoSettingsSideSheetDefaults.containerColor,
             itemProgressBar = {},
             onClickItem = {
                 mediaSelectorPresentation.select(it)

@@ -22,6 +22,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -37,6 +38,7 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -239,7 +241,12 @@ internal fun SettingsTab(
     modifier: Modifier = Modifier,
     content: @Composable SettingsScope.() -> Unit,
 ) {
-    Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(
+            currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding,
+        ),
+    ) {
         val scope = remember(this) {
             object : SettingsScope(), ColumnScope by this {}
         }

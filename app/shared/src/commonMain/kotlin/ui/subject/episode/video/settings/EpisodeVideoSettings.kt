@@ -3,12 +3,14 @@ package me.him188.ani.app.ui.subject.episode.video.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -31,6 +33,8 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.SettingsState
+import me.him188.ani.app.ui.settings.framework.components.SettingsDefaults
+import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
@@ -105,52 +109,53 @@ fun EpisodeVideoSettings(
 ) {
     SettingsTab(modifier) {
         Column {
-            FlowRow(
-                Modifier.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                ElevatedFilterChip(
-                    selected = danmakuConfig.enableTop,
-                    onClick = { setDanmakuConfig(danmakuConfig.copy(enableTop = !danmakuConfig.enableTop)) },
-                    leadingIcon = {
-                        if (danmakuConfig.enableTop) Icon(Icons.Rounded.Check, contentDescription = null)
-                        else Icon(Icons.Rounded.Close, contentDescription = null)
-                    },
-                    label = { Text("顶部", maxLines = 1) },
-                )
-                ElevatedFilterChip(
-                    selected = danmakuConfig.enableFloating,
-                    onClick = { setDanmakuConfig(danmakuConfig.copy(enableFloating = !danmakuConfig.enableFloating)) },
-                    label = { Text("滚动", maxLines = 1) },
-                    leadingIcon = {
-                        if (danmakuConfig.enableFloating) Icon(Icons.Rounded.Check, contentDescription = null)
-                        else Icon(Icons.Rounded.Close, contentDescription = null)
-                    },
-                )
-                ElevatedFilterChip(
-                    selected = danmakuConfig.enableBottom,
-                    onClick = { setDanmakuConfig(danmakuConfig.copy(enableBottom = !danmakuConfig.enableBottom)) },
-                    label = { Text("底部", maxLines = 1) },
-                    leadingIcon = {
-                        if (danmakuConfig.enableBottom) Icon(Icons.Rounded.Check, contentDescription = null)
-                        else Icon(Icons.Rounded.Close, contentDescription = null)
-                    },
-                )
-                ElevatedFilterChip(
-                    selected = danmakuConfig.enableColor,
-                    onClick = {
-                        setDanmakuConfig(
-                            danmakuConfig.copy(enableColor = !danmakuConfig.enableColor),
-                        )
-                    },
-                    leadingIcon = {
-                        if (danmakuConfig.enableColor) Icon(Icons.Rounded.Check, contentDescription = null)
-                        else Icon(Icons.Rounded.Close, contentDescription = null)
-                    },
-                    label = { Text("彩色", maxLines = 1) },
-                )
+            Surface(Modifier.fillMaxWidth(), color = SettingsDefaults.groupBackgroundColor) {
+                FlowRow(
+                    Modifier.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    ElevatedFilterChip(
+                        selected = danmakuConfig.enableTop,
+                        onClick = { setDanmakuConfig(danmakuConfig.copy(enableTop = !danmakuConfig.enableTop)) },
+                        leadingIcon = {
+                            if (danmakuConfig.enableTop) Icon(Icons.Rounded.Check, contentDescription = null)
+                            else Icon(Icons.Rounded.Close, contentDescription = null)
+                        },
+                        label = { Text("顶部", maxLines = 1) },
+                    )
+                    ElevatedFilterChip(
+                        selected = danmakuConfig.enableFloating,
+                        onClick = { setDanmakuConfig(danmakuConfig.copy(enableFloating = !danmakuConfig.enableFloating)) },
+                        label = { Text("滚动", maxLines = 1) },
+                        leadingIcon = {
+                            if (danmakuConfig.enableFloating) Icon(Icons.Rounded.Check, contentDescription = null)
+                            else Icon(Icons.Rounded.Close, contentDescription = null)
+                        },
+                    )
+                    ElevatedFilterChip(
+                        selected = danmakuConfig.enableBottom,
+                        onClick = { setDanmakuConfig(danmakuConfig.copy(enableBottom = !danmakuConfig.enableBottom)) },
+                        label = { Text("底部", maxLines = 1) },
+                        leadingIcon = {
+                            if (danmakuConfig.enableBottom) Icon(Icons.Rounded.Check, contentDescription = null)
+                            else Icon(Icons.Rounded.Close, contentDescription = null)
+                        },
+                    )
+                    ElevatedFilterChip(
+                        selected = danmakuConfig.enableColor,
+                        onClick = {
+                            setDanmakuConfig(
+                                danmakuConfig.copy(enableColor = !danmakuConfig.enableColor),
+                            )
+                        },
+                        leadingIcon = {
+                            if (danmakuConfig.enableColor) Icon(Icons.Rounded.Check, contentDescription = null)
+                            else Icon(Icons.Rounded.Close, contentDescription = null)
+                        },
+                        label = { Text("彩色", maxLines = 1) },
+                    )
+                }
             }
-
             val fontSize by remember(danmakuConfig) {
                 mutableFloatStateOf(danmakuConfig.style.fontSize.value / DanmakuStyle.Default.fontSize.value)
             }

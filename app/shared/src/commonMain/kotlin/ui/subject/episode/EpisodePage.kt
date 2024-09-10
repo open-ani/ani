@@ -79,6 +79,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
+import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -431,6 +432,7 @@ private fun EpisodeSceneContentPhone(
         }
         ModalBottomSheet(
             onDismissRequest = dismiss,
+            modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
             contentWindowInsets = { BottomSheetDefaults.windowInsets.union(windowInsets) },
         ) {
             DetachedDanmakuEditorLayout(

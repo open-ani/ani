@@ -319,7 +319,9 @@ fun VideoScaffold(
 
             // 右侧 sheet
             Box(Modifier.matchParentSize().windowInsetsPadding(contentWindowInsets)) {
-                rhsSheet()
+                MaterialTheme(aniDarkColorTheme()) {
+                    rhsSheet()
+                }
             }
         }
     }

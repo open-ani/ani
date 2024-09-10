@@ -38,3 +38,17 @@ val WindowSizeClass.paneHorizontalPadding
 @Stable
 val WindowSizeClass.paneVerticalPadding
     get() = if (windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 16.dp else 24.dp
+
+/**
+ * 在一个主要的滚动列表中卡片的间距
+ */
+@Stable
+val WindowSizeClass.cardHorizontalPadding
+    get() = if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 16.dp else 20.dp
+
+/**
+ * 在一个主要的滚动列表中卡片的间距
+ */
+@Stable
+val WindowSizeClass.cardVerticalPadding
+    get() = if (windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 16.dp else 20.dp
