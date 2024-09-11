@@ -80,6 +80,7 @@ fun PeerFilterEditItem(
 fun PeerFilterEditPane(
     state: PeerFilterSettingsState,
     contentPadding: PaddingValues,
+    showIpBlockingItem: Boolean,
     onClickIpBlockSettings: () -> Unit,
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
@@ -148,26 +149,29 @@ fun PeerFilterEditPane(
                     Text("提示：修改自动保存")
                 }
             }
-            Column(
-                modifier = Modifier.padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                ProvideTextStyleContentColor(
-                    MaterialTheme.typography.titleMedium,
-                    MaterialTheme.colorScheme.primary,
+            
+            if (showIpBlockingItem) {
+                Column(
+                    modifier = Modifier.padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text("黑名单")
+                    ProvideTextStyleContentColor(
+                        MaterialTheme.typography.titleMedium,
+                        MaterialTheme.colorScheme.primary,
+                    ) {
+                        Text("黑名单")
+                    }
+                    ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
+                        Text("Ani 将总是屏蔽黑名单内的 Peer，无论是否匹配过滤规则")
+                    }
                 }
-                ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
-                    Text("Ani 将总是屏蔽黑名单内的 Peer，无论是否匹配过滤规则")
-                }
+                ListItem(
+                    headlineContent = { Text(text = "IP 黑名单设置", overflow = TextOverflow.Ellipsis) },
+                    supportingContent = { Text("点击进入 IP 黑名单列表") },
+                    colors = listItemColors,
+                    modifier = Modifier.clickable(onClick = onClickIpBlockSettings)
+                )
             }
-            ListItem(
-                headlineContent = { Text(text = "IP 黑名单设置", overflow = TextOverflow.Ellipsis) },
-                supportingContent = { Text("点击此选项进入 IP 黑名单列表") },
-                colors = listItemColors,
-                modifier = Modifier.clickable(onClick = onClickIpBlockSettings)
-            )
         }
     }
 }

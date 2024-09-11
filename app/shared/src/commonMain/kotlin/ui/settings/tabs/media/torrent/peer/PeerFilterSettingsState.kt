@@ -6,6 +6,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
@@ -32,10 +37,21 @@ class PeerFilterSettingsState(
         onSave = onSave,
         isSavingState = stateOf(false)
     )
-    
-    var editingIpBlockList by mutableStateOf(false)
-    
-    var ipBlackList by storage.prop({ it.ipBlackList }, { copy(ipBlackList = it) }, emptyList())
+
+    var searchingBlockedIp by mutableStateOf(false)
+        private set
+    val searchBlockedIpQuery = MutableStateFlow("")
+
+    private var ipBlackList by storage.prop({ it.ipBlackList }, { copy(ipBlackList = it) }, emptyList())
+    var searchedIpBlockList: Flow<List<String>> = searchBlockedIpQuery
+        .combine(snapshotFlow { ipBlackList }) { query, list ->
+            query to list
+        }
+        .transformLatest { (query, list) ->
+            kotlinx.coroutines.delay(500)
+            // 需要去重，避免 lazy column 出现重复的 key
+            emit(list.filter { it.contains(query) }.toSet().toList())
+        }
     
     var ipFilterEnabled by storage.prop({ it.enableIpFilter }, { copy(enableIpFilter = it) }, false)
     var ipFilters by storage.prop(
@@ -57,4 +73,30 @@ class PeerFilterSettingsState(
         copy = { copy(idRegexFilters = it.split('\n')) },
         default = ""
     )
+    
+    fun addBlockedIp(value: String) {
+        ipBlackList = ipBlackList.toMutableList().apply { add(value) }
+    }
+    
+    fun removeBlockedIp(value: String) {
+        val newList = mutableListOf<String>()
+        for (ip in ipBlackList) {
+            if (ip != value) newList.add(ip)
+        }
+        ipBlackList = newList
+    }
+    
+    fun setSearchBlockIpQuery(value: String) {
+        searchBlockedIpQuery.value = value
+    }
+    
+    fun stopSearchBlockedIp() {
+        searchBlockedIpQuery.value = ""
+        searchingBlockedIp = false
+    }
+    
+    fun startSearchBlockedIp() {
+        searchBlockedIpQuery.value = ""
+        searchingBlockedIp = true
+    }
 }

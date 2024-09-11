@@ -6,7 +6,6 @@ import me.him188.ani.utils.ipparser.IpSeqRange
 
 class PeerIpFilter(pattern: String) : PeerFilter {
     private val parser = IpSeqRange.parse(pattern)
-    
     override fun onFilter(info: PeerInfo): Boolean {
         return parser.contains(info.ipAddr)
     }
@@ -23,5 +22,11 @@ class PeerIdFilter(patternRegex: String) : PeerFilter {
     private val regex = Regex(patternRegex)
     override fun onFilter(info: PeerInfo): Boolean {
         return info.id.contains(regex)
+    }
+}
+
+class PeerIpBlackListFilter(private val ipList: List<String>) : PeerFilter {
+    override fun onFilter(info: PeerInfo): Boolean {
+        return ipList.contains(info.ipAddr)
     }
 }

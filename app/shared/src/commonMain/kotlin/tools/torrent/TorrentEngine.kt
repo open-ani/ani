@@ -159,6 +159,7 @@ abstract class AbstractTorrentEngine<Downloader : TorrentDownloader, Config : To
 private fun createPeerFilter(config: TorrentPeerConfig): PeerFilter {
     return object : PeerFilter {
         private val correspondingFilters = buildList {
+            add(PeerIpBlackListFilter(config.ipBlackList))
             if (config.enableIdFilter) {
                 addAll(config.idRegexFilters.map(::PeerIdFilter))
             }

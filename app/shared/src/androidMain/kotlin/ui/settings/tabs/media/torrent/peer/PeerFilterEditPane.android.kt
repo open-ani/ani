@@ -51,6 +51,11 @@ fun PreviewPeerFilterEditPane() {
         val state = remember { 
             PeerFilterSettingsState(config, { config.value = it }, stateOf(false)) 
         }
-        PeerFilterEditPane(state = state, contentPadding = PaddingValues(0.dp), { })
+        PeerFilterEditPane(
+            state = state, 
+            contentPadding = PaddingValues(0.dp), 
+            showIpBlockingItem = true,
+            onClickIpBlockSettings = { }
+        )
     }
 }
