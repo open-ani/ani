@@ -26,7 +26,9 @@ fun PreviewPeerFilterEditItem() {
             filterItem3
         """.trimIndent()) }
         
-        val item by derivedStateOf { PeerFilterItemState(enabled, content) }
+        val item by remember {
+            derivedStateOf { PeerFilterItemState(enabled, content) }
+        }
         PeerFilterEditItem(
             title = "Peer 过滤器的标题",
             description = "点击启用过滤器",
