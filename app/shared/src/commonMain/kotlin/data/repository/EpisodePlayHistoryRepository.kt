@@ -44,6 +44,7 @@ class EpisodePlayHistoryRepositoryImpl(
 
     override suspend fun remove(episodeId: Int) {
         dataStore.updateData { current ->
+            logger.info { "remove play progress for episode $episodeId" }
             current.copy(histories = current.histories.filter { it.episodeId != episodeId })
         }
     }

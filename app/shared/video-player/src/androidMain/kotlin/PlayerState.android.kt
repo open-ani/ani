@@ -216,6 +216,10 @@ internal class ExoPlayerState @UiThread constructor(
             playWhenReady = true
             addListener(
                 object : Player.Listener {
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        state.value = PlaybackState.READY
+                        isBuffering.value = false
+                    }
                     override fun onTracksChanged(tracks: Tracks) {
                         subtitleTracks.candidates.value =
                             tracks.groups.asSequence()
@@ -283,15 +287,17 @@ internal class ExoPlayerState @UiThread constructor(
                                 isBuffering.value = false
                             }
 
-                            Player.STATE_IDLE -> {
-                                state.value = PlaybackState.READY
-                                isBuffering.value = false
-                            }
-
-                            Player.STATE_READY -> {
-                                state.value = PlaybackState.READY
-                                isBuffering.value = false
-                            }
+//                            Player.STATE_IDLE -> {
+//                                println("idle")
+//                                state.value = PlaybackState.READY
+//                                isBuffering.value = false
+//                            }
+//
+//                            Player.STATE_READY -> {
+//                                println("ready")
+//                                state.value = PlaybackState.READY
+//                                isBuffering.value = false
+//                            }
                         }
                         updateVideoProperties()
                     }

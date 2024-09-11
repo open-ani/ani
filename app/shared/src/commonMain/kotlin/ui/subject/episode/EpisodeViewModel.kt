@@ -105,6 +105,7 @@ import me.him188.ani.utils.coroutines.sampleWithInitial
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -338,7 +339,11 @@ private class EpisodeViewModelImpl(
     private fun savePlayProgress() {
         val positionMillis = playerState.currentPositionMillis.value
         val epId = episodeId.value
-        if (positionMillis > 0) {
+        val durationMillis = playerState.videoProperties.value?.durationMillis.let {
+            if (it == null) return@let 0L
+            return@let max(0, it - 1000) // 最后一秒不会保存进度
+        }
+        if (positionMillis in 0..<durationMillis) {
             launchInBackground {
                 episodePlayHistoryRepository.saveOrUpdate(epId, positionMillis)
             }
@@ -708,7 +713,9 @@ private class EpisodeViewModelImpl(
                         val positionMillis =
                             episodePlayHistoryRepository.getPositionMillisByEpisodeId(episodeId = episodeId.value)
                         positionMillis?.let {
-                            playerState.seekTo(positionMillis)
+                            launchInMain { // android must call in main thread
+                                playerState.seekTo(positionMillis)
+                            }
                         }
                     }
 
