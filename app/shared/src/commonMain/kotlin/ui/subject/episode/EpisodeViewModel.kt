@@ -719,6 +719,8 @@ private class EpisodeViewModelImpl(
                         }
                     }
 
+                    PlaybackState.PAUSED -> savePlayProgress()
+
                     PlaybackState.FINISHED ->
                         episodePlayHistoryRepository.remove(episodeId.value)
 
