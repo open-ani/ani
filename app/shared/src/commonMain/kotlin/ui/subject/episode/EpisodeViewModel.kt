@@ -85,6 +85,7 @@ import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -167,6 +168,10 @@ abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
     // Video
     abstract val videoControllerState: VideoControllerState
     abstract val videoScaffoldConfig: VideoScaffoldConfig
+
+    // DanmakuRegexFilterState
+    abstract val danmakuRegexFilterState: DanmakuRegexFilterState
+
 
     /**
      * Play controller for video view. This can be saved even when window configuration changes (i.e. everything recomposes).
@@ -345,6 +350,26 @@ private class EpisodeViewModelImpl(
     override var mediaSelectorVisible: Boolean by mutableStateOf(false)
     override val videoScaffoldConfig: VideoScaffoldConfig by settingsRepository.videoScaffoldConfig
         .flow.produceState(VideoScaffoldConfig.Default)
+
+    override val danmakuRegexFilterState = DanmakuRegexFilterState(
+        list = danmakuRegexFilterRepository.flow.produceState(emptyList()),
+        add = {
+            launchInBackground { danmakuRegexFilterRepository.add(it) }
+        },
+        edit = { regex, filter ->
+            launchInBackground {
+                danmakuRegexFilterRepository.update(filter.id, filter.copy(regex = regex))
+            }
+        },
+        remove = {
+            launchInBackground { danmakuRegexFilterRepository.remove(it) }
+        },
+        switch = {
+            launchInBackground {
+                danmakuRegexFilterRepository.update(it.id, it.copy(enabled = !it.enabled))
+            }
+        },
+    )
 
     override val subjectPresentation: SubjectPresentation by subjectInfo
         .map {

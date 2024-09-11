@@ -7,16 +7,15 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
@@ -24,25 +23,31 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
-import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.utils.platform.Uuid
 
-internal fun isValidRegex(pattern: String): Boolean {
+fun isValidRegex(pattern: String): Boolean {
     return try {
         Regex(pattern)
         true
@@ -53,60 +58,22 @@ internal fun isValidRegex(pattern: String): Boolean {
 
 @Composable
 internal fun SettingsScope.DanmakuRegexFilterGroup(
-    danmakuRegexFilterList: List<DanmakuRegexFilter>,
-    onAdd: (filter: DanmakuRegexFilter) -> Unit,
-    onEdit: (id: String, new: DanmakuRegexFilter) -> Unit,
-    onRemove: (filter: DanmakuRegexFilter) -> Unit,
-    onSwitch: (fiter: DanmakuRegexFilter) -> Unit,
-    isLoadingState: Boolean
+    state: DanmakuRegexFilterState,
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
-    var errorMessage by rememberSaveable { mutableStateOf("") }
 
     if (showAdd) {
         AddRegexFilterDialog(
-            onDismissRequest = { showAdd = false },
-            onConfirm = { name, regex ->
-                if (regex.isBlank()) {
-                    showAdd = false
-                } else {
-                    if (!isValidRegex(regex)) {
-                        errorMessage = "正则输入法不正确"
-                    } else {
-                        onAdd(
-                            DanmakuRegexFilter(
-                                id = Uuid.randomString(),
-                                name = name,
-                                regex = regex,
-                            ),
-                        )
-                        showAdd = false
-                    }
-                }
+            onDismissRequest = {
+                showAdd = false
             },
+            onAdd = state.add,
             title = { Text("添加正则过滤器") },
-            description = {
-                Text("请正确添加正则表达式，例如：第一个字符为数字：'^[1-9]{1}\$'.\n匹配该正常表达式的弹幕将不会显示")
-            },
-
-            )
-    }
-
-    if (errorMessage.isNotBlank()) {
-        AlertDialog(
-            onDismissRequest = { errorMessage = "" },
-            confirmButton = {
-                TextButton(onClick = { errorMessage = "" }) {
-                    Text("确认")
-                }
-            },
-            title = { Text("错误") },
-            text = { Text(errorMessage) },
         )
     }
 
     Group(
-        title = { Text("正则过滤器管理") },
+        title = { Text("弹幕正则过滤器管理", color = MaterialTheme.colorScheme.onSurface) },
         actions = {
             Row {
                 IconButton(
@@ -120,14 +87,14 @@ internal fun SettingsScope.DanmakuRegexFilterGroup(
         },
     ) {
         FlowRow(
-            Modifier.placeholder(isLoadingState).fillMaxWidth().padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            danmakuRegexFilterList.forEachIndexed { index, item ->
+            state.list.forEach { item ->
                 RegexFilterItem(
                     item,
-                    onDelete = { onRemove(item) },
-                    onDisable = { onSwitch(item) },
+                    onDelete = { state.remove(item) },
+                    onDisable = { state.switch(item) },
                 )
             }
         }
@@ -143,7 +110,7 @@ internal fun RegexFilterItem(
     onDisable: () -> Unit,
     onDelete: () -> Unit
 ) {
-    var showConfirmDelete by rememberSaveable { mutableStateOf(false) }
+//    var showConfirmDelete by rememberSaveable { mutableStateOf(false) }
     ElevatedFilterChip(
         selected = item.enabled,
         onClick = onDisable,
@@ -159,41 +126,70 @@ internal fun RegexFilterItem(
             Icon(
                 Icons.Rounded.Close,
                 contentDescription = null,
-                Modifier.clickable(onClick = { showConfirmDelete = true }),
+                Modifier.clickable(onClick = onDelete),
             )
         },
     )
 
-    if (showConfirmDelete) {
-        AlertDialog(
-            onDismissRequest = { showConfirmDelete = false },
-            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-            title = { Text("删除正则") },
-            text = { Text("确认删除 \"${item.regex}\"？") },
-            confirmButton = {
-                TextButton({ onDelete(); showConfirmDelete = false }) {
-                    Text(
-                        "删除",
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
-        )
-    }
+//    if (showConfirmDelete) {
+//        AlertDialog(
+//            onDismissRequest = { showConfirmDelete = false },
+//            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+//            title = { Text("删除正则") },
+//            text = { Text("确认删除 \"${item.regex}\"？") },
+//            confirmButton = {
+//                TextButton({ onDelete(); showConfirmDelete = false }) {
+//                    Text(
+//                        "删除",
+//                        color = MaterialTheme.colorScheme.error,
+//                    )
+//                }
+//            },
+//            dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
+//            modifier = Modifier.fillMaxWidth()
+//                .onKeyEvent { event: KeyEvent ->
+//                    if (event.key == Key.Enter) {
+//                        onDelete()
+//                        true // Consume the event
+//                    } else {
+//                        false // Pass the event to other handlers
+//                    }
+//                },
+//        )
+//    }
 }
 
 
 @Composable
 fun AddRegexFilterDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (name: String, regex: String) -> Unit, // onConfirm now accepts the text field value
+    onAdd: (DanmakuRegexFilter) -> Unit,
     title: @Composable () -> Unit,
-    confirmEnabled: Boolean = true,
-    description: @Composable (() -> Unit)? = null
 ) {
-    var nameTextFieldValue by rememberSaveable { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
+    val isBlank by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
+    val validRegex by remember { derivedStateOf { isValidRegex(regexTextFieldValue) } }
+    var isError by remember { mutableStateOf(false) }
+
+    fun handleAdd(): Unit {
+        if (!isBlank && validRegex) {
+            isError = false
+            onAdd(
+                DanmakuRegexFilter(
+                    id = Uuid.randomString(),
+                    name = "",
+                    regex = regexTextFieldValue,
+                    enabled = true,
+                ),
+            )
+            regexTextFieldValue = ""
+            onDismissRequest()
+        } else {
+            isError = true
+        }
+        focusManager.clearFocus()
+    }
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -217,24 +213,42 @@ fun AddRegexFilterDialog(
                 ) {
                     OutlinedTextField(
                         value = regexTextFieldValue,
-                        onValueChange = { regexTextFieldValue = it },
+                        onValueChange = {
+                            regexTextFieldValue = it
+                            isError = false
+                        },
                         label = { Text("正则表达式") },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
+                            .onKeyEvent { event: KeyEvent ->
+                                if (event.key == Key.Enter) {
+                                    handleAdd()
+                                    true // Consume the event
+                                } else {
+                                    false // Pass the event to other handlers
+                                }
+                            },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { handleAdd() },
+                        ),
+                        supportingText = {
+                            if (isError) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = "正则表达式语法不正确",
+                                )
+                            }
+                        },
+                        placeholder = {
+                            Text(
+                                text = "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。",
+                            )
+                        },
+                        isError = isError,
+                        singleLine = true,
                     )
-                }
-
-                description?.let {
-                    ProvideTextStyleContentColor(
-                        MaterialTheme.typography.labelMedium,
-                        LocalContentColor.current.copy(0.8f),
-                    ) {
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                            horizontalArrangement = Arrangement.Start,
-                        ) {
-                            it()
-                        }
-                    }
                 }
 
                 Row(
@@ -248,12 +262,9 @@ fun AddRegexFilterDialog(
 
                     Button(
                         onClick = {
-                            onConfirm(
-                                nameTextFieldValue,
-                                regexTextFieldValue,
-                            )
+                            handleAdd()
                         }, // Pass the text field value to onConfirm
-                        enabled = confirmEnabled,
+                        enabled = !isBlank,
                     ) {
                         Text("确认")
                     }

@@ -97,9 +97,9 @@ class TimeBasedDanmakuSession private constructor(
         fun filterList(
             list: List<Danmaku>,
             danmakuRegexFilterList: List<DanmakuRegexFilter>,
-            danmakuRegexFilterEnabled: Boolean
+            enableRegexFilter: Boolean
         ): List<Danmaku> {
-            if (!danmakuRegexFilterEnabled) {
+            if (!enableRegexFilter) {
                 return list
             }
 
@@ -143,7 +143,7 @@ class TimeBasedDanmakuSession private constructor(
                             filterConfig to config
                         }
                     combinedFlow.distinctUntilChanged().collect { (filterList, config) ->
-                        val filteredList = filterList(list, filterList, config.danmakuRegexFilterEnabled)
+                        val filteredList = filterList(list, filterList, config.enableRegexFilter)
                         state.updateList(filteredList)
                         state.requestRepopulate()
                     }
@@ -151,17 +151,14 @@ class TimeBasedDanmakuSession private constructor(
 
                 // 一个单独协程收集当前进度和过滤配置
                 launch(start = CoroutineStart.UNDISPATCHED) {
-
                     progress.collect {
                         state.curTimeShared = it
-//                        println("Current time shared: $it")
                     }
                     // progress finished, no need to calculate
                     this@channelFlow.channel.close()
                 }
 
                 val sendItem: (DanmakuEvent) -> Boolean = {
-//                    println("Sending item: $it")
                     trySend(it).isSuccess
                 }
 
@@ -254,7 +251,7 @@ internal class DanmakuSessionFlowState(
     fun requestRepopulate() {
         lastTime = Duration.INFINITE
     }
-
+    
     fun updateList(newList: List<Danmaku>) {
         list = newList
     }

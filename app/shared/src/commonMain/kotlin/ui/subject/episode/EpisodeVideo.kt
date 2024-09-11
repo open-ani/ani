@@ -64,9 +64,11 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresent
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel
+import me.him188.ani.app.ui.subject.episode.video.sidesheet.EditDanmakuRegexFilterSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorSideSheet
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeVideoMediaSelectorSideSheet
@@ -93,7 +95,6 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.state.togglePause
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
-import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -138,11 +139,14 @@ internal fun EpisodeVideoImpl(
     leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
     gestureFamily: GestureFamily = currentPlatform.mouseFamily,
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
     var isLocked by remember { mutableStateOf(false) }
-    var showSettings by remember { mutableStateOf(false) }
+    var sideSheetState by remember { mutableStateOf(SideSheetState.NONE) }
+    var isMediaSelectorVisible by remember { mutableStateOf(false) }
+    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
     val config by remember(configProvider) { derivedStateOf(configProvider) }
 
     // auto hide cursor
@@ -151,12 +155,11 @@ internal fun EpisodeVideoImpl(
     val showCursor by remember(videoControllerState) {
         derivedStateOf {
             !isVideoHovered || (videoControllerState.visibility.bottomBar
-                    || videoControllerState.visibility.detachedSlider)
+                    || videoControllerState.visibility.detachedSlider
+                    || sideSheetState != SideSheetState.NONE)
         }
     }
 
-    var isMediaSelectorVisible by remember { mutableStateOf(false) }
-    var isEpisodeSelectorVisible by remember { mutableStateOf(false) }
 
     VideoScaffold(
         expanded = expanded,
@@ -180,7 +183,7 @@ internal fun EpisodeVideoImpl(
                             Icon(Icons.Rounded.DisplaySettings, contentDescription = "数据源")
                         }
                     }
-                    IconButton({ showSettings = true }, Modifier.testTag(TAG_SHOW_SETTINGS)) {
+                    IconButton({ sideSheetState = SideSheetState.SETTINGS }, Modifier.testTag(TAG_SHOW_SETTINGS)) {
                         Icon(Icons.Rounded.Settings, contentDescription = "设置")
                     }
                 },
@@ -403,7 +406,7 @@ internal fun EpisodeVideoImpl(
             val alwaysOnRequester = rememberAlwaysOnRequester(videoControllerState, "sideSheets")
             val anySideSheetVisible by remember {
                 derivedStateOf {
-                    isMediaSelectorVisible || isEpisodeSelectorVisible || showSettings
+                    sideSheetState != SideSheetState.NONE || isMediaSelectorVisible || isEpisodeSelectorVisible
                 }
             }
             if (anySideSheetVisible) {
@@ -415,22 +418,40 @@ internal fun EpisodeVideoImpl(
                 }
             }
 
-            if (showSettings) {
-                EpisodeVideoSettingsSideSheet(
-                    onDismissRequest = { showSettings = false },
-                    Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
-                    title = { Text(text = "弹幕设置") },
-                    closeButton = {
-                        IconButton(onClick = { showSettings = false }) {
-                            Icon(Icons.Rounded.Close, contentDescription = "关闭")
-                        }
-                    },
-                ) {
-                    EpisodeVideoSettings(
-                        remember { EpisodeVideoSettingsViewModel() },
+            when (sideSheetState) {
+                SideSheetState.EDIT_DANMAKU_REGEX_FILTER -> {
+                    EditDanmakuRegexFilterSideSheet(
+                        state = danmakuRegexFilterState,
+                        onDismissRequest = {
+                            sideSheetState = SideSheetState.NONE
+                        },
+                        expanded = expanded,
                     )
                 }
+
+                SideSheetState.SETTINGS -> {
+                    EpisodeVideoSettingsSideSheet(
+                        onDismissRequest = { sideSheetState = SideSheetState.NONE },
+                        Modifier.testTag(TAG_DANMAKU_SETTINGS_SHEET),
+                        title = { Text(text = "弹幕设置") },
+                        closeButton = {
+                            IconButton(onClick = { sideSheetState = SideSheetState.NONE }) {
+                                Icon(Icons.Rounded.Close, contentDescription = "关闭")
+                            }
+                        },
+                    ) {
+                        EpisodeVideoSettings(
+                            remember { EpisodeVideoSettingsViewModel() },
+                            onManageRegexFilters = {
+                                sideSheetState = SideSheetState.EDIT_DANMAKU_REGEX_FILTER
+                            },
+                        )
+                    }
+                }
+
+                SideSheetState.NONE -> Unit // No sheet is displayed
             }
+
             if (isMediaSelectorVisible) {
                 EpisodeVideoMediaSelectorSideSheet(
                     mediaSelectorPresentation,
@@ -447,6 +468,13 @@ internal fun EpisodeVideoImpl(
             }
         },
     )
+}
+
+
+private enum class SideSheetState {
+    NONE,
+    SETTINGS,
+    EDIT_DANMAKU_REGEX_FILTER
 }
 
 @Stable

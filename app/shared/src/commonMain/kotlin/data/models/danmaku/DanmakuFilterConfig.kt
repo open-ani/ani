@@ -12,7 +12,7 @@ import me.him188.ani.utils.platform.annotations.SerializationOnly
 @Immutable
 @Serializable
 data class DanmakuFilterConfig @SerializationOnly constructor(
-    val danmakuRegexFilterEnabled: Boolean = true,
+    val enableRegexFilter: Boolean = true,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0
 ) {
     companion object {

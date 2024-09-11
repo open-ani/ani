@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
@@ -50,6 +51,8 @@ import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterGroup
+import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.NewVersion
@@ -74,12 +77,18 @@ fun AppSettingsTab(
     softwareUpdateGroupState: SoftwareUpdateGroupState,
     uiSettings: SettingsState<UISettings>,
     videoScaffoldConfig: SettingsState<VideoScaffoldConfig>,
+    danmakuFilterConfig: SettingsState<DanmakuFilterConfig>,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
     modifier: Modifier = Modifier
 ) {
     SettingsTab(modifier) {
         SoftwareUpdateGroup(softwareUpdateGroupState)
         UISettingsGroup(uiSettings)
-        PlayerGroup(videoScaffoldConfig)
+        PlayerGroup(
+            videoScaffoldConfig,
+            danmakuFilterConfig,
+            danmakuRegexFilterState,
+        )
         AppSettingsTabPlatform()
     }
 }
@@ -355,6 +364,8 @@ private fun SettingsScope.SoftwareUpdateGroup(
 @Composable
 private fun SettingsScope.PlayerGroup(
     videoScaffoldConfig: SettingsState<VideoScaffoldConfig>,
+    danmakuFilterConfig: SettingsState<DanmakuFilterConfig>,
+    danmakuRegexFilterState: DanmakuRegexFilterState,
 ) {
     Group(title = { Text("播放器") }) {
         val config by videoScaffoldConfig
@@ -375,6 +386,18 @@ private fun SettingsScope.PlayerGroup(
             },
             title = { Text("竖屏模式下显示全屏按钮") },
             description = { Text("总是显示播放器右下角的切换全屏按钮，方便切换") },
+        )
+        HorizontalDividerItem()
+        SwitchItem(
+            danmakuFilterConfig.value.enableRegexFilter,
+            onCheckedChange = {
+                danmakuFilterConfig.update(danmakuFilterConfig.value.copy(enableRegexFilter = it))
+            },
+            title = { Text("启用正则弹幕过滤器") },
+        )
+        HorizontalDividerItem()
+        DanmakuRegexFilterGroup(
+            state = danmakuRegexFilterState,
         )
         HorizontalDividerItem()
         SwitchItem(

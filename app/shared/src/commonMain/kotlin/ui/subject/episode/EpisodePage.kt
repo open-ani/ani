@@ -617,6 +617,7 @@ private fun EpisodeVideo(
         mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
         episodeSelectorState = vm.episodeSelectorState,
         mediaSourceInfoProvider = vm.mediaSourceInfoProvider,
+        danmakuRegexFilterState = vm.danmakuRegexFilterState,
         leftBottomTips = {
             AnimatedVisibility(
                 visible = vm.playerSkipOpEdState.showSkipTips,

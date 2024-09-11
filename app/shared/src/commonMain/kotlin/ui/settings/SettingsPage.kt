@@ -193,6 +193,8 @@ fun SettingsPage(
                                 vm.softwareUpdateGroupState,
                                 vm.uiSettings,
                                 vm.videoScaffoldConfig,
+                                vm.danmakuFilterConfigState,
+                                vm.danmakuRegexFilterState,
                                 Modifier.fillMaxSize(),
                             )
 

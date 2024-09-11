@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
@@ -157,9 +156,13 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             VerticalDivider()
             EpisodeVideoSettings(
                 danmakuConfig = config.value,
+                enableRegexFilter = false,
                 setDanmakuConfig = { config.value = it },
-                modifier = Modifier.width(300.dp),
-                danmakuRegexFilterGroup = { }
+                onManageRegexFilters = {},
+                switchDanmakuRegexFilterCompletely = {},
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
         }
     } else {
@@ -172,11 +175,13 @@ internal fun PreviewDanmakuHost() = ProvideCompositionLocalsForPreview {
             HorizontalDivider()
             EpisodeVideoSettings(
                 danmakuConfig = config.value,
+                enableRegexFilter = false,
                 setDanmakuConfig = { config.value = it },
+                onManageRegexFilters = {},
+                switchDanmakuRegexFilterCompletely = {},
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                danmakuRegexFilterGroup = { },
             )
         }
     }
