@@ -581,6 +581,7 @@ private class EpisodeViewModelImpl(
                     when (event) {
                         is DanmakuEvent.Add -> {
                             val data = event.danmaku
+                            if (data.text.isBlank()) return@collect
                             danmaku.danmakuHostState.trySend(
                                 createDanmakuPresentation(data, selfId.value),
                             )
@@ -588,9 +589,9 @@ private class EpisodeViewModelImpl(
 
                         is DanmakuEvent.Repopulate -> {
                             danmaku.danmakuHostState.repopulate(
-                                event.list.map {
-                                    createDanmakuPresentation(it, selfId.value)
-                                },
+                                event.list
+                                    .filter { it.text.any { c -> !c.isWhitespace() } }
+                                    .map { createDanmakuPresentation(it, selfId.value) },
                             )
 
                         }
