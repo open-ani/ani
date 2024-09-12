@@ -64,7 +64,6 @@ import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.io.path.createDirectories
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
 
 
 @Stable
@@ -259,6 +258,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
                 override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
                     if (newStatus == MediaParsedStatus.DONE) {
                         videoProperties.value = createVideoProperties()
+                        state.value = PlaybackState.READY
                     }
                 }
             },

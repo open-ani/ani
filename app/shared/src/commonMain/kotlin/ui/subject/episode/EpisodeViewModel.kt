@@ -39,6 +39,7 @@ import me.him188.ani.app.data.models.subject.episodeInfoFlow
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
+import me.him188.ani.app.data.repository.EpisodePlayHistoryRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
@@ -105,6 +106,7 @@ import me.him188.ani.utils.coroutines.sampleWithInitial
 import me.him188.ani.utils.logging.info
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -220,6 +222,7 @@ private class EpisodeViewModelImpl(
     private val mediaSourceManager: MediaSourceManager by inject()
     private val episodePreferencesRepository: EpisodePreferencesRepository by inject()
     private val commentRepository: CommentRepository by inject()
+    private val episodePlayHistoryRepository: EpisodePlayHistoryRepository by inject()
 
     private val subjectInfo = subjectManager.subjectInfoFlow(subjectId).shareInBackground()
     private val episodeInfo =
@@ -338,6 +341,27 @@ private class EpisodeViewModelImpl(
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
+    /**
+     * 保存播放进度的入口有4个：退出播放页，切换剧集，同集切换数据源，暂停播放
+     * 其中 切换剧集 和 同集切换数据源 虽然都是切换数据源，但它们并不能合并成一个入口，
+     * 因为 切换数据源 是依赖 PlayerLauncher collect mediaSelector.selected 实现的，
+     * 它会在 mediaSelector.unselect() 任意时间后发现 selected 已经改变，导致 episodeId 可能已经改变，从而将当前集的播放进度保存到新的剧集中
+     */
+    private fun savePlayProgress() {
+        if (playerState.state.value == PlaybackState.FINISHED) return
+        val positionMillis = playerState.currentPositionMillis.value
+        val epId = episodeId.value
+        val durationMillis = playerState.videoProperties.value?.durationMillis.let {
+            if (it == null) return@let 0L
+            return@let max(0, it - 1000) // 最后一秒不会保存进度
+        }
+        if (positionMillis in 0..<durationMillis) {
+            launchInBackground {
+                episodePlayHistoryRepository.saveOrUpdate(epId, positionMillis)
+            }
+        }
+    }
+    
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
         mediaSelector, videoSourceResolver, playerState, mediaSourceInfoProvider,
         episodeInfo,
@@ -473,6 +497,7 @@ private class EpisodeViewModelImpl(
     override val commentLazyListState: LazyListState = LazyListState()
 
     fun switchEpisode(episodeId: Int) {
+        savePlayProgress()
         episodeDetailsState.showEpisodes = false // 选择后关闭弹窗
         mediaSelector.unselect() // 否则不会自动选择
         playerState.stop()
@@ -577,6 +602,7 @@ private class EpisodeViewModelImpl(
         },
         backgroundScope = backgroundScope,
     )
+
     override val playerSkipOpEdState: PlayerSkipOpEdState = PlayerSkipOpEdState(
         chapters = playerState.chapters.produceState(),
         onSkip = {
@@ -587,6 +613,8 @@ private class EpisodeViewModelImpl(
     )
 
     override fun stopPlaying() {
+        // 退出播放页前保存播放进度
+        savePlayProgress()
         playerState.stop()
     }
 
@@ -702,6 +730,36 @@ private class EpisodeViewModelImpl(
                         playerSkipOpEdState.update(pos)
                     }.collect()
                 }
+        }
+
+        launchInBackground {
+            mediaSelector.events.onBeforeSelect.collect {
+                // 切换 数据源 前保存播放进度
+                savePlayProgress()
+            }
+        }
+        launchInBackground {
+            playerState.state.collect {
+                when (it) {
+                    // 加载播放进度
+                    PlaybackState.READY -> {
+                        val positionMillis =
+                            episodePlayHistoryRepository.getPositionMillisByEpisodeId(episodeId = episodeId.value)
+                        positionMillis?.let {
+                            withContext(Dispatchers.Main) { // android must call in main thread
+                                playerState.seekTo(positionMillis)
+                            }
+                        }
+                    }
+
+                    PlaybackState.PAUSED -> savePlayProgress()
+
+                    PlaybackState.FINISHED ->
+                        episodePlayHistoryRepository.remove(episodeId.value)
+
+                    else -> Unit
+                }
+            }
         }
     }
 
