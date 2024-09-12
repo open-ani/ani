@@ -466,7 +466,9 @@ tasks.withType(KotlinCompileTool::class) {
 tasks.withType(KspTaskJvm::class.java) {
     dependsOn(generateAniBuildConfigDesktop)
 }
-
+tasks.matching { it.name.startsWith("kspKotlin") }.all {
+    dependsOn(generateAniBuildConfigDesktop)
+}
 tasks.withType(KspTaskNative::class.java) {
     dependsOn(generateAniBuildConfigIos)
 }
