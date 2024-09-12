@@ -220,6 +220,7 @@ internal class ExoPlayerState @UiThread constructor(
                         state.value = PlaybackState.READY
                         isBuffering.value = false
                     }
+
                     override fun onTracksChanged(tracks: Tracks) {
                         subtitleTracks.candidates.value =
                             tracks.groups.asSequence()
@@ -275,6 +276,13 @@ internal class ExoPlayerState @UiThread constructor(
                         return true
                     }
 
+                    /**
+                     * STATE_READY 会在当前帧缓冲结束时设置
+                     *
+                     * exoplayer 的 STATE_READY 是不符合 [PlaybackState.READY] 预期的，所以不能在这里设置
+                     *
+                     * [PlaybackState.READY] 会在 [onMediaItemTransition] 中设置
+                     */
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         when (playbackState) {
                             Player.STATE_BUFFERING -> {
@@ -286,18 +294,6 @@ internal class ExoPlayerState @UiThread constructor(
                                 state.value = PlaybackState.FINISHED
                                 isBuffering.value = false
                             }
-
-//                            Player.STATE_IDLE -> {
-//                                println("idle")
-//                                state.value = PlaybackState.READY
-//                                isBuffering.value = false
-//                            }
-//
-//                            Player.STATE_READY -> {
-//                                println("ready")
-//                                state.value = PlaybackState.READY
-//                                isBuffering.value = false
-//                            }
                         }
                         updateVideoProperties()
                     }

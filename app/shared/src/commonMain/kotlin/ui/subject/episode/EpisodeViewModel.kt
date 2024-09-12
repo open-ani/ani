@@ -337,6 +337,7 @@ private class EpisodeViewModelImpl(
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
     private fun savePlayProgress() {
+        if (playerState.state.value == PlaybackState.FINISHED) return
         val positionMillis = playerState.currentPositionMillis.value
         val epId = episodeId.value
         val durationMillis = playerState.videoProperties.value?.durationMillis.let {
