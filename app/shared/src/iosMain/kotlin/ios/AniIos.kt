@@ -54,8 +54,10 @@ import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.SystemDocumentDir
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.resolve
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import platform.UIKit.UIViewController
@@ -67,11 +69,16 @@ expect fun OnBackPressedDispatcherOwner(aniNavigator: AniNavigator): OnBackPress
 fun MainViewController(): UIViewController {
     val scope = createAppRootCoroutineScope()
 
-    val context = IosContext(IosContextFiles(Path(".").inSystem, Path(".").inSystem)) // TODO
+    val context = IosContext(
+        IosContextFiles(
+            cacheDir = Path(SystemDocumentDir).resolve("cache").inSystem,
+            dataDir = Path(SystemDocumentDir).resolve("data").inSystem,
+        ),
+    ) // TODO IOS
 
     val koin = startKoin {
         modules(getCommonKoinModule({ context }, scope))
-        modules(getIosModules(Path(".").inSystem, scope)) // TODO
+        modules(getIosModules(Path(SystemDocumentDir).resolve("torrent").inSystem, scope)) // TODO IOS
     }.startCommonKoinModule(scope).koin
 
     koin.get<TorrentManager>() // start sharing, connect to DHT now
