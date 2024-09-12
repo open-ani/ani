@@ -14,10 +14,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.serialization.Transient
-import me.him188.ani.danmaku.api.Danmaku
 
 /**
- * Configuration for the presentation of each [Danmaku].
+ * Configuration for the presentation of each `me.him188.ani.danmaku.api.Danmaku`.
  */
 @Immutable
 data class DanmakuConfig(

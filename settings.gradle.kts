@@ -48,6 +48,7 @@ includeProject(":utils:xml")
 includeProject(":utils:bbcode", "utils/bbcode")
 includeProject(":utils:bbcode:test-codegen")
 includeProject(":utils:ip-parser", "utils/ip-parser")
+includeProject(":utils:ui-testing")
 
 
 includeProject(":torrent:torrent-api", "torrent/api") // Torrent 系统 API
@@ -90,7 +91,7 @@ includeProject(":datasource:ikaros", "datasource/ikaros") // https://ikaros.run/
 
 // danmaku
 includeProject(":danmaku:danmaku-api", "danmaku/api")
-//includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
+includeProject(":danmaku:danmaku-ui", "danmaku/ui")
 includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 
 includeProject(

@@ -1,6 +1,5 @@
 package me.him188.ani.danmaku.ui
 
-import androidx.annotation.UiThread
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
@@ -90,7 +89,6 @@ class DanmakuHostState(
     /**
      * 监听 [DanmakuConfig] 和 [hostHeight] 配置变化
      */
-    @UiThread
     internal suspend fun observeConfig(measurer: TextMeasurer) {
         uiContext.await()
         coroutineScope {
@@ -228,7 +226,6 @@ class DanmakuHostState(
     /**
      * 更新弹幕轨道数量, 同时也会更新轨道属性
      */
-    @UiThread
     private suspend fun updateTrackCount(count: Int, config: DanmakuConfig) {
         uiContext.await()
         // updateTrack 时 speed 和 safeSeparation 也可能变化, 也需要更新
@@ -278,7 +275,6 @@ class DanmakuHostState(
      * - [FloatingDanmakuTrack.speedPxPerSecond]
      * - [FloatingDanmakuTrack.safeSeparation]
      */
-    @UiThread
     private suspend fun updateTrackProperties(config: DanmakuConfig) {
         uiContext.await()
         // updateTrack 时 speed 和 safeSeparation 也可能变化, 也需要更新
@@ -296,7 +292,6 @@ class DanmakuHostState(
      *
      * 此方法的行为与 [repopulate] 相同, 但是具有更高的执行效率.
      */
-    @UiThread
     private suspend fun recalculatePresentDanmakuPositions(currentElapsedFrameTimeNanos: Long) {
         uiContext.await()
         val presentFloatingDanmakuCopied = presentFloatingDanmaku.toList()
@@ -316,7 +311,6 @@ class DanmakuHostState(
         }
     }
 
-    @UiThread
     internal suspend fun interpolateFrameLoop() {
         uiContext.await()
         coroutineScope {
@@ -367,7 +361,6 @@ class DanmakuHostState(
     /**
      * 逻辑帧 tick, 主要用于移除超出屏幕外或超过时间的弹幕
      */
-    @UiThread
     internal fun tick() {
         floatingTrack.forEach { it.tick() }
         topTrack.forEach { it.tick() }
@@ -593,7 +586,6 @@ class DanmakuHostState(
         }
     }
 
-    @UiThread
     private fun clearPresentDanmaku() {
         floatingTrack.forEach { it.clearAll() }
         topTrack.forEach { it.clearAll() }
@@ -607,7 +599,6 @@ class DanmakuHostState(
         }
     }
 
-    @UiThread
     fun setPaused(pause: Boolean) {
         paused = pause
     }

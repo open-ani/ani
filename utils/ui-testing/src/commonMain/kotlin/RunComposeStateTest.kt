@@ -10,7 +10,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.yield
-import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -18,7 +17,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 /**
- * [Dispatchers.Main] 设置为 test dispatcher, 让一些 state 操作与测试代码在同一调度队列执行. (例如 [HasBackgroundScope.produceState] 会在 [Dispatchers.Main] 执行)
+ * [Dispatchers.Main] 设置为 test dispatcher, 让一些 state 操作与测试代码在同一调度队列执行. (例如 `HasBackgroundScope.produceState` 会在 [Dispatchers.Main] 执行)
  *
  * 可以使用 [TestCoroutineScheduler.runCurrent] 来执行所有后台任务.
  * 使用 [takeSnapshot] 来让所有 Compose snapshot state [androidx.compose.runtime.State] 更新, 例如 [derivedStateOf]

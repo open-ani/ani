@@ -116,6 +116,7 @@ kotlin {
         api(projects.utils.bbcode)
         api(projects.danmaku.danmakuApi)
         api(projects.danmaku.dandanplay)
+        api(projects.danmaku.danmakuUi)
         api(projects.utils.ipParser)
         api(projects.torrent.torrentApi)
         api(projects.torrent.anitorrent)
@@ -163,6 +164,7 @@ kotlin {
     sourceSets.commonTest.dependencies {
         implementation(libs.kotlinx.coroutines.test)
         implementation(projects.utils.testing)
+        implementation(projects.utils.uiTesting)
     }
 
     sourceSets.androidMain.dependencies {
@@ -292,8 +294,6 @@ kotlin {
                 }
             }
         }
-
-        submodule("danmaku/ui")
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
