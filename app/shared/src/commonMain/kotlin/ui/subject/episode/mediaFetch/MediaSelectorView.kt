@@ -81,7 +81,7 @@ fun MediaSelectorView(
             stickyHeader {
                 val isStuck by remember(lazyListState) {
                     derivedStateOf {
-                        lazyListState.firstVisibleItemIndex == 2
+                        lazyListState.firstVisibleItemIndex == 1
                     }
                 }
                 Column(
@@ -160,7 +160,7 @@ private fun MediaItem(
         modifier.width(IntrinsicSize.Min),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer
-            else CardDefaults.elevatedCardColors().containerColor,
+            else MaterialTheme.colorScheme.surface,
         ),
     ) {
         Column(Modifier.padding(all = 16.dp)) {

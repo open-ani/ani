@@ -11,7 +11,6 @@ import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.Verified
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -25,8 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.preference.DarkMode
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
-import me.him188.ani.app.data.models.preference.ThemeKind
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
@@ -36,6 +35,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
@@ -99,37 +99,54 @@ private fun SettingsScope.UISettingsGroup(
 ) {
     val uiSettings by state
     Group(title = { Text("通用") }) {
-        if (Platform.currentPlatform.isDesktop()) {
+        if (Platform.currentPlatform.isAndroid()) {
+            SwitchItem(
+                uiSettings.theme.dynamicTheme,
+                {
+                    state.update(
+                        uiSettings.copy(
+                            theme = uiSettings.theme.copy(dynamicTheme = !uiSettings.theme.dynamicTheme),
+                        ),
+                    )
+                },
+                title = { Text("动态主题") },
+                description = { Text("根据桌面壁纸定制主题") },
+            )
+        }
+        AnimatedVisibility(
+            Platform.currentPlatform.isDesktop() || Platform.currentPlatform.isAndroid(),
+        ) {
             DropdownItem(
-                selected = { uiSettings.theme.kind },
-                values = { ThemeKind.entries },
+                selected = { uiSettings.theme.darkMode },
+                values = { DarkMode.entries },
                 itemText = {
                     when (it) {
-                        ThemeKind.AUTO -> Text("自动")
-                        ThemeKind.LIGHT -> Text("浅色")
-                        ThemeKind.DARK -> Text("深色")
+                        DarkMode.AUTO -> Text("自动")
+                        DarkMode.LIGHT -> Text("浅色")
+                        DarkMode.DARK -> Text("深色")
                     }
                 },
                 onSelect = {
                     state.update(
                         uiSettings.copy(
-                            theme = uiSettings.theme.copy(kind = it),
+                            theme = uiSettings.theme.copy(darkMode = it),
                         ),
                     )
                 },
                 itemIcon = {
                     when (it) {
-                        ThemeKind.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
-                        ThemeKind.LIGHT -> Icon(Icons.Rounded.LightMode, null)
-                        ThemeKind.DARK -> Icon(Icons.Rounded.DarkMode, null)
+                        DarkMode.AUTO -> Icon(Icons.Rounded.HdrAuto, null)
+                        DarkMode.LIGHT -> Icon(Icons.Rounded.LightMode, null)
+                        DarkMode.DARK -> Icon(Icons.Rounded.DarkMode, null)
                     }
                 },
                 description = {
-                    if (uiSettings.theme.kind == ThemeKind.AUTO) {
-                        Text("根据系统设置自动切换")
+                    when (uiSettings.theme.darkMode) {
+                        DarkMode.AUTO -> Text("根据系统设置自动切换")
+                        else -> {}
                     }
                 },
-                title = { Text("主题") },
+                title = { Text("深色模式") },
             )
         }
 
@@ -351,7 +368,7 @@ private fun SettingsScope.SoftwareUpdateGroup(
                     || autoUpdate.hasUpdate, // 在主页自动检查的
         ) {
             HorizontalDividerItem()
-            ListItem(
+            Item(
                 headlineContent = {},
                 trailingContent = {
                     TextButtonUpdateLogo(autoUpdate)

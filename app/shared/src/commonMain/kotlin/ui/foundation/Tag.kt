@@ -51,7 +51,7 @@ fun Tag(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     shape: Shape = MaterialTheme.shapes.small,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     label: @Composable RowScope.() -> Unit,

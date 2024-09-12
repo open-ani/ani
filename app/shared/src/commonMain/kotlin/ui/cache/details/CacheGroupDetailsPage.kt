@@ -7,8 +7,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceInfo
@@ -70,12 +75,14 @@ fun MediaCacheDetailsPage(
     vm: MediaCacheDetailsPageViewModel,
     modifier: Modifier = Modifier,
     allowBack: Boolean = true,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     MediaCacheDetailsPage(
         media = vm.media,
         sourceInfo = vm.sourceInfo,
         modifier = modifier,
         allowBack = allowBack,
+        windowInsets = windowInsets,
     )
 }
 
@@ -85,6 +92,7 @@ fun MediaCacheDetailsPage(
     sourceInfo: MediaSourceInfo?,
     modifier: Modifier = Modifier,
     allowBack: Boolean = true,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     Scaffold(
         modifier = modifier,
@@ -96,8 +104,11 @@ fun MediaCacheDetailsPage(
                         TopAppBarGoBackButton()
                     }
                 },
+                colors = AniThemeDefaults.topAppBarColors(),
+                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         Column(Modifier.fillMaxSize()) {
             Column(

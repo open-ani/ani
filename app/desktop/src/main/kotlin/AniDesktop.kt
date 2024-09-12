@@ -19,7 +19,6 @@
 package me.him188.ani.app.desktop
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -89,7 +88,6 @@ import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.theme.AppTheme
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toast
 import me.him188.ani.app.ui.foundation.widgets.ToastViewModel
@@ -268,6 +266,10 @@ object AniDesktop {
                 undecorated = context.extraWindowProperties.undecorated,
             ) {
                 SideEffect {
+                    // 防止闪眼
+                    window.background = java.awt.Color.BLACK
+                    window.contentPane.background = java.awt.Color.BLACK
+                    
                     logger.info {
                         "renderApi: " + this.window.renderApi
                     }
@@ -320,7 +322,7 @@ private fun FrameWindowScope.MainWindowContent(
         window.setTitleBarColor(NavigationRailDefaults.ContainerColor)
 
         Box(
-            Modifier.background(color = AppTheme.colorScheme.background)
+            Modifier
                 .ifThen(!isSystemInFullscreen()) {
                     statusBarsPadding() // Windows 有, macOS 没有
                 }

@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
@@ -66,6 +68,7 @@ import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -174,7 +177,7 @@ fun SubjectDetailsScene(
                 }
             }
         },
-        modifier,
+        modifier, 
         showTopBar = showTopBar,
         showBlurredBackground = showBlurredBackground,
         windowInsets = windowInsets,
@@ -235,8 +238,8 @@ fun SubjectDetailsPage(
                                 Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                        windowInsets = windowInsets,
+                        colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
+                        windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                     )
 
                     // 有背景, 仅在滚动一段距离后使用
@@ -249,15 +252,15 @@ fun SubjectDetailsPage(
                                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                                 }
                             },
-                            colors = TopAppBarDefaults.topAppBarColors(),
-                            windowInsets = windowInsets,
+                            colors = AniThemeDefaults.topAppBarColors(),
+                            windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                         )
                     }
                 }
             }
         },
         modifier = modifier,
-        contentWindowInsets = WindowInsets(0.dp),
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { scaffoldPadding ->
         FastLinearProgressIndicator(
             indicatorState,

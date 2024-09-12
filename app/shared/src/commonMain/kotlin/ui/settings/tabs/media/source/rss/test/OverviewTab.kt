@@ -17,6 +17,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -47,7 +48,10 @@ fun RssTestPaneDefaults.OverviewTab(
 fun RssOverviewCard(
     result: RssTestResult.Success,
     modifier: Modifier = Modifier,
-    colors: CardColors = CardDefaults.cardColors(),
+    colors: CardColors = CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
+    ),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     state: LazyGridState = rememberLazyGridState(),
 ) {

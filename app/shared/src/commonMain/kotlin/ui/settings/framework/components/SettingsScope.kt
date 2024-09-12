@@ -28,6 +28,13 @@ import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.theme.weaken
 
 object SettingsDefaults {
+    val groupBackgroundColor
+        @Composable
+        get() = MaterialTheme.colorScheme.surfaceContainer
+
+    @Composable
+    fun listItemColors() = ListItemDefaults.colors(containerColor = groupBackgroundColor)
+
     @Composable
     fun ItemIcon(
         modifier: Modifier = Modifier,
@@ -74,7 +81,7 @@ abstract class SettingsScope {
         actions: (@Composable RowScope.() -> Unit)? = null,
         content: @Composable ColumnScope.() -> Unit,
     ) {
-        Surface(modifier = modifier.fillMaxWidth()) {
+        Surface(modifier = modifier.fillMaxWidth(), color = SettingsDefaults.groupBackgroundColor) {
             Column(Modifier.padding(vertical = if (useThinHeader) 12.dp else 16.dp)) {
                 // Group header
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -160,6 +167,7 @@ abstract class SettingsScope {
                     }
                 }
             },
+            colors = SettingsDefaults.listItemColors(),
         )
     }
 

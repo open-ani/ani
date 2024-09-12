@@ -153,7 +153,7 @@ fun ProvideCompositionLocalsForPreview(
                 }
                 NavHost(navController, startDestination = "test") { // provide ViewModelStoreOwner
                     composable("test") {
-                        AniApp(colorScheme = colorScheme) {
+                        AniApp(overrideColorTheme = colorScheme) {
                             content()
                         }
                     }

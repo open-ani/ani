@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -27,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -78,6 +82,7 @@ class WelcomeViewModel : AbstractViewModel(), KoinComponent {
 fun WelcomeScene(
     vm: WelcomeViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val navigator = LocalNavigator.current
     val goBack = {
@@ -98,6 +103,7 @@ fun WelcomeScene(
             }
         },
         modifier = modifier,
+        windowInsets = windowInsets,
     )
 }
 
@@ -106,6 +112,7 @@ fun WelcomePage(
     onClickLogin: () -> Unit,
     onClickGuest: () -> Unit,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     var showDetails by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -116,7 +123,7 @@ fun WelcomePage(
             },
             bottomBar = {
                 if (showDetails) {
-                    Column(Modifier.navigationBarsPadding()) {
+                    Column(Modifier.windowInsetsPadding(windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))) {
                         HorizontalDivider(Modifier.padding(horizontal = 4.dp))
                         Column(
                             Modifier.padding(all = 16.dp).fillMaxWidth(),
@@ -141,6 +148,7 @@ fun WelcomePage(
                     }
                 }
             },
+            contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
         ) { contentPadding ->
             var isContentReady by rememberSaveable {
                 mutableStateOf(false)

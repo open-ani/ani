@@ -22,14 +22,22 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+
+object EpisodeVideoSettingsSideSheetDefaults {
+    val containerColor
+        @Composable
+        get() = MaterialTheme.colorScheme.surfaceContainerHigh
+}
 
 @Composable
 fun EpisodeVideoSettingsSideSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
+    containerColor: Color = EpisodeVideoSettingsSideSheetDefaults.containerColor,
     title: @Composable () -> Unit = {},
     navigationButton: @Composable () -> Unit = { },
     closeButton: @Composable () -> Unit = {},
@@ -62,6 +70,7 @@ fun EpisodeVideoSettingsSideSheet(
                     .fillMaxHeight()
                     .widthIn(min = 300.dp, max = 400.dp)
                     .width((maxWidth * 0.28f)),
+                color = containerColor,
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {

@@ -5,13 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.ScrollableTabRow
@@ -19,6 +22,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -34,8 +38,10 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.profile.SettingsViewModel
@@ -80,6 +86,7 @@ fun SettingsPage(
     allowBack: Boolean = !isShowLandscapeUI(),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
+    val appBarColors = AniThemeDefaults.topAppBarColors()
     Scaffold(
         modifier,
         topBar = {
@@ -90,9 +97,11 @@ fun SettingsPage(
                         TopAppBarGoBackButton()
                     }
                 },
+                colors = appBarColors,
+                windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
-        contentWindowInsets = contentWindowInsets,
+        contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { topBarPaddings ->
         val pageCount by remember {
             derivedStateOf {
@@ -115,9 +124,10 @@ fun SettingsPage(
                         Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
                     )
                 },
-                contentColor = TabRowDefaults.secondaryContentColor,
-                containerColor = TabRowDefaults.secondaryContainerColor,
+                containerColor = appBarColors.containerColor,
+                contentColor = appBarColors.titleContentColor,
                 modifier = Modifier.fillMaxWidth(),
+                divider = {},
             ) {
                 val tabs by remember {
                     derivedStateOf {
@@ -135,6 +145,7 @@ fun SettingsPage(
                     )
                 }
             }
+            HorizontalDivider()
 
             OverrideNavigation(
                 remember(scope, pagerState) {
@@ -230,7 +241,12 @@ internal fun SettingsTab(
     modifier: Modifier = Modifier,
     content: @Composable SettingsScope.() -> Unit,
 ) {
-    Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier.verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(
+            currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding,
+        ),
+    ) {
         val scope = remember(this) {
             object : SettingsScope(), ColumnScope by this {}
         }

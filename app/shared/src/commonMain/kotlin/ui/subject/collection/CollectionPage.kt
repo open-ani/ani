@@ -19,14 +19,14 @@
 package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -46,10 +46,12 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.runtime.Composable
@@ -64,7 +66,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -80,6 +81,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
@@ -104,11 +106,10 @@ val COLLECTION_TABS_SORTED = listOf(
  * My collections
  */
 @Composable
-fun CollectionPage(
+fun CollectionPane(
     onClickCaches: () -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val vm = viewModel { MyCollectionsViewModel() }
     vm.navigator = LocalNavigator.current
@@ -128,10 +129,11 @@ fun CollectionPage(
     Scaffold(
         modifier,
         topBar = {
+            val topAppBarColors = AniThemeDefaults.topAppBarColors()
             Column(modifier = Modifier.fillMaxWidth()) {
                 TopAppBar(
                     title = { Text("我的追番") },
-                    modifier = Modifier.alpha(0.97f),
+                    modifier = Modifier,
                     actions = {
                         if (!showSessionErrorInList) {
                             SessionTipsIcon(vm.authState)
@@ -163,6 +165,8 @@ fun CollectionPage(
                             }
                         }
                     },
+                    colors = topAppBarColors,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 )
 
                 ScrollableTabRow(
@@ -172,9 +176,10 @@ fun CollectionPage(
                             Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
                         )
                     },
-                    containerColor = TabRowDefaults.secondaryContainerColor,
-                    contentColor = TabRowDefaults.secondaryContentColor,
-                    modifier = Modifier.fillMaxWidth().alpha(0.97f),
+                    containerColor = topAppBarColors.containerColor,
+                    contentColor = MaterialTheme.colorScheme.contentColorFor(topAppBarColors.containerColor),
+                    divider = {},
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
                         Tab(
@@ -197,99 +202,97 @@ fun CollectionPage(
                         )
                     }
                 }
+//                HorizontalDivider()
             }
         },
-        contentWindowInsets = contentWindowInsets,
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+        containerColor = AniThemeDefaults.navigationContainerColor,
     ) { topBarPaddings ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = Platform.currentPlatform.isMobile(),
-            verticalAlignment = Alignment.Top,
-        ) { index ->
-            val type = COLLECTION_TABS_SORTED[index]
-            val collection = vm.collectionsByType(type)
-
-            val gridState = rememberLazyGridState()
-
-            val autoUpdateScope = rememberUiMonoTasker()
-            LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-                autoUpdateScope.launch {
-                    if (collection.shouldDoAutoRefresh()) {
-                        collection.subjectCollectionColumnState.manualRefresh()
-                        gridState.animateScrollToItem(0) // 手动刷新完成回到顶部
-                    }
-                }
-            }
-
-            val tabContentPadding = PaddingValues(
-                top = topBarPaddings.calculateTopPadding() + contentPadding.calculateTopPadding(),
-                bottom = contentPadding.calculateBottomPadding(),
-                start = 0.dp,
-                end = 0.dp,
-            )
-
-            Box(
+        Surface(
+            Modifier.padding(topBarPaddings),
+            color = MaterialTheme.colorScheme.background,
+//            shape = MaterialTheme.shapes.extraLarge,
+        ) {
+            HorizontalPager(
+                state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-            ) {
-                when {
-                    // 假设没登录, 但是有缓存, 需要展示缓存
-                    vm.authState.isKnownGuest && showSessionErrorInList -> {
-                        SessionTipsArea(
-                            vm.authState,
-                            guest = { GuestTips(vm.authState) },
-                            Modifier.padding(top = 32.dp)
-                                .padding(horizontal = 16.dp)
-                                .padding(tabContentPadding),
-                        )
-                    }
+                userScrollEnabled = Platform.currentPlatform.isMobile(),
+                verticalAlignment = Alignment.Top,
+            ) { index ->
+                val type = COLLECTION_TABS_SORTED[index]
+                val collection = vm.collectionsByType(type)
 
-                    collection.subjectCollectionColumnState.isKnownAuthorizedAndEmpty -> {
-                        Column(
-                            modifier.padding(top = 32.dp).padding(tabContentPadding).padding(horizontal = 16.dp)
-                                .fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
-                            SideEffect {
-                                collection.subjectCollectionColumnState.requestMore()
-                            }
+                val gridState = rememberLazyGridState()
 
-                            Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
-
-                            val navigator = LocalNavigator.current
-                            Button({ navigator.navigateSearch() }, Modifier.fillMaxWidth()) {
-                                Icon(Icons.Rounded.Search, null)
-                                Text("搜索", Modifier.padding(start = 8.dp))
-                            }
+                val autoUpdateScope = rememberUiMonoTasker()
+                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                    autoUpdateScope.launch {
+                        if (collection.shouldDoAutoRefresh()) {
+                            collection.subjectCollectionColumnState.manualRefresh()
+                            gridState.animateScrollToItem(0) // 手动刷新完成回到顶部
                         }
                     }
+                }
 
-                    else -> {
-                        PullToRefreshBox(
-                            collection.subjectCollectionColumnState.isRefreshing,
-                            onRefresh = {
-                                collection.subjectCollectionColumnState.startAutoRefresh()
-                            },
-                            state = collection.pullToRefreshState,
-                            indicator = {
-                                Indicator(
-                                    modifier = Modifier.align(Alignment.TopCenter).padding(tabContentPadding),
-                                    isRefreshing = collection.subjectCollectionColumnState.isRefreshing,
-                                    state = collection.pullToRefreshState,
-                                )
-                            },
-                        ) {
-                            TabContent(
-                                collection.subjectCollectionColumnState,
-                                vm = vm,
-                                type = type,
-                                contentPadding = tabContentPadding,
-                                modifier = Modifier.fillMaxSize(),
-                                enableAnimation = vm.myCollectionsSettings.enableListAnimation,
-                                allowProgressIndicator = vm.authState.isKnownLoggedIn,
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    when {
+                        // 假设没登录, 但是有缓存, 需要展示缓存
+                        vm.authState.isKnownGuest && showSessionErrorInList -> {
+                            SessionTipsArea(
+                                vm.authState,
+                                guest = { GuestTips(vm.authState) },
+                                Modifier.padding(top = 32.dp)
+                                    .padding(horizontal = 16.dp),
                             )
+                        }
 
+                        collection.subjectCollectionColumnState.isKnownAuthorizedAndEmpty -> {
+                            Column(
+                                modifier.padding(top = 32.dp).padding(horizontal = 16.dp)
+                                    .fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                            ) {
+                                SideEffect {
+                                    collection.subjectCollectionColumnState.requestMore()
+                                }
+
+                                Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
+
+                                val navigator = LocalNavigator.current
+                                Button({ navigator.navigateSearch() }, Modifier.fillMaxWidth()) {
+                                    Icon(Icons.Rounded.Search, null)
+                                    Text("搜索", Modifier.padding(start = 8.dp))
+                                }
+                            }
+                        }
+
+                        else -> {
+                            PullToRefreshBox(
+                                collection.subjectCollectionColumnState.isRefreshing,
+                                onRefresh = {
+                                    collection.subjectCollectionColumnState.startAutoRefresh()
+                                },
+                                state = collection.pullToRefreshState,
+                                indicator = {
+                                    Indicator(
+                                        modifier = Modifier.align(Alignment.TopCenter),
+                                        isRefreshing = collection.subjectCollectionColumnState.isRefreshing,
+                                        state = collection.pullToRefreshState,
+                                    )
+                                },
+                            ) {
+                                TabContent(
+                                    collection.subjectCollectionColumnState,
+                                    vm = vm,
+                                    type = type,
+                                    enableAnimation = vm.myCollectionsSettings.enableListAnimation,
+                                    allowProgressIndicator = vm.authState.isKnownLoggedIn,
+                                )
+                            }
                         }
                     }
                 }
@@ -307,7 +310,6 @@ private fun TabContent(
     state: SubjectCollectionColumnState,
     vm: MyCollectionsViewModel,
     type: UnifiedCollectionType,
-    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     enableAnimation: Boolean = true,
     allowProgressIndicator: Boolean = true,
@@ -371,10 +373,10 @@ private fun TabContent(
                         }
                     }
                 },
+                colors = AniThemeDefaults.primaryCardColors(),
             )
         },
         modifier,
-        contentPadding = contentPadding,
         enableAnimation = enableAnimation,
         allowProgressIndicator = allowProgressIndicator,
     )

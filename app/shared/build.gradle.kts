@@ -95,10 +95,11 @@ kotlin {
         api(libs.compose.material3.adaptive.layout.get().toString()) {
             exclude("androidx.window.core", "window-core")
         }
-        api(libs.compose.material3.adaptive.navigation.get().toString()) {
+        api(libs.compose.material3.adaptive.navigation0.get().toString()) {
             exclude("androidx.window.core", "window-core")
         }
         implementation(compose.components.resources)
+        implementation(compose.material3AdaptiveNavigationSuite)
         implementation(libs.reorderable)
 
         // Data sources
@@ -169,6 +170,7 @@ kotlin {
         api(libs.androidx.media)
         api(libs.androidx.core.ktx)
         api(libs.androidx.activity.compose)
+        api(libs.androidx.activity.ktx)
         api(libs.koin.android)
         implementation(libs.androidx.browser)
 

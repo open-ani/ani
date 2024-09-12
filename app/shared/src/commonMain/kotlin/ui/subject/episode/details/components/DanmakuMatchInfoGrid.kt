@@ -16,6 +16,8 @@ import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +39,7 @@ fun DanmakuMatchInfoGrid(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 16.dp,
+    cardColors: CardColors = CardDefaults.cardColors(),
 ) {
     Column(modifier) {
         ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
@@ -60,7 +63,7 @@ fun DanmakuMatchInfoGrid(
                 maxItemsInEachRow = 2,
             ) {
                 for (info in matchInfos) {
-                    DanmakuMatchInfoView(info, expanded, Modifier.weight(1f))
+                    DanmakuMatchInfoView(info, expanded, Modifier.weight(1f), colors = cardColors)
                 }
             }
         }
@@ -72,9 +75,10 @@ private fun DanmakuMatchInfoView(
     info: DanmakuMatchInfo,
     showDetails: Boolean,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 16.dp)
+    contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+    colors: CardColors = CardDefaults.cardColors(),
 ) {
-    Card(modifier) {
+    Card(modifier, colors = colors) {
         Column(
             Modifier.padding(contentPadding),
             verticalArrangement = Arrangement.spacedBy(12.dp),

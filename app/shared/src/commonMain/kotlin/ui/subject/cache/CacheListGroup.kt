@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
@@ -60,6 +61,7 @@ import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.window.desktopTitleBar
+import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.tools.getOrZero
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.foundation.widgets.ProgressIndicatorHeight
@@ -147,7 +149,7 @@ fun SettingsScope.EpisodeCacheListGroup(
 //                state.cancelMediaSelector(task) 
                 },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-                modifier = Modifier,
+                modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
                 contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
             ) {
                 val selectorPresentation =

@@ -68,6 +68,7 @@ class ModalBottomImeAwareSheetState {
  */
 @Composable
 fun ModalBottomImeAwareSheet(
+    // TODO: Support window insets
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     state: ModalBottomImeAwareSheetState = rememberModalBottomImeAwareSheetState(),

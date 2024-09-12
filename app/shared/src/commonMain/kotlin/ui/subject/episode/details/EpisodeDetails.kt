@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +17,14 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.ExpandCircleDown
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -30,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -56,6 +60,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.window.desktopTitleBar
+import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
@@ -132,6 +137,7 @@ fun EpisodeDetails(
             ModalBottomSheet(
                 { showSubjectDetails = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
                 contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
             ) {
                 SubjectDetailsScene(
@@ -149,6 +155,7 @@ fun EpisodeDetails(
         ModalBottomSheet(
             { state.showEpisodes = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+            modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
             contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
         ) {
             EpisodeCarousel(
@@ -207,7 +214,13 @@ fun EpisodeDetails(
                 }
             }
             episodeCarouselState.playingEpisode?.let { episode ->
-                Card(Modifier.padding(innerPadding).animateContentSize()) {
+                Card(
+                    Modifier.padding(innerPadding).animateContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
+                    ),
+                ) {
                     PlayingEpisodeItem(
                         episodeSort = { Text(episode.episodeInfo.sort.toString()) },
                         title = { Text(episode.episodeInfo.displayName) },
@@ -259,6 +272,7 @@ fun EpisodeDetails(
                                 ModalBottomSheet(
                                     { showMediaSelector = false },
                                     sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                                    modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
                                     contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
                                 ) {
                                     EpisodePlayMediaSelector(
@@ -266,6 +280,7 @@ fun EpisodeDetails(
                                         mediaSourceResultsPresentation,
                                         onDismissRequest = { showMediaSelector = false },
                                         onSelected = { showMediaSelector = false },
+                                        stickyHeaderBackgroundColor = BottomSheetDefaults.ContainerColor,
                                     )
                                 }
                             }
@@ -294,6 +309,10 @@ fun EpisodeDetails(
                     expanded = expandDanmakuStatistics,
                     Modifier.padding(innerPadding),
                     itemSpacing = 16.dp,
+                    cardColors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainer),
+                    ),
                 )
             }
         },
@@ -364,7 +383,9 @@ fun EpisodeDetailsScaffold(
         }
     }
 
-    Column(modifier.padding(top = topPadding, bottom = bottomPadding)) {
+    Column(
+        modifier.padding(top = topPadding, bottom = bottomPadding).background(MaterialTheme.colorScheme.background),
+    ) {
         // header
         Column(
             Modifier.padding(horizontalPaddingValues),

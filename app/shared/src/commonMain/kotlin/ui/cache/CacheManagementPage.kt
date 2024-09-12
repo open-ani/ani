@@ -4,8 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -16,6 +19,7 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -58,6 +62,7 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.creationTimeOrNull
 import me.him188.ani.datasources.api.episodeIdInt
@@ -227,14 +232,14 @@ fun CacheManagementPage(
     vm: CacheManagementViewModel,
     modifier: Modifier = Modifier,
     showBack: Boolean = !isShowLandscapeUI(),
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     CacheManagementPage(
         vm.state,
         modifier = modifier,
         lazyGridState = vm.lazyGridState,
         showBack = showBack,
-        contentWindowInsets = contentWindowInsets,
+        windowInsets = windowInsets,
     )
 }
 
@@ -245,8 +250,9 @@ fun CacheManagementPage(
     modifier: Modifier = Modifier,
     lazyGridState: CacheGroupGridLayoutState = rememberLazyStaggeredGridState(),
     showBack: Boolean = !isShowLandscapeUI(),
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = WindowInsets.systemBars,
 ) {
+    val appBarColors = AniThemeDefaults.topAppBarColors()
     Scaffold(
         modifier,
         topBar = {
@@ -257,15 +263,19 @@ fun CacheManagementPage(
                         TopAppBarGoBackButton()
                     }
                 },
+                colors = appBarColors,
+                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
-        contentWindowInsets = contentWindowInsets,
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         Column(Modifier.padding(paddingValues)) {
             Surface(
                 Modifier.ifThen(lazyGridState.canScrollBackward) {
                     shadow(2.dp, clip = false)
                 },
+                color = appBarColors.containerColor,
+                contentColor = contentColorFor(appBarColors.containerColor),
             ) {
                 CacheManagementOverallStats(
                     { state.overallStats },

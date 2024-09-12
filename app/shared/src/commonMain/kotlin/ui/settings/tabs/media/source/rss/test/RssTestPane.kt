@@ -20,6 +20,7 @@ import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -41,6 +43,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.models.ApiFailure
+import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.connectedScroll
@@ -147,7 +151,7 @@ fun RssTestPane(
 
             HorizontalPager(
                 pagerState,
-                userScrollEnabled = false,
+                userScrollEnabled = currentPlatform.isMobile(),
                 verticalAlignment = Alignment.Top,
             ) { pageIndex ->
                 if (result !is RssTestResult.Success) return@HorizontalPager
@@ -210,6 +214,10 @@ private fun EditTestDataCard(
     Card(
         modifier,
         shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerLow),
+        ),
     ) {
         BoxWithConstraints {
             val isCompact =

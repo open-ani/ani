@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.datasources.api.CachedMedia
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
@@ -174,12 +175,11 @@ fun CacheGroupCard(
     layoutProperties: CacheGroupCardLayoutProperties = CacheGroupCardDefaults.LayoutProperties,
     shape: Shape = MaterialTheme.shapes.large,
 ) {
+    val outerCardColors = AniThemeDefaults.primaryCardColors()
     Card(
         modifier,
         shape = shape,
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
+        colors = outerCardColors,
     ) {
         Card(
             Modifier.fillMaxWidth(),
@@ -293,7 +293,7 @@ fun CacheGroupCard(
                 verticalArrangement = Arrangement.spacedBy(layoutProperties.episodeItemSpacing), // each item already has inner paddings
             ) {
                 for (episode in state.episodes) {
-                    CacheEpisodeItem(episode)
+                    CacheEpisodeItem(episode, containerColor = outerCardColors.containerColor)
                 }
             }
         }

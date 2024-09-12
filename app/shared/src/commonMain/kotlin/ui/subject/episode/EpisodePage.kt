@@ -11,16 +11,19 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -34,11 +37,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -74,7 +79,7 @@ import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
-import me.him188.ani.app.platform.window.desktopTitleBar
+import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -115,6 +120,7 @@ import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderStat
 fun EpisodeScene(
     viewModel: EpisodeViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     Column(modifier.fillMaxSize()) {
         Scaffold(
@@ -123,6 +129,7 @@ fun EpisodeScene(
             EpisodeSceneContent(
                 viewModel,
                 Modifier,
+                windowInsets = windowInsets,
             )
         }
     }
@@ -132,6 +139,7 @@ fun EpisodeScene(
 private fun EpisodeSceneContent(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     // 处理当用户点击返回键时, 如果是全屏, 则退出全屏
     val navigator = LocalNavigator.current
@@ -177,8 +185,13 @@ private fun EpisodeSceneContent(
         }
         CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
             when {
-                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize())
-                else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize())
+                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(
+                    vm,
+                    Modifier.fillMaxSize(),
+                    windowInsets,
+                )
+
+                else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize(), windowInsets)
             }
         }
         ImageViewer(imageViewer) { imageViewer.clear() }
@@ -191,6 +204,7 @@ private fun EpisodeSceneContent(
 private fun EpisodeSceneTabletVeryWide(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
@@ -216,15 +230,22 @@ private fun EpisodeSceneTabletVeryWide(
             modifier
                 .then(
                     if (vm.isFullscreen) Modifier.fillMaxSize()
-                    else Modifier.navigationBarsPadding(),
+                    else Modifier,
                 ),
         ) {
             EpisodeVideo(
+                // do consume insets
                 vm,
                 vm.videoControllerState,
                 expanded = true,
                 modifier = Modifier.weight(1f).fillMaxHeight(),
                 maintainAspectRatio = false,
+                windowInsets = if (vm.isFullscreen) {
+                    windowInsets
+                } else {
+                    // 非全屏右边还有东西
+                    windowInsets.only(WindowInsetsSides.Left + WindowInsetsSides.Top)
+                },
             )
 
             if (vm.isFullscreen) {
@@ -234,8 +255,19 @@ private fun EpisodeSceneTabletVeryWide(
             val pagerState = rememberPagerState(initialPage = 0) { 2 }
             val scope = rememberCoroutineScope()
 
-            Column(Modifier.width(width = (maxWidth * 0.25f).coerceIn(340.dp, 460.dp))) {
-                TabRow(pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth())
+            Column(
+                Modifier
+                    .width(
+                        width = (maxWidth * 0.25f)
+                            .coerceIn(340.dp, 460.dp),
+                    )
+                    .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Right + WindowInsetsSides.Bottom))
+                    .background(MaterialTheme.colorScheme.background), // scrollable background
+            ) {
+                TabRow(
+                    pagerState, scope, { vm.episodeCommentState.count }, Modifier.fillMaxWidth(),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.weaken())
 
                 HorizontalPager(
@@ -299,6 +331,7 @@ private fun TabRow(
             )
         },
         containerColor = containerColor,
+        contentColor = MaterialTheme.colorScheme.contentColorFor(containerColor),
         edgePadding = 0.dp,
         divider = {},
     ) {
@@ -331,8 +364,8 @@ private fun TabRow(
 private fun EpisodeSceneContentPhone(
     vm: EpisodeViewModel,
     modifier: Modifier = Modifier,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-
     var showDanmakuEditor by rememberSaveable { mutableStateOf(false) }
     var showEditCommentSheet by rememberSaveable { mutableStateOf(false) }
     var didSetPaused by rememberSaveable { mutableStateOf(false) }
@@ -404,7 +437,8 @@ private fun EpisodeSceneContentPhone(
         }
         ModalBottomSheet(
             onDismissRequest = dismiss,
-            contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
+            modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
+            contentWindowInsets = { BottomSheetDefaults.windowInsets.union(windowInsets) },
         ) {
             DetachedDanmakuEditorLayout(
                 vm.danmaku,
@@ -483,9 +517,12 @@ fun EpisodeSceneContentPhoneScaffold(
         val scope = rememberCoroutineScope()
 
         Column(Modifier.fillMaxSize()) {
-            Surface {
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
                 Row {
-                    TabRow(pagerState, scope, commentCount, Modifier.weight(1f))
+                    TabRow(
+                        pagerState, scope, commentCount, Modifier.weight(1f),
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    )
                     Box(
                         modifier = Modifier.weight(0.618f) // width
                             .height(48.dp)
@@ -521,6 +558,7 @@ private fun EpisodeVideo(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val context by rememberUpdatedState(LocalContext.current)
 
@@ -635,6 +673,7 @@ private fun EpisodeVideo(
             .fillMaxWidth().background(Color.Black)
             .then(if (expanded) Modifier.fillMaxSize() else Modifier.statusBarsPadding()),
         maintainAspectRatio = maintainAspectRatio,
+        contentWindowInsets = windowInsets,
     )
 }
 

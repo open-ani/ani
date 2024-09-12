@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -45,7 +46,6 @@ import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.IosUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.theme.AppTheme
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toast
 import me.him188.ani.app.ui.foundation.widgets.ToastViewModel
@@ -89,7 +89,7 @@ fun MainViewController(): UIViewController {
                 LocalOnBackPressedDispatcherOwner provides onBackPressedDispatcherOwner,
             ) {
                 Box(
-                    Modifier.background(color = AppTheme.colorScheme.background)
+                    Modifier.background(color = MaterialTheme.colorScheme.background)
                         .ifThen(!isSystemInFullscreen()) {
                             statusBarsPadding() // Windows 有, macOS 没有
                         }
