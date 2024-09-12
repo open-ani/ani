@@ -58,7 +58,10 @@ sourceSets {
 extra.set("ani.jvm.target", 17)
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain {
+        version = "21"
+        vendor = JvmVendorSpec.GRAAL_VM
+    }
 }
 
 compose.desktop {

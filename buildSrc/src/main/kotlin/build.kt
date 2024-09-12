@@ -23,6 +23,8 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JvmVendorSpec
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.findByType
@@ -126,7 +128,10 @@ fun Project.configureJvmTarget() {
     }
 
     extensions.findByType(KotlinProjectExtension::class)?.apply {
-        jvmToolchain(ver.getMajorVersion().toInt())
+        jvmToolchain {
+            version = ver.getMajorVersion()
+            vendor = JvmVendorSpec.GRAAL_VM
+        }
     }
 
     extensions.findByType(JavaPluginExtension::class)?.apply {

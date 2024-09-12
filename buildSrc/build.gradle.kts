@@ -28,7 +28,10 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain {
+        version = "21"
+        vendor = JvmVendorSpec.GRAAL_VM
+    }
     compilerOptions {
         optIn.add("org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi")
     }
