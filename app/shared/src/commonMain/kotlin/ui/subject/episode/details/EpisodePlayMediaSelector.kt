@@ -3,10 +3,12 @@ package me.him188.ani.app.ui.subject.episode.details
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorView
@@ -24,6 +26,7 @@ fun EpisodePlayMediaSelector(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     onSelected: (Media) -> Unit = {},
+    stickyHeaderBackgroundColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     MediaSelectorView(
         mediaSelector,
@@ -33,6 +36,7 @@ fun EpisodePlayMediaSelector(
         modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             .fillMaxWidth()
             .navigationBarsPadding(),
+        stickyHeaderBackgroundColor = stickyHeaderBackgroundColor,
         itemProgressBar = {},
         onClickItem = {
             mediaSelector.select(it)
