@@ -4,16 +4,11 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
-import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -37,8 +32,7 @@ interface DanmakuCollection {
      */
     fun at(
         progress: Flow<Duration>,
-        danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-        danmakuFilterConfig: Flow<DanmakuFilterConfig>
+        danmakuRegexFilterList: Flow<List<String>>,
     ): DanmakuSession
 }
 
@@ -61,8 +55,7 @@ fun emptyDanmakuCollection(): DanmakuCollection {
     return object : DanmakuCollection {
         override fun at(
             progress: Flow<Duration>,
-            danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-            danmakuFilterConfig: Flow<DanmakuFilterConfig>
+            danmakuRegexFilterList: Flow<List<String>>,
         ): DanmakuSession = emptyDanmakuSession()
     }
 }
@@ -90,21 +83,19 @@ class TimeBasedDanmakuSession private constructor(
 
 
         /**
-         * 输入一个[Danmaku] list. 和一个[List<DanmakuRegexFilter>]，返回一个过滤后的[Danmaku] list
+         * 输入一个[Danmaku] list. 和一个[List<String>]，返回一个过滤后的[Danmaku] list
          */
         fun filterList(
             list: List<Danmaku>,
-            danmakuRegexFilterList: List<DanmakuRegexFilter>,
-            enableRegexFilter: Boolean
+            danmakuRegexFilterList: List<String>,
         ): List<Danmaku> {
-            if (!enableRegexFilter) {
+            if (danmakuRegexFilterList.isEmpty()) {
                 return list
             }
 
             // 预编译所有启用的正则表达式 
             val regexFilters = danmakuRegexFilterList
-                .filter { it.enabled }
-                .map { Regex(it.regex) }
+                .map { Regex(it) }
 
             return list.filter { danmaku ->
                 !regexFilters.any { regex ->
@@ -116,12 +107,11 @@ class TimeBasedDanmakuSession private constructor(
 
 
     /**
-     * 接收一个视频的播放进度[Duration]. 和一个[List<DanmakuRegexFilter>]，根据视频进度和过滤后的弹幕列表，通过call [DanmakuSessionAlgorithm] 的 [tick] 函数发送弹幕
+     * 接收一个视频的播放进度[Duration]. 和一个[List<String>]，根据视频进度和过滤后的弹幕列表，通过call [DanmakuSessionAlgorithm] 的 [tick] 函数发送弹幕
      */
     override fun at(
         progress: Flow<Duration>,
-        danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-        danmakuFilterConfig: Flow<DanmakuFilterConfig>
+        danmakuRegexFilterList: Flow<List<String>>,
     ): DanmakuSession {
         if (list.isEmpty()) {
             return emptyDanmakuSession() // fast path
@@ -136,12 +126,8 @@ class TimeBasedDanmakuSession private constructor(
         return object : DanmakuSession {
             override val events: Flow<DanmakuEvent> = channelFlow {
                 launch {
-                    val combinedFlow = danmakuRegexFilterList.distinctUntilChanged()
-                        .combine(danmakuFilterConfig) { filterConfig, config ->
-                            filterConfig to config
-                        }
-                    combinedFlow.distinctUntilChanged().collect { (filterList, config) ->
-                        val filteredList = filterList(list, filterList, config.enableRegexFilter)
+                    danmakuRegexFilterList.collect { filterList ->
+                        val filteredList = filterList(list, filterList)
                         state.updateList(filteredList)
                         state.requestRepopulate()
                     }
@@ -249,7 +235,7 @@ internal class DanmakuSessionFlowState(
     fun requestRepopulate() {
         lastTime = Duration.INFINITE
     }
-    
+
     fun updateList(newList: List<Danmaku>) {
         list = newList
     }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -137,8 +138,10 @@ class DanmakuLoaderImpl(
     private val sessionFlow: Flow<DanmakuSession> = collectionFlow.mapLatest { session ->
         session.at(
             progress = currentPosition,
-            danmakuRegexFilterList = danmakuRegexFilterList,
-            danmakuFilterConfig = danmakuFilterConfig,
+            danmakuRegexFilterList = combine(danmakuFilterConfig, danmakuRegexFilterList) { config, list ->
+                if (!config.enableRegexFilter) emptyList()
+                else list.filter { it.enabled }.map { it.regex }
+            },
         )
     }.shareInBackground(started = SharingStarted.Lazily)
 
@@ -172,9 +175,9 @@ class VideoDanmakuStateImpl(
     private val backgroundScope: CoroutineScope,
     danmakuTrackProperties: DanmakuTrackProperties = DanmakuTrackProperties.Default,
 ) : VideoDanmakuState {
-    override val danmakuHostState: DanmakuHostState = 
+    override val danmakuHostState: DanmakuHostState =
         DanmakuHostState(danmakuConfig, danmakuTrackProperties)
-    
+
     override val enabled: Boolean by danmakuEnabled
     override val isSettingEnabled: Boolean get() = setEnabledTasker.isRunning
     private val setEnabledTasker = MonoTasker(backgroundScope)

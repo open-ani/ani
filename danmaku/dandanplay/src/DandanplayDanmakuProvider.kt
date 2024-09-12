@@ -19,13 +19,10 @@ import me.him188.ani.danmaku.dandanplay.data.toDanmakuOrNull
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
-import kotlin.coroutines.CoroutineContext
 
 class DandanplayDanmakuProvider(
     config: DanmakuProviderConfig,
 ) : AbstractDanmakuProvider(config) {
-    private val sessionCoroutineContext: CoroutineContext = config.coroutineContext
-
     companion object {
         const val ID = "弹弹play"
     }
@@ -126,9 +123,9 @@ class DandanplayDanmakuProvider(
 
         // 都不行, 那就用最不准的方法
 
-        if (request.filename != null) {
+        request.filename?.let { filename ->
             val resp = dandanplayClient.matchVideo(
-                filename = request.filename,
+                filename = filename,
                 fileHash = request.fileHash,
                 fileSize = request.fileSize,
                 videoDuration = request.videoDuration,

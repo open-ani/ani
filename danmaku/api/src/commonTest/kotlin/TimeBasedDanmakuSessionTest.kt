@@ -4,8 +4,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
@@ -38,7 +36,6 @@ internal class TimeBasedDanmakuSessionTest {
         val list = instance.at(
             flowOf(0.seconds),
             danmakuRegexFilterList = flowOf(emptyList()),
-            flowOf(DanmakuFilterConfig.Default),
         ).events.toList()
         assertEquals(0, list.size)
     }
@@ -50,8 +47,7 @@ internal class TimeBasedDanmakuSessionTest {
             dummyDanmaku(2.0, "2"),
             dummyDanmaku(3.0, "3"),
         )
-        val filterlist = listOf(DanmakuRegexFilter(id = "", regex = ".*"))
-        val filteredList = TimeBasedDanmakuSession.filterList(danmakuList, filterlist, true)
+        val filteredList = TimeBasedDanmakuSession.filterList(danmakuList, listOf(".*"))
         assertEquals(emptyList(), filteredList)
     }
 
