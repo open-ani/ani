@@ -92,11 +92,11 @@ class DandanplayDanmakuProvider(
         if (episodes != null) {
             episodes.firstOrNull { it.epOrSort != null && it.epOrSort == request.episodeSort }?.let {
                 logger.info { "Matched episode by exact episodeSort: ${it.subjectName} - ${it.episodeName}" }
-                return createSession(it.id.toLong(), 0, DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
+                return createSession(it.id.toLong(), DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
             }
             episodes.firstOrNull { it.epOrSort != null && it.epOrSort == request.episodeEp }?.let {
                 logger.info { "Matched episode by exact episodeEp: ${it.subjectName} - ${it.episodeName}" }
-                return createSession(it.id.toLong(), 0, DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
+                return createSession(it.id.toLong(), DanmakuMatchMethod.Exact(it.subjectName, it.episodeName))
             }
 
             // 用名称精确匹配, 标记为 Exact
@@ -108,7 +108,6 @@ class DandanplayDanmakuProvider(
                     logger.info { "Matched episode by exact episodeName: ${episode.subjectName} - ${episode.episodeName}" }
                     return createSession(
                         episode.id.toLong(),
-                        0,
                         DanmakuMatchMethod.Exact(episode.subjectName, episode.episodeName),
                     )
                 }
@@ -121,7 +120,6 @@ class DandanplayDanmakuProvider(
                 logger.info { "Matched episode by ep search: ${it.subjectName} - ${it.episodeName}" }
                 return createSession(
                     it.id.toLong(),
-                    0,
                     DanmakuMatchMethod.ExactSubjectFuzzyEpisode(it.subjectName, it.episodeName),
                 )
             }
@@ -156,7 +154,6 @@ class DandanplayDanmakuProvider(
             val episodeId = match.episodeId
             return createSession(
                 episodeId,
-                (match.shift * 1000L).toLong(),
                 DanmakuMatchMethod.Fuzzy(match.animeTitle, match.episodeTitle),
             )
         }
@@ -251,7 +248,6 @@ class DandanplayDanmakuProvider(
 
     private suspend fun createSession(
         episodeId: Long,
-        shiftMillis: Long,
         matchMethod: DanmakuMatchMethod,
     ): DanmakuFetchResult {
         val list = dandanplayClient.getDanmakuList(episodeId = episodeId)
@@ -260,7 +256,6 @@ class DandanplayDanmakuProvider(
             matchInfo = DanmakuMatchInfo(ID, list.size, matchMethod),
             TimeBasedDanmakuSession.create(
                 list.asSequence().mapNotNull { it.toDanmakuOrNull() },
-                shiftMillis = shiftMillis,
                 coroutineContext = sessionCoroutineContext,
             ),
         )

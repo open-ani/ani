@@ -72,7 +72,6 @@ class TimeBasedDanmakuSession private constructor(
      * 一个[Danmaku] list. 必须根据 [DanmakuInfo.playTime] 排序且创建后不可更改，是一条动漫完整的弹幕列表.
      */
     private val list: List<Danmaku>,
-    private val shiftMillis: Long = 0,
     private val flowCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : DanmakuCollection {
     override val totalCount: Flow<Int?> = flowOf(list.size)
@@ -80,14 +79,13 @@ class TimeBasedDanmakuSession private constructor(
     companion object {
         fun create(
             sequence: Sequence<Danmaku>,
-            shiftMillis: Long = 0,
             coroutineContext: CoroutineContext = EmptyCoroutineContext,
         ): DanmakuCollection {
             val list = sequence.mapTo(ArrayList()) {
                 DanmakuSanitizer.sanitize(it)
             }
             list.sortBy { it.playTimeMillis }
-            return TimeBasedDanmakuSession(list, shiftMillis, coroutineContext)
+            return TimeBasedDanmakuSession(list, coroutineContext)
         }
 
 

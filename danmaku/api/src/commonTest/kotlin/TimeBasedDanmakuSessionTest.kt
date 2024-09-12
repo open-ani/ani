@@ -18,10 +18,8 @@ import kotlin.time.Duration.Companion.seconds
 internal class TimeBasedDanmakuSessionTest {
     suspend fun create(
         sequence: Sequence<Danmaku>,
-        shiftMillis: Long = 0,
     ): DanmakuCollection = TimeBasedDanmakuSession.create(
-        sequence, shiftMillis,
-        coroutineContext = currentCoroutineContext()[ContinuationInterceptor] ?: EmptyCoroutineContext,
+        sequence, coroutineContext = currentCoroutineContext()[ContinuationInterceptor] ?: EmptyCoroutineContext,
     )
 
     @Test
