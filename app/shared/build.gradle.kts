@@ -29,12 +29,10 @@ plugins {
     kotlin("plugin.compose")
     id("org.jetbrains.compose")
     // 注意! 前几个插件顺序非常重要, 调整后可能导致 compose multiplatform resources 生成错误
-    `flatten-source-sets`
 
     `ani-mpp-lib-targets`
 
     kotlin("plugin.serialization")
-    kotlin("plugin.parcelize")
     id("org.jetbrains.kotlinx.atomicfu")
     id("com.google.devtools.ksp")
     id("androidx.room")
