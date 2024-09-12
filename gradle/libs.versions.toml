@@ -45,7 +45,7 @@ compose-material3 = "1.3.0"
 jetpack-compose = "1.7.0"
 # https://github.com/JetBrains/compose-multiplatform/releases
 # https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-compatibility-and-versioning.html#use-a-developer-version-of-compose-multiplatform-compiler
-compose-multiplatform = "1.7.0-beta01"
+compose-multiplatform = "1.7.0-dev1809"
 compose-lifecycle = "2.8.1"
 compose-navigation = "2.8.0-alpha09"
 compose-material3-adaptive = "1.0.0-alpha02"
