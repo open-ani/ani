@@ -209,18 +209,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                 return true
             }
             seasonPattern.find(str)?.let { result ->
-                builder.episodeRange =
-                    EpisodeRange.combined(
-                        result.groups.drop(1).mapNotNull { group ->
-                            group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
-                        }.map {
-                            if (it.startsWith("S", ignoreCase = true) && !it.startsWith("SP", ignoreCase = true)) {
-                                EpisodeRange.season(it.drop(1).toIntOrNull())
-                            } else {
-                                EpisodeRange.single(it)
-                            }
-                        },
-                    )
+                builder.episodeRange = parseSeason(result)
                 return true
             }
             if (str.contains("SP", ignoreCase = true) // 包括 "Special"
@@ -236,6 +225,17 @@ class LabelFirstRawTitleParser : RawTitleParser() {
             return false
         }
 
+        private fun parseSeason(result: MatchResult) = EpisodeRange.combined(
+            result.groups.drop(1).mapNotNull { group ->
+                group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
+            }.map {
+                if (it.startsWith("S", ignoreCase = true) && !it.startsWith("SP", ignoreCase = true)) {
+                    EpisodeRange.season(it.drop(1).toIntOrNull())
+                } else {
+                    EpisodeRange.single(it)
+                }
+            },
+        )
     }
 }
 
