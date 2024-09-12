@@ -115,7 +115,7 @@ private fun rememberAnnotatedMaskState(
 @Stable
 object RichTextDefaults {
     val StickerSize: Int = 24
-    val FontSize: Int = 16
+    val FontSize: Float = 16f
 
     @UiThread
     fun checkSanityAndOpen(url: String, context: Context, navigator: BrowserNavigator, toaster: Toaster) {
@@ -227,7 +227,7 @@ object RichTextDefaults {
                         addStyle(
                             style = SpanStyle(
                                 color = textColor,
-                                fontSize = if (e.size.toFloat() != bodyLarge) e.size.sp else 15.5.sp,
+                                fontSize = if (e.size != bodyLarge) e.size.sp else 15.5.sp,
                                 fontWeight = if (e.bold) FontWeight.Bold else null,
                                 fontStyle = if (e.italic) FontStyle.Italic else null,
                                 textDecoration = if (!e.underline && !e.strikethrough) null

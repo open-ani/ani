@@ -12,6 +12,7 @@
 #include "libtorrent/magnet_uri.hpp"
 #include "libtorrent/read_resume_data.hpp"
 #include "torrent_handle_t.hpp"
+#include "peer_filter.hpp"
 
 namespace anilt {
 static std::string compute_torrent_hash(const std::shared_ptr<const lt::torrent_info> &ti) {
@@ -117,6 +118,8 @@ static void apply_settings_to_pack(libtorrent::settings_pack &s, const session_s
 
     s.set_int(settings_pack::aio_threads, 8);
     s.set_int(settings_pack::checking_mem_usage, 2048);
+    
+    s.set_int(settings_pack::share_ratio_limit, settings.share_ratio_limit);
 
     START_LOG("Set int values ok");
 
@@ -171,6 +174,15 @@ void session_t::start(const session_settings_t &settings) {
     START_LOG("create session");
 
     session_ = std::make_shared<libtorrent::session>(s);
+    
+    // peer connection filter
+    session_->add_extension([this](lt::torrent_handle const& handle, lt::client_data_t) -> std::shared_ptr<lt::torrent_plugin> {
+        return create_peer_filter(handle, [this](const peer_info_t &peer_info) -> bool {
+            if (!peer_filter_) return false;
+            return peer_filter_->on_filter(peer_info);
+        });
+    });
+    
     START_LOG("session created");
 }
 
@@ -338,6 +350,13 @@ void session_t::remove_listener() const {
         session->set_alert_notify({});
     }
 }
+
+void session_t::set_peer_filter(peer_filter_t *filter) {
+    function_printer_t _fp("session_t::set_peer_filter");
+    guard_global_lock;
+    peer_filter_ = filter;
+}
+
 void session_t::wait_for_alert(const int timeout_seconds) const {
     function_printer_t _fp("session_t::wait_for_alert");
     guard_global_lock;

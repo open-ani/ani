@@ -13,8 +13,8 @@ import me.him188.ani.app.tools.caching.LazyDataCacheContext
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.foundation.richtext.toUIBriefText
-import me.him188.ani.app.ui.foundation.richtext.toUIRichElements
+import me.him188.ani.app.ui.foundation.richtext.impl.toUIBriefText
+import me.him188.ani.app.ui.foundation.richtext.impl.toUIRichElements
 import me.him188.ani.app.ui.subject.components.comment.UIComment
 import me.him188.ani.app.ui.subject.components.comment.UIRichText
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -124,6 +124,7 @@ class CommentLoader<T>(
     }
 }
 
+// TODO: remove this and use BBCodeRichTextState
 object CommentMapperContext {
     suspend fun parseBBCode(code: String): UIRichText = suspendCancellableCoroutine { cont ->
         val richText = try {

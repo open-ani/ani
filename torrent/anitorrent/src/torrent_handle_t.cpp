@@ -137,6 +137,19 @@ void torrent_handle_t::set_file_priority(const int index, const uint8_t priority
     }
 }
 
+void torrent_handle_t::get_peers(std::vector<anilt::peer_info_t> &peers) const {
+    function_printer_t _fp("torrent_handle_t::get_peers");
+    guard_global_lock;
+    if (const auto handle = handle_; handle && handle->is_valid()) {
+        std::vector<libtorrent::peer_info> raw_peers;
+        handle->get_peer_info(raw_peers);
+        for (const auto& rp: raw_peers) {
+            peers.push_back(parse_peer_info(*handle, rp));
+        }
+    }
+}
+
+
     std::string torrent_handle_t::make_magnet_uri() {
         if (const auto handle = handle_; handle && handle->is_valid()) {
             return libtorrent::make_magnet_uri(*handle);

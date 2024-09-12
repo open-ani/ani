@@ -17,6 +17,8 @@ import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
 import me.him188.ani.app.torrent.api.files.FilePriority
+import me.him188.ani.app.torrent.api.peer.PeerInfo
+import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.writeBytes
@@ -108,6 +110,19 @@ class TestTorrentDescriptor(
 }
 
 @TestOnly
+class TestPeerInfo(
+    override val handle: HandleId,
+    override val id: String,
+    override val client: String,
+    override val ipAddr: String,
+    override val ipPort: Int,
+    override val progress: Float,
+    override val totalDownload: FileSize,
+    override val totalUpload: FileSize,
+    override val flags: Long
+) : PeerInfo
+
+@TestOnly
 data class TestTorrentFileInfo(
     override val name: String,
     override val path: String,
@@ -161,6 +176,10 @@ open class TestTorrentHandle(
 
     override fun reloadFile(): TorrentDescriptor {
         return descriptor
+    }
+
+    override fun getPeers(): List<PeerInfo> {
+        return emptyList()
     }
 
     val pieceDeadlines: MutableList<Int?> = MutableList(descriptor.numPieces) { null }

@@ -117,6 +117,10 @@ interface AniNavigator {
         )
     }
 
+    fun navigateTorrentPeerSettings() {
+        navigator.navigate("/settings/torrent-peer/edit")
+    }
+
     fun navigateCaches() {
         navigator.navigate("/caches")
     }

@@ -45,6 +45,8 @@ import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceViewModel
+import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsPage
+import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsViewModel
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
 import me.him188.ani.app.ui.subject.cache.SubjectCacheViewModelImpl
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
@@ -286,6 +288,19 @@ fun AniAppContentPortrait(
 
                     else -> error("Unknown factoryId: $factoryId")
                 }
+            }
+            composable(
+                "/settings/torrent-peer/edit",
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
+            ) { 
+                val viewModel = viewModel { PeerFilterSettingsViewModel() }
+                PeerFilterSettingsPage(
+                    viewModel.state,
+                    Modifier.desktopTitleBarPadding()
+                )
             }
         }
     }

@@ -1,17 +1,24 @@
 package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
+import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
 import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
@@ -80,6 +87,17 @@ internal fun SettingsScope.TorrentEngineGroup(
                 title = { Text("上传速度限制") },
             )
         }
+        val navigator by rememberUpdatedState(LocalNavigator.current)
+        TextItem(
+            title = { Text("Peer 过滤和屏蔽设置") },
+            description = { Text("在下载或上传缓存的番剧时不与黑名单或命中过滤规则的客户端连接") },
+            action = {
+                IconButton({ navigator.navigateTorrentPeerSettings() }) {
+                    Icon(Icons.Rounded.ArrowOutward, null)
+                }
+            },
+            onClick = { navigator.navigateTorrentPeerSettings() }
+        )
     }
 }
 

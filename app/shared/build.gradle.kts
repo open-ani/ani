@@ -115,6 +115,7 @@ kotlin {
         api(projects.app.shared.imageViewer)
         api(projects.utils.xml)
         api(projects.utils.bbcode)
+        api(projects.utils.ipParser)
 
         // Ktor
         api(libs.ktor.client.websockets)

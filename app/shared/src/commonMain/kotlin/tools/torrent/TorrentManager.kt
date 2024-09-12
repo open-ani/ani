@@ -3,6 +3,7 @@ package me.him188.ani.app.tools.torrent
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.models.preference.ProxySettings
+import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
@@ -35,6 +36,7 @@ class DefaultTorrentManager(
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
     private val proxySettingsFlow: Flow<ProxySettings>,
     private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
+    private val peerFilterConfig: Flow<TorrentPeerConfig>,
     val platform: Platform,
 ) : TorrentManager {
     private val scope = parentCoroutineContext.childScope()
@@ -43,6 +45,7 @@ class DefaultTorrentManager(
         AnitorrentEngine(
             anitorrentConfigFlow,
             proxySettingsFlow,
+            peerFilterConfig,
             saveDir(TorrentEngineType.Anitorrent),
             scope.coroutineContext + CoroutineName("AnitorrentEngine"),
         )
@@ -77,6 +80,7 @@ class DefaultTorrentManager(
                 },
                 settingsRepository.proxySettings.flow,
                 settingsRepository.anitorrentConfig.flow,
+                settingsRepository.torrentPeerConfig.flow,
                 platform,
             )
         }

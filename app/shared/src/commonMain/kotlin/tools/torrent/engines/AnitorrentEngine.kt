@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.data.models.preference.ProxySettings
+import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
@@ -26,6 +27,7 @@ import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader
 import me.him188.ani.app.torrent.api.HttpFileDownloader
 import me.him188.ani.app.torrent.api.TorrentDownloaderConfig
 import me.him188.ani.app.torrent.api.TorrentDownloaderFactory
+import me.him188.ani.app.torrent.api.peer.PeerFilter
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
@@ -47,6 +49,10 @@ data class AnitorrentConfig(
      * 设置为 [FileSize.Unspecified] 表示无限, [FileSize.Zero] 表示不允许上传
      */
     val uploadRateLimit: FileSize = DEFAULT_UPLOAD_RATE_LIMIT,
+    /**
+     * 种子分享率限制.
+     */
+    val shareRatioLimit: Double = 1.1,
     @Transient private val _placeholder: Int = 0,
 ) : TorrentEngineConfig {
     companion object {
@@ -59,6 +65,7 @@ data class AnitorrentConfig(
 class AnitorrentEngine(
     config: Flow<AnitorrentConfig>,
     proxySettings: Flow<ProxySettings>,
+    peerFilterSettings: Flow<TorrentPeerConfig>,
     private val saveDir: SystemPath,
     parentCoroutineContext: CoroutineContext,
     private val anitorrentFactory: TorrentDownloaderFactory = AnitorrentDownloaderFactory()
@@ -67,6 +74,7 @@ class AnitorrentEngine(
     config = config,
     parentCoroutineContext = parentCoroutineContext,
     proxySettings = proxySettings.map { it.default },
+    peerFilterSettings = peerFilterSettings,
 ) {
     override val location: MediaSourceLocation get() = MediaSourceLocation.Local
     override val isSupported: Flow<Boolean>
@@ -118,12 +126,17 @@ class AnitorrentEngine(
         this.applyConfig(config.toTorrentDownloaderConfig())
     }
 
+    override suspend fun AnitorrentTorrentDownloader<*, *>.applyPeerFilter(filter: PeerFilter) {
+        this.setPeerFilter(filter)
+    }
+
     private fun AnitorrentConfig.toTorrentDownloaderConfig() =
         TorrentDownloaderConfig(
             peerFingerprint = computeTorrentFingerprint(),
             userAgent = computeTorrentUserAgent(),
             downloadRateLimitBytes = downloadRateLimit.toLibtorrentRate(),
             uploadRateLimitBytes = uploadRateLimit.toLibtorrentRate(),
+            shareRatioLimit = shareRatioLimit.toLibtorrentShareRatio()
         )
 }
 
@@ -132,6 +145,8 @@ private fun FileSize.toLibtorrentRate(): Int = when (this) {
     FileSize.Zero -> 1024 // libtorrent 没法禁用, 那就限速到 1KB/s
     else -> inBytes.toInt()
 }
+
+private fun Double.toLibtorrentShareRatio(): Int = times(100).toInt()
 
 private fun computeTorrentFingerprint(
     versionCode: String = currentAniBuildConfig.versionCode,
