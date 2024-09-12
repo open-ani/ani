@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
-import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
-import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.session.OpaqueSession
@@ -23,15 +21,12 @@ import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.danmaku.api.Danmaku
-import me.him188.ani.danmaku.api.DanmakuCollection
 import me.him188.ani.danmaku.api.DanmakuFetchResult
 import me.him188.ani.danmaku.api.DanmakuMatchInfo
 import me.him188.ani.danmaku.api.DanmakuMatchMethod
 import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
-import me.him188.ani.danmaku.api.DanmakuSession
-import me.him188.ani.danmaku.api.merge
 import me.him188.ani.danmaku.dandanplay.DandanplayDanmakuProvider
 import me.him188.ani.utils.coroutines.mapAutoClose
 import me.him188.ani.utils.coroutines.mapAutoCloseCollection
@@ -43,7 +38,6 @@ import org.koin.core.component.inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -62,7 +56,7 @@ interface DanmakuManager {
 
 class CombinedDanmakuFetchResult(
     val matchInfos: List<DanmakuMatchInfo>,
-    val danmakuCollection: DanmakuCollection,
+    val list: Sequence<Danmaku>,
 )
 
 object DanmakuProviderLoader {
@@ -143,7 +137,7 @@ class DanmakuManagerImpl(
                                 0,
                                 DanmakuMatchMethod.NoMatch,
                             ),
-                            null,
+                            list = emptySequence(),
                         ),
                     )// 忽略错误, 否则一个源炸了会导致所有弹幕都不发射了
                     // 必须要 emit 一个, 否则下面 .first 会出错
@@ -154,30 +148,11 @@ class DanmakuManagerImpl(
         }.first()
         return CombinedDanmakuFetchResult(
             results.map { it.matchInfo },
-            CombinedDanmakuSession(results.mapNotNull { it.danmakuCollection }),
+            results.asSequence().flatMap { it.list },
         )
     }
 
     override suspend fun post(episodeId: Int, danmaku: DanmakuInfo): Danmaku {
         return sender.first().send(episodeId, danmaku)
-    }
-}
-
-class CombinedDanmakuSession(
-    private val sessions: List<DanmakuCollection>,
-) : DanmakuCollection {
-    override val totalCount: Flow<Int?>
-        get() = combine(sessions.map { it.totalCount }) { array ->
-            array.sumOf { it ?: 0 }
-        }
-
-    override fun at(
-        progress: Flow<Duration>,
-        danmakuRegexFilterList: Flow<List<DanmakuRegexFilter>>,
-        danmakuFilterConfig: Flow<DanmakuFilterConfig>
-    ): DanmakuSession {
-        return sessions.map { session ->
-            session.at(progress, danmakuRegexFilterList, danmakuFilterConfig)
-        }.merge()
     }
 }

@@ -11,7 +11,6 @@ import me.him188.ani.danmaku.api.DanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuProviderFactory
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
-import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.utils.logging.info
 import kotlin.coroutines.CoroutineContext
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation as ProtocolDanmakuLocation
@@ -57,20 +56,17 @@ class AniDanmakuProvider(
                 count = list.size,
                 method = DanmakuMatchMethod.ExactId(request.subjectId, request.episodeId),
             ),
-            TimeBasedDanmakuSession.create(
-                list.asSequence().map {
-                    ApiDanmaku(
-                        id = it.id,
-                        providerId = ID,
-                        playTimeMillis = it.danmakuInfo.playTime,
-                        senderId = it.senderId,
-                        location = it.danmakuInfo.location.toApi(),
-                        text = it.danmakuInfo.text,
-                        color = it.danmakuInfo.color,
-                    )
-                },
-                coroutineContext = sessionCoroutineContext,
-            ),
+            list = list.asSequence().map {
+                ApiDanmaku(
+                    id = it.id,
+                    providerId = ID,
+                    playTimeMillis = it.danmakuInfo.playTime,
+                    senderId = it.senderId,
+                    location = it.danmakuInfo.location.toApi(),
+                    text = it.danmakuInfo.text,
+                    color = it.danmakuInfo.color,
+                )
+            },
         )
     }
 }

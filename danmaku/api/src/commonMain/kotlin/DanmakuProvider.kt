@@ -51,7 +51,7 @@ class DanmakuSearchRequest(
 
 class DanmakuFetchResult(
     val matchInfo: DanmakuMatchInfo,
-    val danmakuCollection: DanmakuCollection?,
+    val list: Sequence<Danmaku>,
 ) {
     companion object {
         @JvmStatic
@@ -61,7 +61,7 @@ class DanmakuFetchResult(
                 count = 0,
                 method = DanmakuMatchMethod.NoMatch,
             ),
-            danmakuCollection = null,
+            list = emptySequence(),
         )
     }
 }

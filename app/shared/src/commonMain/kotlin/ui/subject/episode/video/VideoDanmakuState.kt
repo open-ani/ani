@@ -37,6 +37,7 @@ import me.him188.ani.danmaku.api.DanmakuEvent
 import me.him188.ani.danmaku.api.DanmakuPresentation
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
 import me.him188.ani.danmaku.api.DanmakuSession
+import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.api.emptyDanmakuCollection
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuHostState
@@ -123,7 +124,7 @@ class DanmakuLoaderImpl(
                     ),
                 )
                 state.value = DanmakuLoadingState.Success(result.matchInfos)
-                emit(result.danmakuCollection)
+                emit(TimeBasedDanmakuSession.create(result.list))
             } catch (e: CancellationException) {
                 state.value = DanmakuLoadingState.Idle
                 throw e

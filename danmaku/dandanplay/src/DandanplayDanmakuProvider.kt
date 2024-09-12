@@ -14,7 +14,6 @@ import me.him188.ani.danmaku.api.DanmakuMatchers
 import me.him188.ani.danmaku.api.DanmakuProviderConfig
 import me.him188.ani.danmaku.api.DanmakuProviderFactory
 import me.him188.ani.danmaku.api.DanmakuSearchRequest
-import me.him188.ani.danmaku.api.TimeBasedDanmakuSession
 import me.him188.ani.danmaku.dandanplay.data.SearchEpisodesAnime
 import me.him188.ani.danmaku.dandanplay.data.toDanmakuOrNull
 import me.him188.ani.datasources.api.EpisodeSort
@@ -254,10 +253,7 @@ class DandanplayDanmakuProvider(
         logger.info { "$ID Fetched danmaku list: ${list.size}" }
         return DanmakuFetchResult(
             matchInfo = DanmakuMatchInfo(ID, list.size, matchMethod),
-            TimeBasedDanmakuSession.create(
-                list.asSequence().mapNotNull { it.toDanmakuOrNull() },
-                coroutineContext = sessionCoroutineContext,
-            ),
+            list = list.asSequence().mapNotNull { it.toDanmakuOrNull() },
         )
     }
 }
