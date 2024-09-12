@@ -223,6 +223,14 @@ jobs:
           name: ani-android-universal-release
           path: app/android/build/outputs/apk/release/android-universal-release.apk
 
+      - name: Link iOS Tests
+        if: ${{ matrix.run_tests && env.isMac == 'true' }}
+        run: ./gradlew linkDebugTestIosArm64 ${{ env.gradleArgs }} --no-parallel
+
+      - name: Link iOS Tests
+        if: ${{ matrix.run_tests && env.isMac == 'true' }}
+        run: ./gradlew linkDebugTestIosSimulatorArm64 ${{ env.gradleArgs }} --no-parallel
+
       - name: Check
         if: ${{ matrix.run_tests }}
         run: ./gradlew check ${{ env.gradleArgs }}
