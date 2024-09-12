@@ -3,7 +3,6 @@ package me.him188.ani.danmaku.dandanplay
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
-import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.danmaku.api.AbstractDanmakuProvider
 import me.him188.ani.danmaku.api.DanmakuEpisode
 import me.him188.ani.danmaku.api.DanmakuFetchResult
@@ -157,7 +156,7 @@ class DandanplayDanmakuProvider(
     }
 
     /**
-     * 用尝试用 bangumi 给的名字 [SubjectInfo.allNames] 去精准匹配
+     * 用尝试用 bangumi 给的名字 `SubjectInfo.allNames` 去精准匹配
      */
     private suspend fun DandanplayDanmakuProvider.getEpisodesByExactSubjectMatch(
         request: DanmakuSearchRequest

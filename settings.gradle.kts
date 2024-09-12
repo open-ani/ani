@@ -91,8 +91,7 @@ includeProject(":datasource:ikaros", "data-sources/ikaros") // https://ikaros.ru
 // danmaku
 includeProject(":danmaku:danmaku-api", "danmaku/api")
 //includeProject(":danmaku:ui", "danmaku/ui") // danmaku UI composable
-//includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
-//includeProject(":danmaku:ani:client", "danmaku/ani/client") // danmaku server
+includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 
 includeProject(
     ":datasource:dmhy:dataset-tools",

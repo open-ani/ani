@@ -115,6 +115,7 @@ kotlin {
         api(projects.utils.xml)
         api(projects.utils.bbcode)
         api(projects.danmaku.danmakuApi)
+        api(projects.danmaku.dandanplay)
         api(projects.utils.ipParser)
         api(projects.torrent.torrentApi)
         api(projects.torrent.anitorrent)
@@ -292,7 +293,6 @@ kotlin {
             }
         }
 
-        submodule("danmaku/dandanplay")
         submodule("danmaku/ui")
 
         submodule("app/shared/placeholder")

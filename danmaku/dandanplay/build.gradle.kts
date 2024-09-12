@@ -1,17 +1,24 @@
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
+    `ani-mpp-lib-targets`
 }
 
-dependencies {
-    api(projects.danmaku.api)
-    api(projects.utils.logging)
+kotlin {
+    sourceSets.commonMain {
+        dependencies {
+            api(libs.kotlinx.coroutines.core)
+            api(libs.kotlinx.serialization.core)
 
-    api(libs.kotlinx.coroutines.core)
-    api(libs.kotlinx.serialization.json)
-
-    api(libs.ktor.client.core)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
+            api(projects.danmaku.danmakuApi)
+            api(projects.utils.ktorClient)
+            api(projects.utils.logging)
+            api(projects.datasource.datasourceApi)
+        }
+    }
+    sourceSets.commonTest {
+        dependencies {
+            implementation(libs.kotlinx.coroutines.test)
+        }
+    }
 }
