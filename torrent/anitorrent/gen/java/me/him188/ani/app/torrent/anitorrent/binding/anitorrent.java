@@ -18,8 +18,8 @@ public class anitorrent {
     return new peer_info_t(anitorrentJNI.parse_peer_info(SWIGTYPE_p_lt__torrent_handle.getCPtr(th), SWIGTYPE_p_lt__peer_info.getCPtr(info)), true);
   }
 
-  public static SWIGTYPE_p_std__shared_ptrT_lt__torrent_plugin_t create_peer_filter(SWIGTYPE_p_lt__torrent_handle th, SWIGTYPE_p_std__functionT_bool_fanilt__peer_info_t_pF_t filter) {
-    return new SWIGTYPE_p_std__shared_ptrT_lt__torrent_plugin_t(anitorrentJNI.create_peer_filter(SWIGTYPE_p_lt__torrent_handle.getCPtr(th), SWIGTYPE_p_std__functionT_bool_fanilt__peer_info_t_pF_t.getCPtr(filter)), true);
+  public static SWIGTYPE_p_std__shared_ptrT_lt__torrent_plugin_t create_peer_filter(SWIGTYPE_p_lt__torrent_handle th, SWIGTYPE_p_std__functionT_bool_fanilt__peer_info_t_RF_t filter) {
+    return new SWIGTYPE_p_std__shared_ptrT_lt__torrent_plugin_t(anitorrentJNI.create_peer_filter(SWIGTYPE_p_lt__torrent_handle.getCPtr(th), SWIGTYPE_p_std__functionT_bool_fanilt__peer_info_t_RF_t.getCPtr(filter)), true);
   }
 
   public static String lt_version() {
