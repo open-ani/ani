@@ -226,15 +226,25 @@ class LabelFirstRawTitleParser : RawTitleParser() {
         }
 
         private fun parseSeason(result: MatchResult) = EpisodeRange.combined(
-            result.groups.drop(1).mapNotNull { group ->
-                group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
-            }.map {
-                if (it.startsWith("S", ignoreCase = true) && !it.startsWith("SP", ignoreCase = true)) {
-                    EpisodeRange.season(it.drop(1).toIntOrNull())
-                } else {
-                    EpisodeRange.single(it)
+            result.groups.asSequence().drop(1)
+                // 去除开头 "+"
+                .mapNotNull { group ->
+                    group?.value?.removePrefix("+")?.takeIf { it.isNotBlank() }
                 }
-            },
+                .map {
+                    // expecting "S1" or "S1E5"
+                    if (it.startsWith("SP", ignoreCase = true)) {
+                        return@map EpisodeRange.single(it)
+                    }
+                    if (it.contains("E", ignoreCase = true)) {
+                        val episode = it.substringAfter("E").toIntOrNull()
+                        if (episode != null) {
+                            return@map EpisodeRange.single(EpisodeSort(episode))
+                        }
+                    }
+                    
+                    EpisodeRange.season(it.drop(1).toIntOrNull())
+                }.toList(),
         )
     }
 }
@@ -285,7 +295,10 @@ private val collectionPattern = Regex(
     RegexOption.IGNORE_CASE,
 )
 
-private val seasonPattern = Regex("""(S\d)(?:(\+S\d)|(\+S\w)|(\+\w+))*""", RegexOption.IGNORE_CASE)
+// S1
+// S1+S2
+// S1E5 // ep 5
+private val seasonPattern = Regex("""(S\d+(?:E\d+)?)(?:(\+S\d+(?:E\d+)?)|(\+S\w)|(\+\w+))*""", RegexOption.IGNORE_CASE)
 
 private fun String.remove(str: String) = replace(str, "", ignoreCase = true)
 private fun String.remove(regex: Regex) = replace(regex) { "" }

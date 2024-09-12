@@ -1,3 +1,5 @@
+@file:Suppress("TestFunctionName")
+
 package me.him188.ani.datasources.api.title
 
 import kotlin.test.Test
@@ -16,9 +18,25 @@ class TitleParserTest : PatternBasedTitleParserTestSuite() {
     }
 
     @Test
+    fun S01() {
+        val r = parse("""[Up to 21℃] 怪人的沙拉碗 / Henjin no Salad Bowl - S01 (Baha 1920x1080 AVC AAC MP4)""")
+        assertEquals("S1", r.episodeRange.toString())
+        assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+        assertEquals("1080P", r.resolution.toString())
+    }
+
+    @Test
+    fun S1() {
+        val r = parse("""[Up to 21℃] 怪人的沙拉碗 / Henjin no Salad Bowl - S1 (Baha 1920x1080 AVC AAC MP4)""")
+        assertEquals("S1", r.episodeRange.toString())
+        assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+        assertEquals("1080P", r.resolution.toString())
+    }
+
+    @Test
     fun `S01E05 as ep 05`() {
         val r = parse("""[Up to 21℃] 怪人的沙拉碗 / Henjin no Salad Bowl - S01E05 (Baha 1920x1080 AVC AAC MP4)""")
-        assertEquals("S0", r.episodeRange.toString())
+        assertEquals("05..05", r.episodeRange.toString())
         assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
         assertEquals("1080P", r.resolution.toString())
     }
