@@ -22,6 +22,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/shared/reorderable" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/torrent/anitorrent/libs/boost" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/torrent/anitorrent/anitorrent-native/libs/boost" vcs="Git" />
   </component>
 </project>
