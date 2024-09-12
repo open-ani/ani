@@ -24,7 +24,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.dataSources.dmhy)
+    api(projects.datasource.dmhy)
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.2")
     api(libs.kotlinx.serialization.json)
 }

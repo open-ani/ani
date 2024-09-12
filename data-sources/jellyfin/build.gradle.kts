@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.dataSources.api)
+    api(projects.datasource.datasourceApi)
     implementation(projects.utils.serialization)
     implementation(projects.utils.logging)
 

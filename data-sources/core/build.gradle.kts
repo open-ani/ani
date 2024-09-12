@@ -26,7 +26,7 @@ kotlin {
     sourceSets.commonMain {
         dependencies {
             api(libs.kotlinx.coroutines.core)
-            api(projects.dataSources.api)
+            api(projects.datasource.datasourceApi)
             api(projects.utils.ktorClient)
             api(projects.utils.io)
         }

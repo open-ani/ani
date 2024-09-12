@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.dataSources.api)
+    api(projects.datasource.datasourceApi)
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.serialization.json)
     api(libs.jsoup)

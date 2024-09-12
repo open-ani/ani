@@ -6,8 +6,8 @@ plugins {
 }
 
 dependencies {
-    api(projects.dataSources.api)
-    implementation(projects.dataSources.webBase)
+    api(projects.datasource.datasourceApi)
+    implementation(projects.datasource.webBase)
 }
 
 tasks.withType<Jar> {

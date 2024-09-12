@@ -30,7 +30,7 @@ val generatedRoot = "generated/openapi"
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        api(projects.dataSources.api)
+        api(projects.datasource.datasourceApi)
         api(libs.kotlinx.datetime)
         api(libs.kotlinx.coroutines.core)
 

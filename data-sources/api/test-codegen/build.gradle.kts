@@ -6,9 +6,9 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.dataSources.api)
+    implementation(projects.datasource.datasourceApi)
     implementation(projects.utils.ktorClient)
-    implementation(projects.dataSources.dmhy)
+    implementation(projects.datasource.dmhy)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.slf4j.simple)
     implementation(libs.jsoup)

@@ -24,7 +24,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.dataSources.api)
+    api(projects.datasource.datasourceApi)
 
     api(libs.kotlinx.coroutines.core)
     api(libs.ktor.client.core)

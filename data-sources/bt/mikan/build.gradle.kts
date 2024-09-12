@@ -27,7 +27,7 @@ plugins {
 kotlin {
     sourceSets.commonMain {
         dependencies {
-            api(projects.dataSources.api)
+            api(projects.datasource.datasourceApi)
             implementation(projects.utils.ktorClient)
             implementation(projects.utils.logging)
             implementation(projects.utils.xml)

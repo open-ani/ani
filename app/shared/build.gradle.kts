@@ -101,10 +101,10 @@ kotlin {
         implementation(libs.reorderable)
 
         // Data sources
-        api(projects.dataSources.api)
-        api(projects.dataSources.core)
-        api(projects.dataSources.bangumi)
-        api(projects.dataSources.mikan)
+        implementation(projects.datasource.datasourceApi)
+        api(projects.datasource.datasourceCore)
+        api(projects.datasource.bangumi)
+        api(projects.datasource.mikan)
 
         api(projects.client)
         api(projects.utils.logging)
@@ -113,6 +113,7 @@ kotlin {
         api(projects.app.shared.imageViewer)
         api(projects.utils.xml)
         api(projects.utils.bbcode)
+        implementation(projects.danmaku.danmakuApi)
         api(projects.utils.ipParser)
 
         // Ktor
@@ -141,15 +142,15 @@ kotlin {
     sourceSets.getByName("jvmMain").dependencies {
         // TODO: to be commonized
         api(projects.torrent.anitorrent)
-        api(projects.dataSources.dmhy)
-        api(projects.dataSources.acgRip)
-        api(projects.dataSources.nyafun)
-        api(projects.dataSources.mxdongman)
-        api(projects.dataSources.ntdm)
-        api(projects.dataSources.gugufan)
-        api(projects.dataSources.xfdm)
-        api(projects.dataSources.jellyfin)
-        api(projects.dataSources.ikaros)
+        api(projects.datasource.dmhy)
+        api(projects.datasource.acgRip)
+        api(projects.datasource.nyafun)
+        api(projects.datasource.mxdongman)
+        api(projects.datasource.ntdm)
+        api(projects.datasource.gugufan)
+        api(projects.datasource.xfdm)
+        api(projects.datasource.jellyfin)
+        api(projects.datasource.ikaros)
 
         implementation(libs.jna)
         implementation(libs.slf4j.api)
@@ -289,7 +290,6 @@ kotlin {
             }
         }
 
-        submodule("danmaku/api", flatten = false)
         submodule("danmaku/dandanplay")
         submodule("danmaku/ui")
 

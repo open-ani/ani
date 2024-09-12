@@ -24,7 +24,7 @@ plugins {
 }
 
 dependencies {
-    api(projects.dataSources.api)
+    api(projects.datasource.datasourceApi)
 
     api(libs.kotlinx.coroutines.core)
     api(libs.ktor.client.core)
@@ -42,7 +42,7 @@ dependencies {
 //kotlin {
 //    sourceSets.commonMain {
 //        dependencies {
-//            api(projects.dataSources.api)
+//            api(projects.datasource.api)
 //            implementation(projects.utils.ktorClient)
 //            api(libs.kotlinx.coroutines.core)
 //            implementation(libs.kotlinx.serialization.json)

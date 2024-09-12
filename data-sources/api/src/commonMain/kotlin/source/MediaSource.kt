@@ -63,8 +63,8 @@ import me.him188.ani.datasources.api.paging.SizedSource
  * 1. 在 `data-sources/foo/resources/META-INF/services` 目录下创建一个名为 `me.him188.ani.datasources.api.source.MediaSourceFactory` 的文件
  * 2. 在文件中写入你的 `MediaSourceFactory` 的全限定类名, 例如 `me.him188.ani.datasources.api.source.impl.MyMediaSourceFactory`
  * 3. 在 `MyMediaSourceFactory` 中实现 `create` 方法, 根据传入的 [MediaSourceConfig], 构造并返回你的 [MediaSource] 实例
- * 4. 在 `:app:shared` 中的 `build.gradle.kts` 搜索 `api(projects.dataSources.core)`, 找到现有数据源的依赖定义,
- * 仿照着增加一行你的模块: `api(projects.dataSources.foo)`
+ * 4. 在 `:app:shared` 中的 `build.gradle.kts` 搜索 `api(projects.datasource.core)`, 找到现有数据源的依赖定义,
+ * 仿照着增加一行你的模块: `api(projects.datasource.foo)`
  * 5. 现在启动 app 便可以自动加载你的数据源了, 可在设置中验证
  *
  * @see MediaSourceFactory

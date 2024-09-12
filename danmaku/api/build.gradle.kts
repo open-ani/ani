@@ -12,7 +12,7 @@ kotlin {
 
             api(projects.utils.ktorClient)
             api(projects.utils.logging)
-            api(projects.dataSources.api)
+            api(projects.datasource.datasourceApi)
         }
     }
     sourceSets.commonTest {
