@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.framework
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.IdlingResource
 import androidx.compose.ui.test.MainTestClock
@@ -108,3 +109,11 @@ interface AniComposeUiTest : SemanticsNodeInteractionsProvider {
     fun unregisterIdlingResource(idlingResource: IdlingResource)
     fun setContent(composable: @Composable () -> Unit)
 }
+
+/**
+ * 截图当前的 UI 并与 resources 目录下的图片 [expectedResource] 进行比较.
+ */
+expect fun AniComposeUiTest.assertScreenshot(expectedResource: String)
+
+expect fun ImageBitmap.assertScreenshot(expectedResource: String)
+

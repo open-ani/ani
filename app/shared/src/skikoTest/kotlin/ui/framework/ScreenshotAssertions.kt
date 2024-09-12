@@ -1,4 +1,4 @@
-package me.him188.ani.app.ui
+package me.him188.ani.app.ui.framework
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
@@ -38,7 +38,7 @@ fun SemanticsNodeInteraction.assertScreenshot(expectedResource: String) {
  * 截图当前的 UI 并与 resources 目录下的图片 [expectedResource] 进行比较.
  */
 @OptIn(ExperimentalEncodingApi::class)
-fun ImageBitmap.assertScreenshot(expectedResource: String) {
+actual fun ImageBitmap.assertScreenshot(expectedResource: String) {
     // https://github.com/JetBrains/compose-multiplatform-core/blob/jb-main/compose/ui/ui-test-junit4/src/desktopTest/kotlin/androidx/compose/ui/test/UseComposeUiTest.kt
 
     Image.makeFromBitmap(asSkiaBitmap()).use { img: Image ->
