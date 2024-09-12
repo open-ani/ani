@@ -713,7 +713,7 @@ private class EpisodeViewModelImpl(
                         val positionMillis =
                             episodePlayHistoryRepository.getPositionMillisByEpisodeId(episodeId = episodeId.value)
                         positionMillis?.let {
-                            launchInMain { // android must call in main thread
+                            withContext(Dispatchers.Main) { // android must call in main thread
                                 playerState.seekTo(positionMillis)
                             }
                         }
