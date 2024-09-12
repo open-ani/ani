@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +34,10 @@ import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 @Composable
 fun PeerFilterEditItem(
     title: String,
-    description: String,
     item: PeerFilterItemState,
     onSwitchChange: (Boolean) -> Unit,
     onContentChange: (String) -> Unit,
-    editSupportingTextBBCode: String = description,
+    editSupportingTextBBCode: String,
     modifier: Modifier = Modifier,
     textFieldShape: Shape = MaterialTheme.shapes.medium
 ) {
@@ -43,7 +46,6 @@ fun PeerFilterEditItem(
     Column(modifier = modifier) {
         ListItem(
             headlineContent = { Text(text = title, overflow = TextOverflow.Ellipsis) },
-            supportingContent = { Text(description) },
             trailingContent = { Switch(checked = item.enabled, onCheckedChange = onSwitchChange) },
             colors = listItemColors,
             modifier = Modifier.clickable { onSwitchChange(!item.enabled) }
@@ -82,27 +84,26 @@ fun PeerFilterEditPane(
     contentPadding: PaddingValues,
     showIpBlockingItem: Boolean,
     onClickIpBlockSettings: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
-    
-    Column(modifier = Modifier.padding(contentPadding)) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            Row(Modifier.padding(8.dp)) {
-                ProvideTextStyleContentColor(
-                    MaterialTheme.typography.titleMedium,
-                    MaterialTheme.colorScheme.primary,
-                ) {
-                    Text("过滤规则")
-                }
+
+    Column(
+        modifier = modifier
+            .padding(contentPadding)
+            .verticalScroll(rememberScrollState()),
+    ) {
+        Row(Modifier.padding(8.dp)) {
+            ProvideTextStyleContentColor(
+                MaterialTheme.typography.titleMedium,
+                MaterialTheme.colorScheme.primary,
+            ) {
+                Text("过滤规则")
             }
-            PeerFilterEditItem(
-                title = "IP 地址过滤",
-                description = "根据对方 IP 地址过滤",
-                editSupportingTextBBCode = """
+        }
+        PeerFilterEditItem(
+            title = "过滤 IP 地址",
+            editSupportingTextBBCode = """
                     每行一条过滤规则，支持 IPv4 和 IPv6
                     支持以下格式：
                     * 无类别域间路由（CIDR）
@@ -115,62 +116,65 @@ fun PeerFilterEditPane(
                     * 范围表示
                       例如 [code]10.0.24.100-200[/code] 和 [code]ff06:1234::cafe-dead[/code]
                 """.trimIndent(),
-                item = PeerFilterItemState(state.ipFilterEnabled, state.ipFilters),
-                onSwitchChange = { state.ipFilterEnabled = it },
-                onContentChange = { state.ipFilters = it }
-            )
-            PeerFilterEditItem(
-                title = "指纹过滤",
-                description = "根据对方客户端指纹过滤",
-                editSupportingTextBBCode = """
+            item = PeerFilterItemState(state.ipFilterEnabled, state.ipFilters),
+            onSwitchChange = { state.ipFilterEnabled = it },
+            onContentChange = { state.ipFilters = it }
+        )
+        PeerFilterEditItem(
+            title = "过滤客户端指纹",
+            editSupportingTextBBCode = """
                     每行一条过滤规则，仅支持使用正则表达式过滤
                     例如：[code]\-HP\d{4}\-[/code] 将封禁具有 -HPxxxx- 指纹的客户端
                 """.trimIndent(),
-                item = PeerFilterItemState(state.idFilterEnabled, state.idFilters),
-                onSwitchChange = { state.idFilterEnabled = it },
-                onContentChange = { state.idFilters = it }
-            )
-            PeerFilterEditItem(
-                title = "客户端过滤",
-                description = "根据对方客户端类型过滤",
-                editSupportingTextBBCode = """
+            item = PeerFilterItemState(state.idFilterEnabled, state.idFilters),
+            onSwitchChange = { state.idFilterEnabled = it },
+            onContentChange = { state.idFilters = it }
+        )
+        PeerFilterEditItem(
+            title = "过滤客户端类型",
+            editSupportingTextBBCode = """
                     每行一条过滤规则，仅支持使用正则表达式过滤
                     例如：[code]go\.torrent(\sdev)?[/code] 将封禁百度网盘的离线下载客户端
                 """.trimIndent(),
-                item = PeerFilterItemState(state.clientFilterEnabled, state.clientFilters),
-                onSwitchChange = { state.clientFilterEnabled = it },
-                onContentChange = { state.clientFilters = it }
-            )
-            Row(Modifier.align(Alignment.End).padding(8.dp)) {
+            item = PeerFilterItemState(state.clientFilterEnabled, state.clientFilters),
+            onSwitchChange = { state.clientFilterEnabled = it },
+            onContentChange = { state.clientFilters = it }
+        )
+
+        if (showIpBlockingItem) {
+            Column(
+                modifier = Modifier.padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 ProvideTextStyleContentColor(
-                    MaterialTheme.typography.labelMedium,
-                    MaterialTheme.colorScheme.outline,
+                    MaterialTheme.typography.titleMedium,
+                    MaterialTheme.colorScheme.primary,
                 ) {
-                    Text("提示：修改自动保存")
+                    Text("黑名单")
+                }
+                ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
+                    Text("黑名单中的 Peer 总是被屏蔽，无论是否匹配过滤规则")
                 }
             }
-            
-            if (showIpBlockingItem) {
-                Column(
-                    modifier = Modifier.padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    ProvideTextStyleContentColor(
-                        MaterialTheme.typography.titleMedium,
-                        MaterialTheme.colorScheme.primary,
-                    ) {
-                        Text("黑名单")
+            ListItem(
+                headlineContent = { Text(text = "IP 黑名单设置", overflow = TextOverflow.Ellipsis) },
+                supportingContent = { Text("点击进入 IP 黑名单列表") },
+                trailingContent = {
+                    IconButton(onClickIpBlockSettings) {
+                        Icon(Icons.Rounded.ArrowOutward, null)
                     }
-                    ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
-                        Text("Ani 将总是屏蔽黑名单内的 Peer，无论是否匹配过滤规则")
-                    }
-                }
-                ListItem(
-                    headlineContent = { Text(text = "IP 黑名单设置", overflow = TextOverflow.Ellipsis) },
-                    supportingContent = { Text("点击进入 IP 黑名单列表") },
-                    colors = listItemColors,
-                    modifier = Modifier.clickable(onClick = onClickIpBlockSettings)
-                )
+                },
+                colors = listItemColors,
+                modifier = Modifier.clickable(onClick = onClickIpBlockSettings)
+            )
+        }
+
+        Row(Modifier.align(Alignment.End).padding(8.dp)) {
+            ProvideTextStyleContentColor(
+                MaterialTheme.typography.labelMedium,
+                MaterialTheme.colorScheme.outline,
+            ) {
+                Text("提示：修改自动保存")
             }
         }
     }

@@ -14,6 +14,7 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -26,9 +27,11 @@ class PeerFilterSettingsViewModel : AbstractViewModel(), KoinComponent {
     private val localConfig: MutableState<TorrentPeerConfig?> = mutableStateOf(null)
     
     val state = PeerFilterSettingsState(
-        configState = localConfig,
-        onSave = { update(it) },
-        isSavingState = derivedStateOf { updateTasker.isRunning }
+        storage = SaveableStorage(
+            localConfig,
+            onSave = { update(it) },
+            isSavingState = derivedStateOf { updateTasker.isRunning }
+        )
     )
     
     init {

@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -51,14 +50,15 @@ fun BlockListEditPane(
     blockedIpList: List<String>,
     contentPadding: PaddingValues,
     showTitle: Boolean,
-    onAddBlockedIp: (String) -> Unit,
-    onRemoveBlockedIp: (String) -> Unit,
+    onAdd: (String) -> Unit,
+    onRemove: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
     
     var showAddBlockedIpDialog by rememberSaveable { mutableStateOf(false) }
     
-    Column(modifier = Modifier.padding(contentPadding).fillMaxSize()) {
+    Column(modifier = modifier.padding(contentPadding).fillMaxSize()) {
         if (showTitle) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -71,7 +71,7 @@ fun BlockListEditPane(
                     Text("黑名单")
                 }
                 ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
-                    Text("Ani 将总是屏蔽黑名单内的 Peer，无论是否匹配过滤规则")
+                    Text("黑名单中的 Peer 总是被屏蔽，无论是否匹配过滤规则")
                 }
             }
         }
@@ -109,7 +109,7 @@ fun BlockListEditPane(
                 ListItem(
                     headlineContent = { Text(item) },
                     trailingContent = {
-                        IconButton({ onRemoveBlockedIp(item) }) {
+                        IconButton({ onRemove(item) }) {
                             Icon(Icons.Default.Close, contentDescription = "移除此黑名单 IP")
                         }
                     },
@@ -157,12 +157,12 @@ fun BlockListEditPane(
                 }
             },
             confirmButton = { 
-                Button(
+                TextButton(
                     enabled = dialogAddButtonEnabled,
                     onClick = { 
                         if (validateIp(newBlockedIpValue)) {
                             showAddBlockedIpDialog = false
-                            onAddBlockedIp(newBlockedIpValue)
+                            onAdd(newBlockedIpValue)
                             newBlockedIpValue = ""
                         } else {
                             isIpValueValid = false

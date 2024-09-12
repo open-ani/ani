@@ -177,9 +177,9 @@ void session_t::start(const session_settings_t &settings) {
     
     // peer connection filter
     session_->add_extension([this](lt::torrent_handle const& handle, lt::client_data_t) -> std::shared_ptr<lt::torrent_plugin> {
-        return create_peer_filter(handle, [this](const peer_info_t * peer_info) -> bool {
+        return create_peer_filter(handle, [this](const peer_info_t &peer_info) -> bool {
             if (!peer_filter_) return false;
-            return peer_filter_->on_filter(*peer_info);
+            return peer_filter_->on_filter(peer_info);
         });
     });
     

@@ -10,9 +10,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.TextUnit
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.tools.HtmlColor
 import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
@@ -22,6 +24,7 @@ import me.him188.ani.utils.bbcode.RichElement
 import me.him188.ani.utils.bbcode.RichText
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import kotlin.coroutines.CoroutineContext
 
 @Composable
 fun rememberBBCodeRichTextState(
@@ -36,9 +39,10 @@ fun rememberBBCodeRichTextState(
 
 @Stable
 class BBCodeRichTextState(
-    initialText: String, 
+    initialText: String,
     defaultTextSize: TextUnit,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    parseContext: CoroutineContext = Dispatchers.Default
 ) {
     private val logger = logger(this::class)
     
@@ -49,11 +53,18 @@ class BBCodeRichTextState(
     init {
         scope.launch { 
             textFlow.collectLatest { code ->
-                val richText = try { BBCode.parse(code) } catch (ex: Exception) {
-                    logger.warn(ex) { "failed to parse bbcode \"$code\"" }
-                    return@collectLatest
+                val richText = withContext(parseContext) {
+                    try { 
+                        BBCode.parse(code) 
+                    } catch (ex: Exception) {
+                        logger.warn(ex) { "failed to parse bbcode \"$code\"" }
+                        null
+                    }
                 }
-                elements = richText.toUIRichElements(defaultTextSize.value)
+                if (richText != null) {
+                    elements = richText.toUIRichElements(defaultTextSize.value)
+                }
+                
             }
         }
     }
@@ -129,19 +140,19 @@ fun RichText.toUIRichElements(overrideTextSize: Float? = null): List<UIRichEleme
 }
 
 fun RichText.toUIBriefText(): UIRichElement.AnnotatedText {
-    var plainText = String()
+    val plainText = StringBuilder()
     val annotated = mutableListOf<UIRichElement.Annotated>()
 
     elements.forEach { e ->
         when (e) {
-            is RichElement.Text -> plainText += e.value.replace('\n', ' ')
-            is RichElement.Image -> plainText += "[图片]"
-            is RichElement.Kanmoji -> plainText += e.id
-            is RichElement.Quote -> plainText += "[引用]"
+            is RichElement.Text -> plainText.append(e.value.replace('\n', ' '))
+            is RichElement.Image -> plainText.append("[图片]")
+            is RichElement.Kanmoji -> plainText.append(e.id)
+            is RichElement.Quote -> plainText.append("[引用]")
             is RichElement.BangumiSticker -> {
                 if (plainText.isNotEmpty()) {
-                    annotated.add(UIRichElement.Annotated.Text(plainText, RichTextDefaults.FontSize))
-                    plainText = ""
+                    annotated.add(UIRichElement.Annotated.Text(plainText.toString(), RichTextDefaults.FontSize))
+                    plainText.clear()
                 }
                 annotated.add(
                     UIRichElement.Annotated.Sticker(
@@ -155,8 +166,7 @@ fun RichText.toUIBriefText(): UIRichElement.AnnotatedText {
     }
 
     if (plainText.isNotEmpty()) {
-        annotated.add(UIRichElement.Annotated.Text(plainText, RichTextDefaults.FontSize))
-        plainText = ""
+        annotated.add(UIRichElement.Annotated.Text(plainText.toString(), RichTextDefaults.FontSize))
     }
 
     return UIRichElement.AnnotatedText(annotated)

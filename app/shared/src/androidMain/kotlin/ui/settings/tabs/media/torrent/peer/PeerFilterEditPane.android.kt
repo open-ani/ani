@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
 
 @Preview
 @Composable
@@ -51,7 +52,7 @@ fun PreviewPeerFilterEditPane() {
     ProvideCompositionLocalsForPreview {
         val config = remember { mutableStateOf(TorrentPeerConfig.Default) }
         val state = remember { 
-            PeerFilterSettingsState(config, { config.value = it }, stateOf(false)) 
+            PeerFilterSettingsState(SaveableStorage(config, { config.value = it }, stateOf(false))) 
         }
         PeerFilterEditPane(
             state = state, 

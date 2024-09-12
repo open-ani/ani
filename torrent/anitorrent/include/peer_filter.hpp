@@ -37,7 +37,7 @@ namespace anilt {
 
     std::shared_ptr<lt::torrent_plugin> create_peer_filter(const lt::torrent_handle &th,
                                                            const std::function<bool(
-                                                                   anilt::peer_info_t *)> &filter);
+                                                                   anilt::peer_info_t &)> &filter);
 
 
 } // namespace anilt

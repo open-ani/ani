@@ -1,6 +1,7 @@
 package me.him188.ani.app.ui.settings.tabs.media.torrent.peer
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -11,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
 import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldRole
@@ -29,6 +31,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.IconButton
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
@@ -109,6 +112,13 @@ fun PeerFilterSettingsPage(
             )
         }
     ) { paddingValues ->
+        // TODO: use util after #910 is merged.
+        val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+        val paddingHorizontal = 
+            if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 16.dp else 24.dp
+        val paddingVertical = 
+            if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 16.dp else 24.dp
+        
         ListDetailPaneScaffold(
             directive = navigator.scaffoldDirective,
             value = navigator.scaffoldValue,
@@ -118,7 +128,8 @@ fun PeerFilterSettingsPage(
                         state = state,
                         contentPadding = paddingValues,
                         showIpBlockingItem = !isDualPane,
-                        onClickIpBlockSettings = { navigator.navigateTo(ThreePaneScaffoldRole.Primary) }
+                        onClickIpBlockSettings = { navigator.navigateTo(ThreePaneScaffoldRole.Primary) },
+                        modifier = Modifier.padding(horizontal = paddingHorizontal, vertical = paddingVertical)
                     )
                 }
             },
@@ -129,8 +140,9 @@ fun PeerFilterSettingsPage(
                         blockedIpList = filteredList,
                         contentPadding = paddingValues,
                         showTitle = isDualPane,
-                        onAddBlockedIp = { state.addBlockedIp(it) },
-                        onRemoveBlockedIp = { state.removeBlockedIp(it) }
+                        onAdd = { state.addBlockedIp(it) },
+                        onRemove = { state.removeBlockedIp(it) },
+                        modifier = Modifier.padding(horizontal = paddingHorizontal, vertical = paddingVertical)
                     )
                 }
             }

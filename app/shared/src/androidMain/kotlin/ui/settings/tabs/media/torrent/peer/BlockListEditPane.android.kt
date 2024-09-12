@@ -28,8 +28,8 @@ fun PreviewBlockListEditPane() {
             blockedIpList = list, 
             contentPadding = PaddingValues(16.dp), 
             showTitle = true,
-            onAddBlockedIp = { list.add(it) },
-            onRemoveBlockedIp = { newIp -> list.removeIf { it == newIp } }
+            onAdd = { list.add(it) },
+            onRemove = { newIp -> list.removeIf { it == newIp } }
         )
     }
 }

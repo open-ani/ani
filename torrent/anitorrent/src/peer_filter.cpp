@@ -29,7 +29,7 @@ namespace anilt {
 
     std::shared_ptr<lt::torrent_plugin> create_peer_filter(const lt::torrent_handle &th,
                                                            const std::function<bool(
-                                                                   peer_info_t *)> &filter) {
+                                                                   peer_info_t &)> &filter) {
         // ignore private torrents
         if (th.torrent_file() && th.torrent_file()->priv())
             return nullptr;
@@ -38,7 +38,7 @@ namespace anilt {
                                                       const bool handshake, bool *stop_filtering) {
             peer_info_t peer_info = parse_peer_info(th, info);
 
-            const bool matched = filter(&peer_info);
+            const bool matched = filter(peer_info);
             *stop_filtering = !handshake && !matched;
 
             return matched;

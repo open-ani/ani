@@ -79,6 +79,7 @@ abstract class AnitorrentTorrentDownloader<THandle : TorrentHandle, TAddInfo : T
 ) : TorrentDownloader, SynchronizedObject() {
     protected abstract val native: TorrentManagerSession<THandle, TAddInfo> // must hold reference. 
     protected var filter: PeerFilter? = null
+        private set
 
     companion object {
         private const val FAST_RESUME_FILENAME = "fastresume"

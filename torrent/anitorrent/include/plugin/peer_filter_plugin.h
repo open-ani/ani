@@ -11,9 +11,9 @@ namespace anilt::plugin {
     class peer_filter_plugin final : public lt::peer_plugin {
     public:
         peer_filter_plugin(lt::peer_connection_handle p, filter_function filter, action_function action)
-                : m_peer_connection(p)
-                , m_filter(std::move(filter))
-                , m_action(std::move(action))
+                : peer_connection_(p)
+                , filter_(std::move(filter))
+                , action_(std::move(action))
         {}
 
         bool on_handshake(lt::span<char const> d) override;
@@ -40,27 +40,27 @@ namespace anilt::plugin {
         void handle_peer(bool handshake = false);
 
     private:
-        lt::peer_connection_handle m_peer_connection;
+        lt::peer_connection_handle peer_connection_;
 
-        filter_function m_filter;
-        action_function m_action;
+        filter_function filter_;
+        action_function action_;
 
-        bool m_stop_filtering = false;
+        bool stop_filtering = false;
     };
 
 
     class peer_action_plugin : public lt::torrent_plugin {
     public:
         peer_action_plugin(filter_function filter, action_function action)
-                : m_filter(std::move(filter))
-                , m_action(std::move(action))
+                : filter_(std::move(filter))
+                , action_(std::move(action))
         {}
 
-        std::shared_ptr<lt::peer_plugin> new_connection(lt::peer_connection_handle const& handle);
+        std::shared_ptr<lt::peer_plugin> new_connection(lt::peer_connection_handle const& handle) override;
 
     private:
-        filter_function m_filter;
-        action_function m_action;
+        filter_function filter_;
+        action_function action_;
     };
 } // namespace anilt::plugin
 

@@ -54,17 +54,17 @@ namespace anilt::plugin {
     }
 
     void peer_filter_plugin::handle_peer(bool handshake) {
-        if (m_stop_filtering)
+        if (stop_filtering)
             return;
 
         lt::peer_info info;
-        m_peer_connection.get_peer_info(info);
+        peer_connection_.get_peer_info(info);
 
-        if (m_filter(info, handshake, &m_stop_filtering))
-            m_action(m_peer_connection);
+        if (filter_(info, handshake, &stop_filtering))
+            action_(peer_connection_);
     }
 
     std::shared_ptr<lt::peer_plugin> peer_action_plugin::new_connection(lt::peer_connection_handle const& handle) {
-        return std::make_shared<peer_filter_plugin>(handle, m_filter, m_action);
+        return std::make_shared<peer_filter_plugin>(handle, filter_, action_);
     }
 }

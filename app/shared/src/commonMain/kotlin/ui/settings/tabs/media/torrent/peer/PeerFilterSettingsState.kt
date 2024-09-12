@@ -2,7 +2,6 @@ package me.him188.ani.app.ui.settings.tabs.media.torrent.peer
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
-import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
 
 @Immutable
@@ -28,16 +26,8 @@ data class PeerFilterItemState(
 
 @Stable
 class PeerFilterSettingsState(
-    configState: State<TorrentPeerConfig?>,
-    onSave: (TorrentPeerConfig) -> Unit,
-    isSavingState: State<Boolean>,
+    storage: SaveableStorage<TorrentPeerConfig>
 ) {
-    private val storage = SaveableStorage(
-        containerState = configState,
-        onSave = onSave,
-        isSavingState = stateOf(false)
-    )
-
     var searchingBlockedIp by mutableStateOf(false)
         private set
     val searchBlockedIpQuery = MutableStateFlow("")
@@ -50,7 +40,7 @@ class PeerFilterSettingsState(
         .transformLatest { (query, list) ->
             kotlinx.coroutines.delay(500)
             // 需要去重，避免 lazy column 出现重复的 key
-            emit(list.filter { it.contains(query) }.toSet().toList())
+            emit(list.filter { it.contains(query) }.distinct())
         }
     
     var ipFilterEnabled by storage.prop({ it.enableIpFilter }, { copy(enableIpFilter = it) }, false)
