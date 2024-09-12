@@ -336,6 +336,12 @@ private class EpisodeViewModelImpl(
     override val playerState: PlayerState =
         playerStateFactory.create(context, backgroundScope.coroutineContext)
 
+    /**
+     * 保存播放进度的入口有4个：退出播放页，切换剧集，同集切换数据源，暂停播放
+     * 其中 切换剧集 和 同集切换数据源 虽然都是切换数据源，但它们并不能合并成一个入口，
+     * 因为 切换数据源 是依赖 PlayerLauncher collect mediaSelector.selected 实现的，
+     * 它会在 mediaSelector.unselect() 任意时间后发现 selected 已经改变，导致 episodeId 可能已经改变，从而将当前集的播放进度保存到新的剧集中
+     */
     private fun savePlayProgress() {
         if (playerState.state.value == PlaybackState.FINISHED) return
         val positionMillis = playerState.currentPositionMillis.value
