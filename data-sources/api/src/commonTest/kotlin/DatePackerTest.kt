@@ -1,4 +1,4 @@
-package me.him188.ani.app.data.models
+package me.him188.ani.datasources.api
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

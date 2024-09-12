@@ -28,6 +28,7 @@ kotlin {
         dependencies {
             implementation(libs.kotlinx.serialization.core)
             api(libs.kotlinx.coroutines.core)
+            api(libs.kotlinx.datetime)
             api(projects.utils.ktorClient)
             api(projects.utils.serialization)
             implementation(projects.utils.platform)

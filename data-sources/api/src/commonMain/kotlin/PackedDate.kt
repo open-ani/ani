@@ -1,16 +1,14 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress", "unused")
 
-package me.him188.ani.app.data.models
+package me.him188.ani.datasources.api
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.models.PackedDate.Companion.Invalid
+import me.him188.ani.datasources.api.PackedDate.Companion.Invalid
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmField
@@ -22,7 +20,6 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * 一个日期, 支持年月日. 支持表示无效状态 [Invalid].
  */
-@Immutable
 @JvmInline
 @Serializable
 value class PackedDate @PublishedApi internal constructor(
@@ -122,7 +119,6 @@ inline fun PackedDate.ifInvalid(block: () -> PackedDate): PackedDate {
 /**
  * 获取月份所在季度的第一个月, `1, 4, 7, 10`.
  */
-@Stable
 inline val PackedDate.seasonMonth: Int
     get() = when (month) {
         12, in 1..2 -> 1
@@ -147,7 +143,6 @@ operator fun PackedDate.minus(other: PackedDate): Duration {
     return (thisInstant.toEpochMilliseconds() - otherInstant.toEpochMilliseconds()).milliseconds
 }
 
-@Stable
 inline fun PackedDate(
     year: Int,
     month: Int,

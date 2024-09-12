@@ -1,8 +1,8 @@
 package me.him188.ani.app.data.models.episode
 
 import androidx.compose.ui.util.fastAll
-import me.him188.ani.app.data.models.PackedDate
-import me.him188.ani.app.data.models.minus
+import me.him188.ani.datasources.api.PackedDate
+import me.him188.ani.datasources.api.minus
 import kotlin.time.Duration.Companion.days
 
 object EpisodeCollections {

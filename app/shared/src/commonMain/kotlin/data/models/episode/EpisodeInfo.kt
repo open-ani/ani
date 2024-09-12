@@ -3,9 +3,9 @@ package me.him188.ani.app.data.models.episode
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.models.PackedDate
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.EpisodeType
+import me.him188.ani.datasources.api.PackedDate
 
 /**
  * 与数据源无关的条目信息.
