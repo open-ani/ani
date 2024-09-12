@@ -114,8 +114,7 @@ private fun SettingsScope.UISettingsGroup(
             )
         }
         AnimatedVisibility(
-            Platform.currentPlatform.isDesktop()
-                    || (Platform.currentPlatform.isAndroid() && uiSettings.theme.dynamicTheme),
+            Platform.currentPlatform.isDesktop() || Platform.currentPlatform.isAndroid(),
         ) {
             DropdownItem(
                 selected = { uiSettings.theme.darkMode },
