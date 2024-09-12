@@ -310,12 +310,12 @@ idea {
     }
 }
 
-// Jetpack compose bug since 1.7.0-beta03
+// AS 问题 since 1.7.0-beta03
 afterEvaluate {
-    tasks.named("generateReleaseLintVitalModel") {
+    tasks.matching { it.name.contains("generateReleaseLintVitalModel") }.all {
         dependsOn("releaseAssetsCopyForAGP")
     }
-    tasks.named("lintVitalAnalyzeRelease") {
+    tasks.matching { it.name.contains("lintVitalAnalyzeRelease") }.all {
         dependsOn("releaseAssetsCopyForAGP")
     }
 }
