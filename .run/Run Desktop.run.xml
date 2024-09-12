@@ -1,5 +1,7 @@
 <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="Run Desktop" type="JetRunConfigurationType">
+        <option name="ALTERNATIVE_JRE_PATH" value="graalvm-ce-22" />
+        <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
         <option name="MAIN_CLASS_NAME" value="me.him188.ani.app.desktop.AniDesktop" />
         <module name="ani.app.desktop.main" />
         <shortenClasspath name="NONE" />

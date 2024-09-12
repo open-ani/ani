@@ -207,19 +207,11 @@ jobs:
           index_of_str: "v"
           default_return_value: ${{ steps.tag.outputs.tag }}
 
-      - uses: actions/setup-java@v4
-        if: ${{ env.isWindows != 'true' }}
+      - uses: graalvm/setup-graalvm@v1
         with:
-          distribution: zulu
-          java-version: 17
-          architecture: ${{ matrix.arch }}
-
-      - uses: actions/setup-java@v4
-        if: ${{ env.isWindows == 'true' }}
-        with:
-          distribution: zulu
-          java-version: 17
-          architecture: ${{ matrix.arch }}
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies
