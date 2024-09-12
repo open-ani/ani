@@ -129,7 +129,7 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path = projects.torrent.anitorrent.dependencyProject.projectDir.resolve("CMakeLists.txt")
+            path = projects.torrent.anitorrent.anitorrentNative.dependencyProject.projectDir.resolve("CMakeLists.txt")
         }
     }
 

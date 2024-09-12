@@ -119,7 +119,7 @@ class AnitorrentEngine(
             client.asHttpFileDownloader(),
             config.toTorrentDownloaderConfig(),
             parentCoroutineContext = scope.coroutineContext,
-        )
+        ) as AnitorrentTorrentDownloader<*, *>
     }
 
     override suspend fun AnitorrentTorrentDownloader<*, *>.applyConfig(config: AnitorrentConfig) {
@@ -136,7 +136,7 @@ class AnitorrentEngine(
             userAgent = computeTorrentUserAgent(),
             downloadRateLimitBytes = downloadRateLimit.toLibtorrentRate(),
             uploadRateLimitBytes = uploadRateLimit.toLibtorrentRate(),
-            shareRatioLimit = shareRatioLimit.toLibtorrentShareRatio()
+            shareRatioLimit = shareRatioLimit.toLibtorrentShareRatio(),
         )
 }
 

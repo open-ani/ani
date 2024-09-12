@@ -1,6 +1,5 @@
 package me.him188.ani.app.torrent.api
 
-import me.him188.ani.app.torrent.anitorrent.AnitorrentTorrentDownloader
 import me.him188.ani.utils.io.SystemPath
 import kotlin.coroutines.CoroutineContext
 
@@ -28,5 +27,5 @@ interface TorrentDownloaderFactory { // SPI
         httpFileDownloader: HttpFileDownloader,
         torrentDownloaderConfig: TorrentDownloaderConfig,
         parentCoroutineContext: CoroutineContext,
-    ): AnitorrentTorrentDownloader<*, *>
+    ): TorrentDownloader
 }

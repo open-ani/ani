@@ -43,16 +43,18 @@ else ()
 endif ()
 
 if (NOT DEFINED Boost_INCLUDE_DIR)
-    # Fetch and build Boost for Android using CMake
+    # 不能用这个, 安卓每次更新都会把库全删了, 这库 500MB, 所以我们用 submodule
+    #     Fetch and build Boost for Android using CMake
     #    FetchContent_Declare(
     #            boost
-    #            GIT_REPOSITORY https://github.com/boostorg/boost.git
-    #            GIT_TAG boost-1.85.0
+    #            GIT_REPOSITORY https://github.com/open-ani/boost.git
+    #            GIT_TAG main
     #            UPDATE_DISCONNECTED 1
     #    )
     #    FetchContent_MakeAvailable(boost)
+    #    set(Boost_INCLUDE_DIR ${boost_SOURCE_DIR})
 
-    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/boost/) #TODO
+    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/boost/)
 endif ()
 
 # Fetch and build OpenSSL for Android using CMake

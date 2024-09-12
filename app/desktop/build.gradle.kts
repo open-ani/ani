@@ -165,7 +165,7 @@ val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
 
 val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResources", Copy::class.java) {
     group = "anitorrent"
-    dependsOn(":torrent:anitorrent:buildAnitorrent")
+    dependsOn(":torrent:anitorrent:anitorrent-native:buildAnitorrent")
 
     val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
 
@@ -206,7 +206,7 @@ val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResour
 
 // 复制 anitorrent cmake 构建出来的东西, 以及依赖的库到 appResources, 然后创建一个 anitorrent.deps.json 文件
 val createDependencyManifest = tasks.register("createDependencyManifest") {
-    dependsOn(":torrent:anitorrent:buildAnitorrent")
+    dependsOn(":torrent:anitorrent:anitorrent-native:buildAnitorrent")
     val cmakeCache = anitorrentBuildDir.resolve("CMakeCache.txt")
     if (cmakeCache.exists()) {
         inputs.file(cmakeCache)

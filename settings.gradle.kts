@@ -50,11 +50,9 @@ includeProject(":utils:bbcode:test-codegen")
 includeProject(":utils:ip-parser", "utils/ip-parser")
 
 
-// TODO: add torrent modules back when kotlin has fixed
-//includeProject(":torrent:api") // Torrent 系统 API
-//includeProject(":torrent:impl:libtorrent4j") // libtorrent4j 实现
-//includeProject(":torrent:impl:qbittorrent") // qBittorrent 实现
+includeProject(":torrent:torrent-api", "torrent/api") // Torrent 系统 API
 includeProject(":torrent:anitorrent")
+includeProject(":torrent:anitorrent:anitorrent-native")
 
 // client
 includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
@@ -111,15 +109,18 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 
 // https://github.com/aclassen/ComposeReorderable
-if (file("app/shared/reorderable").run { !exists() || listFiles().isNullOrEmpty() }) {
-    error(
-        """
-        未找到 app/shared/reorderable, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
+fun getMissingSubmoduleMessage(moduleName: String) = """
+        未找到 $moduleName, 这是因为没有正确 clone 或有新 submodule 导致的. 可尝试下列任意一种方法解决:
         1. `git submodule update --init --recursive`
-        2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
+        2. 使用 Android Studio 的 New Project from Version Control 创建项目, 而不要使用命令行 clone
         3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
-        """.trimIndent(),
-    )
+        """.trimIndent()
+if (file("app/shared/reorderable").run { !exists() || listFiles().isNullOrEmpty() }) {
+    error(getMissingSubmoduleMessage("""app/shared/reorderable"""))
+}
+
+if (file("torrent/anitorrent/anitorrent-native/libs/boost").run { !exists() || listFiles().isNullOrEmpty() }) {
+    error(getMissingSubmoduleMessage("""torrent/anitorrent/anitorrent-native/libs/boost"""))
 }
 
 includeBuild("app/shared/reorderable") {

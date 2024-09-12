@@ -1,7 +1,7 @@
-[submodule "torrent/anitorrent/libs/boost"]
-	path = torrent/anitorrent/libs/boost
-	url = https://github.com/open-ani/boost.git
-	branch = main
 [submodule "app/shared/reorderable"]
 	path = app/shared/reorderable
 	url = https://github.com/open-ani/ComposeReorderable.git
+[submodule "torrent/anitorrent/anitorrent-native/libs/boost"]
+	path = torrent/anitorrent/anitorrent-native/libs/boost
+	url = https://github.com/open-ani/boost.git
+	branch = main

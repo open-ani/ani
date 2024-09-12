@@ -99,27 +99,30 @@ class RateAverager(
                 missingValuePassCount += 1
                 if (missingValuePassCount >= 2) {
                     // 仅在连续两次都没有收到新值时才推送, 因为 bytes 也有可能是每秒才更新一次
-                    pushValueToWindow(window[currentIndex].value)
+                    val value = window[currentIndex].value
+                    pushValueToWindow(value)
                 }
             }
             check(currentIndex != -1)
 
-            val current = window[currentIndex]
             if (counted == 1u) {
                 return@onReceive 0
             }
 
-            val toCompare = window[
-                if (counted < window.size.toUInt()) {
-                    0
-                } else {
-                    (currentIndex + 1) % window.size
-                },
-            ]
+            // RateAverager.kt:113: me.him188.ani.app.torrent.api.files.RateAverager$runPass$2$2::invokeSuspend: Unsupported branching/control within atomic operation
+            val windowSize = window.size
+            val toCompareIndex = if (counted < windowSize.toUInt()) {
+                0
+            } else {
+                (currentIndex + 1) % windowSize
+            }
+            
             if (counted == 0u) {
                 0
             } else {
-                (current.value - toCompare.value).coerceAtLeast(0L) / counted.coerceAtMost(window.size.toUInt())
+                val current = window[currentIndex].value
+                val toCompare = window[toCompareIndex].value
+                (current - toCompare).coerceAtLeast(0L) / counted.coerceAtMost(windowSize.toUInt())
                     .toLong()
             }
         }

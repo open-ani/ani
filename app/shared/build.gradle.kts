@@ -101,7 +101,7 @@ kotlin {
         implementation(libs.reorderable)
 
         // Data sources
-        implementation(projects.datasource.datasourceApi)
+        api(projects.datasource.datasourceApi)
         api(projects.datasource.datasourceCore)
         api(projects.datasource.bangumi)
         api(projects.datasource.mikan)
@@ -113,8 +113,10 @@ kotlin {
         api(projects.app.shared.imageViewer)
         api(projects.utils.xml)
         api(projects.utils.bbcode)
-        implementation(projects.danmaku.danmakuApi)
+        api(projects.danmaku.danmakuApi)
         api(projects.utils.ipParser)
+        api(projects.torrent.torrentApi)
+        api(projects.torrent.anitorrent)
 
         // Ktor
         api(libs.ktor.client.websockets)
@@ -141,7 +143,6 @@ kotlin {
     // shared by android and desktop
     sourceSets.getByName("jvmMain").dependencies {
         // TODO: to be commonized
-        api(projects.torrent.anitorrent)
         api(projects.datasource.dmhy)
         api(projects.datasource.acgRip)
         api(projects.datasource.nyafun)
@@ -292,9 +293,6 @@ kotlin {
 
         submodule("danmaku/dandanplay")
         submodule("danmaku/ui")
-
-        submodule("torrent/api")
-        submodule("torrent/impl/anitorrent")
 
         submodule("app/shared/placeholder")
         submodule("app/shared/video-player")
@@ -452,9 +450,6 @@ val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
 
 tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)
-    if (enableAnitorrent) {
-        mustRunAfter(":torrent:anitorrent:generateSwigImpl") // TODO: move this to impl:anitorrent module when we have separate modules
-    }
 }
 
 tasks.withType(KotlinCompileTool::class) {

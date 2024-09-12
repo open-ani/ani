@@ -1,11 +1,10 @@
 package me.him188.ani.app.torrent.api.peer
 
-import me.him188.ani.app.torrent.anitorrent.HandleId
 import me.him188.ani.datasources.api.topic.FileSize
 
 // peer_info_t
 interface PeerInfo {
-    val handle: HandleId // corresponding torrent handle
+    val handle: Long // corresponding torrent handle
     /**
      * The peer's id as used in the bittorrent protocol. 
      * This id can be used to extract 'fingerprints' from the peer. 
