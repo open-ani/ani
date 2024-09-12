@@ -1,7 +1,9 @@
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -79,6 +81,8 @@ interface MediaSelectorPresentation : AutoCloseable {
      */
     fun select(candidate: Media)
 
+    fun bringIntoViewRequester(media: Media): State<BringIntoViewRequester?>
+
     fun removePreferencesUntilFirstCandidate()
 }
 
@@ -125,6 +129,9 @@ internal class MediaSelectorPresentationImpl(
     parentCoroutineContext: CoroutineContext,
 ) : MediaSelectorPresentation, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     override val mediaList: List<Media> by mediaSelector.mediaList.produceState(emptyList())
+    private val bringIntoViewRequesters by derivedStateOf {
+        mediaList.associateWith { BringIntoViewRequester() }
+    }
 
     override val alliance: MediaPreferenceItemPresentation<String> =
         MediaPreferenceItemPresentation(mediaSelector.alliance, backgroundScope)
@@ -141,6 +148,10 @@ internal class MediaSelectorPresentationImpl(
         launchInBackground {
             mediaSelector.select(candidate)
         }
+    }
+
+    override fun bringIntoViewRequester(media: Media): State<BringIntoViewRequester?> = derivedStateOf {
+        bringIntoViewRequesters.get(media)
     }
 
     override fun removePreferencesUntilFirstCandidate() {

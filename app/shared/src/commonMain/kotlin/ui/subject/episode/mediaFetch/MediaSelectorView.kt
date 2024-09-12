@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
@@ -25,14 +27,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
@@ -66,6 +74,7 @@ fun MediaSelectorView(
     bottomActions: (@Composable RowScope.() -> Unit)? = null,
     singleLineFilter: Boolean = false,
 ) {
+    val bringIntoViewRequesters = remember { mutableStateMapOf<Media, BringIntoViewRequester>() }
     Column(modifier) {
         val lazyListState = rememberLazyListState()
         LazyColumn(
@@ -110,6 +119,15 @@ fun MediaSelectorView(
 
             items(state.filteredCandidates, key = { it.mediaId }) { item ->
                 Column {
+                    val requester = remember { BringIntoViewRequester() }
+                    // 记录 item 对应的 requester
+                    DisposableEffect(requester) {
+                        bringIntoViewRequesters[item] = requester
+                        onDispose {
+                            bringIntoViewRequesters.remove(item)
+                        }
+                    }
+
                     MediaItem(
                         item,
                         state.mediaSourceInfoProvider,
@@ -118,7 +136,8 @@ fun MediaSelectorView(
                         onClick = { onClickItem(item) },
                         Modifier
                             .animateItem()
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(requester),
                     )
                     Row(Modifier.height(8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         itemProgressBar(item)
@@ -140,6 +159,15 @@ fun MediaSelectorView(
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        // 当选择一个资源时 (例如自动选择)，自动滚动到该资源 #667
+        snapshotFlow { state.selected }
+            .filterNotNull()
+            .collectLatest {
+                bringIntoViewRequesters[it]?.bringIntoView()
+            }
     }
 }
 
