@@ -138,9 +138,8 @@ fun RssEditPane(
                         label = { Text("搜索链接*") },
                         placeholder = {
                             Text(
-                                "示例:  https://acg.rip/page/{page}.xml?term={keyword}",
+                                "示例：https://acg.rip/page/{page}.xml?term={keyword}",
                                 color = MaterialTheme.colorScheme.outline,
-                                softWrap = false,
                             )
                         },
                         supportingText = {
