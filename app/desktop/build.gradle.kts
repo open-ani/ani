@@ -55,11 +55,11 @@ sourceSets {
     }
 }
 
-extra.set("ani.jvm.target", 17)
+extra.set("ani.jvm.target", 21)
 
 kotlin {
     jvmToolchain {
-        version = "21"
+        languageVersion = JavaLanguageVersion.of(21)
         vendor = JvmVendorSpec.GRAAL_VM
     }
 }

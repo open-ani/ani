@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
  * 如果开了 android, 就会配置 desktop + android, 否则只配置 jvm.
  */
 
-extra.set("ani.jvm.target", 17)
+extra.set("ani.jvm.target", 21)
 
 val android = extensions.findByType(LibraryExtension::class)
 val composeExtension = extensions.findByType(ComposeExtension::class)

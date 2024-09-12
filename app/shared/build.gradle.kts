@@ -39,7 +39,7 @@ plugins {
     idea
 }
 
-extra.set("ani.jvm.target", 17)
+extra.set("ani.jvm.target", 21)
 
 compose.resources {
     packageOfResClass = "me.him188.ani.app"

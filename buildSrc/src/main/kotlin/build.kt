@@ -129,7 +129,7 @@ fun Project.configureJvmTarget() {
 
     extensions.findByType(KotlinProjectExtension::class)?.apply {
         jvmToolchain {
-            version = ver.getMajorVersion()
+            languageVersion = JavaLanguageVersion.of(ver.getMajorVersion())
             vendor = JvmVendorSpec.GRAAL_VM
         }
     }
