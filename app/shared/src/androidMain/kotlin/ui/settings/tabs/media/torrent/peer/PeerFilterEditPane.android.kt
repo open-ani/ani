@@ -32,7 +32,6 @@ fun PreviewPeerFilterEditItem() {
         }
         PeerFilterEditItem(
             title = "Peer 过滤器的标题",
-            description = "点击启用过滤器",
             item = item,
             editSupportingTextBBCode = """
                 Peer 过滤器的说明
