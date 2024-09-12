@@ -34,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -236,6 +237,7 @@ private fun HomeSceneLandscape(
                     )
                 }
             }
+            VerticalDivider()
 
             Column(Modifier.fillMaxHeight().weight(1f)) {
                 val navigator by rememberUpdatedState(LocalNavigator.current)
