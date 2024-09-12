@@ -67,26 +67,26 @@ includeProject(":client")
 //includeProject(":server:database-xodus", "server/database-xodus") // database implementation with Xodus
 
 // data sources
-includeProject(":datasource:datasource-api", "data-sources/api") // data source interfaces: Media, MediaSource 
-includeProject(":datasource:datasource-api:test-codegen", "data-sources/api/test-codegen") // 生成单元测试
+includeProject(":datasource:datasource-api", "datasource/api") // data source interfaces: Media, MediaSource 
+includeProject(":datasource:datasource-api:test-codegen", "datasource/api/test-codegen") // 生成单元测试
 includeProject(
     ":datasource:datasource-core",
-    "data-sources/core",
+    "datasource/core",
 ) // data source managers: MediaFetcher, MediaCacheStorage
-includeProject(":datasource:bangumi", "data-sources/bangumi") // https://bangumi.tv
+includeProject(":datasource:bangumi", "datasource/bangumi") // https://bangumi.tv
 //   BT 数据源
-includeProject(":datasource:dmhy", "data-sources/bt/dmhy") // https://dmhy.org
-includeProject(":datasource:acg-rip", "data-sources/bt/acg.rip") // https://acg.rip
-includeProject(":datasource:mikan", "data-sources/bt/mikan") // https://mikanani.me/
+includeProject(":datasource:dmhy", "datasource/bt/dmhy") // https://dmhy.org
+includeProject(":datasource:acg-rip", "datasource/bt/acg.rip") // https://acg.rip
+includeProject(":datasource:mikan", "datasource/bt/mikan") // https://mikanani.me/
 //   Web 数据源
-includeProject(":datasource:web-base", "data-sources/web/web-base") // web 基础
-includeProject(":datasource:nyafun", "data-sources/web/nyafun") // https://nyafun.net/
-includeProject(":datasource:mxdongman", "data-sources/web/mxdongman") // https://mxdm4.com/
-includeProject(":datasource:ntdm", "data-sources/web/ntdm") // https://ntdm.tv/
-includeProject(":datasource:gugufan", "data-sources/web/gugufan")
-includeProject(":datasource:xfdm", "data-sources/web/xfdm")
-includeProject(":datasource:jellyfin", "data-sources/jellyfin")
-includeProject(":datasource:ikaros", "data-sources/ikaros") // https://ikaros.run/
+includeProject(":datasource:web-base", "datasource/web/web-base") // web 基础
+includeProject(":datasource:nyafun", "datasource/web/nyafun") // https://nyafun.net/
+includeProject(":datasource:mxdongman", "datasource/web/mxdongman") // https://mxdm4.com/
+includeProject(":datasource:ntdm", "datasource/web/ntdm") // https://ntdm.tv/
+includeProject(":datasource:gugufan", "datasource/web/gugufan")
+includeProject(":datasource:xfdm", "datasource/web/xfdm")
+includeProject(":datasource:jellyfin", "datasource/jellyfin")
+includeProject(":datasource:ikaros", "datasource/ikaros") // https://ikaros.run/
 
 // danmaku
 includeProject(":danmaku:danmaku-api", "danmaku/api")
@@ -95,7 +95,7 @@ includeProject(":danmaku:dandanplay", "danmaku/dandanplay")
 
 includeProject(
     ":datasource:dmhy:dataset-tools",
-    "data-sources/bt/dmhy/dataset-tools",
+    "datasource/bt/dmhy/dataset-tools",
 ) // tools for generating dataset for ML title parsing
 
 // ci
