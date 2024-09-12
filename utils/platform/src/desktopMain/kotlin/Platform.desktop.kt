@@ -1,6 +1,6 @@
 package me.him188.ani.utils.platform
 
-internal actual fun Platform.Companion.currentPlatformImpl(): Platform {
+internal actual fun currentPlatformImpl(): Platform {
     val os = System.getProperty("os.name")?.lowercase() ?: error("Cannot determine platform, 'os.name' is null.")
     val arch = getArch()
     return when {

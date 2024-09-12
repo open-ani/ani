@@ -170,7 +170,9 @@ if (android != null) {
             )
         }
         buildFeatures {
-            compose = true
+            if (composeExtension != null) {
+                compose = true
+            }
         }
     }
 }

@@ -74,8 +74,6 @@ import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
@@ -85,6 +83,7 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
@@ -111,6 +110,7 @@ import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
+import me.him188.ani.utils.platform.isMobile
 
 
 /**
@@ -273,7 +273,7 @@ private fun EpisodeSceneTabletVeryWide(
                 HorizontalPager(
                     state = pagerState,
                     Modifier.fillMaxSize(),
-                    userScrollEnabled = currentPlatform.isMobile(),
+                    userScrollEnabled = LocalPlatform.current.isMobile(),
                 ) { index ->
                     when (index) {
                         0 -> Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {

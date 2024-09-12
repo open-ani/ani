@@ -11,8 +11,6 @@ import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.torrent.HttpStreamingVideoSource
 import me.him188.ani.datasources.api.Media
@@ -22,6 +20,7 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.Platform
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openqa.selenium.WebDriver
@@ -158,7 +157,7 @@ class SeleniumWebViewVideoExtractor(
             logger.info { "Starting Selenium with Edge to resolve video source from $pageUrl" }
 
 
-            val driver: RemoteWebDriver = when (currentPlatformDesktop) {
+            val driver: RemoteWebDriver = when (me.him188.ani.utils.platform.currentPlatformDesktop()) {
                 is Platform.MacOS, is Platform.Windows -> {
                     val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
                     val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
@@ -166,7 +165,7 @@ class SeleniumWebViewVideoExtractor(
                     // Try user-set ones first, then fallback on the others
                     val driverCreationFunctions = listOfNotNull(primaryDriverFunction) + fallbackDriverFunctions
                     var successfulDriver: (() -> RemoteWebDriver)? = null
-                    
+
                     val driver = driverCreationFunctions
                         .asSequence()
                         .mapNotNull { func ->
@@ -176,7 +175,7 @@ class SeleniumWebViewVideoExtractor(
                         }
                         .firstOrNull()
                         ?: throw Exception("Failed to create a driver")
-                    
+
                     // If the rollback is successful, update the user settings
                     // Except Safari for now, because it does not support proxy settings and is not listed in the optional list
                     // updateDriverSettingsIfNeeded(successfulDriver)

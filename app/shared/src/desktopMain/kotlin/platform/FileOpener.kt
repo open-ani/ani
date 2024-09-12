@@ -20,6 +20,8 @@ package me.him188.ani.app.platform
 
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.toFile
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatform
 import java.awt.Desktop
 import java.io.File
 
@@ -47,7 +49,7 @@ object FileOpener {
         }
 
         return try {
-            when (Platform.currentPlatform) {
+            when (currentPlatform()) {
                 is Platform.Windows -> {
                     // Windows
                     val command = "explorer /select,\"${file.absolutePath}\""

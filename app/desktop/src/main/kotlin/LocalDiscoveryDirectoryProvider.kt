@@ -1,8 +1,8 @@
 package me.him188.ani.app.desktop
 
-import me.him188.ani.app.platform.Arch
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatformDesktop
+import me.him188.ani.utils.platform.Arch
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatformDesktop
 import uk.co.caprica.vlcj.factory.discovery.provider.DiscoveryDirectoryProvider
 import uk.co.caprica.vlcj.factory.discovery.provider.DiscoveryProviderPriority
 import java.io.File
@@ -12,17 +12,17 @@ class TestDiscoveryDirectoryProvider : DiscoveryDirectoryProvider {
     override fun priority(): Int = DiscoveryProviderPriority.USER_DIR
 
     override fun directories(): Array<String> {
-        val os = when (currentPlatformDesktop) {
+        val os = when (currentPlatformDesktop()) {
             is Platform.MacOS -> "macos"
             is Platform.Windows -> "windows"
         }
 
-        val arch = when (currentPlatformDesktop.arch) {
+        val arch = when (currentPlatformDesktop().arch) {
             Arch.X86_64 -> "x64"
             Arch.AARCH64 -> "arm64"
 
             Arch.ARMV7A, Arch.ARMV8A ->
-                throw UnsupportedOperationException("Unsupported architecture: ${currentPlatformDesktop.arch}")
+                throw UnsupportedOperationException("Unsupported architecture: ${currentPlatformDesktop().arch}")
         }
 
         val libs = File(System.getProperty("user.dir")).resolve("../appResources/${os}-${arch}/lib")

@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import me.him188.ani.app.platform.currentPlatform
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
@@ -134,7 +134,7 @@ fun LockableVideoGestureHost(
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
-    family: GestureFamily = currentPlatform.mouseFamily,
+    family: GestureFamily = LocalPlatform.current.mouseFamily,
 ) {
     if (locked) {
         LockedScreenGestureHost(

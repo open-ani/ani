@@ -57,14 +57,13 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.platform.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -83,6 +82,7 @@ import me.him188.ani.app.ui.update.FailedToInstallDialog
 import me.him188.ani.app.ui.update.UpdateLogoIcon
 import me.him188.ani.app.ui.update.UpdateLogoLabel
 import me.him188.ani.app.ui.update.handleClickLogo
+import me.him188.ani.utils.platform.isAndroid
 
 
 @Composable
@@ -90,7 +90,7 @@ fun HomeScene(
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets, // Compose for Desktop 目前不会考虑这个
 ) {
-    if (currentPlatform.isAndroid()) {
+    if (LocalPlatform.current.isAndroid()) {
         val context = LocalContext.current
         val window = LocalPlatformWindow.current
         LaunchedEffect(true) {

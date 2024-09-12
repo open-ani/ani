@@ -5,8 +5,8 @@ import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.update.supportsInAppUpdate
+import me.him188.ani.utils.platform.currentPlatform
 
 @Immutable
 @Serializable
@@ -17,7 +17,7 @@ data class UpdateSettings(
     /**
      * 是否在应用内下载更新
      */
-    val inAppDownload: Boolean = currentPlatform.supportsInAppUpdate,
+    val inAppDownload: Boolean = currentPlatform().supportsInAppUpdate,
     @Suppress("PropertyName") @Transient val _placeholder: Int = 0,
 ) {
     // 有关默认的更新策略:

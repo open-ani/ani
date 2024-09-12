@@ -19,19 +19,19 @@ import coil3.network.ktor2.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.getAniUserAgent
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.userAgent
+import me.him188.ani.utils.platform.currentPlatform
+import me.him188.ani.utils.platform.isDesktop
 
 val LocalImageLoader = androidx.compose.runtime.staticCompositionLocalOf<ImageLoader> {
     error("No ImageLoader provided")
 }
 
 @Stable
-inline val defaultFilterQuality get() = if (currentPlatform.isDesktop()) FilterQuality.High else FilterQuality.Low
+inline val defaultFilterQuality get() = if (currentPlatform().isDesktop()) FilterQuality.High else FilterQuality.Low
 
 /**
  * Placeholder is [Modifier.placeholder]

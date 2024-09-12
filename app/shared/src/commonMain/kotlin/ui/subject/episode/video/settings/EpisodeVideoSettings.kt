@@ -26,20 +26,18 @@ import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
-import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsDefaults
-import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.danmaku.ui.DanmakuConfig
 import me.him188.ani.danmaku.ui.DanmakuStyle
+import me.him188.ani.utils.platform.isDesktop
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.math.roundToInt
@@ -254,9 +252,10 @@ fun EpisodeVideoSettings(
                 useThinSlider = useThinSlider,
             )
 
-            val displayDensityRange = remember {
+            val platform = LocalPlatform.current
+            val displayDensityRange = remember(platform) {
                 // 100% .. 0%
-                36.dp..(if (currentPlatform.isDesktop()) 720.dp else 240.dp)
+                36.dp..(if (platform.isDesktop()) 720.dp else 240.dp)
             }
             var displayDensity by remember(danmakuConfig) {
                 mutableFloatStateOf(

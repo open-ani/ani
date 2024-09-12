@@ -21,7 +21,6 @@ import me.him188.ani.app.data.source.danmaku.protocol.BangumiLoginRequest
 import me.him188.ani.app.data.source.danmaku.protocol.BangumiLoginResponse
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuPostRequest
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
@@ -34,6 +33,7 @@ import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.currentPlatform
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
@@ -116,8 +116,8 @@ class AniDanmakuSenderImpl(
                     BangumiLoginRequest(
                         bangumiToken,
                         clientVersion = currentAniBuildConfig.versionName,
-                        clientOS = Platform.currentPlatform.name,
-                        clientArch = Platform.currentPlatform.arch.displayName,
+                        clientOS = currentPlatform().name,
+                        clientArch = currentPlatform().arch.displayName,
                     ),
                 )
             }

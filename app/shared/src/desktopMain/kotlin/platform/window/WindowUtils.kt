@@ -2,7 +2,7 @@ package me.him188.ani.app.platform.window
 
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
-import me.him188.ani.app.platform.currentPlatformDesktop
+import me.him188.ani.utils.platform.Platform
 import java.awt.Cursor
 import java.awt.Point
 import java.awt.Toolkit
@@ -28,9 +28,9 @@ interface WindowUtils {
     fun setCursorVisible(window: ComposeWindow, visible: Boolean) {
     }
 
-    companion object : WindowUtils by (when (currentPlatformDesktop) {
-        is me.him188.ani.app.platform.Platform.MacOS -> MacosWindowUtils()
-        is me.him188.ani.app.platform.Platform.Windows -> WindowsWindowUtils()
+    companion object : WindowUtils by (when (me.him188.ani.utils.platform.currentPlatformDesktop()) {
+        is Platform.MacOS -> MacosWindowUtils()
+        is Platform.Windows -> WindowsWindowUtils()
     })
 }
 

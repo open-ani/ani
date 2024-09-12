@@ -5,12 +5,13 @@ import kotlinx.coroutines.flow.Flow
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.tools.torrent.engines.AnitorrentEngine
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatform
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -70,7 +71,7 @@ class DefaultTorrentManager(
             parentCoroutineContext: CoroutineContext,
             settingsRepository: SettingsRepository,
             baseSaveDir: () -> SystemPath,
-            platform: Platform = Platform.currentPlatform,
+            platform: Platform = currentPlatform(),
         ): DefaultTorrentManager {
             val saveDirLazy by lazy(baseSaveDir)
             return DefaultTorrentManager(

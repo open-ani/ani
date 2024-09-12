@@ -36,8 +36,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.isMobile
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
@@ -58,6 +57,7 @@ import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
 import me.him188.ani.app.ui.settings.tabs.network.DanmakuGroup
 import me.him188.ani.app.ui.settings.tabs.network.GlobalProxyGroup
 import me.him188.ani.app.ui.settings.tabs.network.OtherTestGroup
+import me.him188.ani.utils.platform.isMobile
 
 /**
  * @see renderPreferenceTab 查看名称
@@ -163,7 +163,7 @@ fun SettingsPage(
                 HorizontalPager(
                     state = pagerState,
                     Modifier.fillMaxSize(),
-                    userScrollEnabled = Platform.currentPlatform.isMobile(),
+                    userScrollEnabled = LocalPlatform.current.isMobile(),
                 ) { index ->
                     val type = SettingsTab.entries[index]
                     Column(Modifier.fillMaxSize().padding(contentPadding)) {

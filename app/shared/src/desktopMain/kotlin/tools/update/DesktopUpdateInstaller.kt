@@ -2,13 +2,12 @@ package me.him188.ani.app.tools.update
 
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.app.platform.FileOpener
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
 import me.him188.ani.utils.io.toFile
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.Platform
 import org.intellij.lang.annotations.Language
 import java.awt.Desktop
 import java.io.File
@@ -23,7 +22,7 @@ interface DesktopUpdateInstaller : UpdateInstaller {
 
     companion object {
         fun currentOS(): DesktopUpdateInstaller {
-            return when (currentPlatformDesktop) {
+            return when (me.him188.ani.utils.platform.currentPlatformDesktop()) {
                 is Platform.MacOS -> MacOSUpdateInstaller
                 is Platform.Windows -> WindowsUpdateInstaller
             }

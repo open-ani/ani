@@ -49,11 +49,9 @@ import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
@@ -98,6 +96,8 @@ import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.ui.DanmakuHost
 import me.him188.ani.danmaku.ui.DanmakuHostState
 import me.him188.ani.utils.platform.annotations.TestOnly
+import me.him188.ani.utils.platform.isDesktop
+import me.him188.ani.utils.platform.isMobile
 import kotlin.time.Duration.Companion.seconds
 
 internal const val TAG_EPISODE_VIDEO_TOP_BAR = "EpisodeVideoTopBar"
@@ -140,7 +140,7 @@ internal fun EpisodeVideoImpl(
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
     danmakuRegexFilterState: DanmakuRegexFilterState,
-    gestureFamily: GestureFamily = currentPlatform.mouseFamily,
+    gestureFamily: GestureFamily = LocalPlatform.current.mouseFamily,
     contentWindowInsets: WindowInsets = WindowInsets(0.dp),
 ) {
     // Don't rememberSavable. 刻意让每次切换都是隐藏的
@@ -198,7 +198,7 @@ internal fun EpisodeVideoImpl(
             } else {
                 // Save the status bar height to offset the video player
                 var statusBarHeight by rememberSaveable { mutableStateOf(0) }
-                if (currentPlatform.isMobile() && !expanded) {
+                if (LocalPlatform.current.isMobile() && !expanded) {
                     val insets = WindowInsets.systemBars
                     val density = LocalDensity.current
                     SideEffect {
@@ -289,7 +289,7 @@ internal fun EpisodeVideoImpl(
             }
         },
         rhsButtons = {
-            if (expanded && currentPlatform.isDesktop()) {
+            if (expanded && LocalPlatform.current.isDesktop()) {
                 ScreenshotButton(
                     onClick = onClickScreenshot,
                 )
@@ -353,7 +353,7 @@ internal fun EpisodeVideoImpl(
                             onClick = { isEpisodeSelectorVisible = true },
                         )
 
-                        if (currentPlatform.isDesktop()) {
+                        if (LocalPlatform.current.isDesktop()) {
                             PlayerControllerDefaults.AudioSwitcher(playerState.audioTracks)
                         }
 

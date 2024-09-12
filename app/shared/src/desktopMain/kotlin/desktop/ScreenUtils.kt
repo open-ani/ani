@@ -3,8 +3,7 @@ package me.him188.ani.app.desktop
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatformDesktop
+import me.him188.ani.utils.platform.Platform
 import java.awt.Dimension
 import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
@@ -25,7 +24,7 @@ object ScreenUtils {
     fun getScreenSize(): DpSize {
         val dimension: Dimension = Toolkit.getDefaultToolkit().screenSize
 
-        return when (currentPlatformDesktop) {
+        return when (me.him188.ani.utils.platform.currentPlatformDesktop()) {
             is Platform.MacOS -> {
                 // macos dimension 是经过缩放的
 

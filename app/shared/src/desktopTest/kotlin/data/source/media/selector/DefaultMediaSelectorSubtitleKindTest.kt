@@ -2,10 +2,10 @@ package me.him188.ani.app.data.source.media.selector
 
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.platform.Arch
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.SubtitleKind
+import me.him188.ani.utils.platform.Arch
+import me.him188.ani.utils.platform.Platform
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

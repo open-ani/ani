@@ -3,13 +3,13 @@ package me.him188.ani.app.torrent.anitorrent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import me.him188.ani.app.platform.Arch
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isAndroid
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.Arch
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatform
+import me.him188.ani.utils.platform.isAndroid
 import java.io.File
 import kotlin.concurrent.Volatile
 
@@ -32,7 +32,7 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
 
     // appResources/macos-arm64/anitorrent
     private fun getAnitorrentResourceDir(): File {
-        val platform = currentPlatform as Platform.Desktop
+        val platform = currentPlatform() as Platform.Desktop
         val libRelative = "anitorrent"
         System.getProperty("compose.application.resources.dir")?.let {
             val file = File(it).resolve(libRelative)
@@ -63,6 +63,7 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
         throw UnsatisfiedLinkError("Anitorrent resource directory not found")
     }
 
+    @Suppress("UnsafeDynamicallyLoadedCode") // This code only runs on desktop
     private fun loadLibrary(libraryFilename: String) {
         val dir = getAnitorrentResourceDir().resolve("lib")
         dir.resolve(libraryFilename).let {
@@ -74,7 +75,7 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
     }
 
     private fun loadDependencies() {
-        if (currentPlatform.isAndroid()) {
+        if (currentPlatform().isAndroid()) {
             System.loadLibrary("anitorrent")
             return
         }

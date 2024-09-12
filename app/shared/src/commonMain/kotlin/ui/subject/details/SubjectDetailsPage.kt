@@ -55,10 +55,9 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.ImageViewer
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
@@ -83,6 +82,7 @@ import me.him188.ani.app.ui.subject.details.components.SubjectDetailsDefaults
 import me.him188.ani.app.ui.subject.details.components.SubjectDetailsHeader
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.subject.rating.EditableRating
+import me.him188.ani.utils.platform.isMobile
 
 @Composable
 fun SubjectDetailsScene(
@@ -352,7 +352,7 @@ fun SubjectDetailsPage(
                         HorizontalPager(
                             state = pagerState,
                             Modifier.fillMaxHeight(),
-                            userScrollEnabled = Platform.currentPlatform.isMobile(),
+                            userScrollEnabled = LocalPlatform.current.isMobile(),
                             verticalAlignment = Alignment.Top,
                         ) { index ->
                             val type = SubjectDetailsTab.entries[index]

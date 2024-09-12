@@ -32,13 +32,9 @@ import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isAndroid
-import me.him188.ani.app.platform.isDesktop
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.update.supportsInAppUpdate
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.SettingsState
@@ -58,6 +54,9 @@ import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.NewVersion
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.app.ui.update.UpdateChecker
+import me.him188.ani.utils.platform.isAndroid
+import me.him188.ani.utils.platform.isDesktop
+import me.him188.ani.utils.platform.isMobile
 import org.koin.mp.KoinPlatform
 
 
@@ -99,7 +98,7 @@ private fun SettingsScope.UISettingsGroup(
 ) {
     val uiSettings by state
     Group(title = { Text("通用") }) {
-        if (Platform.currentPlatform.isAndroid()) {
+        if (LocalPlatform.current.isAndroid()) {
             SwitchItem(
                 uiSettings.theme.dynamicTheme,
                 {
@@ -114,7 +113,7 @@ private fun SettingsScope.UISettingsGroup(
             )
         }
         AnimatedVisibility(
-            Platform.currentPlatform.isDesktop() || Platform.currentPlatform.isAndroid(),
+            LocalPlatform.current.isDesktop() || LocalPlatform.current.isAndroid(),
         ) {
             DropdownItem(
                 selected = { uiSettings.theme.darkMode },
@@ -308,7 +307,7 @@ private fun SettingsScope.SoftwareUpdateGroup(
             },
             enabled = updateSettings.autoCheckUpdate,
         )
-        if (currentPlatform.supportsInAppUpdate) {
+        if (LocalPlatform.current.supportsInAppUpdate) {
             AnimatedVisibility(updateSettings.inAppDownload) {
                 Column {
                     HorizontalDividerItem()
@@ -440,7 +439,7 @@ private fun SettingsScope.PlayerGroup(
             },
             title = { Text("选择数据源后自动关闭弹窗") },
         )
-        if (currentPlatform.isMobile() && isInDebugMode()) {
+        if (LocalPlatform.current.isMobile() && isInDebugMode()) {
             HorizontalDividerItem()
             SwitchItem(
                 checked = config.autoFullscreenOnLandscapeMode,
@@ -458,7 +457,7 @@ private fun SettingsScope.PlayerGroup(
             },
             title = { Text("自动连播") },
         )
-        if (currentPlatform.isDesktop()) {
+        if (LocalPlatform.current.isDesktop()) {
             HorizontalDividerItem()
             SwitchItem(
                 checked = config.autoSkipOpEd,

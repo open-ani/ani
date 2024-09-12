@@ -3,11 +3,11 @@ package me.him188.ani.app.data.source.media.selector
 import me.him188.ani.app.data.source.media.selector.SubtitleKindPreference.HIDE
 import me.him188.ani.app.data.source.media.selector.SubtitleKindPreference.LOW_PRIORITY
 import me.him188.ani.app.data.source.media.selector.SubtitleKindPreference.NORMAL
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.datasources.api.SubtitleKind
+import me.him188.ani.utils.platform.Platform
 import me.him188.ani.utils.platform.collections.EnumMap
 import me.him188.ani.utils.platform.collections.ImmutableEnumMap
+import me.him188.ani.utils.platform.currentPlatform
 import kotlin.jvm.JvmInline
 
 /**
@@ -37,7 +37,7 @@ value class MediaSelectorSubtitlePreferences(
             forPlatform()
         }
 
-        fun forPlatform(platform: Platform = currentPlatform): MediaSelectorSubtitlePreferences {
+        fun forPlatform(platform: Platform = currentPlatform()): MediaSelectorSubtitlePreferences {
             // 对于缺陷列表, 查看 https://github.com/open-ani/ani/issues/615
             val map = when (platform) {
                 is Platform.MacOS -> ImmutableEnumMap<SubtitleKind, _> {

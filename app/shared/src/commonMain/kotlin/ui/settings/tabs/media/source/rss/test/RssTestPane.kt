@@ -43,14 +43,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.models.ApiFailure
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.connectedScroll
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
+import me.him188.ani.utils.platform.isMobile
 
 @Composable
 fun RssTestPane(
@@ -151,7 +151,7 @@ fun RssTestPane(
 
             HorizontalPager(
                 pagerState,
-                userScrollEnabled = currentPlatform.isMobile(),
+                userScrollEnabled = LocalPlatform.current.isMobile(),
                 verticalAlignment = Alignment.Top,
             ) { pageIndex ->
                 if (result !is RssTestResult.Success) return@HorizontalPager

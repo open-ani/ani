@@ -10,14 +10,13 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.data.source.danmaku.protocol.ReleaseUpdatesDetailedResponse
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.utils.coroutines.withExceptionCollector
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.currentPlatform
 
 
 class CheckVersionFailedException(
@@ -82,7 +81,7 @@ class UpdateChecker {
             url {
                 appendPathSegments("v1/updates/incremental/details")
             }
-            val platform = currentPlatform
+            val platform = currentPlatform()
             parameter("clientVersion", currentAniBuildConfig.versionName)
             parameter("clientPlatform", platform.name.lowercase())
             parameter("clientArch", platform.arch.displayName)
@@ -105,13 +104,6 @@ class UpdateChecker {
                 publishedAt = formatTime(latest.publishTime),
             )
         }
-    }
-
-    private fun getDistributionSuffix(): String = when (val platform = Platform.currentPlatform) {
-        is Platform.MacOS -> "macos-${platform.arch.displayName}.dmg"
-        is Platform.Windows -> "windows-${platform.arch.displayName}.zip"
-        is Platform.Android -> "-universal.apk"
-        is Platform.Ios -> "ipa"
     }
 
     private companion object {

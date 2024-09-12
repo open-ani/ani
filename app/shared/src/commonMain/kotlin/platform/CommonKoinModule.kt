@@ -84,7 +84,6 @@ import me.him188.ani.app.data.source.session.BangumiSessionManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
-import me.him188.ani.app.platform.Platform.Companion.currentPlatform
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
@@ -98,6 +97,7 @@ import me.him188.ani.utils.ktor.ClientProxyConfig
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
+import me.him188.ani.utils.platform.currentPlatform
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
 import kotlin.coroutines.CoroutineContext
@@ -300,7 +300,7 @@ inline val currentAniBuildConfig: AniBuildConfig get() = currentAniBuildConfigIm
  */
 fun getAniUserAgent(
     version: String = currentAniBuildConfig.versionName,
-    platform: String = currentPlatform.nameAndArch,
+    platform: String = currentPlatform().nameAndArch,
 ): String = "open-ani/ani/$version ($platform) (https://github.com/open-ani/ani)"
 
 fun createBangumiClient(

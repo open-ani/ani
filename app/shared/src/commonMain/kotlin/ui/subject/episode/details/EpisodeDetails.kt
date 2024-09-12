@@ -57,10 +57,9 @@ import me.him188.ani.app.data.models.episode.type
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
 import me.him188.ani.app.platform.window.desktopTitleBar
 import me.him188.ani.app.platform.window.desktopTitleBarPadding
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
@@ -89,6 +88,7 @@ import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.datasources.api.unwrapCached
+import me.him188.ani.utils.platform.isDesktop
 
 @Stable
 class EpisodeDetailsState(
@@ -136,7 +136,7 @@ fun EpisodeDetails(
         if (showSubjectDetails) {
             ModalBottomSheet(
                 { showSubjectDetails = false },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = LocalPlatform.current.isDesktop()),
                 modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
                 contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
             ) {
@@ -154,7 +154,7 @@ fun EpisodeDetails(
     if (state.showEpisodes) {
         ModalBottomSheet(
             { state.showEpisodes = false },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = LocalPlatform.current.isDesktop()),
             modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
             contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
         ) {
@@ -271,7 +271,7 @@ fun EpisodeDetails(
                             if (showMediaSelector) {
                                 ModalBottomSheet(
                                     { showMediaSelector = false },
-                                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = currentPlatform.isDesktop()),
+                                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = LocalPlatform.current.isDesktop()),
                                     modifier = Modifier.desktopTitleBarPadding().statusBarsPadding(),
                                     contentWindowInsets = { BottomSheetDefaults.windowInsets.add(WindowInsets.desktopTitleBar()) },
                                 ) {

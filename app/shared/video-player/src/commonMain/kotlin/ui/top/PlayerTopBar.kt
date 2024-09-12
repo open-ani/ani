@@ -14,7 +14,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -22,10 +21,10 @@ import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import me.him188.ani.app.navigation.LocalBackHandler
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.utils.platform.isDesktop
 
 /**
  * 播放器顶部导航栏
@@ -79,5 +78,6 @@ fun PlayerTopBar(
 }
 
 // See #288
-@Stable
-val needWorkaroundForFocusManager: Boolean get() = Platform.currentPlatform.isDesktop()
+val needWorkaroundForFocusManager: Boolean
+    @Composable
+    get() = LocalPlatform.current.isDesktop()

@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
+
 package me.him188.ani.utils.platform
 
 import kotlin.contracts.contract
@@ -44,17 +46,11 @@ sealed class Platform {
     ) : Desktop("macOS")
 
 
-    companion object {
-        private val _currentPlatform =
-            kotlin.runCatching { currentPlatformImpl() } // throw only on get
-
-        /**
-         * Note: this is soft deprecated. Use [me.him188.ani.app.platform.currentPlatform] and [currentPlatformDesktop] instead.
-         */
-
-        val currentPlatform: Platform get() = _currentPlatform.getOrThrow()
-    }
 }
+
+
+@Suppress("ObjectPropertyName")
+private val _currentPlatform = runCatching { currentPlatformImpl() } // throw only on get
 
 /**
  * 获取当前的平台. 在 Linux 上使用时会抛出 [UnsupportedOperationException].
@@ -62,16 +58,14 @@ sealed class Platform {
  * CI 会跑 Ubuntu test (比较快), 所以在 test 环境需要谨慎使用此 API.
  */
 
-val currentPlatform: Platform
-    get() = Platform.currentPlatform
+fun currentPlatform(): Platform = _currentPlatform.getOrThrow()
 
 
-val currentPlatformDesktop: Platform.Desktop
-    get() {
-        val platform = Platform.currentPlatform
-        check(platform is Platform.Desktop)
-        return platform
-    }
+fun currentPlatformDesktop(): Platform.Desktop {
+    val platform = currentPlatform()
+    check(platform is Platform.Desktop)
+    return platform
+}
 
 enum class ArchFamily {
     X86,
@@ -87,7 +81,7 @@ enum class Arch(
     /**
      * macOS, Windows, Android
      */
-    X86_64("x86_64", ArchFamily.X86, 32),
+    X86_64("x86_64", ArchFamily.X86, 64),
 
     /**
      * macOS
@@ -105,23 +99,23 @@ enum class Arch(
     ARMV8A("arm64-v8a", ArchFamily.AARCH, 64),
 }
 
-internal expect fun Platform.Companion.currentPlatformImpl(): Platform
+internal expect fun currentPlatformImpl(): Platform
 
-fun Platform.isAArch(): Boolean = this.arch.family == ArchFamily.AARCH
+inline fun Platform.isAArch(): Boolean = this.arch.family == ArchFamily.AARCH
 
-fun Platform.is64bit(): Boolean = this.arch.addressSizeBits == 64
+inline fun Platform.is64bit(): Boolean = this.arch.addressSizeBits == 64
 
-fun Platform.isDesktop(): Boolean {
+inline fun Platform.isDesktop(): Boolean {
     contract { returns(true) implies (this@isDesktop is Platform.Desktop) }
     return this is Platform.Desktop
 }
 
-fun Platform.isMobile(): Boolean {
+inline fun Platform.isMobile(): Boolean {
     contract { returns(true) implies (this@isMobile is Platform.Mobile) }
     return this is Platform.Mobile
 }
 
-fun Platform.isAndroid(): Boolean {
+inline fun Platform.isAndroid(): Boolean {
     contract { returns(true) implies (this@isAndroid is Platform.Android) }
     return this is Platform.Android
 }

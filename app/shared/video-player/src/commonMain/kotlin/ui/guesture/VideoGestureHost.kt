@@ -69,11 +69,10 @@ import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.StreamType
-import me.him188.ani.app.platform.currentPlatform
 import me.him188.ani.app.platform.getComponentAccessors
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.effects.ComposeKey
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
@@ -94,6 +93,7 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import me.him188.ani.datasources.bangumi.processing.fixToString
+import me.him188.ani.utils.platform.Platform
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
 
@@ -420,7 +420,7 @@ fun VideoGestureHost(
     playerState: PlayerState,
     enableSwipeToSeek: Boolean,
     modifier: Modifier = Modifier,
-    family: GestureFamily = currentPlatform.mouseFamily,
+    family: GestureFamily = LocalPlatform.current.mouseFamily,
     onTogglePauseResume: () -> Unit = {},
     onToggleFullscreen: () -> Unit = {},
     onExitFullscreen: () -> Unit = {},
@@ -454,6 +454,7 @@ fun VideoGestureHost(
         }
 
         // TODO: 临时解决方案, 安卓和 PC 需要不同的组件层级关系才能实现各种快捷手势
+        val needWorkaroundForFocusManager = needWorkaroundForFocusManager
         if (family.useDesktopGestureLayoutWorkaround) {
             val indicatorTasker = rememberUiMonoTasker()
             val focusRequester = remember { FocusRequester() }
@@ -668,7 +669,7 @@ fun VideoGestureHost(
                     }
                 }
             }
-            
+
             Box(
                 modifier
                     .testTag("VideoGestureHost")

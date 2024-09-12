@@ -67,11 +67,8 @@ import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.JvmLogHelper
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.currentPlatformDesktop
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.isSystemInFullscreen
 import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
@@ -103,6 +100,9 @@ import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatform
+import me.him188.ani.utils.platform.currentPlatformDesktop
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -149,7 +149,7 @@ object AniDesktop {
         if (AniBuildConfigDesktop.isDebug) {
             logger.info { "Debug mode enabled" }
         }
-        logger.info { "Ani platform: ${currentPlatform.name}, version: ${currentAniBuildConfig.versionName}" }
+        logger.info { "Ani platform: ${currentPlatform().name}, version: ${currentAniBuildConfig.versionName}" }
 
         val defaultSize = DpSize(1301.dp, 855.dp)
         // Get the screen size as a Dimension object
@@ -289,7 +289,7 @@ object AniDesktop {
 
                     SideEffect {
                         // https://www.formdev.com/flatlaf/macos/
-                        if (currentPlatformDesktop is Platform.MacOS) {
+                        if (currentPlatformDesktop() is Platform.MacOS) {
                             window.rootPane.putClientProperty("apple.awt.application.appearance", "system")
                             window.rootPane.putClientProperty("apple.awt.fullscreenable", true)
                             if (windowImmersed) {

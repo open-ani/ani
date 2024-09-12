@@ -74,11 +74,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.currentPlatform
-import me.him188.ani.app.platform.isDesktop
-import me.him188.ani.app.platform.isMobile
 import me.him188.ani.app.tools.rememberUiMonoTasker
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -90,6 +87,8 @@ import me.him188.ani.app.ui.subject.collection.progress.rememberSubjectProgressS
 import me.him188.ani.app.ui.subject.episode.list.EpisodeListDialog
 import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.isDesktop
+import me.him188.ani.utils.platform.isMobile
 
 
 // 有顺序, https://github.com/Him188/ani/issues/73
@@ -147,7 +146,7 @@ fun CollectionPane(
                             }
                         }
 
-                        if (currentPlatform.isDesktop()) {
+                        if (LocalPlatform.current.isDesktop()) {
                             // PC 无法下拉刷新
                             val refreshTasker = rememberUiMonoTasker()
                             IconButton(
@@ -216,7 +215,7 @@ fun CollectionPane(
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                userScrollEnabled = Platform.currentPlatform.isMobile(),
+                userScrollEnabled = LocalPlatform.current.isMobile(),
                 verticalAlignment = Alignment.Top,
             ) { index ->
                 val type = COLLECTION_TABS_SORTED[index]

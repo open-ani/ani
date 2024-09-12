@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
-import me.him188.ani.app.platform.Platform
-import me.him188.ani.app.platform.isDesktop
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.DropdownItem
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.utils.platform.isDesktop
 
 @Composable
 internal fun SettingsScope.VideoResolverGroup(
@@ -18,7 +18,7 @@ internal fun SettingsScope.VideoResolverGroup(
     modifier: Modifier = Modifier,
 ) {
     // There are not many options for the player.
-    if (!Platform.currentPlatform.isDesktop()) {
+    if (!LocalPlatform.current.isDesktop()) {
         return
     }
 

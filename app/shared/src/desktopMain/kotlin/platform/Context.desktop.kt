@@ -38,9 +38,12 @@ import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.platform.window.WindowUtils
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.toKtPath
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatform
 import java.io.File
 import kotlin.contracts.contract
 
@@ -106,7 +109,7 @@ actual fun isInLandscapeMode(): Boolean = false
 actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscreen: Boolean) {
     checkIsDesktop()
 //    extraWindowProperties.undecorated = fullscreen // Exception in thread "main" java.awt.IllegalComponentStateException: The frame is displayable.
-    if (currentPlatform is Platform.Windows) {
+    if (currentPlatform() is Platform.Windows) {
         if (fullscreen) {
             // hi, 相信前人的智慧, 如果操作不当会导致某些 Windows 设备上全屏会白屏 (你的电脑不一定能复现)
             WindowUtils.setUndecoratedFullscreen(window, true)
@@ -127,7 +130,7 @@ internal actual val Context.filesImpl: ContextFiles
 @Composable
 actual fun isSystemInFullscreenImpl(): Boolean {
     val context = LocalDesktopContext.current
-    if (currentPlatform is Platform.Windows) {
+    if (LocalPlatform.current is Platform.Windows) {
         return LocalPlatformWindow.current.isUndecoratedFullscreen
     }
     // should be true

@@ -2,8 +2,8 @@ package me.him188.ani.app.tools.update
 
 import androidx.compose.runtime.Stable
 import me.him188.ani.app.platform.ContextMP
-import me.him188.ani.app.platform.Platform
 import me.him188.ani.utils.io.SystemPath
+import me.him188.ani.utils.platform.Platform
 
 /**
  * 安装包安装器

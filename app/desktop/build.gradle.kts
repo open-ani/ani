@@ -160,7 +160,7 @@ tasks.withType(KotlinCompilationTask::class) {
 
 //kotlin.sourceSets.main.get().resources.srcDir(project(":common").projectDir.resolve("src/androidMain/res/raw"))
 
-val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent")
+val anitorrentRootDir = rootProject.projectDir.resolve("torrent/anitorrent/anitorrent-native")
 val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
 
 val copyAnitorrentDylibToResources = tasks.register("copyAnitorrentDylibToResources", Copy::class.java) {
