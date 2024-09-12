@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     kotlin("multiplatform")
+    id("com.android.library")
     `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
@@ -16,11 +17,15 @@ kotlin {
         implementation(libs.kotlinx.collections.immutable)
     }
 
-    sourceSets.jvmMain.dependencies {
+    sourceSets.getByName("jvmMain").dependencies {
         api(libs.jetbrains.annotations)
     }
 
     sourceSets.nativeMain.dependencies {
         implementation(libs.kotlinx.datetime)
     }
+}
+
+android {
+    namespace = "me.him188.ani.app.platform"
 }

@@ -103,8 +103,11 @@ configure<KotlinMultiplatformExtension> {
         }
     }
 
-    if (android != null) {
-        listOf(sourceSets.getByName("androidInstrumentedTest"), sourceSets.getByName("androidUnitTest")).forEach { sourceSet ->
+    if (android != null && composeExtension != null) {
+        listOf(
+            sourceSets.getByName("androidInstrumentedTest"),
+            sourceSets.getByName("androidUnitTest"),
+        ).forEach { sourceSet ->
             sourceSet.dependencies {
                 // https://developer.android.com/develop/ui/compose/testing#setup
                 implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
@@ -142,14 +145,14 @@ if (android != null) {
         tasks.named("generateComposeResClass") {
             dependsOn("generateResourceAccessorsForAndroidUnitTest")
         }
-    }
-    tasks.withType(KotlinCompilationTask::class) {
-        dependsOn("generateComposeResClass")
-        dependsOn("generateResourceAccessorsForAndroidRelease")
-        dependsOn("generateResourceAccessorsForAndroidUnitTest")
-        dependsOn("generateResourceAccessorsForAndroidUnitTestRelease")
-        dependsOn("generateResourceAccessorsForAndroidUnitTestDebug")
-        dependsOn("generateResourceAccessorsForAndroidDebug")
+        tasks.withType(KotlinCompilationTask::class) {
+            dependsOn(tasks.matching { it.name == "generateComposeResClass" })
+            dependsOn(tasks.matching { it.name == "generateResourceAccessorsForAndroidRelease" })
+            dependsOn(tasks.matching { it.name == "generateResourceAccessorsForAndroidUnitTest" })
+            dependsOn(tasks.matching { it.name == "generateResourceAccessorsForAndroidUnitTestRelease" })
+            dependsOn(tasks.matching { it.name == "generateResourceAccessorsForAndroidUnitTestDebug" })
+            dependsOn(tasks.matching { it.name == "generateResourceAccessorsForAndroidDebug" })
+        }
     }
 
     android.apply {

@@ -27,6 +27,7 @@ kotlin {
     sourceSets.commonMain.dependencies {
         api(libs.kotlinx.coroutines.core)
         api(projects.utils.io)
+        api(projects.utils.platform)
         api(projects.torrent.torrentApi)
     }
     sourceSets.jvmMain.dependencies {
