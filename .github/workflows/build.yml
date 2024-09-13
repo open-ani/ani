@@ -158,7 +158,7 @@ jobs:
 
       - name: Build Anitorrent for Desktop
         if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
-        run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
+        run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:anitorrent-native:buildAnitorrent ${{ env.gradleArgs }}
 
       - name: Build Anitorrent for Android Debug
         if: ${{ matrix.anitorrent }}
