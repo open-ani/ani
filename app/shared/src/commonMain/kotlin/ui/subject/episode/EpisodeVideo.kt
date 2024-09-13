@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -463,6 +464,7 @@ fun EpisodeVideoDefaults.DanmakuEditor(
 ) {
     val danmakuEditorRequester = rememberAlwaysOnRequester(videoControllerState, "danmakuEditor")
 
+    val focusManager = LocalFocusManager.current
     /**
      * 是否设置了暂停
      */
@@ -482,7 +484,9 @@ fun EpisodeVideoDefaults.DanmakuEditor(
                         color = Color.White.toArgb(),
                         location = DanmakuLocation.NORMAL,
                     ),
-                )
+                ) {
+                    focusManager.clearFocus()
+                }
             },
             modifier = Modifier.onFocusChanged {
                 if (it.isFocused) {
