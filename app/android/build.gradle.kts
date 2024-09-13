@@ -28,6 +28,7 @@ plugins {
 
 dependencies {
     implementation(projects.app.shared)
+    implementation(projects.app.shared.application)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

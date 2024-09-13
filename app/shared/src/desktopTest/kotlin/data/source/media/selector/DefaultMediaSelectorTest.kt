@@ -6,7 +6,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.MediaExtraFiles
 import me.him188.ani.datasources.api.Subtitle

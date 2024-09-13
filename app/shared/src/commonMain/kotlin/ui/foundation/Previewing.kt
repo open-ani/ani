@@ -39,6 +39,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.io.files.Path
+import me.him188.ani.app.data.persistent.dataStores
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
@@ -54,10 +57,7 @@ import me.him188.ani.app.navigation.NoopBrowserNavigator
 import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
-import me.him188.ani.app.platform.getCommonKoinModule
-import me.him188.ani.app.platform.isInLandscapeMode
-import me.him188.ani.app.platform.notification.NoopNotifManager
-import me.him188.ani.app.platform.notification.NotifManager
+import me.him188.ani.app.ui.foundation.layout.isInLandscapeMode
 import me.him188.ani.app.tools.caching.MemoryDataStore
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
@@ -74,10 +74,6 @@ import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-val LocalIsPreviewing = staticCompositionLocalOf {
-    false
-}
-
 @Composable
 fun ProvideCompositionLocalsForPreview(
     module: Module.() -> Unit = {},
@@ -89,7 +85,7 @@ fun ProvideCompositionLocalsForPreview(
         val context = LocalContext.current
         runCatching { stopKoin() }
         startKoin {
-            modules(getCommonKoinModule({ context }, coroutineScope))
+//            modules(getCommonKoinModule({ context }, coroutineScope))
             modules(
                 module {
                     single<PlayerStateFactory> {
@@ -114,9 +110,9 @@ fun ProvideCompositionLocalsForPreview(
                         )
                     }
                     single<PermissionManager> { GrantedPermissionManager }
-                    single<NotifManager> { NoopNotifManager }
                     single<BrowserNavigator> { NoopBrowserNavigator }
                     single<SettingsRepository> { PreferencesRepositoryImpl(MemoryDataStore(mutablePreferencesOf())) }
+                    single<DanmakuRegexFilterRepository> { DanmakuRegexFilterRepositoryImpl(MemoryDataStore(listOf())) }
                     module()
                 },
             )

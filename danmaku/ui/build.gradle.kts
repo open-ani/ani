@@ -13,7 +13,8 @@ kotlin {
     sourceSets.commonMain.dependencies {
         implementation(projects.utils.platform)
         implementation(libs.kotlinx.coroutines.core)
-        implementation(projects.danmaku.danmakuApi)
+        api(projects.danmaku.danmakuApi)
+        api(projects.danmaku.danmakuUiConfig)
         implementation(libs.kotlinx.collections.immutable)
     }
     sourceSets.commonTest.dependencies {

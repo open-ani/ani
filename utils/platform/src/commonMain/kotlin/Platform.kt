@@ -23,7 +23,7 @@ sealed class Platform {
         override val name: String get() = "Android"
     }
 
-    data object Ios : Platform() {
+    data object Ios : Mobile() {
         override val name: String get() = "iOS"
         override val arch: Arch get() = Arch.AARCH64
     }
@@ -108,6 +108,11 @@ inline fun Platform.is64bit(): Boolean = this.arch.addressSizeBits == 64
 inline fun Platform.isDesktop(): Boolean {
     contract { returns(true) implies (this@isDesktop is Platform.Desktop) }
     return this is Platform.Desktop
+}
+
+inline fun Platform.isIos(): Boolean {
+    contract { returns(true) implies (this@isIos is Platform.Ios) }
+    return this is Platform.Ios
 }
 
 inline fun Platform.isMobile(): Boolean {

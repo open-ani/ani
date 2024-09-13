@@ -19,6 +19,7 @@
 package me.him188.ani.app.data.persistent
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
@@ -32,12 +33,15 @@ actual val Context.dataStoresImpl: PlatformDataStoreManager
 internal class PlatformDataStoreManagerDesktop(
     private val context: DesktopContext,
 ) : PlatformDataStoreManager() {
-    override val tokenStore: DataStore<Preferences>
-        get() = context.tokenStore
-    override val preferencesStore: DataStore<Preferences>
-        get() = context.settingStore
-    override val preferredAllianceStore: DataStore<Preferences>
-        get() = context.preferredAllianceStore
+    override val tokenStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
+        context.dataStoreDir.resolve("tokens.preferences_pb")
+    }
+    override val preferencesStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
+        context.dataStoreDir.resolve("settings.preferences_pb")
+    }
+    override val preferredAllianceStore: DataStore<Preferences> = PreferenceDataStoreFactory.create {
+        context.dataStoreDir.resolve("preferredAllianceStore.preferences_pb")
+    }
 
     override fun resolveDataStoreFile(name: String): SystemPath = context.dataStoreDir.resolve(name).toKtPath().inSystem
 }

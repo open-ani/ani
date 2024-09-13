@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.foundation.richtext.UIRichElement
+import me.him188.ani.app.ui.subject.components.comment.richtext.UIRichElement
 import me.him188.ani.app.ui.subject.components.comment.UIRichText
 import me.him188.ani.app.ui.subject.details.components.generateUiComment
 import me.him188.ani.app.ui.subject.details.components.rememberTestCommentState

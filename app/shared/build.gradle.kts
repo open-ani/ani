@@ -18,8 +18,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import com.google.devtools.ksp.gradle.KspTaskJvm
-import com.google.devtools.ksp.gradle.KspTaskNative
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
 
 
@@ -34,12 +32,8 @@ plugins {
 
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
-    id("com.google.devtools.ksp")
-    id("androidx.room")
     idea
 }
-
-extra.set("ani.jvm.target", 17)
 
 compose.resources {
     packageOfResClass = "me.him188.ani.app"
@@ -76,6 +70,13 @@ kotlin {
         api(libs.kotlinx.io.core)
         api(libs.kotlinx.collections.immutable)
         api(projects.utils.ktorClient)
+
+        api(projects.app.shared.appPlatform)
+        api(projects.app.shared.appData)
+        api(projects.app.shared.placeholder)
+        api(projects.app.shared.uiFoundation)
+        api(projects.app.shared.videoPlayer)
+        api(projects.app.shared.videoPlayer.torrentSource)
 
         // Compose
         api(compose.foundation)
@@ -128,18 +129,12 @@ kotlin {
         api(libs.ktor.serialization.kotlinx.json)
 
         // Others
-        api(libs.koin.core) // dependency injection
+        api(libs.koin.core) 
         api(libs.directories) // Data directories on all OSes
         api(libs.coil.core)
         api(libs.coil.svg)
         api(libs.coil.compose.core)
         api(libs.coil.network.ktor2)
-        api(libs.datastore.core) // Data Persistence
-        api(libs.datastore.preferences.core) // Preferences
-        implementation(libs.androidx.room.runtime.get().toString()) {
-            exclude("org.jetbrains.kotlinx", "atomicfu")
-        } // multi-platform database
-        api(libs.sqlite.bundled) // database driver implementation
         implementation(libs.constraintlayout.compose)
     }
 
@@ -211,11 +206,7 @@ kotlin {
         api(libs.kotlinx.coroutines.swing)
         implementation(libs.vlcj)
         implementation(libs.jna) // required and don't change version, otherwise vlcj might crash the VM 
-//        implementation(libs.vlcj.javafx)
-//        implementation(libs.javafx.controls)
-//        implementation(libs.javafx.graphics)
 
-        // https://repo1.maven.org/maven2/org/openjfx/javafx-graphics/17.0.11/
         runtimeOnly(libs.kotlinx.coroutines.debug)
 
         implementation(libs.log4j.core)
@@ -228,75 +219,6 @@ kotlin {
 
         implementation(libs.filekit.core)
         implementation(libs.filekit.compose)
-//        implementation(libs.htmlunit)
-//        implementation("org.openjfx:javafx-base:17.0.11:$classifier") {
-//            exclude("org.openjfx")
-//        }
-//        implementation("org.openjfx:javafx-controls:17.0.11:$classifier") {
-//            exclude("org.openjfx")
-//        }
-//        implementation("org.openjfx:javafx-graphics:17.0.11:$classifier") {
-//            exclude("org.openjfx")
-//        }
-//        implementation("org.openjfx:javafx-media:17.0.11:$classifier") {
-//            exclude("org.openjfx")
-//        }
-//        implementation("org.openjfx:javafx-web:17.0.11:$classifier") {
-//            exclude("org.openjfx")
-//        }
-    }
-
-    sourceSets {
-        // TODO: 临时解决方案, KT-65362 Cannot resolve declarations from a dependency when there are multiple JVM-only project dependencies in a JVM-Android MPP
-        //  https://youtrack.jetbrains.com/issue/KT-65362
-        // Danmaku
-
-        fun submodule(dir: String, flatten: Boolean = !rootProject.projectDir.resolve("$dir/src/commonMain").exists()) {
-            if (flatten) {
-                // flatten
-                commonMain {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/"))
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonMain/"))
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/common/"))
-                    resources.srcDirs(rootProject.projectDir.resolve("$dir/resources/"))
-                }
-                commonTest {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/test/"))
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
-                }
-                androidMain {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidMain/"))
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/android/"))
-                }
-                getByName("desktopMain") {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopMain/"))
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktop/"))
-                }
-                commonTest {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/commonTest/"))
-                }
-                getByName("androidUnitTest") {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/androidUnitTest/"))
-                }
-                getByName("desktopTest") {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/desktopTest/"))
-                }
-                getByName("iosMain") {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/ios/"))
-                }
-                getByName("skikoMain") {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/skikoMain"))
-                }
-            } else {
-                sourceSets.all {
-                    kotlin.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/kotlin"))
-                    resources.srcDirs(rootProject.projectDir.resolve("$dir/src/${this.name}/resources"))
-                }
-            }
-        }
-
-        submodule("app/shared/placeholder")
-        submodule("app/shared/video-player")
     }
 }
 
@@ -310,7 +232,7 @@ idea {
     }
 }
 
-// AS 问题 since 1.7.0-beta03
+// AS 问题 since Compose 1.7.0-beta03
 afterEvaluate {
     tasks.matching { it.name.contains("generateReleaseLintVitalModel") }.all {
         dependsOn("releaseAssetsCopyForAGP")
@@ -320,16 +242,8 @@ afterEvaluate {
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
 
 // BUILD CONFIG
-
-val aniAuthServerUrlDebug =
-    getPropertyOrNull("ani.auth.server.url.debug") ?: "https://auth.myani.org"
-val aniAuthServerUrlRelease = getPropertyOrNull("ani.auth.server.url.release") ?: "https://auth.myani.org"
 
 //if (bangumiClientDesktopAppId == null || bangumiClientDesktopSecret == null) {
 //    logger.warn("bangumi.oauth.client.desktop.appId or bangumi.oauth.client.desktop.secret is not set. Bangumi authorization will not work. Get a token from https://bgm.tv/dev/app and set them in local.properties.")
@@ -340,21 +254,18 @@ android {
     compileSdk = getIntProperty("android.compile.sdk")
     defaultConfig {
         minSdk = getIntProperty("android.min.sdk")
-        buildConfigField("String", "VERSION_NAME", "\"${getProperty("version.name")}\"")
     }
     buildTypes.getByName("release") {
-        isMinifyEnabled = false // shared 不能 minify, 否则构建 app 会失败
+        isMinifyEnabled = false
         isShrinkResources = false
         proguardFiles(
             getDefaultProguardFile("proguard-android-optimize.txt"),
             *sharedAndroidProguardRules(),
         )
         buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani\"")
-        buildConfigField("String", "ANI_AUTH_SERVER_URL", "\"$aniAuthServerUrlRelease\"")
     }
     buildTypes.getByName("debug") {
         buildConfigField("String", "APP_APPLICATION_ID", "\"me.him188.ani.debug2\"")
-        buildConfigField("String", "ANI_AUTH_SERVER_URL", "\"$aniAuthServerUrlDebug\"")
     }
     buildFeatures {
         compose = true
@@ -363,111 +274,9 @@ android {
 }
 
 dependencies {
-    add("kspDesktop", libs.androidx.room.compiler)
-    add("kspAndroid", libs.androidx.room.compiler)
-    add("kspIosArm64", libs.androidx.room.compiler)
-    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
-
-val buildConfigDesktopDir = layout.buildDirectory.file("generated/source/buildConfigDesktop")
-val buildConfigIosDir = layout.buildDirectory.file("generated/source/buildConfigIos")
-
-idea {
-    module {
-        generatedSourceDirs.add(buildConfigDesktopDir.get().asFile)
-        generatedSourceDirs.add(buildConfigIosDir.get().asFile)
-    }
-}
-
-kotlin.sourceSets.getByName("desktopMain") {
-    kotlin.srcDirs(buildConfigDesktopDir)
-}
-
-kotlin.sourceSets.iosMain {
-    kotlin.srcDirs(buildConfigIosDir)
-}
-
-//tasks.register("generateBuildConfigForDesktop") {
-//    doLast {
-//        
-//    }
-//}
-val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDesktop") {
-    val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply {
-        parentFile.mkdirs()
-        createNewFile()
-    }
-
-    inputs.property("project.version", project.version)
-
-    outputs.file(file)
-
-    val text = """
-            package me.him188.ani.app.platform
-            object AniBuildConfigDesktop : AniBuildConfig {
-                override val versionName = "${project.version}"
-                override val isDebug = System.getenv("ANI_DEBUG") == "true" || System.getProperty("ani.debug") == "true"
-                override val aniAuthServerUrl = if (isDebug) "$aniAuthServerUrlDebug" else "$aniAuthServerUrlRelease"
-            }
-            """.trimIndent()
-
-    outputs.upToDateWhen {
-        file.exists() && file.readText().trim() == text.trim()
-    }
-
-    doLast {
-        file.writeText(text)
-    }
-}
-
-val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
-    val file = buildConfigIosDir.get().asFile.resolve("AniBuildConfig.kt").apply {
-        parentFile.mkdirs()
-        createNewFile()
-    }
-
-    inputs.property("project.version", project.version)
-
-    outputs.file(file)
-
-    val text = """
-            package me.him188.ani.app.platform
-            object AniBuildConfigIos : AniBuildConfig {
-                override val versionName = "${project.version}"
-                override val isDebug = false
-                override val aniAuthServerUrl = if (isDebug) "$aniAuthServerUrlDebug" else "$aniAuthServerUrlRelease"
-            }
-            """.trimIndent()
-
-    outputs.upToDateWhen {
-        file.exists() && file.readText().trim() == text.trim()
-    }
-
-    doLast {
-        file.writeText(text)
-    }
-}
-
-tasks.named("compileKotlinDesktop") {
-    dependsOn(generateAniBuildConfigDesktop)
-}
-
-tasks.withType(KotlinCompileTool::class) {
-    dependsOn(generateAniBuildConfigIos)
-}
-
-// :app:shared:kspKotlinDesktop
-tasks.withType(KspTaskJvm::class.java) {
-    dependsOn(generateAniBuildConfigDesktop)
-}
-tasks.matching { it.name.startsWith("kspKotlin") }.all {
-    dependsOn(generateAniBuildConfigDesktop)
-}
-tasks.withType(KspTaskNative::class.java) {
-    dependsOn(generateAniBuildConfigIos)
-}
 
 // 太耗内存了, 只能一次跑一个
 // compose bug, 不能用这个 https://youtrack.jetbrains.com/issue/CMP-5835
@@ -482,6 +291,7 @@ tasks.withType(KspTaskNative::class.java) {
 //    }
 
 if (enableIosFramework) {
+// 太耗内存了, 只能一次跑一个
     tasks.named("linkDebugFrameworkIosArm64") {
         mustRunAfter("linkReleaseFrameworkIosArm64")
         mustRunAfter("linkDebugFrameworkIosSimulatorArm64")

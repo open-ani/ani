@@ -20,9 +20,14 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     kotlin("multiplatform")
+    id("com.android.library")
     `ani-mpp-lib-targets`
     id("org.jetbrains.kotlinx.atomicfu")
     kotlin("plugin.serialization")
+}
+
+android {
+    namespace = "me.him188.ani.utils.io"
 }
 
 kotlin {

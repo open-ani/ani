@@ -1,5 +1,6 @@
 package me.him188.ani.app.ui.settings.tabs
 
+import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.FilledTonalButton
@@ -10,8 +11,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import me.him188.ani.BuildConfig
-import me.him188.ani.app.platform.AndroidLoggingConfigurator.getCurrentLogFile
 import me.him188.ani.app.platform.LocalContext
+import java.io.File
 
 
 @Composable
@@ -54,3 +55,15 @@ internal actual fun ColumnScope.PlatformDebugInfoItems() {
     }
 }
 
+fun Context.getLogsDir(): File {
+    // /data/data/0/me.him188.ani/files/logs/
+    val logs = applicationContext.filesDir.resolve("logs")
+    if (!logs.exists()) {
+        logs.mkdirs()
+    }
+    return logs
+}
+
+fun Context.getCurrentLogFile(): File {
+    return getLogsDir().resolve("app.log")
+}

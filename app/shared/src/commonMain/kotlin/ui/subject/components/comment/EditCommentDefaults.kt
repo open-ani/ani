@@ -62,7 +62,7 @@ import androidx.compose.ui.unit.sp
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.IconButton
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
-import me.him188.ani.app.ui.foundation.richtext.RichText
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichText
 import me.him188.ani.app.ui.foundation.theme.looming
 import org.jetbrains.compose.resources.painterResource
 

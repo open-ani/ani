@@ -10,7 +10,7 @@ import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
-import me.him188.ani.app.ui.foundation.richtext.UIRichElement
+import me.him188.ani.app.ui.subject.components.comment.richtext.UIRichElement
 import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.components.comment.UIComment
 import me.him188.ani.app.ui.subject.components.comment.UICommentReaction

@@ -76,6 +76,7 @@ import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.app.videoplayer.ui.VideoScaffold
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
 import me.him188.ani.app.videoplayer.ui.guesture.GestureLock
+import me.him188.ani.app.videoplayer.ui.guesture.LevelController
 import me.him188.ani.app.videoplayer.ui.guesture.LockableVideoGestureHost
 import me.him188.ani.app.videoplayer.ui.guesture.ScreenshotButton
 import me.him188.ani.app.videoplayer.ui.guesture.mouseFamily
@@ -137,6 +138,8 @@ internal fun EpisodeVideoImpl(
     mediaSourceResultsPresentation: MediaSourceResultsPresentation,
     episodeSelectorState: EpisodeSelectorState,
     mediaSourceInfoProvider: MediaSourceInfoProvider,
+    audioController: LevelController,
+    brightnessController: LevelController,
     leftBottomTips: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     maintainAspectRatio: Boolean = !expanded,
@@ -251,6 +254,8 @@ internal fun EpisodeVideoImpl(
                 playerState,
                 locked = isLocked,
                 enableSwipeToSeek = enableSwipeToSeek,
+                audioController = audioController,
+                brightnessController = brightnessController,
                 Modifier.padding(top = 100.dp),
                 onTogglePauseResume = {
                     if (playerState.state.value.isPlaying) {

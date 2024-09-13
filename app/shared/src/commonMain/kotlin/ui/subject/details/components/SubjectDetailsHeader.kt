@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
@@ -287,6 +288,8 @@ fun SubjectDetailsHeaderWide(
     }
 }
 
+@Stable
+val SubjectCollection.date get() = renderSubjectSeason(info.airDate)
 
 @Stable
 fun renderSubjectSeason(date: PackedDate): String {

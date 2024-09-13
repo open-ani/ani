@@ -15,9 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
-import me.him188.ani.app.navigation.LocalBrowserNavigator
-import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.ResourceLocation
 
@@ -29,8 +28,7 @@ fun ShareEpisodeDropdown(
     modifier: Modifier = Modifier,
 ) {
     val clipboard = LocalClipboardManager.current
-    val browserNavigator = LocalBrowserNavigator.current
-    val context = LocalContext.current
+    val browserNavigator = LocalUriHandler.current
 
     val playingMediaState by rememberUpdatedState(playingMedia)
     DropdownMenu(
@@ -65,7 +63,7 @@ fun ShareEpisodeDropdown(
             onClick = {
                 onDismissRequest()
                 playingMediaState?.let {
-                    browserNavigator.openBrowser(context, it.download.uri)
+                    browserNavigator.openUri(it.download.uri)
                 }
             },
             leadingIcon = { Icon(Icons.Rounded.Outbox, null) },
@@ -75,7 +73,7 @@ fun ShareEpisodeDropdown(
             onClick = {
                 onDismissRequest()
                 playingMediaState?.let {
-                    browserNavigator.openBrowser(context, it.originalUrl)
+                    browserNavigator.openUri(it.originalUrl)
                 }
             },
             leadingIcon = { Icon(Icons.Rounded.ArrowOutward, null) },

@@ -15,10 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
-import me.him188.ani.datasources.bangumi.processing.fixToString
 import kotlin.math.roundToLong
 
-internal const val TAG_MEDIA_PROGRESS_INDICATOR_TEXT = "MediaProgressIndicatorText"
+const val TAG_MEDIA_PROGRESS_INDICATOR_TEXT = "MediaProgressIndicatorText"
 
 /**
  * "88:88:88 / 88:88:88"
@@ -84,7 +83,7 @@ private fun renderSecondsReserve(
  * @see renderSecondsReserve
  */
 @Stable
-fun renderSeconds(current: Long, total: Long?): String {
+internal fun renderSeconds(current: Long, total: Long?): String {
     if (total == null) {
         return "00:${current.fixToString(2)} / 00:00"
     }
@@ -104,5 +103,14 @@ fun renderSeconds(current: Long, total: Long?): String {
         val endM = (total % 3600 / 60).fixToString(2)
         val endS = (total % 60).fixToString(2)
         """$startH:$startM:$startS / $endH:$endM:$endS"""
+    }
+}
+
+private fun Long.fixToString(length: Int, prefix: Char = '0'): String {
+    val str = this.toString()
+    return if (str.length >= length) {
+        str
+    } else {
+        prefix.toString().repeat(length - str.length) + str
     }
 }

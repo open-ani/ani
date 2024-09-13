@@ -48,14 +48,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
@@ -64,9 +63,10 @@ import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
-import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState
@@ -94,7 +94,7 @@ fun SubjectDetailsScene(
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
-    val browserNavigator = LocalBrowserNavigator.current
+    val browserNavigator = LocalUriHandler.current
 
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
@@ -156,7 +156,7 @@ fun SubjectDetailsScene(
             SubjectDetailsDefaults.SubjectCommentColumn(
                 state = vm.subjectCommentState,
                 onClickUrl = {
-                    RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                    RichTextDefaults.checkSanityAndOpen(it, browserNavigator, toaster)
                 },
                 onClickImage = { imageViewer.viewImage(it) },
                 connectedScrollState,
@@ -177,7 +177,7 @@ fun SubjectDetailsScene(
                 }
             }
         },
-        modifier, 
+        modifier,
         showTopBar = showTopBar,
         showBlurredBackground = showBlurredBackground,
         windowInsets = windowInsets,

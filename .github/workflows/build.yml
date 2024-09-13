@@ -96,11 +96,11 @@ jobs:
         run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
         continue-on-error: true
 
-      - uses: graalvm/setup-graalvm@v1
+      - uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          distribution: zulu
+          java-version: 17
+          architecture: ${{ matrix.arch }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies

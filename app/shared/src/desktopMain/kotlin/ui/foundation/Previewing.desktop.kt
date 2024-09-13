@@ -9,8 +9,8 @@ import androidx.compose.ui.window.WindowState
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.window.LocalPlatformWindow
-import me.him188.ani.app.platform.window.PlatformWindow
+import me.him188.ani.app.platform.PlatformWindow
+import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import java.io.File
 
 @Composable

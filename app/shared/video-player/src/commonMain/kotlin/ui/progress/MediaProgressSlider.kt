@@ -53,7 +53,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.collections.immutable.ImmutableList
-import me.him188.ani.app.platform.PlatformPopupProperties
+import me.him188.ani.app.ui.foundation.dialogs.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 import me.him188.ani.app.ui.foundation.theme.weaken
@@ -65,8 +65,8 @@ import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-internal const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
-internal const val TAG_PROGRESS_SLIDER = "ProgressSlider"
+const val TAG_PROGRESS_SLIDER_PREVIEW_POPUP = "ProgressSliderPreviewPopup"
+const val TAG_PROGRESS_SLIDER = "ProgressSlider"
 
 /**
  * 播放器进度滑块的状态.

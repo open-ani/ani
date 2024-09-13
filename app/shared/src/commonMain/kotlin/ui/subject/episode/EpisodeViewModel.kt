@@ -42,9 +42,6 @@ import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.EpisodePlayHistoryRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.BangumiCommentSticker
-import me.him188.ani.app.data.source.CommentLoader
-import me.him188.ani.app.data.source.CommentMapperContext
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
@@ -61,15 +58,22 @@ import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.features.PlatformComponentAccessors
+import me.him188.ani.app.platform.features.StreamType
+import me.him188.ani.app.platform.features.getComponentAccessors
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AuthState
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.components.comment.BangumiCommentSticker
 import me.him188.ani.app.ui.subject.components.comment.CommentContext
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentMapperContext
 import me.him188.ani.app.ui.subject.components.comment.CommentState
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
 import me.him188.ani.app.ui.subject.episode.details.EpisodeCarouselState
@@ -90,6 +94,9 @@ import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterSta
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.guesture.LevelController
+import me.him188.ani.app.videoplayer.ui.guesture.NoOpLevelController
+import me.him188.ani.app.videoplayer.ui.guesture.asLevelController
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -165,6 +172,9 @@ abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
     abstract var mediaSelectorVisible: Boolean
 
     abstract val mediaSourceInfoProvider: MediaSourceInfoProvider
+
+    abstract val audioController: LevelController
+    abstract val brightnessController: LevelController
 
 
     // Video
@@ -326,6 +336,17 @@ private class EpisodeViewModelImpl(
         getSourceInfoFlow = { mediaSourceManager.infoFlowByMediaSourceId(it) },
     )
 
+    private val platformComponentAccessors: PlatformComponentAccessors = context.getComponentAccessors()
+
+    override val audioController: LevelController by lazy {
+        platformComponentAccessors.audioManager?.asLevelController(
+            StreamType.MUSIC,
+        ) ?: NoOpLevelController
+    }
+    override val brightnessController: LevelController by lazy {
+        platformComponentAccessors.brightnessManager?.asLevelController() ?: NoOpLevelController
+    }
+
     override val mediaSelectorPresentation: MediaSelectorPresentation =
         MediaSelectorPresentation(mediaSelector, mediaSourceInfoProvider, backgroundScope.coroutineContext)
 
@@ -361,7 +382,7 @@ private class EpisodeViewModelImpl(
             }
         }
     }
-    
+
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
         mediaSelector, videoSourceResolver, playerState, mediaSourceInfoProvider,
         episodeInfo,

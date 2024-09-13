@@ -1,9 +1,7 @@
 package me.him188.ani.app.tools.update
 
-import androidx.compose.runtime.Stable
 import me.him188.ani.app.platform.ContextMP
 import me.him188.ani.utils.io.SystemPath
-import me.him188.ani.utils.platform.Platform
 
 /**
  * 安装包安装器
@@ -36,8 +34,3 @@ enum class InstallationFailureReason {
      */
     UNSUPPORTED_FILE_STRUCTURE,
 }
-
-@Suppress("UnusedReceiverParameter")
-@Stable
-val Platform.supportsInAppUpdate: Boolean // 虽然目前都支持, 但未来可能增加 iOS 不支持
-    get() = true

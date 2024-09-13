@@ -22,7 +22,7 @@ actual fun VideoPlayer(
     playerState: PlayerState,
     modifier: Modifier
 ) {
-    val isPreviewing by rememberUpdatedState(LocalIsPreviewing.current)
+    val isPreviewing by rememberUpdatedState(me.him188.ani.app.ui.foundation.LocalIsPreviewing.current)
 
     AndroidView(
         factory = { context ->

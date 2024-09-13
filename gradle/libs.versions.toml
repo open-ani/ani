@@ -33,6 +33,7 @@ constraintlayout-compose = "0.4.0"
 antlr-kotlin = "1.0.0-RC4"
 oshai-kotlin-logging = "7.0.0" # Only for native. On JVM we use slf4j directly.
 ipaddress-parser = "5.5.1"
+androidx-annotation = "1.8.2"
 
 mockito = "5.12.0"
 mockito-kotlin = "5.4.0"
@@ -200,6 +201,7 @@ androidx-compose-foundation = { module = "androidx.compose.foundation:foundation
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "jetpack-compose" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "jetpack-compose" }
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 # compose-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "jetpackCompose" }
 
 stately-common = { module = "co.touchlab:stately-common", version.ref = "stately-common" }
@@ -216,6 +218,7 @@ mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-
 vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 
 
 #// https://mvnrepository.com/artifact/software.amazon.awssdk/s3

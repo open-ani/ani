@@ -9,6 +9,7 @@ import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.userInfo
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AuthState
 import me.him188.ani.app.ui.foundation.launchInBackground
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

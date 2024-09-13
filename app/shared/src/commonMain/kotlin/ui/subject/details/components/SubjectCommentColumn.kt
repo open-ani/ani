@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
-import me.him188.ani.app.ui.foundation.richtext.RichText
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichText
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentColumn
 import me.him188.ani.app.ui.subject.components.comment.CommentDefaults

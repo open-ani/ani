@@ -24,8 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -62,20 +60,7 @@ import me.him188.ani.utils.platform.isMobile
 /**
  * @see renderPreferenceTab 查看名称
  */
-@Immutable
-enum class SettingsTab {
-    APP,
-    MEDIA,
-    NETWORK,
-    ABOUT,
-    DEBUG
-    ;
-
-    companion object {
-        @Stable
-        val Default = MEDIA
-    }
-}
+typealias SettingsTab = me.him188.ani.app.navigation.SettingsTab
 
 @Composable
 fun SettingsPage(

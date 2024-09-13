@@ -12,7 +12,7 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorEvents
 import me.him188.ani.app.data.source.media.selector.MutableMediaSelectorEvents
 import me.him188.ani.app.data.source.media.selector.OptionalPreference
 import me.him188.ani.app.data.source.media.selector.orElse
-import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaPreference
+import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified

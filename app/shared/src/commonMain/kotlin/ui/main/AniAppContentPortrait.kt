@@ -28,13 +28,13 @@ import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.window.desktopTitleBar
-import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
 import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
 import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
@@ -296,11 +296,11 @@ fun AniAppContentPortrait(
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
-            ) { 
+            ) {
                 val viewModel = viewModel { PeerFilterSettingsViewModel() }
                 PeerFilterSettingsPage(
                     viewModel.state,
-                    Modifier.desktopTitleBarPadding()
+                    Modifier.desktopTitleBarPadding(),
                 )
             }
         }

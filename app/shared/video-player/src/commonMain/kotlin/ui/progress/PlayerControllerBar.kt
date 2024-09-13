@@ -82,7 +82,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import me.him188.ani.app.platform.PlatformPopupProperties
+import me.him188.ani.app.ui.foundation.dialogs.PlatformPopupProperties
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
@@ -94,7 +94,7 @@ import me.him188.ani.app.videoplayer.ui.state.MediaCacheProgressState
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import kotlin.math.roundToInt
 
-internal const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
+const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
 
 @Stable
 object PlayerControllerDefaults {

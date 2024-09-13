@@ -40,6 +40,7 @@ import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeS
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureFamily
+import me.him188.ani.app.videoplayer.ui.guesture.NoOpLevelController
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
@@ -177,9 +178,11 @@ class EpisodeVideoControllerTest {
                 mediaSourceResultsPresentation = rememberTestMediaSourceResults(),
                 episodeSelectorState = rememberTestEpisodeSelectorState(),
                 mediaSourceInfoProvider = rememberTestMediaSourceInfoProvider(),
+                audioController = NoOpLevelController,
+                brightnessController = NoOpLevelController,
                 leftBottomTips = {},
-                gestureFamily = gestureFamily,
                 danmakuRegexFilterState = createDanmakuRegexFilterState(),
+                gestureFamily = gestureFamily,
             )
         }
     }

@@ -42,6 +42,8 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import me.him188.ani.app.data.models.episode.EpisodeProgressItem
+import me.him188.ani.app.data.models.preference.EpisodeListProgressTheme
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -146,19 +148,6 @@ fun EpisodeListDialog(
     }
 }
 
-/**
- * Describes the progress of an episode (of a subject)
- */
-@Stable
-class EpisodeProgressItem(
-    val episodeId: Int,
-    val episodeSort: String,
-    val collectionType: UnifiedCollectionType,
-    val isOnAir: Boolean?,
-    val cacheStatus: EpisodeCacheStatus?,
-) {
-    var isLoading by mutableStateOf(false)
-}
 
 @Composable
 fun EpisodeListFlowRow(

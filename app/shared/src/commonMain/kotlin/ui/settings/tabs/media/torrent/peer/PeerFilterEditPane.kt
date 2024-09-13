@@ -27,8 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.foundation.richtext.RichText
-import me.him188.ani.app.ui.foundation.richtext.impl.rememberBBCodeRichTextState
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichText
+import me.him188.ani.app.ui.subject.components.comment.richtext.rememberBBCodeRichTextState
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
 @Composable

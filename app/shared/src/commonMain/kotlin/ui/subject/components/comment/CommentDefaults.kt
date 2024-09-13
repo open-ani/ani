@@ -36,12 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.BangumiCommentSticker
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.app.ui.foundation.richtext.RichText
-import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
-import me.him188.ani.app.ui.foundation.richtext.UIRichElement
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichText
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichTextDefaults
+import me.him188.ani.app.ui.subject.components.comment.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import org.jetbrains.compose.resources.painterResource
 

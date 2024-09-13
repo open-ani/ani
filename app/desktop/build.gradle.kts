@@ -35,6 +35,7 @@ plugins {
 
 dependencies {
     implementation(projects.app.shared)
+    implementation(projects.app.shared.application)
     implementation(compose.components.resources)
     implementation(libs.log4j.core)
     implementation(libs.vlcj)
