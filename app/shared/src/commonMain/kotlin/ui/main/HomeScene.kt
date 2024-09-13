@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -70,9 +71,9 @@ import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
-import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.subject.collection.CollectionPane
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
@@ -113,12 +114,13 @@ private fun UpdateCheckerItem(
     }
     var showDialog by rememberSaveable { mutableStateOf(false) }
     val context by rememberUpdatedState(LocalContext.current)
+    val uriHandler = LocalUriHandler.current
     if (showDialog) {
         vm.latestVersion?.let {
             ChangelogDialog(
                 latestVersion = it,
                 onDismissRequest = { showDialog = false },
-                onStartDownload = { vm.startDownload(it, context) },
+                onStartDownload = { vm.startDownload(it, uriHandler) },
                 currentVersion = vm.currentVersion,
             )
         }
@@ -134,6 +136,7 @@ private fun UpdateCheckerItem(
             onClick = {
                 vm.handleClickLogo(
                     context,
+                    uriHandler,
                     onInstallationError = { installationError = it },
                     showChangelogDialog = { showDialog = true },
                 )

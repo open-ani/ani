@@ -32,11 +32,11 @@ import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
+import me.him188.ani.app.ui.cache.details.MediaDetailsColumn
 import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
-import me.him188.ani.app.ui.profile.SettingsViewModel
 import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
 import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthPage
 import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthViewModel
@@ -44,6 +44,7 @@ import me.him188.ani.app.ui.profile.auth.WelcomeScene
 import me.him188.ani.app.ui.profile.auth.WelcomeViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceViewModel
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsPage
@@ -282,6 +283,14 @@ fun AniAppContentPortrait(
                     RssMediaSource.FactoryId -> EditRssMediaSourcePage(
                         viewModel<EditRssMediaSourceViewModel>(key = mediaSourceInstanceId) {
                             EditRssMediaSourceViewModel(mediaSourceInstanceId)
+                        },
+                        mediaDetailsColumn = { media ->
+                            MediaDetailsColumn(
+                                media,
+                                null,
+                                Modifier.fillMaxSize(),
+                                showSourceInfo = false,
+                            )
                         },
                         Modifier,
                         windowInsets,

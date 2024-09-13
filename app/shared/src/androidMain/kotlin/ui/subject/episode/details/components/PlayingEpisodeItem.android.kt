@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.TestMediaSourceInfo
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-import me.him188.ani.app.ui.subject.episode.details.renderProperties
+import me.him188.ani.app.ui.media.renderProperties
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.datasources.api.DefaultMedia

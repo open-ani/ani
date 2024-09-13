@@ -32,7 +32,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.dialogs.PlatformPopupProperties
-import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
+import me.him188.ani.app.ui.media.renderSubtitleLanguage
 
 
 private inline val minWidth get() = 60.dp

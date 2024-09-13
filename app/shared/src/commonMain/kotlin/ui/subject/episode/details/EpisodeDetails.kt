@@ -61,6 +61,7 @@ import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
+import me.him188.ani.app.ui.media.renderProperties
 import me.him188.ani.app.ui.subject.collection.SubjectCollectionTypeSuggestions
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
@@ -80,11 +81,6 @@ import me.him188.ani.app.ui.subject.episode.statistics.DanmakuMatchInfoSummaryRo
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingSummary
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
 import me.him188.ani.app.ui.subject.episode.video.DanmakuStatistics
-import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
-import me.him188.ani.datasources.api.topic.FileSize.Companion.bytes
-import me.him188.ani.datasources.api.topic.Resolution
-import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import me.him188.ani.datasources.api.unwrapCached
@@ -448,31 +444,3 @@ fun EpisodeDetailsScaffold(
         }
     }
 }
-
-@Stable
-internal fun Media.renderProperties(): String {
-    val properties = this.properties
-    return listOfNotNull(
-        properties.resolution,
-        properties.subtitleLanguageIds.joinToString("/") { renderSubtitleLanguage(it) }
-            .takeIf { it.isNotBlank() },
-        properties.size.takeIf { it != 0.bytes && it != Unspecified },
-        properties.alliance,
-    ).joinToString(" · ")
-}
-
-fun renderSubtitleLanguage(id: String): String {
-    return when (id) {
-        SubtitleLanguage.ChineseCantonese.id -> "粤语"
-        SubtitleLanguage.ChineseSimplified.id -> "简中"
-        SubtitleLanguage.ChineseTraditional.id -> "繁中"
-        SubtitleLanguage.Japanese.id -> "日语"
-        SubtitleLanguage.English.id -> "英语"
-        else -> id
-    }
-}
-
-fun renderResolution(id: String): String {
-    return Resolution.tryParse(id)?.displayName ?: id
-}
-

@@ -23,16 +23,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -40,21 +36,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.userInfoOrNull
-import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.LocalContext
-import org.koin.mp.KoinPlatform
+import me.him188.ani.app.ui.settings.tabs.AniHelpSection
 
 @Composable
 fun ProfilePage(
@@ -91,10 +80,6 @@ fun ProfilePage(
 
 }
 
-internal const val GITHUB_HOME = "https://github.com/open-ani/ani"
-internal const val ANI_WEBSITE = "https://myani.org"
-internal const val ISSUE_TRACKER = "https://github.com/open-ani/ani/issues"
-
 @Composable
 private fun DebugInfoView(modifier: Modifier = Modifier) {
     Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -108,57 +93,6 @@ private fun DebugInfoView(modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun AniHelpSection(modifier: Modifier = Modifier) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        val context by rememberUpdatedState(LocalContext.current)
-
-        Text(
-            "欢迎加入 QQ 群反馈建议或者闲聊: 927170241. Telegram 群 openani. 如遇到问题, 除加群外也可以在 GitHub 反馈.",
-        )
-
-        Row(Modifier.align(Alignment.End), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box {
-                var showOpenDropdown by remember { mutableStateOf(false) }
-                DropdownMenu(showOpenDropdown, { showOpenDropdown = false }) {
-                    DropdownMenuItem(
-                        text = { Text("GitHub") },
-                        onClick = {
-                            KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, GITHUB_HOME)
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("反馈问题") },
-                        onClick = { KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ISSUE_TRACKER) },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Ani 官网") },
-                        onClick = { KoinPlatform.getKoin().get<BrowserNavigator>().openBrowser(context, ANI_WEBSITE) },
-                    )
-                }
-
-                OutlinedButton({ showOpenDropdown = true }) {
-                    Text("打开...")
-                }
-            }
-
-            Box {
-                var showHelp by remember { mutableStateOf(false) }
-                Button({ showHelp = true }) {
-                    Text("加群")
-                }
-                HelpDropdown(showHelp, { showHelp = false })
-            }
-        }
-
-        Text(
-            "要让每个番剧都拥有不错的弹幕量需要不小用户基数, 如果你喜欢本应用, 请向朋友推荐以增加弹幕量!",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Bold,
-            ),
-        )
-    }
-}
 
 @Composable
 internal fun SelfInfo(

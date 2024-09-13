@@ -56,6 +56,7 @@ import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.TextWithBorder
 import me.him188.ani.app.ui.foundation.effects.cursorVisibility
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
+import me.him188.ani.app.ui.settings.danmaku.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
@@ -63,7 +64,6 @@ import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceResultsPresent
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.loading.EpisodeVideoLoadingIndicator
-import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettings
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsViewModel

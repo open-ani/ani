@@ -37,8 +37,8 @@ import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
-import me.him188.ani.app.ui.subject.components.comment.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
+import me.him188.ani.app.ui.richtext.UIRichElement
 
 /**
  * 评论项目
@@ -146,11 +146,13 @@ class CommentState(
 ) {
     private val currentSourceVersion: Any? by sourceVersion
     private var lastSourceVersion: Any? = null
-    
+
     var sourceVersion: Any?
         get() = currentSourceVersion
-        set(value) { lastSourceVersion = value }
-    
+        set(value) {
+            lastSourceVersion = value
+        }
+
     val list: List<UIComment> by list
 
     /**
@@ -172,11 +174,11 @@ class CommentState(
     val isLoading get() = reloadTasker.isRunning
 
     private val reactionSubmitTasker = MonoTasker(backgroundScope)
-    
+
     fun sourceVersionEquals(): Boolean {
         return lastSourceVersion == currentSourceVersion
     }
-    
+
     /**
      * 在 LaunchedEffect 中 reload，composition 退出就没必要继续加载
      */

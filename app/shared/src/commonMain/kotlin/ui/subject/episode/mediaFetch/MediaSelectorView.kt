@@ -43,8 +43,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
+import me.him188.ani.app.ui.media.renderSubtitleLanguage
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
-import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
 

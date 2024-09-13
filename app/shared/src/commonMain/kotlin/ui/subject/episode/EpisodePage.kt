@@ -94,10 +94,10 @@ import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
 import me.him188.ani.app.ui.foundation.theme.weaken
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.richtext.RichTextDefaults
 import me.him188.ani.app.ui.subject.components.comment.CommentContext
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentState
-import me.him188.ani.app.ui.subject.components.comment.richtext.RichTextDefaults
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeCommentColumn
 import me.him188.ani.app.ui.subject.episode.comments.EpisodeEditCommentSheet
 import me.him188.ani.app.ui.subject.episode.danmaku.DanmakuEditor

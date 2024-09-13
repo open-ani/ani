@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.media.fetch.MediaFetcher
 import me.him188.ani.app.data.source.media.selector.MediaSelector
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
-import me.him188.ani.app.ui.subject.episode.details.renderProperties
+import me.him188.ani.app.ui.media.renderProperties
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 

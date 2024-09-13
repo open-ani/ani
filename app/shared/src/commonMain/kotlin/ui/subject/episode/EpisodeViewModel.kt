@@ -62,14 +62,15 @@ import me.him188.ani.app.platform.features.PlatformComponentAccessors
 import me.him188.ani.app.platform.features.StreamType
 import me.him188.ani.app.platform.features.getComponentAccessors
 import me.him188.ani.app.tools.caching.ContentPolicy
+import me.him188.ani.app.ui.comment.BangumiCommentSticker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.AuthState
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.launchInMain
+import me.him188.ani.app.ui.settings.danmaku.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.components.comment.BangumiCommentSticker
 import me.him188.ani.app.ui.subject.components.comment.CommentContext
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
 import me.him188.ani.app.ui.subject.components.comment.CommentLoader
@@ -90,7 +91,6 @@ import me.him188.ani.app.ui.subject.episode.video.PlayerLauncher
 import me.him188.ani.app.ui.subject.episode.video.PlayerSkipOpEdState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
-import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState

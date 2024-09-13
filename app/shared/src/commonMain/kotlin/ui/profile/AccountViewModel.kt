@@ -35,7 +35,3 @@ class AccountViewModel : AbstractViewModel(), KoinComponent {
         logoutEnabled = true
     }
 }
-
-class DebugInfo(
-    val properties: Map<String, String?>,
-)

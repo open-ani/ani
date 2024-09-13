@@ -60,7 +60,7 @@ import me.him188.ani.app.ui.foundation.icons.GithubMark
 import me.him188.ani.app.ui.foundation.icons.QqRoundedOutline
 import me.him188.ani.app.ui.foundation.icons.Telegram
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
-import me.him188.ani.app.ui.profile.AniHelpNavigator
+import me.him188.ani.app.ui.settings.tabs.AniHelpNavigator
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

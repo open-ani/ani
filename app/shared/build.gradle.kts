@@ -77,6 +77,7 @@ kotlin {
         api(projects.app.shared.uiFoundation)
         api(projects.app.shared.videoPlayer)
         api(projects.app.shared.videoPlayer.torrentSource)
+        api(projects.app.shared.uiSettings)
 
         // Compose
         api(compose.foundation)
@@ -130,7 +131,6 @@ kotlin {
 
         // Others
         api(libs.koin.core) 
-        api(libs.directories) // Data directories on all OSes
         api(libs.coil.core)
         api(libs.coil.svg)
         api(libs.coil.compose.core)
@@ -216,9 +216,6 @@ kotlin {
 
         implementation(libs.selenium.java)
         implementation(libs.webdrivermanager)
-
-        implementation(libs.filekit.core)
-        implementation(libs.filekit.compose)
     }
 }
 

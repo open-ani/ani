@@ -32,11 +32,11 @@ import me.him188.ani.app.ui.foundation.effects.TAG_CURSOR_VISIBILITY_EFFECT_VISI
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.framework.runAniComposeUiTest
+import me.him188.ani.app.ui.settings.danmaku.createTestDanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
-import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -115,7 +115,7 @@ class EpisodeVideoCursorTest {
                     brightnessController = NoOpLevelController,
                     leftBottomTips = {},
                     modifier = Modifier.weight(1f),
-                    danmakuRegexFilterState = createDanmakuRegexFilterState(),
+                    danmakuRegexFilterState = createTestDanmakuRegexFilterState(),
                     gestureFamily = gestureFamily,
                 )
 

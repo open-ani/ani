@@ -13,8 +13,8 @@ import me.him188.ani.app.tools.caching.LazyDataCacheContext
 import me.him188.ani.app.tools.caching.RefreshOrderPolicy
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.app.ui.subject.components.comment.richtext.toUIBriefText
-import me.him188.ani.app.ui.subject.components.comment.richtext.toUIRichElements
+import me.him188.ani.app.ui.richtext.toUIBriefText
+import me.him188.ani.app.ui.richtext.toUIRichElements
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.utils.bbcode.BBCode
 import kotlin.coroutines.CoroutineContext

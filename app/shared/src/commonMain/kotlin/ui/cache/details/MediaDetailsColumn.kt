@@ -30,59 +30,17 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
+import me.him188.ani.app.ui.media.MediaDetailsRenderer
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
-import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.isSingleEpisode
-import kotlin.jvm.JvmName
 
-object MediaDetailsRenderer {
-    @JvmName("renderSubtitleKindNotNull")
-    fun renderSubtitleKind(subtitleKind: SubtitleKind): String = renderSubtitleKind(subtitleKind as SubtitleKind?)!!
-
-    fun renderSubtitleKind(
-        subtitleKind: SubtitleKind?
-    ): String? {
-        return when (subtitleKind) {
-            SubtitleKind.EMBEDDED -> "内嵌"
-            SubtitleKind.CLOSED -> "内封"
-            SubtitleKind.EXTERNAL_PROVIDED -> "外挂"
-            SubtitleKind.EXTERNAL_DISCOVER -> "未知"
-            SubtitleKind.CLOSED_OR_EXTERNAL_DISCOVER -> "内封或未知"
-            null -> null
-        }
-    }
-
-    fun renderSubtitleLanguages(
-        subtitleKind: SubtitleKind?,
-        subtitleLanguageIds: List<String>
-    ): String = buildString {
-        if (subtitleKind != null) {
-            append("[")
-            append(renderSubtitleKind(subtitleKind))
-            append("] ")
-        } else {
-            if (subtitleLanguageIds.isEmpty()) {
-                append("未知")
-            }
-        }
-
-        for ((index, subtitleLanguageId) in subtitleLanguageIds.withIndex()) {
-            append(renderSubtitleLanguage(subtitleLanguageId))
-            if (index != subtitleLanguageIds.size - 1) {
-                append(" ")
-            }
-        }
-    }
-}
 
 @Composable
 fun MediaDetailsColumn(

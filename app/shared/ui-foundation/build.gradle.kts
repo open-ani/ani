@@ -11,12 +11,12 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        implementation(projects.app.shared.appData)
-        implementation(projects.app.shared.appPlatform)
-        implementation(projects.utils.platform)
-        implementation(libs.kotlinx.coroutines.core)
+        api(projects.app.shared.appData)
+        api(projects.app.shared.appPlatform)
+        api(projects.utils.platform)
+        api(libs.kotlinx.coroutines.core)
         implementation(projects.danmaku.danmakuApi)
-        implementation(libs.kotlinx.collections.immutable)
+        api(libs.kotlinx.collections.immutable)
         implementation(libs.kotlinx.serialization.protobuf)
         implementation(projects.app.shared.placeholder)
         
@@ -45,12 +45,12 @@ kotlin {
         api(libs.koin.core)
     }
     sourceSets.commonTest.dependencies {
-        implementation(projects.utils.uiTesting)
+        api(projects.utils.uiTesting)
     }
     sourceSets.androidMain.dependencies {
-        implementation(libs.androidx.compose.ui.tooling.preview)
-        implementation(libs.androidx.compose.ui.tooling)
-        implementation(libs.compose.material3.adaptive.core.get().toString()) {
+        api(libs.androidx.compose.ui.tooling.preview)
+        api(libs.androidx.compose.ui.tooling)
+        api(libs.compose.material3.adaptive.core.get().toString()) {
             exclude("androidx.window.core", "window-core")
         }
         // Preview only
@@ -58,9 +58,15 @@ kotlin {
     sourceSets.desktopMain.dependencies {
         implementation(libs.jna)
         implementation(libs.jna.platform)
+        api(libs.directories)
     }
 }
 
 android {
     namespace = "me.him188.ani.app.foundation"
+}
+
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "me.him188.ani.app.ui.foundation"
 }

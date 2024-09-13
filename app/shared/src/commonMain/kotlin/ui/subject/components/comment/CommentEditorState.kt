@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.comment.CommentEditorTextState
 import org.jetbrains.compose.resources.DrawableResource
 import kotlin.coroutines.CoroutineContext
 

@@ -37,10 +37,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
-import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
+import me.him188.ani.app.ui.settings.danmaku.DanmakuRegexFilterState
+import me.him188.ani.app.ui.settings.danmaku.RegexFilterItem
+import me.him188.ani.app.ui.settings.danmaku.isValidRegex
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
-import me.him188.ani.app.ui.subject.episode.video.settings.RegexFilterItem
-import me.him188.ani.app.ui.subject.episode.video.settings.isValidRegex
 import me.him188.ani.utils.platform.Uuid
 
 

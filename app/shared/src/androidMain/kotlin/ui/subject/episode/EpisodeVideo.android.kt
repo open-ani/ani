@@ -15,11 +15,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
+import me.him188.ani.app.ui.settings.danmaku.createTestDanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSourceResults
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
-import me.him188.ani.app.ui.subject.episode.video.settings.createDanmakuRegexFilterState
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.rememberTestEpisodeSelectorState
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
@@ -128,7 +128,7 @@ private fun PreviewVideoScaffoldImpl(
         leftBottomTips = {
             PlayerControllerDefaults.LeftBottomTips(onClick = {})
         },
-        danmakuRegexFilterState = createDanmakuRegexFilterState(),
+        danmakuRegexFilterState = createTestDanmakuRegexFilterState(),
         audioController = NoOpLevelController,
         brightnessController = NoOpLevelController,
     )
