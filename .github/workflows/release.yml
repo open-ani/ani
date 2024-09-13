@@ -270,7 +270,7 @@ jobs:
 
       - name: Build Anitorrent
         if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
-        run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:buildAnitorrent ${{ env.gradleArgs }}
+        run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:anitorrent-native:buildAnitorrent ${{ env.gradleArgs }}
 
       - name: Check
         run: ./gradlew check ${{ env.gradleArgs }}
