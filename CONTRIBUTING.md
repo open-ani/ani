@@ -169,6 +169,8 @@ flowchart TD
         :utils:logging
         :utils:coroutines
         :utils:testing
+        :utils:bbcode
+        :utils:ip-parser
         :utils:...(...)
         class :utils:... omitted
     end
@@ -221,23 +223,30 @@ flowchart TD
     APP --> BitTorrent
 
     subgraph "APP"
-        android[":app:android <br/> Android 入口"] --> shared
-        desktop[":app:desktop <br/> 桌面端入口"] --> shared
-        ios[":app:ios <br/> 计划"] --> shared
-        client[":client<br/>Ani 服务客户端 (弹幕+登录)"]
-        shared[":app:shared<br/>APP 主要代码"] --> client
+        android[":app:android <br/> Android 入口"] --> shared:application
+        desktop[":app:desktop <br/> 桌面端入口"] --> shared:application
+        ios[":app:ios <br/> 计划"] --> shared:application
+        shared:application[":app:shared:application<br/>APP 启动入口"] --> shared
+        shared:app-data[":app:shared:app-data<br/>数据层"]
+        shared:app-data --> shared:app-platform
+        shared:app-data --> client
+        shared:ui-foundation[":app:shared:ui-foundation<br/>UI 通用组件"] --> shared:app-platform
+        shared:app-platform[":app:shared:app-platform<br/>平台 API 适配"]
+        shared[":app:shared<br/>UI 和业务逻辑"] --> shared:app-data
+        shared --> shared:ui-foundation
+        client[":client<br/>Ani 云服务客户端 (弹幕+登录)"]
         style android fill: cyan, color: black
         style desktop fill: cyan, color: black
         style ios fill: cyan, stroke-dasharray: 4 4, color: black
 
         subgraph "UI组件"
-            direction TB
             image-viewer[:app:shared:image-view<br/>图片查看器]
             video-player[:app:shared:video-player<br/>视频播放器]
             placeholder[:app:shared:placeholder<br/>载入特效组件]
             reorderable[:app:shared:reorderable<br/>长按排序组件]
         end
 
+        UI组件 --> shared:ui-foundation
         shared --> UI组件
     end
 ```
