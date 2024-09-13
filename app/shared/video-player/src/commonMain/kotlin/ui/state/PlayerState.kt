@@ -33,8 +33,8 @@ import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
-import me.him188.ani.app.videoplayer.torrent.FileVideoData
-import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
+import me.him188.ani.app.videoplayer.data.torrent.FileVideoData
+import me.him188.ani.app.videoplayer.data.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info

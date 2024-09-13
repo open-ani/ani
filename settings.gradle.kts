@@ -56,10 +56,20 @@ includeProject(":torrent:anitorrent")
 includeProject(":torrent:anitorrent:anitorrent-native")
 
 // client
-includeProject(":app:shared", "app/shared") // shared by clients (targets JVM)
+includeProject(":app:shared")
+includeProject(":app:shared:app-data", "app/shared/data")
+includeProject(":app:shared:ui-foundation")
+includeProject(":app:shared:video-player:video-player-api", "app/shared/video-player/api")
+includeProject(":app:shared:video-player:torrent-source")
+includeProject(":app:shared:video-player")
+includeProject(":app:shared:app-base", "app/shared/foundation")
+includeProject(":app:shared:placeholder")
+includeProject(":app:shared:application")
+includeProject(":app:shared:image-viewer")
+
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client
-includeProject(":app:shared:image-viewer")
+
 includeProject(":client")
 
 // server
@@ -90,6 +100,7 @@ includeProject(":datasource:jellyfin", "datasource/jellyfin")
 includeProject(":datasource:ikaros", "datasource/ikaros") // https://ikaros.run/
 
 // danmaku
+includeProject(":danmaku:danmaku-ui-config", "danmaku/ui-config")
 includeProject(":danmaku:danmaku-api", "danmaku/api")
 includeProject(":danmaku:danmaku-ui", "danmaku/ui")
 includeProject(":danmaku:dandanplay", "danmaku/dandanplay")

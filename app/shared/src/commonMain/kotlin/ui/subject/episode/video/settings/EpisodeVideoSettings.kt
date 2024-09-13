@@ -30,6 +30,7 @@ import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.rememberDebugSettingsViewModel
 import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsDefaults
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
@@ -43,7 +44,7 @@ import org.koin.core.component.inject
 import kotlin.math.roundToInt
 
 @Stable
-class EpisodeVideoSettingsViewModel : AbstractViewModel(), KoinComponent {
+class EpisodeVideoSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
     private val danmakuRegexFilterRepository by inject<DanmakuRegexFilterRepository>()
 

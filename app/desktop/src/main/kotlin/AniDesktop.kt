@@ -70,7 +70,7 @@ import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getCommonKoinModule
-import me.him188.ani.app.platform.isSystemInFullscreen
+import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
 import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.navigation.SkikoOnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.notification.NoopNotifManager
@@ -175,7 +175,7 @@ object AniDesktop {
 
         coroutineScope.launch(Dispatchers.IO) {
             // since 3.4.0, anitorrent 增加后不兼容 QB 数据
-            File(projectDirectories.cacheDir).resolve("torrent").let {
+            File(projectDirectories.cacheDir).resolve("data/torrent").let {
                 if (it.exists()) {
                     it.deleteRecursively()
                 }

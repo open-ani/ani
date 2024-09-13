@@ -110,6 +110,11 @@ inline fun Platform.isDesktop(): Boolean {
     return this is Platform.Desktop
 }
 
+inline fun Platform.isIos(): Boolean {
+    contract { returns(true) implies (this@isIos is Platform.Ios) }
+    return this is Platform.Ios
+}
+
 inline fun Platform.isMobile(): Boolean {
     contract { returns(true) implies (this@isMobile is Platform.Mobile) }
     return this is Platform.Mobile

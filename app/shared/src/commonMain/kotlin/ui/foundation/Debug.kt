@@ -8,12 +8,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 
-class DebugSettingsViewModel : AbstractViewModel(), KoinComponent {
+class DebugSettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository by inject<SettingsRepository>()
     val debugSettings =
         settingsRepository.debugSettings.stateInBackground(placeholder = DebugSettings(_placeHolder = -1))

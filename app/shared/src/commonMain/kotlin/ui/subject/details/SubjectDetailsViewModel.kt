@@ -22,7 +22,7 @@ import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.CommentRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator

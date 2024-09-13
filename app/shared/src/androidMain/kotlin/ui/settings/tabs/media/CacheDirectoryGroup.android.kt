@@ -18,10 +18,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -169,10 +169,10 @@ actual fun SettingsScope.CacheDirectoryGroup(state: CacheDirectoryGroupState) {
             } else null,
             confirmButton = {
                 if (cacheVm.migrationStatus.isError) {
-                    val browserNavigator = LocalBrowserNavigator.current
+                    val browserNavigator = LocalUriHandler.current
                     TextButton(
                         {
-                            browserNavigator.openBrowser(context, FEEDBACK_URL)
+                            browserNavigator.openUri(FEEDBACK_URL)
                             cacheVm.exitApp()
                         },
                     ) { Text("提交反馈") }

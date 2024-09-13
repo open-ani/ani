@@ -48,11 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.navigation.BackHandler
@@ -94,7 +94,7 @@ fun SubjectDetailsScene(
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
-    val browserNavigator = LocalBrowserNavigator.current
+    val browserNavigator = LocalUriHandler.current
 
     var showSelectEpisode by rememberSaveable { mutableStateOf(false) }
     if (showSelectEpisode) {
@@ -156,7 +156,7 @@ fun SubjectDetailsScene(
             SubjectDetailsDefaults.SubjectCommentColumn(
                 state = vm.subjectCommentState,
                 onClickUrl = {
-                    RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+                    RichTextDefaults.checkSanityAndOpen(it, browserNavigator, toaster)
                 },
                 onClickImage = { imageViewer.viewImage(it) },
                 connectedScrollState,
@@ -177,7 +177,7 @@ fun SubjectDetailsScene(
                 }
             }
         },
-        modifier, 
+        modifier,
         showTopBar = showTopBar,
         showBlurredBackground = showBlurredBackground,
         windowInsets = windowInsets,

@@ -61,6 +61,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -71,11 +72,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
-import me.him188.ani.app.navigation.LocalBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.navigation.BackHandler
-import me.him188.ani.app.platform.setRequestFullScreen
+import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.tools.rememberUiMonoTasker
@@ -688,9 +688,8 @@ private fun EpisodeCommentColumn(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
-    val context = LocalContext.current
     val toaster = LocalToaster.current
-    val browserNavigator = LocalBrowserNavigator.current
+    val browserNavigator = LocalUriHandler.current
 
     EpisodeCommentColumn(
         state = commentState,
@@ -715,7 +714,7 @@ private fun EpisodeCommentColumn(
             setShowEditCommentSheet(true)
         },
         onClickUrl = {
-            RichTextDefaults.checkSanityAndOpen(it, context, browserNavigator, toaster)
+            RichTextDefaults.checkSanityAndOpen(it, browserNavigator, toaster)
         },
         modifier = modifier.fillMaxSize(),
         lazyListState = lazyListState,

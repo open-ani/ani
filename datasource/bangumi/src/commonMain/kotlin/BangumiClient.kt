@@ -24,6 +24,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.plugin
 import io.ktor.client.request.bearerAuth
@@ -62,6 +63,8 @@ import me.him188.ani.datasources.bangumi.models.search.BangumiSort
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiLegacySubject
 import me.him188.ani.datasources.bangumi.models.subjects.BangumiSubjectImageSize
 import me.him188.ani.datasources.bangumi.next.apis.SubjectBangumiNextApi
+import me.him188.ani.utils.ktor.ClientProxyConfig
+import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.registerLogging
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.serialization.toJsonArray
@@ -122,6 +125,22 @@ interface BangumiClient : Closeable {
     }
 }
 
+fun createBangumiClient(
+    bearerToken: Flow<String?>,
+    proxyConfig: ClientProxyConfig?,
+    parentCoroutineContext: CoroutineContext,
+    userAgent: String,
+): BangumiClient {
+    return BangumiClient.create(
+        bearerToken,
+        parentCoroutineContext,
+    ) {
+        proxy(proxyConfig)
+        install(UserAgent) {
+            agent = userAgent
+        }
+    }
+}
 class DelegateBangumiClient(
     private val client: Flow<BangumiClient>,
 ) : BangumiClient {

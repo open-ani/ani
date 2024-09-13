@@ -1,6 +1,7 @@
 package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.test.runTest
+import me.him188.ani.app.ui.subject.episode.video.TorrentMediaCacheProgressState
 import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.ui.framework.runComposeStateTest

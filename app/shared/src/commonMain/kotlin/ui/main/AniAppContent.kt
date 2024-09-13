@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.navigation.compose.rememberNavController
 import me.him188.ani.app.navigation.AniNavigator
-import me.him188.ani.app.platform.showTabletUI
+import me.him188.ani.app.ui.foundation.layout.showTabletUI
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 

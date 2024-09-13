@@ -33,7 +33,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
-import me.him188.ani.app.platform.isSystemInFullscreen
+import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
 import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.navigation.OnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.notification.NoopNotifManager
@@ -78,7 +78,7 @@ fun MainViewController(): UIViewController {
 
     val koin = startKoin {
         modules(getCommonKoinModule({ context }, scope))
-        modules(getIosModules(Path(SystemDocumentDir).resolve("torrent").inSystem, scope)) // TODO IOS
+        modules(getIosModules(Path(SystemDocumentDir).resolve("data/torrent").inSystem, scope)) // TODO IOS
     }.startCommonKoinModule(scope).koin
 
     koin.get<TorrentManager>() // start sharing, connect to DHT now

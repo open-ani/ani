@@ -6,9 +6,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.Dp
-import me.him188.ani.app.platform.AudioManager
-import me.him188.ani.app.platform.BrightnessManager
-import me.him188.ani.app.platform.StreamType
+import me.him188.ani.app.videoplayer.freatures.AudioManager
+import me.him188.ani.app.videoplayer.freatures.BrightnessManager
+import me.him188.ani.app.videoplayer.freatures.StreamType
 
 interface LevelController {
     val level: Float

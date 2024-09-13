@@ -27,5 +27,5 @@ kotlin {
 }
 
 android {
-    namespace = "me.him188.ani.app.platform"
+    namespace = "me.him188.ani.utils.platform"
 }

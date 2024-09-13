@@ -43,8 +43,8 @@ import me.him188.ani.app.data.repository.EpisodePlayHistoryRepository
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.BangumiCommentSticker
-import me.him188.ani.app.data.source.CommentLoader
-import me.him188.ani.app.data.source.CommentMapperContext
+import me.him188.ani.app.ui.subject.components.comment.CommentLoader
+import me.him188.ani.app.ui.subject.components.comment.CommentMapperContext
 import me.him188.ani.app.data.source.danmaku.DanmakuManager
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager

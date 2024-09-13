@@ -146,19 +146,6 @@ fun EpisodeListDialog(
     }
 }
 
-/**
- * Describes the progress of an episode (of a subject)
- */
-@Stable
-class EpisodeProgressItem(
-    val episodeId: Int,
-    val episodeSort: String,
-    val collectionType: UnifiedCollectionType,
-    val isOnAir: Boolean?,
-    val cacheStatus: EpisodeCacheStatus?,
-) {
-    var isLoading by mutableStateOf(false)
-}
 
 @Composable
 fun EpisodeListFlowRow(

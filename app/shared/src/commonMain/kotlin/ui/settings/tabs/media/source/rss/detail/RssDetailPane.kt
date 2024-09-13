@@ -31,10 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.navigation.LocalBrowserNavigator
-import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.cache.details.MediaDetailsColumn
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -98,8 +97,7 @@ private fun RssItemDetailColumn(
     item: RssItemPresentation,
     modifier: Modifier = Modifier,
 ) {
-    val browser = LocalBrowserNavigator.current
-    val context = LocalContext.current
+    val browser = LocalUriHandler.current
     val clipboard = LocalClipboardManager.current
 
     LazyVerticalGrid(
@@ -118,7 +116,7 @@ private fun RssItemDetailColumn(
             }
         }
         val browseContent = @Composable { url: () -> String ->
-            IconButton({ browser.openBrowser(context, url()) }) {
+            IconButton({ browser.openUri(url()) }) {
                 Icon(Icons.Rounded.ArrowOutward, contentDescription = "打开链接")
             }
         }
