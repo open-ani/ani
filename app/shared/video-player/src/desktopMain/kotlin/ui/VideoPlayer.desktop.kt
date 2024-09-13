@@ -109,6 +109,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun stopImpl() {
+        currentPositionMillis.value = 0L
         player.submit {
             player.controls().stop()
         }
