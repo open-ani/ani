@@ -61,8 +61,8 @@ class PeerFilterSettingsState(
     
     var clientFilterEnabled by storage.prop({ it.enableClientFilter }, { copy(enableClientFilter = it) }, false)
     var clientFilters by storage.prop(
-        get = { it.idRegexFilters.joinToString("\n") },
-        copy = { copy(idRegexFilters = it.split('\n')) },
+        get = { it.clientRegexFilters.joinToString("\n") },
+        copy = { copy(clientRegexFilters = it.split('\n')) },
         default = ""
     )
     
