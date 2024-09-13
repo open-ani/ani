@@ -47,7 +47,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
@@ -302,6 +301,9 @@ private fun UserAvatarInNavigation(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * 需要 consume [WindowInsetsSides.Bottom] 和 [WindowInsetsSides.Horizontal]
+ */
 @Composable
 private fun HomeScenePortrait(
     windowInsets: WindowInsets,
@@ -318,51 +320,50 @@ private fun HomeScenePortrait(
                 searchViewModel.searchActive = false
             }
 
-            Column(Modifier.alpha(0.97f)) {
-                Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
-                    HorizontalDivider(thickness = 1.dp)
+            Column(Modifier.background(MaterialTheme.colorScheme.surface)) {
+                HorizontalDivider(thickness = 1.dp)
 
-                    NavigationBar(
-                        containerColor = AniThemeDefaults.navigationContainerColor,
-                    ) {
-                        NavigationBarItem(
-                            pagerState.currentPage == 0,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(0)
-                                }
-                                closeSearch()
-                            },
-                            icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                            label = { Text(text = "找番") },
-                        )
-                        NavigationBarItem(
-                            pagerState.currentPage == 1,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(1)
-                                }
-                                closeSearch()
-                            },
-                            icon = { Icon(Icons.Rounded.Star, null) },
-                            label = { Text(text = "追番") },
-                        )
-                        NavigationBarItem(
-                            pagerState.currentPage == 2,
-                            onClick = {
-                                uiScope.launch {
-                                    pagerState.scrollToPage(2)
-                                }
-                                closeSearch()
-                            },
-                            icon = { Icon(Icons.Rounded.Settings, null) },
-                            label = { Text(text = "我的") },
-                        )
-                    }
+                NavigationBar(
+                    containerColor = AniThemeDefaults.navigationContainerColor,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                ) {
+                    NavigationBarItem(
+                        pagerState.currentPage == 0,
+                        onClick = {
+                            uiScope.launch {
+                                pagerState.scrollToPage(0)
+                            }
+                            closeSearch()
+                        },
+                        icon = { Icon(Icons.Rounded.TravelExplore, null) },
+                        label = { Text(text = "找番") },
+                    )
+                    NavigationBarItem(
+                        pagerState.currentPage == 1,
+                        onClick = {
+                            uiScope.launch {
+                                pagerState.scrollToPage(1)
+                            }
+                            closeSearch()
+                        },
+                        icon = { Icon(Icons.Rounded.Star, null) },
+                        label = { Text(text = "追番") },
+                    )
+                    NavigationBarItem(
+                        pagerState.currentPage == 2,
+                        onClick = {
+                            uiScope.launch {
+                                pagerState.scrollToPage(2)
+                            }
+                            closeSearch()
+                        },
+                        icon = { Icon(Icons.Rounded.Settings, null) },
+                        label = { Text(text = "我的") },
+                    )
                 }
             }
         },
-        contentWindowInsets = windowInsets,
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal),
     ) { contentPadding ->
         val navigator by rememberUpdatedState(LocalNavigator.current)
 
@@ -389,7 +390,8 @@ private fun HomeScenePortrait(
                         onClickCaches = {
                             navigator.navigateCaches()
                         },
-                        Modifier,
+                        modifier = Modifier.padding(contentPadding),
+                        windowInsets = windowInsets,
                     )
 
                     2 -> {

@@ -102,7 +102,7 @@ val COLLECTION_TABS_SORTED = listOf(
 )
 
 /**
- * My collections
+ * My collections, 需要 consume [WindowInsetsSides.Top]
  */
 @Composable
 fun CollectionPane(
@@ -165,7 +165,7 @@ fun CollectionPane(
                         }
                     },
                     colors = topAppBarColors,
-                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                    windowInsets = windowInsets.only(WindowInsetsSides.Top),
                 )
 
                 ScrollableTabRow(
@@ -204,7 +204,6 @@ fun CollectionPane(
 //                HorizontalDivider()
             }
         },
-        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
         containerColor = AniThemeDefaults.navigationContainerColor,
     ) { topBarPaddings ->
         Surface(
