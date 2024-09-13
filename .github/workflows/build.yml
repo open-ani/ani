@@ -146,7 +146,7 @@ jobs:
 
       - name: Cache Anitorrent for Desktop
         if: ${{ matrix.anitorrent }}
-        id: cache-anitorrent-android
+        id: cache-anitorrent-desktop
         uses: actions/cache@v4
         with:
           path: |
