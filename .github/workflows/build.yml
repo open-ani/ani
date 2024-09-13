@@ -64,7 +64,7 @@ jobs:
             compose_resource_triple: macos-arm64
             run_tests: true
             gradleArgs: >-
-              -Dorg.gradle.jvmargs=-Xmx3g
+              -Dorg.gradle.jvmargs=-Xmx4g
               -Dfile.encoding=UTF-8
               -Dkotlin.daemon.jvm.options=-Xmx3g
               -Pani.build.framework=false
