@@ -119,7 +119,7 @@ android {
             )
         }
         debug {
-            applicationIdSuffix = ".debug2"
+            applicationIdSuffix = getLocalProperty("ani.android.debug.applicationIdSuffix") ?: ".debug2"
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("debug")
         }
