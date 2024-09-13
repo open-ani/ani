@@ -217,11 +217,11 @@ jobs:
 
       - name: Link iOS Tests
         if: ${{ matrix.run_tests && env.isMac == 'true' }}
-        run: ./gradlew linkDebugTestIosArm64 ${{ env.gradleArgs }} --no-parallel
+        run: ./gradlew linkDebugTestIosArm64 ${{ env.gradleArgs }}
 
       - name: Link iOS Tests
         if: ${{ matrix.run_tests && env.isMac == 'true' }}
-        run: ./gradlew linkDebugTestIosSimulatorArm64 ${{ env.gradleArgs }} --no-parallel
+        run: ./gradlew linkDebugTestIosSimulatorArm64 ${{ env.gradleArgs }}
 
       - name: Check
         if: ${{ matrix.run_tests }}
