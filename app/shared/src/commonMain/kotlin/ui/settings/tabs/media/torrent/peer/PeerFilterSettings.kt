@@ -138,6 +138,7 @@ fun PeerFilterSettingsPage(
                 AnimatedPane1 { 
                     BlockListEditPane(
                         blockedIpList = filteredList,
+                        newBlockedIpValue = state.newBlockedIpValue,
                         contentPadding = paddingValues,
                         showTitle = isDualPane,
                         onAdd = { state.addBlockedIp(it) },

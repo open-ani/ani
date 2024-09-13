@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.subject.components.comment.CommentEditorTextState
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -25,11 +26,12 @@ fun PreviewBlockListEditPane() {
                 .toMutableList()
         }
         BlockListEditPane(
-            blockedIpList = list, 
-            contentPadding = PaddingValues(16.dp), 
+            blockedIpList = list,
+            newBlockedIpValue = remember { CommentEditorTextState("") },
+            contentPadding = PaddingValues(16.dp),
             showTitle = true,
             onAdd = { list.addAll(it) },
-            onRemove = { newIp -> list.removeIf { it == newIp } }
+            onRemove = { newIp -> list.removeIf { it == newIp } },
         )
     }
 }

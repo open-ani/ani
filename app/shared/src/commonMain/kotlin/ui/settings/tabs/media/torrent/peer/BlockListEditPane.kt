@@ -68,6 +68,7 @@ private fun validateIp(value: String): Boolean {
 @Composable
 fun BlockListEditPane(
     blockedIpList: List<String>,
+    newBlockedIpValue: CommentEditorTextState,
     contentPadding: PaddingValues,
     showTitle: Boolean,
     onAdd: (List<String>) -> Unit,
@@ -140,7 +141,6 @@ fun BlockListEditPane(
         }
     }
 
-    val newBlockedIpValue = rememberSaveable(CommentEditorTextState.Saver) { CommentEditorTextState("") }
     var isIpValueValid by rememberSaveable { mutableStateOf(true) }
     val dialogAddButtonEnabled by derivedStateOf { newBlockedIpValue.textField.text.isNotEmpty() }
     
@@ -213,6 +213,10 @@ fun BlockListEditPane(
                             }
                         }
                     }
+                    
+                    SideEffect {
+                        focusRequester.requestFocus()
+                    }
                 }
             },
             confirmButton = { 
@@ -229,8 +233,5 @@ fun BlockListEditPane(
                 }
             }
         )
-        SideEffect { 
-            focusRequester.requestFocus()
-        }
     }
 }
