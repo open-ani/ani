@@ -72,7 +72,7 @@ class DanmakuHostState(
 
     /**
      * 所有在 [floatingTrack], [topTrack] 和 [bottomTrack] 弹幕.
-     * 在这里保留一个引用, 方便在 [recalculatePresentDanmakuPositions] 的时候重新计算所有弹幕位置.
+     * 在这里保留一个引用, 方便在 [repopulatePresentDanmaku] 的时候重新计算所有弹幕位置.
      * 大部分弹幕是按时间排序的, 确保 [removeFirst] 操作能消耗较低的时间.
      */
     internal val presentFloatingDanmaku: MutableList<FloatingDanmaku<StyledDanmaku>> = mutableListOf()
@@ -141,7 +141,7 @@ class DanmakuHostState(
                         updateTrackCount(trackCount, newConfig)
                         // 如果弹幕字体大小变化了也会导致弹幕重置
                         if (lastFontSize != newConfig.style.fontSize) {
-                            recalculatePresentDanmakuPositions(elapsedFrameTimeNanos)
+                            repopulatePresentDanmaku(elapsedFrameTimeNanos)
                             lastFontSize = newConfig.style.fontSize
                         }
                         danmakuUpdateSubscription++ // update subscription manually if paused
@@ -158,7 +158,7 @@ class DanmakuHostState(
                     old.safeSeparation == new.safeSeparation && old.isDebug == new.isDebug
                 }.collect { newConfig ->
                     updateTrackProperties(newConfig)
-                    recalculatePresentDanmakuPositions(elapsedFrameTimeNanos)
+                    repopulatePresentDanmaku(elapsedFrameTimeNanos)
                     danmakuUpdateSubscription++ // update subscription manually if paused
                 }
             }
@@ -288,11 +288,11 @@ class DanmakuHostState(
     }
 
     /**
-     * 重新放置屏幕上弹幕的位置. 这也会导致样式和静态位置重置.
+     * 重新放置屏幕上弹幕的位置.
      *
      * 此方法的行为与 [repopulate] 相同, 但是具有更高的执行效率.
      */
-    private suspend fun recalculatePresentDanmakuPositions(currentElapsedFrameTimeNanos: Long) {
+    private suspend fun repopulatePresentDanmaku(currentElapsedFrameTimeNanos: Long) {
         uiContext.await()
         val presentFloatingDanmakuCopied = presentFloatingDanmaku.toList()
         val presentFixedDanmakuCopied = presentFixedDanmaku.toList()
@@ -309,6 +309,10 @@ class DanmakuHostState(
                 trySend(it.danmaku.presentation, placeFrameTimeNanos)
             }
         }
+        
+        // 暂停时重新放置后需要计算一次位置, 否则重新填充弹幕后,
+        // 暂停的这一帧中所有填充的弹幕的静态属性都没有被计算而导致屏幕上没有弹幕
+        if (paused) calculateDanmakuInFrame(0L, 0f)
     }
 
     internal suspend fun interpolateFrameLoop() {
@@ -337,24 +341,36 @@ class DanmakuHostState(
                         // avgFrameTimeNanos += delta
                         currentFrameTimeNanos = nanos
 
-                        for (danmaku in presentFloatingDanmaku) {
-                            // calculate y once
-                            if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
-                            // always calculate distance x
-                            danmaku.distanceX += delta / 1_000_000_000f * currentFloatingTrackSpeed
-                        }
-                        for (danmaku in presentFixedDanmaku) {
-                            if (danmaku.placeFrameTimeNanos == DanmakuTrack.NOT_PLACED) {
-                                danmaku.placeFrameTimeNanos = elapsedFrameTimeNanos
-                            }
-                            // calculate y once
-                            if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
-                        }
-
+                        calculateDanmakuInFrame(delta, currentFloatingTrackSpeed)
                         danmakuUpdateSubscription++ // update subscription manually if paused
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 计算一次弹幕的位置，若弹幕的静态位置没有被计算过，则会计算一次
+     * 
+     * @param appendedFrameTime 需要为浮动弹幕附加的帧时间，在[帧 loop][interpolateFrameLoop] 中需要增加帧时间.
+     * @param floatingTrackSpeed 浮动弹幕的基础速度.
+     */
+    private fun calculateDanmakuInFrame(
+        appendedFrameTime: Long,
+        floatingTrackSpeed: Float
+    ) {
+        for (danmaku in presentFloatingDanmaku) {
+            // calculate y once
+            if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
+            // always calculate distance x
+            danmaku.distanceX += appendedFrameTime / 1_000_000_000f * floatingTrackSpeed
+        }
+        for (danmaku in presentFixedDanmaku) {
+            if (danmaku.placeFrameTimeNanos == DanmakuTrack.NOT_PLACED) {
+                danmaku.placeFrameTimeNanos = elapsedFrameTimeNanos
+            }
+            // calculate y once
+            if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
         }
     }
 
