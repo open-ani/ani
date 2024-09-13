@@ -64,8 +64,8 @@ class PeerFilterSettingsState(
         default = ""
     )
     
-    fun addBlockedIp(value: String) {
-        ipBlackList = ipBlackList.toMutableList().apply { add(value) }
+    fun addBlockedIp(list: List<String>) {
+        ipBlackList = ipBlackList.toMutableList().apply { addAll(list) }
     }
     
     fun removeBlockedIp(value: String) {
