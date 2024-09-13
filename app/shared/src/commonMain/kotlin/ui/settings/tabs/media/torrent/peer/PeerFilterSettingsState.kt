@@ -39,7 +39,6 @@ class PeerFilterSettingsState(
             query to list
         }
         .transformLatest { (query, list) ->
-            kotlinx.coroutines.delay(500)
             // 需要去重，避免 lazy column 出现重复的 key
             emit(list.filter { it.contains(query) }.distinct())
         }
