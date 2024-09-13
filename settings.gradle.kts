@@ -66,6 +66,7 @@ includeProject(":app:shared:video-player")
 includeProject(":app:shared:placeholder")
 includeProject(":app:shared:application")
 includeProject(":app:shared:image-viewer")
+includeProject(":app:shared:test-module")
 
 includeProject(":app:desktop", "app/desktop") // desktop JVM client for macOS, Windows, and Linux
 includeProject(":app:android", "app/android") // Android client

@@ -37,8 +37,11 @@ configure<KotlinMultiplatformExtension> {
      *
      * `native - apple - ios` 的架构是为了契合 Kotlin 官方推荐的默认架构. 以后如果万一要添加其他平台, 可方便添加.
      */
-    iosArm64()
-    iosSimulatorArm64() // to run tests
+    if (project.enableIos) {
+        iosArm64()
+        iosSimulatorArm64() // to run tests
+        // no x86
+    }
     if (android != null) {
         jvm("desktop")
         androidTarget {
@@ -110,25 +113,27 @@ configure<KotlinMultiplatformExtension> {
         ).forEach { sourceSet ->
             sourceSet.dependencies {
                 // https://developer.android.com/develop/ui/compose/testing#setup
-                implementation("androidx.compose.ui:ui-test-junit4-android:1.6.8")
-                implementation("androidx.compose.ui:ui-test-manifest:1.6.8")
+                implementation("androidx.compose.ui:ui-test-junit4-android:1.7.0")
+                implementation("androidx.compose.ui:ui-test-manifest:1.7.0")
             }
         }
 
         dependencies {
-            "debugImplementation"("androidx.compose.ui:ui-test-manifest:1.6.8")
+            "debugImplementation"("androidx.compose.ui:ui-test-manifest:1.7.0")
         }
     }
 }
 
-// ios testing workaround
-// https://developer.squareup.com/blog/kotlin-multiplatform-shared-test-resources/
-tasks.register<Copy>("copyiOSTestResources") {
-    from("src/commonTest/resources")
-    into("build/bin/iosSimulatorArm64/debugTest/resources")
-}
-tasks.named("iosSimulatorArm64Test") {
-    dependsOn("copyiOSTestResources")
+if (enableIos) {
+    // ios testing workaround
+    // https://developer.squareup.com/blog/kotlin-multiplatform-shared-test-resources/
+    tasks.register<Copy>("copyiOSTestResources") {
+        from("src/commonTest/resources")
+        into("build/bin/iosSimulatorArm64/debugTest/resources")
+    }
+    tasks.named("iosSimulatorArm64Test") {
+        dependsOn("copyiOSTestResources")
+    }
 }
 
 if (android != null) {

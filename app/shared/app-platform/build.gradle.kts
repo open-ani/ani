@@ -101,10 +101,6 @@ kotlin.sourceSets.getByName("desktopMain") {
     kotlin.srcDirs(buildConfigDesktopDir)
 }
 
-kotlin.sourceSets.iosMain {
-    kotlin.srcDirs(buildConfigIosDir)
-}
-
 val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDesktop") {
     val file = buildConfigDesktopDir.get().asFile.resolve("AniBuildConfig.kt").apply {
         parentFile.mkdirs()
@@ -133,17 +129,21 @@ val generateAniBuildConfigDesktop = tasks.register("generateAniBuildConfigDeskto
     }
 }
 
-val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
-    val file = buildConfigIosDir.get().asFile.resolve("AniBuildConfig.kt").apply {
-        parentFile.mkdirs()
-        createNewFile()
+if (enableIos) {
+    kotlin.sourceSets.getByName("iosMain") {
+        kotlin.srcDirs(buildConfigIosDir)
     }
+    val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
+        val file = buildConfigIosDir.get().asFile.resolve("AniBuildConfig.kt").apply {
+            parentFile.mkdirs()
+            createNewFile()
+        }
 
-    inputs.property("project.version", project.version)
+        inputs.property("project.version", project.version)
 
-    outputs.file(file)
+        outputs.file(file)
 
-    val text = """
+        val text = """
             package me.him188.ani.app.platform
             object AniBuildConfigIos : AniBuildConfig {
                 override val versionName = "${project.version}"
@@ -152,12 +152,20 @@ val generateAniBuildConfigIos = tasks.register("generateAniBuildConfigIos") {
             }
             """.trimIndent()
 
-    outputs.upToDateWhen {
-        file.exists() && file.readText().trim() == text.trim()
-    }
+        outputs.upToDateWhen {
+            file.exists() && file.readText().trim() == text.trim()
+        }
 
-    doLast {
-        file.writeText(text)
+        doLast {
+            file.writeText(text)
+        }
+    }
+    tasks.withType(KotlinCompileTool::class) {
+        dependsOn(generateAniBuildConfigIos)
+    }
+} else {
+    tasks.register("generateAniBuildConfigIos") {
+        inputs.property("project.version", project.version) // 如果没有 input 会不能 cache
     }
 }
 
@@ -165,6 +173,3 @@ tasks.named("compileKotlinDesktop") {
     dependsOn(generateAniBuildConfigDesktop)
 }
 
-tasks.withType(KotlinCompileTool::class) {
-    dependsOn(generateAniBuildConfigIos)
-}
