@@ -27,7 +27,15 @@ internal abstract class AbstractAniComposeUiTest(override val composeUiTest: Com
         get() = composeUiTest.mainClock
 
     override fun <T> runOnUiThread(action: () -> T): T = composeUiTest.runOnUiThread(action)
-    override fun <T> runOnIdle(action: () -> T): T = composeUiTest.runOnIdle(action)
+    override fun <T> runOnIdle(action: () -> T): T {
+        waitForIdle()
+        val res = runOnUiThread {
+            action()
+        }
+        waitForIdle()
+        return res
+    }
+
     override fun waitForIdle() = composeUiTest.waitForIdle()
     override suspend fun awaitIdle() = composeUiTest.awaitIdle()
 
