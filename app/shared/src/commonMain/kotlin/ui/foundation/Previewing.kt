@@ -39,6 +39,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.io.files.Path
+import me.him188.ani.app.data.persistent.dataStores
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
+import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
@@ -109,6 +112,7 @@ fun ProvideCompositionLocalsForPreview(
                     single<PermissionManager> { GrantedPermissionManager }
                     single<BrowserNavigator> { NoopBrowserNavigator }
                     single<SettingsRepository> { PreferencesRepositoryImpl(MemoryDataStore(mutablePreferencesOf())) }
+                    single<DanmakuRegexFilterRepository> { DanmakuRegexFilterRepositoryImpl(MemoryDataStore(listOf())) }
                     module()
                 },
             )
