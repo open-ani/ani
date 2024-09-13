@@ -67,17 +67,13 @@ import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.JvmLogHelper
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getCommonKoinModule
-import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
-import me.him188.ani.app.platform.navigation.LocalOnBackPressedDispatcherOwner
-import me.him188.ani.app.platform.navigation.SkikoOnBackPressedDispatcherOwner
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
-import me.him188.ani.app.platform.window.LocalPlatformWindow
-import me.him188.ani.app.platform.window.PlatformWindow
 import me.him188.ani.app.platform.window.setTitleBarColor
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
@@ -85,6 +81,10 @@ import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalWindowState
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
+import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
+import me.him188.ani.app.ui.foundation.navigation.LocalOnBackPressedDispatcherOwner
+import me.him188.ani.app.ui.foundation.navigation.SkikoOnBackPressedDispatcherOwner
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toast
 import me.him188.ani.app.ui.foundation.widgets.ToastViewModel
@@ -175,7 +175,7 @@ object AniDesktop {
 
         coroutineScope.launch(Dispatchers.IO) {
             // since 3.4.0, anitorrent 增加后不兼容 QB 数据
-            File(projectDirectories.cacheDir).resolve("data/torrent").let {
+            File(projectDirectories.cacheDir).resolve("torrent").let {
                 if (it.exists()) {
                     it.deleteRecursively()
                 }
@@ -269,7 +269,7 @@ object AniDesktop {
                     // 防止闪眼
                     window.background = java.awt.Color.BLACK
                     window.contentPane.background = java.awt.Color.BLACK
-                    
+
                     logger.info {
                         "renderApi: " + this.window.renderApi
                     }

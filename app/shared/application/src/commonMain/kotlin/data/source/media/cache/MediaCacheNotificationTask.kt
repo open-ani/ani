@@ -45,7 +45,9 @@ class MediaCacheNotificationTask(
                     priority = NotifPriority.MIN
                 }
 
-                val visibleCount = atomic(0)
+                val visibleCount = object {
+                    val v = atomic(0)
+                }
                 for (storage in list) {
                     launch {
                         if (currentTimeMillis() - startTime < 5000) {
@@ -64,12 +66,12 @@ class MediaCacheNotificationTask(
                                         if (progress.isFinished) {
                                             caches = caches.remove(cache)
                                             visibleNotifications.remove(cache.cacheId)?.let {
-                                                visibleCount.decrementAndGet()
+                                                visibleCount.v.decrementAndGet()
                                                 it.release()
                                             }
                                         } else {
                                             visibleNotifications.getOrPut(cache.cacheId) {
-                                                visibleCount.incrementAndGet()
+                                                visibleCount.v.incrementAndGet()
                                                 channel.newNotif().apply {
                                                     setGroup("media-cache")
                                                     contentTitle = cache.previewText
@@ -110,7 +112,7 @@ class MediaCacheNotificationTask(
                     }
 
                     combine(stats.map { it.downloadSpeed }.sampleWithInitial(3000)) { downloadRate ->
-                        if (visibleCount.value == 0) {
+                        if (visibleCount.v.value == 0) {
                             summaryNotif.cancel()
                         } else {
                             summaryNotif.run {

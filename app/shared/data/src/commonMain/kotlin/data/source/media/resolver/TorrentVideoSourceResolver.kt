@@ -12,7 +12,7 @@ import me.him188.ani.app.torrent.api.files.FilePriority
 import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
-import me.him188.ani.app.videoplayer.data.torrent.TorrentVideoData
+import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.MediaExtraFiles

@@ -14,7 +14,6 @@ class VideoNotificationState(
 ) : KoinComponent {
     private val notificationManager: NotifManager by inject()
 
-    @OptIn(ExperimentalCoilApi::class)
     fun setAlbumArt(albumArt: Image) {
         val notif = mediaNotif()
         notif.updateAlbumArt(albumArt)

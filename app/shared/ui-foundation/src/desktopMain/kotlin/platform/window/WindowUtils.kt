@@ -2,6 +2,7 @@ package me.him188.ani.app.platform.window
 
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
+import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.utils.platform.Platform
 import java.awt.Cursor
 import java.awt.Point

@@ -17,11 +17,14 @@ kotlin {
         implementation(libs.kotlinx.coroutines.core)
         implementation(projects.danmaku.danmakuApi)
         implementation(libs.kotlinx.collections.immutable)
+        implementation(libs.kotlinx.serialization.protobuf)
+        implementation(projects.app.shared.placeholder)
         
         api(libs.coil.compose.core)
         api(libs.coil.svg)
         api(libs.coil.network.ktor2)
-        
+
+        implementation(compose.components.resources)
         api(libs.compose.lifecycle.viewmodel.compose)
         api(libs.compose.lifecycle.runtime.compose)
         api(libs.compose.navigation.compose)
@@ -35,6 +38,9 @@ kotlin {
         api(libs.compose.material3.adaptive.navigation0.get().toString()) {
             exclude("androidx.window.core", "window-core")
         }
+
+        implementation(projects.utils.bbcode)
+        implementation(libs.constraintlayout.compose)
         
         api(libs.koin.core)
     }
@@ -51,6 +57,7 @@ kotlin {
     }
     sourceSets.desktopMain.dependencies {
         implementation(libs.jna)
+        implementation(libs.jna.platform)
     }
 }
 

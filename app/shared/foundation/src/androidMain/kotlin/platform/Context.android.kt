@@ -18,25 +18,7 @@
 
 package me.him188.ani.app.platform
 
-import android.app.Activity
-import android.os.Build
-import android.util.Log
-import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsController
-import android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-import android.view.WindowManager
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import me.him188.ani.app.platform.window.PlatformWindowMP
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.toKtPath
@@ -47,7 +29,6 @@ actual typealias Context = android.content.Context
 
 actual val LocalContext: ProvidableCompositionLocal<Context>
     get() = androidx.compose.ui.platform.LocalContext
-
 
 
 internal actual val Context.filesImpl: ContextFiles

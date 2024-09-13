@@ -1,6 +1,5 @@
 package me.him188.ani.app.platform
 
-import android.content.Context
 import android.util.Log
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.joran.JoranConfigurator
@@ -8,7 +7,6 @@ import ch.qos.logback.core.util.StatusPrinter
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
-import java.io.File
 
 object AndroidLoggingConfigurator {
     @Language("xml")
@@ -62,18 +60,5 @@ object AndroidLoggingConfigurator {
             }
             StatusPrinter.print(factory)
         }
-    }
-
-    fun Context.getLogsDir(): File {
-        // /data/data/0/me.him188.ani/files/logs/
-        val logs = applicationContext.filesDir.resolve("logs")
-        if (!logs.exists()) {
-            logs.mkdirs()
-        }
-        return logs
-    }
-
-    fun Context.getCurrentLogFile(): File {
-        return getLogsDir().resolve("app.log")
     }
 }

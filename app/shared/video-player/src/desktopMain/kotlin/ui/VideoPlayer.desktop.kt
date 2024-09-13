@@ -28,12 +28,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
+import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.emptyVideoData
 import me.him188.ani.app.videoplayer.io.SeekableInputCallbackMedia
-import me.him188.ani.app.videoplayer.data.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.VlcjVideoPlayerState.VlcjData
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.AudioTrack
@@ -123,7 +123,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             try {
                 screenshotPath.createDirectories()
             } catch (ex: IOException) {
-                logger.warn("Create ani pictures dir fail", ex);
+                logger.warn("Create ani pictures dir fail", ex)
             }
             val filePath = screenshotPath.resolve(filename)
             player.snapshots().save(filePath.toFile())

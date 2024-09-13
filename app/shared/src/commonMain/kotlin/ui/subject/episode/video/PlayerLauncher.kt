@@ -24,6 +24,7 @@ import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
 import me.him188.ani.app.ui.subject.episode.statistics.VideoLoadingState
 import me.him188.ani.app.ui.subject.episode.statistics.VideoStatistics
+import me.him188.ani.app.videoplayer.data.OpenFailures
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
 import me.him188.ani.app.videoplayer.ui.state.PlayerState

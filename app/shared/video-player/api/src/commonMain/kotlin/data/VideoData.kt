@@ -43,6 +43,8 @@ interface VideoData {
     }
 
     val networkStats: Flow<Stats>
+    
+    val isCacheFinished: Flow<Boolean> get() = flowOf(false)
 
     /**
      * 支持边下边播

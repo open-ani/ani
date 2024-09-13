@@ -6,9 +6,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.Dp
-import me.him188.ani.app.videoplayer.freatures.AudioManager
-import me.him188.ani.app.videoplayer.freatures.BrightnessManager
-import me.him188.ani.app.videoplayer.freatures.StreamType
+import me.him188.ani.app.platform.features.AudioManager
+import me.him188.ani.app.platform.features.BrightnessManager
+import me.him188.ani.app.platform.features.StreamType
 
 interface LevelController {
     val level: Float
@@ -18,6 +18,17 @@ interface LevelController {
 
     @MainThread
     fun decreaseLevel(step: Float = 0.05f)
+}
+
+object NoOpLevelController : LevelController {
+    override val level: Float
+        get() = 0f
+
+    override fun increaseLevel(step: Float) {
+    }
+
+    override fun decreaseLevel(step: Float) {
+    }
 }
 
 fun AudioManager.asLevelController(

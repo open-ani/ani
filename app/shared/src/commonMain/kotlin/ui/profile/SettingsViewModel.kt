@@ -8,9 +8,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
+import me.him188.ani.app.data.models.preference.AnitorrentConfig
 import me.him188.ani.app.data.models.preference.DanmakuSettings
 import me.him188.ani.app.data.models.preference.DebugSettings
 import me.him188.ani.app.data.models.preference.MediaCacheSettings
+import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.UISettings
@@ -24,9 +26,8 @@ import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
-import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.launchInBackground
+import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
 import me.him188.ani.app.ui.settings.framework.DefaultConnectionTesterRunner
@@ -37,7 +38,6 @@ import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroupState
 import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceState
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroupState
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
-import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
@@ -49,7 +49,7 @@ import me.him188.ani.utils.platform.currentTimeMillis
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class SettingsViewModel : AbstractViewModel(), KoinComponent {
+class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val settingsRepository: SettingsRepository by inject()
     private val permissionManager: PermissionManager by inject()
     private val bangumiSubjectProvider: SubjectProvider by inject()

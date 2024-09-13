@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 
 
 @Composable
@@ -91,21 +90,17 @@ fun ConnectingDialog(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun PreviewConnectingDialog() {
-    ProvideCompositionLocalsForPreview {
-        ConnectingDialog()
-    }
+    ConnectingDialog()
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun PreviewConnectingDialogConfirm() {
-    ProvideCompositionLocalsForPreview {
-        ConnectingDialog(
-            confirmButton = {
-                TextButton(onClick = { }) {
-                    Text("取消")
-                }
-            },
-        )
-    }
+    ConnectingDialog(
+        confirmButton = {
+            TextButton(onClick = { }) {
+                Text("取消")
+            }
+        },
+    )
 }

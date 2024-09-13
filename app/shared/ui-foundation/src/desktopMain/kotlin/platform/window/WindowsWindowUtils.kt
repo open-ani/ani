@@ -19,6 +19,8 @@ import com.sun.jna.platform.win32.WinUser.SWP_NOZORDER
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
+import me.him188.ani.app.platform.PlatformWindow
+import me.him188.ani.app.platform.SavedWindowState
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.MONITOR_DEFAULTTONEAREST
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.SC_RESTORE
 import me.him188.ani.app.platform.window.ExtendedUser32.Companion.SWP_NOACTIVATE

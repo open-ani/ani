@@ -20,11 +20,7 @@
 
 package me.him188.ani.app.platform
 
-import androidx.compose.foundation.layout.BoxWithConstraintsScope
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.Stable
-import androidx.compose.ui.unit.dp
 import me.him188.ani.utils.io.SystemPath
 
 expect val LocalContext: ProvidableCompositionLocal<Context>

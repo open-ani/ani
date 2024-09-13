@@ -218,6 +218,7 @@ mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-
 vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 vlcj-javafx = { module = "uk.co.caprica:vlcj-javafx", version = "1.2.0" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 
 
 #// https://mvnrepository.com/artifact/software.amazon.awssdk/s3

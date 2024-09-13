@@ -13,8 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import me.him188.ani.app.data.models.preference.AnitorrentConfig
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.tools.torrent.engines.AnitorrentConfig
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
@@ -96,7 +96,7 @@ internal fun SettingsScope.TorrentEngineGroup(
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
             },
-            onClick = { navigator.navigateTorrentPeerSettings() }
+            onClick = { navigator.navigateTorrentPeerSettings() },
         )
     }
 }

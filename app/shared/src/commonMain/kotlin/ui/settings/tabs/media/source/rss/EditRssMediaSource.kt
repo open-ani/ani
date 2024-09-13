@@ -28,9 +28,9 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
-import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssDetailPane

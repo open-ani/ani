@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.platform.PlatformPopupProperties
+import me.him188.ani.app.ui.foundation.dialogs.PlatformPopupProperties
 import me.him188.ani.app.ui.subject.episode.details.renderSubtitleLanguage
 
 

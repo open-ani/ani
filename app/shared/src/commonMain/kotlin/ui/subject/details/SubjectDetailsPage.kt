@@ -55,7 +55,6 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
@@ -64,9 +63,10 @@ import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.rememberImageViewerHandler
-import me.him188.ani.app.ui.foundation.richtext.RichTextDefaults
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichTextDefaults
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressState

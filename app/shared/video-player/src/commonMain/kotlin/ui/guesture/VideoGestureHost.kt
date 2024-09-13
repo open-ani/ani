@@ -41,7 +41,6 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -68,9 +67,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.platform.StreamType
-import me.him188.ani.app.platform.getComponentAccessors
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.effects.ComposeKey
@@ -78,6 +74,7 @@ import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.utils.fixToString
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.BRIGHTNESS
 import me.him188.ani.app.videoplayer.ui.guesture.GestureIndicatorState.State.FAST_BACKWARD
@@ -92,7 +89,6 @@ import me.him188.ani.app.videoplayer.ui.rememberAlwaysOnRequester
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.SupportsAudio
 import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
-import me.him188.ani.datasources.bangumi.processing.fixToString
 import me.him188.ani.utils.platform.Platform
 import kotlin.math.absoluteValue
 import kotlin.time.Duration.Companion.seconds
@@ -407,8 +403,8 @@ enum class GestureFamily(
     )
 }
 
-internal val VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION = 3.seconds
-internal val VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION = 3.seconds
+val VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION = 3.seconds
+val VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION = 3.seconds
 
 @Composable
 fun VideoGestureHost(
@@ -419,6 +415,8 @@ fun VideoGestureHost(
     fastSkipState: FastSkipState,
     playerState: PlayerState,
     enableSwipeToSeek: Boolean,
+    audioController: LevelController,
+    brightnessController: LevelController,
     modifier: Modifier = Modifier,
     family: GestureFamily = LocalPlatform.current.mouseFamily,
     onTogglePauseResume: () -> Unit = {},
@@ -440,18 +438,6 @@ fun VideoGestureHost(
         }
         val maxHeight = maxHeight
 
-
-        val context by rememberUpdatedState(LocalContext.current)
-        val audioController by remember {
-            derivedStateOf {
-                getComponentAccessors(context = context).audioManager?.asLevelController(StreamType.MUSIC)
-            }
-        }
-        val brightnessLevelController by remember {
-            derivedStateOf {
-                getComponentAccessors(context = context).brightnessManager?.asLevelController()
-            }
-        }
 
         // TODO: 临时解决方案, 安卓和 PC 需要不同的组件层级关系才能实现各种快捷手势
         val needWorkaroundForFocusManager = needWorkaroundForFocusManager
@@ -610,7 +596,7 @@ fun VideoGestureHost(
                     Box(
                         Modifier
                             .ifThen(family.swipeLhsForBrightness) {
-                                brightnessLevelController?.let { controller ->
+                                brightnessController.let { controller ->
                                     swipeLevelControl(
                                         controller,
                                         ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),
@@ -769,7 +755,7 @@ fun VideoGestureHost(
                     Box(
                         Modifier
                             .ifThen(family.swipeLhsForBrightness) {
-                                brightnessLevelController?.let { controller ->
+                                brightnessController.let { controller ->
                                     swipeLevelControl(
                                         controller,
                                         ((maxHeight - 100.dp) / 40).coerceAtLeast(2.dp),

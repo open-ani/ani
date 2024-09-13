@@ -3,12 +3,15 @@ package me.him188.ani.app.videoplayer.ui.state
 import androidx.annotation.UiThread
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
@@ -22,19 +25,17 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.tools.torrent.TorrentMediaCacheProgressState
-import me.him188.ani.app.ui.foundation.produceState
+import me.him188.ani.app.videoplayer.data.FileVideoData
 import me.him188.ani.app.videoplayer.data.VideoData
 import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.VideoSourceOpenException
-import me.him188.ani.app.videoplayer.data.torrent.FileVideoData
-import me.him188.ani.app.videoplayer.data.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.VideoPlayer
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
@@ -43,6 +44,7 @@ import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.reflect.KClass
 
 /**
  * A controller for the [VideoPlayer].
@@ -183,6 +185,27 @@ fun PlayerState.togglePause() {
     }
 }
 
+typealias CacheProgressStateFactory<T> = (T, State<Boolean>) -> UpdatableMediaCacheProgressState?
+
+// TODO: 这可能不是很好, 但这是最不入侵现有代码的修改方案了
+object CacheProgressStateFactoryManager : SynchronizedObject() {
+    private val factories: MutableMap<KClass<*>, CacheProgressStateFactory<*>> =
+        mutableMapOf()
+
+    fun <T : VideoData> register(kClass: KClass<T>, factory: CacheProgressStateFactory<T>) = synchronized(this) {
+        factories[kClass] = factory
+    }
+
+    fun create(videoData: VideoData, isCacheFinished: State<Boolean>): UpdatableMediaCacheProgressState? =
+        synchronized(this) {
+            return factories[videoData::class]?.let { factory ->
+                @Suppress("UNCHECKED_CAST")
+                factory as CacheProgressStateFactory<VideoData>
+                factory(videoData, isCacheFinished)
+            }
+        }
+}
+
 abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
     parentCoroutineContext: CoroutineContext,
 ) : PlayerState, SynchronizedObject() {
@@ -219,25 +242,19 @@ abstract class AbstractPlayerState<D : AbstractPlayerState.Data>(
         it?.videoData
     }
 
-    private val isCacheFinished by videoData.flatMapLatest {
-        when (it) {
-            null -> flowOf(false)
-            is TorrentVideoData -> it.isCacheFinished
-            else -> flowOf(false)
-        }
+    private val isCacheFinishedState = videoData.flatMapLatest {
+        it?.isCacheFinished ?: flowOf(false)
     }.produceState(false, backgroundScope)
 
     private val cacheProgressFlow = videoData.map {
         when (it) {
             null -> staticMediaCacheProgressState(ChunkState.NONE)
-            is TorrentVideoData -> TorrentMediaCacheProgressState(
-                it.pieces,
-                isFinished = { isCacheFinished },
-            )
 
             is FileVideoData -> staticMediaCacheProgressState(ChunkState.DONE)
 
-            else -> staticMediaCacheProgressState(ChunkState.NONE)
+            else ->
+                CacheProgressStateFactoryManager.create(it, isCacheFinishedState)
+                    ?: staticMediaCacheProgressState(ChunkState.NONE)
         }
     }.stateIn(backgroundScope, SharingStarted.WhileSubscribed(), staticMediaCacheProgressState(ChunkState.NONE))
 
@@ -521,4 +538,23 @@ class DummyPlayerState(
             Chapter("chapter2", durationMillis = 5_000L, 90_000L),
         ),
     )
+}
+
+/**
+ * Collects the flow on the main thread into a [State].
+ */
+private fun <T> Flow<T>.produceState(
+    initialValue: T,
+    scope: CoroutineScope,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+): State<T> {
+    val state = mutableStateOf(initialValue)
+    scope.launch(coroutineContext + Dispatchers.Main) {
+        flowOn(Dispatchers.Default) // compute in background
+            .collect {
+                // update state in main
+                state.value = it
+            }
+    }
+    return state
 }

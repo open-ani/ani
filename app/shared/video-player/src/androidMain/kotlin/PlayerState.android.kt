@@ -41,7 +41,6 @@ import me.him188.ani.app.videoplayer.data.VideoProperties
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.data.emptyVideoData
 import me.him188.ani.app.videoplayer.media.VideoDataDataSource
-import me.him188.ani.app.videoplayer.data.torrent.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.ui.state.AbstractPlayerState
 import me.him188.ani.app.videoplayer.ui.state.AudioTrack
 import me.him188.ani.app.videoplayer.ui.state.Chapter

@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.DarkMode
+import me.him188.ani.app.data.models.preference.EpisodeListProgressTheme
 import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
@@ -33,7 +34,6 @@ import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
-import me.him188.ani.app.tools.update.supportsInAppUpdate
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -46,7 +46,6 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
 import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterGroup
 import me.him188.ani.app.ui.subject.episode.video.settings.DanmakuRegexFilterState
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
@@ -56,6 +55,7 @@ import me.him188.ani.app.ui.update.TextButtonUpdateLogo
 import me.him188.ani.app.ui.update.UpdateChecker
 import me.him188.ani.utils.platform.isAndroid
 import me.him188.ani.utils.platform.isDesktop
+import me.him188.ani.utils.platform.isIos
 import me.him188.ani.utils.platform.isMobile
 import org.koin.mp.KoinPlatform
 
@@ -307,7 +307,7 @@ private fun SettingsScope.SoftwareUpdateGroup(
             },
             enabled = updateSettings.autoCheckUpdate,
         )
-        if (LocalPlatform.current.supportsInAppUpdate) {
+        if (!LocalPlatform.current.isIos()) {
             AnimatedVisibility(updateSettings.inAppDownload) {
                 Column {
                     HorizontalDividerItem()

@@ -2,7 +2,8 @@ package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Stable
 
+@PublishedApi
 @Stable
-actual val currentAniBuildConfigImpl: AniBuildConfig
+internal actual val currentAniBuildConfigImpl: AniBuildConfig
     get() = AniBuildConfigIos
 

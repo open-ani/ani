@@ -10,6 +10,7 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.LocalDesktopContext
 import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.app.platform.checkIsDesktop
+import me.him188.ani.app.platform.window.WindowUtils
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.utils.platform.Platform
 import me.him188.ani.utils.platform.currentPlatform

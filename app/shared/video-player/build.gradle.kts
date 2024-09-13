@@ -27,8 +27,18 @@ kotlin {
         implementation(libs.compose.material3.adaptive.core.get().toString()) {
             exclude("androidx.window.core", "window-core")
         }
+        implementation(libs.androidx.media3.exoplayer)
+        implementation(libs.androidx.media3.ui)
     }
     sourceSets.desktopMain.dependencies {
+        api(compose.desktop.currentOs) {
+            exclude(compose.material) // We use material3
+        }
+     
+        api(libs.kotlinx.coroutines.swing)
+        implementation(libs.vlcj)
+        implementation(libs.jna)
+        implementation(libs.jna.platform)
     }
 }
 

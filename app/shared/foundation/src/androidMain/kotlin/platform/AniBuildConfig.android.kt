@@ -1,6 +1,7 @@
 package me.him188.ani.app.platform
 
 import androidx.compose.runtime.Stable
+import me.him188.ani.app.foundation.BuildConfig
 
 
 private object AniBuildConfigAndroid : AniBuildConfig {
@@ -13,5 +14,6 @@ private object AniBuildConfigAndroid : AniBuildConfig {
 }
 
 @Stable
-actual val currentAniBuildConfigImpl: AniBuildConfig
+@PublishedApi
+internal actual val currentAniBuildConfigImpl: AniBuildConfig
     get() = AniBuildConfigAndroid

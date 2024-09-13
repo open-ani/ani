@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import me.him188.ani.app.platform.PlatformPopupProperties
+import me.him188.ani.app.ui.foundation.dialogs.PlatformPopupProperties
 
 @Composable
 fun rememberModalBottomImeAwareSheetState(): ModalBottomImeAwareSheetState {

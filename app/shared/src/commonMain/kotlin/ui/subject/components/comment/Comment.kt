@@ -37,7 +37,7 @@ import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
-import me.him188.ani.app.ui.foundation.richtext.UIRichElement
+import me.him188.ani.app.ui.subject.components.comment.richtext.UIRichElement
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
 
 /**

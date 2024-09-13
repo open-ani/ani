@@ -17,7 +17,7 @@ import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.isInDebugMode
-import me.him188.ani.app.ui.foundation.richtext.RichText
+import me.him188.ani.app.ui.subject.components.comment.richtext.RichText
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentColumn
 import me.him188.ani.app.ui.subject.components.comment.CommentDefaults

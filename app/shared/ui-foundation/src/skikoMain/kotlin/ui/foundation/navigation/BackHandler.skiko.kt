@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import me.him188.ani.app.platform.navigation.OnBackPressedHandler
 
 @Composable
 actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {

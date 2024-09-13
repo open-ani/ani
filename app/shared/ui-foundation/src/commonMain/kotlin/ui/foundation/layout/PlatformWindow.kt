@@ -11,6 +11,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.utils.platform.Platform
 

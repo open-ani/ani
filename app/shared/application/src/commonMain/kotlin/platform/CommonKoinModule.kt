@@ -82,6 +82,9 @@ import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
 import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.ui.subject.episode.video.TorrentMediaCacheProgressState
+import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
+import me.him188.ani.app.videoplayer.ui.state.CacheProgressStateFactoryManager
 import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
@@ -123,7 +126,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<BangumiSubjectRepository> { RemoteBangumiSubjectRepository() }
     single<BangumiRelatedCharactersRepository> { BangumiRelatedCharactersRepository(get()) }
     single<EpisodeScreenshotRepository> { WhatslinkEpisodeScreenshotRepository() }
-    single<SubjectManager> { SubjectManagerImpl(getContext()) }
+    single<SubjectManager> { SubjectManagerImpl(getContext().dataStores) }
     single<UserRepository> { UserRepositoryImpl() }
     single<CommentRepository> { BangumiCommentRepositoryImpl(get()) }
     single<BangumiEpisodeRepository> { EpisodeRepositoryImpl() }
@@ -212,6 +215,10 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
 
     single<MediaAutoCacheService> {
         DefaultMediaAutoCacheService.createWithKoin()
+    }
+
+    CacheProgressStateFactoryManager.register(TorrentVideoData::class) { videoData, state ->
+        TorrentMediaCacheProgressState(videoData.pieces) { state.value }
     }
 }
 

@@ -23,7 +23,7 @@ sealed class Platform {
         override val name: String get() = "Android"
     }
 
-    data object Ios : Platform() {
+    data object Ios : Mobile() {
         override val name: String get() = "iOS"
         override val arch: Arch get() = Arch.AARCH64
     }

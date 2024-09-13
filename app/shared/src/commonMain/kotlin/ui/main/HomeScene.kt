@@ -56,15 +56,15 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
-import me.him188.ani.app.platform.window.LocalPlatformWindow
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
+import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.home.HomePage
 import me.him188.ani.app.ui.home.search.SearchViewModel
@@ -325,7 +325,7 @@ private fun HomeScenePortrait(
 
                 NavigationBar(
                     containerColor = AniThemeDefaults.navigationContainerColor,
-                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
                 ) {
                     NavigationBarItem(
                         pagerState.currentPage == 0,

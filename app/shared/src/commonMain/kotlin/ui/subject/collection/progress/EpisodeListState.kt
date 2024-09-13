@@ -14,15 +14,15 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.episode.EpisodeProgressInfo
+import me.him188.ani.app.data.models.episode.EpisodeProgressItem
 import me.him188.ani.app.data.models.episode.isKnownOnAir
 import me.him188.ani.app.data.models.episode.renderEpisodeEp
+import me.him188.ani.app.data.models.preference.EpisodeListProgressTheme
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.setEpisodeWatched
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.caching.ContentPolicy
-import me.him188.ani.app.ui.subject.episode.list.EpisodeListProgressTheme
-import me.him188.ani.app.ui.subject.episode.list.EpisodeProgressItem
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import kotlin.coroutines.CoroutineContext

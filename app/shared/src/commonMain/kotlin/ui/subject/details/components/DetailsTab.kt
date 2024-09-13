@@ -49,10 +49,10 @@ import me.him188.ani.app.data.models.subject.RelatedPersonInfo
 import me.him188.ani.app.data.models.subject.RelatedSubjectInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.platform.window.desktopTitleBar
-import me.him188.ani.app.platform.window.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.Tag
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 
 
