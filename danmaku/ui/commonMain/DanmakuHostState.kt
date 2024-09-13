@@ -545,10 +545,10 @@ class DanmakuHostState(
      * @param list 要填充到屏幕的弹幕, 必须按发送时间戳排序.
      */
     suspend fun repopulate(list: List<DanmakuPresentation>, timeOffsetMillis: Long = 0L) {
+        withContext(Dispatchers.Main.immediate) { clearPresentDanmaku() }
         if (list.isEmpty()) return
         uiContext.await()
 
-        withContext(Dispatchers.Main.immediate) { clearPresentDanmaku() }
         val currentElapsedFrameTimeNanos = elapsedFrameTimeNanos // take snapshot
 
         val isFloatingDanmaku = { danmaku: DanmakuPresentation ->
