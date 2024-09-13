@@ -11,7 +11,7 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        api(projects.app.shared.appBase)
+        api(projects.app.shared.appPlatform)
         api(projects.app.shared.uiFoundation)
         api(projects.app.shared)
         api(libs.kotlinx.coroutines.core)

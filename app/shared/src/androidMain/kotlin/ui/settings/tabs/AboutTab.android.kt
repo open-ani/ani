@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
-import me.him188.ani.app.foundation.BuildConfig
+import me.him188.ani.BuildConfig
 import me.him188.ani.app.platform.LocalContext
 import java.io.File
 

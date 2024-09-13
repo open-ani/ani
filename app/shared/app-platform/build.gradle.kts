@@ -50,7 +50,7 @@ kotlin {
 }
 
 android {
-    namespace = "me.him188.ani.app.foundation"
+    namespace = "me.him188.ani.app.platform"
 }
 
 

@@ -15,7 +15,7 @@ plugins {
 
 kotlin {
     sourceSets.commonMain.dependencies {
-        implementation(projects.app.shared.appBase)
+        implementation(projects.app.shared.appPlatform)
         api(projects.app.shared.videoPlayer.videoPlayerApi)
         api(projects.app.shared.videoPlayer.torrentSource)
         api(libs.kotlinx.coroutines.core)

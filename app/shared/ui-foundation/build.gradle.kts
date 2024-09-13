@@ -12,7 +12,7 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(projects.app.shared.appData)
-        implementation(projects.app.shared.appBase)
+        implementation(projects.app.shared.appPlatform)
         implementation(projects.utils.platform)
         implementation(libs.kotlinx.coroutines.core)
         implementation(projects.danmaku.danmakuApi)

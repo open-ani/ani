@@ -71,7 +71,7 @@ kotlin {
         api(libs.kotlinx.collections.immutable)
         api(projects.utils.ktorClient)
 
-        api(projects.app.shared.appBase)
+        api(projects.app.shared.appPlatform)
         api(projects.app.shared.appData)
         api(projects.app.shared.placeholder)
         api(projects.app.shared.uiFoundation)
