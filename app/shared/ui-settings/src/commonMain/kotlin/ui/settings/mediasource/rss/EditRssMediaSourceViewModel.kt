@@ -1,4 +1,13 @@
-package me.him188.ani.app.ui.settings.tabs.media.source.rss
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
+package me.him188.ani.app.ui.settings.mediasource.rss
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -6,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import io.ktor.client.plugins.BrowserUserAgent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,7 +36,7 @@ import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.rss.RssParser
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
+import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPaneState
 import me.him188.ani.datasources.api.source.HttpMediaSource
 import me.him188.ani.datasources.api.source.createHttpClient
 import me.him188.ani.datasources.api.source.deserializeArgumentsOrNull
@@ -71,7 +81,7 @@ class EditRssMediaSourceViewModel(
                         onSave = {
                             arguments.value = it
                             saveTasker.launch {
-                                kotlinx.coroutines.delay(500)
+                                delay(500)
                                 mediaSourceManager.updateMediaSourceArguments(
                                     instanceId,
                                     RssMediaSourceArguments.serializer(),

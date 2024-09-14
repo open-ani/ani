@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.settings.tabs.media.source.rss
+package me.him188.ani.app.ui.settings.mediasource.rss
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.WindowInsets
@@ -43,11 +43,11 @@ import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssDetailPane
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.SideSheetPane
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.edit.RssEditPane
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPane
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.test.RssTestPaneState
+import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssDetailPane
+import me.him188.ani.app.ui.settings.mediasource.rss.detail.SideSheetPane
+import me.him188.ani.app.ui.settings.mediasource.rss.edit.RssEditPane
+import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPane
+import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPaneState
 import me.him188.ani.datasources.api.Media
 
 /**

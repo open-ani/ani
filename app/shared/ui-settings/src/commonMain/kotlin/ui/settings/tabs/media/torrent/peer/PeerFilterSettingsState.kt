@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.ui.comment.CommentEditorTextState
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.SaveableStorage
+import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 
 @Immutable
 data class PeerFilterItemState(

@@ -1,4 +1,13 @@
-package me.him188.ani.app.ui.settings.tabs.media.source.rss.test
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
+package me.him188.ani.app.ui.settings.mediasource.rss.test
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
@@ -21,8 +30,8 @@ import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.data.source.media.source.RssSearchQuery
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.EditRssMediaSourceState
-import me.him188.ani.app.ui.settings.tabs.media.source.rss.detail.RssViewingItem
+import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
+import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssViewingItem
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import kotlin.coroutines.cancellation.CancellationException
