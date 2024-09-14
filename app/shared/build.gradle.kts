@@ -18,8 +18,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompileTool
-
 
 plugins {
     kotlin("multiplatform")
@@ -44,7 +42,7 @@ atomicfu {
     transformJvm = false // 这东西很不靠谱, 等 atomicfu 正式版了可能可以考虑下
 }
 
-val enableIosFramework = getPropertyOrNull("ani.build.framework") != "false"
+val enableIosFramework = enableIos && getPropertyOrNull("ani.build.framework") != "false"
 
 kotlin {
     if (enableIosFramework) {
