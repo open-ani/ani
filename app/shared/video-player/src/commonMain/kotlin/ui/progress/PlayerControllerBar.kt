@@ -463,6 +463,7 @@ object PlayerControllerDefaults {
         onValueChange: (Float) -> Unit,
         modifier: Modifier = Modifier,
         optionsProvider: () -> List<Float> = { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 3f) },
+        onExpandedChanged: (expanded: Boolean) -> Unit = {},
     ) {
         return OptionsSwitcher(
             value = value,
@@ -474,6 +475,7 @@ object PlayerControllerDefaults {
             properties = PlatformPopupProperties(
                 clippingEnabled = false,
             ),
+            onExpandedChanged = onExpandedChanged,
         )
     }
 
@@ -490,9 +492,15 @@ object PlayerControllerDefaults {
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
         properties: PopupProperties = PopupProperties(),
+        onExpandedChanged: (expanded: Boolean) -> Unit = {},
     ) {
         Box(modifier, contentAlignment = Alignment.Center) {
             var expanded by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(true) {
+                snapshotFlow { expanded }.collect {
+                    onExpandedChanged(expanded)
+                }
+            }
             TextButton(
                 { expanded = true },
                 colors = ButtonDefaults.textButtonColors(
