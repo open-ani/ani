@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.cache.components
 
 import androidx.compose.animation.AnimatedVisibility
@@ -34,6 +43,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -58,7 +68,7 @@ import me.him188.ani.app.tools.getOrZero
 import me.him188.ani.app.tools.toPercentageOrZero
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.interaction.clickableAndMouseRightClick
-import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
+import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.datasources.api.EpisodeSort
@@ -301,9 +311,7 @@ fun CacheEpisodeItem(
         },
         trailingContent = {
             // 仅当有足够宽度时, 才展示当前状态下的推荐操作
-            // TODO 原本是  derivedStateOf { maxWidth >= 320.dp },
-            //  但 Compose 1.7 后不允许 LazyGrid 里使用 BoxWithConstraints 了
-            val showPrimaryAction = LocalLayoutMode.current.showLandscapeUI
+            val showPrimaryAction = currentWindowAdaptiveInfo().isWidthAtLeastMedium
             Row(horizontalArrangement = Arrangement.aligned(Alignment.End)) {
                 // 当前状态下的推荐操作
                 AnimatedVisibility(showPrimaryAction) {
