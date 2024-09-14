@@ -103,27 +103,27 @@ fun DanmakuHost(
                 }
             }
         }
-    }
-
-    if (state.isDebug) {
-        CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
-            Column(modifier = Modifier.padding(4.dp).fillMaxSize()) {
-                Text("DanmakuHost state: ")
-                Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
-                Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
-                Text("  presentDanmakuCount: ${state.presentFixedDanmaku.size + state.presentFloatingDanmaku.size}")
-                HorizontalDivider()
-                Text("  floating tracks: ")
-                for (track in state.floatingTrack) {
-                    Text("    $track")
-                }
-                Text("  top tracks: ")
-                for (track in state.topTrack) {
-                    Text("    $track")
-                }
-                Text("  bottom tracks: ")
-                for (track in state.bottomTrack) {
-                    Text("    $track")
+        
+        if (state.isDebug) {
+            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                Column(modifier = Modifier.padding(4.dp).fillMaxSize()) {
+                    Text("DanmakuHost state: ")
+                    Text("  hostSize: ${state.hostWidth}x${state.hostHeight}, trackHeight: ${state.trackHeight}")
+                    Text("  paused: ${state.paused}, elapsedFrameTimeMillis: ${state.elapsedFrameTimeNanos / 1_000_000}")
+                    Text("  presentDanmakuCount: ${state.presentFixedDanmaku.size + state.presentFloatingDanmaku.size}")
+                    HorizontalDivider()
+                    Text("  floating tracks: ")
+                    for (track in state.floatingTrack) {
+                        Text("    $track")
+                    }
+                    Text("  top tracks: ")
+                    for (track in state.topTrack) {
+                        Text("    $track")
+                    }
+                    Text("  bottom tracks: ")
+                    for (track in state.bottomTrack) {
+                        Text("    $track")
+                    }
                 }
             }
         }
