@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.compose.animation.AnimatedVisibility
@@ -43,6 +52,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -68,6 +78,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
@@ -85,7 +96,6 @@ import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.effects.ScreenRotationEffect
 import me.him188.ani.app.ui.foundation.isInDebugMode
-import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
@@ -179,18 +189,11 @@ private fun EpisodeSceneContent(
     }
 
     BoxWithConstraints(modifier) {
-        val layoutMode by rememberUpdatedState(LocalLayoutMode.current)
-        val isVeryWide by remember {
-            derivedStateOf { layoutMode.deviceSize.width / layoutMode.deviceSize.height >= 1200f / 770 }
-        }
+        val showExpandedUI =
+            currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
         CompositionLocalProvider(LocalImageViewerHandler provides imageViewer) {
             when {
-                isVeryWide || layoutMode.showLandscapeUI -> EpisodeSceneTabletVeryWide(
-                    vm,
-                    Modifier.fillMaxSize(),
-                    windowInsets,
-                )
-
+                showExpandedUI -> EpisodeSceneTabletVeryWide(vm, Modifier.fillMaxSize(), windowInsets)
                 else -> EpisodeSceneContentPhone(vm, Modifier.fillMaxSize(), windowInsets)
             }
         }
