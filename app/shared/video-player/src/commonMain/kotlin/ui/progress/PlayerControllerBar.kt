@@ -95,6 +95,8 @@ import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import kotlin.math.roundToInt
 
 const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
+const val TAG_SPEED_SWITCHER_TEXT_BUTTON = "SpeedSwitcherTextButton"
+const val TAG_SPEED_SWITCHER_DROPDOWN_MENU = "SpeedSwitcherDropdownMenu"
 
 @Stable
 object PlayerControllerDefaults {
@@ -471,10 +473,11 @@ object PlayerControllerDefaults {
             optionsProvider = optionsProvider,
             renderValue = { Text(remember(it) { "${it}x" }) },
             renderValueExposed = { Text(remember(it) { if (it == 1.0f) "倍速" else """${it}x""" }) },
-            modifier,
             properties = PlatformPopupProperties(
                 clippingEnabled = false,
             ),
+            textButtonTestTag = TAG_SPEED_SWITCHER_TEXT_BUTTON,
+            dropdownMenuTestTag = TAG_SPEED_SWITCHER_DROPDOWN_MENU,
             onExpandedChanged = onExpandedChanged,
         )
     }
@@ -492,6 +495,8 @@ object PlayerControllerDefaults {
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
         properties: PopupProperties = PopupProperties(),
+        textButtonTestTag: String = "textButton",
+        dropdownMenuTestTag: String = "dropDownMenu",
         onExpandedChanged: (expanded: Boolean) -> Unit = {},
     ) {
         Box(modifier, contentAlignment = Alignment.Center) {
@@ -507,6 +512,7 @@ object PlayerControllerDefaults {
                     contentColor = LocalContentColor.current,
                 ),
                 enabled = enabled,
+                modifier = Modifier.testTag(textButtonTestTag),
             ) {
                 renderValueExposed(value)
             }
@@ -515,6 +521,7 @@ object PlayerControllerDefaults {
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 properties = properties,
+                modifier = Modifier.testTag(dropdownMenuTestTag),
             ) {
                 val options = remember(optionsProvider) { optionsProvider() }
                 for (option in options) {
