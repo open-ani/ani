@@ -118,7 +118,6 @@ fun MediaCacheDetailsPage(
                         media?.let {
                             Surface(
                                 Modifier
-                                    .verticalScroll(rememberScrollState())
                                     .padding(horizontal = 16.dp)
                                     .padding(vertical = 16.dp),
                                 color = ListItemDefaults.containerColor, // fill gap between items
