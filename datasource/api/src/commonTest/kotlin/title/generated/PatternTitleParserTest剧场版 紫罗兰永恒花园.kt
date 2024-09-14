@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 // @formatter:off
 @file:Suppress(
   "FunctionName",
@@ -37,7 +46,7 @@ public class `PatternTitleParserTest剧场版 紫罗兰永恒花园` : PatternBa
   public fun `615844_Violet_Evergarden_the_Movie_4K_SDR`() {
     val r = parse("[云光字幕组]剧场版 紫罗兰永恒花园 Violet Evergarden the Movie [简体双语][4K SDR]招募时轴翻译")
     assertEquals("null", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("null", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }

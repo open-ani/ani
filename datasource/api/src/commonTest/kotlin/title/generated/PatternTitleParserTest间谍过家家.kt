@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 // @formatter:off
 @file:Suppress(
   "FunctionName",
@@ -204,7 +213,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `659552_Spy_x_Family_Season_2_1080p`() {
     val r = parse("[云光字幕组]间谍过家家第二季Spy x Family Season 2[合集][简体双语][1080p]招募翻译")
     assertEquals("02..02", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -213,7 +222,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `659551_Spy_x_Family_37_END_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [37][END][简体双语][1080p]招募翻译")
     assertEquals("37..37", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -240,7 +249,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `659300_Spy_x_Family_36_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [36][简体双语][1080p]招募翻译")
     assertEquals("36..36", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -306,7 +315,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `659005_Spy_x_Family_35_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [35][简体双语][1080p]招募翻译")
     assertEquals("35..35", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -396,7 +405,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `658570_Spy_x_Family_34_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [34][简体双语][1080p]招募翻译")
     assertEquals("34..34", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -441,7 +450,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `657725_Spy_x_Family_33_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [33][简体双语][1080p]招募翻译")
     assertEquals("33..33", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -561,7 +570,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `657099_Spy_x_Family_32_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [32][简体双语][1080p]招募翻译")
     assertEquals("32..32", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -624,7 +633,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `656710_Spy_x_Family_31_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [31][简体双语][1080p]招募翻译")
     assertEquals("31..31", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -696,7 +705,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `656017_Spy_x_Family_30_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [30][简体双语][1080p]招募翻译")
     assertEquals("30..30", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -823,7 +832,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `655505_Spy_x_Family_29_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [29][简体双语][1080p]招募翻译")
     assertEquals("29..29", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -859,7 +868,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `655206_Spy_x_Family_28_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [28][简体双语][1080p]招募翻译")
     assertEquals("28..28", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -998,7 +1007,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `654423_Spy_x_Family_27_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [27][简体双语][1080p]招募翻译")
     assertEquals("27..27", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1146,7 +1155,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `653717_Spy_x_Family_26_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 第二季 Spy x Family [26][简体双语][1080p]招募翻译")
     assertEquals("26..26", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1649,7 +1658,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `626136_SPY_FAMILY_25_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [25话合集][简体双语][1080p]招募翻译")
     assertEquals("SPY×FAMILY..SPY×FAMILY", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1658,7 +1667,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `626134_SPY_FAMILY_25_END_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [25][END][简体双语][1080p]招募时轴后期")
     assertEquals("25..25", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1815,7 +1824,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `625727_SPY_FAMILY_24_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [24][简体双语][1080p]招募时轴后期")
     assertEquals("24..24", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1824,7 +1833,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `625726_SPY_FAMILY_23_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [23][简体双语][1080p]招募时轴后期")
     assertEquals("23..23", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2100,7 +2109,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `624593_SPY_FAMILY_22_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [22][简体双语][1080p]招募时轴后期")
     assertEquals("22..22", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2366,7 +2375,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `623849_SPY_FAMILY_21_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [21][简体双语][1080p]招募时轴后期")
     assertEquals("21..21", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2751,7 +2760,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `622694_SPY_FAMILY_20_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [20][简体双语][1080p]招募时轴后期")
     assertEquals("20..20", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2916,7 +2925,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `622017_SPY_FAMILY_19_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [19][简体双语][1080p]招募时轴后期")
     assertEquals("19..19", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -3255,7 +3264,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `621174_SPY_FAMILY_18_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [18][简体双语][1080p]招募时轴后期")
     assertEquals("18..18", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -3264,7 +3273,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `621173_SPY_FAMILY_17_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [17][简体双语][1080p]招募时轴后期")
     assertEquals("17..17", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -3685,7 +3694,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `619546_SPY_FAMILY_16_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [16][简体双语][1080p]招募时轴后期")
     assertEquals("16..16", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -4088,7 +4097,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `618320_SPY_FAMILY_15_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [15][简体双语][1080p]招募时轴后期")
     assertEquals("15..15", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -4288,7 +4297,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `617543_SPY_FAMILY_14_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [14][简体双语][1080p]招募时轴后期")
     assertEquals("14..14", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -4480,7 +4489,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `616869_SPY_FAMILY_13_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [13][简体双语][1080p]招募时轴后期")
     assertEquals("13..13", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -5164,7 +5173,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `604887_SPY_FAMILY_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [合集][简体双语][1080p]招募翻译")
     assertEquals("SPY×FAMILY..SPY×FAMILY", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -5173,7 +5182,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `604884_SPY_FAMILY_12_END_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [12][END][简体双语][1080p]招募后期")
     assertEquals("12..12", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -5463,7 +5472,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `604122_SPY_FAMILY_11_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [11][简体双语][1080p]招募后期")
     assertEquals("11..11", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -5770,7 +5779,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `603161_SPY_FAMILY_10_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [10][简体双语][1080p]招募后期")
     assertEquals("10..10", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -5961,7 +5970,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `602649_SPY_FAMILY_09_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [09][简体双语][1080p]招募后期")
     assertEquals("09..09", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -6060,7 +6069,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `602254_SPY_FAMILY_08_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [08][简体双语][1080p]招募后期")
     assertEquals("08..08", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -6385,7 +6394,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `601273_SPY_FAMILY_07_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [07][简体双语][1080p]招募翻译")
     assertEquals("07..07", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -6502,7 +6511,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `600862_SPY_FAMILY_06_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [06][简体双语][1080p]招募翻译")
     assertEquals("06..06", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -6756,7 +6765,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `600208_SPY_FAMILY_05_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [05][简体双语][1080p]招募翻译")
     assertEquals("05..05", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -6936,7 +6945,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `599714_SPY_FAMILY_04_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [04][简体双语][1080p]招募翻译后期")
     assertEquals("04..04", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -7072,7 +7081,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `599326_SPY_FAMILY_03_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [03][简体双语][1080p]招募翻译")
     assertEquals("03..03", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -7400,7 +7409,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `598283_SPY_FAMILY_02_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [02][简体双语][1080p]招募翻译")
     assertEquals("02..02", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -7626,7 +7635,7 @@ public class PatternTitleParserTest间谍过家家 : PatternBasedTitleParserTest
   public fun `597723_SPY_FAMILY_01_1080p`() {
     val r = parse("[云光字幕组]间谍过家家 SPY×FAMILY [01][简体双语][1080p]招募翻译")
     assertEquals("01..01", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }

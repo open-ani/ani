@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 // @formatter:off
 @file:Suppress(
   "FunctionName",
@@ -89,7 +98,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `670215_3_Hibike_21_Euphonium_S3_06_1080p`() {
     val r = parse("[云光字幕组]吹响吧！上低音号 3 Hibike! Euphonium S3 [06][简体双语][1080p]招募翻译")
     assertEquals("06..06", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -314,7 +323,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `669258_3_Hibike_21_Euphonium_S3_05_1080p`() {
     val r = parse("[云光字幕组]吹响吧！上低音号 3 Hibike! Euphonium S3 [05][简体双语][1080p]招募翻译")
     assertEquals("05..05", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -459,7 +468,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `668882_3_Hibike_21_Euphonium_S3_04_1080p`() {
     val r = parse("[云光字幕组]吹响吧！上低音号 3 Hibike! Euphonium S3 [04][简体双语][1080p]招募翻译")
     assertEquals("04..04", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -702,7 +711,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `668262_3_Hibike_21_Euphonium_S3_03_1080p`() {
     val r = parse("[云光字幕组]吹响吧！上低音号 3 Hibike! Euphonium S3 [03][简体双语][1080p]招募翻译")
     assertEquals("03..03", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -870,7 +879,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `667840_3_Hibike_21_Euphonium_S3_02_1080p`() {
     val r = parse("[云光字幕组]吹响吧！上低音号 3 Hibike! Euphonium S3 [02][简体双语][1080p]招募翻译")
     assertEquals("02..02", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1071,7 +1080,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
   public fun `667130_3_Hibike_21_Euphonium_S3_01_1080p`() {
     val r = parse("[云光字幕组]吹响吧！上低音号 3 Hibike! Euphonium S3 [01][简体双语][1080p]招募翻译")
     assertEquals("01..01", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1236,7 +1245,7 @@ public class PatternTitleParserTest吹响吧_上低音号 : PatternBasedTitlePar
     val r =
         parse("[云光字幕组]特别篇 吹响吧！上低音号~合奏比赛~Hibike! Euphonium Special ~Episode of Ensemble Contest~ [简体双语][1080p]招募翻译")
     assertEquals("Special..Special", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }

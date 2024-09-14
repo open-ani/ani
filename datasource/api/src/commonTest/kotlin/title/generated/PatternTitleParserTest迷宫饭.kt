@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 // @formatter:off
 @file:Suppress(
   "FunctionName",
@@ -62,7 +71,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `670438_Dungeon_Meshi_20_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [20][简体双语][1080p]招募翻译")
     assertEquals("20..20", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -165,7 +174,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `669845_Dungeon_Meshi_19_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [19][简体双语][1080p]招募翻译")
     assertEquals("19..19", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -174,7 +183,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `669844_Dungeon_Meshi_18_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [18][简体双语][1080p]招募翻译")
     assertEquals("18..18", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -353,7 +362,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `668697_Dungeon_Meshi_16_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [17][简体双语][1080p]招募翻译")
     assertEquals("17..17", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -492,7 +501,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `668183_Dungeon_Meshi_16_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [16][简体双语][1080p]招募翻译")
     assertEquals("16..16", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -623,7 +632,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `667535_Dungeon_Meshi_15_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [15][简体双语][1080p]招募翻译")
     assertEquals("15..15", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -650,7 +659,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `667445_Dungeon_Meshi_14_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [14][简体双语][1080p]招募翻译")
     assertEquals("14..14", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -834,7 +843,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `666360_Dungeon_Meshi_13_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [13][简体双语][1080p]招募翻译")
     assertEquals("13..13", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -910,7 +919,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `665797_Dungeon_Meshi_12_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [12][简体双语][1080p]招募翻译")
     assertEquals("12..12", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1031,7 +1040,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `665621_Dungeon_Meshi_11_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [11][简体双语][1080p]招募翻译")
     assertEquals("11..11", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1282,7 +1291,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `664840_Dungeon_Meshi_10_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [10][简体双语][1080p]招募翻译")
     assertEquals("10..10", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1421,7 +1430,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `664299_Dungeon_Meshi_09_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [09][简体双语][1080p]招募翻译")
     assertEquals("09..09", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1430,7 +1439,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `664298_Dungeon_Meshi_08_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [08][简体双语][1080p]招募翻译")
     assertEquals("08..08", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1457,7 +1466,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `664165_Dungeon_Meshi_07_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [07][简体双语][1080p]招募翻译")
     assertEquals("07..07", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1578,7 +1587,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `663851_Dungeon_Meshi_06_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [06][简体双语][1080p]招募翻译")
     assertEquals("06..06", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -1941,7 +1950,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `662317_Dungeon_Meshi_05_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [05][简体双语][1080p]招募翻译")
     assertEquals("05..05", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2062,7 +2071,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `661841_Dungeon_Meshi_04_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [04][简体双语][1080p]招募翻译")
     assertEquals("04..04", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2194,7 +2203,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `661307_Dungeon_Meshi_03_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [03][简体双语][1080p]招募翻译")
     assertEquals("03..03", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2369,7 +2378,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `660861_Dungeon_Meshi_02_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [02][简体双语][1080p]招募翻译")
     assertEquals("02..02", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
@@ -2441,7 +2450,7 @@ public class PatternTitleParserTest迷宫饭 : PatternBasedTitleParserTestSuite(
   public fun `660374_Dungeon_Meshi_01_1080p`() {
     val r = parse("[云光字幕组] 迷宫饭 Dungeon Meshi [01][简体双语][1080p]招募翻译")
     assertEquals("01..01", r.episodeRange.toString())
-    assertEquals("CHS", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+    assertEquals("CHS, JPN", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
     assertEquals("1080P", r.resolution.toString())
     assertEquals(null, r.subtitleKind)
   }
