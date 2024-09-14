@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.foundation.layout.Column
@@ -18,7 +27,7 @@ import me.him188.ani.app.data.source.media.TestMediaList
 import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.data.source.session.SessionStatus
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.createTestAiringLabelState
@@ -40,7 +49,7 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsLongTitle() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsLongTitle() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState(
         remember {
             SubjectInfo.Empty.copy(
@@ -53,7 +62,7 @@ fun PreviewEpisodeDetailsLongTitle() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsShortTitle() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsShortTitle() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState(
         remember {
             SubjectInfo.Empty.copy(
@@ -66,7 +75,7 @@ fun PreviewEpisodeDetailsShortTitle() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsScroll() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsScroll() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState(
         remember {
             SubjectInfo.Empty.copy(
@@ -81,7 +90,7 @@ fun PreviewEpisodeDetailsScroll() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsDoing() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsDoing() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState(
         remember {
             SubjectInfo.Empty.copy(
@@ -97,7 +106,7 @@ fun PreviewEpisodeDetailsDoing() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsDanmakuFailed() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsDanmakuFailed() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState()
     PreviewEpisodeDetailsImpl(
         state,
@@ -111,7 +120,7 @@ fun PreviewEpisodeDetailsDanmakuFailed() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsNotAuthorized() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsNotAuthorized() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState()
     PreviewEpisodeDetailsImpl(
         state,
@@ -121,7 +130,7 @@ fun PreviewEpisodeDetailsNotAuthorized() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsDanmakuLoading() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsDanmakuLoading() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState()
     PreviewEpisodeDetailsImpl(
         state,
@@ -135,7 +144,7 @@ fun PreviewEpisodeDetailsDanmakuLoading() = ProvideCompositionLocalsForPreview {
 
 @Composable
 @PreviewLightDark
-fun PreviewEpisodeDetailsNotSelected() = ProvideCompositionLocalsForPreview {
+fun PreviewEpisodeDetailsNotSelected() = ProvideFoundationCompositionLocalsForPreview {
     val state = rememberTestEpisodeDetailsState()
     PreviewEpisodeDetailsImpl(
         state,
