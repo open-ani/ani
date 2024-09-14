@@ -3,16 +3,12 @@
 package me.him188.ani.app.data.source.session
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.setMain
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.UserInfo
@@ -20,6 +16,7 @@ import me.him188.ani.app.data.repository.AccessTokenSession
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.testFramework.mutablePreferencesOf
 import me.him188.ani.app.tools.caching.MemoryDataStore
+import me.him188.ani.app.ui.framework.runComposeStateTest
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -101,10 +98,5 @@ sealed class AbstractBangumiSessionManagerTest {
     fun runTest(
         context: CoroutineContext = EmptyCoroutineContext,
         testBody: suspend TestScope.() -> Unit
-    ): TestResult {
-        return kotlinx.coroutines.test.runTest(context) {
-            Dispatchers.setMain(currentCoroutineContext()[CoroutineDispatcher]!!)
-            testBody()
-        }
-    }
+    ): TestResult = runComposeStateTest(context, testBody)
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.yield
@@ -27,7 +28,11 @@ fun runComposeStateTest(
     testBody: suspend TestScope.() -> Unit
 ) = runTest(context) {
     setDispatcher()
-    testBody()
+    try {
+        testBody()
+    } finally {
+        Dispatchers.resetMain()
+    }
 }
 
 fun runComposeStateTest(
@@ -36,7 +41,11 @@ fun runComposeStateTest(
     testBody: suspend TestScope.() -> Unit
 ) = runTest(context, timeout) {
     setDispatcher()
-    testBody()
+    try {
+        testBody()
+    } finally {
+        Dispatchers.resetMain()
+    }
 }
 
 @OptIn(ExperimentalStdlibApi::class)
