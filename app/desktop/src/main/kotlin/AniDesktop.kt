@@ -160,7 +160,7 @@ object AniDesktop {
             File(projectDirectories.dataDir),
             File(projectDirectories.dataDir),
             logsDir,
-            ExtraWindowProperties(initialUndecorated = false),
+            ExtraWindowProperties(),
         )
 
         val coroutineScope = createAppRootCoroutineScope()
@@ -253,7 +253,6 @@ object AniDesktop {
                 state = windowState,
                 title = "Ani",
                 icon = painterResource(Res.drawable.a_round),
-                undecorated = context.extraWindowProperties.undecorated,
             ) {
                 val lifecycleOwner = LocalLifecycleOwner.current
                 val backPressedDispatcherOwner = remember {
