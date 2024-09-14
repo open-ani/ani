@@ -1,6 +1,16 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.foundation.layout
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
@@ -26,6 +36,38 @@ private object PanePaddings {
         }
     }
 }
+
+@Stable
+inline val WindowAdaptiveInfo.isWidthCompact: Boolean
+    get() = windowSizeClass.windowWidthSizeClass.isCompact
+
+@Stable
+inline val WindowAdaptiveInfo.isWidthAtLeastMedium: Boolean
+    get() = windowSizeClass.windowWidthSizeClass.isAtLeastMedium
+
+@Stable
+inline val WindowAdaptiveInfo.isHeightCompact: Boolean
+    get() = windowSizeClass.windowHeightSizeClass.isCompact
+
+@Stable
+inline val WindowAdaptiveInfo.isHeightAtLeastMedium: Boolean
+    get() = windowSizeClass.windowHeightSizeClass.isAtLeastMedium
+
+@Stable
+inline val WindowWidthSizeClass.isCompact
+    get() = this == WindowWidthSizeClass.COMPACT
+
+@Stable
+inline val WindowWidthSizeClass.isAtLeastMedium
+    get() = this != WindowWidthSizeClass.COMPACT
+
+@Stable
+inline val WindowHeightSizeClass.isCompact
+    get() = this == WindowHeightSizeClass.COMPACT
+
+@Stable
+inline val WindowHeightSizeClass.isAtLeastMedium
+    get() = this != WindowHeightSizeClass.COMPACT
 
 @Stable
 val WindowSizeClass.panePadding
