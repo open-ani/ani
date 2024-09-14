@@ -43,7 +43,7 @@ import me.him188.ani.datasources.api.topic.isSingleEpisode
 
 
 @Composable
-fun MediaDetailsColumn(
+fun MediaDetailsLazyGrid(
     media: Media,
     sourceInfo: MediaSourceInfo?,
     modifier: Modifier = Modifier,

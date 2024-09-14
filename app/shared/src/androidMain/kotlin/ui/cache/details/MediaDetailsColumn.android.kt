@@ -11,7 +11,7 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 @Composable
 @Preview
 fun PreviewCacheGroupDetailsColumn() = ProvideCompositionLocalsForPreview {
-    MediaDetailsColumn(
+    MediaDetailsLazyGrid(
         TestMediaList[0],
         MikanCNMediaSource.INFO,
     )

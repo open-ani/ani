@@ -134,7 +134,7 @@ fun MediaCacheDetailsPage(
                                     .padding(vertical = 16.dp),
                                 color = ListItemDefaults.containerColor, // fill gap between items
                             ) {
-                                MediaDetailsColumn(
+                                MediaDetailsLazyGrid(
                                     it,
                                     sourceInfo = sourceInfo,
                                     Modifier.fillMaxHeight(),

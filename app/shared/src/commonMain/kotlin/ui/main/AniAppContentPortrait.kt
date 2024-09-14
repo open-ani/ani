@@ -32,7 +32,7 @@ import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
-import me.him188.ani.app.ui.cache.details.MediaDetailsColumn
+import me.him188.ani.app.ui.cache.details.MediaDetailsLazyGrid
 import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
@@ -285,7 +285,7 @@ fun AniAppContentPortrait(
                             EditRssMediaSourceViewModel(mediaSourceInstanceId)
                         },
                         mediaDetailsColumn = { media ->
-                            MediaDetailsColumn(
+                            MediaDetailsLazyGrid(
                                 media,
                                 null,
                                 Modifier.fillMaxSize(),
