@@ -264,9 +264,8 @@ jobs:
         if: ${{ matrix.anitorrent && matrix.anitorrent_separate_build }}
         run: ./gradlew :torrent:anitorrent:build :torrent:anitorrent:anitorrent-native:buildAnitorrent ${{ env.gradleArgs }}
 
-      - name: Check
-        run: ./gradlew check ${{ env.gradleArgs }}
-
+      # No check. We check in `build.yml`.
+      
       - if: ${{ env.uploadApk == 'true' }}
         name: Build Android APK
         run: ./gradlew assembleRelease ${{ env.gradleArgs }}
