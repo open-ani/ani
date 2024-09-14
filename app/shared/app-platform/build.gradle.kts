@@ -28,15 +28,9 @@ kotlin {
         api(libs.compose.lifecycle.runtime.compose)
         api(libs.compose.navigation.compose)
         api(libs.compose.navigation.runtime)
-        api(libs.compose.material3.adaptive.core.get().toString()) {
-            exclude("androidx.window.core", "window-core")
-        }
-        api(libs.compose.material3.adaptive.layout.get().toString()) {
-            exclude("androidx.window.core", "window-core")
-        }
-        api(libs.compose.material3.adaptive.navigation0.get().toString()) {
-            exclude("androidx.window.core", "window-core")
-        }
+        api(libs.compose.material3.adaptive.core)
+        api(libs.compose.material3.adaptive.layout)
+        api(libs.compose.material3.adaptive.navigation0)
 
         api(libs.koin.core)
     }

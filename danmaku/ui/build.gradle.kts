@@ -23,9 +23,7 @@ kotlin {
     sourceSets.androidMain.dependencies {
         implementation(libs.androidx.compose.ui.tooling.preview)
         implementation(libs.androidx.compose.ui.tooling)
-        implementation(libs.compose.material3.adaptive.core.get().toString()) {
-            exclude("androidx.window.core", "window-core")
-        }
+        implementation(libs.compose.material3.adaptive.core)
         // Preview only
     }
 }
