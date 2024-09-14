@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.media.source.rss
 
 import androidx.compose.animation.Crossfade
@@ -14,7 +23,6 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
-import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
@@ -29,6 +37,8 @@ import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
+import me.him188.ani.app.ui.foundation.layout.ThreePaneScaffoldValueConverter.ExtraPaneForNestedDetails
+import me.him188.ani.app.ui.foundation.layout.convert
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -101,7 +111,7 @@ fun EditRssMediaSourcePage(
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     viewModel.state.collectAsStateWithLifecycle(null).value?.let {
-        EditRssMediaSourcePage(it, viewModel.testState,mediaDetailsColumn,  modifier, windowInsets = windowInsets)
+        EditRssMediaSourcePage(it, viewModel.testState, mediaDetailsColumn, modifier, windowInsets = windowInsets)
     }
 }
 
@@ -139,18 +149,7 @@ fun EditRssMediaSourcePage(
 
         ListDetailPaneScaffold(
             navigator.scaffoldDirective,
-            navigator.scaffoldValue.let { value ->
-                if (value.tertiary == PaneAdaptedValue.Expanded && value.secondary == PaneAdaptedValue.Expanded) {
-                    // 手机上三级导航, PC 上将 detail pane (test) 移动到左边, 隐藏 list (edit)
-                    ThreePaneScaffoldValue(
-                        primary = PaneAdaptedValue.Expanded, // detail
-                        secondary = PaneAdaptedValue.Hidden, // list
-                        tertiary = PaneAdaptedValue.Expanded,
-                    )
-                } else {
-                    value
-                }
-            },
+            navigator.scaffoldValue.convert(ExtraPaneForNestedDetails),
             listPane = {
                 AnimatedPane1 {
                     RssEditPane(
