@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.tools.update
 
 import me.him188.ani.app.platform.ContextMP
@@ -17,7 +26,7 @@ interface DesktopUpdateInstaller : UpdateInstaller {
     override fun openForManualInstallation(file: SystemPath, context: ContextMP) {
         FileOpener.openInFileBrowser(file)
     }
-    
+
     fun deleteOldUpdater()
 
     companion object {
@@ -25,12 +34,24 @@ interface DesktopUpdateInstaller : UpdateInstaller {
             return when (me.him188.ani.utils.platform.currentPlatformDesktop()) {
                 is Platform.MacOS -> MacOSUpdateInstaller
                 is Platform.Windows -> WindowsUpdateInstaller
+                is Platform.Linux -> LinuxUpdateInstaller
             }
         }
     }
 }
 
 object MacOSUpdateInstaller : DesktopUpdateInstaller {
+    override fun deleteOldUpdater() {
+        // no-op
+    }
+
+    override fun install(file: SystemPath, context: ContextMP): InstallationResult {
+        Desktop.getDesktop().open(file.toFile())
+        exitProcess(0)
+    }
+}
+
+object LinuxUpdateInstaller : DesktopUpdateInstaller {
     override fun deleteOldUpdater() {
         // no-op
     }
@@ -53,7 +74,10 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
             return InstallationResult.Failed(InstallationFailureReason.UNSUPPORTED_FILE_STRUCTURE)
         }
 
-        val resourcesDir = File(System.getProperty("compose.application.resources.dir") ?: throw IllegalStateException("Cannot get resources directory"))
+        val resourcesDir = File(
+            System.getProperty("compose.application.resources.dir")
+                ?: throw IllegalStateException("Cannot get resources directory"),
+        )
         val updateExecutable = resourcesDir.resolve("ani_update.exe")
         if (!updateExecutable.exists()) {
             logger.info { "'ani_update.exe' not found. Fallback to manual update" }
@@ -63,9 +87,11 @@ object WindowsUpdateInstaller : DesktopUpdateInstaller {
         // Copy ani_update.exe to current dir
         val copiedUpdateExecutable = appDir.resolve("ani_update.exe")
         updateExecutable.copyTo(copiedUpdateExecutable, true)
-        
-        ProcessBuilder("cmd", "/c", "start", "cmd", "/c", 
-            "\"", copiedUpdateExecutable.absolutePath, file.absolutePath, appDir.absolutePath, "\"")
+
+        ProcessBuilder(
+            "cmd", "/c", "start", "cmd", "/c",
+            "\"", copiedUpdateExecutable.absolutePath, file.absolutePath, appDir.absolutePath, "\"",
+        )
             .directory(appDir)
             .start()
 

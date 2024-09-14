@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.source.media.resolver
 
 import io.github.bonigarcia.wdm.WebDriverManager
@@ -11,8 +20,8 @@ import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
+import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
@@ -20,7 +29,6 @@ import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.platform.Platform
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.openqa.selenium.WebDriver
@@ -157,31 +165,29 @@ class SeleniumWebViewVideoExtractor(
             logger.info { "Starting Selenium with Edge to resolve video source from $pageUrl" }
 
 
-            val driver: RemoteWebDriver = when (me.him188.ani.utils.platform.currentPlatformDesktop()) {
-                is Platform.MacOS, is Platform.Windows -> {
-                    val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
-                    val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
+            val driver: RemoteWebDriver = kotlin.run {
+                val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
+                val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
 
-                    // Try user-set ones first, then fallback on the others
-                    val driverCreationFunctions = listOfNotNull(primaryDriverFunction) + fallbackDriverFunctions
-                    var successfulDriver: (() -> RemoteWebDriver)? = null
+                // Try user-set ones first, then fallback on the others
+                val driverCreationFunctions = listOfNotNull(primaryDriverFunction) + fallbackDriverFunctions
+                var successfulDriver: (() -> RemoteWebDriver)? = null
 
-                    val driver = driverCreationFunctions
-                        .asSequence()
-                        .mapNotNull { func ->
-                            runCatching {
-                                func().also { successfulDriver = func }
-                            }.getOrNull()
-                        }
-                        .firstOrNull()
-                        ?: throw Exception("Failed to create a driver")
+                val driver = driverCreationFunctions
+                    .asSequence()
+                    .mapNotNull { func ->
+                        runCatching {
+                            func().also { successfulDriver = func }
+                        }.getOrNull()
+                    }
+                    .firstOrNull()
+                    ?: throw Exception("Failed to create a driver")
 
-                    // If the rollback is successful, update the user settings
-                    // Except Safari for now, because it does not support proxy settings and is not listed in the optional list
-                    // updateDriverSettingsIfNeeded(successfulDriver)
+                // If the rollback is successful, update the user settings
+                // Except Safari for now, because it does not support proxy settings and is not listed in the optional list
+                // updateDriverSettingsIfNeeded(successfulDriver)
 
-                    driver
-                }
+                driver
             }
 
             logger.info { "Using WebDriver: $driver" }
@@ -272,7 +278,7 @@ class SeleniumWebViewVideoExtractor(
             else -> null
         }
     }
-    
+
     private fun getFallbackDriverFunctions(primaryDriverFunction: (() -> RemoteWebDriver)?): List<() -> RemoteWebDriver> {
         return listOf(
             ::createChromeDriver,
@@ -280,7 +286,7 @@ class SeleniumWebViewVideoExtractor(
 //            ::createSafariDriver,
         ).filter { it != primaryDriverFunction }
     }
-    
+
 //    private fun updateDriverSettingsIfNeeded(successfulDriver: (() -> RemoteWebDriver)?, primaryDriverFunction: (() -> RemoteWebDriver)?) {
 //        if (successfulDriver != primaryDriverFunction) {
 //            val fallbackDriverType = when (successfulDriver) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 OpenAni and contributors.
+ * Copyright (C) 2024 OpenAni and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
@@ -92,9 +92,9 @@ import me.him188.ani.utils.io.toKtPath
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.platform.Platform
 import me.him188.ani.utils.platform.currentPlatform
 import me.him188.ani.utils.platform.currentPlatformDesktop
+import me.him188.ani.utils.platform.isMacOS
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -284,7 +284,7 @@ object AniDesktop {
 
                     SideEffect {
                         // https://www.formdev.com/flatlaf/macos/
-                        if (currentPlatformDesktop() is Platform.MacOS) {
+                        if (currentPlatformDesktop().isMacOS()) {
                             window.rootPane.putClientProperty("apple.awt.application.appearance", "system")
                             window.rootPane.putClientProperty("apple.awt.fullscreenable", true)
                             if (windowImmersed) {
