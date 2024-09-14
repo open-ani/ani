@@ -476,6 +476,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     }
 
     override fun seekTo(positionMillis: Long) {
+        currentPositionMillis.value = positionMillis
         player.controls().setTime(positionMillis)
     }
 
