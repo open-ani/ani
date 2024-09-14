@@ -51,7 +51,7 @@ inline fun ProvideFoundationCompositionLocalsForPreview(
         previewImage.asCoilImage()
     }
     CompositionLocalProvider(
-        LocalIsPreviewing providesDefault true,
+        LocalIsPreviewing provides true,
         LocalNavigator providesDefault aniNavigator,
         LocalToaster providesDefault NoOpToaster,
         LocalImageLoader providesDefault remember {
