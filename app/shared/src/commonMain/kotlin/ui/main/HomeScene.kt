@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.main
 
 import androidx.compose.foundation.background
@@ -35,6 +44,7 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,7 +74,7 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
-import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
+import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.home.HomePage
@@ -98,7 +108,7 @@ fun HomeScene(
         }
     }
 
-    if (isShowLandscapeUI()) {
+    if (currentWindowAdaptiveInfo().isWidthAtLeastMedium) {
         HomeSceneLandscape(windowInsets, modifier)
     } else {
         HomeScenePortrait(windowInsets, modifier)
@@ -257,12 +267,14 @@ private fun HomeSceneLandscape(
                             onClickCaches = {
                                 navigator.navigateCaches()
                             },
+                            showCacheButton = false,
                             Modifier,
                             windowInsets = windowInsets,
                         )
 
                         2 -> CacheManagementPage(
                             viewModel { CacheManagementViewModel(navigator) },
+                            showBack = false,
                             Modifier.fillMaxSize(),
                             windowInsets = windowInsets,
                         )
@@ -271,6 +283,7 @@ private fun HomeSceneLandscape(
                             viewModel {
                                 SettingsViewModel()
                             },
+                            showBack = false,
                             Modifier.fillMaxSize(),
                             contentWindowInsets = windowInsets,
                         )
@@ -393,6 +406,7 @@ private fun HomeScenePortrait(
                         onClickCaches = {
                             navigator.navigateCaches()
                         },
+                        showCacheButton = true,
                         modifier = Modifier.padding(contentPadding),
                         windowInsets = windowInsets,
                     )

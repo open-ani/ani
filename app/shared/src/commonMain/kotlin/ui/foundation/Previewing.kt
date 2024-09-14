@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 OpenAni and contributors.
+ * Copyright (C) 2024 OpenAni and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
@@ -9,17 +9,12 @@
 
 package me.him188.ani.app.ui.foundation
 
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.DpSize
 import androidx.datastore.preferences.core.mutablePreferencesOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -43,14 +38,10 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.NoopBrowserNavigator
 import me.him188.ani.app.platform.GrantedPermissionManager
-import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.caching.MemoryDataStore
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
-import me.him188.ani.app.ui.foundation.layout.LayoutMode
-import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
-import me.him188.ani.app.ui.foundation.layout.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
@@ -76,7 +67,6 @@ fun ProvideCompositionLocalsForPreview(
 ) {
     ProvideFoundationCompositionLocalsForPreview {
         val coroutineScope = rememberCoroutineScope()
-        val context = LocalContext.current
         runCatching { stopKoin() }
         startKoin {
 //            modules(getCommonKoinModule({ context }, coroutineScope))
@@ -112,40 +102,31 @@ fun ProvideCompositionLocalsForPreview(
             )
         }
         val aniNavigator = remember { AniNavigator() }
-        val showLandscapeUI = isInLandscapeMode()
 
-        BoxWithConstraints {
-            val size by rememberUpdatedState(
-                with(LocalDensity.current) {
-                    DpSize(constraints.maxWidth.toDp(), constraints.maxHeight.toDp())
-                },
-            )
-            CompositionLocalProvider(
-                LocalIsPreviewing provides true,
-                LocalNavigator provides aniNavigator,
-                LocalLayoutMode provides remember(size) { LayoutMode(showLandscapeUI, size) },
-                LocalImageViewerHandler provides rememberImageViewerHandler(),
-                LocalToaster provides remember {
-                    object : Toaster {
-                        override fun toast(text: String) {
-                        }
+        CompositionLocalProvider(
+            LocalIsPreviewing provides true,
+            LocalNavigator provides aniNavigator,
+            LocalImageViewerHandler provides rememberImageViewerHandler(),
+            LocalToaster provides remember {
+                object : Toaster {
+                    override fun toast(text: String) {
                     }
-                },
-                LocalLifecycleOwner provides remember {
-                    object : LifecycleOwner {
-                        override val lifecycle: Lifecycle get() = TestGlobalLifecycle
-                    }
-                },
-            ) {
-                val navController = rememberNavController()
-                SideEffect {
-                    aniNavigator.setNavController(navController)
                 }
-                NavHost(navController, startDestination = "test") { // provide ViewModelStoreOwner
-                    composable("test") {
-                        AniApp(overrideColorTheme = colorScheme) {
-                            content()
-                        }
+            },
+            LocalLifecycleOwner provides remember {
+                object : LifecycleOwner {
+                    override val lifecycle: Lifecycle get() = TestGlobalLifecycle
+                }
+            },
+        ) {
+            val navController = rememberNavController()
+            SideEffect {
+                aniNavigator.setNavController(navController)
+            }
+            NavHost(navController, startDestination = "test") { // provide ViewModelStoreOwner
+                composable("test") {
+                    AniApp(overrideColorTheme = colorScheme) {
+                        content()
                     }
                 }
             }

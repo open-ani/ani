@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.cache
 
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +68,6 @@ import me.him188.ani.app.ui.cache.components.CacheGroupState
 import me.him188.ani.app.ui.cache.components.CacheManagementOverallStats
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -230,15 +238,15 @@ class CacheManagementState(
 @Composable
 fun CacheManagementPage(
     vm: CacheManagementViewModel,
+    showBack: Boolean,
     modifier: Modifier = Modifier,
-    showBack: Boolean = !isShowLandscapeUI(),
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     CacheManagementPage(
         vm.state,
+        showBack = showBack,
         modifier = modifier,
         lazyGridState = vm.lazyGridState,
-        showBack = showBack,
         windowInsets = windowInsets,
     )
 }
@@ -247,9 +255,9 @@ fun CacheManagementPage(
 @Composable
 fun CacheManagementPage(
     state: CacheManagementState,
+    showBack: Boolean,
     modifier: Modifier = Modifier,
     lazyGridState: CacheGroupGridLayoutState = rememberLazyStaggeredGridState(),
-    showBack: Boolean = !isShowLandscapeUI(),
     windowInsets: WindowInsets = WindowInsets.systemBars,
 ) {
     val appBarColors = AniThemeDefaults.topAppBarColors()

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +45,6 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
-import me.him188.ani.app.ui.foundation.layout.isShowLandscapeUI
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -64,10 +72,10 @@ typealias SettingsTab = me.him188.ani.app.navigation.SettingsTab
 @Composable
 fun SettingsPage(
     vm: SettingsViewModel,
+    showBack: Boolean,
     modifier: Modifier = Modifier,
     initialTab: SettingsTab = SettingsTab.Default,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    allowBack: Boolean = !isShowLandscapeUI(),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val appBarColors = AniThemeDefaults.topAppBarColors()
@@ -77,7 +85,7 @@ fun SettingsPage(
             TopAppBar(
                 title = { Text("设置") },
                 navigationIcon = {
-                    if (allowBack) {
+                    if (showBack) {
                         TopAppBarGoBackButton()
                     }
                 },
