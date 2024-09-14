@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import me.him188.ani.app.navigation.AniNavigator
@@ -25,9 +24,7 @@ import me.him188.ani.app.navigation.AniNavigator
 @Composable
 fun AniAppContent(aniNavigator: AniNavigator) {
     val navigator = rememberNavController()
-    SideEffect {
-        aniNavigator.setNavController(navigator)
-    }
+    aniNavigator.setNavController(navigator)
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
 //            if (isLandscape) {
