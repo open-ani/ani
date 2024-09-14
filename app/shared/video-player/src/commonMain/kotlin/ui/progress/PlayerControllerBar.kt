@@ -473,6 +473,7 @@ object PlayerControllerDefaults {
             optionsProvider = optionsProvider,
             renderValue = { Text(remember(it) { "${it}x" }) },
             renderValueExposed = { Text(remember(it) { if (it == 1.0f) "倍速" else """${it}x""" }) },
+            modifier,
             properties = PlatformPopupProperties(
                 clippingEnabled = false,
             ),
