@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +36,7 @@ class DanmakuHostState(
 ) {
     private val danmakuConfig by danmakuConfigState
     private val uiContext: UIContext = UIContext()
+    
 
     /**
      * DanmakuHost 显示大小, 在显示时修改
@@ -48,7 +51,7 @@ class DanmakuHostState(
         private set
 
     // currently not configurable
-    // private val floatingSpeedMultiplierState = mutableFloatStateOf(danmakuTrackProperties.speedMultiplier)
+    private val floatingSpeedMultiplierState = mutableFloatStateOf(danmakuTrackProperties.speedMultiplier)
     // currently not configurable
     private val fixedDanmakuPresentDuration = mutableLongStateOf(danmakuTrackProperties.fixedDanmakuPresentDuration)
 
@@ -130,17 +133,19 @@ class DanmakuHostState(
                         .coerceAtLeast(1f)
                         .toInt()
 
-                    Triple(trackCount, trackHeight, newConfig)
+                    Triple(trackCount, trackHeight to dummyTextLayout.danmakuWidth, newConfig)
                 }
                     .distinctUntilChanged()
-                    .collect { (trackCount, trackHeight, newConfig) ->
+                    .collect { (trackCount, trackSize, newConfig) ->
+                        val (trackHeight, baseTrackSpeedWidth) = trackSize
                         if (trackHeight != this@DanmakuHostState.trackHeight) {
                             this@DanmakuHostState.trackHeight = trackHeight
                         }
 
-                        updateTrackCount(trackCount, newConfig)
-                        // 如果弹幕字体大小变化了也会导致弹幕重置
+                        updateTrackCount(trackCount, newConfig, baseTrackSpeedWidth)
+                        // 如果弹幕字体大小变化了也会导致弹幕重置和浮动弹幕的一个静态属性更新
                         if (lastFontSize != newConfig.style.fontSize) {
+                            updateTrackStaticProperties(newBaseSpeedTextWidth = baseTrackSpeedWidth)
                             repopulatePresentDanmaku(elapsedFrameTimeNanos)
                             lastFontSize = newConfig.style.fontSize
                         }
@@ -152,26 +157,28 @@ class DanmakuHostState(
              * - [DanmakuConfig.safeSeparation] 弹幕最小间隔
              * - [DanmakuConfig.isDebug] 是否开启调试模式, 将改变弹幕内容
              * - 弹幕字体大小已在上面的 flow 中监听, 并且也会导致弹幕重新放置.
+             * - 弹幕的基础速度宽度已在上面的 flow 中监听, 并且也会导致弹幕重新放置.
              */
             launch {
                 snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
                     old.safeSeparation == new.safeSeparation && old.isDebug == new.isDebug
                 }.collect { newConfig ->
-                    updateTrackProperties(newConfig)
+                    updateTrackStaticProperties(newConfigSafeSeparation = newConfig.safeSeparation)
                     repopulatePresentDanmaku(elapsedFrameTimeNanos)
                     danmakuUpdateSubscription++ // update subscription manually if paused
                 }
             }
             /**
-             * 以下变会导致更新 DanmakuTrack 的静态属性
+             * 以下变会导致更新 DanmakuTrack 的静态属性发生变化
              * - [DanmakuConfig.speed] 浮动弹幕的速度
              * - 弹幕最小间隔已在上面的 flow 中监听, 并且也会更新 DanmakuTrack 属性.
+             * - 弹幕的基础速度宽度已在上面的 flow 中监听, 并且也会更新 DanmakuTrack 属性.
              */
             launch {
                 snapshotFlow { danmakuConfig }.distinctUntilChanged { old, new ->
                     old.speed == new.speed
                 }.collect { newConfig ->
-                    updateTrackProperties(newConfig)
+                    updateTrackStaticProperties(newConfigSpeed = newConfig.speed)
                     danmakuUpdateSubscription++ // update subscription manually if paused
                 }
             }
@@ -205,7 +212,7 @@ class DanmakuHostState(
 
                         for (danmaku in presentFloatingDanmaku) danmaku.danmaku = danmaku.danmaku.transform()
                         for (danmaku in presentFixedDanmaku) danmaku.danmaku = danmaku.danmaku.transform()
-                        danmakuUpdateSubscription++ // update subscription manually if paused
+                        danmakuUpdateSubscription++ // update subscription manually
                     }
             }
             /**
@@ -226,7 +233,7 @@ class DanmakuHostState(
     /**
      * 更新弹幕轨道数量, 同时也会更新轨道属性
      */
-    private suspend fun updateTrackCount(count: Int, config: DanmakuConfig) {
+    private suspend fun updateTrackCount(count: Int, config: DanmakuConfig, baseTrackSpeedWidth: Int) {
         uiContext.await()
         // updateTrack 时 speed 和 safeSeparation 也可能变化, 也需要更新
         val newFloatingTrackSpeed = with(uiContext.density) { danmakuConfig.speed.dp.toPx() }
@@ -237,13 +244,14 @@ class DanmakuHostState(
                 frameTimeNanosState = elapsedFrameTimeNanoState,
                 trackHeight = trackHeightState,
                 trackWidth = hostWidthState,
-                speedPxPerSecond = newFloatingTrackSpeed,
+                baseSpeedPxPerSecond = newFloatingTrackSpeed,
                 safeSeparation = newFloatingTrackSafeSeparation,
-                // baseTextLength = floatingBaseTextLengthForSpeed,
-                // speedMultiplier = floatingSpeedMultiplierState,
+                baseSpeedTextWidth = baseTrackSpeedWidth,
+                speedMultiplier = floatingSpeedMultiplierState,
                 onRemoveDanmaku = { removed -> presentFloatingDanmaku.removeFirst { it.danmaku == removed.danmaku } },
             )
         }
+        
         topTrack.setTrackCountImpl(if (config.enableTop) count else 0) { index ->
             FixedDanmakuTrack(
                 trackIndex = index,
@@ -272,18 +280,23 @@ class DanmakuHostState(
 
     /**
      * 更新一些 DanmakuTrack 的一些静态属性, 这些属性不是 State, 需要手动更新
-     * - [FloatingDanmakuTrack.speedPxPerSecond]
+     * - [FloatingDanmakuTrack.baseSpeedPxPerSecond]
      * - [FloatingDanmakuTrack.safeSeparation]
+     * - [FloatingDanmakuTrack.baseSpeedTextWidth]
      */
-    private suspend fun updateTrackProperties(config: DanmakuConfig) {
+    private suspend fun updateTrackStaticProperties(
+        newConfigSpeed: Float? = null, 
+        newConfigSafeSeparation: Dp? = null,
+        newBaseSpeedTextWidth: Int? = null
+    ) {
         uiContext.await()
-        // updateTrack 时 speed 和 safeSeparation 也可能变化, 也需要更新
-        val newFloatingTrackSpeed = with(uiContext.density) { config.speed.dp.toPx() }
-        val newFloatingTrackSafeSeparation = with(uiContext.density) { config.safeSeparation.toPx() }
+        val newFloatingTrackSpeed = with(uiContext.density) { newConfigSpeed?.dp?.toPx() }
+        val newFloatingTrackSafeSeparation = with(uiContext.density) { newConfigSafeSeparation?.toPx() }
 
         floatingTrack.forEach {
-            it.safeSeparation = newFloatingTrackSafeSeparation
-            it.speedPxPerSecond = newFloatingTrackSpeed
+            if (newFloatingTrackSafeSeparation != null) it.safeSeparation = newFloatingTrackSafeSeparation
+            if (newFloatingTrackSpeed != null) it.baseSpeedPxPerSecond = newFloatingTrackSpeed
+            if (newBaseSpeedTextWidth != null) it.baseSpeedTextWidth = newBaseSpeedTextWidth
         }
     }
 
@@ -363,7 +376,7 @@ class DanmakuHostState(
             // calculate y once
             if (danmaku.y.isNaN()) danmaku.y = danmaku.calculatePosY()
             // always calculate distance x
-            danmaku.distanceX += appendedFrameTime / 1_000_000_000f * floatingTrackSpeed
+            danmaku.distanceX += appendedFrameTime / 1_000_000_000f * (floatingTrackSpeed * danmaku.speedMultiplier)
         }
         for (danmaku in presentFixedDanmaku) {
             if (danmaku.placeFrameTimeNanos == DanmakuTrack.NOT_PLACED) {

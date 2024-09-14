@@ -3,6 +3,7 @@ package me.him188.ani.danmaku.ui
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.setValue
@@ -95,10 +96,10 @@ private fun createFloatingDanmakuTrack(
     frameTimeNanosState = frameTimeNanosState,
     trackWidth = trackWidth,
     trackHeight = mutableIntStateOf(50), // 测试时没用
-    speedPxPerSecond = speedPxPerSecond,
+    baseSpeedPxPerSecond = speedPxPerSecond,
     safeSeparation = safeSeparation,
-    /*baseTextLength = 100f, // 如果不进行撞车测试, 那请设置 speedMultiplier 为 1f
-    speedMultiplier = mutableFloatStateOf(1f),*/
+    baseSpeedTextWidth = 100, // 如果不进行撞车测试, 那请设置 speedMultiplier 为 1f
+    speedMultiplier = mutableFloatStateOf(1f),
     onRemoveDanmaku = onRemoveDanmaku,
 )
 
