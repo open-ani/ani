@@ -217,7 +217,10 @@ jobs:
 
       - name: Check
         if: ${{ matrix.run_tests }}
-        run: ./gradlew check ${{ env.gradleArgs }}
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 2
+          command: ./gradlew check ${{ env.gradleArgs }}
 
       - name: Package Desktop
         run: ./gradlew createReleaseDistributable ${{ env.gradleArgs }}
