@@ -1,19 +1,10 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
 package me.him188.ani.app.ui.foundation
@@ -31,7 +22,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.datastore.preferences.core.mutablePreferencesOf
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
@@ -55,30 +45,36 @@ import me.him188.ani.app.navigation.NoopBrowserNavigator
 import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
-import me.him188.ani.app.ui.foundation.layout.isInLandscapeMode
 import me.him188.ani.app.tools.caching.MemoryDataStore
 import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.layout.LayoutMode
 import me.him188.ani.app.ui.foundation.layout.LocalLayoutMode
+import me.him188.ani.app.ui.foundation.layout.isInLandscapeMode
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
 import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
+/**
+ * 应当优先使用 [me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview].
+ * 仅当 foundation 的不满足需求时才使用此方法.
+ */
+@OptIn(TestOnly::class)
 @Composable
 fun ProvideCompositionLocalsForPreview(
     module: Module.() -> Unit = {},
     colorScheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
-    PlatformPreviewCompositionLocalProvider {
+    ProvideFoundationCompositionLocalsForPreview {
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
         runCatching { stopKoin() }
@@ -137,7 +133,7 @@ fun ProvideCompositionLocalsForPreview(
                 },
                 LocalLifecycleOwner provides remember {
                     object : LifecycleOwner {
-                        override val lifecycle: Lifecycle get() = GlobalLifecycle
+                        override val lifecycle: Lifecycle get() = TestGlobalLifecycle
                     }
                 },
             ) {
@@ -155,29 +151,4 @@ fun ProvideCompositionLocalsForPreview(
             }
         }
     }
-}
-
-@Composable
-expect fun PlatformPreviewCompositionLocalProvider(content: @Composable () -> Unit)
-
-private data object GlobalLifecycle : Lifecycle() {
-
-    private val owner = object : LifecycleOwner {
-        override val lifecycle get() = this@GlobalLifecycle
-    }
-
-    override val currentState get() = State.RESUMED
-
-    override fun addObserver(observer: LifecycleObserver) {
-//        require(observer is DefaultLifecycleObserver) {
-//            "$observer must implement androidx.lifecycle.DefaultLifecycleObserver."
-//        }
-//
-//        // Call the lifecycle methods in order and do not hold a reference to the observer.
-//        observer.onCreate(owner)
-//        observer.onStart(owner)
-//        observer.onResume(owner)
-    }
-
-    override fun removeObserver(observer: LifecycleObserver) {}
 }
