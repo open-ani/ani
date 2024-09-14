@@ -66,6 +66,7 @@ inline fun ProvideFoundationCompositionLocalsForPreview(
         LocalOnBackPressedDispatcherOwner provides remember {
             object : OnBackPressedDispatcherOwner {
                 override val onBackPressedDispatcher: OnBackPressedDispatcher = OnBackPressedDispatcher(null)
+                override val lifecycle: Lifecycle get() = TestGlobalLifecycle
             }
         },
         LocalLifecycleOwner providesDefault remember {

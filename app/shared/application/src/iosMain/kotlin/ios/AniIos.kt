@@ -1,3 +1,12 @@
+/*
+ * Copyright 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ios
 
 import androidx.compose.animation.core.animateDpAsState
@@ -14,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +52,7 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.IosUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
+import me.him188.ani.app.ui.foundation.TestGlobalLifecycle
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
@@ -58,6 +70,7 @@ import me.him188.ani.utils.io.SystemDocumentDir
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import platform.UIKit.UIViewController
@@ -81,7 +94,14 @@ fun MainViewController(): UIViewController {
     koin.get<TorrentManager>() // start sharing, connect to DHT now
 
     val aniNavigator = AniNavigator()
-    val onBackPressedDispatcherOwner = SkikoOnBackPressedDispatcherOwner(aniNavigator)
+    val onBackPressedDispatcherOwner = SkikoOnBackPressedDispatcherOwner(
+        aniNavigator,
+        @OptIn(TestOnly::class)
+        object : LifecycleOwner {
+            override val lifecycle: Lifecycle
+                get() = TestGlobalLifecycle // TODO: ios lifecycle
+        },
+    )
 
     return ComposeUIViewController {
         AniApp {
