@@ -35,6 +35,7 @@ plugins {
 
 dependencies {
     implementation(projects.app.shared)
+    implementation(projects.app.shared.uiFoundation)
     implementation(projects.app.shared.application)
     implementation(compose.components.resources)
     implementation(libs.log4j.core)
@@ -44,13 +45,15 @@ dependencies {
 // workaround for compose limitation
 tasks.named("processResources") {
     dependsOn(":app:shared:desktopProcessResources")
+    dependsOn(":app:shared:ui-foundation:desktopProcessResources")
 }
 
 sourceSets {
     main {
         resources.srcDirs(
-            project(":app:shared").layout.buildDirectory
-//                .file("generated/compose/resourceGenerator/preparedResources/commonMain")
+            projects.app.shared.dependencyProject.layout.buildDirectory
+                .file("processedResources/desktop/main"),
+            projects.app.shared.uiFoundation.dependencyProject.layout.buildDirectory
                 .file("processedResources/desktop/main"),
         )
     }
