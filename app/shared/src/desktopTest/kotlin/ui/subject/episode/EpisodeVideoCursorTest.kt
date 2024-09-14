@@ -214,6 +214,7 @@ class EpisodeVideoCursorTest {
     @Test
     fun `hide cursor after some seconds`() = runAniComposeUiTest {
         controllerState.toggleFullVisible(true)
+        mainClock.autoAdvance = false
         setContent {
             Player(gestureFamily = GestureFamily.MOUSE)
         }
@@ -225,7 +226,6 @@ class EpisodeVideoCursorTest {
                 moveTo(centerRight) // 初始在视频外面
             }
         }
-        mainClock.autoAdvance = false
         runOnIdle {
             root.performMouseInput {
                 moveTo(center)
