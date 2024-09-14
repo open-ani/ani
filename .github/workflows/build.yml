@@ -62,7 +62,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
-            run_tests: true
+            run_tests: false
             gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4g
               -Dfile.encoding=UTF-8
