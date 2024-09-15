@@ -40,37 +40,18 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
      * 无论如何弹幕都不可以放到轨道长度之外.
      */
     override fun canPlace(danmaku: T, placeTimeNanos: Long): Boolean {
-        check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
-            "placeTimeNanos must be NOT_PLACED or non-negative, but had $placeTimeNanos"
-        }
-        // 弹幕轨道宽度为 0 一定不能放
-        if (trackWidth.value <= 0) return false
-        // 无论如何都不能放置在轨道最右侧之外
-        if (placeTimeNanos != DanmakuTrack.NOT_PLACED && frameTimeNanosState.value - placeTimeNanos < 0)
-            return false
+        return checkPlaceableImpl(danmaku, placeTimeNanos) != null
+    }
+
+    override fun tryPlace(danmaku: T, placeTimeNanos: Long): FloatingDanmaku<T>? {
+        val (upcomingDanmaku, insertionIndex) = checkPlaceableImpl(danmaku, placeTimeNanos) ?: return null
+        if (insertionIndex < 0) danmakuList.add(upcomingDanmaku) else danmakuList.add(insertionIndex, upcomingDanmaku)
         
-        // 如果指定了放置时间, 则需要计算划过的距离
-        val speedMultiplier = danmaku.calculateSpeedMultiplier()
-        // 避免浮点数的量级过大
-        val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
-            ((frameTimeNanosState.value - placeTimeNanos) / 1_000L) / 1_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
-        val upcomingDanmaku = FloatingDanmaku(danmaku, upcomingDistanceX, trackIndex, trackHeight, speedMultiplier)
-        
-        // 弹幕缓存为空, 那就判断是否 gone 了, 如果 gone 了就不放置
-        if (danmakuList.isEmpty()) return !upcomingDanmaku.isGone()
-        // 如果弹幕右侧超过了轨道左侧, 则不放置
-        if (upcomingDanmaku.isGone()) return false
-        // 如果缓存不为空, 那就判断是否有重叠
-        return upcomingDanmaku.isNonOverlapping(danmakuList) != -1
-        
+        return upcomingDanmaku
     }
 
     override fun place(danmaku: T, placeTimeNanos: Long): FloatingDanmaku<T> {
-        val speedMultiplier = danmaku.calculateSpeedMultiplier()
-        // 避免浮点数的量级过大
-        val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
-            ((frameTimeNanosState.value - placeTimeNanos) / 1_000L) / 1_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
-        val upcomingDanmaku = FloatingDanmaku(danmaku, upcomingDistanceX, trackIndex, trackHeight, speedMultiplier)
+        val upcomingDanmaku = danmaku.createFloating(placeTimeNanos)
         
         val insertionIndex = upcomingDanmaku.isNonOverlapping(danmakuList)
         if (insertionIndex < 0) danmakuList.add(upcomingDanmaku) else danmakuList.add(insertionIndex, upcomingDanmaku)
@@ -91,14 +72,43 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
             danmaku.isGone().also { if (it) onRemoveDanmaku(danmaku) }
         }
     }
-    
-    private fun T.calculateSpeedMultiplier(): Float {
-        require(danmakuWidth > 0) { 
-            "danmaku width must be positive." 
+
+    /**
+     * check if placeable, return insertionIndex and corresponding upcoming danmaku
+     */
+    private fun checkPlaceableImpl(danmaku: T, placeTimeNanos: Long): Pair<FloatingDanmaku<T>, Int>? {
+        check(placeTimeNanos == DanmakuTrack.NOT_PLACED || placeTimeNanos >= 0) {
+            "placeTimeNanos must be NOT_PLACED or non-negative, but had $placeTimeNanos"
         }
-        return this@FloatingDanmakuTrack.speedMultiplier.value
+        // 弹幕轨道宽度为 0 一定不能放
+        if (trackWidth.value <= 0) return null
+        // 无论如何都不能放置在轨道最右侧之外
+        if (placeTimeNanos != DanmakuTrack.NOT_PLACED && frameTimeNanosState.value - placeTimeNanos < 0)
+            return null
+
+        // 如果指定了放置时间, 则需要计算划过的距离
+        val upcomingDanmaku = danmaku.createFloating(placeTimeNanos)
+
+        // 弹幕缓存为空, 那就判断是否 gone 了, 如果 gone 了就不放置
+        if (danmakuList.isEmpty()) return if (upcomingDanmaku.isGone()) null else Pair(upcomingDanmaku, 0)
+        // 如果弹幕右侧超过了轨道左侧, 则不放置
+        if (upcomingDanmaku.isGone()) return null
+        // 如果缓存不为空, 那就判断是否有重叠
+        val insertionIndex = upcomingDanmaku.isNonOverlapping(danmakuList)
+        return if (insertionIndex == -1) null else Pair(upcomingDanmaku, insertionIndex)
+    }
+    
+    private fun T.createFloating(placeTimeNanos: Long): FloatingDanmaku<T> {
+        require(danmakuWidth > 0) { "danmaku width must be positive." }
+        val speedMultiplier = this@FloatingDanmakuTrack.speedMultiplier.value
             .pow(log(danmakuWidth.toFloat() / baseSpeedTextWidth, 2f))
             .coerceAtLeast(1f)
+        
+        // 避免浮点数的量级过大
+        val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
+            ((frameTimeNanosState.value - placeTimeNanos) / 1_000L) / 1_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
+        
+        return FloatingDanmaku(this, upcomingDistanceX, trackIndex, trackHeight, speedMultiplier)
     }
     
     // 弹幕左侧在轨道的位置
@@ -111,13 +121,13 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
     }
 
     // 撞车检测, 必须让 previous.left 小于 next.left, 也就是 previous 在前 next 在后
-    private fun isClash(previous: FloatingDanmaku<T>, next: FloatingDanmaku<T>): Boolean {
+    private fun willClash(previous: FloatingDanmaku<T>, next: FloatingDanmaku<T>): Boolean {
         // 前一条弹幕的右侧移动到轨道左侧(a.k.a isGone == true)花费的时间
-        val previousRightReachTrackLeftCostTime = previous.right() / (baseSpeedPxPerSecond * previous.speedMultiplier)
+        val previousRightReachTrackLeftCostTime = previous.right() / previous.speedMultiplier
         // 后一条弹幕的左侧移动到轨道左侧花费的时间
-        val nextLeftReachTrackLeftCostTime = next.left() / (baseSpeedPxPerSecond * next.speedMultiplier)
+        val nextLeftReachTrackLeftCostTime = next.left() / next.speedMultiplier
         // 如果 前一条弹幕的右侧移动到轨道左侧花费的时间 比 后一条弹幕的左侧移动到轨道左侧花费的时间 大
-        // 那说明档 后一条弹幕的左侧 移动到轨道左侧时, 前一条弹幕的右侧 还需要花更长时间移动到轨道左侧, 会撞车
+        // 那说明当 后一条弹幕的左侧 移动到轨道左侧时, 前一条弹幕的右侧 还需要花更长时间移动到轨道左侧, 会撞车
         return previousRightReachTrackLeftCostTime > nextLeftReachTrackLeftCostTime
     }
 
@@ -140,7 +150,7 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
         
         // fast path: 检查弹幕左侧是否比列表最后一个还大
         if (left() >= list.last().right()) {
-            return if (isClash(list.last(), this)) -1 else list.size
+            return if (willClash(list.last(), this)) -1 else list.size
         }
 
         // 下面是 chatgpt 写的
@@ -158,10 +168,10 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
 
         // 此 index 保证 this 插入到 list 后 list 仍然是排序的, 由 binarySearch 保证.
         return when {
-            index >= list.size -> if (isClash(list.last(), this)) -1 else list.size
-            index == 0 -> if (isClash(this, list[0])) -1 else 0
+            index >= list.size -> if (willClash(list.last(), this)) -1 else list.size
+            index == 0 -> if (willClash(this, list[0])) -1 else 0
             else -> {
-                if (isClash(list[index - 1], this) || isClash(this, list[index])) -1 else index
+                if (willClash(list[index - 1], this) || willClash(this, list[index])) -1 else index
             }
         }
     }
@@ -187,6 +197,7 @@ internal class FloatingDanmaku<T : SizeSpecifiedDanmaku>(
     initialDistanceX: Float = 0f,
     internal val trackIndex: Int,
     private val trackHeight: IntState,
+    // 这个值和字体大小无关
     internal val speedMultiplier: Float,
 ) {
     /**

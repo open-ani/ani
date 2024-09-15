@@ -15,7 +15,7 @@ class DanmakuTrackProperties(
     val verticalPadding: Int = 1,
     /**
      * speed multiplier for speed of floating danmaku.
-     * represents a multiplier to speed that 2x length of danmaku text
+     * represents a multiplier to speed that 2x length of base danmaku text
      */
     val speedMultiplier: Float = 1.14f,
     /**
