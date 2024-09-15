@@ -21,7 +21,7 @@ jobs:
           - windows-2019 # 16 GB
           - ubuntu-20.04 # 16 GB
           - macos-13 # x86_64, 14 GB
-          - macos-14 # aarch64, 7 GB
+          # - macos-14 # aarch64, 7 GB
         include:
           # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
@@ -56,20 +56,20 @@ jobs:
               -Dkotlin.daemon.jvm.options=-Xmx4g
               -Pani.build.framework=false
               -Pani.android.abis=arm64-v8a
-          - os: macos-14
-            name: macOS aarch64
-            uploadApk: false
-            arch: aarch64
-            anitorrent: true
-            anitorrent_separate_build: true
-            compose_resource_triple: macos-arm64
-            run_tests: false
-            gradleArgs: >-
-              -Dorg.gradle.jvmargs=-Xmx4g
-              -Dfile.encoding=UTF-8
-              -Dkotlin.daemon.jvm.options=-Xmx3g
-              -Pani.build.framework=false
-              -Pani.android.abis=arm64-v8a
+            # - os: macos-14
+            #   name: macOS aarch64
+            #   uploadApk: false
+            #   arch: aarch64
+            #   anitorrent: true
+            #   anitorrent_separate_build: true
+            #   compose_resource_triple: macos-arm64
+            #   run_tests: false
+            #   gradleArgs: >-
+            #     -Dorg.gradle.jvmargs=-Xmx4g
+            #     -Dfile.encoding=UTF-8
+            #     -Dkotlin.daemon.jvm.options=-Xmx3g
+            #     -Pani.build.framework=false
+            #     -Pani.android.abis=arm64-v8a
             # 这台机器硬盘小, 不要构建其他安卓架构
     env:
       gradleArgs: >-
@@ -134,6 +134,26 @@ jobs:
 
       - name: Update version name
         run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}
+
+      - name: Cache Anitorrent for Android
+        if: ${{ matrix.anitorrent }}
+        id: cache-anitorrent-android
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/android/.cxx
+            app/android/build
+          key: ${{ runner.os }}-anitorrent-android
+
+      - name: Cache Anitorrent for Desktop
+        if: ${{ matrix.anitorrent }}
+        id: cache-anitorrent-desktop
+        uses: actions/cache@v4
+        with:
+          path: |
+            torrent/anitorrent/anitorrent-native/build-ci/
+            torrent/anitorrent/anitorrent-native/build/
+          key: ${{ runner.os }}-anitorrent-desktop
 
       # 备注: 这个可能已经不需要了, Compose 可能已经修复了这个 bug
       - name: Explicitly generate Compose resources
