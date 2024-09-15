@@ -17,12 +17,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -30,24 +27,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.window.core.layout.WindowWidthSizeClass
-import me.him188.ani.app.ui.foundation.AsyncImage
-import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
@@ -68,28 +54,8 @@ fun RssEditPane(
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()),
         ) {
-            val headlineStyle = computeRssHeadlineStyle()
             // 大图标和标题
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                AsyncImage(
-                    state.displayIconUrl,
-                    contentDescription = null,
-                    Modifier
-                        .padding(top = headlineStyle.imageTitleSpacing)
-                        .size(headlineStyle.imageSize)
-                        .clip(MaterialTheme.shapes.medium),
-                    error = if (LocalIsPreviewing.current) rememberVectorPainter(Icons.Outlined.DisplaySettings) else null,
-                )
-
-                Text(
-                    state.displayName,
-                    Modifier
-                        .padding(top = headlineStyle.imageTitleSpacing)
-                        .padding(bottom = headlineStyle.imageTitleSpacing),
-                    style = headlineStyle.titleTextStyle,
-                    textAlign = TextAlign.Center,
-                )
-            }
+            MediaSourceHeadline(state.displayIconUrl, state.displayName)
 
             val textFieldShape = MaterialTheme.shapes.medium
             Column(
@@ -205,34 +171,3 @@ fun RssEditPane(
         }
     }
 }
-
-@Immutable
-private class RssHeadlineStyle(
-    val imageSize: DpSize,
-    val titleTextStyle: TextStyle,
-    val imageTitleSpacing: Dp,
-)
-
-@Composable
-private fun computeRssHeadlineStyle(): RssHeadlineStyle {
-    return when (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> {
-            RssHeadlineStyle(
-                imageSize = DpSize(96.dp, 96.dp),
-                titleTextStyle = MaterialTheme.typography.headlineMedium,
-                imageTitleSpacing = 12.dp,
-            )
-        }
-
-        // MEDIUM, EXPANDED for now,
-        // and LARGE in the future
-        else -> {
-            RssHeadlineStyle(
-                imageSize = DpSize(128.dp, 128.dp),
-                titleTextStyle = MaterialTheme.typography.displaySmall,
-                imageTitleSpacing = 20.dp,
-            )
-        }
-    }
-}
-
