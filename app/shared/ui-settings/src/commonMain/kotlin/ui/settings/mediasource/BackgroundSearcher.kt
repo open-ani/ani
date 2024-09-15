@@ -30,6 +30,8 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * 使用测试数据 [TestData] 运行测试 [TestResult].
  * @see DefaultBackgroundSearcher
+ *
+ * @param TestData 测试数据, 将所有[搜索][restartSearchImpl]时需要的数据都封装在这个类中, 以便 debounce
  */
 @Stable
 abstract class BackgroundSearcher<TestData : Any, TestResult : Any>(
@@ -101,14 +103,19 @@ abstract class BackgroundSearcher<TestData : Any, TestResult : Any>(
     }
 
     /**
+     * 当执行搜索时调用.
+     * 
      * Sample implementation:
      * ```
      * val query = RssSearchQuery(
      *     subjectName = testData.keyword,
      *     episodeSort = EpisodeSort(sort),
      * )
+     * // 因为这是在 UI 线程内, 可以更新 UI 状态清除正在查看详情的 item
+     * // 但注意不要读取涉及搜索参数的状态 - 这会跳过 debounce. 需要将所有参数都封装为 TestData 才能 debounce.
      * viewingItem = null
      * return launchRequestInBackground {
+     *     // 后台线程内执行搜索
      *     doSearch(testData, query)
      * }
      * ```
