@@ -319,7 +319,7 @@ class DanmakuHostState(
             val placeFrameTimeNanos = currentElapsedFrameTimeNanos -
                     ((it.distanceX / (floatingTrackSpeed * it.speedMultiplier)) * 1_000_000_000f).toLong()
             if (placeFrameTimeNanos >= 0) {
-                
+                trySend(it.danmaku.presentation, placeFrameTimeNanos)
             }
         }
         
