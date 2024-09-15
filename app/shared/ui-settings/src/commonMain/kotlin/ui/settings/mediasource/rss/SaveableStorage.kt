@@ -11,7 +11,9 @@ package me.him188.ani.app.ui.settings.mediasource.rss
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -52,7 +54,7 @@ class SaveableStorage<Container : Any>(
      *
      * 属性不能为 `null`. 如需支持 `null`, 请使用 [propNullable].
      * @param copy 当修改时调用, 用于应用修改, 构造一个新的 [Container]
-     * @param default 当 [container] 仍然为 `null` 
+     * @param default 当 [container] 仍然为 `null`
      */
     fun <P : Any> prop(
         get: (Container) -> P,
@@ -88,4 +90,17 @@ class SaveableStorage<Container : Any>(
             onSave(arguments.copy(value))
         }
     }
+}
+
+@TestOnly
+fun <T : Any> createTestSaveableStorage(
+    initialValue: T?,
+    isSaving: Boolean = false,
+): SaveableStorage<T> {
+    val containerState = mutableStateOf(initialValue)
+    return SaveableStorage(
+        containerState = containerState,
+        onSave = { containerState.value = it },
+        isSavingState = mutableStateOf(isSaving),
+    )
 }
