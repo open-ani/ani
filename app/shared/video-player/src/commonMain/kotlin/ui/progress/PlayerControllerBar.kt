@@ -95,6 +95,8 @@ import me.him188.ani.app.videoplayer.ui.top.needWorkaroundForFocusManager
 import kotlin.math.roundToInt
 
 const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
+const val TAG_SPEED_SWITCHER_TEXT_BUTTON = "SpeedSwitcherTextButton"
+const val TAG_SPEED_SWITCHER_DROPDOWN_MENU = "SpeedSwitcherDropdownMenu"
 
 @Stable
 object PlayerControllerDefaults {
@@ -463,6 +465,7 @@ object PlayerControllerDefaults {
         onValueChange: (Float) -> Unit,
         modifier: Modifier = Modifier,
         optionsProvider: () -> List<Float> = { listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 3f) },
+        onExpandedChanged: (expanded: Boolean) -> Unit = {},
     ) {
         return OptionsSwitcher(
             value = value,
@@ -474,6 +477,9 @@ object PlayerControllerDefaults {
             properties = PlatformPopupProperties(
                 clippingEnabled = false,
             ),
+            textButtonTestTag = TAG_SPEED_SWITCHER_TEXT_BUTTON,
+            dropdownMenuTestTag = TAG_SPEED_SWITCHER_DROPDOWN_MENU,
+            onExpandedChanged = onExpandedChanged,
         )
     }
 
@@ -490,15 +496,24 @@ object PlayerControllerDefaults {
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
         properties: PopupProperties = PopupProperties(),
+        textButtonTestTag: String = "textButton",
+        dropdownMenuTestTag: String = "dropDownMenu",
+        onExpandedChanged: (expanded: Boolean) -> Unit = {},
     ) {
         Box(modifier, contentAlignment = Alignment.Center) {
             var expanded by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(true) {
+                snapshotFlow { expanded }.collect {
+                    onExpandedChanged(expanded)
+                }
+            }
             TextButton(
                 { expanded = true },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = LocalContentColor.current,
                 ),
                 enabled = enabled,
+                modifier = Modifier.testTag(textButtonTestTag),
             ) {
                 renderValueExposed(value)
             }
@@ -507,6 +522,7 @@ object PlayerControllerDefaults {
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 properties = properties,
+                modifier = Modifier.testTag(dropdownMenuTestTag),
             ) {
                 val options = remember(optionsProvider) { optionsProvider() }
                 for (option in options) {

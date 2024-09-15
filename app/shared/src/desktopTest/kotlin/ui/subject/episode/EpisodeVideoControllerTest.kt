@@ -49,6 +49,8 @@ import me.him188.ani.app.videoplayer.ui.progress.TAG_MEDIA_PROGRESS_INDICATOR_TE
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
 import me.him188.ani.app.videoplayer.ui.progress.TAG_SELECT_EPISODE_ICON_BUTTON
+import me.him188.ani.app.videoplayer.ui.progress.TAG_SPEED_SWITCHER_DROPDOWN_MENU
+import me.him188.ani.app.videoplayer.ui.progress.TAG_SPEED_SWITCHER_TEXT_BUTTON
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
 import me.him188.ani.danmaku.api.Danmaku
@@ -668,6 +670,17 @@ class EpisodeVideoControllerTest {
             waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_EPISODE_SELECTOR_SHEET).doesNotExist() } },
         )
     }
+
+    @Test
+    fun `touch - hover to always on - speed switcher`() = runAniComposeUiTest {
+        // 并非 side sheet
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.TOUCH,
+            openSideSheet = { onNodeWithTag(TAG_SPEED_SWITCHER_TEXT_BUTTON).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_SPEED_SWITCHER_DROPDOWN_MENU).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_SPEED_SWITCHER_DROPDOWN_MENU).doesNotExist() } },
+        )
+    }
     ///////////////////////////////////////////////////////////////////////////
     // mouse
     ///////////////////////////////////////////////////////////////////////////
@@ -818,6 +831,11 @@ class EpisodeVideoControllerTest {
             root.performTouchInput {
                 click(center)
             }
+            // 目前的 controller mouseHoverForController 依赖 Move 事件, 但 compose 似乎有点问题
+            // 所以额外广播一个事件
+            root.performTouchInput {
+                swipe(center, center - Offset(1f, 1f))
+            }
         }
         runOnIdle {
             waitForSideSheetClose()
@@ -864,6 +882,17 @@ class EpisodeVideoControllerTest {
         )
     }
 
+    @Test
+    fun `mouse - hover to always on - speed switcher`() = runAniComposeUiTest {
+        // 并非 side sheet
+        testSideSheetRequestAlwaysOn(
+            gestureFamily = GestureFamily.MOUSE,
+            openSideSheet = { onNodeWithTag(TAG_SPEED_SWITCHER_TEXT_BUTTON).performClick() },
+            waitForSideSheetOpen = { waitUntil { onNodeWithTag(TAG_SPEED_SWITCHER_DROPDOWN_MENU).exists() } },
+            waitForSideSheetClose = { waitUntil { onNodeWithTag(TAG_SPEED_SWITCHER_DROPDOWN_MENU).doesNotExist() } },
+        )
+    }
+    
     ///////////////////////////////////////////////////////////////////////////
     // MOUSE 模式下单击鼠标
     ///////////////////////////////////////////////////////////////////////////

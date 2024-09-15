@@ -47,14 +47,15 @@ jobs:
             uploadApk: true
             arch: x64
             anitorrent: true
-            anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
+            anitorrent_separate_build: true # macOS native 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
             run_tests: true
             gradleArgs: >-
-              -Dorg.gradle.jvmargs=-Xmx4096m
+              -Dorg.gradle.jvmargs=-Xmx4g
               -Dfile.encoding=UTF-8
-              -Dkotlin.daemon.jvm.options=-Xmx4096M
+              -Dkotlin.daemon.jvm.options=-Xmx4g
               -Pani.build.framework=false
+              -Pani.android.abis=arm64-v8a
           - os: macos-14
             name: macOS aarch64
             uploadApk: false
@@ -62,7 +63,7 @@ jobs:
             anitorrent: true
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
-            run_tests: true
+            run_tests: false
             gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4g
               -Dfile.encoding=UTF-8

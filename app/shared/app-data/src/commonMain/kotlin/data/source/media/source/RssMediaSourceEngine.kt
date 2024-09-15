@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.source.media.source
 
 import io.ktor.client.HttpClient
@@ -5,9 +14,7 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.URLBuilder
 import io.ktor.http.Url
-import io.ktor.http.appendPathSegments
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.TimeZone
@@ -59,7 +66,7 @@ abstract class RssMediaSourceEngine {
         page: Int?,
         mediaSourceId: String,
     ): ApiResponse<Result> {
-        val encodedUrl = encodeKeyword(query)
+        val encodedUrl = MediaSourceEngineHelpers.encodeUrlSegment(query.subjectName)
 
         val finalUrl = Url(
             searchConfig.searchUrl
@@ -79,9 +86,6 @@ abstract class RssMediaSourceEngine {
     ): ApiResponse<Result>
 
     protected companion object {
-        fun encodeKeyword(query: RssSearchQuery) =
-            URLBuilder().appendPathSegments(query.subjectName).encodedPathSegments.first()
-
         fun convertItemToMedia(
             item: RssItem,
             mediaSourceId: String,

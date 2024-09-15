@@ -48,6 +48,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -509,18 +510,24 @@ fun VideoGestureHost(
                     }
                     .ifThen(family.mouseHoverForController) {
                         val scope = rememberUiMonoTasker()
+                        // 没有人请求 alwaysOn 时自动隐藏控制器
+                        LaunchedEffect(true) {
+                            snapshotFlow { controllerState.alwaysOn }.collect {
+                                if (!it) {
+                                    controllerState.toggleFullVisible(true)
+                                    keyboardFocus.requestFocus()
+                                    scope.launch {
+                                        delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
+                                        controllerState.toggleFullVisible(false)
+                                    }
+                                }
+                            }
+                        }
                         // 这里不能用 hover, 因为在当控制器隐藏后, hover 状态仍然有, 于是下次移动鼠标时不会重复触发 hover 事件, 也就无法显示
                         // See test case: `mouse - mouseHoverForController - center screen twice`
                         onPointerEventMultiplatform(PointerEventType.Move) { _ ->
                             controllerState.toggleFullVisible(true)
                             keyboardFocus.requestFocus()
-                            scope.launch {
-                                delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
-                                controllerState.toggleFullVisible(false)
-                            }
-                        }.onPointerEventMultiplatform(PointerEventType.Enter) { _ ->
-                            // 展示 side sheet 时会 requestAlwaysOn, 当点击外面关闭 side sheet 后, 不会有 Move 事件, 也就不会自动隐藏. 
-                            // 因此需要用 Enter 来延迟几秒后隐藏. 
                             scope.launch {
                                 delay(VIDEO_GESTURE_MOUSE_MOVE_SHOW_CONTROLLER_DURATION)
                                 controllerState.toggleFullVisible(false)
@@ -649,6 +656,7 @@ fun VideoGestureHost(
 
             if (family.autoHideController) {
                 LaunchedEffect(controllerState.visibility, controllerState.alwaysOn) {
+                    if (controllerState.alwaysOn) return@LaunchedEffect
                     if (controllerState.visibility.bottomBar) {
                         delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
                         controllerState.toggleFullVisible(false)

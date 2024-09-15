@@ -366,10 +366,19 @@ internal fun EpisodeVideoImpl(
                         PlayerControllerDefaults.SubtitleSwitcher(playerState.subtitleTracks)
 
                         val speed by playerState.playbackSpeed.collectAsStateWithLifecycle()
+                        val alwaysOnRequester = rememberAlwaysOnRequester(videoControllerState, "speedSwitcher")
                         SpeedSwitcher(
                             speed,
                             { playerState.setPlaybackSpeed(it) },
+                            onExpandedChanged = {
+                                if (it) {
+                                    alwaysOnRequester.request()
+                                } else {
+                                    alwaysOnRequester.cancelRequest()
+                                }
+                            },
                         )
+
                     }
                     PlayerControllerDefaults.FullscreenIcon(
                         expanded,
