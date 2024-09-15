@@ -21,7 +21,7 @@ jobs:
           - windows-2019 # 16 GB
           - ubuntu-20.04 # 16 GB
           - macos-13 # x86_64, 14 GB
-          - macos-14 # aarch64, 7 GB
+          # - macos-14 # aarch64, 7 GB
         include:
           # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
@@ -56,20 +56,20 @@ jobs:
               -Dkotlin.daemon.jvm.options=-Xmx4g
               -Pani.build.framework=false
               -Pani.android.abis=arm64-v8a
-          - os: macos-14
-            name: macOS aarch64
-            uploadApk: false
-            arch: aarch64
-            anitorrent: true
-            anitorrent_separate_build: true
-            compose_resource_triple: macos-arm64
-            run_tests: false
-            gradleArgs: >-
-              -Dorg.gradle.jvmargs=-Xmx4g
-              -Dfile.encoding=UTF-8
-              -Dkotlin.daemon.jvm.options=-Xmx3g
-              -Pani.build.framework=false
-              -Pani.android.abis=arm64-v8a
+            # - os: macos-14
+            #   name: macOS aarch64
+            #   uploadApk: false
+            #   arch: aarch64
+            #   anitorrent: true
+            #   anitorrent_separate_build: true
+            #   compose_resource_triple: macos-arm64
+            #   run_tests: false
+            #   gradleArgs: >-
+            #     -Dorg.gradle.jvmargs=-Xmx4g
+            #     -Dfile.encoding=UTF-8
+            #     -Dkotlin.daemon.jvm.options=-Xmx3g
+            #     -Pani.build.framework=false
+            #     -Pani.android.abis=arm64-v8a
             # 这台机器硬盘小, 不要构建其他安卓架构
     env:
       gradleArgs: >-
