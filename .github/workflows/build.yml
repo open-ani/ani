@@ -135,6 +135,26 @@ jobs:
       - name: Update version name
         run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}
 
+      - name: Cache Anitorrent for Android
+        if: ${{ matrix.anitorrent }}
+        id: cache-anitorrent-android
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/android/.cxx
+            app/android/build
+          key: ${{ runner.os }}-anitorrent-android
+
+      - name: Cache Anitorrent for Desktop
+        if: ${{ matrix.anitorrent }}
+        id: cache-anitorrent-desktop
+        uses: actions/cache@v4
+        with:
+          path: |
+            torrent/anitorrent/anitorrent-native/build-ci/
+            torrent/anitorrent/anitorrent-native/build/
+          key: ${{ runner.os }}-anitorrent-desktop
+
       # 备注: 这个可能已经不需要了, Compose 可能已经修复了这个 bug
       - name: Explicitly generate Compose resources
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
