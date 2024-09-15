@@ -59,7 +59,7 @@ fun RssEditPane(
     showTestButton: Boolean,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    showDebugFields: Boolean = viewModel<SettingsViewModel>().isInDebugMode,
+    showDebugFields: Boolean = viewModel<SettingsViewModel> { SettingsViewModel() }.isInDebugMode,
 ) {
     Column(
         modifier
@@ -98,7 +98,7 @@ fun RssEditPane(
                     .padding(vertical = 16.dp),
             ) {
                 val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                
+
                 Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                     if (showDebugFields) {
                         OutlinedTextField(
