@@ -20,6 +20,7 @@ import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.platform.Context
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.Media
@@ -87,14 +88,6 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
     }
 }
 
-interface WebViewVideoExtractor {
-    suspend fun <R : Any> getVideoResourceUrl(
-        pageUrl: String,
-        resourceMatcher: (String) -> R?
-    ): R
-}
-
-
 class SeleniumWebViewVideoExtractor(
     private val proxyConfig: ProxyConfig?,
     private val videoResolverSettings: VideoResolverSettings,
@@ -156,6 +149,12 @@ class SeleniumWebViewVideoExtractor(
     }
 
     override suspend fun <R : Any> getVideoResourceUrl(
+        context: Context,
+        pageUrl: String,
+        resourceMatcher: (String) -> R?
+    ): R = getVideoResourceUrl(pageUrl, resourceMatcher)
+
+    suspend fun <R : Any> getVideoResourceUrl(
         pageUrl: String,
         resourceMatcher: (String) -> R?
     ): R {

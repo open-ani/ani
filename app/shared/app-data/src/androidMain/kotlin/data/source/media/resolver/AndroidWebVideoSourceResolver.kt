@@ -63,7 +63,7 @@ class AndroidWebVideoSourceResolver : VideoSourceResolver {
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
         if (!supports(media)) throw UnsupportedMediaException(media)
         val matcherContext = WebVideoMatcherContext(media)
-        val webVideo = WebViewVideoExtractor().getVideoResourceUrl(
+        val webVideo = AndroidWebViewVideoExtractor().getVideoResourceUrl(
             attached ?: throw IllegalStateException("WebVideoSourceResolver not attached"),
             media.download.uri,
             resourceMatcher = {
@@ -76,14 +76,14 @@ class AndroidWebVideoSourceResolver : VideoSourceResolver {
     }
 }
 
-class WebViewVideoExtractor {
+class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
     private companion object {
-        private val logger = logger<WebViewVideoExtractor>()
+        private val logger = logger<AndroidWebViewVideoExtractor>()
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("SetJavaScriptEnabled")
-    suspend fun <R : Any> getVideoResourceUrl(
+    override suspend fun <R : Any> getVideoResourceUrl(
         context: Context,
         pageUrl: String,
         resourceMatcher: (String) -> R?,
