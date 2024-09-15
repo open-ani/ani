@@ -125,7 +125,7 @@ fun EditRssMediaSourcePage(
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     LaunchedEffect(Unit) {
-        testState.observeChangeLoop()
+        testState.searcher.observeChangeLoop()
     }
 
     Scaffold(

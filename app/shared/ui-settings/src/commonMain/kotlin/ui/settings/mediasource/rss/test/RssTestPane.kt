@@ -86,16 +86,16 @@ fun RssTestPane(
             Row(Modifier.padding(top = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("查询结果", style = MaterialTheme.typography.headlineSmall)
 
-                IconButton({ state.restartCurrentSearch() }) {
+                IconButton({ state.searcher.restartCurrentSearch() }) {
                     Icon(Icons.Rounded.RestartAlt, contentDescription = "刷新")
                 }
 
-                val searchResult = state.searchResult
+                val searchResult = state.searcher.searchResult
                 AnimatedVisibility(searchResult is RssTestResult.Failed) {
                     if (searchResult !is RssTestResult.Failed) return@AnimatedVisibility
                     TextButton(
                         onClick = {
-                            state.restartCurrentSearch() // TODO: see error detail 
+                            state.searcher.restartCurrentSearch() // TODO: see error detail 
                         },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.error,
@@ -129,7 +129,7 @@ fun RssTestPane(
 //                LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 4.dp))
 //            }
 
-                FastLinearProgressIndicator(state.isSearching, delayMillis = 0, minimumDurationMillis = 300)
+                FastLinearProgressIndicator(state.searcher.isSearching, delayMillis = 0, minimumDurationMillis = 300)
             }
         }
         val tabs = RssTestPaneTab.entries
@@ -156,7 +156,7 @@ fun RssTestPane(
             }
         }
 
-        Crossfade(state.searchResult, Modifier.padding(top = 20.dp)) { result ->
+        Crossfade(state.searcher.searchResult, Modifier.padding(top = 20.dp)) { result ->
 
             HorizontalPager(
                 pagerState,
