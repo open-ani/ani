@@ -4,6 +4,7 @@ import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.Stable
+import kotlin.math.log
 import kotlin.math.pow
 
 /**
@@ -49,28 +50,26 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
             return false
         
         // 如果指定了放置时间, 则需要计算划过的距离
-        val speedMultiplier = speedMultiplier.value
-            .pow(danmaku.danmakuWidth / (baseSpeedTextWidth.toFloat() * 2f))
-            .coerceAtLeast(1f)
-
+        val speedMultiplier = danmaku.calculateSpeedMultiplier()
+        // 避免浮点数的量级过大
         val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
-            (frameTimeNanosState.value - placeTimeNanos) / 1_000_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
+            ((frameTimeNanosState.value - placeTimeNanos) / 1_000L) / 1_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
         val upcomingDanmaku = FloatingDanmaku(danmaku, upcomingDistanceX, trackIndex, trackHeight, speedMultiplier)
         
         // 弹幕缓存为空, 那就判断是否 gone 了, 如果 gone 了就不放置
         if (danmakuList.isEmpty()) return !upcomingDanmaku.isGone()
+        // 如果弹幕右侧超过了轨道左侧, 则不放置
+        if (upcomingDanmaku.isGone()) return false
         // 如果缓存不为空, 那就判断是否有重叠
         return upcomingDanmaku.isNonOverlapping(danmakuList) != -1
         
     }
-    
-    override fun place(danmaku: T, placeTimeNanos: Long): FloatingDanmaku<T> {
-        val speedMultiplier = speedMultiplier.value
-            .pow(danmaku.danmakuWidth / (baseSpeedTextWidth.toFloat() * 2f))
-            .coerceAtLeast(1f)
 
+    override fun place(danmaku: T, placeTimeNanos: Long): FloatingDanmaku<T> {
+        val speedMultiplier = danmaku.calculateSpeedMultiplier()
+        // 避免浮点数的量级过大
         val upcomingDistanceX = if (placeTimeNanos == DanmakuTrack.NOT_PLACED) 0f else
-            (frameTimeNanosState.value - placeTimeNanos) / 1_000_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
+            ((frameTimeNanosState.value - placeTimeNanos) / 1_000L) / 1_000_000f * (baseSpeedPxPerSecond * speedMultiplier)
         val upcomingDanmaku = FloatingDanmaku(danmaku, upcomingDistanceX, trackIndex, trackHeight, speedMultiplier)
         
         val insertionIndex = upcomingDanmaku.isNonOverlapping(danmakuList)
@@ -92,15 +91,21 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
             danmaku.isGone().also { if (it) onRemoveDanmaku(danmaku) }
         }
     }
-
-
+    
+    private fun T.calculateSpeedMultiplier(): Float {
+        assert(danmakuWidth > 0) { "danmaku width must be positive." }
+        return this@FloatingDanmakuTrack.speedMultiplier.value
+            .pow(log(danmakuWidth.toFloat() / baseSpeedTextWidth, 2f))
+            .coerceAtLeast(1f)
+    }
+    
     // 弹幕左侧在轨道的位置
     private fun FloatingDanmaku<T>.left() = trackWidth.value.toFloat() - distanceX
     // 弹幕右侧在轨道的位置
     private fun FloatingDanmaku<T>.right() = left() + danmaku.danmakuWidth + safeSeparation
-    
+
     private fun FloatingDanmaku<T>.isGone(): Boolean {
-        return right() < 0
+        return right() <= 0
     }
 
     // 撞车检测, 必须让 previous.left 小于 next.left, 也就是 previous 在前 next 在后
