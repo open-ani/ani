@@ -93,7 +93,9 @@ internal class FloatingDanmakuTrack<T : SizeSpecifiedDanmaku>(
     }
     
     private fun T.calculateSpeedMultiplier(): Float {
-        assert(danmakuWidth > 0) { "danmaku width must be positive." }
+        require(danmakuWidth > 0) { 
+            "danmaku width must be positive." 
+        }
         return this@FloatingDanmakuTrack.speedMultiplier.value
             .pow(log(danmakuWidth.toFloat() / baseSpeedTextWidth, 2f))
             .coerceAtLeast(1f)
