@@ -11,12 +11,8 @@ package me.him188.ani.app.ui.settings.mediasource.rss.test
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +25,6 @@ import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,8 +34,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
@@ -50,7 +43,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalPlatform
@@ -58,6 +50,7 @@ import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.connectedScroll
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
+import me.him188.ani.app.ui.settings.mediasource.EditMediaSourceTestDataCardDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssViewingItem
 import me.him188.ani.utils.platform.isMobile
 
@@ -222,75 +215,26 @@ private fun EditTestDataCard(
 ) {
     Card(
         modifier,
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerLow),
-        ),
+        shape = EditMediaSourceTestDataCardDefaults.cardShape,
+        colors = EditMediaSourceTestDataCardDefaults.cardColors,
     ) {
-        BoxWithConstraints {
-            val isCompact =
-                currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
-            FlowRow(
-                Modifier.padding(all = 16.dp).padding(bottom = 4.dp).focusGroup(),
-                verticalArrangement = if (isCompact) {
-                    Arrangement.spacedBy(16.dp)
-                } else {
-                    Arrangement.spacedBy(20.dp)
-                },
-                horizontalArrangement = if (isCompact) {
-                    Arrangement.spacedBy(16.dp)
-                } else {
-                    Arrangement.spacedBy(24.dp)
-                },
-                maxItemsInEachRow = (constraints.maxWidth / 300f).toInt().coerceAtLeast(1),
-            ) {
+        EditMediaSourceTestDataCardDefaults.FlowRow {
+            EditMediaSourceTestDataCardDefaults.KeywordTextField(state, Modifier.weight(1f))
+            EditMediaSourceTestDataCardDefaults.EpisodeSortTextField(state, Modifier.weight(1f))
+            if (state.showPage) {
                 TextField(
-                    value = state.searchKeyword,
-                    onValueChange = { state.searchKeyword = it.trim() },
+                    value = state.pageString,
+                    onValueChange = { state.pageString = it.trim() },
                     Modifier.weight(1f),
-                    label = { Text("关键词") },
-                    placeholder = {
-                        Text(
-                            state.searchKeywordPlaceholder,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = { state.randomKeyword() }) {
-                            Icon(Icons.Rounded.RestartAlt, contentDescription = "随机")
-                        }
-                    },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                )
-                TextField(
-                    value = state.sort,
-                    onValueChange = { state.sort = it.trim() },
-                    Modifier.weight(1f),
-                    label = { Text("剧集序号") },
+                    label = { Text("页码") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Next,
                     ),
+                    isError = state.pageIsError,
                 )
-
-                if (state.showPage) {
-                    TextField(
-                        value = state.pageString,
-                        onValueChange = { state.pageString = it.trim() },
-                        Modifier.weight(1f),
-                        label = { Text("页码") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next,
-                        ),
-                        isError = state.pageIsError,
-                    )
-                }
             }
-
         }
     }
 }
