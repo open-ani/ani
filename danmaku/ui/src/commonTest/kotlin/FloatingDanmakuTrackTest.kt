@@ -3,6 +3,7 @@ package me.him188.ani.danmaku.ui
 import androidx.compose.runtime.IntState
 import androidx.compose.runtime.LongState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.setValue
@@ -19,20 +20,20 @@ class FloatingDanmakuTrackTest {
     fun `test placement`() = runComposeStateTest {
         val frameTimeNanosState = mutableLongStateOf(0)
         var frameTimeNanos by frameTimeNanosState
-        val trackSpeedPerSecond = 100f
+        val baseTrackSpeed = 100f
 
         val presentDanmaku = mutableListOf<FloatingDanmaku<TestDanmaku>>()
         // 轨道长度 1000px, 弹幕速度 100px/second
         val track = createFloatingDanmakuTrack(
             frameTimeNanosState = frameTimeNanosState,
             trackWidth = mutableIntStateOf(1000),
-            speedPxPerSecond = trackSpeedPerSecond,
+            speedPxPerSecond = baseTrackSpeed,
             onRemoveDanmaku = { d -> presentDanmaku.removeAll { it.danmaku == d.danmaku } },
         )
 
-        suspend fun elapseTime(milliseconds: Long, vararg danmaku: FloatingDanmaku<*>) {
+        suspend fun elapseTime(milliseconds: Long) {
             frameTimeNanos += milliseconds.ms2ns
-            danmaku.forEach { it.distanceX += milliseconds / 1000.0f * trackSpeedPerSecond }
+            presentDanmaku.forEach { it.distanceX += milliseconds / 1000.0f * (baseTrackSpeed * it.speedMultiplier) }
             track.tick()
             takeSnapshot()
         }
@@ -49,7 +50,7 @@ class FloatingDanmakuTrackTest {
         assertNull(track.tryPlace(TestDanmaku(50), 1000L.ms2ns))
 
         // 运动 10000 ms, 现在 positioned1 应该在轨道左侧
-        elapseTime(10000L, positioned1)
+        elapseTime(10000L)
         assertEquals(1000f, positioned1.distanceX)
 
         // 放到帧时间 2000L 的位置
@@ -69,7 +70,7 @@ class FloatingDanmakuTrackTest {
         assertEquals(danmaku3, positioned3.danmaku)
 
         // UI帧运动 50ms
-        elapseTime(1500L, positioned1, positioned2, positioned3)
+        elapseTime(1500L)
         // positioned1 在 UI 帧运动 150ms 后应该消失
         assertEquals(2, presentDanmaku.size)
         assertEquals(150f, positioned3.distanceX)
@@ -77,8 +78,86 @@ class FloatingDanmakuTrackTest {
         assertNull(track.tryPlace(TestDanmaku(100)))
 
         // 再运动 15000ms，所有弹幕都应该消失了
-        elapseTime(15000L, positioned2, positioned3)
+        elapseTime(15000L)
         assertEquals(0, presentDanmaku.size)
+    }
+    
+    @Test
+    fun `test collision`() = runComposeStateTest {
+        val frameTimeNanosState = mutableLongStateOf(0)
+        var frameTimeNanos by frameTimeNanosState
+        val baseTrackSpeed = 100f
+        val baseSpeedTextWidth = 50
+
+        val presentDanmaku = mutableListOf<FloatingDanmaku<TestDanmaku>>()
+        // 轨道长度 1000px, 弹幕速度 100px/second
+        val track = createFloatingDanmakuTrack(
+            frameTimeNanosState = frameTimeNanosState,
+            trackWidth = mutableIntStateOf(1000),
+            speedPxPerSecond = baseTrackSpeed,
+            baseSpeedTextWidth = baseSpeedTextWidth,
+            speedMultiplier = 2f,
+            safeSeparation = 0f,
+            onRemoveDanmaku = { d -> presentDanmaku.removeAll { it.danmaku == d.danmaku } },
+        )
+
+        suspend fun elapseTime(milliseconds: Long) {
+            frameTimeNanos += milliseconds.ms2ns
+            presentDanmaku.forEach { it.distanceX += milliseconds / 1000.0f * (baseTrackSpeed * it.speedMultiplier) }
+            track.tick()
+            takeSnapshot()
+        }
+        
+        elapseTime(10000L)
+        
+        // 此弹幕的左侧应该在轨道左侧, speed = 1x
+        val danmakuInLeft = track.tryPlace(TestDanmaku(baseSpeedTextWidth), 0L)
+        assertNotNull(danmakuInLeft)
+        presentDanmaku.add(danmakuInLeft)
+        assertEquals(1000f, danmakuInLeft.distanceX)
+        
+        // 此弹幕应该紧跟在 danmakuInLeft 后面, 并且运动速度和它一样
+        // 因此不会撞车, 所以可以放下
+        val danmakuFollowing = track.tryPlace(TestDanmaku(baseSpeedTextWidth), 500L.ms2ns)
+        assertNotNull(danmakuFollowing)
+        presentDanmaku.add(danmakuFollowing)
+        assertEquals(950f, danmakuFollowing.distanceX)
+        
+        elapseTime(500L)
+        assertEquals(1, presentDanmaku.size)
+        // 运动了 5000ms 后, 尝试放 danmakuWillClash 紧跟着 danmakuFollowing
+        // danmakuWillClash 的速度比 danmakuFollowing 快, 所以一定会撞车, 因此放不下
+        val danmaku2xSpeed = track.tryPlace(TestDanmaku(baseSpeedTextWidth * 2), 475L.ms2ns)
+        assertNull(danmaku2xSpeed)
+        
+        // 延迟 100ms 放, danmakuFollowing 刚好消失, 所以这个弹幕不会撞车
+        val danmaku2xSpeed2 = track.place(TestDanmaku(baseSpeedTextWidth * 2), 575L.ms2ns)
+        assertNotNull(danmaku2xSpeed2)
+        presentDanmaku.add(danmaku2xSpeed2)
+        
+        // 重置一下轨道, 先让所有弹幕都滚动消失再设置帧时间为 0
+        elapseTime(100000L)
+        frameTimeNanos = 0
+        assertEquals(0, presentDanmaku.size)
+
+        elapseTime(5000L)
+        // 此弹幕的左侧应该在轨道左侧, speed = 2x
+        val danmakuInLeft2 = track.tryPlace(TestDanmaku(baseSpeedTextWidth * 2), 0L)
+        assertNotNull(danmakuInLeft2)
+        presentDanmaku.add(danmakuInLeft2)
+        assertEquals(1000f, danmakuInLeft2.distanceX)
+        
+        // 运动了 5000ms 后, 尝试放 danmakuWillClash2 紧跟着 danmakuInLeft2
+        // danmakuWillClash2 的速度比 danmakuInLeft2 快, 所以一定会撞车, 因此放不下
+        val danmaku2xSpeed3 = track.tryPlace(TestDanmaku(baseSpeedTextWidth * 4), 2750L.ms2ns)
+        assertNull(danmaku2xSpeed3)
+        
+        // 在 danmakuInLeft2 刚好 fully visible 时直接放置 danmakuDot5xSpeed
+        // danmakuDot5xSpeed 的速度比 danmakuInLeft2 慢, 所以一定不会撞车, 因此放得下
+        val danmakuDot5xSpeed = track.tryPlace(TestDanmaku(baseSpeedTextWidth), 500L.ms2ns)
+        assertNotNull(danmakuDot5xSpeed)
+        presentDanmaku.add(danmakuDot5xSpeed)
+        assertEquals(450f, danmakuDot5xSpeed.distanceX)
     }
 }
 
@@ -89,16 +168,18 @@ private fun createFloatingDanmakuTrack(
     trackWidth: IntState,
     speedPxPerSecond: Float = 100f,
     safeSeparation: Float = 10f,
+    baseSpeedTextWidth: Int = 100,
+    speedMultiplier: Float = 1f,
     onRemoveDanmaku: (FloatingDanmaku<TestDanmaku>) -> Unit = { },
 ) = FloatingDanmakuTrack(
     trackIndex = 0, // 测试时没用
     frameTimeNanosState = frameTimeNanosState,
     trackWidth = trackWidth,
     trackHeight = mutableIntStateOf(50), // 测试时没用
-    speedPxPerSecond = speedPxPerSecond,
+    baseSpeedPxPerSecond = speedPxPerSecond,
     safeSeparation = safeSeparation,
-    /*baseTextLength = 100f, // 如果不进行撞车测试, 那请设置 speedMultiplier 为 1f
-    speedMultiplier = mutableFloatStateOf(1f),*/
+    baseSpeedTextWidth = baseSpeedTextWidth, // 如果不进行撞车测试, 那请设置 speedMultiplier 为 1f
+    speedMultiplier = mutableFloatStateOf(speedMultiplier),
     onRemoveDanmaku = onRemoveDanmaku,
 )
 
