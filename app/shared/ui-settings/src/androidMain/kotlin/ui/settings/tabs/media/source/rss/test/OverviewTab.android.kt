@@ -23,6 +23,7 @@ import me.him188.ani.app.tools.rss.RssChannel
 import me.him188.ani.app.tools.rss.RssEnclosure
 import me.him188.ani.app.tools.rss.RssItem
 import me.him188.ani.app.ui.foundation.preview.PreviewTabletLightDark
+import me.him188.ani.app.ui.settings.mediasource.rss.test.MatchTag
 import me.him188.ani.app.ui.settings.mediasource.rss.test.OverviewTab
 import me.him188.ani.app.ui.settings.mediasource.rss.test.RssItemPresentation
 import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPaneDefaults
@@ -75,8 +76,8 @@ internal val TestRssItemPresentations
             ),
             parsed = ParsedTopicTitle(),
             tags = listOf(
-                RssItemPresentation.Tag("01..02", isMatch = false),
-                RssItemPresentation.Tag("1080P"),
+                MatchTag("01..02", isMatch = false),
+                MatchTag("1080P"),
             ),
         ),
         RssItemPresentation(
@@ -90,8 +91,8 @@ internal val TestRssItemPresentations
             ),
             parsed = ParsedTopicTitle(),
             tags = listOf(
-                RssItemPresentation.Tag("01..02", isMatch = false),
-                RssItemPresentation.Tag("1080P"),
+                MatchTag("01..02", isMatch = false),
+                MatchTag("1080P"),
             ),
         ),
     )

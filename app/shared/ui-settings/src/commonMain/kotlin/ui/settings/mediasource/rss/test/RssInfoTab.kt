@@ -20,13 +20,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.QuestionMark
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -90,23 +85,8 @@ fun RssTestPaneDefaults.RssInfoTab(
 class RssItemPresentation(
     val rss: RssItem,
     val parsed: ParsedTopicTitle,
-    val tags: List<Tag>,
+    val tags: List<MatchTag>,
 ) {
-    class Tag(
-        val value: String,
-        /**
-         * 该标签表示一个缺失的项目. 例如缺失 EP.
-         */
-        val isMissing: Boolean = false,
-        /**
-         * 该标签是否匹配了用户的搜索条件.
-         * - `true`: 满足了一个条件. UI 显示为紫色的 check
-         * - `false`: 不满足条件. UI 显示为红色的 close
-         * - `null`: 这不是一个搜索条件. UI 不会特别高亮此标签.
-         */
-        val isMatch: Boolean? = null,
-    )
-
     val subtitleLanguageRendered: String = MediaDetailsRenderer.renderSubtitleLanguages(
         parsed.subtitleKind,
         parsed.subtitleLanguages.map { it.displayName },
@@ -131,13 +111,7 @@ class RssItemPresentation(
             title: ParsedTopicTitle,
             query: RssSearchQuery,
             config: RssSearchConfig,
-        ): List<Tag> = buildList {
-            fun emit(
-                value: String,
-                isMissing: Boolean = false,
-                isMatch: Boolean? = null,
-            ): Boolean = add(Tag(value, isMissing, isMatch))
-
+        ): List<MatchTag> = buildMatchTags {
             with(query.toFilterContext()) {
                 val candidate = rss.asCandidate(title)
 
@@ -228,32 +202,7 @@ fun RssTestResultRssItem(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     for (tag in item.tags) {
-                        when {
-                            tag.isMatch == true -> {
-                                OutlinedTag(
-                                    leadingIcon = { Icon(Icons.Rounded.Check, "符合匹配") },
-                                    contentColor = MaterialTheme.colorScheme.primary,
-                                ) { Text(tag.value) }
-                            }
-
-                            tag.isMatch == false -> {
-                                OutlinedTag(
-                                    leadingIcon = { Icon(Icons.Rounded.Close, "不符合匹配") },
-                                    contentColor = MaterialTheme.colorScheme.tertiary,
-                                ) { Text(tag.value) }
-                            }
-
-                            tag.isMissing -> {
-                                OutlinedTag(
-                                    leadingIcon = { Icon(Icons.Rounded.QuestionMark, "缺失") },
-                                    contentColor = MaterialTheme.colorScheme.error,
-                                ) { Text(tag.value) }
-                            }
-
-                            else -> {
-                                OutlinedTag { Text(tag.value) }
-                            }
-                        }
+                        OutlinedMatchTag(tag)
                     }
                     item.rss.pubDate?.let {
                         OutlinedTag { Text(formatDateTime(it)) }
