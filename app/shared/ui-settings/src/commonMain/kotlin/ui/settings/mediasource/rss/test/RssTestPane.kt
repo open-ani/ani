@@ -9,30 +9,21 @@
 
 package me.him188.ani.app.ui.settings.mediasource.rss.test
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Error
-import androidx.compose.material.icons.rounded.RestartAlt
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -43,7 +34,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
@@ -83,43 +73,6 @@ fun RssTestPane(
                 result = state.searcher.searchResult,
                 Modifier.padding(top = 20.dp),
             )
-
-            Row(Modifier.padding(top = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("查询结果", style = MaterialTheme.typography.headlineSmall)
-
-                IconButton({ state.searcher.restartCurrentSearch() }) {
-                    Icon(Icons.Rounded.RestartAlt, contentDescription = "刷新")
-                }
-
-                val searchResult = state.searcher.searchResult
-                AnimatedVisibility(searchResult is RssTestResult.Failed) {
-                    if (searchResult !is RssTestResult.Failed) return@AnimatedVisibility
-                    TextButton(
-                        onClick = {
-                            state.searcher.restartCurrentSearch() // TODO: see error detail 
-                        },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error,
-                        ),
-                    ) {
-                        Icon(Icons.Rounded.Error, null, Modifier.align(Alignment.CenterVertically))
-                        Text(
-                            when (searchResult) {
-                                is RssTestResult.ApiError -> {
-                                    when (searchResult.reason) {
-                                        ApiFailure.NetworkError -> "网络错误"
-                                        ApiFailure.ServiceUnavailable -> "服务器错误"
-                                        ApiFailure.Unauthorized -> "未授权"
-                                    }
-                                }
-
-                                is RssTestResult.UnknownError -> "未知错误: ${searchResult.exception}"
-                            },
-                            Modifier.padding(start = 8.dp).align(Alignment.CenterVertically),
-                        )
-                    }
-                }
-            }
 
             Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
 //            androidx.compose.animation.AnimatedVisibility(
