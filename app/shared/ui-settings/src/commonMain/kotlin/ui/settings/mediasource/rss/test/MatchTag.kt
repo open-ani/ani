@@ -9,6 +9,8 @@
 
 package me.him188.ani.app.ui.settings.mediasource.rss.test
 
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
@@ -61,32 +63,32 @@ fun OutlinedMatchTag(
     when {
         tag.isMatch == true -> {
             OutlinedTag(
-                modifier,
+                modifier.width(IntrinsicSize.Max),
                 leadingIcon = { Icon(Icons.Rounded.Check, "符合匹配") },
                 contentColor = MaterialTheme.colorScheme.primary,
-            ) { Text(tag.value) }
+            ) { Text(tag.value, softWrap = false) }
         }
 
         tag.isMatch == false -> {
             OutlinedTag(
-                modifier,
+                modifier.width(IntrinsicSize.Max),
                 leadingIcon = { Icon(Icons.Rounded.Close, "不符合匹配") },
                 contentColor = MaterialTheme.colorScheme.tertiary,
-            ) { Text(tag.value) }
+            ) { Text(tag.value, softWrap = false) }
         }
 
         tag.isMissing -> {
             OutlinedTag(
-                modifier,
+                modifier.width(IntrinsicSize.Max),
                 leadingIcon = { Icon(Icons.Rounded.QuestionMark, "缺失") },
                 contentColor = MaterialTheme.colorScheme.error,
-            ) { Text(tag.value) }
+            ) { Text(tag.value, softWrap = false) }
         }
 
         else -> {
             OutlinedTag(
-                modifier,
-            ) { Text(tag.value) }
+                modifier.width(IntrinsicSize.Max),
+            ) { Text(tag.value, softWrap = false) }
         }
     }
 }
