@@ -51,6 +51,7 @@ import me.him188.ani.app.ui.foundation.layout.connectedScroll
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.settings.mediasource.EditMediaSourceTestDataCardDefaults
+import me.him188.ani.app.ui.settings.mediasource.RefreshIndicatedHeadlineRow
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssViewingItem
 import me.him188.ani.utils.platform.isMobile
 
@@ -74,6 +75,13 @@ fun RssTestPane(
                 Modifier
                     .padding(top = 20.dp)
                     .fillMaxWidth(),
+            )
+
+            RefreshIndicatedHeadlineRow(
+                headline = { Text("查询结果") },
+                onRefresh = { state.searcher.restartCurrentSearch() },
+                result = state.searcher.searchResult,
+                Modifier.padding(top = 20.dp),
             )
 
             Row(Modifier.padding(top = 20.dp), verticalAlignment = Alignment.CenterVertically) {
