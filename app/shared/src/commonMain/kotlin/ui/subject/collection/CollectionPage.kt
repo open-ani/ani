@@ -195,6 +195,7 @@ fun CollectionPane(
 //                HorizontalDivider()
             }
         },
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Top),
         containerColor = AniThemeDefaults.navigationContainerColor,
     ) { topBarPaddings ->
         Surface(
