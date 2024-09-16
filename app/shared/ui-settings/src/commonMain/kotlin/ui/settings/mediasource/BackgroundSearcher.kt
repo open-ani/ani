@@ -34,7 +34,7 @@ import kotlin.time.Duration.Companion.seconds
  * @param TestData 测试数据, 将所有[搜索][restartSearchImpl]时需要的数据都封装在这个类中, 以便 debounce
  */
 @Stable
-abstract class BackgroundSearcher<TestData : Any, TestResult : Any>(
+abstract class BackgroundSearcher<TestData, TestResult>(
     backgroundScope: CoroutineScope,
 ) {
     /**
@@ -51,7 +51,7 @@ abstract class BackgroundSearcher<TestData : Any, TestResult : Any>(
      */
     val isSearching by searchTasker::isRunning
 
-    interface RestartSearchScope<TestResult : Any> {
+    interface RestartSearchScope<TestResult> {
         /**
          * 一个没有作用的接口, 用来确保让 [restartSearchScopeImpl] 的实现调用 [launchRequestInBackground]
          */
@@ -104,7 +104,7 @@ abstract class BackgroundSearcher<TestData : Any, TestResult : Any>(
 
     /**
      * 当执行搜索时调用.
-     * 
+     *
      * Sample implementation:
      * ```
      * val query = RssSearchQuery(
@@ -132,14 +132,14 @@ abstract class BackgroundSearcher<TestData : Any, TestResult : Any>(
  * @see testDataState 当前的测试数据
  * @see search 当测试数据变化时重新搜索调用
  */
-fun <TestData : Any, TestResult : Any> BackgroundSearcher(
+fun <TestData, TestResult> BackgroundSearcher(
     backgroundScope: CoroutineScope,
     testDataState: State<TestData>,
     @UiThread search: RestartSearchScope<TestResult>.(testData: TestData) -> RestartSearchScope.OK,
 ) = DefaultBackgroundSearcher(backgroundScope, testDataState, search)
 
 @Stable
-class DefaultBackgroundSearcher<TestData : Any, TestResult : Any>(
+class DefaultBackgroundSearcher<TestData, TestResult>(
     backgroundScope: CoroutineScope,
     override val testDataState: State<TestData>,
     val restartSearchImpl: RestartSearchScope<TestResult>.(testData: TestData) -> RestartSearchScope.OK,
