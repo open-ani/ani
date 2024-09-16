@@ -31,11 +31,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.SettingsViewModel
+import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
 
 @Composable
@@ -46,6 +48,7 @@ fun RssEditPane(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     showDebugFields: Boolean = viewModel<SettingsViewModel> { SettingsViewModel() }.isInDebugMode,
+    outlinedTextFieldShape: Shape = MediaSourceConfigurationDefaults.outlinedTextFieldShape
 ) {
     Column(
         modifier
@@ -57,7 +60,6 @@ fun RssEditPane(
             // 大图标和标题
             MediaSourceHeadline(state.displayIconUrl, state.displayName)
 
-            val textFieldShape = MaterialTheme.shapes.medium
             Column(
                 Modifier.focusGroup()
                     .fillMaxHeight()
@@ -75,7 +77,7 @@ fun RssEditPane(
                             placeholder = { Text("设置显示在列表中的名称") },
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             readOnly = true,
-                            shape = textFieldShape,
+                            shape = outlinedTextFieldShape,
                         )
                     }
 
@@ -87,7 +89,7 @@ fun RssEditPane(
                         placeholder = { Text("设置显示在列表中的名称") },
                         isError = state.displayNameIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = textFieldShape,
+                        shape = outlinedTextFieldShape,
                     )
                     OutlinedTextField(
                         state.iconUrl, { state.iconUrl = it.trim() },
@@ -95,7 +97,7 @@ fun RssEditPane(
                             .fillMaxWidth(),
                         label = { Text("图标链接") },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = textFieldShape,
+                        shape = outlinedTextFieldShape,
                     )
                 }
 
@@ -130,7 +132,7 @@ fun RssEditPane(
                         },
                         isError = state.searchUrlIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = textFieldShape,
+                        shape = outlinedTextFieldShape,
                     )
 
                     ListItem(
