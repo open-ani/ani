@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Constraints
 
-fun createTurnstileState(siteKey: String): TurnstileState {
+fun createTurnstileState(url: String): TurnstileState {
     TODO("not implemented")
 }
 

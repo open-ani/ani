@@ -9,21 +9,46 @@
 
 package me.him188.ani.app.ui.subject.components.comment
 
+import androidx.annotation.UiThread
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 
 @Stable
 interface TurnstileState {
-    val siteKey: String
+    val url: String
     
     val tokenFlow: Flow<String>
     
     // reload turnstile
+    @UiThread
     fun reload()
+}
+
+expect fun createTurnstileState(url: String): TurnstileState
+
+fun createPreviewTurnstileState(): TurnstileState {
+    return object : TurnstileState {
+        override val url: String = ""
+        override val tokenFlow: Flow<String> = emptyFlow()
+        override fun reload() { }
+    }
+}
+
+fun TurnstileState(url: String): TurnstileState {
+    return createTurnstileState(url)
 }
 
 @Composable
@@ -31,15 +56,20 @@ fun Turnstile(
     state: TurnstileState,
     modifier: Modifier = Modifier,
 ) {
+    val previewing = LocalIsPreviewing.current
     BoxWithConstraints(modifier) {
-        ActualTurnstile(state, constraints, Modifier)
+        if (previewing) {
+            Column(
+                modifier = Modifier.fillMaxWidth().height(96.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text("PreviewTurnstile")
+            }
+        } else {
+            ActualTurnstile(state, constraints, Modifier)
+        }
     }
-}
-
-expect fun createTurnstileState(siteKey: String): TurnstileState
-
-fun TurnstileState(siteKey: String): TurnstileState {
-    return createTurnstileState(siteKey)
 }
 
 @Composable

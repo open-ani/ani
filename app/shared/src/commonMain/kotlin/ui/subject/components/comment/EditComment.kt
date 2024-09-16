@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -48,6 +49,7 @@ import me.him188.ani.app.ui.foundation.text.ProvideContentColor
 @Composable
 fun EditComment(
     state: CommentEditorState,
+    turnstileState: TurnstileState,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester = remember { FocusRequester() },
     stickerPanelHeight: Dp = EditCommentDefaults.MinStickerHeight.dp,
@@ -94,6 +96,7 @@ fun EditComment(
                 },
                 onSend = {
                     keyboard?.hide()
+                    state.toggleStickerPanelState(false)
                     scope.launch {
                         state.send()
                         onSendComplete()
@@ -113,6 +116,9 @@ fun EditComment(
                 )
             }
         },
+        contentAfterMain = if (state.sending) { 
+            { Turnstile(turnstileState, Modifier.wrapContentSize()) } 
+        } else null,
         expanded = state.expandButtonState,
         onClickExpand = { state.editExpanded = it },
     ) { previewing ->
@@ -130,6 +136,7 @@ fun EditComment(
             } else {
                 EditCommentDefaults.CommentTextField(
                     value = state.content,
+                    enabled = !state.sending,
                     maxLines = if (state.editExpanded) Int.MAX_VALUE else 3,
                     modifier = Modifier
                         .focusRequester(focusRequester)
@@ -155,6 +162,7 @@ fun EditComment(
  * @param expanded 展开按钮状态, 为 `null` 时不显示按钮.
  * @param onClickExpand 点击展开按钮时触发该点击事件.
  * @param title 评论编辑标题, 一般显示 正在为哪个对象发送评论. see [EditCommentDefaults.Title].
+ * @param contentAfterMain 显示在 [content] 下方的内容, 例如发送验证.
  * @param content 评论编辑框. see [EditCommentDefaults.CommentTextField].
  */
 @Composable
@@ -165,6 +173,7 @@ fun EditCommentScaffold(
     modifier: Modifier = Modifier,
     expanded: Boolean? = null,
     title: (@Composable () -> Unit)? = null,
+    contentAfterMain: (@Composable ColumnScope.() -> Unit)? = null,
     contentColor: Color = Color.Unspecified,
     content: @Composable ColumnScope.(previewing: Boolean) -> Unit,
 ) {
@@ -199,8 +208,10 @@ fun EditCommentScaffold(
             ) { previewing ->
                 content(previewing)
             }
-            
         }
+        
+        contentAfterMain?.invoke(this)
+        
         Column {
             actionRow()
         }

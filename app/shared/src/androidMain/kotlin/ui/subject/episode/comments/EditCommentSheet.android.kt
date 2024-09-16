@@ -7,14 +7,15 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.ui.subject.components.comment.CommentMapperContext
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.components.comment.CommentEditorState
+import me.him188.ani.app.ui.subject.components.comment.CommentMapperContext
 import me.him188.ani.app.ui.subject.components.comment.EditComment
 import me.him188.ani.app.ui.subject.components.comment.EditCommentBottomStubPanel
 import me.him188.ani.app.ui.subject.components.comment.EditCommentDefaults
 import me.him188.ani.app.ui.subject.components.comment.EditCommentSticker
+import me.him188.ani.app.ui.subject.components.comment.createPreviewTurnstileState
 
 @Preview
 @Composable
@@ -41,6 +42,7 @@ fun PreviewEditComment() {
                     backgroundScope = scope.backgroundScope,
                 )
             },
+            turnstileState = remember { createPreviewTurnstileState() }
         )
     }
 }

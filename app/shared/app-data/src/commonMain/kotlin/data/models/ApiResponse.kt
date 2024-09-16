@@ -7,7 +7,6 @@ import kotlinx.io.IOException
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.jvm.JvmInline
 
 sealed interface ApiFailure {
     data object Unauthorized : ApiFailure
