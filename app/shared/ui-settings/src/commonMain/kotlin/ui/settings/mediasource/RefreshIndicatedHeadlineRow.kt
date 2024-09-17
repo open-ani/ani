@@ -13,20 +13,32 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.ApiFailure
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 
 /**
  * 标记接口, 表示一个通用的刷新结果.
@@ -48,6 +60,11 @@ interface RefreshResult {
     interface ApiError : Failed {
         val reason: ApiFailure
     }
+
+    /**
+     * 配置有误, 例如测试 RSS 数据源. UI 只会显示 "配置不完整". 你需要让你的编辑框自己显示 error.
+     */
+    interface InvalidConfig : Failed
 
     /**
      * 一个任意类型异常. 这属于不期望遇到的错误 (bug).
@@ -81,8 +98,15 @@ fun RefreshIndicatedHeadlineRow(
 
         AnimatedVisibility(result is RefreshResult.Failed) {
             if (result !is RefreshResult.Failed) return@AnimatedVisibility
+            var showErrorDialog by remember { mutableStateOf(false) }
             TextButton(
-                onClick = onRefresh,
+                onClick = {
+                    if (result is RefreshResult.UnknownError) {
+                        showErrorDialog = true
+                    } else {
+                        onRefresh()
+                    }
+                },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.error,
                 ),
@@ -99,8 +123,49 @@ fun RefreshIndicatedHeadlineRow(
                         }
 
                         is RefreshResult.UnknownError -> "未知错误: ${result.exception}"
+                        is RefreshResult.InvalidConfig -> "配置不完整"
                     },
                     Modifier.padding(start = 8.dp).align(Alignment.CenterVertically),
+                )
+            }
+            if (showErrorDialog) {
+                AlertDialog(
+                    { showErrorDialog = false },
+                    title = { Text("未知错误") },
+                    text = {
+                        val clipboard = LocalClipboardManager.current
+                        val text by derivedStateOf {
+                            (result as? RefreshResult.UnknownError)?.exception?.stackTraceToString() ?: ""
+                        }
+                        val toaster = LocalToaster.current
+                        OutlinedTextField(
+                            value = text,
+                            onValueChange = {},
+                            label = { Text("错误信息") },
+                            readOnly = true,
+                            maxLines = 2,
+                            trailingIcon = {
+                                IconButton(
+                                    {
+                                        clipboard.setText(AnnotatedString(text))
+                                        toaster.toast("已复制")
+                                    },
+                                ) {
+                                    Icon(Icons.Rounded.ContentCopy, "复制")
+                                }
+                            },
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onRefresh) {
+                            Text("重试")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton({ showErrorDialog = false }) {
+                            Text("取消")
+                        }
+                    },
                 )
             }
         }
