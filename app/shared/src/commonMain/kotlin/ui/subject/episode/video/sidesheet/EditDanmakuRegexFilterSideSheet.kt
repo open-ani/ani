@@ -1,10 +1,10 @@
 package me.him188.ani.app.ui.subject.episode.video.sidesheet
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -40,6 +40,7 @@ import me.him188.ani.app.data.models.danmaku.DanmakuRegexFilter
 import me.him188.ani.app.ui.settings.danmaku.DanmakuRegexFilterState
 import me.him188.ani.app.ui.settings.danmaku.RegexFilterItem
 import me.him188.ani.app.ui.settings.danmaku.isValidRegex
+import me.him188.ani.app.ui.settings.framework.components.SettingsDefaults
 import me.him188.ani.app.ui.subject.episode.video.settings.EpisodeVideoSettingsSideSheet
 import me.him188.ani.utils.platform.Uuid
 
@@ -52,6 +53,7 @@ fun EditDanmakuRegexFilterSideSheet(
     expanded: Boolean = true,  // Use the expanded parameter
 ) {
     val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
     val isBlank by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
     val validRegex by remember { derivedStateOf { isValidRegex(regexTextFieldValue) } }
@@ -83,19 +85,16 @@ fun EditDanmakuRegexFilterSideSheet(
                 Icon(Icons.Rounded.Close, contentDescription = "关闭")
             }
         },
-        modifier = modifier
-            .clickable(onClick = { focusManager.clearFocus() }),
     ) {
-        Surface {
+        Surface(Modifier.fillMaxSize(), color = SettingsDefaults.groupBackgroundColor) {
             Column(
                 modifier.padding(horizontal = 16.dp)
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(scrollState),
             ) {
                 // 输入框
                 Column(
-                    modifier = Modifier.padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Row(
@@ -107,11 +106,6 @@ fun EditDanmakuRegexFilterSideSheet(
                     ) {
                         OutlinedTextField(
                             value = regexTextFieldValue,
-                            placeholder = {
-                                Text(
-                                    text = "填写用于屏蔽的正则表达式，例如：‘签’ 会屏蔽所有含有文字‘签’的弹幕。",
-                                )
-                            },
                             onValueChange = {
                                 regexTextFieldValue = it
                                 isError = false
@@ -120,12 +114,17 @@ fun EditDanmakuRegexFilterSideSheet(
                                 if (!expanded) {
                                     Text(
                                         modifier = Modifier.fillMaxWidth(),
-                                        text = "竖屏状态下禁用编辑",
+                                        text = "竖屏状态下禁用编辑。",
                                     )
                                 } else if (isError) {
                                     Text(
                                         modifier = Modifier.fillMaxWidth(),
-                                        text = "正则表达式语法不正确",
+                                        text = "正则表达式语法不正确。",
+                                    )
+                                } else {
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = "填写用于屏蔽的正则表达式，例如：‘签’ 会屏蔽所有含有文字‘签’的弹幕。",
                                     )
                                 }
                             },
