@@ -82,7 +82,7 @@ fun RssEditPane(
                     }
 
                     OutlinedTextField(
-                        state.displayName, { state.displayName = it.trim() },
+                        state.displayName, { state.displayName = it },
                         Modifier
                             .fillMaxWidth(),
                         label = { Text("名称*") },
