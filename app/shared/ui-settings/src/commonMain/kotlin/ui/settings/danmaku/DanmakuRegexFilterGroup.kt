@@ -23,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +33,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
@@ -167,6 +170,7 @@ fun AddRegexFilterDialog(
     title: @Composable () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
     var regexTextFieldValue by rememberSaveable { mutableStateOf("") }
     val isBlank by remember { derivedStateOf { regexTextFieldValue.isBlank() } }
     val validRegex by remember { derivedStateOf { isValidRegex(regexTextFieldValue) } }
@@ -219,6 +223,7 @@ fun AddRegexFilterDialog(
                         },
                         label = { Text("正则表达式") },
                         modifier = Modifier.fillMaxWidth()
+                            .focusRequester(focusRequester)
                             .onKeyEvent { event: KeyEvent ->
                                 if (event.key == Key.Enter) {
                                     handleAdd()
@@ -239,12 +244,12 @@ fun AddRegexFilterDialog(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = "正则表达式语法不正确",
                                 )
+                            } else {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。",
+                                )
                             }
-                        },
-                        placeholder = {
-                            Text(
-                                text = "填写用于屏蔽的正则表达式，例如：‘.*签.*’ 会屏蔽所有含有文字‘签’的弹幕。",
-                            )
                         },
                         isError = isError,
                         singleLine = true,
@@ -268,6 +273,10 @@ fun AddRegexFilterDialog(
                     ) {
                         Text("确认")
                     }
+                }
+
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
                 }
             }
         }

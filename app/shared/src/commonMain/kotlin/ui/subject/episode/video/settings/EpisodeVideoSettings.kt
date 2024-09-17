@@ -351,7 +351,6 @@ fun EpisodeVideoSettings(
 
             TextItem(
                 onClick = { onManageRegexFilters() },
-                modifier = Modifier.padding(bottom = 8.dp, top = 8.dp),
             ) {
                 Text("管理正则弹幕过滤器")
             }
