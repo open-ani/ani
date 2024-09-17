@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.main
 
 import androidx.compose.foundation.clickable
@@ -27,7 +36,10 @@ import me.him188.ani.app.tools.LocalTimeFormatter
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.LocalImageLoader
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.getDefaultImageLoader
+import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.utils.platform.isMobile
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -67,13 +79,15 @@ fun AniApp(
         ) {
             Box(
                 modifier = modifier
-                    .focusable(false)
-                    .clickable(
-                        remember { MutableInteractionSource() },
-                        null,
-                    ) {
-                        keyboard?.hide()
-                        focusManager.clearFocus()
+                    .ifThen(LocalPlatform.current.isMobile()) {
+                        focusable(false)
+                            .clickable(
+                                remember { MutableInteractionSource() },
+                                null,
+                            ) {
+                                keyboard?.hide()
+                                focusManager.clearFocus()
+                            }
                     },
             ) {
                 Column {
