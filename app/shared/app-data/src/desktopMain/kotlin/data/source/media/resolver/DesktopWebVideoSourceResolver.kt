@@ -69,12 +69,13 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
             val config = settings.proxySettings.flow.first().default
             val resolverSettings = settings.videoResolverSettings.flow.first()
 
+            val context = WebVideoMatcherContext(media)
             val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
                     resourceMatcher = {
                         matchers.firstNotNullOfOrNull { matcher ->
-                            matcher.match(it, WebVideoMatcherContext(media))
+                            matcher.match(it, context)
                         }
                     },
                 )
