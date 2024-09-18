@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
-import me.him188.ani.app.ui.comment.CommentEditorTextState
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 
 @Immutable
@@ -51,8 +50,6 @@ class PeerFilterSettingsState(
             // 需要去重，避免 lazy column 出现重复的 key
             emit(list.filter { it.contains(query) }.distinct())
         }
-    
-    val newBlockedIpValue = CommentEditorTextState("")
     
     var ipFilterEnabled by storage.prop({ it.enableIpFilter }, { copy(enableIpFilter = it) }, false)
     var ipFilters by storage.prop(

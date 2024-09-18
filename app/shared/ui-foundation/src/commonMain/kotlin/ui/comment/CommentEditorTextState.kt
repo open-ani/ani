@@ -2,6 +2,8 @@ package me.him188.ani.app.ui.comment
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -80,5 +82,20 @@ class CommentEditorTextState(
 
     fun override(value: TextFieldValue) {
         textField = value
+    }
+    
+    companion object {
+        val Saver: Saver<CommentEditorTextState, Any> = listSaver(
+            save = { original ->
+                listOf(
+                    with(TextFieldValue.Saver) { this@listSaver.save(original.textField) }
+                )
+            },
+            restore = { saveable ->
+                CommentEditorTextState("").apply { 
+                    override(with(TextFieldValue.Saver) { restore(saveable[0]!!) }!!)
+                }
+            }
+        )
     }
 }

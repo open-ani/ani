@@ -36,6 +36,7 @@ import me.him188.ani.app.ui.foundation.IconButton
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.blocklist.BlockListEditPane
 
 @Composable
 fun PeerFilterSettingsPage(
@@ -138,7 +139,6 @@ fun PeerFilterSettingsPage(
                 AnimatedPane1 { 
                     BlockListEditPane(
                         blockedIpList = filteredList,
-                        newBlockedIpValue = state.newBlockedIpValue,
                         contentPadding = paddingValues,
                         showTitle = isDualPane,
                         onAdd = { state.addBlockedIp(it) },
