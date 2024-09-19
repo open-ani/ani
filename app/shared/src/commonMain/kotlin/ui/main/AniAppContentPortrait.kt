@@ -34,6 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import me.him188.ani.app.data.source.media.source.RssMediaSource
+import me.him188.ani.app.data.source.media.source.web.SelectorMediaSource
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
@@ -56,6 +57,8 @@ import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceViewModel
+import me.him188.ani.app.ui.settings.mediasource.selector.EditSelectorMediaSourcePage
+import me.him188.ani.app.ui.settings.mediasource.selector.SelectorMediaSourceConfigurationViewModel
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsPage
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsViewModel
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
@@ -304,6 +307,17 @@ fun AniAppContentPortrait(
                         Modifier,
                         windowInsets,
                     )
+
+                    SelectorMediaSource.FactoryId -> {
+                        val context = LocalContext.current
+                        EditSelectorMediaSourcePage(
+                            viewModel<SelectorMediaSourceConfigurationViewModel>(key = mediaSourceInstanceId) {
+                                SelectorMediaSourceConfigurationViewModel(mediaSourceInstanceId, context)
+                            },
+                            Modifier,
+                            windowInsets = windowInsets,
+                        )
+                    }
 
                     else -> error("Unknown factoryId: $factoryId")
                 }
