@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.settings.mediasource.selector.test
+package me.him188.ani.app.ui.settings.mediasource.selector.episode
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +24,8 @@ import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPrev
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.mediasource.rss.test.buildMatchTags
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.rememberTestSelectorConfigurationState
+import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
+import me.him188.ani.app.ui.settings.mediasource.selector.test.TestSelectorMediaSourceEngine
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.EmptyCoroutineContext

@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.settings.mediasource.selector.test
+package me.him188.ani.app.ui.settings.mediasource.selector.episode
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,6 +61,7 @@ import me.him188.ani.app.ui.settings.mediasource.launchCollectedInBackground
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.MatchVideoSection
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationState
+import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.datasources.api.matcher.WebVideo
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import kotlin.coroutines.CoroutineContext

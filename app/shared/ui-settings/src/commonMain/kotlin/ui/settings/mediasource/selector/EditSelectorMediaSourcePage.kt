@@ -46,11 +46,11 @@ import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationPane
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationState
-import me.him188.ani.app.ui.settings.mediasource.selector.test.ConfigurationContent
-import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorEpisodePane
-import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorEpisodePaneDefaults
-import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorEpisodePaneLayout
-import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorEpisodeState
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.ConfigurationContent
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePane
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneDefaults
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneLayout
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodeState
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestPane
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestState
 
