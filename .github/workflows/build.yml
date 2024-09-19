@@ -12,7 +12,7 @@ on:
 jobs:
   build:
     name: "${{ matrix.name }}"
-    runs-on: [ self-hosted ]
+    runs-on: [ perry01 ]
     strategy:
       fail-fast: false
       matrix:
