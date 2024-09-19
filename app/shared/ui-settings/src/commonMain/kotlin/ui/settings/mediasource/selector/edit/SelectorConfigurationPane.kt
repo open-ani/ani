@@ -33,11 +33,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,216 +41,15 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
-import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
 import me.him188.ani.app.ui.foundation.animation.StandardEasing
 import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
-import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.theme.EasingDurations
-import me.him188.ani.app.ui.settings.danmaku.isValidRegex
-import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.app.ui.settings.mediasource.rss.edit.MediaSourceHeadline
-import me.him188.ani.utils.xml.QueryParser
-import me.him188.ani.utils.xml.parseSelectorOrNull
-
-/**
- * 编辑配置
- */
-@Stable
-class SelectorConfigurationState(
-    private val argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
-) {
-    private val arguments by argumentsStorage.containerState
-    val isLoading by derivedStateOf { arguments == null }
-    val isSaving by argumentsStorage.isSavingState
-
-    var displayName by argumentsStorage.prop(
-        { it.name }, { copy(name = it) },
-        "",
-    )
-
-    val displayNameIsError by derivedStateOf { displayName.isBlank() }
-
-    var iconUrl by argumentsStorage.prop(
-        { it.iconUrl }, { copy(iconUrl = it) },
-        "",
-    )
-
-    var searchUrl by argumentsStorage.prop(
-        { it.searchConfig.searchUrl }, { copy(searchConfig = searchConfig.copy(searchUrl = it)) },
-        "",
-    )
-    val searchUrlIsError by derivedStateOf { searchUrl.isBlank() }
-
-    // region SubjectFormat
-
-    val subjectFormatA = SubjectFormatAConfig()
-
-    @Stable
-    inner class SubjectFormatAConfig {
-        private fun <T : Any> prop(
-            get: (SelectorSubjectFormatA.Config) -> T,
-            set: SelectorSubjectFormatA.Config.(T) -> SelectorSubjectFormatA.Config,
-        ) = argumentsStorage.prop(
-            { it.searchConfig.selectorSubjectFormatA.let(get) },
-            {
-                copy(
-                    searchConfig = searchConfig.copy(
-                        selectorSubjectFormatA = searchConfig.selectorSubjectFormatA.set(it),
-                    ),
-                )
-            },
-            SelectorMediaSourceArguments.Default.searchConfig.selectorSubjectFormatA.let(get),
-        )
-
-        var selectLists by prop({ it.selectLists }, { copy(selectLists = it) })
-        val selectListsIsError by derivedStateOf {
-            QueryParser.parseSelectorOrNull(selectLists) == null
-        }
-    }
-
-    // endregion
-
-    // region ChannelFormat
-
-    var channelFormatId by argumentsStorage.prop(
-        { it.searchConfig.channelFormatId }, { copy(searchConfig = searchConfig.copy(channelFormatId = it)) },
-        SelectorMediaSourceArguments.Default.searchConfig.channelFormatId,
-    )
-    val allChannelFormats get() = SelectorChannelFormat.entries
-
-    val channelFormatIndexed = ChannelFormatIndexedConfig()
-
-    @Stable
-    inner class ChannelFormatIndexedConfig {
-        private fun <T : Any> prop(
-            get: (SelectorChannelFormatFlattened.Config) -> T,
-            set: SelectorChannelFormatFlattened.Config.(T) -> SelectorChannelFormatFlattened.Config,
-        ) = argumentsStorage.prop(
-            { it.searchConfig.selectorChannelFormatFlattened.let(get) },
-            {
-                copy(
-                    searchConfig = searchConfig.copy(
-                        selectorChannelFormatFlattened = searchConfig.selectorChannelFormatFlattened.set(it),
-                    ),
-                )
-            },
-            SelectorMediaSourceArguments.Default.searchConfig.selectorChannelFormatFlattened.let(get),
-        )
-
-        var selectChannels by prop({ it.selectChannels }, { copy(selectChannels = it) })
-        val selectChannelsIsError by derivedStateOf {
-            QueryParser.parseSelectorOrNull(selectChannels) == null
-        }
-        var selectLists by prop({ it.selectLists }, { copy(selectLists = it) })
-        val selectListsIsError by derivedStateOf {
-            QueryParser.parseSelectorOrNull(selectLists) == null
-        }
-        var matchEpisodeSortFromName by prop({ it.matchEpisodeSortFromName }, { copy(matchEpisodeSortFromName = it) })
-        val matchEpisodeSortFromNameIsError by derivedStateOf {
-            matchEpisodeSortFromName.isBlank() || !isValidRegex(matchEpisodeSortFromName)
-        }
-    }
-
-    val channelFormatNoChannel = ChannelFormatNoChannelConfig()
-
-    @Stable
-    inner class ChannelFormatNoChannelConfig {
-        private fun <T : Any> prop(
-            get: (SelectorChannelFormatNoChannel.Config) -> T,
-            set: SelectorChannelFormatNoChannel.Config.(T) -> SelectorChannelFormatNoChannel.Config,
-        ) = argumentsStorage.prop(
-            { it.searchConfig.selectorChannelFormatNoChannel.let(get) },
-            {
-                copy(
-                    searchConfig = searchConfig.copy(
-                        selectorChannelFormatNoChannel = searchConfig.selectorChannelFormatNoChannel.set(it),
-                    ),
-                )
-            },
-            SelectorMediaSourceArguments.Default.searchConfig.selectorChannelFormatNoChannel.let(get),
-        )
-
-        var selectEpisodes by prop({ it.selectEpisodes }, { copy(selectEpisodes = it) })
-        val selectEpisodesIsError by derivedStateOf { QueryParser.parseSelectorOrNull(selectEpisodes) == null }
-        var matchEpisodeSortFromName by prop(
-            { it.matchEpisodeSortFromName },
-            { copy(matchEpisodeSortFromName = it) },
-        )
-        val matchEpisodeSortFromNameIsError by derivedStateOf {
-            matchEpisodeSortFromName.isBlank() || !isValidRegex(matchEpisodeSortFromName)
-        }
-    }
-
-    // endregion
-
-    var filterByEpisodeSort by argumentsStorage.prop(
-        { it.searchConfig.filterByEpisodeSort }, { copy(searchConfig = searchConfig.copy(filterByEpisodeSort = it)) },
-        SelectorMediaSourceArguments.Default.searchConfig.filterByEpisodeSort,
-    )
-    var filterBySubjectName by argumentsStorage.prop(
-        { it.searchConfig.filterBySubjectName }, { copy(searchConfig = searchConfig.copy(filterBySubjectName = it)) },
-        SelectorMediaSourceArguments.Default.searchConfig.filterBySubjectName,
-    )
-
-    val matchVideoConfig: MatchVideoConfig = MatchVideoConfig()
-
-    @Stable
-    inner class MatchVideoConfig {
-        private fun <T : Any> prop(
-            get: (SelectorSearchConfig.MatchVideoConfig) -> T,
-            set: SelectorSearchConfig.MatchVideoConfig.(T) -> SelectorSearchConfig.MatchVideoConfig,
-        ) = argumentsStorage.prop(
-            { it.searchConfig.matchVideo.let(get) },
-            {
-                copy(
-                    searchConfig = searchConfig.copy(
-                        matchVideo = searchConfig.matchVideo.set(it),
-                    ),
-                )
-            },
-            SelectorMediaSourceArguments.Default.searchConfig.matchVideo.let(get),
-        )
-
-        var matchVideoUrl by prop(
-            { it.matchVideoUrl }, { copy(matchVideoUrl = it) },
-        )
-        val matchVideoUrlIsError by derivedStateOf {
-            matchVideoUrl.isBlank() || !isValidRegex(matchVideoUrl)
-        }
-
-        val videoHeaders = HeadersConfig()
-
-        @Stable
-        inner class HeadersConfig {
-            private fun <T : Any> prop(
-                get: (SelectorSearchConfig.VideoHeaders) -> T,
-                set: SelectorSearchConfig.VideoHeaders.(T) -> SelectorSearchConfig.VideoHeaders,
-            ) = this@MatchVideoConfig.prop(
-                { it.addHeadersToVideo.let(get) },
-                { copy(addHeadersToVideo = addHeadersToVideo.set(it)) },
-            )
-
-            var referer by prop(
-                { it.referer }, { copy(referer = referer) },
-            )
-            var userAgent by prop(
-                { it.userAgent }, { copy(userAgent = userAgent) },
-            )
-        }
-    }
-
-    val searchConfigState = derivedStateOf {
-        argumentsStorage.container?.searchConfig
-    }
-}
 
 @Composable
 internal fun SelectorConfigurationPane(
@@ -457,59 +252,5 @@ private fun SubjectChannelSelectionButtonRow(
                 )
             }
         }
-    }
-}
-
-object SelectorConfigurationDefaults {
-    const val STEP_NAME_1 = "步骤 1：搜索条目"
-    const val STEP_NAME_2 = "步骤 2：搜索剧集"
-    const val STEP_NAME_3 = "步骤 3：匹配视频"
-
-    val verticalSpacing: Dp
-        @Composable
-        get() = currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding
-
-    val textFieldShape
-        @Composable
-        get() = MaterialTheme.shapes.medium
-}
-
-@Suppress("UnusedReceiverParameter")
-@Composable
-internal fun SelectorConfigurationDefaults.MatchVideoSection(
-    state: SelectorConfigurationState,
-    modifier: Modifier = Modifier,
-    textFieldShape: Shape = SelectorConfigurationDefaults.textFieldShape,
-    verticalSpacing: Dp = SelectorConfigurationDefaults.verticalSpacing,
-) {
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
-        val matchVideoConfig = state.matchVideoConfig
-        OutlinedTextField(
-            matchVideoConfig.matchVideoUrl, { matchVideoConfig.matchVideoUrl = it },
-            Modifier.fillMaxWidth().moveFocusOnEnter(),
-            label = { Text("匹配视频链接") },
-            supportingText = { Text("从播放页面中加载的所有资源链接中匹配出视频链接的正则表达式。将会使用匹配结果的分组 v") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            shape = textFieldShape,
-            isError = matchVideoConfig.matchVideoUrlIsError,
-        )
-
-        val conf = matchVideoConfig.videoHeaders
-        OutlinedTextField(
-            conf.referer, { conf.referer = it },
-            Modifier.fillMaxWidth().moveFocusOnEnter(),
-            label = { Text("Referer") },
-            supportingText = { Text("HTTP 请求的 Referer") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            shape = textFieldShape,
-        )
-        OutlinedTextField(
-            conf.userAgent, { conf.userAgent = it },
-            Modifier.fillMaxWidth().moveFocusOnEnter(),
-            label = { Text("User-Agent") },
-            supportingText = { Text("HTTP 请求的 User-Agent") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            shape = textFieldShape,
-        )
     }
 }
