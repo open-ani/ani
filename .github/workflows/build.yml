@@ -57,6 +57,7 @@ jobs:
           #     -Pani.build.framework=false
           #     -Pani.android.abis=arm64-v8a
           - os: macos-14
+            free_space: false
             name: macOS aarch64
             uploadApk: false
             arch: aarch64
@@ -103,7 +104,7 @@ jobs:
           java-version: 17
           architecture: ${{ matrix.arch }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.isMac == 'true' && matrix.free_space }}
         name: Install Native Dependencies
         run: chmod +x ./ci-helper/install-deps-macos-ci.sh && ./ci-helper/install-deps-macos-ci.sh
 
