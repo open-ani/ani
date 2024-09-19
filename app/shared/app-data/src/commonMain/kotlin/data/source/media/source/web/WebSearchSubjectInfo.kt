@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
+package me.him188.ani.app.data.source.media.source.web
+
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.utils.xml.Element
+
+data class WebSearchSubjectInfo(
+    val internalId: String,
+    val name: String,
+    val subjectDetailsPageUrl: String,
+    val origin: Element?,
+)
+
+class WebSearchChannelInfo(
+    val name: String,
+    val content: Element,
+)
+
+data class WebSearchEpisodeInfo(
+    /**
+     * 播放线路
+     */
+    val channel: String?,
+    /**
+     * "第x集" 等原名.
+     */
+    val name: String,
+    /**
+     * 解析成功的 [EpisodeSort], 未解析成功则为 `null`.
+     */
+    val episodeSort: EpisodeSort?,
+    /**
+     * 播放地址
+     */
+    val playUrl: String
+)
