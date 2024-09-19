@@ -58,7 +58,7 @@ import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceViewModel
 import me.him188.ani.app.ui.settings.mediasource.selector.EditSelectorMediaSourcePage
-import me.him188.ani.app.ui.settings.mediasource.selector.SelectorMediaSourceConfigurationViewModel
+import me.him188.ani.app.ui.settings.mediasource.selector.EditSelectorMediaSourceViewModel
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsPage
 import me.him188.ani.app.ui.settings.tabs.media.torrent.peer.PeerFilterSettingsViewModel
 import me.him188.ani.app.ui.subject.cache.SubjectCacheScene
@@ -311,8 +311,8 @@ fun AniAppContentPortrait(
                     SelectorMediaSource.FactoryId -> {
                         val context = LocalContext.current
                         EditSelectorMediaSourcePage(
-                            viewModel<SelectorMediaSourceConfigurationViewModel>(key = mediaSourceInstanceId) {
-                                SelectorMediaSourceConfigurationViewModel(mediaSourceInstanceId, context)
+                            viewModel<EditSelectorMediaSourceViewModel>(key = mediaSourceInstanceId) {
+                                EditSelectorMediaSourceViewModel(mediaSourceInstanceId, context)
                             },
                             Modifier,
                             windowInsets = windowInsets,

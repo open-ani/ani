@@ -41,7 +41,7 @@ import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefault
 @Composable
 internal fun SelectorChannelConfigurationColumn(
     formatId: SelectorFormatId,
-    state: SelectorConfigurationState,
+    state: SelectorConfigState,
     modifier: Modifier = Modifier,
     textFieldShape: Shape = MediaSourceConfigurationDefaults.outlinedTextFieldShape,
 ) {

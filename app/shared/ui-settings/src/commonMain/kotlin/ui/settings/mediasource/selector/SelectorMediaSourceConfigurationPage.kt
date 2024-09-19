@@ -51,7 +51,7 @@ import org.koin.core.component.inject
 private typealias ArgumentsType = SelectorMediaSourceArguments
 
 @Stable
-class SelectorMediaSourceConfigurationViewModel(
+class EditSelectorMediaSourceViewModel(
     initialInstanceId: String,
     context: Context,
 ) : AbstractViewModel(), KoinComponent {
@@ -68,7 +68,7 @@ class SelectorMediaSourceConfigurationViewModel(
         }
     }
 
-    val state: Flow<EditSelectorMediaSourceState> = this.instanceId.transformLatest { instanceId ->
+    val state: Flow<EditSelectorMediaSourcePageState> = this.instanceId.transformLatest { instanceId ->
         coroutineScope {
             val saveTasker = MonoTasker(this)
             val arguments = mutableStateOf<ArgumentsType?>(null)
@@ -81,7 +81,7 @@ class SelectorMediaSourceConfigurationViewModel(
                 }
             }
             emit(
-                EditSelectorMediaSourceState(
+                EditSelectorMediaSourcePageState(
                     argumentsStorage = SaveableStorage(
                         arguments,
                         onSave = {

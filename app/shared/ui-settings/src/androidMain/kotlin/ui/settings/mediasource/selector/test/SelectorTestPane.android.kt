@@ -11,6 +11,9 @@
 
 package me.him188.ani.app.ui.settings.mediasource.selector.test
 
+import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -29,21 +32,30 @@ import me.him188.ani.utils.xml.Document
 import me.him188.ani.utils.xml.Element
 
 @Composable
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Preview
 fun PreviewSelectorTestPane() = ProvideFoundationCompositionLocalsForPreview {
     val scope = rememberCoroutineScope()
-    Surface {
-        SelectorTestPane(
-            remember {
-                SelectorTestState(
-                    searchConfigState = mutableStateOf(SelectorSearchConfig.Empty),
-                    engine = TestSelectorMediaSourceEngine(),
-                    scope,
-                ).apply {
-                    subjectSearcher.restartCurrentSearch()
-                }
-            },
-        )
+    SharedTransitionScope { modifier ->
+        @Suppress("AnimatedContentLabel")
+        AnimatedContent(1) { _ ->
+            Surface {
+                SelectorTestPane(
+                    remember {
+                        SelectorTestState(
+                            searchConfigState = mutableStateOf(SelectorSearchConfig.Empty),
+                            engine = TestSelectorMediaSourceEngine(),
+                            scope,
+                        ).apply {
+                            subjectSearcher.restartCurrentSearch()
+                        }
+                    },
+                    {},
+                    this,
+                    modifier = modifier,
+                )
+            }
+        }
     }
 }
 

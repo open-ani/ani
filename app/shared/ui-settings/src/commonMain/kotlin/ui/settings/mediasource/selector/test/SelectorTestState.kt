@@ -14,7 +14,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.ApiResponse
@@ -163,22 +162,6 @@ class SelectorTestState(
                 )
             }
         }
-    }
-
-    //    lateinit var episodeNavController: NavHostController
-    var viewingItem by mutableStateOf<SelectorTestEpisodePresentation?>(null)
-        private set
-
-    fun viewEpisode(
-        episode: SelectorTestEpisodePresentation,
-    ) {
-        this.viewingItem = episode
-//        episodeNavController.navigate("details")
-    }
-
-    fun stopViewing() {
-        this.viewingItem = null
-//        episodeNavController.navigate("list")
     }
 
     private fun convertEpisodeResult(

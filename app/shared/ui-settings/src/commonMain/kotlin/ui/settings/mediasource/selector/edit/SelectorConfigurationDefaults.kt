@@ -42,7 +42,7 @@ object SelectorConfigurationDefaults {
 @Suppress("UnusedReceiverParameter")
 @Composable
 internal fun SelectorConfigurationDefaults.MatchVideoSection(
-    state: SelectorConfigurationState,
+    state: SelectorConfigState,
     modifier: Modifier = Modifier,
     textFieldShape: Shape = SelectorConfigurationDefaults.textFieldShape,
     verticalSpacing: Dp = SelectorConfigurationDefaults.verticalSpacing,
@@ -53,28 +53,10 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
             matchVideoConfig.matchVideoUrl, { matchVideoConfig.matchVideoUrl = it },
             Modifier.fillMaxWidth().moveFocusOnEnter(),
             label = { Text("匹配视频链接") },
-            supportingText = { Text("从播放页面中加载的所有资源链接中匹配出视频链接的正则表达式。将会使用匹配结果的分组 v") },
+            supportingText = { Text("从播放页面中加载的所有资源链接中匹配出视频链接的正则表达式。若正则包含名为 v 的分组则使用该分组，否则使用整个 URL") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             shape = textFieldShape,
             isError = matchVideoConfig.matchVideoUrlIsError,
-        )
-
-        val conf = matchVideoConfig.videoHeaders
-        OutlinedTextField(
-            conf.referer, { conf.referer = it },
-            Modifier.fillMaxWidth().moveFocusOnEnter(),
-            label = { Text("Referer") },
-            supportingText = { Text("HTTP 请求的 Referer") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            shape = textFieldShape,
-        )
-        OutlinedTextField(
-            conf.userAgent, { conf.userAgent = it },
-            Modifier.fillMaxWidth().moveFocusOnEnter(),
-            label = { Text("User-Agent") },
-            supportingText = { Text("HTTP 请求的 User-Agent") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            shape = textFieldShape,
         )
     }
 }

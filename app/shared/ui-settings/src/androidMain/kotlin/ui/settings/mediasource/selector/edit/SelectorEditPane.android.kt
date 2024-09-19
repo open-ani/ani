@@ -26,7 +26,7 @@ fun PreviewSelectorConfigurationPane() = ProvideFoundationCompositionLocalsForPr
     Surface {
         SelectorConfigurationPane(
             remember {
-                SelectorConfigurationState(
+                SelectorConfigState(
                     createTestSaveableStorage(
                         SelectorMediaSourceArguments.Default,
                     ),

@@ -46,7 +46,7 @@ sealed class SelectorTestSearchSubjectResult : RefreshResult {
 }
 
 @Immutable
-class SelectorTestSubjectPresentation(
+data class SelectorTestSubjectPresentation(
     val name: String,
     val subjectDetailsPageUrl: String,
     val origin: Element?,

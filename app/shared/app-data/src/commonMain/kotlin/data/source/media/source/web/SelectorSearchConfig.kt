@@ -65,7 +65,7 @@ data class SelectorSearchConfig(
     @Serializable
     data class MatchVideoConfig(
         @Suppress("RegExpRedundantEscape")
-        val matchVideoUrl: String = """^(?<v>http(s)?:\/\/(?!.*http(s)?:\/\/).+((\.mp4)|(\.mkv)|(\.m3u8)))""",
+        val matchVideoUrl: String = """^(?<v>http(s)?:\/\/(?!.*http(s)?:\/\/).+((\.mp4)|(\.mkv)|(m3u8)).*(\?.+)?)""",
         val addHeadersToVideo: VideoHeaders = VideoHeaders(),
     ) {
         val matchVideoUrlRegex by lazy {

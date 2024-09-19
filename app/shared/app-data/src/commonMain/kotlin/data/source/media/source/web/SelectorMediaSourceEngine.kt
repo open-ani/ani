@@ -192,7 +192,11 @@ abstract class SelectorMediaSourceEngine {
 
     fun matchWebVideo(url: String, searchConfig: SelectorSearchConfig.MatchVideoConfig): WebVideo? {
         val result = searchConfig.matchVideoUrlRegex?.find(url) ?: return null
-        val videoUrl = result.groups["v"]?.value ?: result.value
+        val videoUrl = try {
+            result.groups["v"]?.value ?: url
+        } catch (_: IllegalArgumentException) { // no group
+            url
+        }
         return WebVideo(
             videoUrl,
             mapOf(

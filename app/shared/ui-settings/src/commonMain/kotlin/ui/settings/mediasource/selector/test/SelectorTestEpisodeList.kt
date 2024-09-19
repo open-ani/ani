@@ -27,6 +27,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.layout.cardHorizontalPadding
@@ -36,10 +37,10 @@ import me.him188.ani.app.ui.settings.mediasource.rss.test.OutlinedMatchTag
 @Composable
 fun SelectorTestEpisodeListGrid(
     episodes: List<SelectorTestEpisodePresentation>,
-    onClick: (SelectorTestEpisodePresentation) -> Unit,
     modifier: Modifier = Modifier,
     state: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    eachItem: @Composable (SelectorTestEpisodePresentation) -> Unit,
 ) {
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(300.dp),
@@ -51,17 +52,31 @@ fun SelectorTestEpisodeListGrid(
     ) {
         for (episode in episodes) {
             item(key = episode) {
-                EpisodeCard(
-                    title = { Text(episode.name) },
-                    { onClick(episode) },
-                ) {
-                    episode.tags.forEach {
-                        OutlinedMatchTag(it)
-                    }
-                }
+                eachItem(episode)
             }
         }
     }
+}
+
+@Stable
+object SelectorTestEpisodeListGridDefaults {
+    @Composable
+    fun EpisodeCard(
+        episode: SelectorTestEpisodePresentation,
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier,
+    ) {
+        EpisodeCard(
+            title = { Text(episode.name) },
+            { onClick() },
+            modifier,
+        ) {
+            episode.tags.forEach {
+                OutlinedMatchTag(it)
+            }
+        }
+    }
+
 }
 
 @Composable

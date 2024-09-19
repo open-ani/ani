@@ -53,7 +53,7 @@ import me.him188.ani.app.ui.settings.mediasource.rss.edit.MediaSourceHeadline
 
 @Composable
 internal fun SelectorConfigurationPane(
-    state: SelectorConfigurationState,
+    state: SelectorConfigState,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalSpacing: Dp = SelectorConfigurationDefaults.verticalSpacing,
@@ -153,13 +153,13 @@ internal fun SelectorConfigurationPane(
 
             SubjectChannelSelectionButtonRow(
                 state,
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().padding(bottom = 4.dp),
             )
 
             AnimatedContent(
                 state.channelFormatId,
                 Modifier
-                    .padding(vertical = 12.dp)
+                    .padding(vertical = 16.dp)
                     .fillMaxWidth()
                     .animateContentSize(tween(EasingDurations.standard, easing = StandardEasing)),
                 transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
@@ -208,6 +208,35 @@ internal fun SelectorConfigurationPane(
                 verticalSpacing = verticalSpacing,
             )
 
+            Row(Modifier.padding(top = verticalSpacing, bottom = 12.dp)) {
+                ProvideTextStyleContentColor(
+                    MaterialTheme.typography.titleMedium,
+                    MaterialTheme.colorScheme.primary,
+                ) {
+                    Text("播放视频时")
+                }
+            }
+
+            Column(Modifier, verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
+                val conf = state.matchVideoConfig.videoHeaders
+                OutlinedTextField(
+                    conf.referer, { conf.referer = it },
+                    Modifier.fillMaxWidth().moveFocusOnEnter(),
+                    label = { Text("Referer") },
+                    supportingText = { Text("播放视频时执行的 HTTP 请求的 Referer") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                )
+                OutlinedTextField(
+                    conf.userAgent, { conf.userAgent = it },
+                    Modifier.fillMaxWidth().moveFocusOnEnter(),
+                    label = { Text("User-Agent") },
+                    supportingText = { Text("播放视频时执行的 HTTP 请求的 User-Agent") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                )
+            }
+
             Row(Modifier.align(Alignment.End).padding(top = verticalSpacing, bottom = 12.dp)) {
                 ProvideTextStyleContentColor(
                     MaterialTheme.typography.labelMedium,
@@ -223,7 +252,7 @@ internal fun SelectorConfigurationPane(
 
 @Composable
 private fun SubjectChannelSelectionButtonRow(
-    state: SelectorConfigurationState,
+    state: SelectorConfigState,
     modifier: Modifier = Modifier,
 ) {
     SingleChoiceSegmentedButtonRow(modifier) {

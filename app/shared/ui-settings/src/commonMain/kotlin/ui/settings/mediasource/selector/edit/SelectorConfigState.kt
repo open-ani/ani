@@ -27,7 +27,7 @@ import me.him188.ani.utils.xml.parseSelectorOrNull
  * 编辑配置
  */
 @Stable
-class SelectorConfigurationState(
+class SelectorConfigState(
     private val argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
 ) {
     private val arguments by argumentsStorage.containerState

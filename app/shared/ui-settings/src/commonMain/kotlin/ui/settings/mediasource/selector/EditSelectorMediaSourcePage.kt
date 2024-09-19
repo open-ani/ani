@@ -25,50 +25,75 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.CoroutineDispatcher
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceEngine
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.isWidthCompact
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
+import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
+import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigState
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationPane
-import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationState
-import me.him188.ani.app.ui.settings.mediasource.selector.episode.ConfigurationContent
-import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePane
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneDefaults
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneLayout
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneRoutes
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodeState
-import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestPane
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorTestAndEpisodePane
+import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestState
+import kotlin.coroutines.CoroutineContext
 
-class EditSelectorMediaSourceState(
+class EditSelectorMediaSourcePageState(
     argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
     engine: SelectorMediaSourceEngine,
     webViewVideoExtractor: State<WebViewVideoExtractor?>,
     backgroundScope: CoroutineScope,
     context: Context,
-    flowDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    flowDispatcher: CoroutineContext = Dispatchers.Default,
 ) {
-    internal val configurationState: SelectorConfigurationState = SelectorConfigurationState(argumentsStorage)
+    internal val configurationState: SelectorConfigState = SelectorConfigState(argumentsStorage)
 
     internal val testState: SelectorTestState =
         SelectorTestState(configurationState.searchConfigState, engine, backgroundScope)
 
+    private val viewingItemState = mutableStateOf<SelectorTestEpisodePresentation?>(null)
+
+    //    lateinit var episodeNavController: NavHostController
+    var viewingItem by viewingItemState
+        private set
+
+    fun viewEpisode(
+        episode: SelectorTestEpisodePresentation,
+    ) {
+        this.viewingItem = episode
+//        episodeNavController.navigate("details")
+    }
+
+    fun stopViewing() {
+        this.viewingItem = null
+//        episodeNavController.navigate("list")
+    }
+
+
     internal val episodeState: SelectorEpisodeState = SelectorEpisodeState(
-        itemState = derivedStateOf { testState.viewingItem },
+        itemState = viewingItemState,
         matchVideoConfigState = derivedStateOf { configurationState.searchConfigState.value?.matchVideo },
         webViewVideoExtractor = webViewVideoExtractor,
         engine = engine,
@@ -80,7 +105,7 @@ class EditSelectorMediaSourceState(
 
 @Composable
 fun EditSelectorMediaSourcePage(
-    vm: SelectorMediaSourceConfigurationViewModel,
+    vm: EditSelectorMediaSourceViewModel,
     modifier: Modifier = Modifier,
     navigator: ThreePaneScaffoldNavigator<Nothing> = rememberListDetailPaneScaffoldNavigator(),
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
@@ -93,32 +118,61 @@ fun EditSelectorMediaSourcePage(
 
 @Composable
 fun EditSelectorMediaSourcePage(
-    state: EditSelectorMediaSourceState,
+    state: EditSelectorMediaSourcePageState,
     modifier: Modifier = Modifier,
     navigator: ThreePaneScaffoldNavigator<Nothing> = rememberListDetailPaneScaffoldNavigator(),
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
+    val nestedNav = rememberNavController()
+    val episodePaneLayout = SelectorEpisodePaneLayout.calculate(navigator.scaffoldValue)
+    val testConnectedScrollState = rememberConnectedScrollState()
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = { Text(state.configurationState.displayName) },
-                navigationIcon = { TopAppBarGoBackButton() },
-                actions = {
-                    if (currentWindowAdaptiveInfo().isWidthCompact) {
-                        TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
-                            Text("测试")
-                        }
-                    }
-                },
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                if (episodePaneLayout.showTopBarInScaffold) {
+                    SelectorEpisodePaneDefaults.TopAppBar(state.episodeState)
+                } else {
+                    TopAppBar(
+                        title = {
+                            nestedNav.navigate(SelectorEpisodePaneRoutes.EPISODE)
+                            val viewingItem = state.viewingItem
+                            if (viewingItem != null) {
+                                Text(viewingItem.name)
+                            } else {
+                                Text(state.configurationState.displayName)
+                            }
+                        },
+                        navigationIcon = { TopAppBarGoBackButton() },
+                        actions = {
+                            if (currentWindowAdaptiveInfo().isWidthCompact && navigator.currentDestination?.pane != ListDetailPaneScaffoldRole.Detail) {
+                                TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
+                                    Text("测试")
+                                }
+                            }
+                        },
+                        windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                    )
+                }
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         BackHandler(navigator.canNavigateBack()) {
             navigator.navigateBack()
         }
+
+        // 在外面启动, 避免在切换页面后重新启动导致刷新
+        LaunchedEffect(state) {
+            state.testState.subjectSearcher.observeChangeLoop()
+        }
+        LaunchedEffect(state) {
+            state.testState.episodeListSearcher.observeChangeLoop()
+        }
+        LaunchedEffect(state) {
+            state.episodeState.searcher.observeChangeLoop()
+        }
+
         ListDetailPaneScaffold(
             navigator.scaffoldDirective,
             navigator.scaffoldValue,
@@ -133,34 +187,17 @@ fun EditSelectorMediaSourcePage(
             },
             detailPane = {
                 AnimatedPane1 {
-                    SelectorTestPane(
-                        state.testState,
-                        onViewEpisode = {
-                            state.testState.viewEpisode(it)
-                            navigator.navigateTo(ListDetailPaneScaffoldRole.Extra)
-                        },
-                        Modifier.fillMaxSize().consumeWindowInsets(paddingValues),
+                    SelectorTestAndEpisodePane(
+                        state,
+                        episodePaneLayout,
+                        Modifier.consumeWindowInsets(paddingValues),
+                        nestedNav,
                         paddingValues,
+                        testConnectedScrollState,
                     )
                 }
             },
             Modifier.materialWindowMarginPadding(),
-            extraPane = {
-                AnimatedPane1 {
-                    SelectorEpisodePane(
-                        state.episodeState,
-                        SelectorEpisodePaneLayout.calculate(navigator.scaffoldValue),
-                        configurationContent = {
-                            SelectorEpisodePaneDefaults.ConfigurationContent(
-                                state.configurationState,
-                                contentPadding = it,
-                            )
-                        },
-                        Modifier.fillMaxSize().consumeWindowInsets(paddingValues),
-                        paddingValues,
-                    )
-                }
-            },
         )
     }
 }

@@ -10,6 +10,8 @@
 package me.him188.ani.app.ui.settings.mediasource.selector.test
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,14 +24,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
+import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
+import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.connectedScroll
+import me.him188.ani.app.ui.foundation.layout.only
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
@@ -41,23 +46,24 @@ import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigura
  * 测试数据源. 编辑
  */
 @Composable
-fun SelectorTestPane(
+fun SharedTransitionScope.SelectorTestPane(
     state: SelectorTestState,
     onViewEpisode: (SelectorTestEpisodePresentation) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    connectedScrollState: ConnectedScrollState = rememberConnectedScrollState(),
 ) {
-    LaunchedEffect(state) {
-        state.subjectSearcher.observeChangeLoop()
-    }
-    LaunchedEffect(state) {
-        state.episodeListSearcher.observeChangeLoop()
-    }
-
     val verticalSpacing = currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding
-    Column(modifier.padding(contentPadding)) {
-        val connectedScrollState = rememberConnectedScrollState()
-        Column(Modifier.connectedScroll(connectedScrollState)) {
+    Column(
+        modifier
+            .padding(contentPadding.only(PaddingValuesSides.Top))
+            .clipToBounds(),
+    ) {
+        Column(
+            Modifier.connectedScroll(connectedScrollState)
+                .padding(contentPadding.only(PaddingValuesSides.Horizontal)),
+        ) {
             Text(
                 "测试数据源",
                 style = MaterialTheme.typography.headlineSmall,
@@ -104,6 +110,7 @@ fun SelectorTestPane(
 
         AnimatedContent(
             state.selectedSubject,
+            Modifier.padding(contentPadding.only(PaddingValuesSides.Horizontal)),
             transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
         ) { selectedSubjectIndex ->
             if (selectedSubjectIndex != null) {
@@ -132,12 +139,18 @@ fun SelectorTestPane(
                     val staggeredGridState = rememberLazyStaggeredGridState()
                     SelectorTestEpisodeListGrid(
                         result.episodes,
-                        onClick = onViewEpisode,
                         modifier = Modifier.padding(top = verticalSpacing - 8.dp)
                             .nestedScroll(connectedScrollState.nestedScrollConnection)
                             .nestedScrollWorkaround(staggeredGridState, connectedScrollState),
                         state = staggeredGridState,
-                    )
+                        contentPadding = contentPadding.only(PaddingValuesSides.Horizontal + PaddingValuesSides.Bottom),
+                    ) { episode ->
+                        SelectorTestEpisodeListGridDefaults.EpisodeCard(
+                            episode,
+                            { onViewEpisode(episode) },
+                            Modifier.sharedBounds(rememberSharedContentState(episode.id), animatedVisibilityScope),
+                        )
+                    }
                 }
             }
         }

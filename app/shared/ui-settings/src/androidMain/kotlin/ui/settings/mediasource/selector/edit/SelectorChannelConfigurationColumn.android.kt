@@ -27,9 +27,9 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 @TestOnly
 fun rememberTestSelectorConfigurationState(
     arguments: SelectorMediaSourceArguments = SelectorMediaSourceArguments.Default
-): SelectorConfigurationState {
+): SelectorConfigState {
     return remember {
-        SelectorConfigurationState(
+        SelectorConfigState(
             createTestSaveableStorage(
                 arguments,
             ),

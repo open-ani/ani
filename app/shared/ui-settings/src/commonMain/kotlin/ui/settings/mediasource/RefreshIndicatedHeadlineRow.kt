@@ -92,7 +92,7 @@ fun RefreshIndicatedHeadlineRow(
     result: RefreshResult?,
     modifier: Modifier = Modifier,
     refreshIcon: @Composable () -> Unit = { RefreshIndicationDefaults.RefreshIconButton(onRefresh) },
-    style: TextStyle = MaterialTheme.typography.headlineSmall,
+    style: TextStyle = MaterialTheme.typography.titleLarge,
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         ProvideTextStyle(style) {
@@ -114,7 +114,7 @@ object RefreshIndicationDefaults {
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
     ) {
-        TextButton(
+        IconButton(
             onClick = onClick,
             modifier = modifier,
         ) {

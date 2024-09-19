@@ -9,8 +9,6 @@
 
 package me.him188.ani.app.ui.settings.mediasource.selector.episode
 
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -18,52 +16,45 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.source.media.resolver.TestWebViewVideoExtractor
+import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.app.ui.settings.mediasource.rss.createTestSaveableStorage
 import me.him188.ani.app.ui.settings.mediasource.rss.test.buildMatchTags
-import me.him188.ani.app.ui.settings.mediasource.selector.edit.rememberTestSelectorConfigurationState
+import me.him188.ani.app.ui.settings.mediasource.selector.EditSelectorMediaSourcePageState
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.app.ui.settings.mediasource.selector.test.TestSelectorMediaSourceEngine
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.EmptyCoroutineContext
 
-@TestOnly
-private val configurationContent: @Composable ColumnScope.(contentPadding: PaddingValues) -> Unit = { contentPadding ->
-    SelectorEpisodePaneDefaults.ConfigurationContent(
-        rememberTestSelectorConfigurationState(),
-        contentPadding = contentPadding,
-    )
-}
-
 @OptIn(TestOnly::class)
 @Composable
 @Preview
-fun PreviewSelectorEpisodePaneWithBottomSheet() = ProvideFoundationCompositionLocalsForPreview {
+fun PreviewSelectorEpisodePaneCompact() = ProvideFoundationCompositionLocalsForPreview {
     Surface {
-        SelectorEpisodePane(
-            state = rememberTestSelectorEpisodeState(
+        SelectorTestAndEpisodePane(
+            state = rememberTestEditSelectorMediaSourceState(
                 TestSelectorTestEpisodePresentations[0],
                 SelectorSearchConfig.MatchVideoConfig(),
             ),
-            layout = SelectorEpisodePaneLayout.WithBottomSheet,
-            configurationContent = configurationContent,
+            layout = SelectorEpisodePaneLayout.Compact,
         )
     }
 }
 
 @OptIn(TestOnly::class)
 @Composable
-@Preview
-fun PreviewSelectorEpisodePaneListOnly() {
+@Preview(device = "spec:width=1280dp,height=800dp,dpi=240")
+fun PreviewSelectorEpisodePaneExpanded() {
     ProvideFoundationCompositionLocalsForPreview {
         Surface {
-            SelectorEpisodePane(
-                state = rememberTestSelectorEpisodeState(),
-                layout = SelectorEpisodePaneLayout.ListOnly,
-                configurationContent = configurationContent,
+            SelectorTestAndEpisodePane(
+                state = rememberTestEditSelectorMediaSourceState(),
+                layout = SelectorEpisodePaneLayout.Expanded,
+                initialRoute = SelectorEpisodePaneRoutes.EPISODE,
             )
         }
     }
@@ -115,5 +106,38 @@ internal fun rememberTestSelectorEpisodeState(
             flowDispatcher = EmptyCoroutineContext,
             context = context,
         )
+    }
+}
+
+@TestOnly
+@Composable
+internal fun rememberTestEditSelectorMediaSourceState(
+    viewing: SelectorTestEpisodePresentation? = TestSelectorTestEpisodePresentations[0],
+    matchVideoConfig: SelectorSearchConfig.MatchVideoConfig = SelectorSearchConfig.MatchVideoConfig(),
+    urls: (pageUrl: String) -> List<String> = {
+        listOf("https://example.com/a.mkv")
+    },
+): EditSelectorMediaSourcePageState {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    return remember {
+        EditSelectorMediaSourcePageState(
+            createTestSaveableStorage(
+                SelectorMediaSourceArguments.Default.run {
+                    copy(
+                        searchConfig = searchConfig.copy(matchVideo = matchVideoConfig),
+                    )
+                },
+            ),
+            engine = TestSelectorMediaSourceEngine(),
+            webViewVideoExtractor = stateOf(TestWebViewVideoExtractor(urls)),
+            backgroundScope = scope,
+            context,
+            flowDispatcher = EmptyCoroutineContext,
+        ).apply {
+            viewing?.let { presentation ->
+                this.viewEpisode(presentation)
+            }
+        }
     }
 }

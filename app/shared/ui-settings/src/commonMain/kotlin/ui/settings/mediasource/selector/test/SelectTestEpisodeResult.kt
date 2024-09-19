@@ -18,6 +18,7 @@ import me.him188.ani.app.ui.settings.mediasource.RefreshResult
 import me.him188.ani.app.ui.settings.mediasource.rss.test.MatchTag
 import me.him188.ani.app.ui.settings.mediasource.rss.test.buildMatchTags
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.utils.platform.Uuid
 import me.him188.ani.utils.xml.Element
 
 @Immutable
@@ -50,6 +51,8 @@ class SelectorTestEpisodePresentation(
     val tags: List<MatchTag>,
     val origin: Element?,
 ) {
+    val id: Uuid = Uuid.random()
+
     companion object {
         fun compute(
             info: WebSearchEpisodeInfo,
