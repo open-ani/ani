@@ -24,6 +24,7 @@ import me.him188.ani.app.platform.Context
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -54,8 +55,10 @@ import java.util.logging.Level
 /**
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
  */
-class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
-    private val matchers by lazy {
+class DesktopWebVideoSourceResolver(
+    private val matcherLoader: MediaSourceWebVideoMatcherLoader
+) : VideoSourceResolver, KoinComponent {
+    private val matchersFromClasspath by lazy {
         java.util.ServiceLoader.load(WebVideoMatcher::class.java).filterNotNull()
     }
     private val settings: SettingsRepository by inject()
@@ -68,13 +71,15 @@ class DesktopWebVideoSourceResolver : VideoSourceResolver, KoinComponent {
 
             val config = settings.proxySettings.flow.first().default
             val resolverSettings = settings.videoResolverSettings.flow.first()
+            val matchersFromMediaSource = matcherLoader.loadMatchers(media.mediaSourceId)
+            val allMatchers = matchersFromMediaSource + matchersFromClasspath
 
             val context = WebVideoMatcherContext(media)
             val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
                     resourceMatcher = {
-                        matchers.firstNotNullOfOrNull { matcher ->
+                        allMatchers.firstNotNullOfOrNull { matcher ->
                             matcher.match(it, context)
                         }
                     },

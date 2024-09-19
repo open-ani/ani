@@ -27,6 +27,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.topic.ResourceLocation
@@ -37,8 +38,10 @@ import java.io.ByteArrayInputStream
 /**
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
  */
-class AndroidWebVideoSourceResolver : VideoSourceResolver {
-    private val matchers by lazy {
+class AndroidWebVideoSourceResolver(
+    private val matcherLoader: MediaSourceWebVideoMatcherLoader,
+) : VideoSourceResolver {
+    private val matchersFromClasspath by lazy {
         java.util.ServiceLoader.load(WebVideoMatcher::class.java, this::class.java.classLoader).filterNotNull()
     }
 
@@ -63,11 +66,15 @@ class AndroidWebVideoSourceResolver : VideoSourceResolver {
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
         if (!supports(media)) throw UnsupportedMediaException(media)
         val matcherContext = WebVideoMatcherContext(media)
+
+        val matchersFromMediaSource = matcherLoader.loadMatchers(media.mediaSourceId)
+        val allMatchers = matchersFromMediaSource + matchersFromClasspath
+
         val webVideo = AndroidWebViewVideoExtractor().getVideoResourceUrl(
             attached ?: throw IllegalStateException("WebVideoSourceResolver not attached"),
             media.download.uri,
             resourceMatcher = {
-                matchers.firstNotNullOfOrNull { matcher ->
+                allMatchers.firstNotNullOfOrNull { matcher ->
                     matcher.match(it, matcherContext)
                 }
             },

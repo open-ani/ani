@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.network
 
 import androidx.compose.runtime.Composable
@@ -11,6 +20,7 @@ import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceTemplate
 import me.him188.ani.app.ui.settings.tabs.media.source.SelectMediaSourceTemplateDialog
+import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSource
 import me.him188.ani.datasources.api.source.MediaSourceConfig
@@ -102,6 +112,8 @@ fun createTestMediaSourceManager() = object : MediaSourceManager {
     override val allFactoryIdsExceptLocal: List<FactoryId>
         get() = allFactoryIds.filter { !isLocal(it) }
     override val mediaFetcher: Flow<MediaFetcher> get() = flowOf()
+    override val webVideoMatcherLoader: MediaSourceWebVideoMatcherLoader =
+        MediaSourceWebVideoMatcherLoader(flowOf(emptyList()))
 
     override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig?> {
         return MutableStateFlow(MediaSourceConfig())

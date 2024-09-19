@@ -27,6 +27,7 @@ import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.app.tools.ServiceLoader
+import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaSource
@@ -70,6 +71,8 @@ interface MediaSourceManager { // available by inject
      * 根据启用的 [MediaSourceInstance] 创建的 [MediaSourceMediaFetcher].
      */
     val mediaFetcher: Flow<MediaFetcher>
+
+    val webVideoMatcherLoader: MediaSourceWebVideoMatcherLoader
 
     fun isLocal(factoryId: FactoryId): Boolean = isLocal(factoryId.value)
     fun isLocal(mediaSourceId: String): Boolean {
@@ -231,6 +234,9 @@ class MediaSourceManagerImpl(
             mediaSources = instances,
         )
     }
+    override val webVideoMatcherLoader: MediaSourceWebVideoMatcherLoader = MediaSourceWebVideoMatcherLoader(
+        allInstances.map { list -> list.map { it.source } },
+    )
 
     override fun instanceConfigFlow(instanceId: String): Flow<MediaSourceConfig?> {
         return instances.flow.map { list ->

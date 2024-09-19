@@ -41,6 +41,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.UpdateManager
+import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
@@ -207,7 +208,7 @@ object AniDesktop {
                                 .map { TorrentVideoSourceResolver(it) }
                                 .plus(LocalFileVideoSourceResolver())
                                 .plus(HttpStreamingVideoSourceResolver())
-                                .plus(DesktopWebVideoSourceResolver()),
+                                .plus(DesktopWebVideoSourceResolver(get<MediaSourceManager>().webVideoMatcherLoader)),
                         )
                     }
                     single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
