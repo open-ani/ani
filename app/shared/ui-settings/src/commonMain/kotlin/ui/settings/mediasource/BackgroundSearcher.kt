@@ -18,8 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
@@ -58,8 +65,15 @@ abstract class BackgroundSearcher<TestData, TestResult>(
         interface OK
 
         /**
+         * 立即完成, 而不启动后台协程.
+         */
+        fun complete(result: TestResult): OK
+
+        /**
          * 在 [searchTasker] 启动协程, 执行 [request].
          * @param request 保证在后台线程执行
+         *
+         * @see launchCollectedInBackground
          */
         fun launchRequestInBackground(request: suspend () -> TestResult): OK
     }
@@ -81,6 +95,11 @@ abstract class BackgroundSearcher<TestData, TestResult>(
     }
 
     private val restartSearchScopeImpl = object : RestartSearchScope<TestResult>, RestartSearchScope.OK {
+        override fun complete(result: TestResult): RestartSearchScope.OK {
+            searchResult = result
+            return this
+        }
+
         override fun launchRequestInBackground(request: suspend () -> TestResult): RestartSearchScope.OK {
             searchTasker.launch {
                 // background scope
@@ -146,4 +165,42 @@ class DefaultBackgroundSearcher<TestData, TestResult>(
 ) : BackgroundSearcher<TestData, TestResult>(backgroundScope) {
     override fun RestartSearchScope<TestResult>.restartSearchImpl(testData: TestData): RestartSearchScope.OK =
         restartSearchImpl.invoke(this, testData)
+}
+
+
+/**
+ * 在 [BackgroundSearcher.searchTasker] 启动协程, 执行 [block], 每 emit 的值都会被收集到 list 中, 然后由 flow 更新.
+ * @param block 保证在后台线程执行
+ *
+ * @sample me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorEpisodeState.searcher
+ */
+inline fun <T> RestartSearchScope<StateFlow<PersistentList<T>>>.launchCollectedInBackground(
+    crossinline block: suspend SafeResultCollector<T>.() -> Unit,
+): RestartSearchScope.OK = launchRequestInBackground {
+    val flow = MutableStateFlow(persistentListOf<T>())
+    block(SafeResultCollectorImpl(flow))
+    flow.asStateFlow()
+}
+
+// single class. 否则每次 inline 都会多一个 class.
+@PublishedApi
+internal class SafeResultCollectorImpl<T>(
+    private val flow: MutableStateFlow<PersistentList<T>>,
+) : SafeResultCollector<T>() {
+    override fun emitImpl(value: T) {
+        flow.value = flow.value.add(value)
+    }
+}
+
+abstract class SafeResultCollector<T>
+@PublishedApi internal constructor() {
+    private val lock = SynchronizedObject()
+
+    fun collect(value: T) { // 与 flow 相比, 这个不需要 suspend, 而且这个是线程安全的
+        synchronized(lock) { // light-weight lock
+            emitImpl(value)
+        }
+    }
+
+    abstract fun emitImpl(value: T)
 }
