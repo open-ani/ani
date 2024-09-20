@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.collection.components
 
 import androidx.compose.foundation.layout.padding
@@ -15,6 +24,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,7 +33,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Stable
 class EditableSubjectCollectionTypeState(
@@ -128,4 +140,24 @@ private fun SetAllEpisodeDoneDialog(
         dismissButton = { TextButton(onDismissRequest) { Text("忽略") } },
         modifier = modifier,
     )
+}
+
+@TestOnly
+@Composable
+fun rememberTestEditableSubjectCollectionTypeState(type: UnifiedCollectionType = UnifiedCollectionType.WISH): EditableSubjectCollectionTypeState {
+    val backgroundScope = rememberBackgroundScope()
+    val selfCollectionType = remember {
+        mutableStateOf(type)
+    }
+    return remember {
+        EditableSubjectCollectionTypeState(
+            selfCollectionType,
+            hasAnyUnwatched = { false },
+            onSetSelfCollectionType = {
+                selfCollectionType.value = it
+            },
+            onSetAllEpisodesWatched = { },
+            backgroundScope.backgroundScope,
+        )
+    }
 }

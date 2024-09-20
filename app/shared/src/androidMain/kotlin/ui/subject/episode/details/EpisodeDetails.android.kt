@@ -7,6 +7,8 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.foundation.layout.Column
@@ -30,8 +32,8 @@ import me.him188.ani.app.data.source.session.SessionStatus
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.details.components.createTestAiringLabelState
-import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.createTestAiringLabelState
+import me.him188.ani.app.ui.subject.collection.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation

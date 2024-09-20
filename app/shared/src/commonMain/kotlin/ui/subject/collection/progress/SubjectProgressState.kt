@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.collection.progress
 
 import androidx.compose.runtime.Composable
@@ -5,6 +14,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,7 +29,10 @@ import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.tools.WeekFormatter
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.foundation.stateOf
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.PackedDate
 import me.him188.ani.datasources.api.toLocalDateOrNull
+import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
 
 // 在 VM 中创建
@@ -149,5 +162,49 @@ class SubjectProgressState(
 
     fun onClickButton() {
         episodeIdToPlay?.let { play(it) }
+    }
+}
+
+
+@Stable
+@TestOnly
+object TestSubjectProgressInfos {
+    @Stable
+    val NotOnAir = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.NotOnAir(PackedDate.Invalid),
+        nextEpisodeIdToPlay = null,
+    )
+
+    @Stable
+    val ContinueWatching2 = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.Continue(1, EpisodeSort(2), EpisodeSort(1)),
+        nextEpisodeIdToPlay = null,
+    )
+
+    @Stable
+    val Watched2 = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.Watched(1, EpisodeSort(2), PackedDate.Invalid),
+        nextEpisodeIdToPlay = null,
+    )
+
+    @Stable
+    val Done = SubjectProgressInfo(
+        continueWatchingStatus = ContinueWatchingStatus.Done,
+        nextEpisodeIdToPlay = null,
+    )
+}
+
+@Composable
+@TestOnly
+fun rememberTestSubjectProgressState(
+    info: SubjectProgressInfo = SubjectProgressInfo.Done,
+): SubjectProgressState {
+    return remember {
+        SubjectProgressState(
+            stateOf(1),
+            info = stateOf(info),
+            episodeProgressInfos = mutableStateOf(emptyList()),
+            onPlay = { _, _ -> },
+        )
     }
 }

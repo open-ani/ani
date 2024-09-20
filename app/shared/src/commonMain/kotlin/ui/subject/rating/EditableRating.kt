@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.rating
 
 import androidx.compose.material3.AlertDialog
@@ -16,6 +25,9 @@ import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.subject.RatingInfo
 import me.him188.ani.app.data.models.subject.SelfRatingInfo
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.ui.foundation.rememberBackgroundScope
+import me.him188.ani.app.ui.subject.details.TestSubjectInfo
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 
 @Stable
@@ -112,4 +124,30 @@ fun EditableRating(
         clickEnabled = state.clickEnabled,
         modifier = modifier,
     )
+}
+
+
+@TestOnly
+internal val TestSelfRatingInfo
+    get() = SelfRatingInfo(
+        score = 7,
+        comment = "test",
+        tags = listOf("My tag"),
+        isPrivate = false,
+    )
+
+@Composable
+@TestOnly
+fun rememberTestEditableRatingState(): EditableRatingState {
+    val backgroundScope = rememberBackgroundScope()
+    return remember {
+        EditableRatingState(
+            ratingInfo = mutableStateOf(TestSubjectInfo.ratingInfo),
+            selfRatingInfo = mutableStateOf(TestSelfRatingInfo),
+            enableEdit = mutableStateOf(true),
+            isCollected = { true },
+            onRate = { _ -> },
+            backgroundScope.backgroundScope,
+        )
+    }
 }
