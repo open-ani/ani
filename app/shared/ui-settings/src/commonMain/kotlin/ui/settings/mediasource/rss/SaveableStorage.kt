@@ -90,6 +90,13 @@ class SaveableStorage<Container : Any>(
             onSave(arguments.copy(value))
         }
     }
+
+    /**
+     * 立即覆盖当前整个容器
+     */
+    fun set(container: Container) {
+        onSave(container)
+    }
 }
 
 @TestOnly
