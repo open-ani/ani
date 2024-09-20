@@ -24,6 +24,7 @@ import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.writeBytes
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.random.Random
 
 @TestOnly
