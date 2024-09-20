@@ -43,7 +43,6 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -69,6 +68,7 @@ import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
+import me.him188.ani.app.ui.foundation.widgets.PullToRefreshBox
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
 import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
@@ -267,6 +267,7 @@ fun CollectionPane(
                                     collection.subjectCollectionColumnState.startAutoRefresh()
                                 },
                                 state = collection.pullToRefreshState,
+                                enabled = LocalPlatform.current.isMobile(),
                                 indicator = {
                                     Indicator(
                                         modifier = Modifier.align(Alignment.TopCenter),

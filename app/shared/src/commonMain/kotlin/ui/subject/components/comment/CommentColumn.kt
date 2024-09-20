@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
@@ -34,10 +33,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
 import me.him188.ani.app.ui.foundation.thenNotNull
+import me.him188.ani.app.ui.foundation.widgets.PullToRefreshBox
+import me.him188.ani.utils.platform.isMobile
 
 @Composable
 fun CommentColumn(
@@ -63,6 +65,7 @@ fun CommentColumn(
         isRefreshing = state.isLoading,
         onRefresh = { state.reload() },
         modifier = modifier,
+        enabled = LocalPlatform.current.isMobile(),
         contentAlignment = Alignment.TopCenter,
     ) {
         LazyColumn(
