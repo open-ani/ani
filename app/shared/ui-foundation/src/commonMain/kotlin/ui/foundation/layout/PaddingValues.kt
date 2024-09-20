@@ -12,6 +12,7 @@ package me.him188.ani.app.ui.foundation.layout
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.only
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 /**
  * @see WindowInsets.only
  */
+@Stable
 fun PaddingValues.only(sides: PaddingValuesSides): PaddingValues = OnlyPaddingValues(this, sides)
 
 private class OnlyPaddingValues(
