@@ -15,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import io.ktor.client.plugins.BrowserUserAgent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -81,7 +80,6 @@ class EditRssMediaSourceViewModel(
                         onSave = {
                             arguments.value = it
                             saveTasker.launch {
-                                delay(500)
                                 mediaSourceManager.updateMediaSourceArguments(
                                     instanceId,
                                     RssMediaSourceArguments.serializer(),
