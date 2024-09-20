@@ -153,14 +153,6 @@ fun PeerFilterEditPane(
             enabled = state.idFilterEnabled,
             onSwitchChange = { state.idFilterEnabled = it },
             enabledContent = {
-                SwitchItem(
-                    title = "总是过滤异常指纹",
-                    enabled = state.blockUnexpectedId,
-                    onSwitchChange = { state.blockUnexpectedId = it },
-                    supportingTextBBCode = """
-                        无视下方规则, 总是尝试过滤不满足 [code]-xxxxxx-[/code] 格式的客户端指纹.
-                    """.trimIndent()
-                )
                 RuleEditItem(
                     content = state.idFilters,
                     enabled = state.idFilterEnabled,
@@ -169,6 +161,14 @@ fun PeerFilterEditPane(
                         例如：[code]\-HP\d{4}\-[/code] 将封禁具有 -HPxxxx- 指纹的客户端
                     """.trimIndent(),
                     onContentChange = { state.idFilters = it },
+                )
+                SwitchItem(
+                    title = "总是过滤异常指纹",
+                    enabled = state.blockUnexpectedId,
+                    onSwitchChange = { state.blockUnexpectedId = it },
+                    supportingTextBBCode = """
+                        无论是否满足规则, 都会屏蔽指纹不符合 [code]-xxxxxx-[/code] 格式的客户端
+                    """.trimIndent()
                 )
             }
         )
