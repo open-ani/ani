@@ -26,7 +26,7 @@ jobs:
           # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
             name: Windows x86_64
-            uploadApk: false
+            uploadApk: true
             arch: x64
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
@@ -46,7 +46,7 @@ jobs:
             gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M'
           - os: macos-13
             name: macOS x86_64
-            uploadApk: true
+            uploadApk: false
             arch: x64
             anitorrent: true
             anitorrent_separate_build: true # macOS native 构建快, 先构建 anitorrent, 再 assemble
