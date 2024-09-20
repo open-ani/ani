@@ -80,7 +80,7 @@ private fun RuleEditItem(
     enabled: Boolean,
     supportingTextBBCode: String,
     onContentChange: (String) -> Unit,
-    textFieldShape: Shape = MaterialTheme.shapes.medium
+    textFieldShape: Shape = MaterialTheme.shapes.extraSmall
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
     ListItem(
