@@ -9,6 +9,7 @@
 
 package me.him188.ani.app.ui.settings.mediasource.rss.edit
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -134,6 +135,7 @@ fun RssEditPane(
 
                     ListItem(
                         headlineContent = { Text("使用剧集序号过滤") },
+                        Modifier.clickable { state.filterByEpisodeSort = !state.filterByEpisodeSort },
                         supportingContent = { Text("要求资源标题包含剧集序号。适用于数据源可能搜到无关内容的情况") },
                         trailingContent = { Switch(state.filterByEpisodeSort, { state.filterByEpisodeSort = it }) },
                         colors = listItemColors,
@@ -141,6 +143,7 @@ fun RssEditPane(
 
                     ListItem(
                         headlineContent = { Text("使用条目名称过滤") },
+                        Modifier.clickable { state.filterBySubjectName = !state.filterBySubjectName },
                         supportingContent = { Text("要求资源标题包含条目名称。适用于数据源可能搜到无关内容的情况") },
                         trailingContent = { Switch(state.filterBySubjectName, { state.filterBySubjectName = it }) },
                         colors = listItemColors,
