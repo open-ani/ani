@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemGesturesPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
@@ -74,6 +75,7 @@ import me.him188.ani.app.ui.foundation.effects.ComposeKey
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.utils.fixToString
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -451,7 +453,6 @@ fun VideoGestureHost(
             Box(
                 modifier
                     .focusRequester(keyboardFocus)
-                    .padding(top = 60.dp)
                     .ifThen(family.swipeToSeek) {
                         swipeToSeek(seekerState, Orientation.Horizontal)
                     }
@@ -674,7 +675,6 @@ fun VideoGestureHost(
                             }
                         }
                     }
-                    .padding(top = 60.dp)
                     .combinedClickable(
                         remember { MutableInteractionSource() },
                         indication = null,
@@ -756,6 +756,9 @@ fun VideoGestureHost(
             ) {
                 Row(
                     Modifier.matchParentSize()
+                        .ifThen(isSystemInFullscreen()) {
+                            systemGesturesPadding()
+                        }
                         .ifThen(family.longPressForFastSkip) {
                             longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
                         },
