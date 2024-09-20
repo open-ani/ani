@@ -1,6 +1,16 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.components.comment
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +41,7 @@ fun CommentColumn(
     modifier: Modifier = Modifier,
     hasDividerLine: Boolean = true,
     listState: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     commentItem: @Composable LazyItemScope.(index: Int, item: UIComment) -> Unit
 ) {
     LaunchedEffect(true) {
@@ -54,6 +65,7 @@ fun CommentColumn(
                 .fillMaxSize(),
             state = listState,
             horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = contentPadding,
         ) {
             item("spacer header") { Spacer(Modifier.height(1.dp)) }
 

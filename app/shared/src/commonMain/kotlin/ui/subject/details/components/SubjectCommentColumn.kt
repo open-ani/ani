@@ -1,6 +1,16 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.details.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,7 +43,8 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
     onClickImage: (String) -> Unit,
     connectedScrollState: ConnectedScrollState,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState()
+    lazyListState: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Box(modifier, contentAlignment = Alignment.TopCenter) {
         CommentColumn(
@@ -44,6 +55,7 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
                 .fillMaxHeight()
                 .nestedScrollWorkaround(lazyListState, connectedScrollState)
                 .nestedScroll(connectedScrollState.nestedScrollConnection),
+            contentPadding = contentPadding,
         ) { _, comment ->
             SubjectComment(
                 comment = comment,
