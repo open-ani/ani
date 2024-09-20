@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -16,7 +17,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,54 +31,75 @@ import me.him188.ani.app.ui.richtext.RichText
 import me.him188.ani.app.ui.richtext.rememberBBCodeRichTextState
 
 @Composable
-fun PeerFilterEditItem(
+private fun BBCodeSupportingText(text: String, modifier: Modifier = Modifier) {
+    val richTextState = rememberBBCodeRichTextState(text)
+    RichText(richTextState.elements, modifier)
+}
+
+@Composable
+private fun SwitchItem(
     title: String,
-    item: PeerFilterItemState,
+    enabled: Boolean,
     onSwitchChange: (Boolean) -> Unit,
-    onContentChange: (String) -> Unit,
-    editSupportingTextBBCode: String,
+    supportingTextBBCode: String? = null,
+) {
+    val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
+    ListItem(
+        headlineContent = { Text(text = title, overflow = TextOverflow.Ellipsis) },
+        supportingContent = supportingTextBBCode?.let {
+            { BBCodeSupportingText(supportingTextBBCode) }
+        },
+        trailingContent = { Switch(checked = enabled, onCheckedChange = onSwitchChange) },
+        colors = listItemColors,
+        modifier = Modifier.clickable { onSwitchChange(!enabled) },
+    )
+}
+
+@Composable
+private fun ExpandableSwitchItem(
+    title: String,
+    enabled: Boolean,
+    onSwitchChange: (Boolean) -> Unit,
+    enabledContent: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        SwitchItem(title, enabled, onSwitchChange)
+
+        AnimatedVisibility(enabled) {
+            Column {
+                enabledContent()
+            }
+        }
+    }
+}
+
+@Composable
+private fun RuleEditItem(
+    content: String,
+    enabled: Boolean,
+    supportingTextBBCode: String,
+    onContentChange: (String) -> Unit,
     textFieldShape: Shape = MaterialTheme.shapes.medium
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
-
-    Column(modifier = modifier) {
-        ListItem(
-            headlineContent = { Text(text = title, overflow = TextOverflow.Ellipsis) },
-            trailingContent = { Switch(checked = item.enabled, onCheckedChange = onSwitchChange) },
-            colors = listItemColors,
-            modifier = Modifier.clickable { onSwitchChange(!item.enabled) },
-        )
-
-        AnimatedVisibility(item.enabled) {
-            val richTextState = rememberBBCodeRichTextState(
-                editSupportingTextBBCode,
-                MaterialTheme.typography.bodySmall.fontSize,
+    ListItem(
+        headlineContent = {
+            OutlinedTextField(
+                value = content,
+                enabled = enabled,
+                label = { Text("规则") },
+                maxLines = 8,
+                onValueChange = onContentChange,
+                shape = textFieldShape,
+                modifier = Modifier.fillMaxWidth(),
             )
-            
-            ListItem(
-                headlineContent = {
-                    OutlinedTextField(
-                        value = item.content,
-                        enabled = item.enabled,
-                        label = { Text("规则") },
-                        maxLines = 8,
-                        onValueChange = onContentChange,
-                        shape = textFieldShape,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                },
-                supportingContent = {
-                    ProvideTextStyle(MaterialTheme.typography.bodySmall) {
-                        RichText(
-                            richTextState.elements,
-                            modifier = Modifier.padding(8.dp),
-                        )
-                    }
-                }
-            )
+        },
+        colors = listItemColors,
+        supportingContent = {
+            BBCodeSupportingText(supportingTextBBCode, Modifier.padding(8.dp))
         }
-    }
+    )
 }
 
 @Composable
@@ -89,7 +110,6 @@ fun PeerFilterEditPane(
     modifier: Modifier = Modifier,
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
-
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
     ) {
@@ -103,44 +123,70 @@ fun PeerFilterEditPane(
                 }
             }
         )
-        PeerFilterEditItem(
+        ExpandableSwitchItem(
             title = "过滤 IP 地址",
-            editSupportingTextBBCode = """
-                    每行一条过滤规则，支持 IPv4 和 IPv6
-                    支持以下格式：
-                    * 无类别域间路由（CIDR）
-                      例如：[code]10.0.0.1/24[/code] 将过滤从 [code]10.0.0.0[/code] 至 [code]10.0.0.255[/code] 的所有 IP
-                      [code]ff06:1234::/64[/code] 将过滤从 [code]ff06:1234::[/code] 至 [code]ff06:1234::ffff:ffff:ffff:ffff[/code] 的所有 IP
-                    * 通配符
-                      例如：[code]10.0.12.*[/code] 将过滤从 [code]10.0.12.0[/code] 至 [code]10.0.12.255[/code] 的所有 IP
-                      [code]ff06:1234::*[/code] 将过滤从 [code]ff06:1234::[/code] 至 [code]ff06:1234::ffff[/code] 的所有 IP
-                      支持多级通配符，例如 [code]10.0.*.*[/code]
-                    * 范围表示
-                      例如 [code]10.0.24.100-200[/code] 和 [code]ff06:1234::cafe-dead[/code]
-                """.trimIndent(),
-            item = PeerFilterItemState(state.ipFilterEnabled, state.ipFilters),
+            enabled = state.ipFilterEnabled,
             onSwitchChange = { state.ipFilterEnabled = it },
-            onContentChange = { state.ipFilters = it },
+            enabledContent = {
+                RuleEditItem(
+                    content = state.ipFilters,
+                    enabled = state.ipFilterEnabled,
+                    supportingTextBBCode = """
+                        每行一条过滤规则，支持 IPv4 和 IPv6
+                        支持以下格式：
+                        * 无类别域间路由（CIDR）
+                          例如：[code]10.0.0.1/24[/code] 将过滤从 [code]10.0.0.0[/code] 至 [code]10.0.0.255[/code] 的所有 IP
+                          [code]ff06:1234::/64[/code] 将过滤从 [code]ff06:1234::[/code] 至 [code]ff06:1234::ffff:ffff:ffff:ffff[/code] 的所有 IP
+                        * 通配符
+                          例如：[code]10.0.12.*[/code] 将过滤从 [code]10.0.12.0[/code] 至 [code]10.0.12.255[/code] 的所有 IP
+                          [code]ff06:1234::*[/code] 将过滤从 [code]ff06:1234::[/code] 至 [code]ff06:1234::ffff[/code] 的所有 IP
+                          支持多级通配符，例如 [code]10.0.*.*[/code]
+                        * 范围表示
+                          例如 [code]10.0.24.100-200[/code] 和 [code]ff06:1234::cafe-dead[/code]
+                    """.trimIndent(),
+                    onContentChange = { state.ipFilters = it },
+                )
+            }
         )
-        PeerFilterEditItem(
+        ExpandableSwitchItem(
             title = "过滤客户端指纹",
-            editSupportingTextBBCode = """
-                    每行一条过滤规则，仅支持使用正则表达式过滤
-                    例如：[code]\-HP\d{4}\-[/code] 将封禁具有 -HPxxxx- 指纹的客户端
-                """.trimIndent(),
-            item = PeerFilterItemState(state.idFilterEnabled, state.idFilters),
+            enabled = state.idFilterEnabled,
             onSwitchChange = { state.idFilterEnabled = it },
-            onContentChange = { state.idFilters = it },
+            enabledContent = {
+                SwitchItem(
+                    title = "总是过滤异常指纹",
+                    enabled = state.blockUnexpectedId,
+                    onSwitchChange = { state.blockUnexpectedId = it },
+                    supportingTextBBCode = """
+                        无视下方规则, 总是尝试过滤不满足 [code]-xxxxxx-[/code] 格式的客户端指纹.
+                    """.trimIndent()
+                )
+                RuleEditItem(
+                    content = state.idFilters,
+                    enabled = state.idFilterEnabled,
+                    supportingTextBBCode = """
+                        每行一条过滤规则，仅支持使用正则表达式过滤
+                        例如：[code]\-HP\d{4}\-[/code] 将封禁具有 -HPxxxx- 指纹的客户端
+                    """.trimIndent(),
+                    onContentChange = { state.idFilters = it },
+                )
+            }
         )
-        PeerFilterEditItem(
+        ExpandableSwitchItem(
             title = "过滤客户端类型",
-            editSupportingTextBBCode = """
-                    每行一条过滤规则，仅支持使用正则表达式过滤
-                    例如：[code]go\.torrent(\sdev)?[/code] 将封禁百度网盘的离线下载客户端
-                """.trimIndent(),
-            item = PeerFilterItemState(state.clientFilterEnabled, state.clientFilters),
+            enabled = state.clientFilterEnabled,
             onSwitchChange = { state.clientFilterEnabled = it },
-            onContentChange = { state.clientFilters = it },
+            enabledContent = {
+                RuleEditItem(
+                    content = state.clientFilters,
+                    enabled = state.clientFilterEnabled,
+                    supportingTextBBCode = """
+                        每行一条过滤规则，仅支持使用正则表达式过滤
+                        例如：[code]go\.torrent(\sdev)?[/code] 将封禁百度网盘的离线下载客户端
+                    """.trimIndent(),
+                    onContentChange = { state.clientFilters = it },
+                )
+            }
         )
 
         if (showIpBlockingItem) {

@@ -160,6 +160,9 @@ private fun createPeerFilter(config: TorrentPeerConfig): PeerFilter {
     return object : PeerFilter {
         private val correspondingFilters = buildList {
             add(PeerIpBlackListFilter(config.ipBlackList))
+            if (config.blockUnexpectedId) {
+                add(PeerUnexpectedIdFilter)
+            }
             if (config.enableIdFilter) {
                 addAll(config.idRegexFilters.map(::PeerIdFilter))
             }

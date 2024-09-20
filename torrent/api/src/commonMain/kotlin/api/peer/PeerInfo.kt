@@ -13,7 +13,7 @@ interface PeerInfo {
      * For anitorrent, the value is calculated by
      * [computeTorrentFingerprint][me.him188.ani.app.tools.torrent.engines.computeTorrentFingerprint].
      */
-    val id: String
+    val id: CharArray
 
     /**
      * A human readable string describing the software at the other end of the connection. 

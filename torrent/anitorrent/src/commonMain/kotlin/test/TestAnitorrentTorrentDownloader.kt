@@ -24,7 +24,6 @@ import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.io.writeBytes
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmField
 import kotlin.random.Random
 
 @TestOnly
@@ -112,7 +111,7 @@ class TestTorrentDescriptor(
 @TestOnly
 class TestPeerInfo(
     override val handle: HandleId,
-    override val id: String,
+    override val id: CharArray,
     override val client: String,
     override val ipAddr: String,
     override val ipPort: Int,
