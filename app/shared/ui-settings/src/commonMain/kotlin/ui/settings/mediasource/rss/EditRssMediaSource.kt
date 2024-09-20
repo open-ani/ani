@@ -9,6 +9,7 @@
 
 package me.him188.ani.app.ui.settings.mediasource.rss
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -135,13 +136,23 @@ fun EditRssMediaSourcePage(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(state.displayName.ifEmpty { "新建数据源" })
+                    AnimatedContent(
+                        navigator.currentDestination?.pane,
+                        transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+                    ) {
+                        when (it) {
+                            ListDetailPaneScaffoldRole.List -> Text(state.displayName)
+                            ListDetailPaneScaffoldRole.Detail -> Text("测试数据源")
+                            ListDetailPaneScaffoldRole.Extra -> Text("详情")
+                            else -> Text(state.displayName)
+                        }
+                    }
                 },
                 navigationIcon = { TopAppBarGoBackButton() },
                 colors = AniThemeDefaults.topAppBarColors(),
                 windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 actions = {
-                    if (navigator.scaffoldValue.primary == PaneAdaptedValue.Hidden) {
+                    if (navigator.scaffoldValue[ListDetailPaneScaffoldRole.Detail] == PaneAdaptedValue.Hidden) {
                         TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
                             Text("测试")
                         }
