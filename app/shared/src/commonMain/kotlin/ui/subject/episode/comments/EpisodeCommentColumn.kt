@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.comments
 
 import androidx.compose.foundation.layout.Column
@@ -17,6 +26,7 @@ import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.LocalImageViewerHandler
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.isInDebugMode
+import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.richtext.RichText
 import me.him188.ani.app.ui.subject.components.comment.Comment
 import me.him188.ani.app.ui.subject.components.comment.CommentColumn
@@ -34,7 +44,8 @@ fun EpisodeCommentColumn(
     onClickEditCommentStubEmoji: () -> Unit,
     onClickUrl: (url: String) -> Unit,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState()
+    lazyListState: LazyListState = rememberLazyListState(),
+    connectedScrollState: ConnectedScrollState? = null,
 ) {
     val imageViewer = LocalImageViewerHandler.current
 
@@ -42,7 +53,8 @@ fun EpisodeCommentColumn(
         CommentColumn(
             state = state,
             listState = lazyListState,
-            modifier = Modifier.weight(1f).fillMaxSize()
+            connectedScrollState = connectedScrollState,
+            modifier = Modifier.weight(1f).fillMaxSize(),
         ) { _, comment ->
             EpisodeComment(
                 comment = comment,

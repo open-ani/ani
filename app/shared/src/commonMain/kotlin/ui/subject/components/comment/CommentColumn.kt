@@ -30,10 +30,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
+import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.theme.stronglyWeaken
+import me.him188.ani.app.ui.foundation.thenNotNull
 
 @Composable
 fun CommentColumn(
@@ -42,6 +46,7 @@ fun CommentColumn(
     hasDividerLine: Boolean = true,
     listState: LazyListState = rememberLazyListState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    connectedScrollState: ConnectedScrollState? = null,
     commentItem: @Composable LazyItemScope.(index: Int, item: UIComment) -> Unit
 ) {
     LaunchedEffect(true) {
@@ -62,6 +67,12 @@ fun CommentColumn(
     ) {
         LazyColumn(
             modifier = Modifier
+                .thenNotNull(
+                    connectedScrollState?.let {
+                        Modifier.nestedScroll(connectedScrollState.nestedScrollConnection)
+                            .nestedScrollWorkaround(listState, connectedScrollState)
+                    },
+                )
                 .fillMaxSize(),
             state = listState,
             horizontalAlignment = Alignment.CenterHorizontally,
