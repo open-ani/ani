@@ -13,6 +13,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
@@ -39,9 +40,11 @@ import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
+import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.ThreePaneScaffoldValueConverter.ExtraPaneForNestedDetails
 import me.him188.ani.app.ui.foundation.layout.convert
-import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
+import me.him188.ani.app.ui.foundation.layout.only
+import me.him188.ani.app.ui.foundation.layout.panePadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
@@ -166,6 +169,8 @@ fun EditRssMediaSourcePage(
             navigator.navigateBack()
         }
 
+        val panePadding = currentWindowAdaptiveInfo().windowSizeClass.panePadding
+        val panePaddingVertical = panePadding.only(PaddingValuesSides.Vertical)
         ListDetailPaneScaffold(
             navigator.scaffoldDirective,
             navigator.scaffoldValue.convert(ExtraPaneForNestedDetails),
@@ -174,7 +179,7 @@ fun EditRssMediaSourcePage(
                     RssEditPane(
                         state = state,
                         Modifier.fillMaxSize(),
-                        contentPadding = paddingValues,
+                        contentPadding = panePaddingVertical,
                     )
                 }
             },
@@ -184,11 +189,14 @@ fun EditRssMediaSourcePage(
                         testState,
                         { navigator.navigateTo(ListDetailPaneScaffoldRole.Extra) },
                         Modifier.fillMaxSize(),
-                        contentPadding = paddingValues,
+                        contentPadding = panePaddingVertical,
                     )
                 }
             },
-            Modifier.materialWindowMarginPadding(),
+            Modifier
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
+                .padding(panePadding.only(PaddingValuesSides.Horizontal)),
             extraPane = {
                 AnimatedPane1 {
                     Crossfade(testState.viewingItem) { item ->
@@ -196,7 +204,7 @@ fun EditRssMediaSourcePage(
                         if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT) {
                             SideSheetPane(
                                 onClose = { navigator.navigateBack() },
-                                Modifier.padding(paddingValues),
+                                Modifier.padding(panePaddingVertical),
                             ) {
                                 RssDetailPane(
                                     item,
@@ -211,7 +219,7 @@ fun EditRssMediaSourcePage(
                                 mediaDetailsColumn = mediaDetailsColumn,
                                 Modifier
                                     .fillMaxSize(),
-                                contentPadding = paddingValues,
+                                contentPadding = panePaddingVertical,
                             )
                         }
                     }

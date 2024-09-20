@@ -45,13 +45,8 @@ fun RssEditPane(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     outlinedTextFieldShape: Shape = MediaSourceConfigurationDefaults.outlinedTextFieldShape
 ) {
-    Column(
-        modifier
-            .padding(contentPadding),
-    ) {
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()),
-        ) {
+    Column(modifier.verticalScroll(rememberScrollState())) {
+        Column(Modifier.padding(contentPadding)) {
             // 大图标和标题
             MediaSourceHeadline(state.displayIconUrl, state.displayName)
 
@@ -134,7 +129,7 @@ fun RssEditPane(
                     )
                 }
 
-                Row(Modifier.align(Alignment.End).padding(top = 20.dp, bottom = 12.dp)) {
+                Row(Modifier.align(Alignment.End).padding(top = 20.dp)) {
                     ProvideTextStyleContentColor(
                         MaterialTheme.typography.labelMedium,
                         MaterialTheme.colorScheme.outline,
