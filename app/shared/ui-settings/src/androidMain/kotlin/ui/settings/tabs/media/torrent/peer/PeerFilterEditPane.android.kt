@@ -9,7 +9,6 @@
 
 package me.him188.ani.app.ui.settings.tabs.media.torrent.peer
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -19,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
@@ -64,7 +62,6 @@ fun PreviewPeerFilterEditPane() {
     }
     PeerFilterEditPane(
         state = state,
-        contentPadding = PaddingValues(0.dp),
         showIpBlockingItem = true,
         onClickIpBlockSettings = { },
     )

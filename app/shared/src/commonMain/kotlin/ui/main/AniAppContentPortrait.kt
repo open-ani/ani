@@ -319,6 +319,7 @@ fun AniAppContentPortrait(
                 PeerFilterSettingsPage(
                     viewModel.state,
                     Modifier.desktopTitleBarPadding(),
+                    windowInsets = ScaffoldDefaults.contentWindowInsets,
                 )
             }
         }

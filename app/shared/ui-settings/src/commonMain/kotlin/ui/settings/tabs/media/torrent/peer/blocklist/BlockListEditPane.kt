@@ -11,10 +11,8 @@ package me.him188.ani.app.ui.settings.tabs.media.torrent.peer.blocklist
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -42,32 +40,31 @@ import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 @Composable
 fun BlockListEditPane(
     blockedIpList: List<String>,
-    contentPadding: PaddingValues,
     showTitle: Boolean,
     onAdd: (List<String>) -> Unit,
     onRemove: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
-
     var showAddBlockedIpDialog by rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = modifier.padding(contentPadding).fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         if (showTitle) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                ProvideTextStyleContentColor(
-                    MaterialTheme.typography.titleMedium,
-                    MaterialTheme.colorScheme.primary,
-                ) {
-                    Text("黑名单")
+            ListItem(
+                headlineContent = {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        ProvideTextStyleContentColor(
+                            MaterialTheme.typography.labelLarge,
+                            MaterialTheme.colorScheme.primary,
+                        ) {
+                            Text("黑名单")
+                        }
+                        ProvideTextStyleContentColor(MaterialTheme.typography.labelMedium) {
+                            Text("黑名单中的 Peer 总是被屏蔽，无论是否匹配过滤规则")
+                        }
+                    }
                 }
-                ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
-                    Text("黑名单中的 Peer 总是被屏蔽，无论是否匹配过滤规则")
-                }
-            }
+            )
         }
         ListItem(
             headlineContent = {
@@ -97,9 +94,7 @@ fun BlockListEditPane(
             },
             colors = listItemColors,
         )
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(items = blockedIpList, key = { it }) { item ->
                 ListItem(
                     headlineContent = { Text(item) },

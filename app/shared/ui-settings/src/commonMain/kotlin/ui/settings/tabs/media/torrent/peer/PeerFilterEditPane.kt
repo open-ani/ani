@@ -4,8 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +16,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,24 +55,28 @@ fun PeerFilterEditItem(
                 editSupportingTextBBCode,
                 MaterialTheme.typography.bodySmall.fontSize,
             )
-
-            Column(modifier = Modifier.padding(bottom = 20.dp)) {
-                OutlinedTextField(
-                    value = item.content,
-                    enabled = item.enabled,
-                    label = { Text("规则") },
-                    maxLines = 8,
-                    onValueChange = onContentChange,
-                    supportingText = {
+            
+            ListItem(
+                headlineContent = {
+                    OutlinedTextField(
+                        value = item.content,
+                        enabled = item.enabled,
+                        label = { Text("规则") },
+                        maxLines = 8,
+                        onValueChange = onContentChange,
+                        shape = textFieldShape,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                },
+                supportingContent = {
+                    ProvideTextStyle(MaterialTheme.typography.bodySmall) {
                         RichText(
                             richTextState.elements,
-                            modifier = Modifier.padding(top = 4.dp),
+                            modifier = Modifier.padding(8.dp),
                         )
-                    },
-                    shape = textFieldShape,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+                    }
+                }
+            )
         }
     }
 }
@@ -81,7 +84,6 @@ fun PeerFilterEditItem(
 @Composable
 fun PeerFilterEditPane(
     state: PeerFilterSettingsState,
-    contentPadding: PaddingValues,
     showIpBlockingItem: Boolean,
     onClickIpBlockSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -89,18 +91,18 @@ fun PeerFilterEditPane(
     val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
 
     Column(
-        modifier = modifier
-            .padding(contentPadding)
-            .verticalScroll(rememberScrollState()),
+        modifier = modifier.verticalScroll(rememberScrollState()),
     ) {
-        Row(Modifier.padding(8.dp)) {
-            ProvideTextStyleContentColor(
-                MaterialTheme.typography.titleMedium,
-                MaterialTheme.colorScheme.primary,
-            ) {
-                Text("过滤规则")
+        ListItem(
+            headlineContent = {
+                ProvideTextStyleContentColor(
+                    MaterialTheme.typography.labelLarge,
+                    MaterialTheme.colorScheme.primary,
+                ) {
+                    Text("过滤规则")
+                }
             }
-        }
+        )
         PeerFilterEditItem(
             title = "过滤 IP 地址",
             editSupportingTextBBCode = """
@@ -142,20 +144,21 @@ fun PeerFilterEditPane(
         )
 
         if (showIpBlockingItem) {
-            Column(
-                modifier = Modifier.padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                ProvideTextStyleContentColor(
-                    MaterialTheme.typography.titleMedium,
-                    MaterialTheme.colorScheme.primary,
-                ) {
-                    Text("黑名单")
+            ListItem(
+                headlineContent = {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        ProvideTextStyleContentColor(
+                            MaterialTheme.typography.labelLarge,
+                            MaterialTheme.colorScheme.primary,
+                        ) {
+                            Text("黑名单")
+                        }
+                        ProvideTextStyleContentColor(MaterialTheme.typography.labelMedium) {
+                            Text("黑名单中的 Peer 总是被屏蔽，无论是否匹配过滤规则")
+                        }
+                    }
                 }
-                ProvideTextStyleContentColor(MaterialTheme.typography.bodyMedium) {
-                    Text("黑名单中的 Peer 总是被屏蔽，无论是否匹配过滤规则")
-                }
-            }
+            )
             ListItem(
                 headlineContent = { Text(text = "IP 黑名单设置", overflow = TextOverflow.Ellipsis) },
                 supportingContent = { Text("点击进入 IP 黑名单列表") },
@@ -169,13 +172,18 @@ fun PeerFilterEditPane(
             )
         }
 
-        Row(Modifier.align(Alignment.End).padding(8.dp)) {
-            ProvideTextStyleContentColor(
-                MaterialTheme.typography.labelMedium,
-                MaterialTheme.colorScheme.outline,
+        ListItem(headlineContent = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End
             ) {
-                Text("提示：修改自动保存")
+                ProvideTextStyleContentColor(
+                    MaterialTheme.typography.labelMedium,
+                    MaterialTheme.colorScheme.outline,
+                ) {
+                    Text("提示：修改自动保存")
+                }
             }
-        }
+        })
     }
 }
