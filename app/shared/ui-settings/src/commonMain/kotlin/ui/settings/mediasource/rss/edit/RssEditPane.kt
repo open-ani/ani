@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,8 +42,6 @@ import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
 @Composable
 fun RssEditPane(
     state: EditRssMediaSourceState,
-    onClickTest: () -> Unit,
-    showTestButton: Boolean,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     showDebugFields: Boolean = viewModel<SettingsViewModel> { SettingsViewModel() }.isInDebugMode,
@@ -158,17 +155,6 @@ fun RssEditPane(
                         Text("提示：修改自动保存")
                     }
                 }
-            }
-        }
-
-        if (showTestButton) {
-            FilledTonalButton(
-                onClick = onClickTest,
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-            ) {
-                Text("测试")
             }
         }
     }

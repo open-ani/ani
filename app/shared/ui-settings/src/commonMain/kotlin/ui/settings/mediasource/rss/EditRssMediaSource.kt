@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
@@ -139,6 +140,13 @@ fun EditRssMediaSourcePage(
                 navigationIcon = { TopAppBarGoBackButton() },
                 colors = AniThemeDefaults.topAppBarColors(),
                 windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                actions = {
+                    if (navigator.scaffoldValue.primary == PaneAdaptedValue.Hidden) {
+                        TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
+                            Text("测试")
+                        }
+                    }
+                },
             )
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
@@ -154,8 +162,6 @@ fun EditRssMediaSourcePage(
                 AnimatedPane1 {
                     RssEditPane(
                         state = state,
-                        onClickTest = { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) },
-                        showTestButton = navigator.scaffoldValue.primary == PaneAdaptedValue.Hidden,
                         Modifier.fillMaxSize(),
                         contentPadding = paddingValues,
                     )
