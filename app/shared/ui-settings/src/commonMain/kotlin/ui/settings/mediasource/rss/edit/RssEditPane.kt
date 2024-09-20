@@ -34,9 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
-import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
 
@@ -45,7 +43,6 @@ fun RssEditPane(
     state: EditRssMediaSourceState,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    showDebugFields: Boolean = viewModel<SettingsViewModel> { SettingsViewModel() }.isInDebugMode,
     outlinedTextFieldShape: Shape = MediaSourceConfigurationDefaults.outlinedTextFieldShape
 ) {
     Column(
@@ -66,19 +63,6 @@ fun RssEditPane(
                 val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
 
                 Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                    if (showDebugFields) {
-                        OutlinedTextField(
-                            state.instanceId, { },
-                            Modifier
-                                .fillMaxWidth(),
-                            label = { Text("[debug] instanceId") },
-                            placeholder = { Text("设置显示在列表中的名称") },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            readOnly = true,
-                            shape = outlinedTextFieldShape,
-                        )
-                    }
-
                     OutlinedTextField(
                         state.displayName, { state.displayName = it },
                         Modifier
