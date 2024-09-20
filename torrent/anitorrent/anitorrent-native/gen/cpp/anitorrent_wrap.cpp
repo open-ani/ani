@@ -931,6 +931,68 @@ SWIGINTERN void std_vector_Sl_anilt_peer_info_t_Sg__doRemoveRange(std::vector< a
           throw std::out_of_range("vector index out of range");
         }
       }
+SWIGINTERN std::vector< char > *new_std_vector_Sl_char_Sg___SWIG_2(jint count,char const &value){
+        if (count < 0)
+          throw std::out_of_range("vector count must be positive");
+        return new std::vector< char >(static_cast<std::vector< char >::size_type>(count), value);
+      }
+SWIGINTERN jint std_vector_Sl_char_Sg__doCapacity(std::vector< char > *self){
+        return SWIG_VectorSize(self->capacity());
+      }
+SWIGINTERN void std_vector_Sl_char_Sg__doReserve(std::vector< char > *self,jint n){
+        if (n < 0)
+          throw std::out_of_range("vector reserve size must be positive");
+        self->reserve(n);
+      }
+SWIGINTERN jint std_vector_Sl_char_Sg__doSize(std::vector< char > const *self){
+        return SWIG_VectorSize(self->size());
+      }
+SWIGINTERN void std_vector_Sl_char_Sg__doAdd__SWIG_0(std::vector< char > *self,std::vector< char >::value_type const &x){
+        self->push_back(x);
+      }
+SWIGINTERN void std_vector_Sl_char_Sg__doAdd__SWIG_1(std::vector< char > *self,jint index,std::vector< char >::value_type const &x){
+        jint size = static_cast<jint>(self->size());
+        if (0 <= index && index <= size) {
+          self->insert(self->begin() + index, x);
+        } else {
+          throw std::out_of_range("vector index out of range");
+        }
+      }
+SWIGINTERN std::vector< char >::value_type std_vector_Sl_char_Sg__doRemove(std::vector< char > *self,jint index){
+        jint size = static_cast<jint>(self->size());
+        if (0 <= index && index < size) {
+          char const old_value = (*self)[index];
+          self->erase(self->begin() + index);
+          return old_value;
+        } else {
+          throw std::out_of_range("vector index out of range");
+        }
+      }
+SWIGINTERN std::vector< char >::value_type const &std_vector_Sl_char_Sg__doGet(std::vector< char > *self,jint index){
+        jint size = static_cast<jint>(self->size());
+        if (index >= 0 && index < size)
+          return (*self)[index];
+        else
+          throw std::out_of_range("vector index out of range");
+      }
+SWIGINTERN std::vector< char >::value_type std_vector_Sl_char_Sg__doSet(std::vector< char > *self,jint index,std::vector< char >::value_type const &val){
+        jint size = static_cast<jint>(self->size());
+        if (index >= 0 && index < size) {
+          char const old_value = (*self)[index];
+          (*self)[index] = val;
+          return old_value;
+        }
+        else
+          throw std::out_of_range("vector index out of range");
+      }
+SWIGINTERN void std_vector_Sl_char_Sg__doRemoveRange(std::vector< char > *self,jint fromIndex,jint toIndex){
+        jint size = static_cast<jint>(self->size());
+        if (0 <= fromIndex && fromIndex <= toIndex && toIndex <= size) {
+          self->erase(self->begin() + fromIndex, self->begin() + toIndex);
+        } else {
+          throw std::out_of_range("vector index out of range");
+        }
+      }
 
 #include <stdint.h>		// Use the C99 official header
 
@@ -2301,6 +2363,284 @@ SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitor
   (void)jenv;
   (void)jcls;
   arg1 = *(std::vector< anilt::peer_info_t > **)&jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1CharVector_1_1SWIG_10(JNIEnv *jenv, jclass jcls) {
+  jlong jresult = 0 ;
+  std::vector< char > *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (std::vector< char > *)new std::vector< char >();
+  *(std::vector< char > **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1CharVector_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  std::vector< char > *arg1 = 0 ;
+  std::vector< char > *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1;
+  if (!arg1) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "std::vector< char > const & is null");
+    return 0;
+  } 
+  result = (std::vector< char > *)new std::vector< char >((std::vector< char > const &)*arg1);
+  *(std::vector< char > **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jboolean JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1isEmpty(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jboolean jresult = 0 ;
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  result = (bool)((std::vector< char > const *)arg1)->empty();
+  jresult = (jboolean)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1clear(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  (arg1)->clear();
+}
+
+
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_new_1CharVector_1_1SWIG_12(JNIEnv *jenv, jclass jcls, jint jarg1, jchar jarg2) {
+  jlong jresult = 0 ;
+  jint arg1 ;
+  char *arg2 = 0 ;
+  char temp2 ;
+  std::vector< char > *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = jarg1; 
+  temp2 = (char)jarg2; 
+  arg2 = &temp2; 
+  try {
+    result = (std::vector< char > *)new_std_vector_Sl_char_Sg___SWIG_2(SWIG_STD_MOVE(arg1),(char const &)*arg2);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  *(std::vector< char > **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doCapacity(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  try {
+    result = std_vector_Sl_char_Sg__doCapacity(arg1);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doReserve(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  arg2 = jarg2; 
+  try {
+    std_vector_Sl_char_Sg__doReserve(arg1,SWIG_STD_MOVE(arg2));
+  } catch(std::length_error &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  }
+}
+
+
+SWIGEXPORT jint JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doSize(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  try {
+    result = std_vector_Sl_char_Sg__doSize((std::vector< char > const *)arg1);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doAdd_1_1SWIG_10(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jchar jarg2) {
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  std::vector< char >::value_type *arg2 = 0 ;
+  std::vector< char >::value_type temp2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  temp2 = (std::vector< char >::value_type)jarg2; 
+  arg2 = &temp2; 
+  std_vector_Sl_char_Sg__doAdd__SWIG_0(arg1,(char const &)*arg2);
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doAdd_1_1SWIG_11(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jchar jarg3) {
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint arg2 ;
+  std::vector< char >::value_type *arg3 = 0 ;
+  std::vector< char >::value_type temp3 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  arg2 = jarg2; 
+  temp3 = (std::vector< char >::value_type)jarg3; 
+  arg3 = &temp3; 
+  try {
+    std_vector_Sl_char_Sg__doAdd__SWIG_1(arg1,SWIG_STD_MOVE(arg2),(char const &)*arg3);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  }
+}
+
+
+SWIGEXPORT jchar JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doRemove(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  jchar jresult = 0 ;
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint arg2 ;
+  std::vector< char >::value_type result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  arg2 = jarg2; 
+  try {
+    result = (std::vector< char >::value_type)std_vector_Sl_char_Sg__doRemove(arg1,SWIG_STD_MOVE(arg2));
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = (jchar)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jchar JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doGet(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+  jchar jresult = 0 ;
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint arg2 ;
+  std::vector< char >::value_type *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  arg2 = jarg2; 
+  try {
+    result = (std::vector< char >::value_type *) &std_vector_Sl_char_Sg__doGet(arg1,SWIG_STD_MOVE(arg2));
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = (jchar)*result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jchar JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doSet(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jchar jarg3) {
+  jchar jresult = 0 ;
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint arg2 ;
+  std::vector< char >::value_type *arg3 = 0 ;
+  std::vector< char >::value_type temp3 ;
+  std::vector< char >::value_type result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  arg2 = jarg2; 
+  temp3 = (std::vector< char >::value_type)jarg3; 
+  arg3 = &temp3; 
+  try {
+    result = (std::vector< char >::value_type)std_vector_Sl_char_Sg__doSet(arg1,SWIG_STD_MOVE(arg2),(char const &)*arg3);
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return 0;
+  }
+  jresult = (jchar)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_CharVector_1doRemoveRange(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  jint arg2 ;
+  jint arg3 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(std::vector< char > **)&jarg1; 
+  arg2 = jarg2; 
+  arg3 = jarg3; 
+  try {
+    std_vector_Sl_char_Sg__doRemoveRange(arg1,SWIG_STD_MOVE(arg2),SWIG_STD_MOVE(arg3));
+  } catch(std::out_of_range &_e) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, (&_e)->what());
+    return ;
+  }
+}
+
+
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_delete_1CharVector(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  std::vector< char > *arg1 = (std::vector< char > *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(std::vector< char > **)&jarg1; 
   delete arg1;
 }
 
@@ -4142,38 +4482,31 @@ SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anito
 }
 
 
-SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1peer_1id_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2) {
+SWIGEXPORT void JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1peer_1id_1set(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
   anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
-  std::string *arg2 = 0 ;
+  std::vector< char > *arg2 = (std::vector< char > *) 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
+  (void)jarg2_;
   arg1 = *(anilt::peer_info_t **)&jarg1; 
-  if(!jarg2) {
-    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
-    return ;
-  }
-  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
-  if (!arg2_pstr) return ;
-  std::string arg2_str(arg2_pstr);
-  arg2 = &arg2_str;
-  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  arg2 = *(std::vector< char > **)&jarg2; 
   if (arg1) (arg1)->peer_id = *arg2;
 }
 
 
-SWIGEXPORT jstring JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1peer_1id_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
-  jstring jresult = 0 ;
+SWIGEXPORT jlong JNICALL Java_me_him188_ani_app_torrent_anitorrent_binding_anitorrentJNI_peer_1info_1t_1peer_1id_1get(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
   anilt::peer_info_t *arg1 = (anilt::peer_info_t *) 0 ;
-  std::string *result = 0 ;
+  std::vector< char > *result = 0 ;
   
   (void)jenv;
   (void)jcls;
   (void)jarg1_;
   arg1 = *(anilt::peer_info_t **)&jarg1; 
-  result = (std::string *) & ((arg1)->peer_id);
-  jresult = jenv->NewStringUTF(result->c_str()); 
+  result = (std::vector< char > *)& ((arg1)->peer_id);
+  *(std::vector< char > **)&jresult = result; 
   return jresult;
 }
 

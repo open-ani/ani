@@ -17,6 +17,7 @@
 %feature("director") peer_filter_t;
 
 %template(PeerInfoList) std::vector<anilt::peer_info_t>;
+%template(CharVector) std::vector<char>;
 
 %include stdint.i
 %include "arrays_java.i"

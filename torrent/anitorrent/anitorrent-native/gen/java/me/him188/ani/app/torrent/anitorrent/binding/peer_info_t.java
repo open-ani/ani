@@ -57,12 +57,13 @@ public class peer_info_t {
     return anitorrentJNI.peer_info_t_torrent_handle_id_get(swigCPtr, this);
   }
 
-  public void setPeer_id(String value) {
-    anitorrentJNI.peer_info_t_peer_id_set(swigCPtr, this, value);
+  public void setPeer_id(CharVector value) {
+    anitorrentJNI.peer_info_t_peer_id_set(swigCPtr, this, CharVector.getCPtr(value), value);
   }
 
-  public String getPeer_id() {
-    return anitorrentJNI.peer_info_t_peer_id_get(swigCPtr, this);
+  public CharVector getPeer_id() {
+    long cPtr = anitorrentJNI.peer_info_t_peer_id_get(swigCPtr, this);
+    return (cPtr == 0) ? null : new CharVector(cPtr, false);
   }
 
   public void setClient(String value) {

@@ -10,7 +10,7 @@ namespace anilt {
     struct peer_info_t final {
         uint32_t torrent_handle_id = 0;
 
-        std::string peer_id{};
+        std::vector<char> peer_id{};
         std::string client{};
         std::string ip_addr{};
         unsigned short ip_port = 0;
