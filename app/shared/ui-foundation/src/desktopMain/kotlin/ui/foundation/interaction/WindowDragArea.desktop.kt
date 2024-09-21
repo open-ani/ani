@@ -11,13 +11,17 @@ package me.him188.ani.app.ui.foundation.interaction
 
 import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 
 @Composable
-actual inline fun WindowDragArea(crossinline content: @Composable () -> Unit) {
+actual inline fun WindowDragArea(
+    modifier: Modifier,
+    crossinline content: @Composable () -> Unit
+) {
     val windowScope = LocalPlatformWindow.current.windowScope
     windowScope?.run {
-        WindowDraggableArea {
+        WindowDraggableArea(modifier) {
             content()
         }
     } ?: content()

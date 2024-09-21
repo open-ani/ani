@@ -10,8 +10,10 @@
 package me.him188.ani.app.ui.foundation.interaction
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
 @Composable
 expect inline fun WindowDragArea(
-    crossinline content: @Composable () -> Unit
+    modifier: Modifier = Modifier,
+    crossinline content: @Composable () -> Unit = {}
 )
