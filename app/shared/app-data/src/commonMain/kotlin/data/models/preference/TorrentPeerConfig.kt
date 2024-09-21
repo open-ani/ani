@@ -32,7 +32,7 @@ data class TorrentPeerConfig(
      * [PeerInfo.id] 一般是以 ASCII `-xxxxxx-` 开头的 ByteArray. 例如 Ani 的是 `-aniLT3000-`.
      * 如果 Peer 连接的客户端不是以此开头, 可以将其视为异常客户端.
      */
-    val blockUnexpectedId: Boolean = false,
+    val blockInvalidId: Boolean = true,
 
     @Suppress("PropertyName")
     @Transient val _placeholder: Int = 0,

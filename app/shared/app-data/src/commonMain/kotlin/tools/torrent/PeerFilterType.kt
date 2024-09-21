@@ -18,14 +18,14 @@ class PeerClientFilter(patternRegex: String) : PeerFilter {
     }
 }
 
-object PeerUnexpectedIdFilter : PeerFilter {
+object PeerInvalidIdFilter : PeerFilter {
     private const val FINGERPRINT_TRIM = '-'
             
     override fun onFilter(info: PeerInfo): Boolean {
         val idArr = info.id
         // id 开头不是 fingerprint 就拒绝连接 
         if (idArr[0] != FINGERPRINT_TRIM) return true
-        if (!idArr.drop(1).contains(FINGERPRINT_TRIM)) return true
+        if (idArr.lastIndexOf(FINGERPRINT_TRIM) == 0) return true
         return false
     }
 }
@@ -33,7 +33,7 @@ object PeerUnexpectedIdFilter : PeerFilter {
 class PeerIdFilter(patternRegex: String) : PeerFilter {
     private val regex = Regex(patternRegex)
     override fun onFilter(info: PeerInfo): Boolean {
-        val decoded = info.id.contentToString()
+        val decoded = info.id.joinToString("")
         return decoded.contains(regex)
     }
 }

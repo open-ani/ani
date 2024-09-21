@@ -164,8 +164,8 @@ fun PeerFilterEditPane(
                 )
                 SwitchItem(
                     title = "总是过滤异常指纹",
-                    enabled = state.blockUnexpectedId,
-                    onSwitchChange = { state.blockUnexpectedId = it },
+                    enabled = state.blockInvalidId,
+                    onSwitchChange = { state.blockInvalidId = it },
                     supportingTextBBCode = """
                         无论是否满足规则, 都会屏蔽指纹不符合 [code]-xxxxxx-[/code] 格式的客户端
                     """.trimIndent()

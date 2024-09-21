@@ -47,9 +47,8 @@ class PeerFilterSettingsState(
     )
     
     var idFilterEnabled by storage.prop(
-        get = { it.enableIdFilter }, 
-        // 启用的时候 blockUnexpectedId 一定默认不启用, 禁用的时候 blockUnexpectedId 一定被禁用.
-        copy = { copy(enableIdFilter = it, blockUnexpectedId = false) }, 
+        get = { it.enableIdFilter },
+        copy = { copy(enableIdFilter = it) }, 
         default = false
     )
     var idFilters by storage.prop(
@@ -57,7 +56,7 @@ class PeerFilterSettingsState(
         copy = { copy(idRegexFilters = it.split('\n')) },
         default = ""
     )
-    var blockUnexpectedId by storage.prop({ it.blockUnexpectedId }, { copy(blockUnexpectedId = it) }, false)
+    var blockInvalidId by storage.prop({ it.blockInvalidId }, { copy(blockInvalidId = it) }, false)
     
     var clientFilterEnabled by storage.prop({ it.enableClientFilter }, { copy(enableClientFilter = it) }, false)
     var clientFilters by storage.prop(
