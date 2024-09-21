@@ -275,6 +275,7 @@ object AniDesktop {
                     LocalPlatformWindow provides remember(window.windowHandle) {
                         PlatformWindow(
                             windowHandle = window.windowHandle,
+                            windowScope = this,
                         )
                     },
                     LocalOnBackPressedDispatcherOwner provides backPressedDispatcherOwner,

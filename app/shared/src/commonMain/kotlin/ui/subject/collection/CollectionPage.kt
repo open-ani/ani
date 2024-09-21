@@ -66,6 +66,7 @@ import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.LocalPlatform
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.PullToRefreshBox
@@ -121,43 +122,45 @@ fun CollectionPane(
         topBar = {
             val topAppBarColors = AniThemeDefaults.topAppBarColors()
             Column(modifier = Modifier.fillMaxWidth()) {
-                TopAppBar(
-                    title = { Text("我的追番") },
-                    modifier = Modifier,
-                    actions = {
-                        if (!showSessionErrorInList) {
-                            SessionTipsIcon(vm.authState)
-                        }
-
-                        if (showCacheButton) {
-                            TextButtonUpdateLogo()
-
-                            IconButton(onClickCaches) {
-                                Icon(Icons.Rounded.Download, "缓存管理")
+                WindowDragArea {
+                    TopAppBar(
+                        title = { Text("我的追番") },
+                        modifier = Modifier,
+                        actions = {
+                            if (!showSessionErrorInList) {
+                                SessionTipsIcon(vm.authState)
                             }
-                        }
 
-                        if (LocalPlatform.current.isDesktop()) {
-                            // PC 无法下拉刷新
-                            val refreshTasker = rememberUiMonoTasker()
-                            IconButton(
-                                {
-                                    val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
-                                    val collection = vm.collectionsByType(type)
-                                    if (!refreshTasker.isRunning) {
-                                        refreshTasker.launch {
-                                            collection.subjectCollectionColumnState.manualRefresh()
+                            if (showCacheButton) {
+                                TextButtonUpdateLogo()
+
+                                IconButton(onClickCaches) {
+                                    Icon(Icons.Rounded.Download, "缓存管理")
+                                }
+                            }
+
+                            if (LocalPlatform.current.isDesktop()) {
+                                // PC 无法下拉刷新
+                                val refreshTasker = rememberUiMonoTasker()
+                                IconButton(
+                                    {
+                                        val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
+                                        val collection = vm.collectionsByType(type)
+                                        if (!refreshTasker.isRunning) {
+                                            refreshTasker.launch {
+                                                collection.subjectCollectionColumnState.manualRefresh()
+                                            }
                                         }
-                                    }
-                                },
-                            ) {
-                                Icon(Icons.Rounded.Refresh, null)
+                                    },
+                                ) {
+                                    Icon(Icons.Rounded.Refresh, null)
+                                }
                             }
-                        }
-                    },
-                    colors = topAppBarColors,
-                    windowInsets = windowInsets.only(WindowInsetsSides.Top),
-                )
+                        },
+                        colors = topAppBarColors,
+                        windowInsets = windowInsets.only(WindowInsetsSides.Top),
+                    )
+                }
 
                 ScrollableTabRow(
                     selectedTabIndex = pagerState.currentPage,

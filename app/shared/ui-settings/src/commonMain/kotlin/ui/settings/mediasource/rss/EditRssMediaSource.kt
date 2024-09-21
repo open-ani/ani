@@ -48,6 +48,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.ThreePaneScaffoldValueConverter.ExtraPaneForNestedDetails
@@ -168,52 +169,54 @@ fun EditRssMediaSourcePage(
         modifier
             .fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    AnimatedContent(
-                        navigator.currentDestination?.pane,
-                        transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-                    ) {
-                        when (it) {
-                            ListDetailPaneScaffoldRole.List -> Text(state.displayName)
-                            ListDetailPaneScaffoldRole.Detail -> Text("测试数据源")
-                            ListDetailPaneScaffoldRole.Extra -> Text("详情")
-                            else -> Text(state.displayName)
+            WindowDragArea {
+                TopAppBar(
+                    title = {
+                        AnimatedContent(
+                            navigator.currentDestination?.pane,
+                            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+                        ) {
+                            when (it) {
+                                ListDetailPaneScaffoldRole.List -> Text(state.displayName)
+                                ListDetailPaneScaffoldRole.Detail -> Text("测试数据源")
+                                ListDetailPaneScaffoldRole.Extra -> Text("详情")
+                                else -> Text(state.displayName)
+                            }
                         }
-                    }
-                },
-                navigationIcon = { TopAppBarGoBackButton() },
-                colors = AniThemeDefaults.topAppBarColors(),
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                actions = {
-                    if (navigator.scaffoldValue[ListDetailPaneScaffoldRole.Detail] == PaneAdaptedValue.Hidden) {
-                        TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
-                            Text("测试")
+                    },
+                    navigationIcon = { TopAppBarGoBackButton() },
+                    colors = AniThemeDefaults.topAppBarColors(),
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                    actions = {
+                        if (navigator.scaffoldValue[ListDetailPaneScaffoldRole.Detail] == PaneAdaptedValue.Hidden) {
+                            TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
+                                Text("测试")
+                            }
                         }
-                    }
-                    Box {
-                        var showDropdown by remember { mutableStateOf(false) }
-                        IconButton({ showDropdown = true }) {
-                            Icon(Icons.Rounded.MoreVert, "更多")
+                        Box {
+                            var showDropdown by remember { mutableStateOf(false) }
+                            IconButton({ showDropdown = true }) {
+                                Icon(Icons.Rounded.MoreVert, "更多")
+                            }
+                            DropdownMenu(showDropdown, { showDropdown = false }) {
+                                MediaSourceConfigurationDefaults.DropdownMenuImport(
+                                    parseContent = { state.parseSerializedArguments(it) },
+                                    onImport = {
+                                        state.import(it)
+                                        showDropdown = false
+                                    },
+                                    enabled = !state.isLoading,
+                                )
+                                MediaSourceConfigurationDefaults.DropdownMenuExport(
+                                    encode = { state.serializeArguments() },
+                                    onDismissRequest = { showDropdown = false },
+                                    enabled = !state.isLoading,
+                                )
+                            }
                         }
-                        DropdownMenu(showDropdown, { showDropdown = false }) {
-                            MediaSourceConfigurationDefaults.DropdownMenuImport(
-                                parseContent = { state.parseSerializedArguments(it) },
-                                onImport = {
-                                    state.import(it)
-                                    showDropdown = false
-                                },
-                                enabled = !state.isLoading,
-                            )
-                            MediaSourceConfigurationDefaults.DropdownMenuExport(
-                                encode = { state.serializeArguments() },
-                                onDismissRequest = { showDropdown = false },
-                                enabled = !state.isLoading,
-                            )
-                        }
-                    }
-                },
-            )
+                    },
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

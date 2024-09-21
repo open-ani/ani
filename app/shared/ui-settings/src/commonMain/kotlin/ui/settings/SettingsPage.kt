@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.ui.foundation.LocalPlatform
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -82,16 +83,18 @@ fun SettingsPage(
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = { Text("设置") },
-                navigationIcon = {
-                    if (showBack) {
-                        TopAppBarGoBackButton()
-                    }
-                },
-                colors = appBarColors,
-                windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                TopAppBar(
+                    title = { Text("设置") },
+                    navigationIcon = {
+                        if (showBack) {
+                            TopAppBarGoBackButton()
+                        }
+                    },
+                    colors = appBarColors,
+                    windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                )
+            }
         },
         contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { topBarPaddings ->

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.him188.ani.app.ui.foundation.IconButton
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
@@ -75,46 +76,48 @@ fun PeerFilterSettingsPage(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { 
-                    if (inIpBlockListPane) {
-                        if (state.searchingBlockedIp) {
-                            val searchQuery by state.searchBlockedIpQuery.collectAsStateWithLifecycle("")
-                            TextField(
-                                value = searchQuery,
-                                onValueChange = { state.setSearchBlockIpQuery(it) },
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { keyboard?.hide() }),
-                                colors = TextFieldDefaults.colors(
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                modifier = Modifier.fillMaxSize().focusRequester(focusRequester)
-                            )
-                            SideEffect { focusRequester.requestFocus() }
+            WindowDragArea {
+                TopAppBar(
+                    title = {
+                        if (inIpBlockListPane) {
+                            if (state.searchingBlockedIp) {
+                                val searchQuery by state.searchBlockedIpQuery.collectAsStateWithLifecycle("")
+                                TextField(
+                                    value = searchQuery,
+                                    onValueChange = { state.setSearchBlockIpQuery(it) },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = { keyboard?.hide() }),
+                                    colors = TextFieldDefaults.colors(
+                                        unfocusedContainerColor = Color.Transparent,
+                                        focusedContainerColor = Color.Transparent,
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                    ),
+                                    modifier = Modifier.fillMaxSize().focusRequester(focusRequester),
+                                )
+                                SideEffect { focusRequester.requestFocus() }
+                            } else {
+                                if (!isDualPane) {
+                                    Text("管理 IP 黑名单")
+                                } else {
+                                    Text("Peer 过滤和屏蔽设置")
+                                }
+                            }
                         } else {
-                           if (!isDualPane) {
-                               Text("管理 IP 黑名单")
-                           } else {
-                               Text("Peer 过滤和屏蔽设置")
-                           }
+                            Text("Peer 过滤和屏蔽设置")
                         }
-                    } else {
-                        Text("Peer 过滤和屏蔽设置")
-                    }
-                },
-                navigationIcon = { TopAppBarGoBackButton() },
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                actions = {
-                    if (inIpBlockListPane && !state.searchingBlockedIp) {
-                        IconButton({ state.startSearchBlockedIp() }) {
-                            Icon(Icons.Default.Search, contentDescription = "搜索黑名单 IP 地址")
+                    },
+                    navigationIcon = { TopAppBarGoBackButton() },
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                    actions = {
+                        if (inIpBlockListPane && !state.searchingBlockedIp) {
+                            IconButton({ state.startSearchBlockedIp() }) {
+                                Icon(Icons.Default.Search, contentDescription = "搜索黑名单 IP 地址")
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
