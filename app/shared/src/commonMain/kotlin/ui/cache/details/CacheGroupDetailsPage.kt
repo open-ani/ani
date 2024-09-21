@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
@@ -36,6 +34,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.source.media.cache.MediaCacheManager
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.datasources.api.Media
@@ -97,16 +96,18 @@ fun MediaCacheDetailsPage(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = { Text("详情") },
-                navigationIcon = {
-                    if (allowBack) {
-                        TopAppBarGoBackButton()
-                    }
-                },
-                colors = AniThemeDefaults.topAppBarColors(),
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                TopAppBar(
+                    title = { Text("详情") },
+                    navigationIcon = {
+                        if (allowBack) {
+                            TopAppBarGoBackButton()
+                        }
+                    },
+                    colors = AniThemeDefaults.topAppBarColors(),
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

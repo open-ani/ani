@@ -68,6 +68,7 @@ import me.him188.ani.app.ui.cache.components.CacheGroupState
 import me.him188.ani.app.ui.cache.components.CacheManagementOverallStats
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -264,16 +265,18 @@ fun CacheManagementPage(
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = { Text("缓存管理") },
-                navigationIcon = {
-                    if (showBack) {
-                        TopAppBarGoBackButton()
-                    }
-                },
-                colors = appBarColors,
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                TopAppBar(
+                    title = { Text("缓存管理") },
+                    navigationIcon = {
+                        if (showBack) {
+                            TopAppBarGoBackButton()
+                        }
+                    },
+                    colors = appBarColors,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

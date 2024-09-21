@@ -49,6 +49,7 @@ import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
@@ -277,16 +278,18 @@ fun SubjectCachePageScaffold(
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = {
-                    title()
-                },
-                navigationIcon = {
-                    TopAppBarGoBackButton()
-                },
-                colors = appBarColors,
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                TopAppBar(
+                    title = {
+                        title()
+                    },
+                    navigationIcon = {
+                        TopAppBarGoBackButton()
+                    },
+                    colors = appBarColors,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

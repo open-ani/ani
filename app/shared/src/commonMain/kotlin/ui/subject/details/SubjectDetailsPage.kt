@@ -70,6 +70,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
@@ -245,33 +246,41 @@ fun SubjectDetailsPage(
     Scaffold(
         topBar = {
             if (showTopBar) {
-                Box {
-                    // 透明背景的, 总是显示
-                    TopAppBar(
-                        title = {},
-                        navigationIcon = { TopAppBarGoBackButton() },
-                        actions = {
-                            IconButton(onClickOpenExternal) {
-                                Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
-                            }
-                        },
-                        colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
-                        windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                    )
-
-                    // 有背景, 仅在滚动一段距离后使用
-                    AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                WindowDragArea {
+                    Box {
+                        // 透明背景的, 总是显示
                         TopAppBar(
-                            title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            title = {},
                             navigationIcon = { TopAppBarGoBackButton() },
                             actions = {
                                 IconButton(onClickOpenExternal) {
                                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                                 }
                             },
-                            colors = AniThemeDefaults.topAppBarColors(),
+                            colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
                             windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                         )
+
+                        // 有背景, 仅在滚动一段距离后使用
+                        AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                            TopAppBar(
+                                title = {
+                                    Text(
+                                        state.info.displayName,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
+                                navigationIcon = { TopAppBarGoBackButton() },
+                                actions = {
+                                    IconButton(onClickOpenExternal) {
+                                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+                                    }
+                                },
+                                colors = AniThemeDefaults.topAppBarColors(),
+                                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                            )
+                        }
                     }
                 }
             }
