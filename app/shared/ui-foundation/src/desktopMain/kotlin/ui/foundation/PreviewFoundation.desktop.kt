@@ -12,10 +12,8 @@ package me.him188.ani.app.ui.foundation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
@@ -40,13 +38,7 @@ internal actual inline fun ProvidePlatformCompositionLocalsForPreview(crossinlin
             )
         },
         LocalPlatformWindow provides remember {
-            PlatformWindow(
-                0L,
-                object : FrameWindowScope {
-                    override val window: ComposeWindow
-                        get() = TODO("Not yet implemented")
-                },
-            )
+            PlatformWindow(0L)
         },
     ) {
         content()

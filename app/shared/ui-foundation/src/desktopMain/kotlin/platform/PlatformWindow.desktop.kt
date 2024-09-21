@@ -8,7 +8,7 @@ import androidx.compose.ui.window.WindowScope
 
 actual open class PlatformWindow(
     val windowHandle: Long,
-    val windowScope: WindowScope
+    val windowScope: WindowScope? = null
 ) {
     internal var savedWindowState: SavedWindowState? = null
 

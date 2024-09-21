@@ -14,9 +14,11 @@ import androidx.compose.runtime.Composable
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 
 @Composable
-actual fun WindowDragArea(content: @Composable () -> Unit) {
+actual inline fun WindowDragArea(crossinline content: @Composable () -> Unit) {
     val windowScope = LocalPlatformWindow.current.windowScope
-    windowScope.WindowDraggableArea {
-        content()
-    }
+    windowScope?.run {
+        WindowDraggableArea {
+            content()
+        }
+    } ?: content()
 }
