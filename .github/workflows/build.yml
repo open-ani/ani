@@ -162,7 +162,7 @@ jobs:
       - name: Explicitly generate Compose resources
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ matrix.uploadApk }}
         name: Prepare signing key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
