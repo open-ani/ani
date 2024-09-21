@@ -9,7 +9,6 @@
 
 package me.him188.ani.app.ui.settings.tabs.media.torrent.peer
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,17 +20,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
-
-@Immutable
-data class PeerFilterItemState(
-    val enabled: Boolean,
-    val content: String
-) {
-    companion object {
-        @Stable
-        val Default = PeerFilterItemState(false, "")
-    }
-}
 
 @Stable
 class PeerFilterSettingsState(
@@ -58,12 +46,17 @@ class PeerFilterSettingsState(
         default = ""
     )
     
-    var idFilterEnabled by storage.prop({ it.enableIdFilter }, { copy(enableIdFilter = it) }, false)
+    var idFilterEnabled by storage.prop(
+        get = { it.enableIdFilter },
+        copy = { copy(enableIdFilter = it) }, 
+        default = false
+    )
     var idFilters by storage.prop(
         get = { it.idRegexFilters.joinToString("\n") },
         copy = { copy(idRegexFilters = it.split('\n')) },
         default = ""
     )
+    var blockInvalidId by storage.prop({ it.blockInvalidId }, { copy(blockInvalidId = it) }, false)
     
     var clientFilterEnabled by storage.prop({ it.enableClientFilter }, { copy(enableClientFilter = it) }, false)
     var clientFilters by storage.prop(
