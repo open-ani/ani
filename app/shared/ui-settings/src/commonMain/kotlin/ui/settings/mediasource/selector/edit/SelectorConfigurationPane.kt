@@ -259,6 +259,7 @@ private fun SubjectChannelSelectionButtonRow(
         @Composable
         fun Btn(
             id: SelectorFormatId, index: Int,
+            enabled: Boolean = true,
             label: @Composable () -> Unit,
         ) {
             SegmentedButton(
@@ -267,11 +268,15 @@ private fun SubjectChannelSelectionButtonRow(
                 SegmentedButtonDefaults.itemShape(index, state.allChannelFormats.size),
                 icon = { SegmentedButtonDefaults.Icon(state.channelFormatId == id) },
                 label = label,
+                enabled = enabled,
             )
         }
 
         for ((index, selectorChannelFormat) in state.allChannelFormats.withIndex()) {
-            Btn(selectorChannelFormat.id, index) {
+            Btn(
+                selectorChannelFormat.id, index,
+                enabled = selectorChannelFormat == SelectorChannelFormatNoChannel,
+            ) {
                 Text(
                     when (selectorChannelFormat) { // type-safe to handle all formats
                         SelectorChannelFormatNoChannel -> "不区分线路"

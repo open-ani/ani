@@ -34,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
@@ -47,13 +46,13 @@ import me.him188.ani.app.ui.foundation.layout.isWidthCompact
 import me.him188.ani.app.ui.foundation.layout.materialWindowMarginPadding
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigState
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationPane
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneDefaults
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneLayout
-import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneRoutes
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodeState
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorTestAndEpisodePane
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
@@ -123,20 +122,21 @@ fun EditSelectorMediaSourcePage(
     navigator: ThreePaneScaffoldNavigator<Nothing> = rememberListDetailPaneScaffoldNavigator(),
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val nestedNav = rememberNavController()
     val episodePaneLayout = SelectorEpisodePaneLayout.calculate(navigator.scaffoldValue)
     val testConnectedScrollState = rememberConnectedScrollState()
     Scaffold(
         modifier,
         topBar = {
             WindowDragArea {
-                if (episodePaneLayout.showTopBarInScaffold) {
-                    SelectorEpisodePaneDefaults.TopAppBar(state.episodeState)
+                val viewingItem = state.viewingItem
+                if (viewingItem != null && episodePaneLayout.showTopBarInScaffold) {
+                    SelectorEpisodePaneDefaults.TopAppBar(
+                        state.episodeState,
+                        windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                    )
                 } else {
                     TopAppBar(
                         title = {
-                            nestedNav.navigate(SelectorEpisodePaneRoutes.EPISODE)
-                            val viewingItem = state.viewingItem
                             if (viewingItem != null) {
                                 Text(viewingItem.name)
                             } else {
@@ -152,6 +152,7 @@ fun EditSelectorMediaSourcePage(
                             }
                         },
                         windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                        colors = AniThemeDefaults.topAppBarColors(),
                     )
                 }
             }
@@ -188,12 +189,11 @@ fun EditSelectorMediaSourcePage(
             detailPane = {
                 AnimatedPane1 {
                     SelectorTestAndEpisodePane(
-                        state,
-                        episodePaneLayout,
-                        Modifier.consumeWindowInsets(paddingValues),
-                        nestedNav,
-                        paddingValues,
-                        testConnectedScrollState,
+                        state = state,
+                        layout = episodePaneLayout,
+                        modifier = Modifier.consumeWindowInsets(paddingValues),
+                        contentPadding = paddingValues,
+                        testConnectedScrollState = testConnectedScrollState,
                     )
                 }
             },

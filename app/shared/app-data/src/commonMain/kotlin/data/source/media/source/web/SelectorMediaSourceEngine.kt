@@ -47,11 +47,12 @@ import me.him188.ani.utils.xml.Xml
 
 data class SelectorSearchQuery(
     val subjectName: String,
+    val allSubjectNames: Set<String>,
     val episodeSort: EpisodeSort,
 )
 
 fun SelectorSearchQuery.toFilterContext() = MediaListFilterContext(
-    subjectNames = setOf(subjectName),
+    subjectNames = allSubjectNames,
     episodeSort = episodeSort,
 )
 
@@ -117,7 +118,16 @@ abstract class SelectorMediaSourceEngine {
 
     suspend fun searchEpisodes(
         subjectDetailsPageUrl: String,
-    ): ApiResponse<Document> = doHttpGet(subjectDetailsPageUrl)
+    ): ApiResponse<Document?> = try {
+        doHttpGet(subjectDetailsPageUrl)
+    } catch (e: ClientRequestException) {
+        e.response.status.let {
+            if (it == HttpStatusCode.NotFound) {
+                return ApiResponse.success(null)
+            }
+            throw e
+        }
+    }
 
     /**
      * @return `null` if config is invalid
@@ -231,7 +241,7 @@ internal fun SelectorSearchConfig.createFiltersForSubject() = buildList {
 }
 
 internal fun SelectorSearchConfig.createFiltersForEpisode() = buildList {
-    addAll(createFiltersForSubject())
+    // 不使用 filterBySubjectName, 因为 web 的剧集名称通常为 "第x集", 不包含 subject
     if (filterByEpisodeSort) add(MediaListFilters.ContainsEpisodeSort)
 }
 

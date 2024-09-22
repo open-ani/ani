@@ -40,7 +40,11 @@ class SelectorTestState(
         if (searchKeyword.isBlank() || sort.isBlank()) {
             null
         } else {
-            SelectorSearchQuery(subjectName = searchKeyword, episodeSort = EpisodeSort(sort))
+            SelectorSearchQuery(
+                subjectName = searchKeyword,
+                episodeSort = EpisodeSort(sort),
+                allSubjectNames = setOf(searchKeyword),
+            )
         }
     }
 
@@ -126,11 +130,15 @@ class SelectorTestState(
                     null
                 } else {
                     try {
-                        engine.searchEpisodes(
-                            selectedSubject.subjectDetailsPageUrl,
+                        Result.success(
+                            engine.searchEpisodes(
+                                selectedSubject.subjectDetailsPageUrl,
+                            ),
                         )
                     } catch (e: CancellationException) {
                         throw e
+                    } catch (e: Throwable) {
+                        Result.failure(e)
                     }
                 }
             }
@@ -155,23 +163,28 @@ class SelectorTestState(
             }
 
             else -> {
-                convertEpisodeResult(
-                    subjectDetailsPageDocument,
-                    searchConfig,
-                    queryState,
+                subjectDetailsPageDocument.fold(
+                    onSuccess = { document ->
+                        convertEpisodeResult(document, searchConfig, queryState)
+                    },
+                    onFailure = {
+                        SelectorTestEpisodeListResult.UnknownError(it)
+                    },
                 )
             }
         }
     }
 
     private fun convertEpisodeResult(
-        res: ApiResponse<Document>,
+        res: ApiResponse<Document?>,
         config: SelectorSearchConfig,
         query: SelectorSearchQuery,
     ): SelectorTestEpisodeListResult {
         return res.fold(
             onSuccess = { document ->
                 try {
+                    document ?: return SelectorTestEpisodeListResult.Success(null, emptyList())
+
                     val episodeList = engine.selectEpisodes(document, config)
                         ?: return SelectorTestEpisodeListResult.InvalidConfig
                     SelectorTestEpisodeListResult.Success(

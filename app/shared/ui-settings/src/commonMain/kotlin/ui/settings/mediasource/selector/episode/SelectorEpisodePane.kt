@@ -159,9 +159,13 @@ fun SelectorTestAndEpisodePane(
         LaunchedEffect(state) {
             snapshotFlow { state.viewingItem }.collect { value ->
                 if (value == null) {
-                    nestedNav.navigate(SelectorEpisodePaneRoutes.TEST)
+                    nestedNav.navigate(SelectorEpisodePaneRoutes.TEST) {
+                        launchSingleTop = true
+                    }
                 } else {
-                    nestedNav.navigate(SelectorEpisodePaneRoutes.EPISODE)
+                    nestedNav.navigate(SelectorEpisodePaneRoutes.EPISODE) {
+                        launchSingleTop = true
+                    }
                 }
             }
         }

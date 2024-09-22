@@ -11,6 +11,7 @@ package me.him188.ani.app.data.source.media.source.web
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import io.ktor.http.URLBuilder
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
@@ -59,7 +60,24 @@ data class SelectorSearchConfig(
     val matchVideo: MatchVideoConfig = MatchVideoConfig(),
 ) { // TODO: add Engine version capabilities
     val baseUrl by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        searchUrl.substringBeforeLast("/")
+        kotlin.runCatching {
+            URLBuilder(searchUrl).apply {
+                pathSegments = emptyList()
+                parameters.clear()
+            }.toString()
+        }.getOrElse {
+            val schemaIndex = searchUrl.indexOf("//")
+            if (schemaIndex == -1) {
+                searchUrl.removeSuffix("/")
+            } else {
+                val slashIndex = searchUrl.indexOf('/', startIndex = schemaIndex + 2)
+                if (slashIndex == -1) {
+                    searchUrl.removeSuffix("/")
+                } else {
+                    searchUrl.substring(0, slashIndex)
+                }
+            }
+        }
     }
 
     @Serializable

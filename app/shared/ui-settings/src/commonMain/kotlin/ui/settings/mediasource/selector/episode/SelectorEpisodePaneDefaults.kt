@@ -9,10 +9,21 @@
 
 package me.him188.ani.app.ui.settings.mediasource.selector.episode
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +31,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.mediasource.RefreshIndicationDefaults
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.MatchVideoSection
@@ -41,7 +54,7 @@ object SelectorEpisodePaneDefaults {
             title = {
                 Row(
                     verticalAlignment = Alignment.Companion.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(state.episodeName, style = LocalTextStyle.current)
                     RefreshIndicationDefaults.RefreshIconButton(
@@ -55,11 +68,22 @@ object SelectorEpisodePaneDefaults {
             },
             actions = {
                 val uriHandler = LocalUriHandler.current
-                IconButton({ uriHandler.openUri(state.episodeUrl) }) {
-                    Icon(Icons.Rounded.ArrowOutward, "打开原始链接 ${state.episodeName}")
+                val toaster = LocalToaster.current
+                if (state.episodeUrl.isNotBlank() && state.episodeUrl.startsWith("http")) {
+                    IconButton(
+                        {
+                            try {
+                                uriHandler.openUri(state.episodeUrl)
+                            } catch (e: Throwable) {
+                                toaster.toast("无法打开链接")
+                            }
+                        },
+                    ) {
+                        Icon(Icons.Rounded.ArrowOutward, "打开原始链接 ${state.episodeName}")
+                    }
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            colors = AniThemeDefaults.topAppBarColors(),
             modifier = modifier,
             windowInsets = windowInsets,
         )
