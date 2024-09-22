@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 OpenAni and contributors.
+ * Copyright (C) 2024 OpenAni and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
@@ -28,7 +28,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.io.files.Path
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
@@ -66,9 +65,10 @@ import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.SystemCacheDir
 import me.him188.ani.utils.io.SystemDocumentDir
 import me.him188.ani.utils.io.SystemPath
-import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.createDirectories
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.context.startKoin
@@ -81,14 +81,14 @@ fun MainViewController(): UIViewController {
 
     val context = IosContext(
         IosContextFiles(
-            cacheDir = Path(SystemDocumentDir).resolve("cache").inSystem,
-            dataDir = Path(SystemDocumentDir).resolve("data").inSystem,
+            cacheDir = SystemCacheDir.apply { createDirectories() },
+            dataDir = SystemDocumentDir.apply { createDirectories() },
         ),
-    ) // TODO IOS
+    )
 
     val koin = startKoin {
         modules(getCommonKoinModule({ context }, scope))
-        modules(getIosModules(Path(SystemDocumentDir).resolve("torrent").inSystem, scope)) // TODO IOS
+        modules(getIosModules(SystemDocumentDir.resolve("torrent"), scope))
     }.startCommonKoinModule(scope).koin
 
     koin.get<TorrentManager>() // start sharing, connect to DHT now
