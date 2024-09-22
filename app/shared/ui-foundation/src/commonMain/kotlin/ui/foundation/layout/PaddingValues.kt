@@ -35,15 +35,27 @@ private class OnlyPaddingValues(
     }
 
     override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp {
-        if (sides.hasAny(PaddingValuesSides.Left)) {
-            return delegate.calculateLeftPadding(layoutDirection)
+        if (layoutDirection == LayoutDirection.Ltr) {
+            if (sides.hasAny(PaddingValuesSides.AllowLeftInLtr)) {
+                return delegate.calculateLeftPadding(layoutDirection)
+            }
+        } else {
+            if (sides.hasAny(PaddingValuesSides.AllowLeftInRtl)) {
+                return delegate.calculateLeftPadding(layoutDirection)
+            }
         }
         return 0.dp
     }
 
     override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp {
-        if (sides.hasAny(PaddingValuesSides.Right)) {
-            return delegate.calculateRightPadding(layoutDirection)
+        if (layoutDirection == LayoutDirection.Ltr) {
+            if (sides.hasAny(PaddingValuesSides.AllowRightInLtr)) {
+                return delegate.calculateLeftPadding(layoutDirection)
+            }
+        } else {
+            if (sides.hasAny(PaddingValuesSides.AllowRightInRtl)) {
+                return delegate.calculateLeftPadding(layoutDirection)
+            }
         }
         return 0.dp
     }
