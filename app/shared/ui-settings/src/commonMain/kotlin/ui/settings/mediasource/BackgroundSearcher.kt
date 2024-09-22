@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher.RestartSearchScope
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -83,15 +84,20 @@ abstract class BackgroundSearcher<TestData, TestResult>(
      * 在 UI 调用, 当测试数据变化时重新搜索
      */
     suspend fun observeChangeLoop() {
-        withContext(Dispatchers.Main.immediate) {
-            while (true) {
-                snapshotFlow { testDataState.value }
-                    .distinctUntilChanged()
-                    .debounce(0.5.seconds)
-                    .collect {
-                        restartSearch(it)
-                    }
+        try {
+            withContext(Dispatchers.Main.immediate) {
+                while (true) {
+                    snapshotFlow { testDataState.value }
+                        .distinctUntilChanged()
+                        .debounce(0.5.seconds)
+                        .collect {
+                            restartSearch(it)
+                        }
+                }
             }
+        } catch (e: CancellationException) {
+            searchTasker.cancel(kotlinx.coroutines.CancellationException("observeChangeLoop cancelled", e))
+            throw e
         }
     }
 
