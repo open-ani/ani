@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.app
 
 import androidx.compose.animation.AnimatedVisibility
@@ -290,21 +299,21 @@ private fun SettingsScope.SoftwareUpdateGroup(
             },
             title = { Text("更新类型") },
         )
-        HorizontalDividerItem()
-        SwitchItem(
-            updateSettings.inAppDownload,
-            { state.updateSettings.update(updateSettings.copy(inAppDownload = it)) },
-            title = { Text("应用内下载") },
-            description = {
-                if (updateSettings.inAppDownload) {
-                    Text("省去跳转浏览器步骤")
-                } else {
-                    Text("已关闭，将会跳转到外部浏览器完成下载")
-                }
-            },
-            enabled = updateSettings.autoCheckUpdate,
-        )
         if (!LocalPlatform.current.isIos()) {
+            HorizontalDividerItem()
+            SwitchItem(
+                updateSettings.inAppDownload,
+                { state.updateSettings.update(updateSettings.copy(inAppDownload = it)) },
+                title = { Text("应用内下载") },
+                description = {
+                    if (updateSettings.inAppDownload) {
+                        Text("省去跳转浏览器步骤")
+                    } else {
+                        Text("已关闭，将会跳转到外部浏览器完成下载")
+                    }
+                },
+                enabled = updateSettings.autoCheckUpdate,
+            )
             AnimatedVisibility(updateSettings.inAppDownload) {
                 Column {
                     HorizontalDividerItem()
