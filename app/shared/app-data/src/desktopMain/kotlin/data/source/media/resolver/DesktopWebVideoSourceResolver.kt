@@ -20,6 +20,7 @@ import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -33,23 +34,17 @@ import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.devtools.HasDevTools
-import org.openqa.selenium.devtools.NetworkInterceptor
+import org.openqa.selenium.devtools.v125.network.Network
 import org.openqa.selenium.edge.EdgeDriver
 import org.openqa.selenium.edge.EdgeOptions
 import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.remote.http.HttpHandler
-import org.openqa.selenium.remote.http.HttpMethod
-import org.openqa.selenium.remote.http.HttpResponse
-import org.openqa.selenium.remote.http.Route
 import org.openqa.selenium.safari.SafariDriver
 import org.openqa.selenium.safari.SafariOptions
-import org.openqa.selenium.support.events.EventFiringDecorator
-import org.openqa.selenium.support.events.WebDriverListener
-import java.lang.reflect.Method
+import java.util.Optional
+import java.util.function.Consumer
 import java.util.logging.Level
 
 /**
@@ -74,16 +69,31 @@ class DesktopWebVideoSourceResolver(
             val matchersFromMediaSource = matcherLoader.loadMatchers(media.mediaSourceId)
             val allMatchers = matchersFromMediaSource + matchersFromClasspath
 
+
             val context = WebVideoMatcherContext(media)
+            fun match(url: String): WebVideoMatcher.MatchResult? {
+                return allMatchers
+                    .asSequence()
+                    .map { matcher ->
+                        matcher.match(url, context)
+                    }
+                    .firstOrNull { it !is WebVideoMatcher.MatchResult.Continue }
+            }
+
             val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
                     resourceMatcher = {
-                        allMatchers.firstNotNullOfOrNull { matcher ->
-                            matcher.match(it, context)
+                        when (match(it)) {
+                            WebVideoMatcher.MatchResult.Continue -> Instruction.Continue
+                            WebVideoMatcher.MatchResult.LoadPage -> Instruction.LoadPage
+                            is WebVideoMatcher.MatchResult.Matched -> Instruction.FoundResource
+                            null -> Instruction.Continue
                         }
                     },
-                )
+                )?.let {
+                    (match(it.url) as? WebVideoMatcher.MatchResult.Matched)?.video
+                } ?: throw VideoSourceResolutionException(ResolutionFailures.NO_MATCHING_RESOURCE)
             return@withContext HttpStreamingVideoSource(
                 webVideo.m3u8Url,
                 media.originalTitle,
@@ -110,198 +120,183 @@ class SeleniumWebViewVideoExtractor(
         }
     }
 
-    private fun createChromeDriver(): ChromeDriver {
-        WebDriverManager.chromedriver().setup()
-        return ChromeDriver(
-            ChromeOptions().apply {
-                addArguments("--headless")
-                addArguments("--disable-gpu")
-//                addArguments("--log-level=3")
-                proxyConfig?.let {
-                    addArguments("--proxy-server=${it.url}")
-                }
-            },
-        )
-    }
 
-    private fun createEdgeDriver(): EdgeDriver {
-        WebDriverManager.edgedriver().setup()
-        return EdgeDriver(
-            EdgeOptions().apply {
-                addArguments("--headless")
-                addArguments("--disable-gpu")
-//                addArguments("--log-level=3")
-                proxyConfig?.let<ProxyConfig, Unit> {
-                    addArguments("--proxy-server=${it.url}")
-                }
-            },
-        )
-    }
-
-    /**
-     * SafariDriver does not support the use of proxies.
-     * https://github.com/SeleniumHQ/selenium/issues/10401#issuecomment-1054814944
-     */
-    private fun createSafariDriver(): SafariDriver {
-        WebDriverManager.safaridriver().setup()
-        return SafariDriver(
-            SafariOptions().apply {
-                proxyConfig?.let {
-                    // Causes an exception
-                    setCapability("proxy", it.url)
-                }
-            },
-        )
-    }
-
-    override suspend fun <R : Any> getVideoResourceUrl(
+    override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
-        resourceMatcher: (String) -> R?
-    ): R = getVideoResourceUrl(pageUrl, resourceMatcher)
+        resourceMatcher: (String) -> Instruction
+    ): WebResource? = getVideoResourceUrl(pageUrl, resourceMatcher)
 
-    suspend fun <R : Any> getVideoResourceUrl(
+    suspend fun getVideoResourceUrl(
         pageUrl: String,
-        resourceMatcher: (String) -> R?
-    ): R {
-        val deferred = CompletableDeferred<R>()
-
-        withContext(Dispatchers.IO) {
-            logger.info { "Starting Selenium with Edge to resolve video source from $pageUrl" }
-
-
-            val driver: RemoteWebDriver = kotlin.run {
-                val primaryDriverFunction = mapWebViewDriverToFunction(videoResolverSettings.driver)
-                val fallbackDriverFunctions = getFallbackDriverFunctions(primaryDriverFunction)
-
-                // Try user-set ones first, then fallback on the others
-                val driverCreationFunctions = listOfNotNull(primaryDriverFunction) + fallbackDriverFunctions
-                var successfulDriver: (() -> RemoteWebDriver)? = null
-
-                val driver = driverCreationFunctions
-                    .asSequence()
-                    .mapNotNull { func ->
-                        runCatching {
-                            func().also { successfulDriver = func }
-                        }.getOrNull()
-                    }
-                    .firstOrNull()
-                    ?: throw Exception("Failed to create a driver")
-
-                // If the rollback is successful, update the user settings
-                // Except Safari for now, because it does not support proxy settings and is not listed in the optional list
-                // updateDriverSettingsIfNeeded(successfulDriver)
-
-                driver
-            }
-
-            logger.info { "Using WebDriver: $driver" }
-
-            val listener = object : WebDriverListener {
-                override fun beforeAnyNavigationCall(
-                    navigation: WebDriver.Navigation?,
-                    method: Method?,
-                    args: Array<out Any>?
-                ) {
-                    logger.info { "Navigating to $pageUrl" }
-                }
-
-                override fun afterAnyNavigationCall(
-                    navigation: WebDriver.Navigation?,
-                    method: Method?,
-                    args: Array<out Any>?,
-                    result: Any?
-                ) {
-                    logger.info { "Navigated to $pageUrl" }
-                }
-
-                override fun beforeGet(driver: WebDriver?, url: String?) {
-                    if (driver == null || url == null) return
-                    resourceMatcher(url)?.let { matched ->
-                        logger.info { "Found video resource via beforeGet: $url" }
-                        deferred.complete(matched)
-                    }
-                }
-            }
-
-            check(driver is HasDevTools) {
-                "WebDriver must support DevTools"
-            }
-            val decoratedDriver: WebDriver =
-                EventFiringDecorator(WebDriver::class.java, listener).decorate(driver)
-            val emptyResponseHandler = HttpHandler { _ ->
-                HttpResponse().apply {
-                    status = 500
-                }
-            }
-
-            val route: Route = Route.matching { req ->
-                if (HttpMethod.GET != req.method) return@matching false
-
-                val url = req.uri
-                val matched = resourceMatcher(url)
-                if (matched != null) {
-                    logger.info { "Found video resource via network interception: $url" }
-                    deferred.complete(matched)
-                    return@matching true
-                }
-                false
-            }.to { emptyResponseHandler }
-
-            val interceptor = NetworkInterceptor(driver, route)
-            deferred.invokeOnCompletion {
-                @Suppress("OPT_IN_USAGE")
-                GlobalScope.launch {
-                    kotlin.runCatching {
-                        interceptor.close()
-                        decoratedDriver.quit()
-                    }.onFailure {
-                        logger.error(it) { "Failed to close selenium" }
-                    }
-                }
-            }
-
-
-            decoratedDriver.navigate().to(pageUrl)
-        }
+        resourceMatcher: (String) -> Instruction
+    ): WebResource? {
+        val deferred = CompletableDeferred<WebResource>()
 
         return try {
+            withContext(Dispatchers.IO) {
+                logger.info { "Starting Selenium to resolve video source from $pageUrl" }
+
+                val driver: RemoteWebDriver = createDriver()
+
+                /**
+                 * @return if the url has been consumed
+                 */
+                fun handleUrl(url: String): Boolean {
+                    val matched = resourceMatcher(url)
+                    when (matched) {
+                        Instruction.Continue -> return false
+                        Instruction.FoundResource -> {
+                            deferred.complete(WebResource(url))
+                            return true
+                        }
+
+                        Instruction.LoadPage -> {
+                            if (driver.currentUrl == url) return false // don't recurse
+                            logger.info { "WebView loading nested page: $url" }
+                            val script = "window.location.href = '$url'"
+                            logger.info { "WebView executing: $script" }
+                            driver.executeScript(script)
+//                        decoratedDriver.get(url)
+                            return false
+                        }
+                    }
+                }
+
+                logger.info { "Using WebDriver: $driver" }
+
+                check(driver is HasDevTools) {
+                    "WebDriver must support DevTools"
+                }
+                val devTools = driver.devTools
+                devTools.createSession()
+//            devTools.send(Network.enable(Optional.of(10000000), Optional.of(10000000), Optional.of(10000000)))
+                devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()))
+                devTools.addListener(
+                    Network.requestWillBeSent(),
+                    Consumer {
+                        val url = it.request.url
+                        if (handleUrl(url)) {
+                            logger.info { "Found video resource via devtools: $url" }
+                        }
+                    },
+                )
+                devTools.send(Network.clearBrowserCache())
+
+                deferred.invokeOnCompletion {
+                    @Suppress("OPT_IN_USAGE")
+                    GlobalScope.launch {
+                        kotlin.runCatching {
+                            driver.quit()
+                        }.onFailure {
+                            logger.error(it) { "Failed to close selenium" }
+                        }
+                    }
+                }
+
+                driver.get(pageUrl)
+            }
+
             deferred.await()
         } catch (e: Throwable) {
             if (deferred.isActive) {
-                deferred.cancel()
+                deferred.cancel() // will quit driver
             }
             throw e
         }
     }
 
+    private fun createDriver(): RemoteWebDriver {
+        return getPreferredDriverFactory()
+            .runCatching {
+                create(videoResolverSettings, proxyConfig)
+            }
+            .let {
+                // 依次尝试备用
+                var result = it
+                for (fallback in getFallbackDrivers()) {
+                    result = result.recoverCatching {
+                        fallback.create(videoResolverSettings, proxyConfig)
+                    }
+                }
+                result
+            }
+            .getOrThrow()
+        // TODO: update user settings if we fell back to a different driver
+    }
 
-    private fun mapWebViewDriverToFunction(driver: WebViewDriver): (() -> RemoteWebDriver)? {
-        return when (driver) {
-            WebViewDriver.CHROME -> ::createChromeDriver
-            WebViewDriver.EDGE -> ::createEdgeDriver
-            else -> null
+
+    private fun getPreferredDriverFactory(): WebDriverFactory {
+        return when (videoResolverSettings.driver) {
+            WebViewDriver.CHROME -> WebDriverFactory.Chrome
+            WebViewDriver.EDGE -> WebDriverFactory.Edge
+            else -> WebDriverFactory.Chrome
         }
     }
 
-    private fun getFallbackDriverFunctions(primaryDriverFunction: (() -> RemoteWebDriver)?): List<() -> RemoteWebDriver> {
+    private fun getFallbackDrivers(): List<WebDriverFactory> {
         return listOf(
-            ::createChromeDriver,
-            ::createEdgeDriver,
-//            ::createSafariDriver,
-        ).filter { it != primaryDriverFunction }
+            WebDriverFactory.Chrome,
+            WebDriverFactory.Edge,
+        )
+    }
+}
+
+private sealed interface WebDriverFactory {
+    fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver
+
+    data object Edge : WebDriverFactory {
+        override fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver {
+            WebDriverManager.edgedriver().setup()
+            return EdgeDriver(
+                EdgeOptions().apply {
+                    if (videoResolverSettings.headless) {
+                        addArguments("--headless")
+                        addArguments("--disable-gpu")
+                    }
+//                addArguments("--log-level=3")
+                    proxyConfig?.let {
+                        addArguments("--proxy-server=${it.url}")
+                    }
+                },
+            )
+        }
     }
 
-//    private fun updateDriverSettingsIfNeeded(successfulDriver: (() -> RemoteWebDriver)?, primaryDriverFunction: (() -> RemoteWebDriver)?) {
-//        if (successfulDriver != primaryDriverFunction) {
-//            val fallbackDriverType = when (successfulDriver) {
-//                ::createEdgeDriver -> WebViewDriver.EDGE
-//                ::createChromeDriver -> WebViewDriver.CHROME
-//                else -> null
-//            }
-//            if (fallbackDriverType != null) {
-//                // TODO: update driver settings
-//            }
-//        }
-//    }
+    data object Chrome : WebDriverFactory {
+        override fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver {
+            WebDriverManager.chromedriver().setup()
+            return ChromeDriver(
+                ChromeOptions().apply {
+                    if (videoResolverSettings.headless) {
+                        addArguments("--headless")
+                        addArguments("--disable-gpu")
+                    }
+//                addArguments("--log-level=3")
+                    proxyConfig?.let {
+                        addArguments("--proxy-server=${it.url}")
+                    }
+                },
+            )
+        }
+    }
+
+    @Deprecated("Safari is not supported")
+    data object Safari : WebDriverFactory {
+        /**
+         * SafariDriver does not support the use of proxies.
+         * https://github.com/SeleniumHQ/selenium/issues/10401#issuecomment-1054814944
+         */ // 而且还要求用户去设置里开启开发者模式
+        override fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver {
+            WebDriverManager.safaridriver().setup()
+            return SafariDriver(
+                SafariOptions().apply {
+                    proxyConfig?.let {
+                        // Causes an exception
+                        setCapability("proxy", it.url)
+                    }
+                },
+            )
+        }
+    }
 }

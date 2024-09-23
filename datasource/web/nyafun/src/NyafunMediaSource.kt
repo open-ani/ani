@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.datasources.nyafun
 
 import io.ktor.client.plugins.BrowserUserAgent
@@ -57,26 +66,28 @@ data class NyafunEp(
 )
 
 class NyafunWebVideoMatcher : WebVideoMatcher {
-    override fun match(url: String, context: WebVideoMatcherContext): WebVideo? {
-        if (context.media.mediaSourceId != NyafunMediaSource.ID) return null
+    override fun match(url: String, context: WebVideoMatcherContext): WebVideoMatcher.MatchResult {
+        if (context.media.mediaSourceId != NyafunMediaSource.ID) return WebVideoMatcher.MatchResult.Continue
         // we want https://vod.2bdm.cc/2024/04/gs8h/01.mp4?verify=1716675316-p3ScUWwQbHmMf5%2F63tM6%2FR2Ac8NydzYvECQ1XmTUhbU%3D
         if ((url.contains(".mp4") || url.contains(".mkv") || url.contains(".m3u8"))
             && url.contains("verify=")
         ) {
-            return WebVideo(
-                url,
-                mapOf(
-                    "User-Agent" to """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
-                    "Referer" to "https://play.nyafun.net/",
-                    "Sec-Ch-Ua-Mobile" to "?0",
-                    "Sec-Ch-Ua-Platform" to "macOS",
-                    "Sec-Fetch-Dest" to "video",
-                    "Sec-Fetch-Mode" to "no-cors",
-                    "Sec-Fetch-Site" to "cross-site",
+            return WebVideoMatcher.MatchResult.Matched(
+                WebVideo(
+                    url,
+                    mapOf(
+                        "User-Agent" to """Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3""",
+                        "Referer" to "https://play.nyafun.net/",
+                        "Sec-Ch-Ua-Mobile" to "?0",
+                        "Sec-Ch-Ua-Platform" to "macOS",
+                        "Sec-Fetch-Dest" to "video",
+                        "Sec-Fetch-Mode" to "no-cors",
+                        "Sec-Fetch-Site" to "cross-site",
+                    ),
                 ),
             )
         }
-        return null
+        return WebVideoMatcher.MatchResult.Continue
     }
 }
 

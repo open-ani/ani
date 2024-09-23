@@ -11,16 +11,35 @@ package me.him188.ani.app.data.source.media.resolver
 
 import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
+import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
 import me.him188.ani.app.platform.Context
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 interface WebViewVideoExtractor {
-    suspend fun <R : Any> getVideoResourceUrl(
+    sealed class Instruction {
+        /**
+         * 继续加载这个链接
+         */
+        data object LoadPage : Instruction()
+
+        /**
+         * 已经找到资源, 停止加载
+         */
+        data object FoundResource : Instruction()
+
+        data object Continue : Instruction()
+    }
+
+    suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
-        resourceMatcher: (String) -> R?,
-    ): R
+        resourceMatcher: (String) -> Instruction,
+    ): WebResource?
 }
+
+data class WebResource(
+    val url: String
+)
 
 expect fun WebViewVideoExtractor(
     proxyConfig: ProxyConfig?,
@@ -31,13 +50,15 @@ expect fun WebViewVideoExtractor(
 class TestWebViewVideoExtractor(
     private val urls: (pageUrl: String) -> List<String>,
 ) : WebViewVideoExtractor {
-    override suspend fun <R : Any> getVideoResourceUrl(
+    override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
-        resourceMatcher: (String) -> R?
-    ): R {
+        resourceMatcher: (String) -> Instruction,
+    ): WebResource {
         urls(pageUrl).forEach {
-            resourceMatcher(it)?.let { return it }
+            if (resourceMatcher(it) is Instruction.FoundResource) {
+                return WebResource(it)
+            }
         }
         throw IllegalStateException("No match found")
     }

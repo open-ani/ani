@@ -16,13 +16,24 @@ import me.him188.ani.datasources.api.source.MediaSource
 
 /**
  * 匹配 WebView 拦截到的资源.
- */
+ */ // see also: SelectorMediaSource
 fun interface WebVideoMatcher { // SPI service load
+    sealed class MatchResult {
+        data class Matched(
+            val video: WebVideo
+        ) : MatchResult()
+
+        data object Continue : MatchResult()
+        data object LoadPage : MatchResult()
+    }
+
     fun match(
         url: String,
         context: WebVideoMatcherContext
-    ): WebVideo?
+    ): MatchResult
 }
+
+val WebVideoMatcher.MatchResult.videoOrNull get() = (this as? WebVideoMatcher.MatchResult.Matched)?.video
 
 class WebVideoMatcherContext(
     val media: Media,

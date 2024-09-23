@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
@@ -30,10 +31,13 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.matcher.videoOrNull
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import java.io.ByteArrayInputStream
+import java.util.concurrent.ConcurrentSkipListSet
+
 
 /**
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
@@ -65,20 +69,36 @@ class AndroidWebVideoSourceResolver(
 
     override suspend fun resolve(media: Media, episode: EpisodeMetadata): VideoSource<*> {
         if (!supports(media)) throw UnsupportedMediaException(media)
-        val matcherContext = WebVideoMatcherContext(media)
 
         val matchersFromMediaSource = matcherLoader.loadMatchers(media.mediaSourceId)
         val allMatchers = matchersFromMediaSource + matchersFromClasspath
+
+        val context = WebVideoMatcherContext(media)
+        fun match(url: String): WebVideoMatcher.MatchResult? {
+            return allMatchers
+                .asSequence()
+                .map { matcher ->
+                    matcher.match(url, context)
+                }
+                .firstOrNull { it !is WebVideoMatcher.MatchResult.Continue }
+        }
 
         val webVideo = AndroidWebViewVideoExtractor().getVideoResourceUrl(
             attached ?: throw IllegalStateException("WebVideoSourceResolver not attached"),
             media.download.uri,
             resourceMatcher = {
-                allMatchers.firstNotNullOfOrNull { matcher ->
-                    matcher.match(it, matcherContext)
+                when (match(it)) {
+                    WebVideoMatcher.MatchResult.Continue -> Instruction.Continue
+                    WebVideoMatcher.MatchResult.LoadPage -> Instruction.LoadPage
+                    is WebVideoMatcher.MatchResult.Matched -> Instruction.FoundResource
+                    null -> Instruction.Continue
                 }
             },
-        )
+        )?.let { resource ->
+            allMatchers.firstNotNullOfOrNull { matcher ->
+                matcher.match(resource.url, context).videoOrNull
+            }
+        } ?: throw VideoSourceResolutionException(ResolutionFailures.NO_MATCHING_RESOURCE)
         return HttpStreamingVideoSource(webVideo.m3u8Url, media.originalTitle, webVideo = webVideo, media.extraFiles)
     }
 }
@@ -86,54 +106,64 @@ class AndroidWebVideoSourceResolver(
 class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
     private companion object {
         private val logger = logger<AndroidWebViewVideoExtractor>()
+        private val consoleMessageUrlRegex = Regex("""'https?://.*?'""")
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("SetJavaScriptEnabled")
-    override suspend fun <R : Any> getVideoResourceUrl(
+    override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
-        resourceMatcher: (String) -> R?,
-    ): R {
-        val deferred = CompletableDeferred<R>()
+        resourceMatcher: (String) -> Instruction,
+    ): WebResource? {
+        val deferred = CompletableDeferred<WebResource>()
         withContext(Dispatchers.Main) {
-            val webView = WebView(context)
-            deferred.invokeOnCompletion {
-                GlobalScope.launch(Dispatchers.Main.immediate) {
-                    webView.destroy()
+            val loadedNestedUrls = ConcurrentSkipListSet<String>()
+
+            /**
+             * @return if the url has been consumed
+             */
+            fun handleUrl(webView: WebView, url: String): Boolean {
+                val matched = resourceMatcher(url)
+                when (matched) {
+                    Instruction.Continue -> return false
+                    Instruction.FoundResource -> {
+                        deferred.complete(WebResource(url))
+                        return true
+                    }
+
+                    Instruction.LoadPage -> {
+                        logger.info { "WebView loading nested page: $url" }
+                        launch {
+                            withContext(Dispatchers.Main) {
+                                @Suppress("LABEL_NAME_CLASH")
+                                if (webView.url == url) return@withContext // avoid infinite loop
+                                if (!loadedNestedUrls.add(url)) return@withContext
+                                logger.info { "New webview created" }
+                                createWebView(context, deferred, ::handleUrl).loadUrl(url)
+                            }
+                        }
+                        return false
+                    }
                 }
             }
 
-            webView.settings.javaScriptEnabled = true
+            loadedNestedUrls.add(pageUrl)
+            createWebView(context, deferred, ::handleUrl).loadUrl(pageUrl)
 
-            webView.webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(
-                    view: WebView?,
-                    request: WebResourceRequest?
-                ): WebResourceResponse? {
-                    if (request == null) return null
-                    val url = request.url ?: return super.shouldInterceptRequest(view, request)
-                    if (url.toString().contains(".mp4")) {
-                        logger.info { "Found url: $url" }
-                    }
-                    val matched = resourceMatcher(url.toString())
-                    if (matched != null) {
-                        logger.info { "Found video resource via shouldInterceptRequest: $url" }
-                        deferred.complete(matched)
-
-                        // 拦截, 以防资源只能加载一次
-                        return WebResourceResponse(
-                            "text/plain",
-                            "UTF-8", 500,
-                            "Internal Server Error",
-                            mapOf(),
-                            ByteArrayInputStream(ByteArray(0)),
-                        )
-                    }
-                    return super.shouldInterceptRequest(view, request)
-                }
-            }
-            webView.loadUrl(pageUrl)
+//            webView.webChromeClient = object : WebChromeClient() {
+//                override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+//                    consoleMessage ?: return false
+//                    val message = consoleMessage.message() ?: return false
+//                    // HTTPS 页面加载 HTTP 的视频时会有日志
+//                    for (matchResult in consoleMessageUrlRegex.findAll(message)) {
+//                        val url = matchResult.value.removeSurrounding("'")
+//                        logger.info { "WebView console get url: $url" }
+//                        handleUrl(url)
+//                    }
+//                    return false
+//                }
+//            }
         }
 
         return try {
@@ -143,6 +173,49 @@ class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
                 deferred.cancel()
             }
             throw e
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun createWebView(
+        context: Context,
+        deferred: CompletableDeferred<WebResource>,
+        handleUrl: (WebView, String) -> Boolean,
+    ): WebView = WebView(context).apply {
+        val webView = this
+        deferred.invokeOnCompletion {
+            GlobalScope.launch(Dispatchers.Main.immediate) {
+                webView.destroy()
+            }
+        }
+        webView.settings.javaScriptEnabled = true
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(
+                view: WebView,
+                request: WebResourceRequest
+            ): WebResourceResponse? {
+                val url = request.url ?: return super.shouldInterceptRequest(view, request)
+                if (handleUrl(view, url.toString())) {
+                    logger.info { "Found video resource via shouldInterceptRequest: $url" }
+                    // 拦截, 以防资源只能加载一次
+                    return WebResourceResponse(
+                        "text/plain",
+                        "UTF-8", 500,
+                        "Internal Server Error",
+                        mapOf(),
+                        ByteArrayInputStream(ByteArray(0)),
+                    )
+                }
+                return super.shouldInterceptRequest(view, request)
+            }
+
+            override fun onLoadResource(view: WebView, url: String) {
+                if (handleUrl(view, url)) {
+                    logger.info { "Found video resource via onLoadResource: $url" }
+                }
+                super.onLoadResource(view, url)
+            }
         }
     }
 }
