@@ -64,7 +64,7 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
             Modifier
                 .padding(bottom = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
                 .clickable { matchVideoConfig.enableNestedUrl = !matchVideoConfig.enableNestedUrl },
-            supportingContent = { Text("当遇到匹配的链接时，跳转到该链接，并继续匹配视频链接。支持任意次数嵌套") },
+            supportingContent = { Text("当遇到匹配的链接时，终止父页面加载并跳转到匹配的链接，在嵌套页面中继续查找视频链接。支持任意次数嵌套") },
             trailingContent = {
                 Switch(matchVideoConfig.enableNestedUrl, { matchVideoConfig.enableNestedUrl = it })
             },
@@ -79,7 +79,7 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
                     .moveFocusOnEnter()
                     .padding(bottom = verticalSpacing),
                 label = { Text("匹配嵌套链接") },
-                supportingText = { Text("从播放页面中加载的所有资源链接中匹配出需要跳转进入的链接。若正则包含名为 v 的分组则使用该分组，否则使用整个 URL") },
+                supportingText = { Text("正则表达式，从播放页面中加载的所有资源链接中匹配出需要跳转进入的链接。若正则包含名为 v 的分组则使用该分组，否则使用整个 URL") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 shape = textFieldShape,
                 isError = matchVideoConfig.matchNestedUrlIsError,
@@ -90,7 +90,7 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
             matchVideoConfig.matchVideoUrl, { matchVideoConfig.matchVideoUrl = it },
             Modifier.fillMaxWidth().moveFocusOnEnter(),
             label = { Text("匹配视频链接") },
-            supportingText = { Text("从播放页面中加载的所有资源链接中匹配出视频链接的正则表达式。若正则包含名为 v 的分组则使用该分组，否则使用整个 URL") },
+            supportingText = { Text("正则表达式，从播放页面中加载的所有资源链接中匹配出视频链接。若正则包含名为 v 的分组则使用该分组，否则使用整个 URL") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             shape = textFieldShape,
             isError = matchVideoConfig.matchVideoUrlIsError,

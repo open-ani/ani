@@ -136,7 +136,11 @@ class SelectorMediaSource(
         query: SelectorSearchQuery,
         mediaSourceId: String,
     ): ApiResponse<List<DefaultMedia>> {
-        return searchSubjects(searchConfig.searchUrl, query.subjectName).map { (_, document) ->
+        return searchSubjects(
+            searchConfig.searchUrl,
+            subjectName = query.subjectName,
+            useOnlyFirstWord = searchConfig.searchUseOnlyFirstWord,
+        ).map { (_, document) ->
             document ?: return@map emptyList()
             val episodes = selectSubjects(document, searchConfig)
                 .orEmpty()

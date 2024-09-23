@@ -36,21 +36,27 @@ class SelectorConfigState(
 
     var displayName by argumentsStorage.prop(
         { it.name }, { copy(name = it) },
-        "",
+        SelectorMediaSourceArguments.Default.name,
     )
 
     val displayNameIsError by derivedStateOf { displayName.isBlank() }
 
     var iconUrl by argumentsStorage.prop(
         { it.iconUrl }, { copy(iconUrl = it) },
-        "",
+        SelectorMediaSourceArguments.Default.iconUrl,
     )
 
     var searchUrl by argumentsStorage.prop(
         { it.searchConfig.searchUrl }, { copy(searchConfig = searchConfig.copy(searchUrl = it)) },
-        "",
+        SelectorMediaSourceArguments.Default.searchConfig.searchUrl,
     )
     val searchUrlIsError by derivedStateOf { searchUrl.isBlank() }
+
+    var searchUseOnlyFirstWord by argumentsStorage.prop(
+        { it.searchConfig.searchUseOnlyFirstWord },
+        { copy(searchConfig = searchConfig.copy(searchUseOnlyFirstWord = it)) },
+        SelectorMediaSourceArguments.Default.searchConfig.searchUseOnlyFirstWord,
+    )
 
     // region SubjectFormat
 
@@ -77,6 +83,7 @@ class SelectorConfigState(
         val selectListsIsError by derivedStateOf {
             QueryParser.parseSelectorOrNull(selectLists) == null
         }
+        var preferShorterName by prop({ it.preferShorterName }, { copy(preferShorterName = it) })
     }
 
     // endregion

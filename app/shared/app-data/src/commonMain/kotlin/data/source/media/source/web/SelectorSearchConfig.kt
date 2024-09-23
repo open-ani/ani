@@ -28,6 +28,8 @@ import org.intellij.lang.annotations.Language
 data class SelectorSearchConfig(
     // Phase 1, search
     val searchUrl: String = "", // required
+    val searchUseOnlyFirstWord: Boolean = true,
+    val preferShortest: Boolean = true,
     // Phase 2, for search result, select subjects
     val subjectFormatId: SelectorFormatId = SelectorSubjectFormatA.id,
     val selectorSubjectFormatA: SelectorSubjectFormatA.Config = SelectorSubjectFormatA.Config(),

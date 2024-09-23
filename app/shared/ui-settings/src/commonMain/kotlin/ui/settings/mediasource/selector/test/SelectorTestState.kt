@@ -59,6 +59,9 @@ class SelectorTestState(
     private val searchUrl by derivedStateOf {
         searchConfigState.value?.searchUrl
     }
+    private val useOnlyFirstWord by derivedStateOf {
+        searchConfigState.value?.searchUseOnlyFirstWord
+    }
 
     /**
      * 用于查询条目列表, 每当编辑请求和 `searchUrl`, 会重新搜索, 但不会筛选.
@@ -67,20 +70,24 @@ class SelectorTestState(
     val subjectSearcher = BackgroundSearcher(
         backgroundScope,
         derivedStateOf {
-            val url = searchUrl
-            url to searchKeyword
+            Triple(
+                searchConfigState.value?.searchUrl,
+                searchKeyword,
+                searchConfigState.value?.searchUseOnlyFirstWord,
+            )
         },
-        search = { (url, searchKeyword) ->
+        search = { (url, searchKeyword, useOnlyFirstWord) ->
             // 不清除 selectedSubjectIndex
 
             launchRequestInBackground {
-                if (url.isNullOrBlank() || searchKeyword.isBlank()) {
+                if (url == null || url.isBlank() || searchKeyword.isBlank() || useOnlyFirstWord == null) {
                     null
                 } else {
                     try {
                         val res = engine.searchSubjects(
-                            url,
+                            searchUrl = url,
                             searchKeyword,
+                            useOnlyFirstWord = useOnlyFirstWord,
                         )
                         Result.success(res)
                     } catch (e: CancellationException) {

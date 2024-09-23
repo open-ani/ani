@@ -90,7 +90,6 @@ class EditSelectorMediaSourcePageState(
         if (episodeNavController.currentDestination?.hasRoute<SelectorEpisodePaneRoutes.EPISODE>() != true) {
             episodeNavController.navigate(SelectorEpisodePaneRoutes.EPISODE)
         }
-        episodeNavController.navigate(SelectorEpisodePaneRoutes.EPISODE)
     }
 
     fun stopViewing() {

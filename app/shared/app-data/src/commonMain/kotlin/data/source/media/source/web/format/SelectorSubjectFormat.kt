@@ -53,6 +53,7 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
     data class Config(
         @Language("css")
         val selectLists: String = "div.video-info-header > a",
+        val preferShorterName: Boolean = true,
     ) : SelectorFormatConfig {
         override fun isValid(): Boolean {
             return selectLists.isNotBlank()
@@ -65,7 +66,8 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
         config: Config,
     ): List<WebSearchSubjectInfo>? {
         val selectLists = QueryParser.parseSelectorOrNull(config.selectLists) ?: return null
-        return document.select(selectLists).map { a ->
+        val elements = document.select(selectLists)
+        return elements.mapTo(ArrayList(elements.size)) { a ->
             val name = a.attr("title").takeIf { it.isNotBlank() } ?: a.text()
             val href = a.attr("href")
             val id = href.substringBeforeLast(".html").substringAfterLast("/")
@@ -75,6 +77,12 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
                 subjectDetailsPageUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
                 origin = a,
             )
+        }.apply {
+            if (config.preferShorterName) {
+                sortBy { info ->
+                    info.name.length
+                }
+            }
         }
     }
 }

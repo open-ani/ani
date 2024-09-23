@@ -116,8 +116,10 @@ class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
         pageUrl: String,
         resourceMatcher: (String) -> Instruction,
     ): WebResource? {
-        val deferred = CompletableDeferred<WebResource>()
-        withContext(Dispatchers.Main) {
+        // WebView requires same thread
+//        Executors.newSingleThreadExecutor().asCoroutineDispatcher().use { dispatcher ->
+        return withContext(Dispatchers.Main) {
+            val deferred = CompletableDeferred<WebResource>()
             val loadedNestedUrls = ConcurrentSkipListSet<String>()
 
             /**
@@ -134,14 +136,13 @@ class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
 
                     Instruction.LoadPage -> {
                         logger.info { "WebView loading nested page: $url" }
-                        launch {
-                            withContext(Dispatchers.Main) {
-                                @Suppress("LABEL_NAME_CLASH")
-                                if (webView.url == url) return@withContext // avoid infinite loop
-                                if (!loadedNestedUrls.add(url)) return@withContext
-                                logger.info { "New webview created" }
-                                createWebView(context, deferred, ::handleUrl).loadUrl(url)
-                            }
+                        launch(Dispatchers.Main) {
+                            @Suppress("LABEL_NAME_CLASH")
+                            if (webView.url == url) return@launch // avoid infinite loop
+                            if (!loadedNestedUrls.add(url)) return@launch
+                            logger.info { "WebView navigating to new url: $url" }
+                            webView.loadUrl(url)
+//                            createWebView(context, deferred, ::handleUrl).loadUrl(url)
                         }
                         return false
                     }
@@ -151,29 +152,30 @@ class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
             loadedNestedUrls.add(pageUrl)
             createWebView(context, deferred, ::handleUrl).loadUrl(pageUrl)
 
-//            webView.webChromeClient = object : WebChromeClient() {
-//                override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-//                    consoleMessage ?: return false
-//                    val message = consoleMessage.message() ?: return false
-//                    // HTTPS 页面加载 HTTP 的视频时会有日志
-//                    for (matchResult in consoleMessageUrlRegex.findAll(message)) {
-//                        val url = matchResult.value.removeSurrounding("'")
-//                        logger.info { "WebView console get url: $url" }
-//                        handleUrl(url)
-//                    }
-//                    return false
-//                }
-//            }
-        }
+            //            webView.webChromeClient = object : WebChromeClient() {
+            //                override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+            //                    consoleMessage ?: return false
+            //                    val message = consoleMessage.message() ?: return false
+            //                    // HTTPS 页面加载 HTTP 的视频时会有日志
+            //                    for (matchResult in consoleMessageUrlRegex.findAll(message)) {
+            //                        val url = matchResult.value.removeSurrounding("'")
+            //                        logger.info { "WebView console get url: $url" }
+            //                        handleUrl(url)
+            //                    }
+            //                    return false
+            //                }
+            //            }
 
-        return try {
-            deferred.await()
-        } catch (e: Throwable) {
-            if (deferred.isActive) {
-                deferred.cancel()
+            try {
+                deferred.await()
+            } catch (e: Throwable) {
+                if (deferred.isActive) {
+                    deferred.cancel()
+                }
+                throw e
             }
-            throw e
         }
+//        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")

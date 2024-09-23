@@ -83,14 +83,22 @@ abstract class SelectorMediaSourceEngine {
     suspend fun searchSubjects(
         searchUrl: String,
         subjectName: String,
+        useOnlyFirstWord: Boolean,
     ): ApiResponse<SearchSubjectResult> {
-        val encodedUrl = MediaSourceEngineHelpers.encodeUrlSegment(subjectName)
+        val encodedUrl = MediaSourceEngineHelpers.encodeUrlSegment(
+            if (useOnlyFirstWord) getFirstWord(subjectName) else subjectName,
+        )
 
         val finalUrl = Url(
             searchUrl.replace("{keyword}", encodedUrl),
         )
 
         return searchImpl(finalUrl)
+    }
+
+    private fun getFirstWord(string: String): String {
+        if (!(string.contains(' '))) return string
+        return string.substringBefore(' ').ifBlank { string }
     }
 
     protected abstract suspend fun searchImpl(

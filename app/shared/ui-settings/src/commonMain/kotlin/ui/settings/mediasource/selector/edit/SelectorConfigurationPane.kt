@@ -107,7 +107,7 @@ internal fun SelectorConfigurationPane(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
+            Column {
                 OutlinedTextField(
                     state.searchUrl, { state.searchUrl = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter(),
@@ -130,15 +130,38 @@ internal fun SelectorConfigurationPane(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                 )
+                ListItem(
+                    headlineContent = { Text("仅使用第一个词") },
+                    Modifier
+                        .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
+                        .clickable { state.searchUseOnlyFirstWord = !state.searchUseOnlyFirstWord },
+                    supportingContent = { Text("以空格分割，仅使用第一个词搜索。适用于搜索兼容性差的情况") },
+                    trailingContent = {
+                        Switch(state.searchUseOnlyFirstWord, { state.searchUseOnlyFirstWord = it })
+                    },
+                    colors = listItemColors,
+                )
+
                 val conf = state.subjectFormatA
                 OutlinedTextField(
                     conf.selectLists, { conf.selectLists = it },
-                    Modifier.fillMaxWidth().moveFocusOnEnter(),
+                    Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = verticalSpacing),
                     label = { Text("提取条目列表") },
                     supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个条目，将会读取其 href 属性和 text") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                     isError = conf.selectListsIsError,
+                )
+                ListItem(
+                    headlineContent = { Text("选择最短标题") },
+                    Modifier
+                        .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
+                        .clickable { conf.preferShorterName = !conf.preferShorterName },
+                    supportingContent = { Text("选择满足匹配的标题最短的条目。可避免为第一季匹配到第二季") },
+                    trailingContent = {
+                        Switch(conf.preferShorterName, { conf.preferShorterName = it })
+                    },
+                    colors = listItemColors,
                 )
             }
 
