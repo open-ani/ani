@@ -12,6 +12,7 @@ package me.him188.ani.app.ui.subject.episode.mediaFetch
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import me.him188.ani.datasources.api.Media
+import me.him188.ani.datasources.api.source.MediaSourceKind
 
 @Immutable // only after build
 class MediaGroup @MediaGroupBuilderApi internal constructor(
@@ -38,11 +39,18 @@ internal annotation class MediaGroupBuilderApi
 @OptIn(MediaGroupBuilderApi::class)
 object MediaGrouper {
     fun getGroupId(media: Media): String {
-        var title = media.originalTitle
-        if (title.startsWith('[')) {
-            title = title.substringAfter(']')
+        return when (media.kind) {
+            MediaSourceKind.BitTorrent -> {
+                var title = media.originalTitle
+                if (title.startsWith('[')) {
+                    title = title.substringAfter(']')
+                }
+                return title
+            }
+
+            MediaSourceKind.WEB,
+            MediaSourceKind.LocalCache -> media.mediaId
         }
-        return title
     }
 
     fun getItemIdWithinGroup(media: Media): String {
