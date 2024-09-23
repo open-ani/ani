@@ -155,7 +155,10 @@ fun MediaSelectorView(
                         state.mediaSourceInfoProvider,
                         state.selected in group.list,
                         state,
-                        onSelect = onClickItem,
+                        onSelect = {
+                            // 点击这个卡片时, 如果这个卡片是一个 group, 那么应当取用 group 的选中项目
+                            onClickItem(state.getGroupState(group.groupId).selectedItem ?: it)
+                        },
                         Modifier
                             .animateItem()
                             .fillMaxWidth()
