@@ -147,10 +147,11 @@ internal class MediaSelectorPresentationImpl(
     parentCoroutineContext: CoroutineContext,
 ) : MediaSelectorPresentation, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     override val mediaList: List<Media> by mediaSelector.mediaList.produceState(emptyList())
+    override val filteredCandidates: List<Media> by mediaSelector.filteredCandidates.produceState(emptyList())
 
     private val groupStates: SnapshotStateMap<MediaGroupId, MediaGroupState> = SnapshotStateMap()
     override val groupedMediaList: List<MediaGroup> by derivedStateOf {
-        MediaGrouper.buildGroups(mediaList)
+        MediaGrouper.buildGroups(filteredCandidates)
     }
 
     override fun getGroupState(groupId: MediaGroupId): MediaGroupState {
@@ -176,7 +177,6 @@ internal class MediaSelectorPresentationImpl(
         MediaPreferenceItemPresentation(mediaSelector.subtitleLanguageId, backgroundScope)
     override val mediaSource: MediaPreferenceItemPresentation<String> =
         MediaPreferenceItemPresentation(mediaSelector.mediaSourceId, backgroundScope)
-    override val filteredCandidates: List<Media> by mediaSelector.filteredCandidates.produceState(emptyList())
     override val selected: Media? by mediaSelector.selected.produceState(null)
 
     override fun select(candidate: Media) {
