@@ -249,7 +249,7 @@ internal fun SelectorConfigurationPane(
                     conf.referer, { conf.referer = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter(),
                     label = { Text("Referer") },
-                    supportingText = { Text("播放视频时执行的 HTTP 请求的 Referer") },
+                    supportingText = { Text("播放视频时执行的 HTTP 请求的 Referer，可留空") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                 )
