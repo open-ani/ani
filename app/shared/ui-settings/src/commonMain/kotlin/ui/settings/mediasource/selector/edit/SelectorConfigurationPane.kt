@@ -176,7 +176,10 @@ internal fun SelectorConfigurationPane(
                 }
             }
 
-            Column(Modifier, verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
+            Column(
+                Modifier,
+                verticalArrangement = Arrangement.spacedBy((verticalSpacing - 16.dp).coerceAtLeast(0.dp)),
+            ) {
                 ListItem(
                     headlineContent = { Text("使用条目名称过滤") },
                     Modifier.focusable(false).clickable { state.filterBySubjectName = !state.filterBySubjectName },
@@ -280,7 +283,7 @@ private fun SubjectChannelSelectionButtonRow(
                 Text(
                     when (selectorChannelFormat) { // type-safe to handle all formats
                         SelectorChannelFormatNoChannel -> "不区分线路"
-                        SelectorChannelFormatFlattened -> "多线路扁平"
+                        SelectorChannelFormatFlattened -> "(其他暂未支持)"
                     },
                     softWrap = false,
                 )

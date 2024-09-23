@@ -15,6 +15,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.fold
@@ -48,7 +49,7 @@ class SelectorTestState(
         }
     }
 
-    var selectedSubjectIndex by mutableIntStateOf(-1)
+    var selectedSubjectIndex by mutableIntStateOf(0)
     val selectedSubjectState = derivedStateOf {
         val success = subjectSearchSelectResult as? SelectorTestSearchSubjectResult.Success
             ?: return@derivedStateOf null
@@ -189,9 +190,11 @@ class SelectorTestState(
                         ?: return SelectorTestEpisodeListResult.InvalidConfig
                     SelectorTestEpisodeListResult.Success(
                         episodeList.channels,
-                        episodeList.episodes.map {
-                            SelectorTestEpisodePresentation.compute(it, query, document, config)
-                        },
+                        episodeList.episodes
+                            .fastDistinctBy { it.playUrl }
+                            .map {
+                                SelectorTestEpisodePresentation.compute(it, query, document, config)
+                            },
                     )
                 } catch (e: Throwable) {
                     SelectorTestEpisodeListResult.UnknownError(e)

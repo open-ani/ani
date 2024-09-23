@@ -26,6 +26,9 @@ sealed class SelectorTestEpisodeListResult : RefreshResult {
     @Immutable
     data class Success(
         val channels: List<String>?,
+        /**
+         * must distinct by [SelectorTestEpisodePresentation.playUrl]
+         */
         val episodes: List<SelectorTestEpisodePresentation>,
     ) : SelectorTestEpisodeListResult(), RefreshResult.Success
 

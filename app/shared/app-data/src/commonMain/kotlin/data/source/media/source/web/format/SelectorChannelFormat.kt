@@ -17,6 +17,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.utils.xml.Element
 import me.him188.ani.utils.xml.QueryParser
 import me.him188.ani.utils.xml.parseSelectorOrNull
+import org.intellij.lang.annotations.Language
 
 /**
  * 决定如何匹配线路和剧集
@@ -43,7 +44,8 @@ sealed class SelectorChannelFormat<in Config : SelectorFormatConfig>(override va
             return entries.find { it.id == id }
         }
 
-        const val DEFAULT_MATCH_EPISODE_SORT_FROM_NAME = "第(?<ep>.+)(话|集)"
+        @Language("regexp")
+        const val DEFAULT_MATCH_EPISODE_SORT_FROM_NAME = """第\s*(?<ep>.+)\s*[话集]"""
 
         fun isPossiblyMovie(title: String): Boolean {
             return ("简" in title || "繁" in title)
@@ -71,13 +73,17 @@ data object SelectorChannelFormatFlattened :
     @Immutable
     @Serializable
     data class Config(
+        @Language("css")
         val selectChannels: String = "body > div.box-width.cor5 > div.anthology.wow.fadeInUp.animated > div.anthology-tab.nav-swiper.b-b.br div.swiper-wrapper a.swiper-slide",
+        @Language("css")
         val selectLists: String = "body > div.box-width.cor5 > div.anthology.wow.fadeInUp.animated > a",
+        @Language("css")
         val selectElements: String = "a",
+        @Language("regexp")
         val matchEpisodeSortFromName: String = DEFAULT_MATCH_EPISODE_SORT_FROM_NAME,
     ) : SelectorFormatConfig {
         override fun isValid(): Boolean {
-            return selectChannels.isNotBlank() && selectLists.isNotBlank() && selectElements.isNotBlank()
+            return selectChannels.isNotBlank() && selectLists.isNotBlank() && selectElements.isNotBlank() && matchEpisodeSortFromName.isNotBlank()
         }
     }
 
@@ -130,15 +136,13 @@ data object SelectorChannelFormatNoChannel :
     @Immutable
     @Serializable
     data class Config(
-        val selectEpisodes: String = "",
+        @Language("css")
+        val selectEpisodes: String = "#glist-1 > div.module-blocklist.scroll-box.scroll-box-y > div > a",
+        @Language("regexp")
         val matchEpisodeSortFromName: String = DEFAULT_MATCH_EPISODE_SORT_FROM_NAME,
     ) : SelectorFormatConfig {
         val matchEpisodeSortFromNameRegex by lazy(LazyThreadSafetyMode.PUBLICATION) {
-            try {
-                matchEpisodeSortFromName.toRegex()
-            } catch (e: Exception) {
-                null
-            }
+            Regex.parseOrNull(matchEpisodeSortFromName)
         }
 
         override fun isValid(): Boolean {

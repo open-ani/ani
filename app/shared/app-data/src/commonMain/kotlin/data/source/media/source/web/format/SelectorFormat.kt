@@ -28,7 +28,6 @@ interface SelectorFormat {
 @Immutable
 @JvmInline
 value class SelectorFormatId(
-    // in case we want to change type
     val value: String,
 )
 

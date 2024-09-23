@@ -189,6 +189,16 @@ class SelectorConfigState(
             matchVideoUrl.isBlank() || !isValidRegex(matchVideoUrl)
         }
 
+        var enableNestedUrl by prop(
+            { it.enableNestedUrl }, { copy(enableNestedUrl = it) },
+        )
+        var matchNestedUrl by prop(
+            { it.matchNestedUrl }, { copy(matchNestedUrl = it) },
+        )
+        val matchNestedUrlIsError by derivedStateOf {
+            matchNestedUrl.isBlank() || !isValidRegex(matchNestedUrl)
+        }
+
         val videoHeaders = HeadersConfig()
 
         @Stable

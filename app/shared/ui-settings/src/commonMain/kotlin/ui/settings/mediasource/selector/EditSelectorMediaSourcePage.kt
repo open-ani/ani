@@ -34,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
@@ -53,6 +55,7 @@ import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigSta
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationPane
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneDefaults
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneLayout
+import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodePaneRoutes
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodeState
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorTestAndEpisodePane
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
@@ -74,20 +77,27 @@ class EditSelectorMediaSourcePageState(
 
     private val viewingItemState = mutableStateOf<SelectorTestEpisodePresentation?>(null)
 
-    //    lateinit var episodeNavController: NavHostController
     var viewingItem by viewingItemState
         private set
+
+    lateinit var episodeNavController: NavHostController
+        internal set // set from ui
 
     fun viewEpisode(
         episode: SelectorTestEpisodePresentation,
     ) {
         this.viewingItem = episode
-//        episodeNavController.navigate("details")
+        if (episodeNavController.currentDestination?.hasRoute<SelectorEpisodePaneRoutes.EPISODE>() != true) {
+            episodeNavController.navigate(SelectorEpisodePaneRoutes.EPISODE)
+        }
+        episodeNavController.navigate(SelectorEpisodePaneRoutes.EPISODE)
     }
 
     fun stopViewing() {
         this.viewingItem = null
-//        episodeNavController.navigate("list")
+        if (episodeNavController.currentDestination?.hasRoute<SelectorEpisodePaneRoutes.TEST>() != true) {
+            episodeNavController.navigate(SelectorEpisodePaneRoutes.TEST)
+        }
     }
 
 

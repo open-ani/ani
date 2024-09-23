@@ -34,6 +34,7 @@ import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.matcher.WebVideo
+import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
 import me.him188.ani.datasources.api.topic.EpisodeRange
@@ -75,7 +76,9 @@ abstract class SelectorMediaSourceEngine {
          * `null` means 404
          */
         val document: Document?,
-    )
+    ) {
+        override fun toString(): String = "SearchSubjectResult(url=$url, document=${document.toString().length}...)"
+    }
 
     suspend fun searchSubjects(
         searchUrl: String,
@@ -200,23 +203,39 @@ abstract class SelectorMediaSourceEngine {
         }
     }
 
-    fun matchWebVideo(url: String, searchConfig: SelectorSearchConfig.MatchVideoConfig): WebVideo? {
-        val result = searchConfig.matchVideoUrlRegex?.find(url) ?: return null
+    fun shouldLoadPage(url: String, config: SelectorSearchConfig.MatchVideoConfig): Boolean {
+        if (config.enableNestedUrl) {
+            config.matchNestedUrlRegex?.find(url)?.let {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun matchWebVideo(url: String, searchConfig: SelectorSearchConfig.MatchVideoConfig): WebVideoMatcher.MatchResult {
+        if (shouldLoadPage(url, searchConfig)) {
+            return WebVideoMatcher.MatchResult.LoadPage
+        }
+
+        val result = searchConfig.matchVideoUrlRegex?.find(url) ?: return WebVideoMatcher.MatchResult.Continue
         val videoUrl = try {
             result.groups["v"]?.value ?: url
         } catch (_: IllegalArgumentException) { // no group
             url
         }
-        return WebVideo(
-            videoUrl,
-            mapOf(
-                "User-Agent" to searchConfig.addHeadersToVideo.userAgent,
-                "Referer" to searchConfig.addHeadersToVideo.referer,
-                "Sec-Ch-Ua-Mobile" to "?0",
-                "Sec-Ch-Ua-Platform" to "macOS",
-                "Sec-Fetch-Dest" to "video",
-                "Sec-Fetch-Mode" to "no-cors",
-                "Sec-Fetch-Site" to "cross-site",
+
+        return WebVideoMatcher.MatchResult.Matched(
+            WebVideo(
+                videoUrl,
+                mapOf(
+                    "User-Agent" to searchConfig.addHeadersToVideo.userAgent,
+                    "Referer" to searchConfig.addHeadersToVideo.referer,
+                    "Sec-Ch-Ua-Mobile" to "?0",
+                    "Sec-Ch-Ua-Platform" to "macOS",
+                    "Sec-Fetch-Dest" to "video",
+                    "Sec-Fetch-Mode" to "no-cors",
+                    "Sec-Fetch-Site" to "cross-site",
+                ),
             ),
         )
     }

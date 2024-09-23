@@ -10,6 +10,7 @@
 package me.him188.ani.app.ui.settings.mediasource.selector.episode
 
 import androidx.compose.runtime.*
+import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,7 @@ import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher
 import me.him188.ani.app.ui.settings.mediasource.launchCollectedInBackground
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.datasources.api.matcher.WebVideo
+import me.him188.ani.datasources.api.matcher.videoOrNull
 import me.him188.ani.utils.platform.Uuid
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
@@ -49,7 +51,7 @@ class SelectorEpisodeState(
     context: Context,
     flowDispatcher: CoroutineContext = Dispatchers.Default,
 ) {
-    private var _lastNonNullId: Uuid = Uuid.Companion.random()
+    private var _lastNonNullId: Uuid = Uuid.Companion.random() // 当取消选择时, 仍然需要保持 ID, 才能有 container transform 动画
     val lastNonNullId by derivedStateOf {
         itemState.value?.id?.also { _lastNonNullId = it } ?: _lastNonNullId
     }
@@ -63,17 +65,25 @@ class SelectorEpisodeState(
     val searcher =
         BackgroundSearcher(
             backgroundScope,
-            testDataState = derivedStateOf { itemState.value?.playUrl to webViewVideoExtractor.value },
-        ) { (episodeUrl, extractor) ->
-            launchCollectedInBackground<String, _>(
+            testDataState = derivedStateOf {
+                Triple(itemState.value?.playUrl, webViewVideoExtractor.value, matchVideoConfigState.value)
+            },
+        ) { (episodeUrl, extractor, config) ->
+            launchCollectedInBackground<SelectorTestWebUrl, _>(
                 updateState = { SelectorEpisodeResult.InProgress(it) },
             ) { flow ->
                 try {
-                    if (episodeUrl != null && extractor != null) {
+                    if (episodeUrl != null && extractor != null && config != null) {
                         withTimeoutOrNull(30.seconds) { // timeout considered as success
                             extractor.getVideoResourceUrl(context, episodeUrl) {
-                                collect(it)
-                                null
+                                val shouldLoadPage = engine.shouldLoadPage(it, config)
+                                collect(SelectorTestWebUrl(it, didLoadNestedPage = shouldLoadPage))
+
+                                if (shouldLoadPage) {
+                                    WebViewVideoExtractor.Instruction.LoadPage
+                                } else {
+                                    WebViewVideoExtractor.Instruction.Continue
+                                }
                             }
                         }
                     }
@@ -87,12 +97,21 @@ class SelectorEpisodeState(
         }
 
     @Immutable
+    @Stable
     data class MatchResult(
-        val originalUrl: String,
+        val webUrl: SelectorTestWebUrl,
         val video: WebVideo?,
     ) {
+        val originalUrl get() = webUrl.url
+        val parsedUrl = runCatching { Url(originalUrl) }.getOrNull()
+
+        // ui
+        val key get() = originalUrl
+
         @Stable
-        fun isMatch() = video != null
+        fun isMatchedVideo() = video != null
+
+        val highlight get() = isMatchedVideo() || webUrl.didLoadNestedPage
     }
 
     val isSearchingInProgress get() = searcher.isSearching
@@ -100,7 +119,7 @@ class SelectorEpisodeState(
     /**
      * 不断更新的匹配结果
      */
-    val matchResults: Flow<List<MatchResult>> by derivedStateOf {
+    val rawMatchResults: Flow<List<MatchResult>> by derivedStateOf {
         val matchVideoConfig = matchVideoConfigState.value ?: return@derivedStateOf emptyFlow()
         val searchResult = searcher.searchResult ?: return@derivedStateOf emptyFlow()
         val flow = when (searchResult) {
@@ -116,14 +135,65 @@ class SelectorEpisodeState(
         flow.map { list ->
             list.asSequence()
                 .map { original ->
-                    MatchResult(original, engine.matchWebVideo(original, matchVideoConfig))
+                    MatchResult(original, engine.matchWebVideo(original.url, matchVideoConfig).videoOrNull)
                 }
-                .distinctBy { it.originalUrl } // O(n) extra space, O(1) time
+                .distinctBy { it.key } // O(n) extra space, O(1) time
                 .toMutableList() // single list instance construction
                 .apply {
                     // sort in-place for better performance
-                    sortByDescending { it.isMatch() } // 优先展示匹配的
+                    sortByDescending { it.isMatchedVideo() } // 优先展示匹配的
                 }
         }.flowOn(flowDispatcher) // possibly significant computation
     }
+
+    val filteredResults: Flow<List<MatchResult>> by derivedStateOf {
+        // read states in UI thread
+        val hideImages = hideImages
+        val hideCss = hideCss
+        val hideScripts = hideScripts
+        val hideData = hideData
+
+        rawMatchResults.map { list ->
+            // In background
+            list.filter { shouldIncludeUrl(it, hideImages, hideCss, hideScripts, hideData) }
+        }.flowOn(flowDispatcher)
+    }
+
+    var hideImages: Boolean by mutableStateOf(true)
+    var hideCss: Boolean by mutableStateOf(true)
+    var hideScripts: Boolean by mutableStateOf(true)
+    var hideData: Boolean by mutableStateOf(true)
+
+    companion object {
+        private val imageExtensions = setOf("jpg", "jpeg", "png", "gif", "webp", "ico", "svg")
+        private val cssExtensions = setOf("css", "ttf", "woff2")
+        private val scriptsExtensions = setOf("js", "wasm")
+
+        private fun shouldIncludeUrl(
+            result: MatchResult,
+            hideImages: Boolean,
+            hideCss: Boolean,
+            hideScripts: Boolean,
+            hideData: Boolean,
+        ): Boolean {
+            val lastSegment = result.parsedUrl?.pathSegments?.lastOrNull() ?: return true
+            val extension = lastSegment.substringAfterLast('.', "")
+            if (extension.isNotEmpty()) {
+                if (hideImages) {
+                    if (imageExtensions.any { extension.equals(it, ignoreCase = true) }) return false
+                }
+                if (hideCss) {
+                    if (cssExtensions.any { extension.equals(it, ignoreCase = true) }) return false
+                }
+                if (hideScripts) {
+                    if (scriptsExtensions.any { extension.equals(it, ignoreCase = true) }) return false
+                }
+            }
+            if (hideData) {
+                if (result.originalUrl.startsWith("data:")) return false
+            }
+            return true
+        }
+    }
 }
+

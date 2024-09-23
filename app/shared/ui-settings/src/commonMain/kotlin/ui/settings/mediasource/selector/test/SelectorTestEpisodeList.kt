@@ -51,7 +51,7 @@ fun SelectorTestEpisodeListGrid(
         verticalItemSpacing = currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding,
     ) {
         for (episode in episodes) {
-            item(key = episode) {
+            item(key = episode.playUrl) {
                 eachItem(episode)
             }
         }

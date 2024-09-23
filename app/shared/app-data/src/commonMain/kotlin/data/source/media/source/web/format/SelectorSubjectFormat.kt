@@ -15,21 +15,26 @@ import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
 import me.him188.ani.utils.xml.Element
 import me.him188.ani.utils.xml.QueryParser
 import me.him188.ani.utils.xml.parseSelectorOrNull
+import org.intellij.lang.annotations.Language
 
 /**
  * 决定如何匹配条目
  */
 sealed class SelectorSubjectFormat<in Config : SelectorFormatConfig>(override val id: SelectorFormatId) :
     SelectorFormat { // 方便改名
+
+    /**
+     * `null` means invalid config
+     */
     abstract fun select(
         document: Element,
         baseUrl: String,
         config: Config,
-    ): List<WebSearchSubjectInfo>
+    ): List<WebSearchSubjectInfo>?
 
     companion object {
         val entries by lazy { // 必须 lazy, 否则可能获取到 null
-            listOf(SelectorSubjectFormatA)
+            listOf(checkNotNull(SelectorSubjectFormatA)) // checkNotNull is needed to be fail-fast
         }
 
         fun findById(id: SelectorFormatId): SelectorSubjectFormat<*>? {
@@ -46,7 +51,8 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
     @Immutable
     @Serializable
     data class Config(
-        val selectLists: String = "",
+        @Language("css")
+        val selectLists: String = "div.video-info-header > a",
     ) : SelectorFormatConfig {
         override fun isValid(): Boolean {
             return selectLists.isNotBlank()
@@ -57,8 +63,8 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
         document: Element,
         baseUrl: String,
         config: Config,
-    ): List<WebSearchSubjectInfo> {
-        val selectLists = QueryParser.parseSelectorOrNull(config.selectLists) ?: return emptyList()
+    ): List<WebSearchSubjectInfo>? {
+        val selectLists = QueryParser.parseSelectorOrNull(config.selectLists) ?: return null
         return document.select(selectLists).map { a ->
             val name = a.attr("title").takeIf { it.isNotBlank() } ?: a.text()
             val href = a.attr("href")

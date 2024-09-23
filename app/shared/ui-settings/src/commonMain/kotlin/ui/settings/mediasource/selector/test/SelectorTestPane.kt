@@ -134,7 +134,10 @@ fun SharedTransitionScope.SelectorTestPane(
         }
 
         if (state.selectedSubject != null) {
-            AnimatedContent(state.episodeListSearchSelectResult) { result ->
+            AnimatedContent(
+                state.episodeListSearchSelectResult,
+                transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+            ) { result ->
                 if (result is SelectorTestEpisodeListResult.Success) {
                     val staggeredGridState = rememberLazyStaggeredGridState()
                     SelectorTestEpisodeListGrid(

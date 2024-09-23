@@ -16,14 +16,19 @@ import me.him188.ani.app.ui.settings.mediasource.RefreshResult
 
 sealed class SelectorEpisodeResult : RefreshResult {
     data class InProgress(
-        val flow: StateFlow<PersistentList<String>>,
+        val flow: StateFlow<PersistentList<SelectorTestWebUrl>>,
     ) : SelectorEpisodeResult(), RefreshResult.InProgress
 
     data class Success(
-        val flow: StateFlow<PersistentList<String>>,
+        val flow: StateFlow<PersistentList<SelectorTestWebUrl>>,
     ) : SelectorEpisodeResult(), RefreshResult.Success
 
     object InvalidConfig : SelectorEpisodeResult(), RefreshResult.InvalidConfig
     data class ApiError(override val reason: ApiFailure) : SelectorEpisodeResult(), RefreshResult.ApiError
     data class UnknownError(override val exception: Throwable) : SelectorEpisodeResult(), RefreshResult.UnknownError
 }
+
+data class SelectorTestWebUrl(
+    val url: String,
+    val didLoadNestedPage: Boolean,
+)

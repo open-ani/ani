@@ -11,6 +11,7 @@ package me.him188.ani.app.ui.settings.mediasource.selector.episode
 
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,13 +36,16 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Preview
 fun PreviewSelectorEpisodePaneCompact() = ProvideFoundationCompositionLocalsForPreview {
     Surface {
+        val state = rememberTestEditSelectorMediaSourceState(
+            SelectorSearchConfig.MatchVideoConfig(),
+        )
         SelectorTestAndEpisodePane(
-            state = rememberTestEditSelectorMediaSourceState(
-                TestSelectorTestEpisodePresentations[0],
-                SelectorSearchConfig.MatchVideoConfig(),
-            ),
+            state = state,
             layout = SelectorEpisodePaneLayout.Compact,
         )
+        SideEffect {
+            state.viewEpisode(TestSelectorTestEpisodePresentations[0])
+        }
     }
 }
 
@@ -112,7 +116,6 @@ internal fun rememberTestSelectorEpisodeState(
 @TestOnly
 @Composable
 internal fun rememberTestEditSelectorMediaSourceState(
-    viewing: SelectorTestEpisodePresentation? = TestSelectorTestEpisodePresentations[0],
     matchVideoConfig: SelectorSearchConfig.MatchVideoConfig = SelectorSearchConfig.MatchVideoConfig(),
     urls: (pageUrl: String) -> List<String> = {
         listOf("https://example.com/a.mkv")
@@ -134,10 +137,6 @@ internal fun rememberTestEditSelectorMediaSourceState(
             backgroundScope = scope,
             context,
             flowDispatcher = EmptyCoroutineContext,
-        ).apply {
-            viewing?.let { presentation ->
-                this.viewEpisode(presentation)
-            }
-        }
+        )
     }
 }

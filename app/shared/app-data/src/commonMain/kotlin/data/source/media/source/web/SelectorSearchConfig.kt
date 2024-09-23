@@ -21,6 +21,7 @@ import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
 import me.him188.ani.app.data.source.media.source.web.format.parseOrNull
+import org.intellij.lang.annotations.Language
 
 @Immutable
 @Serializable
@@ -81,11 +82,18 @@ data class SelectorSearchConfig(
     }
 
     @Serializable
+    @Suppress("RegExpRedundantEscape")
     data class MatchVideoConfig(
-        @Suppress("RegExpRedundantEscape")
-        val matchVideoUrl: String = """^(?<v>http(s)?:\/\/(?!.*http(s)?:\/\/).+((\.mp4)|(\.mkv)|(m3u8)).*(\?.+)?)""",
+        val enableNestedUrl: Boolean = true,
+        @Language("regexp")
+        val matchNestedUrl: String = """^.+(m3u8|vip|xigua\.php).+\?""",
+        @Language("regexp")
+        val matchVideoUrl: String = """(^http(s)?:\/\/(?!.*http(s)?:\/\/).+((\.mp4)|(\.mkv)|(m3u8)).*(\?.+)?)|(akamaized)|(bilivideo.com)""",
         val addHeadersToVideo: VideoHeaders = VideoHeaders(),
     ) {
+        val matchNestedUrlRegex by lazy {
+            Regex.parseOrNull(matchNestedUrl)
+        }
         val matchVideoUrlRegex by lazy {
             Regex.parseOrNull(matchVideoUrl)
         }
