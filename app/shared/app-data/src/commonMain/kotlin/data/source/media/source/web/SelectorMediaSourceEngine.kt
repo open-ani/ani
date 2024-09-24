@@ -41,6 +41,7 @@ import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
+import me.him188.ani.datasources.api.topic.titles.LabelFirstRawTitleParser
 import me.him188.ani.utils.ktor.toSource
 import me.him188.ani.utils.xml.Document
 import me.him188.ani.utils.xml.Element
@@ -68,6 +69,9 @@ fun SelectorSearchQuery.toFilterContext() = MediaListFilterContext(
 abstract class SelectorMediaSourceEngine {
     companion object {
         const val CURRENT_VERSION: UInt = 1u
+
+        // single instance to save memory
+        private val defaultSubtitleLanguages = listOf(SubtitleLanguage.ChineseSimplified.id)
     }
 
     data class SearchSubjectResult(
@@ -174,7 +178,9 @@ abstract class SelectorMediaSourceEngine {
         query: SelectorSearchQuery,
         mediaSourceId: String,
     ): SelectMediaResult {
+        val parser = LabelFirstRawTitleParser()
         val originalMediaList = episodes.mapNotNull { info ->
+            val subtitleLanguages = guessSubtitleLanguages(info, parser)
             info.episodeSort ?: return@mapNotNull null
             DefaultMedia(
                 mediaId = "$mediaSourceId.${info.name}-${info.episodeSort}",
@@ -184,7 +190,7 @@ abstract class SelectorMediaSourceEngine {
                 originalTitle = info.name,
                 publishedTime = 0L,
                 properties = MediaProperties(
-                    subtitleLanguageIds = listOf(SubtitleLanguage.ChineseSimplified.id),
+                    subtitleLanguageIds = subtitleLanguages,
                     resolution = "1080P",
                     alliance = info.channel ?: mediaSourceId,
                     size = FileSize.Unspecified,
@@ -208,6 +214,30 @@ abstract class SelectorMediaSourceEngine {
                 filters.applyOn(it.asCandidate())
             }
             SelectMediaResult(originalMediaList, filteredList)
+        }
+    }
+
+    /**
+     * 有的 channel 会叫 "简中" 和 "繁中"
+     */
+    private fun guessSubtitleLanguages(
+        info: WebSearchEpisodeInfo,
+        parser: LabelFirstRawTitleParser
+    ): List<String> {
+        val languagesFromChannel = info.channel?.let { parser.parseSubtitleLanguages(it) } ?: emptyList()
+        val languagesFromName = info.name.let { parser.parseSubtitleLanguages(it) }
+
+        return when {
+            languagesFromChannel.isEmpty() && languagesFromName.isEmpty() -> defaultSubtitleLanguages
+            else -> languagesFromChannel.asSequence()
+                .plus(languagesFromName)
+                .map {
+                    it.id
+                }
+                .toList()
+                .ifEmpty {
+                    defaultSubtitleLanguages
+                }
         }
     }
 
