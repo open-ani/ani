@@ -78,7 +78,7 @@ import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.home.HomePage
+import me.him188.ani.app.ui.home.SearchPage
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
@@ -259,7 +259,7 @@ private fun HomeSceneLandscape(
                 VerticalPager(pagerState, userScrollEnabled = false) {
                     when (it) {
                         0 -> {
-                            HomePage(
+                            SearchPage(
                                 Modifier.fillMaxSize(),
                                 searchBarFocusRequester = searchBarFocusRequester,
                                 contentWindowInsets = windowInsets,
@@ -400,7 +400,7 @@ private fun HomeScenePortrait(
         ) {
             HorizontalPager(pagerState, userScrollEnabled = false) {
                 when (it) {
-                    0 -> HomePage(
+                    0 -> SearchPage(
                         contentPadding = contentPadding,
                         searchBarFocusRequester = searchBarFocusRequester,
                     )

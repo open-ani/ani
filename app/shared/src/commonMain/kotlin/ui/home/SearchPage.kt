@@ -60,7 +60,7 @@ import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
 import me.him188.ani.app.ui.home.search.SubjectSearchBar
 
 @Composable
-fun HomePage(
+fun SearchPage(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     searchBarFocusRequester: FocusRequester = remember { FocusRequester() },

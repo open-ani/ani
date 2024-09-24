@@ -26,6 +26,6 @@ import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 @Preview(backgroundColor = 0xFF000000, showBackground = true)
 internal fun PreviewHomePagePortrait() {
     ProvideCompositionLocalsForPreview {
-        HomePage()
+        SearchPage()
     }
 }
