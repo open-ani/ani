@@ -37,7 +37,7 @@ sealed class SelectorChannelFormat<in Config : SelectorFormatConfig>(override va
 
     companion object {
         val entries by lazy { // 必须 lazy, 否则可能获取到 null
-            listOf(SelectorChannelFormatNoChannel, SelectorChannelFormatFlattened)
+            listOf(SelectorChannelFormatNoChannel, SelectorChannelFormatIndexGrouped)
         }
 
         fun findById(id: SelectorFormatId): SelectorChannelFormat<*>? {
@@ -64,26 +64,27 @@ data class SelectedChannelEpisodes(
 
 
 /**
- * 每个剧集标题内包含了线路名称. 例如 "主线第1集"
- *
- * 解析方式:
+ * tab row + horizontal pager 形式
  */
-data object SelectorChannelFormatFlattened :
-    SelectorChannelFormat<SelectorChannelFormatFlattened.Config>(SelectorFormatId("flattened")) {
+data object SelectorChannelFormatIndexGrouped :
+    SelectorChannelFormat<SelectorChannelFormatIndexGrouped.Config>(SelectorFormatId("index-grouped")) {
     @Immutable
     @Serializable
     data class Config(
         @Language("css")
-        val selectChannels: String = "body > div.box-width.cor5 > div.anthology.wow.fadeInUp.animated > div.anthology-tab.nav-swiper.b-b.br div.swiper-wrapper a.swiper-slide",
+        val selectChannelNames: String = ".anthology-tab > .swiper-wrapper a",
+        @Language("regexp")
+        val matchChannelName: String = """(?<ch>.+?)(\d+?)""", // empty to use full text
         @Language("css")
-        val selectLists: String = "body > div.box-width.cor5 > div.anthology.wow.fadeInUp.animated > a",
+        val selectEpisodeLists: String = ".anthology-list-box",
         @Language("css")
-        val selectElements: String = "a",
+        val selectEpisodesFromList: String = "a",
+
         @Language("regexp")
         val matchEpisodeSortFromName: String = DEFAULT_MATCH_EPISODE_SORT_FROM_NAME,
     ) : SelectorFormatConfig {
         override fun isValid(): Boolean {
-            return selectChannels.isNotBlank() && selectLists.isNotBlank() && selectElements.isNotBlank() && matchEpisodeSortFromName.isNotBlank()
+            return selectChannelNames.isNotBlank() && selectEpisodeLists.isNotBlank() && selectEpisodesFromList.isNotBlank() && matchEpisodeSortFromName.isNotBlank()
         }
     }
 
@@ -92,40 +93,98 @@ data object SelectorChannelFormatFlattened :
         baseUrl: String,
         config: Config,
     ): SelectedChannelEpisodes? {
-        val selectChannels = QueryParser.parseSelectorOrNull(config.selectChannels) ?: return null
-        val selectElements = QueryParser.parseSelectorOrNull(config.selectElements) ?: return null
-        val selectLists = QueryParser.parseSelectorOrNull(config.selectLists) ?: return null
-        val matchEpisodeSortFromNameRegex = Regex.parseOrNull(config.matchEpisodeSortFromName) ?: return null
-
-        val channels = page.select(selectChannels)
-            .map { e -> e.text().trim() }
-
-        fun parseEps(ep: Element, channel: String?): List<WebSearchEpisodeInfo> {
-            return ep.select(selectElements).mapNotNull { a ->
-                val text = a.text()
-                if (text in channels) return@mapNotNull null
-
-                val href = a.attr("title").takeIf { it.isNotBlank() } ?: a.attr("href")
-                WebSearchEpisodeInfo(
-                    channel = channel,
-                    name = text,
-                    episodeSort = matchEpisodeSortFromNameRegex.find(text)?.groups?.get("ep")?.value
-                        ?.let { EpisodeSort(it) }
-                        ?: EpisodeSort(text),
-                    playUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
-                )
+        val selectChannelNames = QueryParser.parseSelectorOrNull(config.selectChannelNames) ?: return null
+        // null to use full text
+        val matchChannelName = config.matchChannelName.let { expr ->
+            if (expr.isEmpty()) {
+                null
+            } else {
+                Regex.parseOrNull(expr) // this null means invalid regex, which is not acceptable
+                    ?: return null
             }
         }
+        val selectEpisodesFromList = QueryParser.parseSelectorOrNull(config.selectEpisodesFromList) ?: return null
+        val selectLists = QueryParser.parseSelectorOrNull(config.selectEpisodeLists) ?: return null
+        val matchEpisodeSortFromNameRegex = Regex.parseOrNull(config.matchEpisodeSortFromName) ?: return null
+
+        val channelNames = page.select(selectChannelNames)
+            .mapNotNull { e ->
+                val text = e.text().trim().takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                if (matchChannelName == null) {
+                    text
+                } else {
+                    matchChannelName.findGroupOrFullText(text, "ch") // null means no match
+                }
+            }
+
+        val lists = page.select(selectLists)
+
+        val episodes = lists.asSequence()
+            .zip(channelNames.asSequence()) { list, channelName ->
+                list.select(selectEpisodesFromList).mapNotNull { a ->
+                    val text = a.text()
+//                if (text in channelNames) return@mapNotNull null
+
+                    val href = a.attr("href")
+                    WebSearchEpisodeInfo(
+                        channel = channelName,
+                        name = text,
+                        episodeSort = matchEpisodeSortFromNameRegex.findGroupOrFullText(text, "ep")
+                            ?.let { EpisodeSort(it) }
+                            ?: EpisodeSort(text),
+                        playUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
+                    )
+                }
+            }
+            .flatten()
 
         return SelectedChannelEpisodes(
-            channels,
-            page.select(selectLists)
-                .flatMapIndexed { i, e ->
-                    val channel = channels.getOrNull(i)
-                    parseEps(e, channel)
-                },
+            channelNames,
+            episodes.toList(),
         )
     }
+
+    // 注释掉的是 flatten 实现, 名字包含 channel (但没有测试过)
+
+//    override fun select(
+//        page: Element,
+//        baseUrl: String,
+//        config: Config,
+//    ): SelectedChannelEpisodes? {
+//        val selectChannels = QueryParser.parseSelectorOrNull(config.selectChannelNames) ?: return null
+//        val selectElements = QueryParser.parseSelectorOrNull(config.selectEpisodesFromList) ?: return null
+//        val selectLists = QueryParser.parseSelectorOrNull(config.selectLists) ?: return null
+//        val matchEpisodeSortFromNameRegex = Regex.parseOrNull(config.matchEpisodeSortFromName) ?: return null
+//
+//        val channels = page.select(selectChannels)
+//            .map { e -> e.text().trim() }
+//
+//        fun parseEps(ep: Element, channel: String?): List<WebSearchEpisodeInfo> {
+//            return ep.select(selectElements).mapNotNull { a ->
+//                val text = a.text()
+//                if (text in channels) return@mapNotNull null
+//
+//                val href = a.attr("title").takeIf { it.isNotBlank() } ?: a.attr("href")
+//                WebSearchEpisodeInfo(
+//                    channel = channel,
+//                    name = text,
+//                    episodeSort = matchEpisodeSortFromNameRegex.find(text)?.groups?.get("ep")?.value
+//                        ?.let { EpisodeSort(it) }
+//                        ?: EpisodeSort(text),
+//                    playUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
+//                )
+//            }
+//        }
+//
+//        return SelectedChannelEpisodes(
+//            channels,
+//            page.select(selectLists)
+//                .flatMapIndexed { i, e ->
+//                    val channel = channels.getOrNull(i)
+//                    parseEps(e, channel)
+//                },
+//        )
+//    }
 }
 
 /**
@@ -165,7 +224,7 @@ data object SelectorChannelFormatNoChannel :
                 WebSearchEpisodeInfo(
                     channel = null,
                     name = text,
-                    episodeSort = regex.find(text)?.groups?.get("ep")?.value
+                    episodeSort = regex.findGroupOrFullText(text, groupName = "ep")
                         ?.let { EpisodeSort(it) }
                         ?: EpisodeSort(text),
                     playUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
@@ -174,3 +233,29 @@ data object SelectorChannelFormatNoChannel :
         )
     }
 }
+
+/**
+ * 匹配并提取 group [groupName]. 如果没有 group, 就返回整个 text.
+ *
+ * 当未匹配到时返回 `null`.
+ */
+private fun Regex.findGroupOrFullText(
+    text: String,
+    groupName: String,
+): String? {
+    val result = find(text) ?: return null
+    // matched
+    result.groups.getOrNull(groupName)?.let { group ->
+        return group.value
+    }
+    return text
+}
+
+
+private fun MatchGroupCollection.getOrNull(name: String): MatchGroup? {
+    return try {
+        get(name)
+    } catch (_: IllegalArgumentException) {
+        return null
+    }
+} 

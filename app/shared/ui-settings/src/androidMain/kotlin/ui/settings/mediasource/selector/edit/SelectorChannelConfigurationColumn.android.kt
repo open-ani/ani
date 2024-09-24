@@ -16,7 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
+import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
@@ -49,7 +49,7 @@ private fun PreviewSelectorChannelConfigurationColumnNotFound() = ProvideFoundat
 @Preview
 private fun PreviewSelectorChannelConfigurationColumnFlattened() = ProvideFoundationCompositionLocalsForPreview {
     Surface {
-        SelectorChannelFormatColumn(SelectorChannelFormatFlattened.id, rememberTestSelectorConfigurationState())
+        SelectorChannelFormatColumn(SelectorChannelFormatIndexGrouped.id, rememberTestSelectorConfigurationState())
     }
 }
 

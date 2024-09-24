@@ -14,7 +14,7 @@ import androidx.compose.runtime.Stable
 import io.ktor.http.URLBuilder
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
+import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatConfig
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
@@ -37,7 +37,7 @@ data class SelectorSearchConfig(
     val selectorSubjectFormatIndexed: SelectorSubjectFormatIndexed.Config = SelectorSubjectFormatIndexed.Config(),
     // Phase 3, for each subject, select channels
     val channelFormatId: SelectorFormatId = SelectorChannelFormatNoChannel.id,
-    val selectorChannelFormatFlattened: SelectorChannelFormatFlattened.Config = SelectorChannelFormatFlattened.Config(),
+    val selectorChannelFormatFlattened: SelectorChannelFormatIndexGrouped.Config = SelectorChannelFormatIndexGrouped.Config(),
     val selectorChannelFormatNoChannel: SelectorChannelFormatNoChannel.Config = SelectorChannelFormatNoChannel.Config(),
 //    /**
 //     * Regex. Group names:
@@ -140,7 +140,7 @@ fun <C : SelectorFormatConfig> SelectorSearchConfig.getFormatConfig(format: Sele
 fun <C : SelectorFormatConfig> SelectorSearchConfig.getFormatConfig(format: SelectorChannelFormat<C>): C {
     @Suppress("UNCHECKED_CAST")
     return when (format) {
-        SelectorChannelFormatFlattened -> selectorChannelFormatFlattened as C
+        SelectorChannelFormatIndexGrouped -> selectorChannelFormatFlattened as C
         SelectorChannelFormatNoChannel -> selectorChannelFormatNoChannel as C
     }
 }

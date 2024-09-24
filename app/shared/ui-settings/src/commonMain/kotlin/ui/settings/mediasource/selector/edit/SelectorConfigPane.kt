@@ -41,7 +41,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
+import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
@@ -337,14 +337,11 @@ private fun SelectorChannelSelectionButtonRow(
         }
 
         for ((index, selectorChannelFormat) in state.allChannelFormats.withIndex()) {
-            Btn(
-                selectorChannelFormat.id, index,
-                enabled = selectorChannelFormat == SelectorChannelFormatNoChannel,
-            ) {
+            Btn(selectorChannelFormat.id, index) {
                 Text(
                     when (selectorChannelFormat) { // type-safe to handle all formats
                         SelectorChannelFormatNoChannel -> "不区分线路"
-                        SelectorChannelFormatFlattened -> "(其他暂未支持)"
+                        SelectorChannelFormatIndexGrouped -> "线路分组"
                     },
                     softWrap = false,
                 )

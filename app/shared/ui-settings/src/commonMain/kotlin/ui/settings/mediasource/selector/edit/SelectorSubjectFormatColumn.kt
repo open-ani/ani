@@ -46,7 +46,7 @@ internal fun SelectorSubjectConfigurationColumn(
             Text(
                 "单个表达式，选取一些 <a>，根据其 title 属性或 text 确定名称，href 属性确定链接",
                 Modifier,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.labelLarge,
             )
 
             val conf = state.subjectFormatA
@@ -76,7 +76,7 @@ internal fun SelectorSubjectConfigurationColumn(
             Text(
                 "两个表达式，分别选取条目名称列表和链接列表，按顺序一一对应",
                 Modifier,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.labelLarge,
             )
             val conf = state.subjectFormatIndex
             OutlinedTextField(

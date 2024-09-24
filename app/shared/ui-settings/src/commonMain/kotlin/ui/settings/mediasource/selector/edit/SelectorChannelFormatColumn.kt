@@ -30,7 +30,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
+import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
@@ -47,27 +47,53 @@ internal fun SelectorChannelFormatColumn(
 ) {
     Column(modifier) {
         when (SelectorChannelFormat.findById(formatId)) {
-            SelectorChannelFormatFlattened -> Column(
+            SelectorChannelFormatIndexGrouped -> Column(
                 verticalArrangement = Arrangement.spacedBy(currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding),
             ) {
+                Text(
+                    "先提取线路名称列表，再提取剧集面板列表，按顺序对应后，再分别从每个剧集面板中提取剧集",
+                    Modifier,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+
                 val conf = state.channelFormatIndexed
                 OutlinedTextField(
-                    conf.selectChannels, { conf.selectChannels = it },
+                    conf.selectChannelNames, { conf.selectChannelNames = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter(),
-                    label = { Text("提取线路名称列表") },
+                    label = { Text("从页面中提取线路名称列表") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
-                    supportingText = { Text("CSS Selector 表达式。将会读取结果的 text") },
-                    isError = conf.selectChannelsIsError,
+                    supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个剧集，将会读取其 text 作为线路名称") },
+                    isError = conf.selectChannelNamesIsError,
                 )
                 OutlinedTextField(
-                    conf.selectLists, { conf.selectLists = it },
+                    conf.matchChannelName, { conf.matchChannelName = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter(),
-                    label = { Text("提取所有线路的剧集列表") },
+                    label = { Text("匹配线路名称") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                    supportingText = { Text("正则表达式。从上面提取到的元素 text 中，匹配线路名称。期望名为 ch 的分组，留空则使用整个 text。") },
+                    isError = conf.matchChannelNameIsError,
+                )
+
+                OutlinedTextField(
+                    conf.selectEpisodeLists, { conf.selectEpisodeLists = it },
+                    Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = 8.dp),
+                    label = { Text("从页面中提取剧集面板列表") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                    supportingText = { Text("CSS Selector 表达式。期望返回一些 <div>，每个对应一个剧集面板。剧集面板内通常包含 1-12 集按钮") },
+                    isError = conf.selectEpisodeListsIsError,
+                )
+
+                OutlinedTextField(
+                    conf.selectEpisodesFromList, { conf.selectEpisodesFromList = it },
+                    Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = 8.dp),
+                    label = { Text("从剧集面板中提取剧集") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                     supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个剧集，将会读取其 href 属性和 text") },
-                    isError = conf.selectListsIsError,
+                    isError = conf.selectEpisodesFromListIsError,
                 )
                 OutlinedTextField(
                     conf.matchEpisodeSortFromName, { conf.matchEpisodeSortFromName = it },
@@ -75,7 +101,7 @@ internal fun SelectorChannelFormatColumn(
                     label = { Text("从剧集名称中匹配序号") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
-                    supportingText = { Text("正则表达式查找。期望名为 ep 的分组") },
+                    supportingText = { Text("正则表达式查找。期望名为 ep 的分组，数字为佳") },
                     isError = conf.matchEpisodeSortFromNameIsError,
                 )
             }
@@ -99,7 +125,7 @@ internal fun SelectorChannelFormatColumn(
                     label = { Text("从剧集名称中匹配序号") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
-                    supportingText = { Text("正则表达式查找。期望名为 ep 的分组") },
+                    supportingText = { Text("正则表达式查找。期望名为 ep 的分组，数字为佳") },
                     isError = conf.matchEpisodeSortFromNameIsError,
                 )
             }

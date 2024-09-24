@@ -67,7 +67,7 @@ object SelectorTestEpisodeListGridDefaults {
         modifier: Modifier = Modifier,
     ) {
         EpisodeCard(
-            title = { Text(episode.name) },
+            title = { Text(episode.nameWithChannel) },
             { onClick() },
             modifier,
         ) {

@@ -15,11 +15,12 @@ import androidx.compose.runtime.getValue
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
+import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
+import me.him188.ani.app.data.source.media.source.web.format.parseOrNull
 import me.him188.ani.app.ui.settings.danmaku.isValidRegex
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.utils.xml.QueryParser
@@ -139,8 +140,8 @@ class SelectorConfigState(
     @Stable
     inner class ChannelFormatIndexedConfig {
         private fun <T : Any> prop(
-            get: (SelectorChannelFormatFlattened.Config) -> T,
-            set: SelectorChannelFormatFlattened.Config.(T) -> SelectorChannelFormatFlattened.Config,
+            get: (SelectorChannelFormatIndexGrouped.Config) -> T,
+            set: SelectorChannelFormatIndexGrouped.Config.(T) -> SelectorChannelFormatIndexGrouped.Config,
         ) = argumentsStorage.prop(
             { it.searchConfig.selectorChannelFormatFlattened.let(get) },
             {
@@ -153,13 +154,22 @@ class SelectorConfigState(
             SelectorMediaSourceArguments.Default.searchConfig.selectorChannelFormatFlattened.let(get),
         )
 
-        var selectChannels by prop({ it.selectChannels }, { copy(selectChannels = it) })
-        val selectChannelsIsError by derivedStateOf {
-            QueryParser.parseSelectorOrNull(selectChannels) == null
+        var selectChannelNames by prop({ it.selectChannelNames }, { copy(selectChannelNames = it) })
+        val selectChannelNamesIsError by derivedStateOf {
+            QueryParser.parseSelectorOrNull(selectChannelNames) == null
         }
-        var selectLists by prop({ it.selectLists }, { copy(selectLists = it) })
-        val selectListsIsError by derivedStateOf {
-            QueryParser.parseSelectorOrNull(selectLists) == null
+        var matchChannelName by prop({ it.matchChannelName }, { copy(matchChannelName = it) })
+        val matchChannelNameIsError by derivedStateOf {
+            if (matchChannelName.isEmpty()) false
+            else Regex.parseOrNull(matchChannelName) == null
+        }
+        var selectEpisodeLists by prop({ it.selectEpisodeLists }, { copy(selectEpisodeLists = it) })
+        val selectEpisodeListsIsError by derivedStateOf {
+            QueryParser.parseSelectorOrNull(selectEpisodeLists) == null
+        }
+        var selectEpisodesFromList by prop({ it.selectEpisodesFromList }, { copy(selectEpisodesFromList = it) })
+        val selectEpisodesFromListIsError by derivedStateOf {
+            QueryParser.parseSelectorOrNull(selectEpisodesFromList) == null
         }
         var matchEpisodeSortFromName by prop({ it.matchEpisodeSortFromName }, { copy(matchEpisodeSortFromName = it) })
         val matchEpisodeSortFromNameIsError by derivedStateOf {

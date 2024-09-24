@@ -48,12 +48,15 @@ sealed class SelectorTestEpisodeListResult : RefreshResult {
 
 @Immutable
 class SelectorTestEpisodePresentation(
+    val channel: String?,
     val name: String,
     val episodeSort: EpisodeSort?,
     val playUrl: String,
     val tags: List<MatchTag>,
     val origin: Element?,
 ) {
+    val nameWithChannel: String = "[$channel] $name"
+
     val id: Uuid = Uuid.random()
 
     companion object {
@@ -64,6 +67,7 @@ class SelectorTestEpisodePresentation(
             config: SelectorSearchConfig,
         ): SelectorTestEpisodePresentation {
             return SelectorTestEpisodePresentation(
+                channel = info.channel,
                 name = info.name,
                 episodeSort = info.episodeSort,
                 playUrl = info.playUrl,

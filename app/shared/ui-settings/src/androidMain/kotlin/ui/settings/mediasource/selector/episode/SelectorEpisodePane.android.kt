@@ -69,6 +69,7 @@ fun PreviewSelectorEpisodePaneExpanded() {
 internal val TestSelectorTestEpisodePresentations
     get() = listOf(
         SelectorTestEpisodePresentation(
+            channel = null,
             name = "Test Episode 2",
             episodeSort = EpisodeSort(2),
             playUrl = "https://example.com",
@@ -79,6 +80,7 @@ internal val TestSelectorTestEpisodePresentations
             origin = null,
         ),
         SelectorTestEpisodePresentation(
+            channel = null,
             name = "Test Episode Unknown",
             episodeSort = null,
             playUrl = "https://example.com",
