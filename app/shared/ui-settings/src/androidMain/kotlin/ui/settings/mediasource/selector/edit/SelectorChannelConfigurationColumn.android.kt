@@ -41,7 +41,7 @@ fun rememberTestSelectorConfigurationState(
 @Preview
 private fun PreviewSelectorChannelConfigurationColumnNotFound() = ProvideFoundationCompositionLocalsForPreview {
     Surface {
-        SelectorChannelConfigurationColumn(SelectorFormatId("dummy"), rememberTestSelectorConfigurationState())
+        SelectorChannelFormatColumn(SelectorFormatId("dummy"), rememberTestSelectorConfigurationState())
     }
 }
 
@@ -49,7 +49,7 @@ private fun PreviewSelectorChannelConfigurationColumnNotFound() = ProvideFoundat
 @Preview
 private fun PreviewSelectorChannelConfigurationColumnFlattened() = ProvideFoundationCompositionLocalsForPreview {
     Surface {
-        SelectorChannelConfigurationColumn(SelectorChannelFormatFlattened.id, rememberTestSelectorConfigurationState())
+        SelectorChannelFormatColumn(SelectorChannelFormatFlattened.id, rememberTestSelectorConfigurationState())
     }
 }
 
@@ -57,6 +57,6 @@ private fun PreviewSelectorChannelConfigurationColumnFlattened() = ProvideFounda
 @Preview
 private fun PreviewSelectorChannelConfigurationColumnNoChannel() = ProvideFoundationCompositionLocalsForPreview {
     Surface {
-        SelectorChannelConfigurationColumn(SelectorChannelFormatNoChannel.id, rememberTestSelectorConfigurationState())
+        SelectorChannelFormatColumn(SelectorChannelFormatNoChannel.id, rememberTestSelectorConfigurationState())
     }
 }

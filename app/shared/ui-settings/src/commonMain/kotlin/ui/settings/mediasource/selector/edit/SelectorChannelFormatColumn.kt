@@ -39,7 +39,7 @@ import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
 import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 
 @Composable
-internal fun SelectorChannelConfigurationColumn(
+internal fun SelectorChannelFormatColumn(
     formatId: SelectorFormatId,
     state: SelectorConfigState,
     modifier: Modifier = Modifier,
@@ -105,22 +105,25 @@ internal fun SelectorChannelConfigurationColumn(
             }
 
             null -> {
-                Column(
-                    Modifier.align(Alignment.CenterHorizontally),
-                ) {
-                    ProvideTextStyleContentColor(MaterialTheme.typography.bodyLarge, MaterialTheme.colorScheme.error) {
-                        Icon(
-                            Icons.Rounded.Error, null,
-                            Modifier.align(Alignment.CenterHorizontally).size(48.dp),
-                        )
-                        Text(
-                            "当前版本不支持该配置类型：${formatId.value}\n\n这可能是导入了一个在更高版本编辑的配置导致的\n可升级 Ani 或切换到其他配置类型",
-                            Modifier.padding(top = 24.dp),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
+                UnsupportedFormatIdHint(formatId, Modifier.align(Alignment.CenterHorizontally))
             }
+        }
+    }
+}
+
+@Composable
+internal fun UnsupportedFormatIdHint(formatId: SelectorFormatId, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        ProvideTextStyleContentColor(MaterialTheme.typography.bodyLarge, MaterialTheme.colorScheme.error) {
+            Icon(
+                Icons.Rounded.Error, null,
+                Modifier.align(Alignment.CenterHorizontally).size(48.dp),
+            )
+            Text(
+                "当前版本不支持该配置类型：${formatId.value}\n\n这可能是导入了一个在更高版本编辑的配置导致的\n可升级 Ani 或切换到其他配置类型",
+                Modifier.padding(top = 24.dp),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

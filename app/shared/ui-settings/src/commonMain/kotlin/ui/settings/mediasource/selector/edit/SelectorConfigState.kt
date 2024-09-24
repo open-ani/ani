@@ -17,7 +17,9 @@ import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
 import me.him188.ani.app.ui.settings.danmaku.isValidRegex
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.utils.xml.QueryParser
@@ -60,6 +62,11 @@ class SelectorConfigState(
 
     // region SubjectFormat
 
+    val allSubjectFormats get() = SelectorSubjectFormat.entries
+    var subjectFormatId by argumentsStorage.prop(
+        { it.searchConfig.subjectFormatId }, { copy(searchConfig = searchConfig.copy(subjectFormatId = it)) },
+        SelectorMediaSourceArguments.Default.searchConfig.subjectFormatId,
+    )
     val subjectFormatA = SubjectFormatAConfig()
 
     @Stable
@@ -83,6 +90,37 @@ class SelectorConfigState(
         val selectListsIsError by derivedStateOf {
             QueryParser.parseSelectorOrNull(selectLists) == null
         }
+        var preferShorterName by prop({ it.preferShorterName }, { copy(preferShorterName = it) })
+    }
+
+    val subjectFormatIndex = SubjectFormatIndexedConfig()
+
+    inner class SubjectFormatIndexedConfig {
+        private fun <T : Any> prop(
+            get: (SelectorSubjectFormatIndexed.Config) -> T,
+            set: SelectorSubjectFormatIndexed.Config.(T) -> SelectorSubjectFormatIndexed.Config,
+        ) = argumentsStorage.prop(
+            { it.searchConfig.selectorSubjectFormatIndexed.let(get) },
+            {
+                copy(
+                    searchConfig = searchConfig.copy(
+                        selectorSubjectFormatIndexed = searchConfig.selectorSubjectFormatIndexed.set(it),
+                    ),
+                )
+            },
+            SelectorMediaSourceArguments.Default.searchConfig.selectorSubjectFormatIndexed.let(get),
+        )
+
+        var selectNames by prop({ it.selectNames }, { copy(selectNames = it) })
+        val selectNamesIsError by derivedStateOf {
+            QueryParser.parseSelectorOrNull(selectNames) == null
+        }
+
+        var selectLinks by prop({ it.selectLinks }, { copy(selectLinks = it) })
+        val selectLinksIsError by derivedStateOf {
+            QueryParser.parseSelectorOrNull(selectLinks) == null
+        }
+
         var preferShorterName by prop({ it.preferShorterName }, { copy(preferShorterName = it) })
     }
 

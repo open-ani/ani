@@ -10,12 +10,14 @@
 package me.him188.ani.app.data.source.media.source.web.format
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.util.fastMapNotNull
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
 import me.him188.ani.utils.xml.Element
 import me.him188.ani.utils.xml.QueryParser
 import me.him188.ani.utils.xml.parseSelectorOrNull
 import org.intellij.lang.annotations.Language
+import kotlin.contracts.contract
 
 /**
  * 决定如何匹配条目
@@ -34,7 +36,10 @@ sealed class SelectorSubjectFormat<in Config : SelectorFormatConfig>(override va
 
     companion object {
         val entries by lazy { // 必须 lazy, 否则可能获取到 null
-            listOf(checkNotNull(SelectorSubjectFormatA)) // checkNotNull is needed to be fail-fast
+            listOf(
+                checkNotNull(SelectorSubjectFormatA),
+                checkNotNull(SelectorSubjectFormatIndexed),
+            ) // checkNotNull is needed to be fail-fast
         }
 
         fun findById(id: SelectorFormatId): SelectorSubjectFormat<*>? {
@@ -74,7 +79,8 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
             WebSearchSubjectInfo(
                 internalId = id,
                 name = name,
-                subjectDetailsPageUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
+                fullUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
+                partialUrl = href,
                 origin = a,
             )
         }.apply {
@@ -85,4 +91,77 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
             }
         }
     }
+}
+
+
+/**
+ * 一个语句 select 出所有的名字, 然后一个语句 select 所有的按钮 `<a>`, 按顺序对应
+ */
+data object SelectorSubjectFormatIndexed :
+    SelectorSubjectFormat<SelectorSubjectFormatIndexed.Config>(SelectorFormatId("indexed")) {
+    @Immutable
+    @Serializable
+    data class Config(
+        @Language("css")
+        val selectNames: String = ".search-box .thumb-content > .thumb-txt",
+        @Language("css")
+        val selectLinks: String = ".search-box .thumb-menu > a",
+        val preferShorterName: Boolean = true,
+    ) : SelectorFormatConfig {
+        override fun isValid(): Boolean {
+            return selectNames.isNotBlank()
+        }
+    }
+
+    override fun select(
+        document: Element,
+        baseUrl: String,
+        config: Config,
+    ): List<WebSearchSubjectInfo>? {
+        val selectNames = QueryParser.parseSelectorOrNull(config.selectNames) ?: return null
+        val selectLinks = QueryParser.parseSelectorOrNull(config.selectLinks) ?: return null
+
+
+        val names: List<String> = document.select(selectNames).fastMapNotNull { a ->
+            a.text().takeIf { it.isNotBlank() }
+        }
+
+        val links = document.select(selectLinks).fastMapNotNull { a ->
+            val href = a.attr("href")
+            href.takeIf { it.isNotBlank() }
+        }
+
+        return names.fastZipNotNullToMutable(links) { name, href ->
+            val id = href.substringBeforeLast(".html").substringAfterLast("/")
+            WebSearchSubjectInfo(
+                internalId = id,
+                name = name,
+                fullUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
+                partialUrl = href,
+                origin = null,
+            )
+        }.apply {
+            if (config.preferShorterName) {
+                sortBy { info ->
+                    info.name.length
+                }
+            }
+        }
+    }
+}
+
+private inline fun <T, R, V : Any> List<T>.fastZipNotNullToMutable(
+    other: List<R>,
+    transform: (a: T, b: R) -> V?
+): MutableList<V> {
+    contract { callsInPlace(transform) }
+    val minSize = minOf(size, other.size)
+    val target = ArrayList<V>(minSize)
+    for (i in 0 until minSize) {
+        val res = transform(get(i), other[i])
+        if (res != null) {
+            target += res
+        }
+    }
+    return target
 }

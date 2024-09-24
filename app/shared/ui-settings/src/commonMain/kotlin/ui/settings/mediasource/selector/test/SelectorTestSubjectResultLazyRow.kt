@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -50,7 +50,10 @@ internal fun SelectorTestSubjectResultLazyRow(
                 title = { Text("1\n2") },
                 isSelected = false,
                 onClick = {},
-                tags = { Tag { Text("Dummy") } },
+                tags = {
+                    Tag { Text("Dummy") }
+                    Tag { Text("https://example.com/example/example") }
+                },
             )
         }
         val itemSize = measurable.measure(constraints)
@@ -61,7 +64,7 @@ internal fun SelectorTestSubjectResultLazyRow(
                     item,
                     selectedItemIndex == index,
                     onClick = { onSelect(index, item) },
-                    Modifier.height(itemSize.height.toDp()), // 使用固定高度
+                    Modifier.heightIn(min = itemSize.height.toDp()),
                 )
             }
         }

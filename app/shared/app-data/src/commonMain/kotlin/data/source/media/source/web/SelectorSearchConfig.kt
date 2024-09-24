@@ -20,6 +20,7 @@ import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatConfi
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
 import me.him188.ani.app.data.source.media.source.web.format.parseOrNull
 import org.intellij.lang.annotations.Language
 
@@ -33,6 +34,7 @@ data class SelectorSearchConfig(
     // Phase 2, for search result, select subjects
     val subjectFormatId: SelectorFormatId = SelectorSubjectFormatA.id,
     val selectorSubjectFormatA: SelectorSubjectFormatA.Config = SelectorSubjectFormatA.Config(),
+    val selectorSubjectFormatIndexed: SelectorSubjectFormatIndexed.Config = SelectorSubjectFormatIndexed.Config(),
     // Phase 3, for each subject, select channels
     val channelFormatId: SelectorFormatId = SelectorChannelFormatNoChannel.id,
     val selectorChannelFormatFlattened: SelectorChannelFormatFlattened.Config = SelectorChannelFormatFlattened.Config(),
@@ -128,6 +130,7 @@ fun <C : SelectorFormatConfig> SelectorSearchConfig.getFormatConfig(format: Sele
     @Suppress("UNCHECKED_CAST")
     return when (format) {
         SelectorSubjectFormatA -> selectorSubjectFormatA as C
+        SelectorSubjectFormatIndexed -> selectorSubjectFormatIndexed as C
     }
 }
 

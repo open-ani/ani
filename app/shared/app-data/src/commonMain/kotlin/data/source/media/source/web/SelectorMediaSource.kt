@@ -153,7 +153,7 @@ class SelectorMediaSource(
                     }
                 }
                 .mapNotNull { subject ->
-                    doHttpGet(subject.subjectDetailsPageUrl)
+                    doHttpGet(subject.fullUrl)
                         .getOrNull()
                 }
                 .asSequence()

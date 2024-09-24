@@ -44,6 +44,9 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatFlattened
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
 import me.him188.ani.app.ui.foundation.animation.StandardEasing
 import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
@@ -141,27 +144,25 @@ internal fun SelectorConfigurationPane(
                     },
                     colors = listItemColors,
                 )
+            }
 
-                val conf = state.subjectFormatA
-                OutlinedTextField(
-                    conf.selectLists, { conf.selectLists = it },
-                    Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = verticalSpacing),
-                    label = { Text("提取条目列表") },
-                    supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个条目，将会读取其 href 属性和 text") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    shape = textFieldShape,
-                    isError = conf.selectListsIsError,
-                )
-                ListItem(
-                    headlineContent = { Text("选择最短标题") },
-                    Modifier
-                        .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
-                        .clickable { conf.preferShorterName = !conf.preferShorterName },
-                    supportingContent = { Text("选择满足匹配的标题最短的条目。可避免为第一季匹配到第二季") },
-                    trailingContent = {
-                        Switch(conf.preferShorterName, { conf.preferShorterName = it })
-                    },
-                    colors = listItemColors,
+            SelectorSubjectFormatSelectionButtonRow(
+                state,
+                Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            )
+
+            AnimatedContent(
+                SelectorSubjectFormat.findById(state.subjectFormatId),
+                Modifier
+                    .padding(vertical = 16.dp)
+                    .fillMaxWidth()
+                    .animateContentSize(tween(EasingDurations.standard, easing = StandardEasing)),
+                transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+            ) { format ->
+                SelectorSubjectConfigurationColumn(
+                    format, state,
+                    textFieldShape, verticalSpacing, listItemColors,
+                    Modifier.fillMaxWidth(),
                 )
             }
 
@@ -187,7 +188,7 @@ internal fun SelectorConfigurationPane(
                     .animateContentSize(tween(EasingDurations.standard, easing = StandardEasing)),
                 transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
             ) { formatId ->
-                SelectorChannelConfigurationColumn(formatId, state, Modifier.fillMaxWidth())
+                SelectorChannelFormatColumn(formatId, state, Modifier.fillMaxWidth())
             }
 
             Row(Modifier.padding(top = verticalSpacing, bottom = 12.dp)) {
@@ -273,6 +274,43 @@ internal fun SelectorConfigurationPane(
             }
         }
 
+    }
+}
+
+
+@Composable
+private fun SelectorSubjectFormatSelectionButtonRow(
+    state: SelectorConfigState,
+    modifier: Modifier = Modifier,
+) {
+    SingleChoiceSegmentedButtonRow(modifier) {
+        @Composable
+        fun Btn(
+            id: SelectorFormatId, index: Int,
+            enabled: Boolean = true,
+            label: @Composable () -> Unit,
+        ) {
+            SegmentedButton(
+                state.subjectFormatId == id,
+                { state.subjectFormatId = id },
+                SegmentedButtonDefaults.itemShape(index, state.allSubjectFormats.size),
+                icon = { SegmentedButtonDefaults.Icon(state.subjectFormatId == id) },
+                label = label,
+                enabled = enabled,
+            )
+        }
+
+        for ((index, format) in state.allSubjectFormats.withIndex()) {
+            Btn(format.id, index) {
+                Text(
+                    when (format) { // type-safe to handle all formats
+                        SelectorSubjectFormatA -> "单标签"
+                        SelectorSubjectFormatIndexed -> "多标签"
+                    },
+                    softWrap = false,
+                )
+            }
+        }
     }
 }
 

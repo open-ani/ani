@@ -15,7 +15,8 @@ import me.him188.ani.utils.xml.Element
 data class WebSearchSubjectInfo(
     val internalId: String,
     val name: String,
-    val subjectDetailsPageUrl: String,
+    val fullUrl: String,
+    val partialUrl: String,
     val origin: Element?,
 )
 

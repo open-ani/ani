@@ -12,14 +12,22 @@ package me.him188.ani.app.ui.settings.mediasource.selector.test
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowOutward
+import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -28,6 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
@@ -38,6 +49,7 @@ import me.him188.ani.app.ui.foundation.layout.only
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.mediasource.EditMediaSourceTestDataCardDefaults
 import me.him188.ani.app.ui.settings.mediasource.RefreshIndicatedHeadlineRow
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationDefaults
@@ -112,8 +124,8 @@ fun SharedTransitionScope.SelectorTestPane(
             state.selectedSubject,
             Modifier.padding(contentPadding.only(PaddingValuesSides.Horizontal)),
             transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-        ) { selectedSubjectIndex ->
-            if (selectedSubjectIndex != null) {
+        ) { selectedSubject ->
+            if (selectedSubject != null) {
                 Column {
                     RefreshIndicatedHeadlineRow(
                         headline = { Text(SelectorConfigurationDefaults.STEP_NAME_2) },
@@ -121,6 +133,36 @@ fun SharedTransitionScope.SelectorTestPane(
                         result = state.episodeListSearchSelectResult,
                         Modifier.padding(top = verticalSpacing),
                     )
+
+                    val url = state.selectedSubject?.subjectDetailsPageUrl ?: ""
+                    val clipboard = LocalClipboardManager.current
+                    val toaster = LocalToaster.current
+                    Row(
+                        Modifier.fillMaxWidth()
+                            .clickable(onClickLabel = "复制条目链接") {
+                                clipboard.setText(AnnotatedString(url))
+                                toaster.toast("已复制")
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.Rounded.Link,
+                            contentDescription = null,
+                            Modifier.padding(end = 16.dp).size(24.dp),
+                        )
+                        Text(
+                            url,
+                            Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        val uriHandler = LocalUriHandler.current
+                        IconButton({ uriHandler.openUri(url) }, Modifier.padding(start = 8.dp)) {
+                            Icon(
+                                Icons.Rounded.ArrowOutward,
+                                contentDescription = "打开条目页面",
+                            )
+                        }
+                    }
 
                     Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
                         FastLinearProgressIndicator(

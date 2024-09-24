@@ -62,7 +62,7 @@ data class SelectorTestSubjectPresentation(
             val tags = computeTags(info, query, config)
             return SelectorTestSubjectPresentation(
                 name = info.name,
-                subjectDetailsPageUrl = info.subjectDetailsPageUrl,
+                subjectDetailsPageUrl = info.fullUrl,
                 origin = origin,
                 tags = tags,
             )
@@ -81,6 +81,11 @@ data class SelectorTestSubjectPresentation(
                     } else {
                         emit("标题", isMatch = true)
                     }
+                }
+                if (info.fullUrl.isBlank()) {
+                    emit("链接", isMissing = true)
+                } else {
+                    emit(info.partialUrl, isMatch = true)
                 }
             }
         }

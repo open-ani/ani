@@ -74,10 +74,10 @@ class TestSelectorMediaSourceEngine : SelectorMediaSourceEngine() {
 
     override fun selectSubjects(document: Element, config: SelectorSearchConfig): List<WebSearchSubjectInfo> {
         return listOf(
-            WebSearchSubjectInfo("a", "Test Subject", "https://example.com", null),
-            WebSearchSubjectInfo("a", "Test Subject", "https://example.com", null),
-            WebSearchSubjectInfo("a", "Test Subject", "https://example.com", null),
-            WebSearchSubjectInfo("a", "Test Subject", "https://example.com", null),
+            WebSearchSubjectInfo("a", "Test Subject", "https://example.com/1.html", "1.html", null),
+            WebSearchSubjectInfo("a", "Test Subject", "https://example.com/2.html", "2.html", null),
+            WebSearchSubjectInfo("a", "Test Subject", "https://example.com/3.html", "3.html", null),
+            WebSearchSubjectInfo("a", "Test Subject", "https://example.com/4.html", "4.html", null),
         )
     }
 
