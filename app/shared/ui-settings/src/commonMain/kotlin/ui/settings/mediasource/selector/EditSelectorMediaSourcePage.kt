@@ -9,11 +9,17 @@
 
 package me.him188.ani.app.ui.settings.mediasource.selector
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
@@ -30,6 +36,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -50,6 +57,9 @@ import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.settings.mediasource.DropdownMenuExport
+import me.him188.ani.app.ui.settings.mediasource.DropdownMenuImport
+import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigState
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigurationPane
@@ -60,10 +70,13 @@ import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisod
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorTestAndEpisodePane
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestState
+import me.him188.ani.datasources.api.source.MediaSourceConfig
+import me.him188.ani.datasources.api.source.deserializeArgumentsFromString
+import me.him188.ani.datasources.api.source.serializeArgumentsToString
 import kotlin.coroutines.CoroutineContext
 
 class EditSelectorMediaSourcePageState(
-    argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
+    private val argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
     engine: SelectorMediaSourceEngine,
     webViewVideoExtractor: State<WebViewVideoExtractor?>,
     backgroundScope: CoroutineScope,
@@ -109,6 +122,23 @@ class EditSelectorMediaSourcePageState(
         context = context,
         flowDispatcher = flowDispatcher,
     )
+
+
+    fun parseSerializedArguments(string: String): SelectorMediaSourceArguments? {
+        return kotlin.runCatching {
+            MediaSourceConfig.deserializeArgumentsFromString(SelectorMediaSourceArguments.serializer(), string)
+        }.getOrNull()
+    }
+
+    fun serializeArguments(): String? {
+        return argumentsStorage.container?.let {
+            MediaSourceConfig.serializeArgumentsToString(SelectorMediaSourceArguments.serializer(), it)
+        }
+    }
+
+    fun importArguments(arguments: SelectorMediaSourceArguments) {
+        this.argumentsStorage.set(arguments)
+    }
 }
 
 @Composable
@@ -159,6 +189,28 @@ fun EditSelectorMediaSourcePage(
                                     Text("测试")
                                 }
                             }
+                            Box {
+                                var showDropdown by remember { mutableStateOf(false) }
+                                IconButton({ showDropdown = true }) {
+                                    Icon(Icons.Rounded.MoreVert, "更多")
+                                }
+                                DropdownMenu(showDropdown, { showDropdown = false }) {
+                                    MediaSourceConfigurationDefaults.DropdownMenuImport(
+                                        parseContent = { state.parseSerializedArguments(it) },
+                                        onImport = {
+                                            state.importArguments(it)
+                                            showDropdown = false
+                                        },
+                                        enabled = !state.configurationState.isLoading,
+                                    )
+                                    MediaSourceConfigurationDefaults.DropdownMenuExport(
+                                        encode = { state.serializeArguments() },
+                                        onDismissRequest = { showDropdown = false },
+                                        enabled = !state.configurationState.isLoading,
+                                    )
+                                }
+                            }
+
                         },
                         windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                         colors = AniThemeDefaults.topAppBarColors(),
