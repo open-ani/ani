@@ -10,7 +10,6 @@
 package me.him188.ani.app.data.source.media.source.web.format
 
 import androidx.compose.runtime.Immutable
-import androidx.compose.ui.util.fastMapNotNull
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
 import me.him188.ani.utils.xml.Element
@@ -122,11 +121,11 @@ data object SelectorSubjectFormatIndexed :
         val selectLinks = QueryParser.parseSelectorOrNull(config.selectLinks) ?: return null
 
 
-        val names: List<String> = document.select(selectNames).fastMapNotNull { a ->
+        val names: List<String> = document.select(selectNames).mapNotNull { a ->
             a.text().takeIf { it.isNotBlank() }
         }
 
-        val links = document.select(selectLinks).fastMapNotNull { a ->
+        val links = document.select(selectLinks).mapNotNull { a ->
             val href = a.attr("href")
             href.takeIf { it.isNotBlank() }
         }
