@@ -184,7 +184,7 @@ class SelectorMediaSource(
             }.merge()
     }
 
-    override val matcher: WebVideoMatcher by lazy(LazyThreadSafetyMode.NONE) {
+    override val matcher: WebVideoMatcher by lazy(LazyThreadSafetyMode.PUBLICATION) {
         WebVideoMatcher { url, _ ->
             engine.matchWebVideo(url, arguments.searchConfig.matchVideo)
         }

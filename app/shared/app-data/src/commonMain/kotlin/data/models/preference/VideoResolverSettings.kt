@@ -41,7 +41,7 @@ enum class WebViewDriver {
     }
 
     companion object {
-        val enabledEntries by lazy(LazyThreadSafetyMode.NONE) {
+        val enabledEntries by lazy {
             entries.sortedDescending()
         }
     }

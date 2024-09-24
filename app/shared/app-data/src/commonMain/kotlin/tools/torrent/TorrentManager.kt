@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.tools.torrent
 
 import kotlinx.coroutines.CoroutineName
@@ -52,7 +61,7 @@ class DefaultTorrentManager(
         )
     }
 
-    override val engines: List<TorrentEngine> by lazy(LazyThreadSafetyMode.NONE) {
+    override val engines: List<TorrentEngine> by lazy {
         // 注意, 是故意只启用一个下载器的, 因为每个下载器都会创建一个 DirectoryMediaCacheStorage
         // 并且使用相同的 mediaSourceId: MediaCacheManager.LOCAL_FS_MEDIA_SOURCE_ID.
         // 搜索数据源时会使用 mediaSourceId 作为 map key, 导致总是只会用一个 storage.
