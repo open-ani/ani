@@ -174,7 +174,7 @@ internal fun SelectorConfigurationPane(
                 }
             }
 
-            SubjectChannelSelectionButtonRow(
+            SelectorChannelSelectionButtonRow(
                 state,
                 Modifier.fillMaxWidth().padding(bottom = 4.dp),
             )
@@ -277,7 +277,7 @@ internal fun SelectorConfigurationPane(
 }
 
 @Composable
-private fun SubjectChannelSelectionButtonRow(
+private fun SelectorChannelSelectionButtonRow(
     state: SelectorConfigState,
     modifier: Modifier = Modifier,
 ) {
