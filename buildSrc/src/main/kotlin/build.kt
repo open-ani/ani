@@ -10,6 +10,8 @@
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalog
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
@@ -18,10 +20,17 @@ import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
@@ -73,9 +82,35 @@ fun Project.configureKotlinOptIns() {
         configureKotlinOptIns()
     }
 
+    val libs = versionCatalogLibs()
+    val (major, minor) = libs["kotlin"].split('.')
+    val kotlinVersion = KotlinVersion.valueOf("KOTLIN_${major}_${minor}")
+
+    val options = kotlinCommonCompilerOptions()
+    options.apply {
+        languageVersion.set(kotlinVersion)
+    }
+    // ksp task extends KotlinCompile
+    project.tasks.withType(KotlinCompile::class.java) {
+        @Suppress("MISSING_DEPENDENCY_SUPERCLASS_IN_TYPE_ARGUMENT")
+        compilerOptions.languageVersion.set(kotlinVersion)
+    }
+
     for (name in testLanguageFeatures) {
         enableLanguageFeatureForTestSourceSets(name)
     }
+}
+
+private fun Project.versionCatalogLibs(): VersionCatalog =
+    project.extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+private operator fun VersionCatalog.get(name: String): String = findVersion(name).get().displayName
+
+private fun Project.kotlinCommonCompilerOptions(): KotlinCommonCompilerOptions = when (val ext = kotlinExtension) {
+    is KotlinJvmProjectExtension -> ext.compilerOptions
+    is KotlinAndroidProjectExtension -> ext.compilerOptions
+    is KotlinMultiplatformExtension -> ext.compilerOptions
+    else -> error("Unsupported kotlinExtension: ${ext::class}")
 }
 
 fun KotlinSourceSet.configureKotlinOptIns() {
