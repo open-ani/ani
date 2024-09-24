@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
-import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.app.data.models.preference.MediaPreference
+import me.him188.ani.app.data.models.preference.MediaSelectorSettings
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.source.MediaSourceLocation
@@ -45,6 +45,7 @@ interface MediaSelector {
     val subtitleLanguageId: MediaPreferenceItem<String>
     val mediaSourceId: MediaPreferenceItem<String>
 
+    val preferKind: Flow<MediaSourceKind?>
     /**
      * 经过 [alliance], [resolution] 等[偏好][MediaPreference]筛选后的列表.
      */
@@ -301,6 +302,8 @@ class DefaultMediaSelector(
         },
         getFromPreference = { it.mediaSourceId },
     )
+
+    override val preferKind: Flow<MediaSourceKind?> = mediaSelectorSettings.map { it.preferKind }
 
     /**
      * 当前会话中的生效偏好

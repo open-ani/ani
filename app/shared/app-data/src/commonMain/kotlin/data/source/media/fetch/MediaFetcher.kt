@@ -338,10 +338,43 @@ class MediaSourceMediaFetcher(
                 }
 
         override val hasCompleted = if (mediaSourceResults.isEmpty()) {
-            flowOf(true)
+            flowOf(CompletedCondition.AllCompleted)
         } else {
-            combine(mediaSourceResults.map { it.state }) { states ->
+            val webStates = mediaSourceResults.filter { it.kind == MediaSourceKind.WEB }
+                .map { it.state }
+            val bitTorrentStates = mediaSourceResults.filter { it.kind == MediaSourceKind.BitTorrent }
+                .map { it.state }
+            val localCacheStates = mediaSourceResults.filter { it.kind == MediaSourceKind.LocalCache }
+                .map { it.state }
+
+            val webCompleted = combine(webStates) { states ->
                 states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+            }.onStart {
+                if (webStates.isEmpty()) emit(false)
+            }
+            val btCompleted = combine(bitTorrentStates) { states ->
+                states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+            }.onStart {
+                if (bitTorrentStates.isEmpty()) emit(false)
+            }
+            val localCacheCompleted = combine(localCacheStates) { states ->
+                states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+            }.onStart {
+                if (localCacheStates.isEmpty()) emit(false)
+            }
+            val allCompleted = combine(mediaSourceResults.map { it.state }) { states ->
+                states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+            }
+
+            combine(
+                webCompleted, btCompleted, localCacheCompleted, allCompleted,
+            ) { web, bt, local, all ->
+                CompletedCondition(
+                    webCompleted = web,
+                    btCompleted = bt,
+                    localCacheCompleted = local,
+                    allCompleted = all,
+                )
             }.flowOn(flowContext)
         }
     }
@@ -356,5 +389,22 @@ class MediaSourceMediaFetcher(
     private companion object {
         private val logger = logger<MediaSourceMediaFetcher>()
         private const val ENABLE_WATCHDOG = false
+    }
+}
+
+class CompletedCondition(
+    val webCompleted: Boolean,
+    val btCompleted: Boolean,
+    val localCacheCompleted: Boolean,
+    val allCompleted: Boolean,
+) {
+
+    companion object {
+        val AllCompleted = CompletedCondition(
+            webCompleted = true,
+            btCompleted = true,
+            localCacheCompleted = true,
+            allCompleted = true,
+        )
     }
 }

@@ -386,7 +386,7 @@ private class EpisodeViewModelImpl(
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
         mediaSelector, videoSourceResolver, playerState, mediaSourceInfoProvider,
         episodeInfo,
-        mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it },
+        mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it.allCompleted },
         backgroundScope.coroutineContext,
     )
 

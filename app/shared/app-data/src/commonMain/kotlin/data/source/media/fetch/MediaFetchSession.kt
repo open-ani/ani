@@ -76,7 +76,7 @@ interface MediaFetchSession {
      * 注意, 即使 [hasCompletedOrDisabled] 现在为 `true`, 它也可能在未来因为数据源重试, 或者 [request] 变更而变为 `false`.
      * 因此该 flow 永远不会完结.
      */
-    val hasCompleted: Flow<Boolean>
+    val hasCompleted: Flow<CompletedCondition>
 }
 
 /**
@@ -84,10 +84,12 @@ interface MediaFetchSession {
  *
  * 支持 cancellation.
  */
-suspend fun MediaFetchSession.awaitCompletion() {
+suspend fun MediaFetchSession.awaitCompletion(
+    onHasCompletedChanged: suspend (completedCondition: CompletedCondition) -> Boolean = { it.allCompleted }
+) {
     cancellableCoroutineScope {
         cumulativeResults.shareIn(this, started = SharingStarted.Eagerly, replay = 1)
-        hasCompleted.first { it }
+        hasCompleted.first { onHasCompletedChanged(it) }
         cancelScope()
     }
 }
