@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode
 
 import androidx.annotation.UiThread
@@ -58,9 +67,6 @@ import me.him188.ani.app.data.source.media.selector.autoSelect
 import me.him188.ani.app.data.source.media.selector.eventHandling
 import me.him188.ani.app.data.source.session.AuthState
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.platform.features.PlatformComponentAccessors
-import me.him188.ani.app.platform.features.StreamType
-import me.him188.ani.app.platform.features.getComponentAccessors
 import me.him188.ani.app.tools.caching.ContentPolicy
 import me.him188.ani.app.ui.comment.BangumiCommentSticker
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -94,9 +100,6 @@ import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuStateImpl
 import me.him188.ani.app.ui.subject.episode.video.sidesheet.EpisodeSelectorState
 import me.him188.ani.app.videoplayer.ui.ControllerVisibility
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
-import me.him188.ani.app.videoplayer.ui.guesture.LevelController
-import me.him188.ani.app.videoplayer.ui.guesture.NoOpLevelController
-import me.him188.ani.app.videoplayer.ui.guesture.asLevelController
 import me.him188.ani.app.videoplayer.ui.state.PlaybackState
 import me.him188.ani.app.videoplayer.ui.state.PlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
@@ -172,10 +175,6 @@ abstract class EpisodeViewModel : AbstractViewModel(), HasBackgroundScope {
     abstract var mediaSelectorVisible: Boolean
 
     abstract val mediaSourceInfoProvider: MediaSourceInfoProvider
-
-    abstract val audioController: LevelController
-    abstract val brightnessController: LevelController
-
 
     // Video
     abstract val videoControllerState: VideoControllerState
@@ -335,17 +334,6 @@ private class EpisodeViewModelImpl(
     override val mediaSourceInfoProvider: MediaSourceInfoProvider = MediaSourceInfoProvider(
         getSourceInfoFlow = { mediaSourceManager.infoFlowByMediaSourceId(it) },
     )
-
-    private val platformComponentAccessors: PlatformComponentAccessors = context.getComponentAccessors()
-
-    override val audioController: LevelController by lazy {
-        platformComponentAccessors.audioManager?.asLevelController(
-            StreamType.MUSIC,
-        ) ?: NoOpLevelController
-    }
-    override val brightnessController: LevelController by lazy {
-        platformComponentAccessors.brightnessManager?.asLevelController() ?: NoOpLevelController
-    }
 
     override val mediaSelectorPresentation: MediaSelectorPresentation =
         MediaSelectorPresentation(mediaSelector, mediaSourceInfoProvider, backgroundScope.coroutineContext)
