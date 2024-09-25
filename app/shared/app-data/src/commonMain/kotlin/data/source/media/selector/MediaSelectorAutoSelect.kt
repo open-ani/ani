@@ -32,7 +32,7 @@ value class MediaSelectorAutoSelect(
      */
     suspend fun awaitCompletedAndSelectDefault(
         mediaFetchSession: MediaFetchSession,
-        preferKind: Flow<MediaSourceKind?> = flowOf()
+        preferKind: Flow<MediaSourceKind?> = flowOf(null)
     ): Media? {
         // 等全部加载完成
         mediaFetchSession.awaitCompletion { completedConditions ->
