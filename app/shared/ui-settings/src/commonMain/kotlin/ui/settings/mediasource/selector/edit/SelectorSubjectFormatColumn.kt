@@ -60,11 +60,11 @@ internal fun SelectorSubjectConfigurationColumn(
                 isError = conf.selectListsIsError,
             )
             ListItem(
-                headlineContent = { Text("选择最短标题") },
+                headlineContent = { Text("优先选择最短标题") },
                 Modifier
                     .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
                     .clickable { conf.preferShorterName = !conf.preferShorterName },
-                supportingContent = { Text("选择满足匹配的标题最短的条目。可避免为第一季匹配到第二季") },
+                supportingContent = { Text("优先选择满足匹配的标题最短的条目。可避免为第一季匹配到第二季") },
                 trailingContent = {
                     Switch(conf.preferShorterName, { conf.preferShorterName = it })
                 },
@@ -98,11 +98,11 @@ internal fun SelectorSubjectConfigurationColumn(
                 isError = conf.selectLinksIsError,
             )
             ListItem(
-                headlineContent = { Text("选择最短标题") },
+                headlineContent = { Text("优先选择最短标题") },
                 Modifier
                     .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
                     .clickable { conf.preferShorterName = !conf.preferShorterName },
-                supportingContent = { Text("选择满足匹配的标题最短的条目。可避免为第一季匹配到第二季") },
+                supportingContent = { Text("优先选择满足匹配的标题最短的条目。可避免为第一季匹配到第二季") },
                 trailingContent = {
                     Switch(conf.preferShorterName, { conf.preferShorterName = it })
                 },
