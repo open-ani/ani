@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.rendering
 
 import androidx.compose.foundation.Image
@@ -64,9 +73,9 @@ fun MediaSourceIcon(
             )
         }
 
-        sourceInfo?.iconUrl != null -> {
+        sourceInfo != null -> {
             AsyncImage(
-                sourceInfo.iconUrl,
+                sourceInfo.iconUrl?.takeIf { it.isNotEmpty() } ?: MediaSourceIcons.getDefaultIconUrl(sourceInfo),
                 null,
                 modifier,
                 contentScale = ContentScale.Crop,
@@ -108,19 +117,9 @@ fun SmallMediaSourceIcon(
                 )
             }
 
-            info.iconUrl != null -> {
-                AsyncImage(
-                    info.iconUrl,
-                    null, Modifier.size(24.dp),
-                    contentScale = ContentScale.Crop,
-                    alignment = Alignment.Center,
-                    colorFilter = null,
-                )
-            }
-
             else -> {
-                Image(
-                    rememberVectorPainter(Icons.Rounded.DisplaySettings),
+                AsyncImage(
+                    info.iconUrl?.takeIf { it.isNotEmpty() } ?: MediaSourceIcons.getDefaultIconUrl(info),
                     null, Modifier.size(24.dp),
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center,
