@@ -31,7 +31,6 @@ value class MediaSelectorAutoSelect(
     suspend fun awaitCompletedAndSelectDefault(mediaFetchSession: MediaFetchSession): Media? {
         // 等全部加载完成
         mediaFetchSession.awaitCompletion { completedCondition ->
-            if (completedCondition.allCompleted) return@awaitCompletion true
             return@awaitCompletion mediaSelector.preferKind.first()?.let {
                 when (it) {
                     MediaSourceKind.WEB -> completedCondition.webCompleted
