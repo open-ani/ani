@@ -11,6 +11,7 @@ package me.him188.ani.app.data.source.media.resolver
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -31,6 +32,7 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.datasources.api.matcher.videoOrNull
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.info
@@ -45,6 +47,10 @@ import java.util.concurrent.ConcurrentSkipListSet
 class AndroidWebVideoSourceResolver(
     private val matcherLoader: MediaSourceWebVideoMatcherLoader,
 ) : VideoSourceResolver {
+    private companion object {
+        private val logger = logger<AndroidWebVideoSourceResolver>()
+    }
+
     private val matchersFromClasspath by lazy {
         java.util.ServiceLoader.load(WebVideoMatcher::class.java, this::class.java.classLoader).filterNotNull()
     }
@@ -83,18 +89,23 @@ class AndroidWebVideoSourceResolver(
                 .firstOrNull { it !is WebVideoMatcher.MatchResult.Continue }
         }
 
+        val config = allMatchers.fold(WebViewConfig.Empty) { acc, matcher ->
+            matcher.patchConfig(acc)
+        }
+        logger.info { "Final config: $config" }
+
         val webVideo = AndroidWebViewVideoExtractor().getVideoResourceUrl(
             attached ?: throw IllegalStateException("WebVideoSourceResolver not attached"),
             media.download.uri,
-            resourceMatcher = {
-                when (match(it)) {
-                    WebVideoMatcher.MatchResult.Continue -> Instruction.Continue
-                    WebVideoMatcher.MatchResult.LoadPage -> Instruction.LoadPage
-                    is WebVideoMatcher.MatchResult.Matched -> Instruction.FoundResource
-                    null -> Instruction.Continue
-                }
-            },
-        )?.let { resource ->
+            config,
+        ) {
+            when (match(it)) {
+                WebVideoMatcher.MatchResult.Continue -> Instruction.Continue
+                WebVideoMatcher.MatchResult.LoadPage -> Instruction.LoadPage
+                is WebVideoMatcher.MatchResult.Matched -> Instruction.FoundResource
+                null -> Instruction.Continue
+            }
+        }?.let { resource ->
             allMatchers.firstNotNullOfOrNull { matcher ->
                 matcher.match(resource.url, context).videoOrNull
             }
@@ -114,6 +125,7 @@ class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
     override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
+        config: WebViewConfig,
         resourceMatcher: (String) -> Instruction,
     ): WebResource? {
         // WebView requires same thread
@@ -121,6 +133,14 @@ class AndroidWebViewVideoExtractor : WebViewVideoExtractor {
         return withContext(Dispatchers.Main) {
             val deferred = CompletableDeferred<WebResource>()
             val loadedNestedUrls = ConcurrentSkipListSet<String>()
+
+            runCatching {
+                for (string in config.cookies) {
+                    CookieManager.getInstance().setCookie(pageUrl, string)
+                }
+            }.onFailure { exception ->
+                logger.error("Failed to set cookie", exception)
+            }
 
             /**
              * @return if the url has been consumed

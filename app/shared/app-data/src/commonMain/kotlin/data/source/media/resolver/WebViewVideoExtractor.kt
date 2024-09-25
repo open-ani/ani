@@ -13,6 +13,7 @@ import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
 import me.him188.ani.app.platform.Context
+import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 interface WebViewVideoExtractor {
@@ -33,6 +34,7 @@ interface WebViewVideoExtractor {
     suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
+        config: WebViewConfig,
         resourceMatcher: (String) -> Instruction,
     ): WebResource?
 }
@@ -53,6 +55,7 @@ class TestWebViewVideoExtractor(
     override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
+        config: WebViewConfig,
         resourceMatcher: (String) -> Instruction,
     ): WebResource {
         urls(pageUrl).forEach {

@@ -88,12 +88,20 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
 
         OutlinedTextField(
             matchVideoConfig.matchVideoUrl, { matchVideoConfig.matchVideoUrl = it },
-            Modifier.fillMaxWidth().moveFocusOnEnter(),
+            Modifier.fillMaxWidth().moveFocusOnEnter().padding(bottom = verticalSpacing),
             label = { Text("匹配视频链接") },
             supportingText = { Text("正则表达式，从播放页面中加载的所有资源链接中匹配出视频链接。若正则包含名为 v 的分组则使用该分组，否则使用整个 URL") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             shape = textFieldShape,
             isError = matchVideoConfig.matchVideoUrlIsError,
+        )
+        OutlinedTextField(
+            matchVideoConfig.cookies, { matchVideoConfig.cookies = it },
+            Modifier.fillMaxWidth(),
+            label = { Text("Cookies (可选)") },
+            supportingText = { Text("key=value 格式的 cookies，一行一个，留空则不添加") },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            shape = textFieldShape,
         )
     }
 }

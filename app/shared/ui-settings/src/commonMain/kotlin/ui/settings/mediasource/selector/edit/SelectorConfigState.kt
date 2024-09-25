@@ -175,7 +175,7 @@ class SelectorConfigState(
             { it.selectEpisodeLinksFromList },
             { copy(selectEpisodeLinksFromList = it) },
         )
-        
+
         var matchEpisodeSortFromName by prop({ it.matchEpisodeSortFromName }, { copy(matchEpisodeSortFromName = it) })
         val matchEpisodeSortFromNameIsError by derivedStateOf {
             matchEpisodeSortFromName.isBlank() || !isValidRegex(matchEpisodeSortFromName)
@@ -204,7 +204,7 @@ class SelectorConfigState(
         var selectEpisodes by prop({ it.selectEpisodes }, { copy(selectEpisodes = it) })
         val selectEpisodesIsError by derivedStateOf { QueryParser.parseSelectorOrNull(selectEpisodes) == null }
         var selectEpisodeLinks by prop({ it.selectEpisodeLinks }, { copy(selectEpisodeLinks = it) })
-        
+
         var matchEpisodeSortFromName by prop(
             { it.matchEpisodeSortFromName },
             { copy(matchEpisodeSortFromName = it) },
@@ -250,6 +250,9 @@ class SelectorConfigState(
         val matchVideoUrlIsError by derivedStateOf {
             matchVideoUrl.isBlank() || !isValidRegex(matchVideoUrl)
         }
+        var cookies by prop(
+            { it.cookies }, { copy(cookies = it) },
+        )
 
         var enableNestedUrl by prop(
             { it.enableNestedUrl }, { copy(enableNestedUrl = it) },

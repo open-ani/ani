@@ -10,6 +10,9 @@
 package me.him188.ani.app.data.source.media.resolver
 
 import io.github.bonigarcia.wdm.WebDriverManager
+import io.ktor.http.Url
+import io.ktor.http.parseServerSetCookieHeader
+import io.ktor.util.date.toJvmDate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -28,12 +31,14 @@ import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
+import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.openqa.selenium.Cookie
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.devtools.HasDevTools
@@ -53,6 +58,10 @@ import java.util.logging.Level
 class DesktopWebVideoSourceResolver(
     private val matcherLoader: MediaSourceWebVideoMatcherLoader
 ) : VideoSourceResolver, KoinComponent {
+    private companion object {
+        private val logger = logger<DesktopWebVideoSourceResolver>()
+    }
+
     private val matchersFromClasspath by lazy {
         java.util.ServiceLoader.load(WebVideoMatcher::class.java).filterNotNull()
     }
@@ -69,6 +78,11 @@ class DesktopWebVideoSourceResolver(
             val matchersFromMediaSource = matcherLoader.loadMatchers(media.mediaSourceId)
             val allMatchers = matchersFromMediaSource + matchersFromClasspath
 
+            val webViewConfig = allMatchers.fold(WebViewConfig.Empty) { acc, matcher ->
+                matcher.patchConfig(acc)
+            }
+            logger.info { "Final config: $webViewConfig" }
+
 
             val context = WebVideoMatcherContext(media)
             fun match(url: String): WebVideoMatcher.MatchResult? {
@@ -83,6 +97,7 @@ class DesktopWebVideoSourceResolver(
             val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
+                    webViewConfig,
                     resourceMatcher = {
                         when (match(it)) {
                             WebVideoMatcher.MatchResult.Continue -> Instruction.Continue
@@ -124,12 +139,14 @@ class SeleniumWebViewVideoExtractor(
     override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
+        config: WebViewConfig,
         resourceMatcher: (String) -> Instruction
-    ): WebResource? = getVideoResourceUrl(pageUrl, resourceMatcher)
+    ): WebResource? = getVideoResourceUrl(pageUrl, config, resourceMatcher)
 
     suspend fun getVideoResourceUrl(
         pageUrl: String,
-        resourceMatcher: (String) -> Instruction
+        webViewConfig: WebViewConfig,
+        resourceMatcher: (String) -> Instruction,
     ): WebResource? {
         val deferred = CompletableDeferred<WebResource>()
 
@@ -195,6 +212,18 @@ class SeleniumWebViewVideoExtractor(
                 }
 
                 driver.get(pageUrl)
+
+                for (t in webViewConfig.cookies) {
+                    try {
+                        val url = Url(pageUrl)
+                        driver.manage().addCookie(
+                            parseServerSetCookieHeader(t)
+                                .toDriverCookie(domain = url.host),
+                        )
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to parse or add cookie, see cause" }
+                    }
+                }
             }
 
             deferred.await()
@@ -204,6 +233,10 @@ class SeleniumWebViewVideoExtractor(
             }
             throw e
         }
+    }
+
+    private fun io.ktor.http.Cookie.toDriverCookie(domain: String): Cookie {
+        return Cookie(name, value, domain, path, expires?.toJvmDate(), secure, httpOnly)
     }
 
     private fun createDriver(): RemoteWebDriver {

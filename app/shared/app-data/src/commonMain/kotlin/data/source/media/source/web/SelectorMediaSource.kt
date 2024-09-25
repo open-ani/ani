@@ -21,7 +21,9 @@ import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
+import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherProvider
+import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.paging.map
@@ -185,8 +187,18 @@ class SelectorMediaSource(
     }
 
     override val matcher: WebVideoMatcher by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        WebVideoMatcher { url, _ ->
-            engine.matchWebVideo(url, arguments.searchConfig.matchVideo)
+        object : WebVideoMatcher {
+            override fun match(
+                url: String,
+                context: WebVideoMatcherContext
+            ): WebVideoMatcher.MatchResult = engine.matchWebVideo(url, arguments.searchConfig.matchVideo)
+
+            override fun patchConfig(config: WebViewConfig): WebViewConfig {
+                val myCookies = arguments.searchConfig.matchVideo.cookies
+                return config.copy(
+                    cookies = myCookies.lines().filter { it.isNotBlank() },
+                )
+            }
         }
     }
 }

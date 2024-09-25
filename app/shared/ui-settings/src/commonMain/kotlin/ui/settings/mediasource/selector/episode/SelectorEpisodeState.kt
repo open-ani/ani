@@ -26,6 +26,7 @@ import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher
 import me.him188.ani.app.ui.settings.mediasource.launchCollectedInBackground
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.datasources.api.matcher.WebVideo
+import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.datasources.api.matcher.videoOrNull
 import me.him188.ani.utils.platform.Uuid
 import kotlin.coroutines.CoroutineContext
@@ -75,7 +76,11 @@ class SelectorEpisodeState(
                 try {
                     if (episodeUrl != null && extractor != null && config != null) {
                         withTimeoutOrNull(30.seconds) { // timeout considered as success
-                            extractor.getVideoResourceUrl(context, episodeUrl) {
+                            extractor.getVideoResourceUrl(
+                                context,
+                                episodeUrl,
+                                WebViewConfig.Empty.copy(config.cookies.lines().filter { it.isNotBlank() }),
+                            ) {
                                 val shouldLoadPage = engine.shouldLoadPage(it, config)
                                 collect(SelectorTestWebUrl(it, didLoadNestedPage = shouldLoadPage))
 

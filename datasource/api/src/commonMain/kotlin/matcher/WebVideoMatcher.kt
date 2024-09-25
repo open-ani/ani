@@ -31,6 +31,16 @@ fun interface WebVideoMatcher { // SPI service load
         url: String,
         context: WebVideoMatcherContext
     ): MatchResult
+
+    fun patchConfig(config: WebViewConfig): WebViewConfig = config
+}
+
+data class WebViewConfig(
+    val cookies: List<String> = emptyList(),
+) {
+    companion object {
+        val Empty = WebViewConfig()
+    }
 }
 
 val WebVideoMatcher.MatchResult.videoOrNull get() = (this as? WebVideoMatcher.MatchResult.Matched)?.video
