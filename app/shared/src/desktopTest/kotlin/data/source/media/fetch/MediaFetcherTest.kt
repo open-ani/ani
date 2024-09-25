@@ -93,7 +93,7 @@ class MediaFetcherTest {
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
-        assertEquals(false, session.hasCompleted.first().allCompleted)
+        assertEquals(false, session.hasCompleted.first().allCompleted())
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ class MediaFetcherTest {
     fun `hasCompleted is initially true if no source`() = runTest {
         val session = createFetcher().newSession(request1)
         assertEquals(0, session.mediaSourceResults.size)
-        assertEquals(true, session.hasCompleted.first().allCompleted)
+        assertEquals(true, session.hasCompleted.first().allCompleted())
     }
 
     @Test
@@ -113,7 +113,7 @@ class MediaFetcherTest {
         assertEquals(1, session.mediaSourceResults.size)
         val res = session.mediaSourceResults.first()
         assertIs<MediaSourceFetchState.Idle>(res.state.value)
-        assertEquals(false, session.hasCompleted.first().allCompleted)
+        assertEquals(false, session.hasCompleted.first().allCompleted())
     }
 
     @Test
@@ -125,7 +125,7 @@ class MediaFetcherTest {
         assertEquals(2, session.mediaSourceResults.size)
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults.first().state.value)
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults.toList()[1].state.value)
-        assertEquals(true, session.hasCompleted.first().allCompleted)
+        assertEquals(true, session.hasCompleted.first().allCompleted())
     }
 
     @Test
@@ -137,7 +137,7 @@ class MediaFetcherTest {
         assertEquals(2, session.mediaSourceResults.size)
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults.first().state.value)
         assertIs<MediaSourceFetchState.Idle>(session.mediaSourceResults[1].state.value)
-        assertEquals(false, session.hasCompleted.first().allCompleted)
+        assertEquals(false, session.hasCompleted.first().allCompleted())
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -396,7 +396,7 @@ class MediaFetcherTest {
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults.first().state.value)
         assertIs<MediaSourceFetchState.Disabled>(session.mediaSourceResults[1].state.value)
         assertEquals(0, session.awaitCompletedResults().size)
-        assertEquals(true, session.hasCompleted.first().allCompleted)
+        assertEquals(true, session.hasCompleted.first().allCompleted())
     }
 
     ///////////////////////////////////////////////////////////////////////////

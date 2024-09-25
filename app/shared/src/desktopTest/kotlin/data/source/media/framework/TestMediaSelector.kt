@@ -5,7 +5,6 @@ package me.him188.ani.app.data.source.media.framework
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaPreferenceItem
@@ -15,7 +14,6 @@ import me.him188.ani.app.data.source.media.selector.MutableMediaSelectorEvents
 import me.him188.ani.app.data.source.media.selector.OptionalPreference
 import me.him188.ani.app.data.source.media.selector.orElse
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseTraditional
@@ -59,7 +57,6 @@ open class TestMediaSelector(
     final override val resolution: TestMediaPreferenceItem<String> = TestMediaPreferenceItem()
     final override val subtitleLanguageId: TestMediaPreferenceItem<String> = TestMediaPreferenceItem()
     final override val mediaSourceId: TestMediaPreferenceItem<String> = TestMediaPreferenceItem()
-    final override val preferKind: Flow<MediaSourceKind?> = flowOf(MediaSourceKind.WEB)
 
     private val mergedPreference = combine(
         defaultPreference,

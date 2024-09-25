@@ -35,14 +35,10 @@ value class MediaSelectorAutoSelect(
         preferKind: Flow<MediaSourceKind?> = flowOf()
     ): Media? {
         // 等全部加载完成
-        mediaFetchSession.awaitCompletion { completedCondition ->
+        mediaFetchSession.awaitCompletion { completedConditions ->
             return@awaitCompletion preferKind.first()?.let {
-                when (it) {
-                    MediaSourceKind.WEB -> completedCondition.webCompleted
-                    MediaSourceKind.BitTorrent -> completedCondition.btCompleted
-                    MediaSourceKind.LocalCache -> completedCondition.localCacheCompleted
-                }
-            } ?: completedCondition.allCompleted
+                completedConditions[it]
+            } ?: completedConditions.allCompleted()
         }
         if (mediaSelector.selected.value == null) {
             val selected = mediaSelector.trySelectDefault()

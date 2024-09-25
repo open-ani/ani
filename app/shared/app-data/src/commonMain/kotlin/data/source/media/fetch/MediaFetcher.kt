@@ -47,8 +47,11 @@ import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.collections.EnumMap
+import me.him188.ani.utils.platform.collections.ImmutableEnumMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmInline
 
 /**
  * [MediaFetcher], 为支持从多个 [MediaSource] 并行获取 [Media] 的综合查询工具.
@@ -338,38 +341,22 @@ class MediaSourceMediaFetcher(
                 }
 
         override val hasCompleted = if (mediaSourceResults.isEmpty()) {
-            flowOf(CompletedCondition.AllCompleted)
+            flowOf(CompletedConditions.AllCompleted)
         } else {
-            val webStates = mediaSourceResults.filter { it.kind == MediaSourceKind.WEB }
-                .map { it.state }
-            val bitTorrentStates = mediaSourceResults.filter { it.kind == MediaSourceKind.BitTorrent }
-                .map { it.state }
-            val localCacheStates = mediaSourceResults.filter { it.kind == MediaSourceKind.LocalCache }
-                .map { it.state }
-
-            val webCompleted = combine(webStates) { states ->
-                states?.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
-            }.onStart {
-                if (webStates.isEmpty()) emit(null)
-            }
-            val btCompleted = combine(bitTorrentStates) { states ->
-                states?.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
-            }.onStart {
-                if (bitTorrentStates.isEmpty()) emit(null)
-            }
-            val localCacheCompleted = combine(localCacheStates) { states ->
-                states?.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
-            }.onStart {
-                if (localCacheStates.isEmpty()) emit(null)
+            val map = MediaSourceKind.entries.map { kind ->
+                val stateList = mediaSourceResults.filter { it.kind == kind }.map { it.state }
+                combine(stateList) { states ->
+                    kind to states?.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+                }.onStart {
+                    if (stateList.isEmpty()) emit(kind to null)
+                }
             }
 
-            combine(
-                webCompleted, btCompleted, localCacheCompleted,
-            ) { web, bt, local ->
-                CompletedCondition(
-                    webCompleted = web,
-                    btCompleted = bt,
-                    localCacheCompleted = local,
+            combine(map) { pairs ->
+                CompletedConditions(
+                    ImmutableEnumMap<MediaSourceKind, _> { kind ->
+                        pairs.find { it.first == kind }?.second
+                    },
                 )
             }.flowOn(flowContext)
         }
@@ -388,17 +375,21 @@ class MediaSourceMediaFetcher(
     }
 }
 
-class CompletedCondition(
-    val webCompleted: Boolean?,
-    val btCompleted: Boolean?,
-    val localCacheCompleted: Boolean?,
+@JvmInline
+value class CompletedConditions(
+    val values: EnumMap<MediaSourceKind, Boolean?>
 ) {
-    val allCompleted: Boolean get() = webCompleted ?: true && btCompleted ?: true && localCacheCompleted ?: true
+    fun allCompleted() = values.values.all { it ?: true }
+
+    operator fun get(kind: MediaSourceKind): Boolean? = values[kind]
+
+    fun copy(
+        values: EnumMap<MediaSourceKind, Boolean?> = this.values,
+    ): CompletedConditions = CompletedConditions(values)
+
     companion object {
-        val AllCompleted = CompletedCondition(
-            webCompleted = true,
-            btCompleted = true,
-            localCacheCompleted = true,
+        val AllCompleted = CompletedConditions(
+            ImmutableEnumMap { true },
         )
     }
 }
