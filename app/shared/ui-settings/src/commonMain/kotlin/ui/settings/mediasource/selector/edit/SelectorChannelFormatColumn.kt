@@ -69,7 +69,7 @@ internal fun SelectorChannelFormatColumn(
                 OutlinedTextField(
                     conf.matchChannelName, { conf.matchChannelName = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter(),
-                    label = { Text("匹配线路名称") },
+                    label = { Text("匹配线路名称 (可选)") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                     supportingText = { Text("正则表达式。从上面提取到的元素 text 中，匹配线路名称。期望名为 ch 的分组，留空则使用整个 text。") },
@@ -89,11 +89,27 @@ internal fun SelectorChannelFormatColumn(
                 OutlinedTextField(
                     conf.selectEpisodesFromList, { conf.selectEpisodesFromList = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = 8.dp),
-                    label = { Text("从剧集面板中提取剧集") },
+                    label = { Text("从每个剧集面板中提取剧集列表") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
-                    supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个剧集，将会读取其 href 属性和 text") },
+                    supportingText = {
+                        Text(
+                            """
+                                CSS Selector 表达式。期望返回一些元素，将会提取每个元素的 text 作为剧集名称。
+                                如果元素是 <a>，则还会默认读取 href 作为剧集的链接。也可以在下面的设置中用其他方式提取链接。
+                                如果元素不为 <a>，即名称和链接不在相同元素的情况，则需配置下面的设置来提取链接
+                            """.trimIndent(),
+                        )
+                    },
                     isError = conf.selectEpisodesFromListIsError,
+                )
+                OutlinedTextField(
+                    conf.selectEpisodeLinksFromList, { conf.selectEpisodeLinksFromList = it },
+                    Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = 8.dp),
+                    label = { Text("从剧集面板中提取剧集链接列表 (可选)") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                    supportingText = { Text("可选的 CSS Selector 表达式。如果上一个设置中提取到的剧集元素不为 <a>，则需要配置此项提取链接") },
                 )
                 OutlinedTextField(
                     conf.matchEpisodeSortFromName, { conf.matchEpisodeSortFromName = it },
@@ -116,8 +132,22 @@ internal fun SelectorChannelFormatColumn(
                     label = { Text("提取剧集列表") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
-                    supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个剧集，将会读取其 href 属性和 text") },
+                    supportingText = {
+                        Text(
+                            "CSS Selector 表达式。期望返回一些元素，将会提取每个元素的 text 作为剧集名称。" +
+                                    "如果元素是 <a>，则还会默认读取 href 作为剧集的链接。也可以在下面的设置中用其他方式提取链接。" +
+                                    "如果元素不为 <a>，即名称和链接不在相同元素的情况，则需配置下面的设置来提取链接",
+                        )
+                    },
                     isError = conf.selectEpisodesIsError,
+                )
+                OutlinedTextField(
+                    conf.selectEpisodeLinks, { conf.selectEpisodeLinks = it },
+                    Modifier.fillMaxWidth().moveFocusOnEnter(),
+                    label = { Text("提取剧集链接列表 (可选)") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                    supportingText = { Text("可选的 CSS Selector 表达式。如果上一个设置中提取到的剧集元素不为 <a>，则需要配置此项提取链接") },
                 )
                 OutlinedTextField(
                     conf.matchEpisodeSortFromName, { conf.matchEpisodeSortFromName = it },

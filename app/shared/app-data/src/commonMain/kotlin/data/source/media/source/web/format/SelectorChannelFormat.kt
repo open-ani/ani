@@ -77,8 +77,17 @@ data object SelectorChannelFormatIndexGrouped :
         val matchChannelName: String = """(?<ch>.+?)(\d+?)""", // empty to use full text
         @Language("css")
         val selectEpisodeLists: String = ".anthology-list-box",
+
+        /**
+         * 提取剧集名称. 如果是 `<a>`, 还能提取链接
+         */
         @Language("css")
         val selectEpisodesFromList: String = "a",
+        /**
+         * 如果 [selectEpisodesFromList] 不返回 `<a>`, 则此项必须有
+         */
+        @Language("css")
+        val selectEpisodeLinksFromList: String = "",
 
         @Language("regexp")
         val matchEpisodeSortFromName: String = DEFAULT_MATCH_EPISODE_SORT_FROM_NAME,
@@ -121,11 +130,13 @@ data object SelectorChannelFormatIndexGrouped :
 
         val episodes = lists.asSequence()
             .zip(channelNames.asSequence()) { list, channelName ->
-                list.select(selectEpisodesFromList).mapNotNull { a ->
+                val links = selectLinksOrNull(config.selectEpisodeLinksFromList, list)
+
+                list.select(selectEpisodesFromList).mapIndexedNotNull { index, a ->
                     val text = a.text()
 //                if (text in channelNames) return@mapNotNull null
 
-                    val href = a.attr("href")
+                    val href = links?.getOrNull(index) ?: a.attr("href")
                     WebSearchEpisodeInfo(
                         channel = channelName,
                         name = text,
@@ -195,8 +206,16 @@ data object SelectorChannelFormatNoChannel :
     @Immutable
     @Serializable
     data class Config(
+        /**
+         * 提取剧集名称. 如果是 `<a>`, 还能提取链接
+         */
         @Language("css")
         val selectEpisodes: String = "#glist-1 > div.module-blocklist.scroll-box.scroll-box-y > div > a",
+        /**
+         * 如果 [selectEpisodes] 不返回 `<a>`, 则此项必须有
+         */
+        @Language("css")
+        val selectEpisodeLinks: String = "",
         @Language("regexp")
         val matchEpisodeSortFromName: String = DEFAULT_MATCH_EPISODE_SORT_FROM_NAME,
     ) : SelectorFormatConfig {
@@ -216,11 +235,14 @@ data object SelectorChannelFormatNoChannel :
     ): SelectedChannelEpisodes? {
         val regex = config.matchEpisodeSortFromNameRegex ?: return null
         val selectEpisodes = QueryParser.parseSelectorOrNull(config.selectEpisodes) ?: return null
+
+        val links = selectLinksOrNull(config.selectEpisodeLinks, page)
+
         return SelectedChannelEpisodes(
             null,
-            page.select(selectEpisodes).map { a ->
+            page.select(selectEpisodes).mapIndexed { index, a ->
                 val text = a.text()
-                val href = a.attr("href")
+                val href = links?.getOrNull(index) ?: a.attr("href")
                 WebSearchEpisodeInfo(
                     channel = null,
                     name = text,
@@ -232,6 +254,18 @@ data object SelectorChannelFormatNoChannel :
             },
         )
     }
+}
+
+private fun selectLinksOrNull(selectEpisodeLinks: String, parent: Element): List<String>? {
+    return selectEpisodeLinks.takeIf { it.isNotBlank() }
+        ?.let {
+            QueryParser.parseSelectorOrNull(it)
+        }
+        ?.let { evaluator ->
+            parent.select(evaluator).mapNotNull { element ->
+                element.attr("href").takeIf { it.isNotBlank() }
+            }
+        }
 }
 
 /**

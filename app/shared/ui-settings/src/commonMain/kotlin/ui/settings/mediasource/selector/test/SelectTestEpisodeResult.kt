@@ -55,8 +55,6 @@ class SelectorTestEpisodePresentation(
     val tags: List<MatchTag>,
     val origin: Element?,
 ) {
-    val nameWithChannel: String = "[$channel] $name"
-
     val id: Uuid = Uuid.random()
 
     companion object {
@@ -78,6 +76,10 @@ class SelectorTestEpisodePresentation(
                         } else {
                             emit("EP: ${info.episodeSort}", isMatch = info.episodeSort == searchQuery.episodeSort)
                         }
+                    }
+
+                    if (info.channel != null) {
+                        emit("线路: ${info.channel}")
                     }
 
                     when {

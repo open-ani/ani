@@ -171,6 +171,11 @@ class SelectorConfigState(
         val selectEpisodesFromListIsError by derivedStateOf {
             QueryParser.parseSelectorOrNull(selectEpisodesFromList) == null
         }
+        var selectEpisodeLinksFromList by prop(
+            { it.selectEpisodeLinksFromList },
+            { copy(selectEpisodeLinksFromList = it) },
+        )
+        
         var matchEpisodeSortFromName by prop({ it.matchEpisodeSortFromName }, { copy(matchEpisodeSortFromName = it) })
         val matchEpisodeSortFromNameIsError by derivedStateOf {
             matchEpisodeSortFromName.isBlank() || !isValidRegex(matchEpisodeSortFromName)
@@ -198,6 +203,8 @@ class SelectorConfigState(
 
         var selectEpisodes by prop({ it.selectEpisodes }, { copy(selectEpisodes = it) })
         val selectEpisodesIsError by derivedStateOf { QueryParser.parseSelectorOrNull(selectEpisodes) == null }
+        var selectEpisodeLinks by prop({ it.selectEpisodeLinks }, { copy(selectEpisodeLinks = it) })
+        
         var matchEpisodeSortFromName by prop(
             { it.matchEpisodeSortFromName },
             { copy(matchEpisodeSortFromName = it) },

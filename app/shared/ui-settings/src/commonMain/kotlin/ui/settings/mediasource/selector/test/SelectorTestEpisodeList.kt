@@ -67,7 +67,7 @@ object SelectorTestEpisodeListGridDefaults {
         modifier: Modifier = Modifier,
     ) {
         EpisodeCard(
-            title = { Text(episode.nameWithChannel) },
+            title = { Text(episode.name.ifEmpty { "<名称为空>" }) },
             { onClick() },
             modifier,
         ) {
