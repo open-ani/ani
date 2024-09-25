@@ -60,7 +60,7 @@ fun ChangelogDialog(
                 OutlinedButton({ uriHandler.openUri(RELEASES) }) {
                     Icon(Icons.Rounded.ArrowOutward, null)
                 }
-                if (LocalPlatform.current.isIos()) {
+                if (!LocalPlatform.current.isIos()) {
                     Button(
                         {
                             latestVersion.downloadUrlAlternatives.firstOrNull()
