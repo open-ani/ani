@@ -82,7 +82,7 @@ internal fun SelectorSubjectConfigurationColumn(
             OutlinedTextField(
                 conf.selectNames, { conf.selectNames = it },
                 Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = verticalSpacing),
-                label = { Text("提取条目列表") },
+                label = { Text("提取条目名称列表") },
                 supportingText = { Text("CSS Selector 表达式。选取条目名称列表") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 shape = textFieldShape,
@@ -91,7 +91,7 @@ internal fun SelectorSubjectConfigurationColumn(
             OutlinedTextField(
                 conf.selectLinks, { conf.selectLinks = it },
                 Modifier.fillMaxWidth().moveFocusOnEnter().padding(top = verticalSpacing),
-                label = { Text("提取条目列表") },
+                label = { Text("提取条目链接列表") },
                 supportingText = { Text("CSS Selector 表达式。选取链接列表") },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 shape = textFieldShape,

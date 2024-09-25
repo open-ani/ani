@@ -63,7 +63,7 @@ internal fun SelectorChannelFormatColumn(
                     label = { Text("从页面中提取线路名称列表") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
-                    supportingText = { Text("CSS Selector 表达式。期望返回一些 <a>，每个对应一个剧集，将会读取其 text 作为线路名称") },
+                    supportingText = { Text("CSS Selector 表达式。期望返回一些任意类型元素，每个对应一个线路，将会读取其 text 作为线路名称") },
                     isError = conf.selectChannelNamesIsError,
                 )
                 OutlinedTextField(
