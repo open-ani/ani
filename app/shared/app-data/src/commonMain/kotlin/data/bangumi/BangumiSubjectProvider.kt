@@ -9,7 +9,7 @@
 
 package me.him188.ani.app.data.bangumi
 
-import me.him188.ani.app.tools.search.Subject
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.tools.search.SubjectProvider
 import me.him188.ani.app.tools.search.SubjectSearchQuery
 import me.him188.ani.datasources.api.paging.PagedSource
@@ -28,7 +28,7 @@ class BangumiSubjectProvider(
         return client.testConnection()
     }
 
-    override fun startSearch(query: SubjectSearchQuery): PagedSource<Subject> =
+    override fun startSearch(query: SubjectSearchQuery): PagedSource<SubjectInfo> =
         BangumiPagedSource(client, query)
 
 //    override suspend fun getSubjectDetails(id: String): SubjectDetails? {

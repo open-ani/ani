@@ -15,6 +15,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.utils.serialization.BigNum
@@ -30,7 +31,7 @@ interface SubjectProvider {
 
     suspend fun testConnection(): ConnectionStatus
 
-    fun startSearch(query: SubjectSearchQuery): PagedSource<Subject>
+    fun startSearch(query: SubjectSearchQuery): PagedSource<SubjectInfo>
 //
 //    suspend fun getSubjectDetails(id: String): SubjectDetails?
 }

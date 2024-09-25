@@ -16,13 +16,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.ApiResponse
-import me.him188.ani.app.data.models.subject.RatingInfo
-import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
-import me.him188.ani.datasources.api.paging.map
 import kotlin.coroutines.CoroutineContext
 
 class SubjectSearcher(
@@ -34,7 +30,7 @@ class SubjectSearcher(
     private val ldc = currentQuery.map { query ->
         query ?: return@map null
         LazyDataCache(
-            createSource = { ApiResponse.success(subjectProvider.startSearch(query).map { it.toSubjectInfo() }) },
+            createSource = { ApiResponse.success(subjectProvider.startSearch(query)) },
             getKey = { it.id },
             debugName = "SubjectSearcher.ldc",
         )
@@ -53,18 +49,4 @@ class SubjectSearcher(
     fun search(query: SubjectSearchQuery) {
         currentQuery.value = query
     }
-}
-
-
-fun Subject.toSubjectInfo(): SubjectInfo {
-    return SubjectInfo(
-        id = id,
-        name = originalName,
-        nameCn = chineseName,
-        summary = this.summary,
-        tags = this.tags.map { Tag(it.first, it.second) }.sortedByDescending { it.count },
-        imageCommon = this.images.landscapeCommon,
-        imageLarge = this.images.largePoster,
-        ratingInfo = RatingInfo.Empty.copy(rank = rank),
-    )
 }

@@ -9,8 +9,9 @@
 
 package me.him188.ani.app.data.bangumi
 
-import me.him188.ani.app.tools.search.Subject
-import me.him188.ani.app.tools.search.SubjectImages
+import me.him188.ani.app.data.models.subject.RatingInfo
+import me.him188.ani.app.data.models.subject.SubjectInfo
+import me.him188.ani.app.data.models.subject.Tag
 import me.him188.ani.app.tools.search.SubjectSearchQuery
 import me.him188.ani.app.tools.search.SubjectType
 import me.him188.ani.datasources.api.paging.AbstractPageBasedPagedSource
@@ -31,10 +32,10 @@ class BangumiPagedSource(
     private val client: BangumiClient,
     private val query: SubjectSearchQuery,
     private val pageSize: Int = 25,
-) : AbstractPageBasedPagedSource<Subject>() {
+) : AbstractPageBasedPagedSource<SubjectInfo>() {
 
-    override suspend fun nextPageImpl(page: Int): List<Subject> {
-        val paged: Paged<Subject>
+    override suspend fun nextPageImpl(page: Int): List<SubjectInfo> {
+        val paged: Paged<SubjectInfo>
         if (query.useOldSearchApi) {
             val tmpPaged = client.getSubjects().searchSubjectsByKeywordsWithOldApi(
                 query.keyword,
@@ -81,24 +82,19 @@ class BangumiPagedSource(
         return paged.page
     }
 
-    private fun convert2Subject(legaSub: BangumiLegacySubject): Subject {
-        return Subject(
+    private fun convert2Subject(legaSub: BangumiLegacySubject): SubjectInfo {
+        return SubjectInfo(
             id = legaSub.id,
-            originalName = legaSub.originalName,
-            chineseName = legaSub.chineseName,
-            score = BigNum.ZERO,
-            rank = legaSub.rank.let { 0 },
-            tags = listOf(),
-            sourceUrl = legaSub.url.let { "" },
-            images = SubjectImages(
-                landscapeCommon = BangumiClientImpl.getSubjectImageUrl(
-                    legaSub.id,
-                    BangumiSubjectImageSize.MEDIUM,
-                ),
-                largePoster = BangumiClientImpl.getSubjectImageUrl(
-                    legaSub.id,
-                    BangumiSubjectImageSize.LARGE,
-                ),
+            name = legaSub.originalName,
+            nameCn = legaSub.chineseName,
+            ratingInfo = RatingInfo.Empty.copy(rank = legaSub.rank.let { 0 }, score = BigNum.ZERO.toString()),
+            imageCommon = BangumiClientImpl.getSubjectImageUrl(
+                legaSub.id,
+                BangumiSubjectImageSize.MEDIUM,
+            ),
+            imageLarge = BangumiClientImpl.getSubjectImageUrl(
+                legaSub.id,
+                BangumiSubjectImageSize.LARGE,
             ),
             summary = legaSub.summary,
         )
@@ -110,36 +106,28 @@ class BangumiPagedSource(
 
 }
 
-private fun BangumiSearchSubjects200ResponseDataInner.toSubject(): Subject {
-    return Subject(
+private fun BangumiSearchSubjects200ResponseDataInner.toSubject(): SubjectInfo {
+    return SubjectInfo(
         id = id,
-        originalName = name,
-        chineseName = nameCn,
-        score = score,
-        rank = rank,
-        tags = tags.map { it.name to it.count },
-        sourceUrl = "",
-        images = SubjectImages(
-            landscapeCommon = image,
-            largePoster = image,
-        ),
+        name = name,
+        nameCn = nameCn,
+        ratingInfo = RatingInfo.Empty.copy(rank = rank, score = score.toString()),
+        tags = tags.map { Tag(it.name, it.count) },
+        imageCommon = image,
+        imageLarge = image,
         summary = summary,
     )
 }
 
-private fun BangumiSubject.toSubject(): Subject {
-    return Subject(
+private fun BangumiSubject.toSubjectInfo(): SubjectInfo {
+    return SubjectInfo(
         id = id,
-        originalName = name,
-        chineseName = nameCn,
-        score = rating.score,
-        rank = rating.rank,
-        tags = tags.map { it.name to it.count },
-        sourceUrl = "",
-        images = SubjectImages(
-            landscapeCommon = images.common,
-            largePoster = images.large,
-        ),
+        name = name,
+        nameCn = nameCn,
+        ratingInfo = RatingInfo.Empty.copy(rank = rating.score.toInt(), score = rating.score.toString()),
+        tags = tags.map { Tag(it.name, it.count) },
+        imageCommon = images.common,
+        imageLarge = images.large,
         summary = summary,
     )
 }
