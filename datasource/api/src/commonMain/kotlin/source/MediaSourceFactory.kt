@@ -107,6 +107,7 @@ fun HttpClientConfig<*>.applyMediaSourceConfig(
 
 private val parametersJson = Json {
     ignoreUnknownKeys = true
+    encodeDefaults = true
 }
 
 fun <T> MediaSourceConfig.deserializeArgumentsOrNull(
