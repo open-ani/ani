@@ -1,8 +1,10 @@
 package me.him188.ani.app.data.source.media.selector
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.takeWhile
 import me.him188.ani.app.data.source.media.fetch.MediaFetchSession
 import me.him188.ani.app.data.source.media.fetch.awaitCompletion
@@ -28,10 +30,13 @@ value class MediaSelectorAutoSelect(
      *
      * 返回成功选择的 [Media] 对象. 当用户已经手动选择过一个别的 [Media], 或者没有可选的 [Media] 时返回 `null`.
      */
-    suspend fun awaitCompletedAndSelectDefault(mediaFetchSession: MediaFetchSession): Media? {
+    suspend fun awaitCompletedAndSelectDefault(
+        mediaFetchSession: MediaFetchSession,
+        preferKind: Flow<MediaSourceKind?> = flowOf()
+    ): Media? {
         // 等全部加载完成
         mediaFetchSession.awaitCompletion { completedCondition ->
-            return@awaitCompletion mediaSelector.preferKind.first()?.let {
+            return@awaitCompletion preferKind.first()?.let {
                 when (it) {
                     MediaSourceKind.WEB -> completedCondition.webCompleted
                     MediaSourceKind.BitTorrent -> completedCondition.btCompleted

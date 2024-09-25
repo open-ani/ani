@@ -296,10 +296,14 @@ private class EpisodeViewModelImpl(
         )
         .apply {
             autoSelect.run {
+
                 launchInBackground {
                     mediaFetchSession.collectLatest {
                         awaitSwitchEpisodeCompleted()
-                        awaitCompletedAndSelectDefault(it)
+                        awaitCompletedAndSelectDefault(
+                            it,
+                            settingsRepository.mediaSelectorSettings.flow.map { it.preferKind },
+                        )
                     }
                 }
                 launchInBackground {

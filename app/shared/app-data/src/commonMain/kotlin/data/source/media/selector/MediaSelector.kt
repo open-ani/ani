@@ -45,7 +45,6 @@ interface MediaSelector {
     val subtitleLanguageId: MediaPreferenceItem<String>
     val mediaSourceId: MediaPreferenceItem<String>
 
-    val preferKind: Flow<MediaSourceKind?>
     /**
      * 经过 [alliance], [resolution] 等[偏好][MediaPreference]筛选后的列表.
      */
@@ -302,8 +301,6 @@ class DefaultMediaSelector(
         },
         getFromPreference = { it.mediaSourceId },
     )
-
-    override val preferKind: Flow<MediaSourceKind?> = mediaSelectorSettings.map { it.preferKind }
 
     /**
      * 当前会话中的生效偏好
