@@ -1,12 +1,3 @@
-/*
- * Copyright (C) 2024 OpenAni and contributors.
- *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
- *
- * https://github.com/open-ani/ani/blob/main/LICENSE
- */
-
 package me.him188.ani.app.data.models
 
 import me.him188.ani.app.data.models.episode.EpisodeCollections
@@ -20,14 +11,14 @@ class EpisodeCollectionsTest {
 
     @Test
     @Disabled
-    fun `subject completed after 365 days`() {
+    fun `subject completed after 14 days`() {
         assertTrue {
             EpisodeCollections.isSubjectCompleted(
                 sequenceOf(
                     PackedDate(2023, 10, 4),
                     PackedDate(2023, 10, 11),
                 ),
-                now = PackedDate(2024, 10, 11),
+                now = PackedDate(2023, 10, 11 + 14),
             )
         }
     }
@@ -40,7 +31,7 @@ class EpisodeCollectionsTest {
                     PackedDate(2023, 10, 4),
                     PackedDate(2023, 10, 11),
                 ),
-                now = PackedDate(2024, 10, 9),
+                now = PackedDate(2023, 10, 11 + 13),
             )
         }
     }
