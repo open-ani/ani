@@ -52,7 +52,7 @@ jobs:
             anitorrent_separate_build: true # macOS native 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
             run_tests: true
-            assemble: false
+            assemble: true
             gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4g
               -Dfile.encoding=UTF-8
