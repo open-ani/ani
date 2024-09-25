@@ -169,7 +169,7 @@ private const val BANGUMI_API_HOST = "https://api.bgm.tv"
 private const val BANGUMI_NEXT_API_HOST = "https://next.bgm.tv" // dev.bgm38.com for testing
 private const val BANGUMI_HOST = "https://bgm.tv"
 
-internal class BangumiClientImpl(
+class BangumiClientImpl(
     private val bearerToken: Flow<String?>,
     parentCoroutineContext: CoroutineContext,
     httpClientConfiguration: HttpClientConfig<*>.() -> Unit = {},

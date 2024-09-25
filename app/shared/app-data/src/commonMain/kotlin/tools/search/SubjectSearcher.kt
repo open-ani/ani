@@ -23,9 +23,6 @@ import me.him188.ani.app.tools.caching.LazyDataCache
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.datasources.api.paging.map
-import me.him188.ani.datasources.api.subject.Subject
-import me.him188.ani.datasources.api.subject.SubjectProvider
-import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import kotlin.coroutines.CoroutineContext
 
 class SubjectSearcher(

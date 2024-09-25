@@ -40,10 +40,10 @@ import me.him188.ani.app.data.persistent.database.eneity.SearchHistoryEntity
 import me.him188.ani.app.data.persistent.database.eneity.SearchTagEntity
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepository
+import me.him188.ani.app.tools.search.SubjectProvider
+import me.him188.ani.app.tools.search.SubjectSearchQuery
 import me.him188.ani.app.tools.search.SubjectSearcher
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.datasources.api.subject.SubjectProvider
-import me.him188.ani.datasources.api.subject.SubjectSearchQuery
 import me.him188.ani.utils.coroutines.update
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

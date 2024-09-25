@@ -1,11 +1,22 @@
-package me.him188.ani.datasources.bangumi
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
 
+package me.him188.ani.app.data.bangumi
+
+import me.him188.ani.app.tools.search.Subject
+import me.him188.ani.app.tools.search.SubjectImages
+import me.him188.ani.app.tools.search.SubjectSearchQuery
+import me.him188.ani.app.tools.search.SubjectType
 import me.him188.ani.datasources.api.paging.AbstractPageBasedPagedSource
 import me.him188.ani.datasources.api.paging.Paged
-import me.him188.ani.datasources.api.subject.Subject
-import me.him188.ani.datasources.api.subject.SubjectImages
-import me.him188.ani.datasources.api.subject.SubjectSearchQuery
-import me.him188.ani.datasources.api.subject.SubjectType
+import me.him188.ani.datasources.bangumi.BangumiClient
+import me.him188.ani.datasources.bangumi.BangumiClientImpl
 import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjects200ResponseDataInner
 import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjectsRequest
 import me.him188.ani.datasources.bangumi.models.BangumiSearchSubjectsRequest.Sort
