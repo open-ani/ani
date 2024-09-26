@@ -125,8 +125,6 @@ kotlin {
         api(projects.datasource.dmhy)
         api(projects.datasource.acgRip)
         api(projects.datasource.nyafun)
-        api(projects.datasource.mxdongman)
-        api(projects.datasource.ntdm)
         api(projects.datasource.gugufan)
         api(projects.datasource.xfdm)
         api(projects.datasource.jellyfin)

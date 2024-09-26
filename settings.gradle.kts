@@ -85,8 +85,6 @@ includeProject(":datasource:mikan", "datasource/bt/mikan") // https://mikanani.m
 //   Web 数据源
 includeProject(":datasource:web-base", "datasource/web/web-base") // web 基础
 includeProject(":datasource:nyafun", "datasource/web/nyafun") // https://nyafun.net/
-includeProject(":datasource:mxdongman", "datasource/web/mxdongman") // https://mxdm4.com/
-includeProject(":datasource:ntdm", "datasource/web/ntdm") // https://ntdm.tv/
 includeProject(":datasource:gugufan", "datasource/web/gugufan")
 includeProject(":datasource:xfdm", "datasource/web/xfdm")
 includeProject(":datasource:jellyfin", "datasource/jellyfin")
