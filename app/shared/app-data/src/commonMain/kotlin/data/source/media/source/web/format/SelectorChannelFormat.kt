@@ -74,7 +74,7 @@ data object SelectorChannelFormatIndexGrouped :
         @Language("css")
         val selectChannelNames: String = ".anthology-tab > .swiper-wrapper a",
         @Language("regexp")
-        val matchChannelName: String = """(?<ch>.+?)(\d+?)""", // empty to use full text
+        val matchChannelName: String = """^(?<ch>.+?)(\d+)?$""", // empty to use full text
         @Language("css")
         val selectEpisodeLists: String = ".anthology-list-box",
 
