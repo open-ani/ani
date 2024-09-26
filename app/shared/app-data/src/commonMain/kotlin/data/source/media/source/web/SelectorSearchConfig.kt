@@ -93,7 +93,7 @@ data class SelectorSearchConfig(
         val matchNestedUrl: String = """^.+(m3u8|vip|xigua\.php).+\?""",
         @Language("regexp")
         val matchVideoUrl: String = """(^http(s)?:\/\/(?!.*http(s)?:\/\/).+((\.mp4)|(\.mkv)|(m3u8)).*(\?.+)?)|(akamaized)|(bilivideo.com)""",
-        val cookies: String = """quality=1080P""",
+        val cookies: String = """quality=1080""",
         val addHeadersToVideo: VideoHeaders = VideoHeaders(),
     ) {
         val matchNestedUrlRegex by lazy {
