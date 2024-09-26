@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.models
 
 import io.ktor.client.plugins.ClientRequestException
@@ -101,14 +110,14 @@ inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> {
 }
 
 inline fun <T : R, R> ApiResponse<T>.valueOrElse(
-    block: () -> R,
+    block: (ApiFailure) -> R,
 ): R {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     return if (isSuccess) {
         @Suppress("UNCHECKED_CAST")
         getOrNull() as T
     } else {
-        block()
+        block(failureOrNull()!!)
     }
 }
 
