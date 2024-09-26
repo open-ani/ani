@@ -12,12 +12,18 @@
 package me.him188.ani.app.data.source.media.source.codec
 
 /**
- * Marker interface
+ * Marker interface. 表示一个 [me.him188.ani.datasources.api.source.MediaSource] 的可导出配置.
+ *
+ * @see me.him188.ani.datasources.api.source.MediaSourceConfig.serializedArguments
+ * @see MediaSourceCodecManager.deserializeArgument
+ * 
  * @see MediaSourceCodec
  * @see MediaSourceCodecManager
  */
 @SubclassOptInRequired(DontForgetToRegisterCodec::class)
-interface MediaSourceArguments
+interface MediaSourceArguments {
+    val name: String // used as id
+}
 
 @RequiresOptIn("实现新的 MediaSourceArgument 时, 还需要在 MediaSourceCodecManager 注册此 Argument 类型的 codec")
 annotation class DontForgetToRegisterCodec

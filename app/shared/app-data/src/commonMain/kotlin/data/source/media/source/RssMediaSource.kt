@@ -48,7 +48,7 @@ import me.him188.ani.datasources.api.source.useHttpClient
 @OptIn(DontForgetToRegisterCodec::class)
 @Serializable
 data class RssMediaSourceArguments(
-    val name: String,
+    override val name: String,
     val description: String,
     val iconUrl: String,
     val searchConfig: RssSearchConfig = RssSearchConfig.Empty,

@@ -58,7 +58,7 @@ private typealias EngineType = DefaultSelectorMediaSourceEngine
 @OptIn(DontForgetToRegisterCodec::class)
 @Serializable
 data class SelectorMediaSourceArguments(
-    val name: String,
+    override val name: String,
     val description: String,
     val iconUrl: String,
     val searchConfig: SelectorSearchConfig = SelectorSearchConfig.Empty,
