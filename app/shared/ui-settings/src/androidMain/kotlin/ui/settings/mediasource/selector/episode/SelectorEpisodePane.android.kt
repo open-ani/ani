@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.source.media.resolver.TestWebViewVideoExtractor
+import me.him188.ani.app.data.source.media.source.codec.createTestMediaSourceCodecManager
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
 import me.him188.ani.app.platform.LocalContext
@@ -136,6 +137,7 @@ internal fun rememberTestEditSelectorMediaSourceState(
             ),
             engine = TestSelectorMediaSourceEngine(),
             webViewVideoExtractor = stateOf(TestWebViewVideoExtractor(urls)),
+            codecManager = createTestMediaSourceCodecManager(),
             backgroundScope = scope,
             context,
             flowDispatcher = EmptyCoroutineContext,

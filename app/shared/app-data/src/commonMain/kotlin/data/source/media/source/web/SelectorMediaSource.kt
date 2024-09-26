@@ -19,6 +19,9 @@ import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.models.runApiRequest
+import me.him188.ani.app.data.source.media.source.codec.DefaultMediaSourceCodec
+import me.him188.ani.app.data.source.media.source.codec.DontForgetToRegisterCodec
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceArguments
 import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
@@ -52,13 +55,14 @@ private typealias EngineType = DefaultSelectorMediaSourceEngine
  *
  * @since 3.10
  */
+@OptIn(DontForgetToRegisterCodec::class)
 @Serializable
 data class SelectorMediaSourceArguments(
     val name: String,
     val description: String,
     val iconUrl: String,
     val searchConfig: SelectorSearchConfig = SelectorSearchConfig.Empty,
-) {
+) : MediaSourceArguments {
     companion object {
         val Default = SelectorMediaSourceArguments(
             name = "Selector",
@@ -68,6 +72,13 @@ data class SelectorMediaSourceArguments(
         )
     }
 }
+
+object SelectorMediaSourceCodec : DefaultMediaSourceCodec<SelectorMediaSourceArguments>(
+    SelectorMediaSource.FactoryId,
+    SelectorMediaSourceArguments::class,
+    currentVersion = 1,
+    SelectorMediaSourceArguments.serializer(),
+)
 
 /**
  * @since 3.10

@@ -46,6 +46,7 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceEngine
 import me.him188.ani.app.platform.Context
@@ -59,6 +60,8 @@ import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.mediasource.DropdownMenuExport
 import me.him188.ani.app.ui.settings.mediasource.DropdownMenuImport
+import me.him188.ani.app.ui.settings.mediasource.ExportMediaSourceState
+import me.him188.ani.app.ui.settings.mediasource.ImportMediaSourceState
 import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
 import me.him188.ani.app.ui.settings.mediasource.selector.edit.SelectorConfigState
@@ -70,15 +73,13 @@ import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisod
 import me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorTestAndEpisodePane
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestEpisodePresentation
 import me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorTestState
-import me.him188.ani.datasources.api.source.MediaSourceConfig
-import me.him188.ani.datasources.api.source.deserializeArgumentsFromString
-import me.him188.ani.datasources.api.source.serializeArgumentsToString
 import kotlin.coroutines.CoroutineContext
 
 class EditSelectorMediaSourcePageState(
     private val argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
     engine: SelectorMediaSourceEngine,
     webViewVideoExtractor: State<WebViewVideoExtractor?>,
+    private val codecManager: MediaSourceCodecManager,
     backgroundScope: CoroutineScope,
     context: Context,
     flowDispatcher: CoroutineContext = Dispatchers.Default,
@@ -124,21 +125,14 @@ class EditSelectorMediaSourcePageState(
     )
 
 
-    fun parseSerializedArguments(string: String): SelectorMediaSourceArguments? {
-        return kotlin.runCatching {
-            MediaSourceConfig.deserializeArgumentsFromString(SelectorMediaSourceArguments.serializer(), string)
-        }.getOrNull()
-    }
-
-    fun serializeArguments(): String? {
-        return argumentsStorage.container?.let {
-            MediaSourceConfig.serializeArgumentsToString(SelectorMediaSourceArguments.serializer(), it)
-        }
-    }
-
-    fun importArguments(arguments: SelectorMediaSourceArguments) {
-        this.argumentsStorage.set(arguments)
-    }
+    val importState = ImportMediaSourceState<SelectorMediaSourceArguments>(
+        codecManager,
+        onImport = { argumentsStorage.set(it) },
+    )
+    val exportState = ExportMediaSourceState(
+        codecManager,
+        onExport = { argumentsStorage.container },
+    )
 }
 
 @Composable
@@ -196,15 +190,12 @@ fun EditSelectorMediaSourcePage(
                                 }
                                 DropdownMenu(showDropdown, { showDropdown = false }) {
                                     MediaSourceConfigurationDefaults.DropdownMenuImport(
-                                        parseContent = { state.parseSerializedArguments(it) },
-                                        onImport = {
-                                            state.importArguments(it)
-                                            showDropdown = false
-                                        },
+                                        state = state.importState,
+                                        onImported = { showDropdown = false },
                                         enabled = !state.configurationState.isLoading,
                                     )
                                     MediaSourceConfigurationDefaults.DropdownMenuExport(
-                                        encode = { state.serializeArguments() },
+                                        state = state.exportState,
                                         onDismissRequest = { showDropdown = false },
                                         enabled = !state.configurationState.isLoading,
                                     )

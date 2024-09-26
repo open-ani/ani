@@ -32,6 +32,7 @@ import me.him188.ani.app.data.source.media.fetch.updateMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.DefaultRssMediaSourceEngine
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.rss.RssParser
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -50,6 +51,7 @@ class EditRssMediaSourceViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val mediaSourceManager: MediaSourceManager by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val codecManager: MediaSourceCodecManager by inject()
 
     private val instanceId: MutableStateFlow<String> = MutableStateFlow(initialInstanceId)
 
@@ -90,6 +92,7 @@ class EditRssMediaSourceViewModel(
                         isSavingState = derivedStateOf { saveTasker.isRunning },
                     ),
                     instanceId = instanceId,
+                    codecManager = codecManager,
                 ),
             )
         }

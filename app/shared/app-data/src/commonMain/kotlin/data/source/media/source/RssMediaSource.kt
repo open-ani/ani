@@ -15,6 +15,9 @@ import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.models.fold
 import me.him188.ani.app.data.models.runApiRequest
+import me.him188.ani.app.data.source.media.source.codec.DefaultMediaSourceCodec
+import me.him188.ani.app.data.source.media.source.codec.DontForgetToRegisterCodec
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceArguments
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.paging.PageBasedPagedSource
@@ -42,13 +45,14 @@ import me.him188.ani.datasources.api.source.useHttpClient
  *
  * @since 3.9
  */
+@OptIn(DontForgetToRegisterCodec::class)
 @Serializable
 data class RssMediaSourceArguments(
     val name: String,
     val description: String,
     val iconUrl: String,
     val searchConfig: RssSearchConfig = RssSearchConfig.Empty,
-) {
+) : MediaSourceArguments {
     companion object {
         const val DEFAULT_ICON_URL = "https://rss.com/blog/wp-content/uploads/2019/10/social_style_3_rss-512-1.png"
 
@@ -62,6 +66,11 @@ data class RssMediaSourceArguments(
         )
     }
 }
+
+object RssMediaSourceCodec : DefaultMediaSourceCodec<RssMediaSourceArguments>(
+    RssMediaSource.FactoryId, RssMediaSourceArguments::class,
+    currentVersion = 1, RssMediaSourceArguments.serializer(),
+)
 
 /**
  * 用于对接 [MediaSource] 和 [RssMediaSourceEngine]

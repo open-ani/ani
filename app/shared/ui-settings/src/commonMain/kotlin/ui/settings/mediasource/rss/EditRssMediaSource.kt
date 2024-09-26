@@ -48,6 +48,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
@@ -60,6 +61,8 @@ import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.mediasource.DropdownMenuExport
 import me.him188.ani.app.ui.settings.mediasource.DropdownMenuImport
+import me.him188.ani.app.ui.settings.mediasource.ExportMediaSourceState
+import me.him188.ani.app.ui.settings.mediasource.ImportMediaSourceState
 import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssDetailPane
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.SideSheetPane
@@ -67,9 +70,6 @@ import me.him188.ani.app.ui.settings.mediasource.rss.edit.RssEditPane
 import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPane
 import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPaneState
 import me.him188.ani.datasources.api.Media
-import me.him188.ani.datasources.api.source.MediaSourceConfig
-import me.him188.ani.datasources.api.source.deserializeArgumentsFromString
-import me.him188.ani.datasources.api.source.serializeArgumentsToString
 
 /**
  * 整个编辑 RSS 数据源页面的状态. 对于测试部分: [RssTestPaneState]
@@ -80,6 +80,7 @@ import me.him188.ani.datasources.api.source.serializeArgumentsToString
 class EditRssMediaSourceState(
     private val argumentsStorage: SaveableStorage<RssMediaSourceArguments>,
     val instanceId: String,
+    codecManager: MediaSourceCodecManager,
 ) {
     private val arguments by argumentsStorage.containerState
     val isLoading by derivedStateOf { arguments == null }
@@ -123,21 +124,14 @@ class EditRssMediaSourceState(
         )
     }
 
-    fun parseSerializedArguments(string: String): RssMediaSourceArguments? {
-        return kotlin.runCatching {
-            MediaSourceConfig.deserializeArgumentsFromString(RssMediaSourceArguments.serializer(), string)
-        }.getOrNull()
-    }
-
-    fun serializeArguments(): String? {
-        return arguments?.let {
-            MediaSourceConfig.serializeArgumentsToString(RssMediaSourceArguments.serializer(), it)
-        }
-    }
-
-    fun import(arguments: RssMediaSourceArguments) {
-        argumentsStorage.set(arguments)
-    }
+    val importState = ImportMediaSourceState<RssMediaSourceArguments>(
+        codecManager,
+        onImport = { argumentsStorage.set(it) },
+    )
+    val exportState = ExportMediaSourceState(
+        codecManager,
+        onExport = { argumentsStorage.container },
+    )
 }
 
 @Composable
@@ -200,15 +194,12 @@ fun EditRssMediaSourcePage(
                             }
                             DropdownMenu(showDropdown, { showDropdown = false }) {
                                 MediaSourceConfigurationDefaults.DropdownMenuImport(
-                                    parseContent = { state.parseSerializedArguments(it) },
-                                    onImport = {
-                                        state.import(it)
-                                        showDropdown = false
-                                    },
+                                    state = state.importState,
+                                    onImported = { showDropdown = false },
                                     enabled = !state.isLoading,
                                 )
                                 MediaSourceConfigurationDefaults.DropdownMenuExport(
-                                    encode = { state.serializeArguments() },
+                                    state = state.exportState,
                                     onDismissRequest = { showDropdown = false },
                                     enabled = !state.isLoading,
                                 )

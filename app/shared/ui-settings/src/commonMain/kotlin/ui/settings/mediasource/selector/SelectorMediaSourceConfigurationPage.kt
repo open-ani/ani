@@ -33,6 +33,7 @@ import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.data.source.media.fetch.updateMediaSourceArguments
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
 import me.him188.ani.app.data.source.media.source.web.DefaultSelectorMediaSourceEngine
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.platform.Context
@@ -46,6 +47,7 @@ import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.registerLogging
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
 import org.koin.core.component.inject
 
 private typealias ArgumentsType = SelectorMediaSourceArguments
@@ -104,6 +106,7 @@ class EditSelectorMediaSourceViewModel(
                     ) { proxySettings, videoResolverSettings ->
                         WebViewVideoExtractor(proxySettings, videoResolverSettings)
                     }.produceState(null),
+                    codecManager = get<MediaSourceCodecManager>(),
                     backgroundScope = this,
                     context,
                     flowDispatcher = Dispatchers.Default,

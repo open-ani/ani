@@ -28,6 +28,7 @@ import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
 import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
 import me.him188.ani.app.data.source.media.source.RssSearchConfig
 import me.him188.ani.app.data.source.media.source.RssSearchQuery
+import me.him188.ani.app.data.source.media.source.codec.createTestMediaSourceCodecManager
 import me.him188.ani.app.tools.rss.RssParser
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
@@ -137,6 +138,7 @@ internal fun rememberTestEditRssMediaSourceState() = remember {
             stateOf(false),
         ),
         instanceId = "test-id",
+        codecManager = createTestMediaSourceCodecManager(),
     )
 }
 
