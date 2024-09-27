@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,7 +28,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
@@ -51,7 +55,9 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.IosUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
+import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.foundation.TestGlobalLifecycle
+import me.him188.ani.app.ui.foundation.getDefaultImageLoader
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
@@ -102,15 +108,28 @@ fun MainViewController(): UIViewController {
                 get() = TestGlobalLifecycle // TODO: ios lifecycle
         },
     )
+    val proxyConfig = koin.get<SettingsRepository>().proxySettings.flow.map {
+        it.default.config
+    }
 
     return ComposeUIViewController {
         AniApp {
+            val proxy by proxyConfig.collectAsStateWithLifecycle(null)
+
+            val coilContext = LocalPlatformContext.current
+            val imageLoader by remember(coilContext) {
+                derivedStateOf {
+                    getDefaultImageLoader(coilContext, proxyConfig = proxy)
+                }
+            }
+
             CompositionLocalProvider(
                 LocalContext provides context,
                 LocalPlatformWindow provides remember {
                     PlatformWindow()
                 },
                 LocalOnBackPressedDispatcherOwner provides onBackPressedDispatcherOwner,
+                LocalImageLoader provides imageLoader,
             ) {
                 Box(
                     Modifier.background(color = MaterialTheme.colorScheme.background)

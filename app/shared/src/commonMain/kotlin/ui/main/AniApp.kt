@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -27,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.models.preference.DarkMode
 import me.him188.ani.app.data.models.preference.ThemeSettings
@@ -35,9 +33,7 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.LocalTimeFormatter
 import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.foundation.AbstractViewModel
-import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.foundation.LocalPlatform
-import me.him188.ani.app.ui.foundation.getDefaultImageLoader
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.utils.platform.isMobile
 import org.koin.core.component.KoinComponent
@@ -55,15 +51,20 @@ fun AniApp(
     overrideColorTheme: ColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
-    val coilContext = LocalPlatformContext.current
-    val imageLoader by remember {
-        derivedStateOf {
-            getDefaultImageLoader(coilContext)
-        }
-    }
+//    val proxy by remember {
+//        KoinPlatform.getKoin().get<SettingsRepository>().proxySettings.flow.map {
+//            it.default.config
+//        }
+//    }.collectAsStateWithLifecycle(null)
+//    val coilContext = LocalPlatformContext.current
+//    val imageLoader by remember(coilContext) {
+//        derivedStateOf {
+//            getDefaultImageLoader(coilContext, proxyConfig = proxy)
+//        }
+//    }
 
     CompositionLocalProvider(
-        LocalImageLoader provides imageLoader,
+//        LocalImageLoader provides imageLoader,
         LocalTimeFormatter provides remember { TimeFormatter() },
     ) {
         val focusManager by rememberUpdatedState(LocalFocusManager.current)

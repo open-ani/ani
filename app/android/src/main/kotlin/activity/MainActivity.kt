@@ -20,10 +20,16 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import coil3.compose.LocalPlatformContext
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.AppStartupTasks
@@ -31,6 +37,8 @@ import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
 import me.him188.ani.app.platform.notification.NotifManager
+import me.him188.ani.app.ui.foundation.LocalImageLoader
+import me.him188.ani.app.ui.foundation.getDefaultImageLoader
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
@@ -40,6 +48,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
+import org.koin.core.context.GlobalContext
 import org.koin.mp.KoinPlatformTools
 
 class MainActivity : AniComponentActivity() {
@@ -84,13 +93,27 @@ class MainActivity : AniComponentActivity() {
                 Toast.makeText(this@MainActivity, text, Toast.LENGTH_LONG).show()
             }
         }
+
+        val proxyConfig = GlobalContext.get().get<SettingsRepository>().proxySettings.flow.map {
+            it.default.config
+        }
         setContent {
             AniApp {
+                val proxy by proxyConfig.collectAsStateWithLifecycle(null)
+
+                val coilContext = LocalPlatformContext.current
+                val imageLoader by remember(coilContext) {
+                    derivedStateOf {
+                        getDefaultImageLoader(coilContext, proxyConfig = proxy)
+                    }
+                }
+
                 CompositionLocalProvider(
                     LocalToaster provides toaster,
                     LocalPlatformWindow provides remember {
                         PlatformWindow()
                     },
+                    LocalImageLoader provides imageLoader,
                 ) {
                     AniAppContent(aniNavigator)
                 }

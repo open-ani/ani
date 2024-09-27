@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -33,8 +34,10 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
@@ -71,7 +74,9 @@ import me.him188.ani.app.tools.torrent.DefaultTorrentManager
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
+import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.foundation.LocalWindowState
+import me.him188.ani.app.ui.foundation.getDefaultImageLoader
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
@@ -99,6 +104,7 @@ import me.him188.ani.utils.platform.isMacOS
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 import java.io.File
 
 
@@ -315,6 +321,18 @@ private fun FrameWindowScope.MainWindowContent(
     aniNavigator: AniNavigator,
 ) {
     AniApp {
+        val proxyConfig = KoinPlatform.getKoin().get<SettingsRepository>().proxySettings.flow.map {
+            it.default.config
+        }
+        val proxy by proxyConfig.collectAsStateWithLifecycle(null)
+
+        val coilContext = LocalPlatformContext.current
+        val imageLoader by remember(coilContext) {
+            derivedStateOf {
+                getDefaultImageLoader(coilContext, proxyConfig = proxy)
+            }
+        }
+
         window.setTitleBarColor(AniThemeDefaults.navigationContainerColor)
 
         Box(
@@ -339,6 +357,7 @@ private fun FrameWindowScope.MainWindowContent(
                             vm.show(text)
                         }
                     },
+                    LocalImageLoader provides imageLoader,
                 ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
                         AniAppContent(aniNavigator)

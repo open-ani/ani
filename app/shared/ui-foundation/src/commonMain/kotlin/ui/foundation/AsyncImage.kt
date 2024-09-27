@@ -30,13 +30,16 @@ import coil3.network.ktor2.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import me.him188.ani.app.data.models.preference.ProxyConfig
+import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.ktor.proxy
 import me.him188.ani.utils.ktor.userAgent
 import me.him188.ani.utils.platform.currentPlatform
 import me.him188.ani.utils.platform.isDesktop
 
-val LocalImageLoader = androidx.compose.runtime.staticCompositionLocalOf<ImageLoader> {
+val LocalImageLoader = androidx.compose.runtime.compositionLocalOf<ImageLoader> {
     error("No ImageLoader provided")
 }
 
@@ -160,6 +163,7 @@ fun AsyncImage(
 
 fun getDefaultImageLoader(
     context: PlatformContext,
+    proxyConfig: ProxyConfig?,
     config: ImageLoader.Builder.() -> Unit = {}
 ): ImageLoader {
     return ImageLoader.Builder(context).apply {
@@ -185,6 +189,7 @@ fun getDefaultImageLoader(
                 KtorNetworkFetcherFactory {
                     createDefaultHttpClient {
                         userAgent(getAniUserAgent())
+                        proxy(proxyConfig?.toClientProxyConfig())
                     }
                 },
             )
