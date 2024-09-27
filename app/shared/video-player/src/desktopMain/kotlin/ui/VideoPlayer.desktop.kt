@@ -267,7 +267,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             object : MediaEventAdapter() {
                 override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
                     if (newStatus == MediaParsedStatus.DONE) {
-                        videoProperties.value = createVideoProperties()
+                        createVideoProperties()?.let {
+                            videoProperties.value = it
+                        }
                         state.value = PlaybackState.READY
                     }
                 }
@@ -276,8 +278,12 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         player.events().addMediaPlayerEventListener(
             object : MediaPlayerEventAdapter() {
                 override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
+                    // 对于 m3u8, 这个 callback 会先调用
                     videoProperties.value = videoProperties.value?.copy(
                         durationMillis = newLength,
+                    ) ?: VideoProperties(
+                        title = null,
+                        durationMillis = newLength, // 至少要把 length 放进去, 否则会一直显示缓冲
                     )
                 }
 
@@ -463,19 +469,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     private fun createVideoProperties(): VideoProperties? {
         val info = player.media().info() ?: return null
         val title = player.titles().titleDescriptions().firstOrNull()
-        val video = info.videoTracks().firstOrNull() ?: return null
-        val audio = info.audioTracks().firstOrNull() ?: return null
         return VideoProperties(
             title = title?.name(),
-            heightPx = video.height(),
-            widthPx = video.width(),
-            videoBitrate = video.bitRate(),
-            audioBitrate = audio.bitRate(),
-            frameRate = video.frameRate().toFloat(),
             durationMillis = info.duration(),
-            fileLengthBytes = 0,
-            fileHash = null,
-            filename = title?.name() ?: "",
         )
     }
 

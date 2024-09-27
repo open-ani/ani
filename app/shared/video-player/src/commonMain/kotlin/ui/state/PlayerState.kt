@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.videoplayer.ui.state
 
 import androidx.annotation.UiThread
@@ -470,15 +479,7 @@ class DummyPlayerState(
     override val videoProperties: MutableStateFlow<VideoProperties> = MutableStateFlow(
         VideoProperties(
             title = "Test Video",
-            heightPx = 1080,
-            widthPx = 1920,
-            videoBitrate = 100,
-            audioBitrate = 100,
-            frameRate = 30f,
             durationMillis = 100_000,
-            fileLengthBytes = 100_000_000,
-            fileHash = null,
-            filename = "test.mp4",
         ),
     )
     override val currentPositionMillis = MutableStateFlow(10_000L)
