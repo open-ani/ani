@@ -346,7 +346,11 @@ class MediaSourceMediaFetcher(
             val map = MediaSourceKind.entries.map { kind ->
                 val stateList = mediaSourceResults.filter { it.kind == kind }.map { it.state }
                 combine(stateList) { states ->
-                    kind to states?.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+                    kind to when {
+                        states.all { it is MediaSourceFetchState.Disabled } -> null
+                        states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled } -> true
+                        else -> false
+                    }
                 }.onStart {
                     if (stateList.isEmpty()) emit(kind to null)
                 }
@@ -381,7 +385,11 @@ value class CompletedConditions(
 ) {
     fun allCompleted() = values.values.all { it ?: true }
 
-    operator fun get(kind: MediaSourceKind): Boolean? = values[kind]
+    operator fun get(kind: MediaSourceKind): Boolean? = try {
+        values[kind]
+    } catch (e: NoSuchElementException) {
+        null
+    }
 
     fun copy(
         values: EnumMap<MediaSourceKind, Boolean?> = this.values,
