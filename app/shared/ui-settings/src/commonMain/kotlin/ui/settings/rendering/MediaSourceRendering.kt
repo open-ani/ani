@@ -32,9 +32,6 @@ import me.him188.ani.app.ui.foundation.acg_rip
 import me.him188.ani.app.ui.foundation.dmhy
 import me.him188.ani.app.ui.foundation.gugufan
 import me.him188.ani.app.ui.foundation.mikan
-import me.him188.ani.app.ui.foundation.mxdongman
-import me.him188.ani.app.ui.foundation.ntdm
-import me.him188.ani.app.ui.foundation.nyafun
 import me.him188.ani.app.ui.foundation.xfdm
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import org.jetbrains.compose.resources.painterResource
@@ -46,9 +43,6 @@ fun MediaSourceInfo.getIconResourceOrNull(): Painter? {
         "acg-rip.png" -> Res.drawable.acg_rip
         "dmhy.png" -> Res.drawable.dmhy
         "gugufan.png" -> Res.drawable.gugufan
-        "mxdongman.png" -> Res.drawable.mxdongman
-        "ntdm.png" -> Res.drawable.ntdm
-        "nyafun.png" -> Res.drawable.nyafun
         "xfdm.png" -> Res.drawable.xfdm
         else -> null
     }

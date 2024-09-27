@@ -282,7 +282,7 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
 
     coroutineScope.launch {
         // TODO: 这里是自动删除旧版数据源. 在未来 3.14 左右就可以去除这个了
-        val removedFactoryIds = setOf("ntdm", "mxdm")
+        val removedFactoryIds = setOf("ntdm", "mxdongman", "nyafun")
         val manager = koin.get<MediaSourceManager>()
         for (instance in manager.allInstances.first()) {
             if (instance.factoryId.value in removedFactoryIds) {
