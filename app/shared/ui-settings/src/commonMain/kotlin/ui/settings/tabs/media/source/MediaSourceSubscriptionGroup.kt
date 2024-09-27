@@ -132,7 +132,7 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
             }
         },
     ) {
-        for (subscription in state.subscriptions) {
+        for ((index, subscription) in state.subscriptions.withIndex()) {
             Item(
                 headlineContent = {
                     SelectionContainer {
@@ -165,6 +165,9 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
                     }
                 },
             )
+            if (index != state.subscriptions.lastIndex) {
+                HorizontalDividerItem()
+            }
         }
 
         if (showAddDialog) {
