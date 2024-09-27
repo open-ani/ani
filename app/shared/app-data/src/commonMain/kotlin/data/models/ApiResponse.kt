@@ -98,6 +98,12 @@ inline fun <T> runApiRequest(block: () -> T): ApiResponse<T> {
     }
 }
 
+/**
+ * @see me.him188.ani.app.data.models.runApiRequest
+ */
+inline fun <R, T> R.runApiRequest(block: R.() -> T): ApiResponse<T> =
+    me.him188.ani.app.data.models.runApiRequest { block() }
+
 inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> {
     contract { callsInPlace(transform, InvocationKind.AT_MOST_ONCE) }
     return if (isSuccess) {
