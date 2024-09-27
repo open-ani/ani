@@ -155,26 +155,34 @@ class SelectorMediaSource(
             useOnlyFirstWord = searchConfig.searchUseOnlyFirstWord,
         ).map { (_, document) ->
             document ?: return@map emptyList()
-            val episodes = selectSubjects(document, searchConfig)
-                .orEmpty()
-                .let { originalList ->
-                    val filters = searchConfig.createFiltersForSubject()
-                    with(query.toFilterContext()) {
-                        originalList.filter {
-                            filters.applyOn(it.asCandidate())
+
+            buildList {
+                val subjects = selectSubjects(document, searchConfig)
+                    .orEmpty()
+                    .let { originalList ->
+                        val filters = searchConfig.createFiltersForSubject()
+                        with(query.toFilterContext()) {
+                            originalList.filter {
+                                filters.applyOn(it.asCandidate())
+                            }
                         }
                     }
-                }
-                .mapNotNull { subject ->
-                    doHttpGet(subject.fullUrl)
-                        .getOrNull()
-                }
-                .asSequence()
-                .mapNotNull { subjectDetails ->
-                    selectEpisodes(subjectDetails, searchConfig) // null if invalid config
-                }
 
-            selectMedia(episodes.flatMap { it.episodes }, searchConfig, query, mediaSourceId).filteredList
+                for (subjectInfo in subjects) {
+                    val episodeDocument = doHttpGet(subjectInfo.fullUrl).getOrNull() ?: continue
+                    val episodes = selectEpisodes(episodeDocument, searchConfig)?.episodes ?: continue
+
+                    addAll(
+                        selectMedia(
+                            episodes.asSequence(),
+                            searchConfig,
+                            query,
+                            mediaSourceId,
+                            subjectName = subjectInfo.name,
+                        ).filteredList,
+                    )
+                }
+            }
         }
     }
 

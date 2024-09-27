@@ -177,17 +177,18 @@ abstract class SelectorMediaSourceEngine {
         config: SelectorSearchConfig,
         query: SelectorSearchQuery,
         mediaSourceId: String,
+        subjectName: String,
     ): SelectMediaResult {
         val parser = LabelFirstRawTitleParser()
         val originalMediaList = episodes.mapNotNull { info ->
             val subtitleLanguages = guessSubtitleLanguages(info, parser)
             info.episodeSort ?: return@mapNotNull null
             DefaultMedia(
-                mediaId = "$mediaSourceId.${info.name}-${info.episodeSort}",
+                mediaId = "$mediaSourceId.${subjectName}-${info.name}-${info.episodeSort}",
                 mediaSourceId = mediaSourceId,
                 originalUrl = info.playUrl,
                 download = ResourceLocation.WebVideo(info.playUrl),
-                originalTitle = info.name,
+                originalTitle = subjectName + " " + info.name,
                 publishedTime = 0L,
                 properties = MediaProperties(
                     subtitleLanguageIds = subtitleLanguages,
