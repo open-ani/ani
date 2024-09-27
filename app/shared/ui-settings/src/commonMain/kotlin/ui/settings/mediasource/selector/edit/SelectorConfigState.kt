@@ -10,6 +10,7 @@
 package me.him188.ani.app.ui.settings.mediasource.selector.edit
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
@@ -32,10 +33,15 @@ import me.him188.ani.utils.xml.parseSelectorOrNull
 @Stable
 class SelectorConfigState(
     private val argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
+    private val allowEditState: State<Boolean>,
 ) {
     private val arguments by argumentsStorage.containerState
     val isLoading by derivedStateOf { arguments == null }
     val isSaving by argumentsStorage.isSavingState
+
+    val enableEdit by derivedStateOf {
+        !isLoading && allowEditState.value
+    }
 
     var displayName by argumentsStorage.prop(
         { it.name }, { copy(name = it) },
@@ -277,10 +283,10 @@ class SelectorConfigState(
             )
 
             var referer by prop(
-                { it.referer }, { copy(referer = referer) },
+                { it.referer }, { copy(referer = it) },
             )
             var userAgent by prop(
-                { it.userAgent }, { copy(userAgent = userAgent) },
+                { it.userAgent }, { copy(userAgent = it) },
             )
         }
     }

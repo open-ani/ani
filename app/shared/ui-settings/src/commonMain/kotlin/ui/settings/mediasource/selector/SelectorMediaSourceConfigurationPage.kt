@@ -74,12 +74,15 @@ class EditSelectorMediaSourceViewModel(
         coroutineScope {
             val saveTasker = MonoTasker(this)
             val arguments = mutableStateOf<ArgumentsType?>(null)
+            val allowEdit = mutableStateOf(false)
             launch {
-                val persisted = mediaSourceManager.instanceConfigFlow(instanceId).first()
+                val config = mediaSourceManager.instanceConfigFlow(instanceId).first()
+                val persisted = config
                     ?.deserializeArgumentsOrNull(ArgumentsType.serializer())
                     ?: ArgumentsType.Default
                 withContext(Dispatchers.Main) {
                     arguments.value = persisted
+                    allowEdit.value = config != null && config.subscriptionId == null
                 }
             }
             emit(
@@ -99,6 +102,7 @@ class EditSelectorMediaSourceViewModel(
                         },
                         isSavingState = derivedStateOf { saveTasker.isRunning },
                     ),
+                    allowEditState = allowEdit,
                     engine = DefaultSelectorMediaSourceEngine(client),
                     webViewVideoExtractor = combine(
                         settingsRepository.proxySettings.flow.map { it.default.config }.distinctUntilChanged(),

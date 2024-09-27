@@ -89,6 +89,7 @@ internal fun SelectorConfigurationPane(
                     isError = state.displayNameIsError,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     state.iconUrl, { state.iconUrl = it },
@@ -98,6 +99,7 @@ internal fun SelectorConfigurationPane(
                     label = { Text("图标链接") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
+                    enabled = state.enableEdit,
                 )
             }
 
@@ -132,15 +134,21 @@ internal fun SelectorConfigurationPane(
                     isError = state.searchUrlIsError,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
+                    enabled = state.enableEdit,
                 )
                 ListItem(
                     headlineContent = { Text("仅使用第一个词") },
                     Modifier
                         .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
-                        .clickable { state.searchUseOnlyFirstWord = !state.searchUseOnlyFirstWord },
+                        .clickable(enabled = state.enableEdit) {
+                            state.searchUseOnlyFirstWord = !state.searchUseOnlyFirstWord
+                        },
                     supportingContent = { Text("以空格分割，仅使用第一个词搜索。适用于搜索兼容性差的情况") },
                     trailingContent = {
-                        Switch(state.searchUseOnlyFirstWord, { state.searchUseOnlyFirstWord = it })
+                        Switch(
+                            state.searchUseOnlyFirstWord, { state.searchUseOnlyFirstWord = it },
+                            enabled = state.enableEdit,
+                        )
                     },
                     colors = listItemColors,
                 )
@@ -149,6 +157,7 @@ internal fun SelectorConfigurationPane(
             SelectorSubjectFormatSelectionButtonRow(
                 state,
                 Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                enabled = state.enableEdit,
             )
 
             AnimatedContent(
@@ -178,6 +187,7 @@ internal fun SelectorConfigurationPane(
             SelectorChannelSelectionButtonRow(
                 state,
                 Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                enabled = state.enableEdit,
             )
 
             AnimatedContent(
@@ -206,16 +216,30 @@ internal fun SelectorConfigurationPane(
             ) {
                 ListItem(
                     headlineContent = { Text("使用条目名称过滤") },
-                    Modifier.focusable(false).clickable { state.filterBySubjectName = !state.filterBySubjectName },
+                    Modifier.focusable(false).clickable(
+                        enabled = state.enableEdit,
+                    ) { state.filterBySubjectName = !state.filterBySubjectName },
                     supportingContent = { Text("要求资源标题包含条目名称。适用于数据源可能搜到无关内容的情况。通常建议开启") },
-                    trailingContent = { Switch(state.filterBySubjectName, { state.filterBySubjectName = it }) },
+                    trailingContent = {
+                        Switch(
+                            state.filterBySubjectName, { state.filterBySubjectName = it },
+                            enabled = state.enableEdit,
+                        )
+                    },
                     colors = listItemColors,
                 )
                 ListItem(
                     headlineContent = { Text("使用剧集序号过滤") },
-                    Modifier.focusable(false).clickable { state.filterByEpisodeSort = !state.filterByEpisodeSort },
+                    Modifier.focusable(false).clickable(
+                        enabled = state.enableEdit,
+                    ) { state.filterByEpisodeSort = !state.filterByEpisodeSort },
                     supportingContent = { Text("要求资源标题包含剧集序号。适用于数据源可能搜到无关内容的情况。通常建议开启") },
-                    trailingContent = { Switch(state.filterByEpisodeSort, { state.filterByEpisodeSort = it }) },
+                    trailingContent = {
+                        Switch(
+                            state.filterByEpisodeSort, { state.filterByEpisodeSort = it },
+                            enabled = state.enableEdit,
+                        )
+                    },
                     colors = listItemColors,
                 )
             }
@@ -253,6 +277,7 @@ internal fun SelectorConfigurationPane(
                     supportingText = { Text("播放视频时执行的 HTTP 请求的 Referer，可留空") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     conf.userAgent, { conf.userAgent = it },
@@ -261,15 +286,18 @@ internal fun SelectorConfigurationPane(
                     supportingText = { Text("播放视频时执行的 HTTP 请求的 User-Agent") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
+                    enabled = state.enableEdit,
                 )
             }
 
             Row(Modifier.align(Alignment.End).padding(top = verticalSpacing, bottom = 12.dp)) {
-                ProvideTextStyleContentColor(
-                    MaterialTheme.typography.labelMedium,
-                    MaterialTheme.colorScheme.outline,
-                ) {
-                    Text("提示：修改自动保存")
+                if (state.enableEdit) {
+                    ProvideTextStyleContentColor(
+                        MaterialTheme.typography.labelMedium,
+                        MaterialTheme.colorScheme.outline,
+                    ) {
+                        Text("提示：修改自动保存")
+                    }
                 }
             }
         }
@@ -282,12 +310,12 @@ internal fun SelectorConfigurationPane(
 private fun SelectorSubjectFormatSelectionButtonRow(
     state: SelectorConfigState,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     SingleChoiceSegmentedButtonRow(modifier) {
         @Composable
         fun Btn(
             id: SelectorFormatId, index: Int,
-            enabled: Boolean = true,
             label: @Composable () -> Unit,
         ) {
             SegmentedButton(
@@ -318,12 +346,12 @@ private fun SelectorSubjectFormatSelectionButtonRow(
 private fun SelectorChannelSelectionButtonRow(
     state: SelectorConfigState,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     SingleChoiceSegmentedButtonRow(modifier) {
         @Composable
         fun Btn(
             id: SelectorFormatId, index: Int,
-            enabled: Boolean = true,
             label: @Composable () -> Unit,
         ) {
             SegmentedButton(

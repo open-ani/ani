@@ -36,6 +36,7 @@ import me.him188.ani.app.data.source.media.source.codec.MediaSourceDecodeExcepti
 import me.him188.ani.app.data.source.media.source.codec.UnsupportedVersionException
 import me.him188.ani.app.data.source.media.source.codec.decodeFromStringOrNull
 import me.him188.ani.app.data.source.media.source.codec.serializeToString
+import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 
 @Stable
@@ -213,6 +214,12 @@ class ExportMediaSourceState(
             codecManager.serializeToString(listOf(it))
         }
     }
+
+    fun serializeSingleToString(): String? {
+        return onExport()?.let {
+            codecManager.serializeSingleToString(it)
+        }
+    }
 }
 
 @Suppress("UnusedReceiverParameter")
@@ -240,4 +247,21 @@ fun MediaSourceConfigurationDefaults.DropdownMenuExport(
         leadingIcon = { Icon(Icons.Rounded.Share, null) },
         enabled = enabled,
     )
+    if (isInDebugMode()) {
+        DropdownMenuItem(
+            text = { Text("导出单个配置 (仅限开发者)") },
+            onClick = {
+                state.serializeSingleToString()?.let {
+                    clipboard.setText(AnnotatedString(it))
+                    toaster.toast("已复制到剪贴板")
+                } ?: kotlin.run {
+                    toaster.toast("目前无法导出，请稍后再试")
+                }
+                onDismissRequest()
+            },
+            modifier,
+            leadingIcon = { Icon(Icons.Rounded.Share, null) },
+            enabled = enabled,
+        )
+    }
 }

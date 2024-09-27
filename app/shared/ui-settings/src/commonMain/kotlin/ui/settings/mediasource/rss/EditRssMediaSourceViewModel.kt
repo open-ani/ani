@@ -67,12 +67,15 @@ class EditRssMediaSourceViewModel(
         coroutineScope {
             val saveTasker = MonoTasker(this)
             val arguments = mutableStateOf<RssMediaSourceArguments?>(null)
+            val allowEdit = mutableStateOf(false)
             launch {
-                val persisted = mediaSourceManager.instanceConfigFlow(instanceId).first()
+                val config = mediaSourceManager.instanceConfigFlow(instanceId).first()
+                val persisted = config
                     ?.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer())
                     ?: RssMediaSourceArguments.Default
                 withContext(Dispatchers.Main) {
                     arguments.value = persisted
+                    allowEdit.value = config != null && config.subscriptionId == null
                 }
             }
             emit(
@@ -91,6 +94,7 @@ class EditRssMediaSourceViewModel(
                         },
                         isSavingState = derivedStateOf { saveTasker.isRunning },
                     ),
+                    allowEditState = allowEdit,
                     instanceId = instanceId,
                     codecManager = codecManager,
                 ),

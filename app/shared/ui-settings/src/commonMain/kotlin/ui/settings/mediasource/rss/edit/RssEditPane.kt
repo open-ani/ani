@@ -67,6 +67,7 @@ fun RssEditPane(
                         isError = state.displayNameIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = outlinedTextFieldShape,
+                        enabled = state.enableEdit,
                     )
                     OutlinedTextField(
                         state.iconUrl, { state.iconUrl = it.trim() },
@@ -75,6 +76,7 @@ fun RssEditPane(
                         label = { Text("图标链接") },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = outlinedTextFieldShape,
+                        enabled = state.enableEdit,
                     )
                 }
 
@@ -110,21 +112,36 @@ fun RssEditPane(
                         isError = state.searchUrlIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         shape = outlinedTextFieldShape,
+                        enabled = state.enableEdit,
                     )
 
                     ListItem(
                         headlineContent = { Text("使用剧集序号过滤") },
-                        Modifier.clickable { state.filterByEpisodeSort = !state.filterByEpisodeSort },
+                        Modifier.clickable(
+                            enabled = state.enableEdit,
+                        ) { state.filterByEpisodeSort = !state.filterByEpisodeSort },
                         supportingContent = { Text("要求资源标题包含剧集序号。适用于数据源可能搜到无关内容的情况") },
-                        trailingContent = { Switch(state.filterByEpisodeSort, { state.filterByEpisodeSort = it }) },
+                        trailingContent = {
+                            Switch(
+                                state.filterByEpisodeSort, { state.filterByEpisodeSort = it },
+                                enabled = state.enableEdit,
+                            )
+                        },
                         colors = listItemColors,
                     )
 
                     ListItem(
                         headlineContent = { Text("使用条目名称过滤") },
-                        Modifier.clickable { state.filterBySubjectName = !state.filterBySubjectName },
+                        Modifier.clickable(
+                            enabled = state.enableEdit,
+                        ) { state.filterBySubjectName = !state.filterBySubjectName },
                         supportingContent = { Text("要求资源标题包含条目名称。适用于数据源可能搜到无关内容的情况") },
-                        trailingContent = { Switch(state.filterBySubjectName, { state.filterBySubjectName = it }) },
+                        trailingContent = {
+                            Switch(
+                                state.filterBySubjectName, { state.filterBySubjectName = it },
+                                enabled = state.enableEdit,
+                            )
+                        },
                         colors = listItemColors,
                     )
                 }

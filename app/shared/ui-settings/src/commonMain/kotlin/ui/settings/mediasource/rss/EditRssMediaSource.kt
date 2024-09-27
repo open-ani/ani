@@ -37,6 +37,7 @@ import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,12 +80,17 @@ import me.him188.ani.datasources.api.Media
 @Stable
 class EditRssMediaSourceState(
     private val argumentsStorage: SaveableStorage<RssMediaSourceArguments>,
+    private val allowEditState: State<Boolean>,
     val instanceId: String,
     codecManager: MediaSourceCodecManager,
 ) {
     private val arguments by argumentsStorage.containerState
     val isLoading by derivedStateOf { arguments == null }
     val isSaving by argumentsStorage.isSavingState
+
+    val enableEdit by derivedStateOf {
+        !isLoading && allowEditState.value
+    }
 
     var displayName by argumentsStorage.prop(
         RssMediaSourceArguments::name, { copy(name = it) },

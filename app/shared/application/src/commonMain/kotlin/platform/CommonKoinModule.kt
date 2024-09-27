@@ -10,16 +10,23 @@
 package me.him188.ani.app.platform
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import io.ktor.client.call.body
+import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.models.map
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
 import me.him188.ani.app.data.persistent.createDatabaseBuilder
@@ -70,6 +77,8 @@ import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManagerImpl
 import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
 import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
+import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscriptionUpdater
+import me.him188.ani.app.data.source.media.source.subscription.SubscriptionUpdateData
 import me.him188.ani.app.data.source.session.BangumiSessionManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
@@ -87,10 +96,15 @@ import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.ktor.proxy
+import me.him188.ani.utils.ktor.registerLogging
+import me.him188.ani.utils.ktor.userAgent
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
+import kotlin.time.Duration.Companion.minutes
 
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
@@ -209,6 +223,29 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             },
         )
     }
+    single<MediaSourceSubscriptionUpdater> {
+        val settings = get<SettingsRepository>()
+        val client = settings.proxySettings.flow.map { it.default }.map { proxySettings ->
+            createDefaultHttpClient {
+                userAgent(getAniUserAgent())
+                proxy(proxySettings.config.toClientProxyConfig())
+            }.apply {
+                registerLogging(logger<MediaSourceSubscriptionUpdater>())
+            }
+        }.onReplacement {
+            it.close()
+        }.shareIn(coroutineScope, started = SharingStarted.Lazily, replay = 1)
+        MediaSourceSubscriptionUpdater(
+            get<MediaSourceSubscriptionRepository>(),
+            get<MediaSourceManager>(),
+            get<MediaSourceCodecManager>(),
+            requestSubscription = {
+                client.first().runApiRequest { get(it.url) }.map { response ->
+                    response.body<SubscriptionUpdateData>()
+                }
+            },
+        )
+    }
 
     // Caching
 
@@ -232,6 +269,25 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
         val manager = koin.get<MediaCacheManager>()
         for (storage in manager.storages) {
             storage.first()?.restorePersistedCaches()
+        }
+    }
+
+    coroutineScope.launch {
+        val subscriptionUpdater = koin.get<MediaSourceSubscriptionUpdater>()
+        while (currentCoroutineContext().isActive) {
+            val nextDelay = subscriptionUpdater.updateAllOutdated()
+            delay(nextDelay.coerceAtLeast(1.minutes))
+        }
+    }
+
+    coroutineScope.launch {
+        // TODO: 这里是自动删除旧版数据源. 在未来 3.14 左右就可以去除这个了
+        val removedFactoryIds = setOf("ntdm", "mxdm")
+        val manager = koin.get<MediaSourceManager>()
+        for (instance in manager.allInstances.first()) {
+            if (instance.factoryId.value in removedFactoryIds) {
+                manager.removeInstance(instance.instanceId)
+            }
         }
     }
 

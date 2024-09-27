@@ -12,6 +12,7 @@ package me.him188.ani.app.data.source.media.source.codec
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import me.him188.ani.app.data.source.media.source.RssMediaSourceCodec
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceCodec
 import me.him188.ani.datasources.api.source.FactoryId
@@ -58,6 +59,13 @@ class MediaSourceCodecManager(
     }
 
     /**
+     * 序列化单个数据源 [ExportedMediaSourceData]. 此序列化结果不能用于导入. 仅用于内部测试使用.
+     */
+    fun <T : MediaSourceArguments> serializeSingleToString(arguments: T): String {
+        return context.json.encodeToString(ExportedMediaSourceData.serializer(), encode(arguments))
+    }
+
+    /**
      * 反序列化该数据为其对应的 [MediaSourceArguments].
      *
      * `null` means it's not supported by this client
@@ -69,6 +77,21 @@ class MediaSourceCodecManager(
         check(codec.factoryId == data.factoryId)
         return with(codec) {
             context.decode(data)
+        }
+    }
+
+    /**
+     * 将 [me.him188.ani.datasources.api.source.MediaSourceConfig.serializedArguments]
+     * 转换为 [factoryId] 对应的 [MediaSourceArguments].
+     */
+    fun deserializeArgument(
+        factoryId: FactoryId,
+        jsonElement: JsonElement
+    ): MediaSourceArguments {
+        val codec = findByFactoryId(factoryId)
+            ?: throw FactoryNotFoundException(factoryId)
+        return with(codec) {
+            context.deserialize(jsonElement)
         }
     }
 }

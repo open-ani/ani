@@ -22,6 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
+import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscription
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
@@ -47,12 +49,13 @@ import kotlin.time.Duration.Companion.seconds
 
 class MediaSourceLoader(
     private val mediaSourceManager: MediaSourceManager,
+    subscriptions: Flow<List<MediaSourceSubscription>>,
     parentCoroutineContext: CoroutineContext,
 ) {
     private val scope = parentCoroutineContext.childScope()
 
     val mediaSourcesFlow = mediaSourceManager.allInstances
-        .map { instances ->
+        .combine(subscriptions) { instances, subscriptions ->
             instances.mapNotNull { instance ->
                 val factory = findFactory(instance.factoryId) ?: return@mapNotNull null
                 MediaSourcePresentation(
@@ -72,6 +75,9 @@ class MediaSourceLoader(
                         },
                     ),
                     instance,
+                    ownerSubscriptionUrl = instance.config.subscriptionId?.let { subscriptionId ->
+                        subscriptions.find { it.subscriptionId == subscriptionId }?.url
+                    },
                 )
             }
             // 不能 sort, 会用来 reorder
@@ -239,6 +245,8 @@ class MediaSourcePresentation(
     val parameters: MediaSourceParameters,
     val connectionTester: ConnectionTester,
     val instance: MediaSourceInstance,
+
+    val ownerSubscriptionUrl: String?,
 )
 
 /**

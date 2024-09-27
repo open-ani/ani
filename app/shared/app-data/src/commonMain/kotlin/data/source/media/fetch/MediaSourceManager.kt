@@ -120,6 +120,8 @@ interface MediaSourceManager { // available by inject
         config: MediaSourceConfig
     )
 
+    suspend fun getListBySubscriptionId(subscriptionId: String): List<MediaSourceSave>
+
     /**
      * deprecated.
      */
@@ -269,6 +271,12 @@ class MediaSourceManagerImpl(
             config = config,
         )
         instances.add(save)
+    }
+
+    override suspend fun getListBySubscriptionId(subscriptionId: String): List<MediaSourceSave> {
+        return instances.flow.first().filter { save ->
+            save.config.subscriptionId == subscriptionId
+        }
     }
 
     override suspend fun updateConfig(instanceId: String, config: MediaSourceConfig): Boolean {

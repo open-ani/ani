@@ -20,6 +20,7 @@ import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelForm
 import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
 import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.mediasource.rss.createTestSaveableStorage
 import me.him188.ani.utils.platform.annotations.TestOnly
 
@@ -33,6 +34,7 @@ fun rememberTestSelectorConfigurationState(
             createTestSaveableStorage(
                 arguments,
             ),
+            allowEditState = stateOf(true),
         )
     }
 }

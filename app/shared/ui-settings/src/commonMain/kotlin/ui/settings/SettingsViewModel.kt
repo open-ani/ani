@@ -28,9 +28,11 @@ import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
+import me.him188.ani.app.data.repository.MediaSourceSubscriptionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
+import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscriptionUpdater
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.danmaku.DanmakuRegexFilterState
@@ -45,6 +47,7 @@ import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroupState
 import me.him188.ani.app.ui.settings.tabs.media.source.EditMediaSourceState
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroupState
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceSubscriptionGroupState
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
 import me.him188.ani.datasources.api.subject.SubjectProvider
@@ -61,6 +64,8 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     private val mediaSourceManager: MediaSourceManager by inject()
     private val mediaSourceInstanceRepository: MediaSourceInstanceRepository by inject()
+    private val mediaSourceSubscriptionRepository: MediaSourceSubscriptionRepository by inject()
+    private val mediaSourceSubscriptionUpdater: MediaSourceSubscriptionUpdater by inject()
 
     val softwareUpdateGroupState: SoftwareUpdateGroupState = SoftwareUpdateGroupState(
         updateSettings = settingsRepository.updateSettings.stateInBackground(UpdateSettings.Default.copy(_placeholder = -1)),
@@ -170,6 +175,7 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
 
     private val mediaSourceLoader = MediaSourceLoader(
         mediaSourceManager,
+        mediaSourceSubscriptionRepository.flow,
         backgroundScope.coroutineContext,
     )
     val mediaSourceGroupState = MediaSourceGroupState(
@@ -191,6 +197,18 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         onEdit = { instanceId, config -> mediaSourceManager.updateConfig(instanceId, config) },
         onDelete = { instanceId -> mediaSourceManager.removeInstance(instanceId) },
         onSetEnabled = { instanceId, enabled -> mediaSourceManager.setEnabled(instanceId, enabled) },
+        backgroundScope,
+    )
+
+    val mediaSourceSubscriptionGroupState = MediaSourceSubscriptionGroupState(
+        subscriptionsState = mediaSourceSubscriptionRepository.flow.produceState(emptyList()),
+        onUpdateAll = { mediaSourceSubscriptionUpdater.updateAllOutdated(force = true) },
+        onAdd = { mediaSourceSubscriptionRepository.add(it) },
+        onDelete = {
+            launchInBackground {
+                mediaSourceSubscriptionRepository.remove(it)
+            }
+        },
         backgroundScope,
     )
 

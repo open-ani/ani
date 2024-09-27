@@ -135,6 +135,7 @@ internal fun rememberTestEditSelectorMediaSourceState(
                     )
                 },
             ),
+            allowEditState = stateOf(true),
             engine = TestSelectorMediaSourceEngine(),
             webViewVideoExtractor = stateOf(TestWebViewVideoExtractor(urls)),
             codecManager = createTestMediaSourceCodecManager(),

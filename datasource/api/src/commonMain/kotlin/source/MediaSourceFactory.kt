@@ -72,6 +72,9 @@ interface MediaSourceFactory { // SPI service load
     ): MediaSource
 }
 
+/**
+ * 本地配置. 导出时不会导出 [MediaSourceConfig], 而是导出 [arguments].
+ */
 @Serializable
 data class MediaSourceConfig(
     val proxy: ClientProxyConfig? = null,
@@ -86,8 +89,14 @@ data class MediaSourceConfig(
      * 新版本的参数列表, 各个数据源可以自己决定该数据的格式. 要使用此类型参数, 数据源必须拥有单独的配置 UI 界面.
      *
      * 用户为数据源配置的参数列表.
+     *
+     * 如需转换为 `MediaSourceArguments`, 使用 `MediaSourceCodecManager.deserializeArgument`.
      */
     val serializedArguments: JsonElement? = null,
+    /**
+     * 所属订阅的 ID. `null` 表示是本地自己添加的
+     */
+    val subscriptionId: String? = null,
 ) {
     companion object {
         val Default = MediaSourceConfig()

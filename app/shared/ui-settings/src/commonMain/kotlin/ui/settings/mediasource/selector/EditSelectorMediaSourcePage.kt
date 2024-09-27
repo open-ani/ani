@@ -77,6 +77,7 @@ import kotlin.coroutines.CoroutineContext
 
 class EditSelectorMediaSourcePageState(
     private val argumentsStorage: SaveableStorage<SelectorMediaSourceArguments>,
+    allowEditState: State<Boolean>,
     engine: SelectorMediaSourceEngine,
     webViewVideoExtractor: State<WebViewVideoExtractor?>,
     private val codecManager: MediaSourceCodecManager,
@@ -84,7 +85,10 @@ class EditSelectorMediaSourcePageState(
     context: Context,
     flowDispatcher: CoroutineContext = Dispatchers.Default,
 ) {
-    internal val configurationState: SelectorConfigState = SelectorConfigState(argumentsStorage)
+    internal val configurationState: SelectorConfigState = SelectorConfigState(
+        argumentsStorage,
+        allowEditState = allowEditState,
+    )
 
     internal val testState: SelectorTestState =
         SelectorTestState(configurationState.searchConfigState, engine, backgroundScope)

@@ -65,6 +65,7 @@ internal fun SelectorChannelFormatColumn(
                     shape = textFieldShape,
                     supportingText = { Text("CSS Selector 表达式。期望返回一些任意类型元素，每个对应一个线路，将会读取其 text 作为线路名称") },
                     isError = conf.selectChannelNamesIsError,
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     conf.matchChannelName, { conf.matchChannelName = it },
@@ -74,6 +75,7 @@ internal fun SelectorChannelFormatColumn(
                     shape = textFieldShape,
                     supportingText = { Text("正则表达式。从上面提取到的元素 text 中，匹配线路名称。期望名为 ch 的分组，留空则使用整个 text。") },
                     isError = conf.matchChannelNameIsError,
+                    enabled = state.enableEdit,
                 )
 
                 OutlinedTextField(
@@ -84,6 +86,7 @@ internal fun SelectorChannelFormatColumn(
                     shape = textFieldShape,
                     supportingText = { Text("CSS Selector 表达式。期望返回一些 <div>，每个对应一个剧集面板。剧集面板内通常包含 1-12 集按钮") },
                     isError = conf.selectEpisodeListsIsError,
+                    enabled = state.enableEdit,
                 )
 
                 OutlinedTextField(
@@ -102,6 +105,7 @@ internal fun SelectorChannelFormatColumn(
                         )
                     },
                     isError = conf.selectEpisodesFromListIsError,
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     conf.selectEpisodeLinksFromList, { conf.selectEpisodeLinksFromList = it },
@@ -110,6 +114,7 @@ internal fun SelectorChannelFormatColumn(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                     supportingText = { Text("可选的 CSS Selector 表达式。如果上一个设置中提取到的剧集元素不为 <a>，则需要配置此项提取链接") },
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     conf.matchEpisodeSortFromName, { conf.matchEpisodeSortFromName = it },
@@ -119,6 +124,7 @@ internal fun SelectorChannelFormatColumn(
                     shape = textFieldShape,
                     supportingText = { Text("正则表达式查找。期望名为 ep 的分组，数字为佳") },
                     isError = conf.matchEpisodeSortFromNameIsError,
+                    enabled = state.enableEdit,
                 )
             }
 
@@ -140,6 +146,7 @@ internal fun SelectorChannelFormatColumn(
                         )
                     },
                     isError = conf.selectEpisodesIsError,
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     conf.selectEpisodeLinks, { conf.selectEpisodeLinks = it },
@@ -148,6 +155,7 @@ internal fun SelectorChannelFormatColumn(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     shape = textFieldShape,
                     supportingText = { Text("可选的 CSS Selector 表达式。如果上一个设置中提取到的剧集元素不为 <a>，则需要配置此项提取链接") },
+                    enabled = state.enableEdit,
                 )
                 OutlinedTextField(
                     conf.matchEpisodeSortFromName, { conf.matchEpisodeSortFromName = it },
@@ -157,6 +165,7 @@ internal fun SelectorChannelFormatColumn(
                     shape = textFieldShape,
                     supportingText = { Text("正则表达式查找。期望名为 ep 的分组，数字为佳") },
                     isError = conf.matchEpisodeSortFromNameIsError,
+                    enabled = state.enableEdit,
                 )
             }
 

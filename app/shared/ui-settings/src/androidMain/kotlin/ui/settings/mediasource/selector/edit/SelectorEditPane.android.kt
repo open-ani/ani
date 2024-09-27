@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PHONE_LANDSCAPE
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.mediasource.rss.createTestSaveableStorage
 import me.him188.ani.utils.platform.annotations.TestOnly
 
@@ -30,6 +31,7 @@ fun PreviewSelectorConfigurationPane() = ProvideFoundationCompositionLocalsForPr
                     createTestSaveableStorage(
                         SelectorMediaSourceArguments.Default,
                     ),
+                    allowEditState = stateOf(true),
                 )
             },
         )

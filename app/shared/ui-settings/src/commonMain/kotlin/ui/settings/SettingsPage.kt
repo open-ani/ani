@@ -60,6 +60,7 @@ import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
 import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
 import me.him188.ani.app.ui.settings.tabs.media.VideoResolverGroup
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
+import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceSubscriptionGroup
 import me.him188.ani.app.ui.settings.tabs.network.DanmakuGroup
 import me.him188.ani.app.ui.settings.tabs.network.GlobalProxyGroup
 import me.him188.ani.app.ui.settings.tabs.network.OtherTestGroup
@@ -177,6 +178,7 @@ fun SettingsPage(
                             SettingsTab.NETWORK -> {
                                 SettingsTab(Modifier.fillMaxSize()) {
                                     GlobalProxyGroup(vm.proxySettingsState)
+                                    MediaSourceSubscriptionGroup(vm.mediaSourceSubscriptionGroupState)
                                     MediaSourceGroup(vm.mediaSourceGroupState, vm.editMediaSourceState)
                                     OtherTestGroup(vm.otherTesters)
                                     DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)

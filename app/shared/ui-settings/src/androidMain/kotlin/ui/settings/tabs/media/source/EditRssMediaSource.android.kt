@@ -137,6 +137,7 @@ internal fun rememberTestEditRssMediaSourceState() = remember {
             {},
             stateOf(false),
         ),
+        allowEditState = stateOf(true),
         instanceId = "test-id",
         codecManager = createTestMediaSourceCodecManager(),
     )

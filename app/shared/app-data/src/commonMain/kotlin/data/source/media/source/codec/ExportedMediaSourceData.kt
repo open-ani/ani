@@ -13,6 +13,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import me.him188.ani.datasources.api.source.FactoryId
 
+/**
+ * @see MediaSourceCodec.encode
+ */
 @Serializable
 data class ExportedMediaSourceData(
     val factoryId: FactoryId,
@@ -20,7 +23,10 @@ data class ExportedMediaSourceData(
      * 每个 factory 自己定义的 version. 通常的约束是, 高版本导出的数据源无法在低版本导入
      */
     val version: Int,
-    val data: JsonElement, // 不使用多态序列化, 为了兼容性
+    /**
+     * [MediaSourceArguments] 的序列化结果
+     */
+    val arguments: JsonElement, // 不使用多态序列化, 为了兼容性
 )
 
 @Serializable

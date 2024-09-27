@@ -11,6 +11,7 @@ package me.him188.ani.app.data.source.media.source.codec
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import me.him188.ani.datasources.api.source.FactoryId
 import kotlin.reflect.KClass
 
@@ -27,10 +28,16 @@ abstract class MediaSourceCodec<T : MediaSourceArguments>(
     abstract fun MediaSourceCodecContext.encode(arguments: T): ExportedMediaSourceData
 
     /**
+     * 考虑版本兼容性. 潜在地会转换不兼容数据的为当前支持的
      * [ExportedMediaSourceData.factoryId] must match current [factoryId]
      */
     @Throws(UnsupportedVersionException::class)
     abstract fun MediaSourceCodecContext.decode(data: ExportedMediaSourceData): T
+
+    /**
+     * 直接使用 [KSerializer] 反序列化 [data]
+     */
+    abstract fun MediaSourceCodecContext.deserialize(data: JsonElement): T
 
     override fun toString(): String {
         return "MediaSourceArgumentCodec(factoryId=$factoryId, currentVersion=$currentVersion, forClass=$forClass)"
@@ -63,7 +70,11 @@ open class DefaultMediaSourceCodec<T : MediaSourceArguments>(
             throw UnsupportedVersionException(unexpectedVersion = data.version, currentVersion = currentVersion)
         }
 
-        return json.decodeFromJsonElement(serializer, data.data)
+        return deserialize(data.arguments)
+    }
+
+    override fun MediaSourceCodecContext.deserialize(data: JsonElement): T {
+        return json.decodeFromJsonElement(serializer, data)
     }
 }
 

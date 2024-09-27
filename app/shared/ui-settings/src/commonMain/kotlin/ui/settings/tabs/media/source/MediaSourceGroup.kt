@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Add
@@ -301,9 +302,26 @@ internal fun SettingsScope.MediaSourceItem(
 //    )
     TextItem(
         modifier = modifier,
-        description = item.info.description?.let {
-            {
-                Text(it, Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) })
+        description = {
+            SelectionContainer {
+                Text(
+                    remember(item) {
+                        buildString {
+                            val desc = item.info.description.orEmpty()
+                            val subUrl = item.ownerSubscriptionUrl
+                            if (subUrl != null) {
+                                if (desc.isNotBlank()) {
+                                    appendLine(desc)
+                                }
+                                append("来自订阅，不可编辑 ")
+                                append(subUrl)
+                            } else {
+                                append(desc)
+                            }
+                        }
+                    },
+                    Modifier.ifThen(!isEnabled) { alpha(DISABLED_ALPHA) },
+                )
             }
         },
         icon = {

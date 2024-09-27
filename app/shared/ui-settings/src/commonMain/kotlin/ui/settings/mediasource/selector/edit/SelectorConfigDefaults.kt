@@ -63,10 +63,15 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
             headlineContent = { Text("启用嵌套链接") },
             Modifier
                 .padding(bottom = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
-                .clickable { matchVideoConfig.enableNestedUrl = !matchVideoConfig.enableNestedUrl },
+                .clickable(
+                    enabled = state.enableEdit,
+                ) { matchVideoConfig.enableNestedUrl = !matchVideoConfig.enableNestedUrl },
             supportingContent = { Text("当遇到匹配的链接时，终止父页面加载并跳转到匹配的链接，在嵌套页面中继续查找视频链接。支持任意次数嵌套") },
             trailingContent = {
-                Switch(matchVideoConfig.enableNestedUrl, { matchVideoConfig.enableNestedUrl = it })
+                Switch(
+                    matchVideoConfig.enableNestedUrl, { matchVideoConfig.enableNestedUrl = it },
+                    enabled = state.enableEdit,
+                )
             },
             colors = ListItemDefaults.colors(containerColor = Transparent),
         )
@@ -83,6 +88,7 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 shape = textFieldShape,
                 isError = matchVideoConfig.matchNestedUrlIsError,
+                enabled = state.enableEdit,
             )
         }
 
@@ -94,6 +100,7 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             shape = textFieldShape,
             isError = matchVideoConfig.matchVideoUrlIsError,
+            enabled = state.enableEdit,
         )
         OutlinedTextField(
             matchVideoConfig.cookies, { matchVideoConfig.cookies = it },
@@ -102,6 +109,7 @@ internal fun SelectorConfigurationDefaults.MatchVideoSection(
             supportingText = { Text("key=value 格式的 cookies，一行一个，留空则不添加") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             shape = textFieldShape,
+            enabled = state.enableEdit,
         )
     }
 }
