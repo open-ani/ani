@@ -13,6 +13,7 @@ import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscription
+import me.him188.ani.utils.platform.Uuid
 
 class MediaSourceSubscriptionRepository(
     private val dataStore: DataStore<MediaSourceSubscriptionsSaveData>,
@@ -62,6 +63,13 @@ data class MediaSourceSubscriptionsSaveData(
     val list: List<MediaSourceSubscription>
 ) {
     companion object {
-        val Empty = MediaSourceSubscriptionsSaveData(emptyList())
+        val Default = MediaSourceSubscriptionsSaveData(
+            listOf(
+                MediaSourceSubscription(
+                    subscriptionId = Uuid.randomString(),
+                    url = "https://sub.creamycake.org/sub1.json",
+                ),
+            ),
+        )
     }
 }

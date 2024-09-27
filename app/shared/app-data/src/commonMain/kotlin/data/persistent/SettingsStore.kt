@@ -48,10 +48,10 @@ abstract class PlatformDataStoreManager {
     val mediaSourceSubscriptionStore by lazy {
         DataStoreFactory.create(
             serializer = MediaSourceSubscriptionsSaveData.serializer()
-                .asDataStoreSerializer({ MediaSourceSubscriptionsSaveData.Empty }),
+                .asDataStoreSerializer({ MediaSourceSubscriptionsSaveData.Default }),
             produceFile = { resolveDataStoreFile("mediaSourceSubscription") },
             corruptionHandler = ReplaceFileCorruptionHandler {
-                MediaSourceSubscriptionsSaveData.Empty
+                MediaSourceSubscriptionsSaveData.Default
             },
         )
     }
