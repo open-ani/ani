@@ -20,11 +20,17 @@ class MediaSourceSubscriptionRepository(
     val flow get() = dataStore.data.map { it.list }
 
     suspend fun add(subscription: MediaSourceSubscription) {
-        dataStore.updateData { it.copy(it.list + subscription) }
+        dataStore.updateData { it.copy(list = it.list + subscription) }
     }
 
     suspend fun remove(subscription: MediaSourceSubscription) {
-        dataStore.updateData { it.copy(it.list - subscription) }
+        dataStore.updateData {
+            it.copy(
+                list = it.list.filterNotTo(ArrayList(it.list.size)) {
+                    it.subscriptionId == subscription.subscriptionId
+                },
+            )
+        }
     }
 
     /**

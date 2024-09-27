@@ -157,7 +157,10 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
                         DropdownMenuItem(
                             leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                             text = { Text("删除", color = MaterialTheme.colorScheme.error) },
-                            onClick = { state.delete(subscription) },
+                            onClick = {
+                                state.delete(subscription)
+                                showDropdown = false
+                            },
                         )
                     }
                 },
