@@ -27,7 +27,7 @@ class WebSearchChannelInfo(
 
 data class WebSearchEpisodeInfo(
     /**
-     * 播放线路
+     * 播放线路, 与 [name] 一起组成 ID. 如要修改, 考虑 [SelectorMediaSourceEngine.selectMedia]
      */
     val channel: String?,
     /**

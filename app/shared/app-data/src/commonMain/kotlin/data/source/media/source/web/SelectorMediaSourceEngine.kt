@@ -184,7 +184,7 @@ abstract class SelectorMediaSourceEngine {
             val subtitleLanguages = guessSubtitleLanguages(info, parser)
             info.episodeSort ?: return@mapNotNull null
             DefaultMedia(
-                mediaId = "$mediaSourceId.${subjectName}-${info.name}-${info.episodeSort}",
+                mediaId = "$mediaSourceId.${subjectName}-${info.channel}-${info.name}-${info.episodeSort}",
                 mediaSourceId = mediaSourceId,
                 originalUrl = info.playUrl,
                 download = ResourceLocation.WebVideo(info.playUrl),
