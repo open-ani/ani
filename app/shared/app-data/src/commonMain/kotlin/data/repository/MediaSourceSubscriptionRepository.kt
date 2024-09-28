@@ -24,6 +24,9 @@ class MediaSourceSubscriptionRepository(
         dataStore.updateData { it.copy(list = it.list + subscription) }
     }
 
+    /**
+     * 不会删除由该订阅添加的实例
+     */
     suspend fun remove(subscription: MediaSourceSubscription) {
         dataStore.updateData {
             it.copy(

@@ -148,67 +148,7 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
         },
     ) {
         for ((index, subscription) in state.subscriptions.withIndex()) {
-            Item(
-                headlineContent = {
-                    SelectionContainer {
-                        Text(subscription.url)
-                    }
-                },
-                supportingContent = {
-                    Text(
-                        "每 ${subscription.updatePeriod} 自动更新，" + formatLastUpdated(subscription.lastUpdated),
-                    )
-                },
-                trailingContent = {
-                    var showDropdown by remember { mutableStateOf(false) }
-                    IconButton({ showDropdown = true }) {
-                        Icon(Icons.Rounded.MoreVert, contentDescription = null)
-                    }
-                    DropdownMenu(showDropdown, { showDropdown = false }) {
-//                        DropdownMenuItem(
-//                            text = { Text("立即更新") },
-//                            onClick = {},
-//                        )
-                        val uiScope = rememberCoroutineScope()
-                        val clipboard = LocalClipboardManager.current
-                        val toaster = LocalToaster.current
-
-                        DropdownMenuItem(
-                            leadingIcon = { Icon(Icons.Rounded.Share, null) },
-                            text = { Text("复制链接") },
-                            onClick = {
-                                clipboard.setText(AnnotatedString(subscription.url))
-                                showDropdown = false
-                                toaster.toast("已复制")
-                            },
-                        )
-
-                        DropdownMenuItem(
-                            leadingIcon = { Icon(Icons.Rounded.Share, null) },
-                            text = { Text("全部导出到剪贴板") },
-                            onClick = {
-                                uiScope.launch {
-                                    val string = state.exportToString(subscription)
-                                    clipboard.setText(AnnotatedString(string))
-                                    showDropdown = false
-                                    toaster.toast("已复制")
-                                }
-                            },
-                            enabled = !state.isExportInProgress,
-                        )
-
-                        DropdownMenuItem(
-                            leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
-                            onClick = {
-                                state.delete(subscription)
-                                showDropdown = false
-                            },
-                            enabled = !state.isExportInProgress,
-                        )
-                    }
-                },
-            )
+            SubscriptionItem(subscription, state)
             if (index != state.subscriptions.lastIndex) {
                 HorizontalDividerItem()
             }
@@ -262,6 +202,96 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
                 },
             )
         }
+    }
+}
+
+@Composable
+private fun SettingsScope.SubscriptionItem(
+    subscription: MediaSourceSubscription,
+    state: MediaSourceSubscriptionGroupState
+) {
+    var showConfirmDelete by remember { mutableStateOf(false) }
+    Item(
+        headlineContent = {
+            SelectionContainer {
+                Text(subscription.url)
+            }
+        },
+        supportingContent = {
+            Text(
+                "每 ${subscription.updatePeriod} 自动更新，" + formatLastUpdated(subscription.lastUpdated),
+            )
+        },
+        trailingContent = {
+            var showDropdown by remember { mutableStateOf(false) }
+            IconButton({ showDropdown = true }) {
+                Icon(Icons.Rounded.MoreVert, contentDescription = null)
+            }
+            DropdownMenu(showDropdown, { showDropdown = false }) {
+                val uiScope = rememberCoroutineScope()
+                val clipboard = LocalClipboardManager.current
+                val toaster = LocalToaster.current
+
+                DropdownMenuItem(
+                    leadingIcon = { Icon(Icons.Rounded.Share, null) },
+                    text = { Text("复制链接") },
+                    onClick = {
+                        clipboard.setText(AnnotatedString(subscription.url))
+                        showDropdown = false
+                        toaster.toast("已复制")
+                    },
+                )
+
+                DropdownMenuItem(
+                    leadingIcon = { Icon(Icons.Rounded.Share, null) },
+                    text = { Text("全部导出到剪贴板") },
+                    onClick = {
+                        uiScope.launch {
+                            val string = state.exportToString(subscription)
+                            clipboard.setText(AnnotatedString(string))
+                            showDropdown = false
+                            toaster.toast("已复制")
+                        }
+                    },
+                    enabled = !state.isExportInProgress,
+                )
+
+                DropdownMenuItem(
+                    leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                    text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                    onClick = {
+                        showDropdown = false
+                        showConfirmDelete = true
+                    },
+                    enabled = !state.isExportInProgress,
+                )
+            }
+        },
+    )
+    if (showConfirmDelete) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDelete = false },
+            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text("删除数据源订阅") },
+            text = {
+                Text("将会同时删除来自该订阅的所有数据源 (共 ${subscription.lastUpdated?.mediaSourceCount ?: 0} 个)")
+            },
+            confirmButton = {
+                TextButton(
+                    {
+                        state.delete(subscription)
+                        showConfirmDelete = false
+                    },
+                ) {
+                    Text(
+                        "删除",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
+        )
+
     }
 }
 

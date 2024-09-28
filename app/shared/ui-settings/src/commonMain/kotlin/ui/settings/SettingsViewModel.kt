@@ -210,6 +210,9 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         onAdd = { mediaSourceSubscriptionRepository.add(it) },
         onDelete = {
             launchInBackground {
+                for (save in mediaSourceManager.getListBySubscriptionId(it.subscriptionId)) {
+                    mediaSourceManager.removeInstance(save.instanceId)
+                }
                 mediaSourceSubscriptionRepository.remove(it)
             }
         },
