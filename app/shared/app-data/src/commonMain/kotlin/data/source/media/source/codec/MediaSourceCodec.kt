@@ -27,6 +27,8 @@ abstract class MediaSourceCodec<T : MediaSourceArguments>(
 
     abstract fun MediaSourceCodecContext.encode(arguments: T): ExportedMediaSourceData
 
+    abstract fun MediaSourceCodecContext.serialize(arguments: JsonElement): ExportedMediaSourceData
+
     /**
      * 考虑版本兼容性. 潜在地会转换不兼容数据的为当前支持的
      * [ExportedMediaSourceData.factoryId] must match current [factoryId]
@@ -62,6 +64,10 @@ open class DefaultMediaSourceCodec<T : MediaSourceArguments>(
 ) : MediaSourceCodec<T>(factoryId, forClass) {
     override fun MediaSourceCodecContext.encode(arguments: T): ExportedMediaSourceData {
         return ExportedMediaSourceData(factoryId, currentVersion, json.encodeToJsonElement(serializer, arguments))
+    }
+
+    override fun MediaSourceCodecContext.serialize(arguments: JsonElement): ExportedMediaSourceData {
+        return ExportedMediaSourceData(factoryId, currentVersion, arguments)
     }
 
     override fun MediaSourceCodecContext.decode(data: ExportedMediaSourceData): T {

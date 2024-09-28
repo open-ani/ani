@@ -13,7 +13,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import me.him188.ani.app.data.source.media.instance.MediaSourceSave
 import me.him188.ani.app.data.source.media.source.RssMediaSourceCodec
+import me.him188.ani.app.data.source.media.source.subscription.SubscriptionUpdateData
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceCodec
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -58,6 +60,19 @@ class MediaSourceCodecManager(
         }
     }
 
+    fun serialize(
+        factoryId: FactoryId,
+        arguments: JsonElement
+    ): ExportedMediaSourceData {
+        val codec = findByFactoryId(factoryId)
+            ?: throw FactoryNotFoundException(factoryId)
+        return with(codec) {
+            context.serialize(arguments).also {
+                check(it.factoryId == codec.factoryId) { "Codec $codec returned different factory id $it than ${codec.factoryId}" }
+            }
+        }
+    }
+
     /**
      * 序列化单个数据源 [ExportedMediaSourceData]. 此序列化结果不能用于导入. 仅用于内部测试使用.
      */
@@ -94,7 +109,28 @@ class MediaSourceCodecManager(
             context.deserialize(jsonElement)
         }
     }
+
+    /**
+     * 序列化订阅数据. 序列化之后的数据, 在 HTTP 服务器 host 之后, 可以作为订阅添加.
+     */
+    fun serializeSubscriptionToString(
+        data: SubscriptionUpdateData,
+    ): String = context.json.encodeToString(SubscriptionUpdateData.serializer(), data)
+
 }
+
+fun MediaSourceCodecManager.serializeSubscriptionToString(
+    saves: List<MediaSourceSave>
+): String = serializeSubscriptionToString(
+    SubscriptionUpdateData(
+        ExportedMediaSourceDataList(
+            saves.mapNotNull {
+                val args = it.config.serializedArguments ?: return@mapNotNull null
+                serialize(it.factoryId, args)
+            },
+        ),
+    ),
+)
 
 class FactoryNotFoundException(factoryId: FactoryId) : MediaSourceDecodeException("Factory not found: $factoryId")
 

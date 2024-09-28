@@ -19,6 +19,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -37,19 +38,24 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscription
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
+import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.utils.platform.Uuid
 import kotlin.jvm.JvmName
@@ -60,6 +66,7 @@ class MediaSourceSubscriptionGroupState(
     private val onUpdateAll: suspend () -> Unit,
     private val onAdd: suspend (MediaSourceSubscription) -> Unit,
     private val onDelete: (MediaSourceSubscription) -> Unit,
+    private val onExportLocalChangesToString: suspend (MediaSourceSubscription) -> String,
     backgroundScope: CoroutineScope,
 ) {
     val subscriptions by subscriptionsState
@@ -101,6 +108,14 @@ class MediaSourceSubscriptionGroupState(
 
     fun delete(subscription: MediaSourceSubscription) {
         onDelete(subscription)
+    }
+
+    private val exportTasker = MonoTasker(backgroundScope)
+    val isExportInProgress get() = exportTasker.isRunning
+    suspend fun exportToString(subscription: MediaSourceSubscription): String {
+        return exportTasker.async {
+            onExportLocalChangesToString(subscription)
+        }.await()
     }
 }
 
@@ -154,6 +169,34 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
 //                            text = { Text("立即更新") },
 //                            onClick = {},
 //                        )
+                        val uiScope = rememberCoroutineScope()
+                        val clipboard = LocalClipboardManager.current
+                        val toaster = LocalToaster.current
+
+                        DropdownMenuItem(
+                            leadingIcon = { Icon(Icons.Rounded.Share, null) },
+                            text = { Text("复制链接") },
+                            onClick = {
+                                clipboard.setText(AnnotatedString(subscription.url))
+                                showDropdown = false
+                                toaster.toast("已复制")
+                            },
+                        )
+
+                        DropdownMenuItem(
+                            leadingIcon = { Icon(Icons.Rounded.Share, null) },
+                            text = { Text("全部导出到剪贴板") },
+                            onClick = {
+                                uiScope.launch {
+                                    val string = state.exportToString(subscription)
+                                    clipboard.setText(AnnotatedString(string))
+                                    showDropdown = false
+                                    toaster.toast("已复制")
+                                }
+                            },
+                            enabled = !state.isExportInProgress,
+                        )
+
                         DropdownMenuItem(
                             leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
                             text = { Text("删除", color = MaterialTheme.colorScheme.error) },
@@ -161,6 +204,7 @@ internal fun SettingsScope.MediaSourceSubscriptionGroup(
                                 state.delete(subscription)
                                 showDropdown = false
                             },
+                            enabled = !state.isExportInProgress,
                         )
                     }
                 },

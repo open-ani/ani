@@ -32,6 +32,8 @@ import me.him188.ani.app.data.repository.MediaSourceSubscriptionRepository
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.danmaku.AniBangumiSeverBaseUrls
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
+import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
+import me.him188.ani.app.data.source.media.source.codec.serializeSubscriptionToString
 import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscriptionUpdater
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.ui.foundation.launchInBackground
@@ -66,6 +68,7 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
     private val mediaSourceInstanceRepository: MediaSourceInstanceRepository by inject()
     private val mediaSourceSubscriptionRepository: MediaSourceSubscriptionRepository by inject()
     private val mediaSourceSubscriptionUpdater: MediaSourceSubscriptionUpdater by inject()
+    private val mediaSourceCodecManager: MediaSourceCodecManager by inject()
 
     val softwareUpdateGroupState: SoftwareUpdateGroupState = SoftwareUpdateGroupState(
         updateSettings = settingsRepository.updateSettings.stateInBackground(UpdateSettings.Default.copy(_placeholder = -1)),
@@ -200,14 +203,19 @@ class SettingsViewModel : AbstractSettingsViewModel(), KoinComponent {
         backgroundScope,
     )
 
+    private val subscriptionsState = mediaSourceSubscriptionRepository.flow.produceState(emptyList())
     val mediaSourceSubscriptionGroupState = MediaSourceSubscriptionGroupState(
-        subscriptionsState = mediaSourceSubscriptionRepository.flow.produceState(emptyList()),
+        subscriptionsState = subscriptionsState,
         onUpdateAll = { mediaSourceSubscriptionUpdater.updateAllOutdated(force = true) },
         onAdd = { mediaSourceSubscriptionRepository.add(it) },
         onDelete = {
             launchInBackground {
                 mediaSourceSubscriptionRepository.remove(it)
             }
+        },
+        onExportLocalChangesToString = { subscription ->
+            val saves = mediaSourceManager.getListBySubscriptionId(subscription.subscriptionId)
+            mediaSourceCodecManager.serializeSubscriptionToString(saves)
         },
         backgroundScope,
     )
