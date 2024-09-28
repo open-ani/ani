@@ -60,16 +60,31 @@ class MediaSourceSubscriptionRepository(
 
 @Serializable
 data class MediaSourceSubscriptionsSaveData(
-    val list: List<MediaSourceSubscription>
+    val list: List<MediaSourceSubscription>,
+    private val version: Int,
 ) {
+    init {
+        require(version == CURRENT_VERSION) { "Version updated to $CURRENT_VERSION" }
+    }
+
     companion object {
+        /**
+         * 更新后所有用户的配置的都会丢失
+         */
+        private const val CURRENT_VERSION = 1
+
         val Default = MediaSourceSubscriptionsSaveData(
             listOf(
                 MediaSourceSubscription(
                     subscriptionId = Uuid.randomString(),
-                    url = "https://sub.creamycake.org/sub1.json",
+                    url = "https://sub.creamycake.org/v1/bt1.json",
+                ),
+                MediaSourceSubscription(
+                    subscriptionId = Uuid.randomString(),
+                    url = "https://sub.creamycake.org/v1/css1.json",
                 ),
             ),
+            version = CURRENT_VERSION,
         )
     }
 }
