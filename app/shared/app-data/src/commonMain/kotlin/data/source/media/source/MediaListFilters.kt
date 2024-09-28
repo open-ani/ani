@@ -18,7 +18,7 @@ import me.him188.ani.datasources.api.topic.contains
  */
 object MediaListFilters {
     val specialCharRegex = Regex("""[ 	~!@#$%^&*()_+{}\[\]\\|;':",.<>/?【】]""")
-    
+
     val ContainsSubjectName = BasicMediaListFilter { media ->
         subjectNamesWithoutSpecial.any { subjectName ->
             media.originalTitle.replace(specialCharRegex, "")
@@ -30,4 +30,17 @@ object MediaListFilters {
         val range = media.episodeRange ?: return@BasicMediaListFilter false
         range.contains(episodeSort)
     }
+    val ContainsEpisodeEp = BasicMediaListFilter { media ->
+        val range = media.episodeRange ?: return@BasicMediaListFilter false
+        episodeEp != null && range.contains(episodeEp)
+    }
+    val ContainsEpisodeName = BasicMediaListFilter { media ->
+        episodeName ?: return@BasicMediaListFilter false
+        val name = episodeNameWithoutSpecial
+        checkNotNull(name)
+        if (name.isBlank()) return@BasicMediaListFilter false
+        media.originalTitle.replace(specialCharRegex, "").contains(name)
+    }
+
+    val ContainsAnyEpisodeInfo = ContainsEpisodeSort or ContainsEpisodeName or ContainsEpisodeEp
 }

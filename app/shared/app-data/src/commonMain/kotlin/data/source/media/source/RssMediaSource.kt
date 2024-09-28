@@ -166,6 +166,8 @@ class RssMediaSource(
                         subjectName = name,
                         episodeSort = query.episodeSort,
                         allSubjectNames = query.subjectNames,
+                        episodeEp = query.episodeEp,
+                        episodeName = query.episodeName,
                     ),
                 ).map {
                     MediaMatch(it, MatchKind.FUZZY)
@@ -178,9 +180,13 @@ data class RssSearchQuery(
     val subjectName: String,
     val allSubjectNames: Set<String>,
     val episodeSort: EpisodeSort,
+    val episodeEp: EpisodeSort?,
+    val episodeName: String?,
 )
 
 fun RssSearchQuery.toFilterContext() = MediaListFilterContext(
     subjectNames = allSubjectNames,
     episodeSort = episodeSort,
+    episodeEp = episodeSort,
+    episodeName = episodeName,
 )

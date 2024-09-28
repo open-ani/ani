@@ -149,7 +149,7 @@ data class RssSearchConfig(
  */
 fun RssSearchConfig.createFilters() = buildList {
     if (filterBySubjectName) add(MediaListFilters.ContainsSubjectName)
-    if (filterByEpisodeSort) add(MediaListFilters.ContainsEpisodeSort)
+    if (filterByEpisodeSort) add(MediaListFilters.ContainsAnyEpisodeInfo)
 }
 
 /**

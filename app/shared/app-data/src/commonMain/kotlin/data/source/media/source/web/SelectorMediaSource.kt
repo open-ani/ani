@@ -196,6 +196,8 @@ class SelectorMediaSource(
                             subjectName = name,
                             episodeSort = query.episodeSort,
                             allSubjectNames = query.subjectNames,
+                            episodeEp = query.episodeEp,
+                            episodeName = query.episodeName,
                         ),
                         mediaSourceId,
                     ).getOrThrow().asFlow()

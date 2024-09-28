@@ -98,6 +98,8 @@ class RssTestPaneState(
                 subjectName = testData.keyword,
                 episodeSort = EpisodeSort(sort),
                 allSubjectNames = setOf(testData.keyword),
+                episodeName = null,
+                episodeEp = null,
             )
             viewingItem = null
             launchRequestInBackground {

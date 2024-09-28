@@ -45,6 +45,8 @@ class SelectorTestState(
                 subjectName = searchKeyword,
                 episodeSort = EpisodeSort(sort),
                 allSubjectNames = setOf(searchKeyword),
+                episodeName = null,
+                episodeEp = null,
             )
         }
     }

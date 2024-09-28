@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 @file:Suppress("unused", "UNUSED_VARIABLE")
 
 package me.him188.ani.app.data.source.media.source
@@ -16,10 +25,14 @@ fun applyingFilters(mediaList: List<Media>) {
         if (enableFilterBySubjectName) {
             add(MediaListFilters.ContainsSubjectName)
         }
-        add(MediaListFilters.ContainsEpisodeSort)
+        add(MediaListFilters.ContainsAnyEpisodeInfo)
     }
 
-    val newList: List<Media> = with(MediaListFilterContext(setOf("条目名称"), EpisodeSort(1))) {
+    val context = MediaListFilterContext(
+        setOf("条目名称"), EpisodeSort(1), EpisodeSort(1),
+        "第1集",
+    )
+    val newList: List<Media> = with(context) {
         mediaList.filter { media ->
             filters.applyOn(media.asCandidate())
         }

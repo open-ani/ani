@@ -51,11 +51,15 @@ data class SelectorSearchQuery(
     val subjectName: String,
     val allSubjectNames: Set<String>,
     val episodeSort: EpisodeSort,
+    val episodeEp: EpisodeSort?,
+    val episodeName: String?,
 )
 
 fun SelectorSearchQuery.toFilterContext() = MediaListFilterContext(
     subjectNames = allSubjectNames,
     episodeSort = episodeSort,
+    episodeEp = episodeEp,
+    episodeName = episodeName,
 )
 
 /**
@@ -300,7 +304,7 @@ internal fun SelectorSearchConfig.createFiltersForSubject() = buildList {
 
 internal fun SelectorSearchConfig.createFiltersForEpisode() = buildList {
     // 不使用 filterBySubjectName, 因为 web 的剧集名称通常为 "第x集", 不包含 subject
-    if (filterByEpisodeSort) add(MediaListFilters.ContainsEpisodeSort)
+    if (filterByEpisodeSort) add(MediaListFilters.ContainsAnyEpisodeInfo)
 }
 
 class DefaultSelectorMediaSourceEngine(

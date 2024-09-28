@@ -20,11 +20,16 @@ import me.him188.ani.datasources.api.EpisodeSort
 open class MediaListFilterContext(
     val subjectNames: Set<String>, // faster
     val episodeSort: EpisodeSort,
+    val episodeEp: EpisodeSort?,
+    val episodeName: String?,
 ) {
     val subjectNamesWithoutSpecial: Set<String> by lazy {
         subjectNames.mapTo(HashSet(subjectNames.size)) {
             it.replace(MediaListFilters.specialCharRegex, "")
         }
+    }
+    val episodeNameWithoutSpecial: String? by lazy {
+        episodeName?.replace(MediaListFilters.specialCharRegex, "")
     }
 
     /**

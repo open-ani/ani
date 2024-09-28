@@ -123,7 +123,7 @@ class RssItemPresentation(
                     } else {
                         emit(
                             episodeRange.toString(),
-                            isMatch = MediaListFilters.ContainsEpisodeSort.applyOn(candidate),
+                            isMatch = MediaListFilters.ContainsAnyEpisodeInfo.applyOn(candidate),
                         )
                     }
                 } else {
