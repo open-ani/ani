@@ -156,6 +156,7 @@ class SeleniumWebViewVideoExtractor(
                 logger.info { "Starting Selenium to resolve video source from $pageUrl" }
 
                 val driver: RemoteWebDriver = createDriver()
+                driver.manage().window().minimize()
 
                 /**
                  * @return if the url has been consumed
@@ -284,11 +285,8 @@ private sealed interface WebDriverFactory {
             WebDriverManager.edgedriver().setup()
             return EdgeDriver(
                 EdgeOptions().apply {
-                    if (videoResolverSettings.headless) {
-                        addArguments("--headless")
-                        addArguments("--disable-gpu")
-                    }
 //                addArguments("--log-level=3")
+                    addArguments("--mute-audio")
                     proxyConfig?.let {
                         addArguments("--proxy-server=${it.url}")
                     }
@@ -302,11 +300,8 @@ private sealed interface WebDriverFactory {
             WebDriverManager.chromedriver().setup()
             return ChromeDriver(
                 ChromeOptions().apply {
-                    if (videoResolverSettings.headless) {
-                        addArguments("--headless")
-                        addArguments("--disable-gpu")
-                    }
 //                addArguments("--log-level=3")
+                    addArguments("--mute-audio")
                     proxyConfig?.let {
                         addArguments("--proxy-server=${it.url}")
                     }
