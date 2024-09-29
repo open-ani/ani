@@ -111,7 +111,7 @@ fun MainViewController(): UIViewController {
     )
     val proxyConfig = koin.get<SettingsRepository>().proxySettings.flow.map {
         it.default.configIfEnabledOrNull
-
+    }
     return ComposeUIViewController {
         AniApp {
             val proxy by proxyConfig.collectAsStateWithLifecycle(null)
