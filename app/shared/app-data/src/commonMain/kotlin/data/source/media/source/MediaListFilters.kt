@@ -17,11 +17,9 @@ import me.him188.ani.datasources.api.topic.contains
  * @see MediaListFilter
  */
 object MediaListFilters {
-    val specialCharRegex = Regex("""[ 	~!@#$%^&*()_+{}\[\]\\|;':",.<>/?【】：～「」]""")
-
     val ContainsSubjectName = BasicMediaListFilter { media ->
         subjectNamesWithoutSpecial.any { subjectName ->
-            media.originalTitle.replace(specialCharRegex, "")
+            removeSpecials(removeSpecials(media.originalTitle))
                 .contains(subjectName, ignoreCase = true)
         }
     }
@@ -39,8 +37,40 @@ object MediaListFilters {
         val name = episodeNameWithoutSpecial
         checkNotNull(name)
         if (name.isBlank()) return@BasicMediaListFilter false
-        media.originalTitle.replace(specialCharRegex, "").contains(name)
+        removeSpecials(media.originalTitle)
+            .contains(name, ignoreCase = true)
     }
 
     val ContainsAnyEpisodeInfo = ContainsEpisodeSort or ContainsEpisodeName or ContainsEpisodeEp
+
+    private val numberMappings = buildMap {
+        put("X", "10")
+        put("IX", "9")
+        put("VIII", "8")
+        put("VII", "7")
+        put("VI", "6")
+        put("V", "5")
+        put("IV", "4")
+        put("III", "3")
+        put("II", "2")
+        put("I", "1")
+
+        put("十", "10")
+        put("九", "9")
+        put("八", "8")
+        put("七", "7")
+        put("六", "6")
+        put("五", "5")
+        put("四", "4")
+        put("三", "3")
+        put("二", "2")
+        put("一", "1")
+    }
+    private val allNumbersRegex = numberMappings.keys.joinToString("|").toRegex()
+    private val specialCharRegex = Regex("""[ 	~!@#$%^&*()_+{}\[\]\\|;':",.<>/?【】：～「」]""")
+
+    fun removeSpecials(string: String): String {
+        return string.replace(this.specialCharRegex, "")
+            .replace(allNumbersRegex) { numberMappings.getValue(it.value) }
+    }
 }
