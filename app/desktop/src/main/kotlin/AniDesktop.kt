@@ -107,6 +107,7 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
 import java.io.File
+import kotlin.time.measureTime
 
 
 private val logger by lazy { logger("Ani") }
@@ -170,6 +171,11 @@ object AniDesktop {
             logsDir,
             ExtraWindowProperties(),
         )
+
+        val time = measureTime {
+            SingleInstanceChecker.instance.ensureSingleInstance()
+        }
+        logger.info { "Single instance check took $time" }
 
         val coroutineScope = createAppRootCoroutineScope()
 
