@@ -17,7 +17,7 @@ import me.him188.ani.datasources.api.topic.contains
  * @see MediaListFilter
  */
 object MediaListFilters {
-    val specialCharRegex = Regex("""[ 	~!@#$%^&*()_+{}\[\]\\|;':",.<>/?【】]""")
+    val specialCharRegex = Regex("""[ 	~!@#$%^&*()_+{}\[\]\\|;':",.<>/?【】：～「」]""")
 
     val ContainsSubjectName = BasicMediaListFilter { media ->
         subjectNamesWithoutSpecial.any { subjectName ->
