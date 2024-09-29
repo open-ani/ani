@@ -104,7 +104,7 @@ class TimeBasedDanmakuSession private constructor(
 
             // 预编译所有启用的正则表达式 
             val regexFilters = danmakuRegexFilterList
-                .map { Regex(it) }
+                .map { Regex(it, option = RegexOption.IGNORE_CASE) }
 
             return list.filter { danmaku ->
                 // 所有过滤器都没有匹配到, 才算通过
