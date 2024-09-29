@@ -87,7 +87,7 @@ class BangumiPagedSource(
             id = legaSub.id,
             name = legaSub.originalName,
             nameCn = legaSub.chineseName,
-            ratingInfo = RatingInfo.Empty.copy(rank = legaSub.rank.let { 0 }, score = BigNum.ZERO.toString()),
+            ratingInfo = RatingInfo.Empty.copy(rank = legaSub.rank ?: 0, score = BigNum.ZERO.toString()),
             imageCommon = BangumiClientImpl.getSubjectImageUrl(
                 legaSub.id,
                 BangumiSubjectImageSize.MEDIUM,
