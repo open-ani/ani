@@ -231,6 +231,30 @@ class SelectorConfigState(
         SelectorMediaSourceArguments.Default.searchConfig.filterBySubjectName,
     )
 
+
+    val selectMediaConfig: SelectMediaConfig = SelectMediaConfig()
+
+    @Stable
+    inner class SelectMediaConfig {
+        private fun <T : Any> prop(
+            get: (SelectorSearchConfig.SelectMediaConfig) -> T,
+            set: SelectorSearchConfig.SelectMediaConfig.(T) -> SelectorSearchConfig.SelectMediaConfig,
+        ) = argumentsStorage.prop(
+            { it.searchConfig.selectMedia.let(get) },
+            {
+                copy(
+                    searchConfig = searchConfig.copy(
+                        selectMedia = searchConfig.selectMedia.set(it),
+                    ),
+                )
+            },
+            SelectorMediaSourceArguments.Default.searchConfig.selectMedia.let(get),
+        )
+
+        var distinguishSubjectName by prop({ it.distinguishSubjectName }, { copy(distinguishSubjectName = it) })
+        var distinguishChannelName by prop({ it.distinguishChannelName }, { copy(distinguishChannelName = it) })
+    }
+
     val matchVideoConfig: MatchVideoConfig = MatchVideoConfig()
 
     @Stable

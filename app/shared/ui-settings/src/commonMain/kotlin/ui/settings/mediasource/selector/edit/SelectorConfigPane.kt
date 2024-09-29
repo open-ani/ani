@@ -264,6 +264,59 @@ internal fun SelectorConfigurationPane(
                     MaterialTheme.typography.titleMedium,
                     MaterialTheme.colorScheme.primary,
                 ) {
+                    Text("在播放器内选择资源时")
+                }
+            }
+
+            Column(Modifier, verticalArrangement = Arrangement.spacedBy(verticalSpacing)) {
+                val conf = state.selectMediaConfig
+                ListItem(
+                    headlineContent = { Text("区分条目名称") },
+                    Modifier.focusable(false).clickable(
+                        enabled = state.enableEdit,
+                    ) { conf.distinguishSubjectName = !conf.distinguishSubjectName },
+                    supportingContent = {
+                        Text(
+                            "关闭后，所有步骤 1 搜索到的条目都将被视为同一个，它们的相同标题的剧集将会被去重。" +
+                                    "开启此项则不会这样去重。\n" +
+                                    "此选项不影响测试结果，影响播放器内选择数据源时的结果。",
+                        )
+                    },
+                    trailingContent = {
+                        Switch(
+                            conf.distinguishSubjectName, { conf.distinguishSubjectName = it },
+                            enabled = state.enableEdit,
+                        )
+                    },
+                    colors = listItemColors,
+                )
+                ListItem(
+                    headlineContent = { Text("区分线路名称") },
+                    Modifier.focusable(false).clickable(
+                        enabled = state.enableEdit,
+                    ) { conf.distinguishChannelName = !conf.distinguishChannelName },
+                    supportingContent = {
+                        Text(
+                            "关闭后，线路名称不同，但只要标题相同的剧集就会被去重。" +
+                                    "开启此项则不会这样去重。\n" +
+                                    "此选项不影响测试结果，影响播放器内选择数据源时的结果。",
+                        )
+                    },
+                    trailingContent = {
+                        Switch(
+                            conf.distinguishChannelName, { conf.distinguishChannelName = it },
+                            enabled = state.enableEdit,
+                        )
+                    },
+                    colors = listItemColors,
+                )
+            }
+
+            Row(Modifier.padding(top = verticalSpacing, bottom = 12.dp)) {
+                ProvideTextStyleContentColor(
+                    MaterialTheme.typography.titleMedium,
+                    MaterialTheme.colorScheme.primary,
+                ) {
                     Text("播放视频时")
                 }
             }

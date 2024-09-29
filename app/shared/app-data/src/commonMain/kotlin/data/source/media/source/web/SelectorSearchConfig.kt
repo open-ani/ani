@@ -62,6 +62,7 @@ data class SelectorSearchConfig(
     val filterBySubjectName: Boolean = true,
 
     // When playing a media:
+    val selectMedia: SelectMediaConfig = SelectMediaConfig(),
     val matchVideo: MatchVideoConfig = MatchVideoConfig(),
 ) { // TODO: add Engine version capabilities
     val baseUrl by lazy(LazyThreadSafetyMode.PUBLICATION) {
@@ -108,6 +109,12 @@ data class SelectorSearchConfig(
     data class VideoHeaders(
         val referer: String = "",
         val userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+    )
+
+    @Serializable
+    data class SelectMediaConfig(
+        val distinguishSubjectName: Boolean = true,
+        val distinguishChannelName: Boolean = true,
     )
 
 
