@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.bangumi.BangumiSubjectProvider
 import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.models.runApiRequest
@@ -84,13 +85,12 @@ import me.him188.ani.app.data.source.session.BangumiSessionManager
 import me.him188.ani.app.data.source.session.OpaqueSession
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.data.source.session.unverifiedAccessToken
+import me.him188.ani.app.tools.search.SubjectProvider
 import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.ui.subject.episode.video.TorrentMediaCacheProgressState
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.state.CacheProgressStateFactoryManager
-import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.datasources.bangumi.createBangumiClient
 import me.him188.ani.utils.coroutines.childScope

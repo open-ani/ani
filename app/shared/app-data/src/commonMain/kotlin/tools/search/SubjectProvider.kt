@@ -1,22 +1,13 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright (C) 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.datasources.api.subject
+package me.him188.ani.app.tools.search
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -24,6 +15,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.datasources.api.paging.PagedSource
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.utils.serialization.BigNum
@@ -39,7 +31,7 @@ interface SubjectProvider {
 
     suspend fun testConnection(): ConnectionStatus
 
-    fun startSearch(query: SubjectSearchQuery): PagedSource<Subject>
+    fun startSearch(query: SubjectSearchQuery): PagedSource<SubjectInfo>
 //
 //    suspend fun getSubjectDetails(id: String): SubjectDetails?
 }

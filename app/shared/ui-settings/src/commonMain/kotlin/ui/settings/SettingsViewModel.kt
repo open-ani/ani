@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.get
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.bangumi.BangumiSubjectProvider
 import me.him188.ani.app.data.models.danmaku.DanmakuFilterConfig
 import me.him188.ani.app.data.models.preference.AnitorrentConfig
 import me.him188.ani.app.data.models.preference.DanmakuSettings
@@ -36,6 +37,7 @@ import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
 import me.him188.ani.app.data.source.media.source.codec.serializeSubscriptionToString
 import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscriptionUpdater
 import me.him188.ani.app.platform.PermissionManager
+import me.him188.ani.app.tools.search.SubjectProvider
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.settings.danmaku.DanmakuRegexFilterState
 import me.him188.ani.app.ui.settings.framework.AbstractSettingsViewModel
@@ -52,8 +54,6 @@ import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceLoader
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceSubscriptionGroupState
 import me.him188.ani.datasources.api.source.ConnectionStatus
 import me.him188.ani.datasources.api.source.asAutoCloseable
-import me.him188.ani.datasources.api.subject.SubjectProvider
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
