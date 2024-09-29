@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.UpdateManager
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
@@ -322,7 +323,7 @@ private fun FrameWindowScope.MainWindowContent(
 ) {
     AniApp {
         val proxyConfig = KoinPlatform.getKoin().get<SettingsRepository>().proxySettings.flow.map {
-            it.default.config
+            it.default.configIfEnabledOrNull
         }
         val proxy by proxyConfig.collectAsStateWithLifecycle(null)
 

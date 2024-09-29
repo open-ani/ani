@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
@@ -109,8 +110,7 @@ fun MainViewController(): UIViewController {
         },
     )
     val proxyConfig = koin.get<SettingsRepository>().proxySettings.flow.map {
-        it.default.config
-    }
+        it.default.configIfEnabledOrNull
 
     return ComposeUIViewController {
         AniApp {

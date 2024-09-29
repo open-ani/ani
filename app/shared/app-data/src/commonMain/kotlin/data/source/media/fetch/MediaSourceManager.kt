@@ -26,6 +26,7 @@ import kotlinx.serialization.json.JsonElement
 import me.him188.ani.app.data.models.preference.MediaSourceProxySettings
 import me.him188.ani.app.data.models.preference.ProxyAuthorization
 import me.him188.ani.app.data.models.preference.ProxyConfig
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.SettingsRepository
@@ -315,13 +316,7 @@ class MediaSourceManagerImpl(
 }
 
 fun MediaSourceProxySettings.toClientProxyConfig(): ClientProxyConfig? {
-    return if (enabled) {
-        config.run {
-            toClientProxyConfig()
-        }
-    } else {
-        null
-    }
+    return configIfEnabledOrNull?.toClientProxyConfig()
 }
 
 fun ProxyConfig.toClientProxyConfig() = ClientProxyConfig(

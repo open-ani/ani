@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
@@ -95,7 +96,7 @@ class MainActivity : AniComponentActivity() {
         }
 
         val proxyConfig = GlobalContext.get().get<SettingsRepository>().proxySettings.flow.map {
-            it.default.config
+            it.default.configIfEnabledOrNull
         }
         setContent {
             AniApp {

@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
 import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
@@ -105,7 +106,8 @@ class EditSelectorMediaSourceViewModel(
                     allowEditState = allowEdit,
                     engine = DefaultSelectorMediaSourceEngine(client),
                     webViewVideoExtractor = combine(
-                        settingsRepository.proxySettings.flow.map { it.default.config }.distinctUntilChanged(),
+                        settingsRepository.proxySettings.flow.map { it.default.configIfEnabledOrNull }
+                            .distinctUntilChanged(),
                         settingsRepository.videoResolverSettings.flow.distinctUntilChanged(),
                     ) { proxySettings, videoResolverSettings ->
                         WebViewVideoExtractor(proxySettings, videoResolverSettings)

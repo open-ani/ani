@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.map
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
@@ -228,7 +229,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         val client = settings.proxySettings.flow.map { it.default }.map { proxySettings ->
             createDefaultHttpClient {
                 userAgent(getAniUserAgent())
-                proxy(proxySettings.config.toClientProxyConfig())
+                proxy(proxySettings.configIfEnabledOrNull?.toClientProxyConfig())
             }.apply {
                 registerLogging(logger<MediaSourceSubscriptionUpdater>())
             }

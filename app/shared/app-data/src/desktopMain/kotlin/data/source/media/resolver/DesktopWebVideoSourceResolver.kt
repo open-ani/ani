@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.WebViewDriver
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
 import me.him188.ani.app.platform.Context
@@ -94,7 +95,7 @@ class DesktopWebVideoSourceResolver(
                     .firstOrNull { it !is WebVideoMatcher.MatchResult.Continue }
             }
 
-            val webVideo = SeleniumWebViewVideoExtractor(config.config.takeIf { config.enabled }, resolverSettings)
+            val webVideo = SeleniumWebViewVideoExtractor(config.configIfEnabledOrNull, resolverSettings)
                 .getVideoResourceUrl(
                     media.download.uri,
                     webViewConfig,
