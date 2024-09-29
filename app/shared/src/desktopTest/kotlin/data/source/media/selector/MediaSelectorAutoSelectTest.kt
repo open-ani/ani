@@ -19,6 +19,7 @@ import me.him188.ani.datasources.api.DefaultMedia
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.MediaProperties
 import me.him188.ani.datasources.api.paging.SinglePagePagedSource
+import me.him188.ani.datasources.api.paging.SizedSource
 import me.him188.ani.datasources.api.source.MatchKind
 import me.him188.ani.datasources.api.source.MediaFetchRequest
 import me.him188.ani.datasources.api.source.MediaMatch
@@ -123,14 +124,25 @@ class MediaSelectorAutoSelectTest {
 
     private val autoSelect get() = selector.autoSelect
 
+    /**
+     * 创建一个具有一个 bt 源 和一个 web 源的 [MediaFetchSession]
+     * @param addBtSources 添加 bt 类型的资源信息
+     * @param addWebSources 添加 web 类型的资源信息
+     * @param btEnabled 启用 bt 数据源
+     * @param webEnabled 启用 web 数据源
+     */
     private suspend fun mediaFetchSessionWithFetchHook(
         addBtSources: Boolean,
         addWebSources: Boolean,
+        btEnabled: Boolean,
+        webEnabled: Boolean,
         preferKind: MediaSourceKind?,
         beforeBtFetch: suspend () -> Unit = {},
         afterBtFetch: suspend () -> Unit = {},
         beforeWebFetch: suspend () -> Unit = {},
         afterWebFetch: suspend () -> Unit = {},
+        btFetch: (suspend (MediaFetchRequest) -> SizedSource<MediaMatch>)? = null,
+        webFetch: (suspend (MediaFetchRequest) -> SizedSource<MediaMatch>)? = null,
     ): MediaFetchSession {
         val mediaList = mutableListOf<DefaultMedia>()
         // 至少保持一个 local cache 类型
@@ -144,27 +156,30 @@ class MediaSelectorAutoSelectTest {
             configProvider = { MediaFetcherConfig.Default },
             mediaSources = listOf(
                 createTestMediaSourceInstance(
-                    isEnabled = addBtSources,
+                    isEnabled = btEnabled,
                     source = TestHttpMediaSource(
                         fetch = {
                             beforeBtFetch()
-                            SinglePagePagedSource {
-                                mediaList.filter { it.kind == MediaSourceKind.BitTorrent }
-                                    .map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                            }.also { afterBtFetch() }
+                            btFetch?.invoke(it).also { afterBtFetch() }
+                                ?: SinglePagePagedSource {
+                                    mediaList.filter { it.kind == MediaSourceKind.BitTorrent }
+                                        .map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                                }.also { afterBtFetch() }
                         },
                     ),
                 ),
                 createTestMediaSourceInstance(
-                    isEnabled = addWebSources,
+                    isEnabled = webEnabled,
                     source = TestHttpMediaSource(
                         kind = MediaSourceKind.WEB,
                         fetch = {
                             beforeWebFetch()
-                            SinglePagePagedSource {
-                                mediaList.filter { it.kind == MediaSourceKind.WEB }
-                                    .map { MediaMatch(it.copy(kind = MediaSourceKind.WEB), MatchKind.EXACT) }.asFlow()
-                            }.also { afterWebFetch() }
+                            webFetch?.invoke(it).also { afterWebFetch() }
+                                ?: SinglePagePagedSource {
+                                    mediaList.filter { it.kind == MediaSourceKind.WEB }
+                                        .map { MediaMatch(it.copy(kind = MediaSourceKind.WEB), MatchKind.EXACT) }
+                                        .asFlow()
+                                }.also { afterWebFetch() }
                         },
                     ),
                 ),
@@ -282,6 +297,8 @@ class MediaSelectorAutoSelectTest {
         val session = mediaFetchSessionWithFetchHook(
             addBtSources = true,
             addWebSources = true,
+            btEnabled = true,
+            webEnabled = true,
             preferKind = MediaSourceKind.BitTorrent,
             beforeWebFetch = {
                 completableDeferred.await()
@@ -298,6 +315,8 @@ class MediaSelectorAutoSelectTest {
         val session = mediaFetchSessionWithFetchHook(
             addBtSources = true,
             addWebSources = true,
+            btEnabled = true,
+            webEnabled = true,
             preferKind = MediaSourceKind.BitTorrent,
             beforeBtFetch = {
                 completableDeferred.await()
@@ -316,6 +335,8 @@ class MediaSelectorAutoSelectTest {
         val session = mediaFetchSessionWithFetchHook(
             addBtSources = false,
             addWebSources = true,
+            btEnabled = false,
+            webEnabled = true,
             preferKind = MediaSourceKind.BitTorrent,
         )
         val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
@@ -331,6 +352,8 @@ class MediaSelectorAutoSelectTest {
         val session = mediaFetchSessionWithFetchHook(
             addBtSources = true,
             addWebSources = true,
+            btEnabled = true,
+            webEnabled = true,
             preferKind = null,
             afterBtFetch = {
                 completableDeferred.complete(Unit)
@@ -345,35 +368,24 @@ class MediaSelectorAutoSelectTest {
 
     @Test
     fun `priority select preferred data sources when prefer bt and bt media source no results`() = runTest {
-        mediaList.value = TestMediaList.map { it.copy(kind = MediaSourceKind.WEB) }.toMutableList()
-        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(preferKind = MediaSourceKind.BitTorrent)
-        val mediaFetcher = MediaSourceMediaFetcher(
-            configProvider = { MediaFetcherConfig.Default },
-            mediaSources = listOf(
-                createTestMediaSourceInstance(
-                    source = TestHttpMediaSource(),
-                ),
-                createTestMediaSourceInstance(
-                    source = TestHttpMediaSource(
-                        kind = MediaSourceKind.WEB,
-                        fetch = {
-                            SinglePagePagedSource {
-                                mediaList.value.filter { it.kind == MediaSourceKind.WEB }
-                                    .map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                            }
-                        },
-                    ),
-                ),
-            ),
-        )
-        val session = mediaFetcher.newSession(
-            MediaFetchRequest(
-                subjectId = "1",
-                episodeId = "1",
-                subjectNames = setOf("孤独摇滚"),
-                episodeSort = EpisodeSort(1),
-                episodeName = "test",
-            ),
+        val completableDeferred = CompletableDeferred<Unit>()
+        val session = mediaFetchSessionWithFetchHook(
+            addBtSources = false,
+            addWebSources = true,
+            btEnabled = true,
+            webEnabled = true,
+            preferKind = MediaSourceKind.BitTorrent,
+            afterBtFetch = {
+                completableDeferred.complete(Unit)
+            },
+            beforeWebFetch = {
+                completableDeferred.await()
+            },
+            btFetch = {
+                SinglePagePagedSource {
+                    emptyList<MediaMatch>().asFlow()
+                }
+            },
         )
 
         val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
