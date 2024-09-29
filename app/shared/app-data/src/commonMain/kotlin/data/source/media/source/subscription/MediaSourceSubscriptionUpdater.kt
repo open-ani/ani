@@ -194,5 +194,5 @@ class MediaSourceSubscriptionUpdater(
     }
 }
 
-sealed class UpdateSubscriptionException : Exception()
-class RequestFailureException(val apiFailure: ApiFailure) : UpdateSubscriptionException()
+sealed class UpdateSubscriptionException(override val message: String?) : Exception()
+class RequestFailureException(apiFailure: ApiFailure) : UpdateSubscriptionException("Request failed: $apiFailure")
