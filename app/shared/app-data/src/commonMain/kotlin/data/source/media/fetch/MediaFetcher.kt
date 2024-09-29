@@ -342,23 +342,19 @@ class MediaSourceMediaFetcher(
         override val hasCompleted = if (mediaSourceResults.isEmpty()) {
             flowOf(CompletedConditions.AllCompleted)
         } else {
-            val map = MediaSourceKind.entries.map { kind ->
-                val stateList = mediaSourceResults.filter { it.kind == kind }.map { it.state }
-                combine(stateList) { states ->
-                    kind to when {
-                        states.all { it is MediaSourceFetchState.Disabled } -> null
-                        states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled } -> true
+            combine(mediaSourceResults.map { it.state }) {
+                val pairs = MediaSourceKind.entries.associateWith { kind ->
+                    val stateList = mediaSourceResults.filter { it.kind == kind }.map { it.state }
+                    when {
+                        // 该类型数据源全部禁用时返回 null，如果返回 false 会导致 awaitCompletion 无法结束
+                        stateList.all { it.value is MediaSourceFetchState.Disabled } -> null
+                        stateList.all { it.value is MediaSourceFetchState.Completed || it.value is MediaSourceFetchState.Disabled } -> true
                         else -> false
                     }
-                }.onStart {
-                    if (stateList.isEmpty()) emit(kind to null)
                 }
-            }
-
-            combine(map) { pairs ->
                 CompletedConditions(
                     ImmutableEnumMap<MediaSourceKind, _> { kind ->
-                        pairs.find { it.first == kind }?.second
+                        pairs[kind]
                     },
                 )
             }.flowOn(flowContext)

@@ -169,7 +169,6 @@ class MediaSelectorAutoSelectTest {
                     ),
                 ),
             ),
-            flowContext = EmptyCoroutineContext,
         )
         return mediaFetcher.newSession(
             MediaFetchRequest(
@@ -366,7 +365,6 @@ class MediaSelectorAutoSelectTest {
                     ),
                 ),
             ),
-            flowContext = EmptyCoroutineContext,
         )
         val session = mediaFetcher.newSession(
             MediaFetchRequest(
