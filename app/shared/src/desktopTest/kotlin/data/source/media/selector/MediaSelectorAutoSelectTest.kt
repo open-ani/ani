@@ -123,47 +123,48 @@ class MediaSelectorAutoSelectTest {
 
     private val autoSelect get() = selector.autoSelect
 
-    private fun mediaFetchSessionWithCompletableDeferred(
-        btEnabled: Boolean = true,
-        webEnabled: Boolean = true,
-        preferKind: MediaSourceKind? = MediaSourceKind.BitTorrent,
-        beforeBTFetch: suspend CompletableDeferred<Unit>.() -> Unit = {},
-        afterBTFetch: suspend CompletableDeferred<Unit>.() -> Unit = {},
-        beforeWebFetch: suspend CompletableDeferred<Unit>.() -> Unit = {},
-        afterWebFetch: suspend CompletableDeferred<Unit>.() -> Unit = {},
+    private suspend fun mediaFetchSessionWithFetchHook(
+        addBtSources: Boolean,
+        addWebSources: Boolean,
+        preferKind: MediaSourceKind?,
+        beforeBtFetch: suspend () -> Unit = {},
+        afterBtFetch: suspend () -> Unit = {},
+        beforeWebFetch: suspend () -> Unit = {},
+        afterWebFetch: suspend () -> Unit = {},
     ): MediaFetchSession {
         val mediaList = mutableListOf<DefaultMedia>()
-        if (webEnabled) mediaList.addAll(TestMediaList.map { it.copy(kind = MediaSourceKind.WEB) })
-        if (btEnabled) mediaList.addAll(TestMediaList.map { it.copy(kind = MediaSourceKind.BitTorrent) })
+        // 至少保持一个 local cache 类型
+        mediaList.addAll(TestMediaList.take(1).map { it.copy(kind = MediaSourceKind.LocalCache) })
+        if (addWebSources) mediaList.addAll(TestMediaList.map { it.copy(kind = MediaSourceKind.WEB) })
+        if (addBtSources) mediaList.addAll(TestMediaList.map { it.copy(kind = MediaSourceKind.BitTorrent) })
         this.mediaList.value = mediaList
         mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(preferKind = preferKind)
 
-        val completableDeferred = CompletableDeferred<Unit>()
         val mediaFetcher = MediaSourceMediaFetcher(
             configProvider = { MediaFetcherConfig.Default },
             mediaSources = listOf(
                 createTestMediaSourceInstance(
-                    isEnabled = btEnabled,
+                    isEnabled = addBtSources,
                     source = TestHttpMediaSource(
                         fetch = {
-                            beforeBTFetch(completableDeferred)
+                            beforeBtFetch()
                             SinglePagePagedSource {
                                 mediaList.filter { it.kind == MediaSourceKind.BitTorrent }
                                     .map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                            }.also { afterBTFetch(completableDeferred) }
+                            }.also { afterBtFetch() }
                         },
                     ),
                 ),
                 createTestMediaSourceInstance(
-                    isEnabled = webEnabled,
+                    isEnabled = addWebSources,
                     source = TestHttpMediaSource(
                         kind = MediaSourceKind.WEB,
                         fetch = {
-                            beforeWebFetch(completableDeferred)
+                            beforeWebFetch()
                             SinglePagePagedSource {
                                 mediaList.filter { it.kind == MediaSourceKind.WEB }
                                     .map { MediaMatch(it.copy(kind = MediaSourceKind.WEB), MatchKind.EXACT) }.asFlow()
-                            }.also { afterWebFetch(completableDeferred) }
+                            }.also { afterWebFetch() }
                         },
                     ),
                 ),
@@ -191,98 +192,6 @@ class MediaSelectorAutoSelectTest {
         assertNotNull(selected)
     }
 
-    @Test
-    fun `awaitCompletedAndSelectDefault selects one when prefer bt and bt done`() = runTest {
-        val session = mediaFetchSessionWithCompletableDeferred(
-            beforeWebFetch = {
-                await()
-            },
-        )
-        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
-        assertNotNull(selected)
-        assertEquals(MediaSourceKind.BitTorrent, selected.kind)
-    }
-
-    @Test
-    fun `awaitCompletedAndSelectDefault selects one when prefer bt and web done`() = runTest {
-        val session = mediaFetchSessionWithCompletableDeferred(
-            beforeBTFetch = {
-                await()
-            },
-            afterWebFetch = {
-                complete(Unit)
-            },
-        )
-        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
-        assertNotNull(selected)
-        assertEquals(MediaSourceKind.BitTorrent, selected.kind)
-    }
-
-    @Test
-    fun `awaitCompletedAndSelectDefault selects one when prefer bt and bt media source disable`() = runTest {
-        val session = mediaFetchSessionWithCompletableDeferred(
-            btEnabled = false,
-        )
-        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
-        val btRes = session.mediaSourceResults[0]
-        assertIs<MediaSourceFetchState.Disabled>(btRes.state.value)
-        assertNotNull(selected)
-        assertEquals(MediaSourceKind.WEB, selected.kind)
-    }
-
-    @Test
-    fun `awaitCompletedAndSelectDefault selects one when no prefer and bt done`() = runTest {
-        val session = mediaFetchSessionWithCompletableDeferred(
-            preferKind = null,
-            afterBTFetch = {
-                complete(Unit)
-            },
-            beforeWebFetch = {
-                await()
-            },
-        )
-        val selected = autoSelect.awaitCompletedAndSelectDefault(session)
-        assertNotNull(selected)
-    }
-
-    @Test
-    fun `awaitCompletedAndSelectDefault selects one when prefer bt and bt media source no results`() = runTest {
-        mediaList.value = TestMediaList.map { it.copy(kind = MediaSourceKind.WEB) }.toMutableList()
-        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(preferKind = MediaSourceKind.BitTorrent)
-        val mediaFetcher = MediaSourceMediaFetcher(
-            configProvider = { MediaFetcherConfig.Default },
-            mediaSources = listOf(
-                createTestMediaSourceInstance(
-                    source = TestHttpMediaSource(),
-                ),
-                createTestMediaSourceInstance(
-                    source = TestHttpMediaSource(
-                        kind = MediaSourceKind.WEB,
-                        fetch = {
-                            SinglePagePagedSource {
-                                mediaList.value.filter { it.kind == MediaSourceKind.WEB }
-                                    .map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
-                            }
-                        },
-                    ),
-                ),
-            ),
-            flowContext = EmptyCoroutineContext,
-        )
-        val session = mediaFetcher.newSession(
-            MediaFetchRequest(
-                subjectId = "1",
-                episodeId = "1",
-                subjectNames = setOf("孤独摇滚"),
-                episodeSort = EpisodeSort(1),
-                episodeName = "test",
-            ),
-        )
-
-        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
-        assertNotNull(selected)
-        assertEquals(MediaSourceKind.WEB, selected.kind)
-    }
     @Test
     fun `awaitCompletedAndSelectDefault twice does not select`() = runTest {
         val selected = autoSelect.awaitCompletedAndSelectDefault(mediaFetchSession())
@@ -366,5 +275,111 @@ class MediaSelectorAutoSelectTest {
     fun `selectCached selects null when there is no cache`() = runTest {
         val isSuccess = autoSelect.selectCached(mediaFetchSession(), 1)
         assertNull(isSuccess)
+    }
+
+    @Test
+    fun `priority select preferred data sources when prefer bt and bt done`() = runTest {
+        val completableDeferred = CompletableDeferred<Unit>()
+        val session = mediaFetchSessionWithFetchHook(
+            addBtSources = true,
+            addWebSources = true,
+            preferKind = MediaSourceKind.BitTorrent,
+            beforeWebFetch = {
+                completableDeferred.await()
+            },
+        )
+        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
+        assertNotNull(selected)
+        assertEquals(MediaSourceKind.BitTorrent, selected.kind)
+    }
+
+    @Test
+    fun `priority select preferred data sources when prefer bt and web done`() = runTest {
+        val completableDeferred = CompletableDeferred<Unit>()
+        val session = mediaFetchSessionWithFetchHook(
+            addBtSources = true,
+            addWebSources = true,
+            preferKind = MediaSourceKind.BitTorrent,
+            beforeBtFetch = {
+                completableDeferred.await()
+            },
+            afterWebFetch = {
+                completableDeferred.complete(Unit)
+            },
+        )
+        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
+        assertNotNull(selected)
+        assertEquals(MediaSourceKind.BitTorrent, selected.kind)
+    }
+
+    @Test
+    fun `priority select preferred data sources when prefer bt and bt media source disable`() = runTest {
+        val session = mediaFetchSessionWithFetchHook(
+            addBtSources = false,
+            addWebSources = true,
+            preferKind = MediaSourceKind.BitTorrent,
+        )
+        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
+        val btRes = session.mediaSourceResults[0]
+        assertIs<MediaSourceFetchState.Disabled>(btRes.state.value)
+        assertNotNull(selected)
+        assertEquals(MediaSourceKind.WEB, selected.kind)
+    }
+
+    @Test
+    fun `priority select preferred data sources when no prefer and bt done`() = runTest {
+        val completableDeferred = CompletableDeferred<Unit>()
+        val session = mediaFetchSessionWithFetchHook(
+            addBtSources = true,
+            addWebSources = true,
+            preferKind = null,
+            afterBtFetch = {
+                completableDeferred.complete(Unit)
+            },
+            beforeWebFetch = {
+                completableDeferred.await()
+            },
+        )
+        val selected = autoSelect.awaitCompletedAndSelectDefault(session)
+        assertNotNull(selected)
+    }
+
+    @Test
+    fun `priority select preferred data sources when prefer bt and bt media source no results`() = runTest {
+        mediaList.value = TestMediaList.map { it.copy(kind = MediaSourceKind.WEB) }.toMutableList()
+        mediaSelectorSettings.value = MediaSelectorSettings.Default.copy(preferKind = MediaSourceKind.BitTorrent)
+        val mediaFetcher = MediaSourceMediaFetcher(
+            configProvider = { MediaFetcherConfig.Default },
+            mediaSources = listOf(
+                createTestMediaSourceInstance(
+                    source = TestHttpMediaSource(),
+                ),
+                createTestMediaSourceInstance(
+                    source = TestHttpMediaSource(
+                        kind = MediaSourceKind.WEB,
+                        fetch = {
+                            SinglePagePagedSource {
+                                mediaList.value.filter { it.kind == MediaSourceKind.WEB }
+                                    .map { MediaMatch(it, MatchKind.EXACT) }.asFlow()
+                            }
+                        },
+                    ),
+                ),
+            ),
+            flowContext = EmptyCoroutineContext,
+        )
+        val session = mediaFetcher.newSession(
+            MediaFetchRequest(
+                subjectId = "1",
+                episodeId = "1",
+                subjectNames = setOf("孤独摇滚"),
+                episodeSort = EpisodeSort(1),
+                episodeName = "test",
+            ),
+        )
+
+        val selected = autoSelect.awaitCompletedAndSelectDefault(session, mediaSelectorSettings.map { it.preferKind })
+        assertNotNull(selected)
+        assertEquals(MediaSourceKind.WEB, selected.kind)
     }
 }

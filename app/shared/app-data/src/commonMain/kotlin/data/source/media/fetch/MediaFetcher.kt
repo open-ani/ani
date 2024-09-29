@@ -51,7 +51,6 @@ import me.him188.ani.utils.platform.collections.EnumMap
 import me.him188.ani.utils.platform.collections.ImmutableEnumMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmInline
 
 /**
  * [MediaFetcher], 为支持从多个 [MediaSource] 并行获取 [Media] 的综合查询工具.
@@ -379,9 +378,8 @@ class MediaSourceMediaFetcher(
     }
 }
 
-@JvmInline
-value class CompletedConditions(
-    val values: EnumMap<MediaSourceKind, Boolean?>
+class CompletedConditions(
+    private val values: EnumMap<MediaSourceKind, Boolean?>
 ) {
     fun allCompleted() = values.values.all { it ?: true }
 
@@ -390,10 +388,6 @@ value class CompletedConditions(
     } catch (e: NoSuchElementException) {
         null
     }
-
-    fun copy(
-        values: EnumMap<MediaSourceKind, Boolean?> = this.values,
-    ): CompletedConditions = CompletedConditions(values)
 
     companion object {
         val AllCompleted = CompletedConditions(
