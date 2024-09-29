@@ -13,6 +13,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import me.him188.ani.app.platform.SystemProxyDetector
 
 /**
  * All proxy preferences
@@ -50,7 +51,18 @@ data class MediaSourceProxySettings(
 ) {
     companion object {
         @Stable
-        val Default = MediaSourceProxySettings()
+        val Default by lazy {
+            val defaultProxy = SystemProxyDetector.instance.detect()
+            // 如果检测到了则启用检测到的代理, 否则使用默认的代理 (但保持禁用)
+            if (defaultProxy == null) {
+                MediaSourceProxySettings()
+            } else {
+                MediaSourceProxySettings(
+                    enabled = true,
+                    config = ProxyConfig(url = defaultProxy.url.toString()),
+                )
+            }
+        }
     }
 }
 
