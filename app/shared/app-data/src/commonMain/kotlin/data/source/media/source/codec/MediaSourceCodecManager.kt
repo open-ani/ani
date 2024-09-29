@@ -30,11 +30,9 @@ class MediaSourceCodecManager(
         SelectorMediaSourceCodec,
     )
 ) {
+
     internal val context = object : MediaSourceCodecContext {
-        override val json: Json = Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-        }
+        override val json: Json = Companion.json
     }
 
     private fun <T : MediaSourceArguments> getByArgumentType(argument: T): MediaSourceCodec<T> {
@@ -117,6 +115,12 @@ class MediaSourceCodecManager(
         data: SubscriptionUpdateData,
     ): String = context.json.encodeToString(SubscriptionUpdateData.serializer(), data)
 
+    companion object {
+        val json = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+    }
 }
 
 fun MediaSourceCodecManager.serializeSubscriptionToString(

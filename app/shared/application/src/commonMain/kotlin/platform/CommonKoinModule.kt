@@ -10,8 +10,8 @@
 package me.him188.ani.app.platform
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -241,7 +241,10 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
             get<MediaSourceCodecManager>(),
             requestSubscription = {
                 client.first().runApiRequest { get(it.url) }.map { response ->
-                    response.body<SubscriptionUpdateData>()
+                    MediaSourceCodecManager.Companion.json.decodeFromString(
+                        SubscriptionUpdateData.serializer(),
+                        response.bodyAsText(),
+                    )
                 }
             },
         )
