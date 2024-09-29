@@ -235,5 +235,5 @@ aws-s3control = { module = "software.amazon.awssdk:s3control", version.ref = "aw
 aws-secretsmanager = { module = "software.amazon.awssdk:secretsmanager", version.ref = "aws" }
 
 #htmlunit = { group = "net.sourceforge.htmlunit", name = "htmlunit", version = "2.70.0" }
-selenium-java = { group = "org.seleniumhq.selenium", name = "selenium-java", version = "4.21.0" }
-webdrivermanager = { group = "io.github.bonigarcia", name = "webdrivermanager", version = "5.8.0" }
+selenium-java = { group = "org.seleniumhq.selenium", name = "selenium-java", version = "4.25.0" }
+webdrivermanager = { group = "io.github.bonigarcia", name = "webdrivermanager", version = "5.9.2" }

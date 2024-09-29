@@ -43,7 +43,7 @@ import org.openqa.selenium.Cookie
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.devtools.HasDevTools
-import org.openqa.selenium.devtools.v125.network.Network
+import org.openqa.selenium.devtools.v129.network.Network
 import org.openqa.selenium.edge.EdgeDriver
 import org.openqa.selenium.edge.EdgeOptions
 import org.openqa.selenium.remote.RemoteWebDriver
