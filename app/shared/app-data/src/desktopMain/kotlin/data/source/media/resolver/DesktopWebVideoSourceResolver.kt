@@ -156,7 +156,9 @@ class SeleniumWebViewVideoExtractor(
                 logger.info { "Starting Selenium to resolve video source from $pageUrl" }
 
                 val driver: RemoteWebDriver = createDriver()
-                driver.manage().window().minimize()
+
+                // 不能 minimize, minimize 之后有些页面不加载了 :(
+//                driver.manage().window().minimize()
 
                 /**
                  * @return if the url has been consumed
@@ -286,7 +288,7 @@ private sealed interface WebDriverFactory {
             return EdgeDriver(
                 EdgeOptions().apply {
 //                addArguments("--log-level=3")
-                    addArguments("--mute-audio")
+                    addArguments(*DEFAULT_CHROMIUM_ARGS)
                     proxyConfig?.let {
                         addArguments("--proxy-server=${it.url}")
                     }
@@ -301,7 +303,7 @@ private sealed interface WebDriverFactory {
             return ChromeDriver(
                 ChromeOptions().apply {
 //                addArguments("--log-level=3")
-                    addArguments("--mute-audio")
+                    addArguments(*DEFAULT_CHROMIUM_ARGS)
                     proxyConfig?.let {
                         addArguments("--proxy-server=${it.url}")
                     }
@@ -327,5 +329,14 @@ private sealed interface WebDriverFactory {
                 },
             )
         }
+    }
+
+    private companion object {
+        val DEFAULT_CHROMIUM_ARGS = arrayOf(
+            "--mute-audio",
+            "--force-dark-mode",
+            "--default-background-color",
+            "ff808080",
+        )
     }
 }
