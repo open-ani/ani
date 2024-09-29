@@ -343,12 +343,12 @@ class MediaSourceMediaFetcher(
             flowOf(CompletedConditions.AllCompleted)
         } else {
             combine(mediaSourceResults.map { it.state }) {
-                val pairs = MediaSourceKind.entries.associateWith { kind ->
-                    val stateList = mediaSourceResults.filter { it.kind == kind }.map { it.state }
+                val pairs = mediaSourceResults.groupBy { it.kind }.mapValues { results ->
+                    val states = results.value.map { it.state }
                     when {
                         // 该类型数据源全部禁用时返回 null，如果返回 false 会导致 awaitCompletion 无法结束
-                        stateList.all { it.value is MediaSourceFetchState.Disabled } -> null
-                        stateList.all { it.value is MediaSourceFetchState.Completed || it.value is MediaSourceFetchState.Disabled } -> true
+                        states.all { it.value is MediaSourceFetchState.Disabled } -> null
+                        states.all { it.value is MediaSourceFetchState.Completed || it.value is MediaSourceFetchState.Disabled } -> true
                         else -> false
                     }
                 }
