@@ -12,7 +12,6 @@ package me.him188.ani.app.ui.settings.mediasource.selector.test
 import androidx.compose.runtime.Immutable
 import me.him188.ani.app.data.models.ApiFailure
 import me.him188.ani.app.data.source.media.source.MediaListFilters
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
 import me.him188.ani.app.data.source.media.source.web.SelectorSearchQuery
 import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
 import me.him188.ani.app.data.source.media.source.web.asCandidate
@@ -57,9 +56,9 @@ data class SelectorTestSubjectPresentation(
             info: WebSearchSubjectInfo,
             query: SelectorSearchQuery,
             origin: Element?,
-            config: SelectorSearchConfig,
+            filterBySubjectName: Boolean,
         ): SelectorTestSubjectPresentation {
-            val tags = computeTags(info, query, config)
+            val tags = computeTags(info, query, filterBySubjectName)
             return SelectorTestSubjectPresentation(
                 name = info.name,
                 subjectDetailsPageUrl = info.fullUrl,
@@ -71,11 +70,11 @@ data class SelectorTestSubjectPresentation(
         private fun computeTags(
             info: WebSearchSubjectInfo,
             query: SelectorSearchQuery,
-            config: SelectorSearchConfig,
+            filterBySubjectName: Boolean,
         ) = buildMatchTags {
             with(query.toFilterContext()) {
                 val candidate = info.asCandidate()
-                if (config.filterBySubjectName) {
+                if (filterBySubjectName) {
                     if (!MediaListFilters.ContainsSubjectName.applyOn(candidate)) {
                         emit("标题", isMatch = false)
                     } else {

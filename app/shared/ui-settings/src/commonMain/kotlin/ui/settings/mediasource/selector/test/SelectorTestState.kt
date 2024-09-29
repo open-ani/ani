@@ -238,7 +238,7 @@ class SelectorTestState(
                 SelectorTestSearchSubjectResult.Success(
                     data.url.toString(),
                     originalList.map {
-                        SelectorTestSubjectPresentation.compute(it, query, document, searchConfig)
+                        SelectorTestSubjectPresentation.compute(it, query, document, searchConfig.filterBySubjectName)
                     },
                 )
             },
