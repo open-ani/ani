@@ -295,10 +295,14 @@ private class EpisodeViewModelImpl(
         )
         .apply {
             autoSelect.run {
+
                 launchInBackground {
                     mediaFetchSession.collectLatest {
                         awaitSwitchEpisodeCompleted()
-                        awaitCompletedAndSelectDefault(it)
+                        awaitCompletedAndSelectDefault(
+                            it,
+                            settingsRepository.mediaSelectorSettings.flow.map { it.preferKind },
+                        )
                     }
                 }
                 launchInBackground {
@@ -374,7 +378,7 @@ private class EpisodeViewModelImpl(
     private val playerLauncher: PlayerLauncher = PlayerLauncher(
         mediaSelector, videoSourceResolver, playerState, mediaSourceInfoProvider,
         episodeInfo,
-        mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it },
+        mediaFetchSession.flatMapLatest { it.hasCompleted }.map { !it.allCompleted() },
         backgroundScope.coroutineContext,
     )
 

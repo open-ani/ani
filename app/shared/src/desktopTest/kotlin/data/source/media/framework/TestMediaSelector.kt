@@ -5,6 +5,7 @@ package me.him188.ani.app.data.source.media.framework
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
 import me.him188.ani.app.data.source.media.selector.MediaPreferenceItem
 import me.him188.ani.app.data.source.media.selector.MediaSelector
@@ -12,7 +13,6 @@ import me.him188.ani.app.data.source.media.selector.MediaSelectorEvents
 import me.him188.ani.app.data.source.media.selector.MutableMediaSelectorEvents
 import me.him188.ani.app.data.source.media.selector.OptionalPreference
 import me.him188.ani.app.data.source.media.selector.orElse
-import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.Resolution
 import me.him188.ani.datasources.api.topic.SubtitleLanguage.ChineseSimplified

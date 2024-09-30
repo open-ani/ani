@@ -47,6 +47,8 @@ import me.him188.ani.utils.coroutines.cancellableCoroutineScope
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.collections.EnumMap
+import me.him188.ani.utils.platform.collections.ImmutableEnumMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -338,10 +340,23 @@ class MediaSourceMediaFetcher(
                 }
 
         override val hasCompleted = if (mediaSourceResults.isEmpty()) {
-            flowOf(true)
+            flowOf(CompletedConditions.AllCompleted)
         } else {
-            combine(mediaSourceResults.map { it.state }) { states ->
-                states.all { it is MediaSourceFetchState.Completed || it is MediaSourceFetchState.Disabled }
+            combine(mediaSourceResults.map { it.state }) {
+                val pairs = mediaSourceResults.groupBy { it.kind }.mapValues { results ->
+                    val states = results.value.map { it.state }
+                    when {
+                        // 该类型数据源全部禁用时返回 null，如果返回 false 会导致 awaitCompletion 无法结束
+                        states.all { it.value is MediaSourceFetchState.Disabled } -> null
+                        states.all { it.value is MediaSourceFetchState.Completed || it.value is MediaSourceFetchState.Disabled } -> true
+                        else -> false
+                    }
+                }
+                CompletedConditions(
+                    ImmutableEnumMap<MediaSourceKind, _> { kind ->
+                        pairs[kind]
+                    },
+                )
             }.flowOn(flowContext)
         }
     }
@@ -356,5 +371,23 @@ class MediaSourceMediaFetcher(
     private companion object {
         private val logger = logger<MediaSourceMediaFetcher>()
         private const val ENABLE_WATCHDOG = false
+    }
+}
+
+class CompletedConditions(
+    private val values: EnumMap<MediaSourceKind, Boolean?>
+) {
+    fun allCompleted() = values.values.all { it ?: true }
+
+    operator fun get(kind: MediaSourceKind): Boolean? = try {
+        values[kind]
+    } catch (e: NoSuchElementException) {
+        null
+    }
+
+    companion object {
+        val AllCompleted = CompletedConditions(
+            ImmutableEnumMap { true },
+        )
     }
 }
