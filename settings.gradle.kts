@@ -85,7 +85,6 @@ includeProject(":datasource:acg-rip", "datasource/bt/acg.rip") // https://acg.ri
 includeProject(":datasource:mikan", "datasource/bt/mikan") // https://mikanani.me/
 //   Web 数据源
 includeProject(":datasource:web-base", "datasource/web/web-base") // web 基础
-includeProject(":datasource:gugufan", "datasource/web/gugufan")
 includeProject(":datasource:xfdm", "datasource/web/xfdm")
 includeProject(":datasource:jellyfin", "datasource/jellyfin")
 includeProject(":datasource:ikaros", "datasource/ikaros") // https://ikaros.run/

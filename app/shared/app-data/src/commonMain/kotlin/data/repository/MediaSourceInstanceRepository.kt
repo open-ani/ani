@@ -56,7 +56,7 @@ data class MediaSourceSaves(
             )
 
             val enabledWebSources: List<String> =
-                listOf("gugufan", "xfdm")
+                listOf("xfdm")
             val enabledBtSources: List<String> =
                 listOf(MikanCNMediaSource.ID, "dmhy")
             val disabledBtSources: List<String> = listOf()
