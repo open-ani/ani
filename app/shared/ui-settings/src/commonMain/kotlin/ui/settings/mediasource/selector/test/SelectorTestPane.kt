@@ -47,10 +47,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.cardHorizontalPadding
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
-import me.him188.ani.app.ui.foundation.layout.only
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -78,10 +76,7 @@ fun SharedTransitionScope.SelectorTestPane(
         horizontalArrangement = Arrangement.spacedBy(currentWindowAdaptiveInfo().windowSizeClass.cardHorizontalPadding),
     ) {
         item(span = StaggeredGridItemSpan.FullLine) {
-            Column(
-                Modifier
-                    .padding(contentPadding.only(PaddingValuesSides.Horizontal)),
-            ) {
+            Column {
                 Text(
                     "测试数据源",
                     style = MaterialTheme.typography.headlineSmall,
