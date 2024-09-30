@@ -134,16 +134,16 @@ class SelectorTestState(
      */
     val episodeListSearcher = BackgroundSearcher(
         backgroundScope,
-        selectedSubjectState,
-        search = { selectedSubject ->
+        derivedStateOf { selectedSubject?.subjectDetailsPageUrl },
+        search = { subjectDetailsPageUrl ->
             launchRequestInBackground {
-                if (selectedSubject == null) {
+                if (subjectDetailsPageUrl == null) {
                     null
                 } else {
                     try {
                         Result.success(
                             engine.searchEpisodes(
-                                selectedSubject.subjectDetailsPageUrl,
+                                subjectDetailsPageUrl,
                             ),
                         )
                     } catch (e: CancellationException) {
