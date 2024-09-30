@@ -201,7 +201,11 @@ fun SharedTransitionScope.SelectorTestPane(
                     }
                 }
 
-                items(state.filteredEpisodes ?: emptyList()) { episode ->
+                items(
+                    state.filteredEpisodes ?: emptyList(),
+                    key = { it.id.toString() },
+                    contentType = { 1 },
+                ) { episode ->
                     SelectorTestEpisodeListGridDefaults.EpisodeCard(
                         episode,
                         { onViewEpisode(episode) },
