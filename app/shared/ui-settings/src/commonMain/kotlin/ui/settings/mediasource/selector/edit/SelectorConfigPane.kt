@@ -47,6 +47,7 @@ import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatJsonPathIndexed
 import me.him188.ani.app.ui.foundation.animation.StandardEasing
 import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
@@ -387,6 +388,7 @@ private fun SelectorSubjectFormatSelectionButtonRow(
                     when (format) { // type-safe to handle all formats
                         SelectorSubjectFormatA -> "单标签"
                         SelectorSubjectFormatIndexed -> "多标签"
+                        SelectorSubjectFormatJsonPathIndexed -> "JsonPath"
                     },
                     softWrap = false,
                 )

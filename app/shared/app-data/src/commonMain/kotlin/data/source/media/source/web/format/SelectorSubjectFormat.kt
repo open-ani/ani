@@ -11,7 +11,15 @@ package me.him188.ani.app.data.source.media.source.web.format
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
+import me.him188.ani.utils.jsonpath.JsonPath
+import me.him188.ani.utils.jsonpath.compileOrNull
+import me.him188.ani.utils.jsonpath.resolveOrNull
 import me.him188.ani.utils.xml.Element
 import me.him188.ani.utils.xml.QueryParser
 import me.him188.ani.utils.xml.parseSelectorOrNull
@@ -35,9 +43,11 @@ sealed class SelectorSubjectFormat<in Config : SelectorFormatConfig>(override va
 
     companion object {
         val entries by lazy { // 必须 lazy, 否则可能获取到 null
+            @Suppress("RedundantRequireNotNullCall")
             listOf(
                 checkNotNull(SelectorSubjectFormatA),
                 checkNotNull(SelectorSubjectFormatIndexed),
+                checkNotNull(SelectorSubjectFormatJsonPathIndexed),
             ) // checkNotNull is needed to be fail-fast
         }
 
@@ -74,7 +84,7 @@ data object SelectorSubjectFormatA : SelectorSubjectFormat<SelectorSubjectFormat
         return elements.mapTo(ArrayList(elements.size)) { a ->
             val name = a.attr("title").takeIf { it.isNotBlank() } ?: a.text()
             val href = a.attr("href")
-            val id = href.substringBeforeLast(".html").substringAfterLast("/")
+            val id = guessIdFromUrl(href)
             WebSearchSubjectInfo(
                 internalId = id,
                 name = name,
@@ -131,7 +141,7 @@ data object SelectorSubjectFormatIndexed :
         }
 
         return names.fastZipNotNullToMutable(links) { name, href ->
-            val id = href.substringBeforeLast(".html").substringAfterLast("/")
+            val id = guessIdFromUrl(href)
             WebSearchSubjectInfo(
                 internalId = id,
                 name = name,
@@ -148,6 +158,83 @@ data object SelectorSubjectFormatIndexed :
         }
     }
 }
+
+data object SelectorSubjectFormatJsonPathIndexed :
+    SelectorSubjectFormat<SelectorSubjectFormatJsonPathIndexed.Config>(SelectorFormatId("json-path-indexed")) {
+
+    @Serializable
+    data class Config(
+        @Language("jsonpath") // install IDE plugin "jsonpath"
+        val selectLinks: String = "$[*]['url', 'link']",
+        @Language("jsonpath")
+        val selectNames: String = "$[*]['title','name']",
+        val preferShorterName: Boolean = true,
+    ) : SelectorFormatConfig {
+        override fun isValid(): Boolean {
+            return selectLinks.isNotBlank() && selectNames.isNotBlank()
+        }
+    }
+
+    override fun select(document: Element, baseUrl: String, config: Config): List<WebSearchSubjectInfo>? {
+        val selectUrls = JsonPath.compileOrNull(config.selectLinks) ?: return null
+        val selectNames = JsonPath.compileOrNull(config.selectNames) ?: return null
+        val json = try {
+            Json.parseToJsonElement(document.text())
+        } catch (e: Exception) {
+            return emptyList()
+        }
+
+        try {
+            val urls = json.resolveOrNull(selectUrls)?.values?.mapNotNull { e ->
+                e.getSingleStringValueOrNull()?.takeIf { it.isNotBlank() }
+            }?.toList() ?: return emptyList()
+
+            val names = json.resolveOrNull(selectNames)?.values?.mapNotNull { e ->
+                e.getSingleStringValueOrNull()?.takeIf { it.isNotBlank() }
+            }?.toList() ?: return emptyList()
+
+            return names.fastZipNotNullToMutable(urls) { name, href ->
+                val id = guessIdFromUrl(href)
+                WebSearchSubjectInfo(
+                    internalId = id,
+                    name = name,
+                    fullUrl = SelectorHelpers.computeAbsoluteUrl(baseUrl, href),
+                    partialUrl = href,
+                    origin = null,
+                )
+            }.apply {
+                if (config.preferShorterName) {
+                    sortBy { info ->
+                        info.name.length
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            return null
+        }
+    }
+}
+
+// Supports:
+// - `$[*]['title', 'name']` which returns array of objects,
+// - `$[*].title` which returns array of strings
+private val JsonElement.values: Sequence<JsonElement>
+    get() = when (this) {
+        is JsonArray -> asSequence()
+        is JsonObject -> values.asSequence()
+        is JsonPrimitive -> sequenceOf(this)
+    }
+
+private fun JsonElement.getSingleStringValueOrNull(): String? {
+    return when (this) {
+        is JsonArray -> firstOrNull()?.getSingleStringValueOrNull()
+        is JsonObject -> values.firstOrNull()?.getSingleStringValueOrNull()
+        is JsonPrimitive -> content
+    }
+}
+
+private fun guessIdFromUrl(href: String) =
+    href.removeSuffix("/").substringBeforeLast(".html").substringAfterLast("/")
 
 private inline fun <T, R, V : Any> List<T>.fastZipNotNullToMutable(
     other: List<R>,

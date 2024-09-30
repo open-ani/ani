@@ -21,6 +21,7 @@ import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatJsonPathIndexed
 import me.him188.ani.app.data.source.media.source.web.format.parseOrNull
 import org.intellij.lang.annotations.Language
 
@@ -35,6 +36,7 @@ data class SelectorSearchConfig(
     val subjectFormatId: SelectorFormatId = SelectorSubjectFormatA.id,
     val selectorSubjectFormatA: SelectorSubjectFormatA.Config = SelectorSubjectFormatA.Config(),
     val selectorSubjectFormatIndexed: SelectorSubjectFormatIndexed.Config = SelectorSubjectFormatIndexed.Config(),
+    val selectorSubjectFormatJsonPathIndexed: SelectorSubjectFormatJsonPathIndexed.Config = SelectorSubjectFormatJsonPathIndexed.Config(),
     // Phase 3, for each subject, select channels
     val channelFormatId: SelectorFormatId = SelectorChannelFormatNoChannel.id,
     val selectorChannelFormatFlattened: SelectorChannelFormatIndexGrouped.Config = SelectorChannelFormatIndexGrouped.Config(),
@@ -139,6 +141,7 @@ fun <C : SelectorFormatConfig> SelectorSearchConfig.getFormatConfig(format: Sele
     return when (format) {
         SelectorSubjectFormatA -> selectorSubjectFormatA as C
         SelectorSubjectFormatIndexed -> selectorSubjectFormatIndexed as C
+        SelectorSubjectFormatJsonPathIndexed -> selectorSubjectFormatJsonPathIndexed as C
     }
 }
 

@@ -21,9 +21,12 @@ import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelForm
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
 import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
+import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatJsonPathIndexed
 import me.him188.ani.app.data.source.media.source.web.format.parseOrNull
 import me.him188.ani.app.ui.settings.danmaku.isValidRegex
 import me.him188.ani.app.ui.settings.mediasource.rss.SaveableStorage
+import me.him188.ani.utils.jsonpath.JsonPath
+import me.him188.ani.utils.jsonpath.compileOrNull
 import me.him188.ani.utils.xml.QueryParser
 import me.him188.ani.utils.xml.parseSelectorOrNull
 
@@ -126,6 +129,37 @@ class SelectorConfigState(
         var selectLinks by prop({ it.selectLinks }, { copy(selectLinks = it) })
         val selectLinksIsError by derivedStateOf {
             QueryParser.parseSelectorOrNull(selectLinks) == null
+        }
+
+        var preferShorterName by prop({ it.preferShorterName }, { copy(preferShorterName = it) })
+    }
+
+    val subjectFormatJsonPathIndex = SubjectFormatJsonPathIndexedConfig()
+
+    inner class SubjectFormatJsonPathIndexedConfig {
+        private fun <T : Any> prop(
+            get: (SelectorSubjectFormatJsonPathIndexed.Config) -> T,
+            set: SelectorSubjectFormatJsonPathIndexed.Config.(T) -> SelectorSubjectFormatJsonPathIndexed.Config,
+        ) = argumentsStorage.prop(
+            { it.searchConfig.selectorSubjectFormatJsonPathIndexed.let(get) },
+            {
+                copy(
+                    searchConfig = searchConfig.copy(
+                        selectorSubjectFormatJsonPathIndexed = searchConfig.selectorSubjectFormatJsonPathIndexed.set(it),
+                    ),
+                )
+            },
+            SelectorMediaSourceArguments.Default.searchConfig.selectorSubjectFormatJsonPathIndexed.let(get),
+        )
+
+        var selectNames by prop({ it.selectNames }, { copy(selectNames = it) })
+        val selectNamesIsError by derivedStateOf {
+            JsonPath.compileOrNull(selectNames) == null
+        }
+
+        var selectLinks by prop({ it.selectLinks }, { copy(selectLinks = it) })
+        val selectLinksIsError by derivedStateOf {
+            JsonPath.compileOrNull(selectLinks) == null
         }
 
         var preferShorterName by prop({ it.preferShorterName }, { copy(preferShorterName = it) })
