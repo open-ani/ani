@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -74,6 +75,7 @@ import me.him188.ani.app.data.source.media.source.web.SelectorMediaSource
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.onRightClickIfSupported
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.TextButtonItem
@@ -210,6 +212,44 @@ internal fun SettingsScope.MediaSourceGroup(
                         }
                     }
                     val platform = LocalPlatform.current
+
+                    var showMoreDropdown by remember { mutableStateOf(false) }
+                    var showConfirmDeletionDialog by rememberSaveable { mutableStateOf(false) }
+                    if (showConfirmDeletionDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showConfirmDeletionDialog = false },
+                            icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+                            title = { Text("删除数据源") },
+                            text = {
+                                if (item.parameters.isEmpty()) {
+                                    Text("该数据源无特殊配置，删除后可以重新从模板直接添加，确认删除吗？")
+                                } else {
+                                    Text("该数据源有配置，删除后将丢失配置，之后从模板添加时需要重新配置，确认删除吗？")
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    {
+                                        edit.deleteMediaSource(item);
+                                        showConfirmDeletionDialog = false
+                                    },
+                                ) {
+                                    Text(
+                                        "删除",
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    {
+                                        showConfirmDeletionDialog = false
+                                    },
+                                ) { Text("取消") }
+                            },
+                        )
+                    }
+
                     MediaSourceItem(
                         item,
                         Modifier.combinedClickable(
@@ -221,14 +261,34 @@ internal fun SettingsScope.MediaSourceGroup(
                             },
                             onLongClickLabel = "开始排序",
                             onClick = startEditing,
-                        ),
+                        ).onRightClickIfSupported {
+                            showMoreDropdown = true
+                        },
                     ) {
-                        NormalMediaSourceItemAction(
-                            item,
-                            onEdit = startEditing,
-                            onDelete = { edit.deleteMediaSource(item) },
-                            onEnabledChange = { edit.toggleMediaSourceEnabled(item, it) },
-                        )
+                        IconButton({}, enabled = false) { // 放在 button 里保持 padding 一致
+                            ConnectionTesterResultIndicator(
+                                item.connectionTester,
+                                showIdle = false,
+                            )
+                        }
+
+                        Box {
+                            IconButton(onClick = { showMoreDropdown = true }) {
+                                Icon(
+                                    Icons.Rounded.MoreVert,
+                                    contentDescription = "更多",
+                                )
+                            }
+
+                            MoreOptionsDropdown(
+                                showMoreDropdown,
+                                onDismissRequest = { showMoreDropdown = false },
+                                onDeleteRequest = { showConfirmDeletionDialog = true },
+                                item,
+                                onEnabledChange = { edit.toggleMediaSourceEnabled(item, it) },
+                                onEdit = startEditing,
+                            )
+                        }
                     }
                 }
             }
@@ -299,7 +359,7 @@ internal fun SettingsScope.MediaSourceItem(
     item: MediaSourcePresentation,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = item.isEnabled,
-    action: @Composable () -> Unit,
+    actions: @Composable RowScope.() -> Unit,
 ) {
 //    ListItem(
 //        headlineContent = title,
@@ -339,7 +399,11 @@ internal fun SettingsScope.MediaSourceItem(
                 MediaSourceIcon(item.info, Modifier.size(48.dp))
             }
         },
-        action = action,
+        action = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                actions()
+            }
+        },
         title = {
             val name = if (!isEnabled) {
                 item.info.displayName + "（已禁用）"
@@ -355,97 +419,54 @@ internal fun SettingsScope.MediaSourceItem(
 }
 
 @Composable
-internal fun NormalMediaSourceItemAction(
+private fun MoreOptionsDropdown(
+    showMore: Boolean,
+    onDismissRequest: () -> Unit,
+    onDeleteRequest: () -> Unit,
     item: MediaSourcePresentation,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit,
     onEnabledChange: (enabled: Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    onEdit: () -> Unit,
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        IconButton({}, enabled = false) { // 放在 button 里保持 padding 一致
-            ConnectionTesterResultIndicator(
-                item.connectionTester,
-                showIdle = false,
-            )
-        }
-
-        var showConfirmDelete by rememberSaveable { mutableStateOf(false) }
-        if (showConfirmDelete) {
-            AlertDialog(
-                onDismissRequest = { showConfirmDelete = false },
-                icon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                title = { Text("删除数据源") },
-                text = {
-                    if (item.parameters.isEmpty()) {
-                        Text("该数据源无特殊配置，删除后可以重新从模板直接添加，确认删除吗？")
-                    } else {
-                        Text("该数据源有配置，删除后将丢失配置，之后从模板添加时需要重新配置，确认删除吗？")
-                    }
-                },
-                confirmButton = {
-                    TextButton({ onDelete(); showConfirmDelete = false }) {
-                        Text(
-                            "删除",
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                },
-                dismissButton = { TextButton({ showConfirmDelete = false }) { Text("取消") } },
-            )
-        }
-
-        Box {
-            var showMore by remember { mutableStateOf(false) }
-            DropdownMenu(
-                expanded = showMore,
-                onDismissRequest = { showMore = false },
-            ) {
-                DropdownMenuItem(
-                    leadingIcon = {
-                        if (item.isEnabled) {
-                            Icon(Icons.Rounded.VisibilityOff, null)
-                        } else {
-                            Icon(Icons.Rounded.Visibility, null)
-                        }
-                    },
-                    text = {
-                        if (item.isEnabled) {
-                            Text("禁用")
-                        } else {
-                            Text("启用")
-                        }
-                    },
-                    onClick = {
-                        onEnabledChange(!item.isEnabled)
-                        showMore = false
-                    },
-                )
-                DropdownMenuItem(
-                    leadingIcon = { Icon(Icons.Rounded.Edit, null) },
-                    text = { Text("编辑") }, // 直接点击数据源一行也可以编辑, 但还是在这里放一个按钮以免有人不知道
-                    onClick = {
-                        showMore = false
-                        onEdit()
-                    },
-                )
-                DropdownMenuItem(
-                    leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
-                    text = { Text("删除（可重新添加）", color = MaterialTheme.colorScheme.error) },
-                    onClick = {
-                        showMore = false
-                        showConfirmDelete = true
-                    },
-                )
-            }
-
-            IconButton({ showMore = true }) {
-                Icon(
-                    Icons.Rounded.MoreVert,
-                    contentDescription = "更多",
-                )
-            }
-        }
+    DropdownMenu(
+        expanded = showMore,
+        onDismissRequest = onDismissRequest,
+    ) {
+        DropdownMenuItem(
+            leadingIcon = {
+                if (item.isEnabled) {
+                    Icon(Icons.Rounded.VisibilityOff, null)
+                } else {
+                    Icon(Icons.Rounded.Visibility, null)
+                }
+            },
+            text = {
+                if (item.isEnabled) {
+                    Text("禁用")
+                } else {
+                    Text("启用")
+                }
+            },
+            onClick = {
+                onEnabledChange(!item.isEnabled)
+                onDismissRequest()
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Rounded.Edit, null) },
+            text = { Text("编辑") }, // 直接点击数据源一行也可以编辑, 但还是在这里放一个按钮以免有人不知道
+            onClick = {
+                onEdit()
+                onDismissRequest()
+            },
+        )
+        DropdownMenuItem(
+            leadingIcon = { Icon(Icons.Rounded.Delete, null, tint = MaterialTheme.colorScheme.error) },
+            text = { Text("删除（可重新添加）", color = MaterialTheme.colorScheme.error) },
+            onClick = {
+                onDeleteRequest()
+                onDismissRequest()
+            },
+        )
     }
 }
 
