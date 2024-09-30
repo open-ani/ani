@@ -72,6 +72,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.source.media.source.RssMediaSource
 import me.him188.ani.app.data.source.media.source.web.SelectorMediaSource
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.settings.framework.ConnectionTesterResultIndicator
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -80,6 +81,7 @@ import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.framework.rememberSorterState
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.datasources.api.source.parameter.isEmpty
+import me.him188.ani.utils.platform.isMobile
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
@@ -207,11 +209,16 @@ internal fun SettingsScope.MediaSourceGroup(
                             edit.startEditing(item)
                         }
                     }
+                    val platform = LocalPlatform.current
                     MediaSourceItem(
                         item,
                         Modifier.combinedClickable(
                             onClickLabel = "编辑",
-                            onLongClick = { sorter.start(state.mediaSources) },
+                            onLongClick = {
+                                if (platform.isMobile()) {
+                                    sorter.start(state.mediaSources)
+                                }
+                            },
                             onLongClickLabel = "开始排序",
                             onClick = startEditing,
                         ),
