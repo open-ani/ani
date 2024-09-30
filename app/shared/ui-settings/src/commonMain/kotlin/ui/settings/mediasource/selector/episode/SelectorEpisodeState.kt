@@ -67,9 +67,11 @@ class SelectorEpisodeState(
         BackgroundSearcher(
             backgroundScope,
             testDataState = derivedStateOf {
-                Triple(itemState.value?.playUrl, webViewVideoExtractor.value, matchVideoConfigState.value)
+                Pair(itemState.value?.playUrl, webViewVideoExtractor.value)
             },
-        ) { (episodeUrl, extractor, config) ->
+        ) { (episodeUrl, extractor) ->
+            // Dot trigger re-fetch on config change.
+            val config = matchVideoConfigState.value
             launchCollectedInBackground<SelectorTestWebUrl, _>(
                 updateState = { SelectorEpisodeResult.InProgress(it) },
             ) { flow ->
