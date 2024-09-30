@@ -76,7 +76,7 @@ data class SelectorMediaSourceArguments(
 object SelectorMediaSourceCodec : DefaultMediaSourceCodec<SelectorMediaSourceArguments>(
     SelectorMediaSource.FactoryId,
     SelectorMediaSourceArguments::class,
-    currentVersion = 1,
+    currentVersion = 2,
     SelectorMediaSourceArguments.serializer(),
 )
 
