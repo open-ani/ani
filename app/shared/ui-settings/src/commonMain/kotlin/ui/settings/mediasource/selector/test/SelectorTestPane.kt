@@ -24,6 +24,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
@@ -36,26 +40,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
-import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
+import me.him188.ani.app.ui.foundation.layout.cardHorizontalPadding
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
-import me.him188.ani.app.ui.foundation.layout.connectedScroll
 import me.him188.ani.app.ui.foundation.layout.only
-import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -73,68 +68,68 @@ fun SharedTransitionScope.SelectorTestPane(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    connectedScrollState: ConnectedScrollState = rememberConnectedScrollState(),
 ) {
     val verticalSpacing = currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding
-    Column(
-        modifier
-            .padding(contentPadding.only(PaddingValuesSides.Top))
-            .clipToBounds(),
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Adaptive(300.dp),
+        modifier,
+        rememberLazyStaggeredGridState(),
+        contentPadding,
+        horizontalArrangement = Arrangement.spacedBy(currentWindowAdaptiveInfo().windowSizeClass.cardHorizontalPadding),
     ) {
-        Column(
-            Modifier.connectedScroll(connectedScrollState)
-                .padding(contentPadding.only(PaddingValuesSides.Horizontal)),
-        ) {
-            Text(
-                "测试数据源",
-                style = MaterialTheme.typography.headlineSmall,
-            )
-
-            EditTestDataCard(
-                state,
+        item(span = StaggeredGridItemSpan.FullLine) {
+            Column(
                 Modifier
-                    .padding(top = verticalSpacing)
-                    .fillMaxWidth(),
-            )
-
-            RefreshIndicatedHeadlineRow(
-                headline = { Text(SelectorConfigurationDefaults.STEP_NAME_1) },
-                onRefresh = { state.subjectSearcher.restartCurrentSearch() },
-                result = state.subjectSearchSelectResult,
-                Modifier.padding(top = verticalSpacing),
-            )
-
-            Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
-                FastLinearProgressIndicator(
-                    state.subjectSearcher.isSearching,
-                    delayMillis = 0,
-                    minimumDurationMillis = 300,
+                    .padding(contentPadding.only(PaddingValuesSides.Horizontal)),
+            ) {
+                Text(
+                    "测试数据源",
+                    style = MaterialTheme.typography.headlineSmall,
                 )
-            }
 
-            AnimatedContent(
-                state.subjectSearchSelectResult,
-                transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-            ) { result ->
-                if (result is SelectorTestSearchSubjectResult.Success) {
-                    SelectorTestSubjectResultLazyRow(
-                        items = result.subjects,
-                        state.selectedSubjectIndex,
-                        onSelect = { index, _ ->
-                            state.selectedSubjectIndex = index
-                        },
-                        modifier = Modifier.padding(top = verticalSpacing - 8.dp),
+                EditTestDataCard(
+                    state,
+                    Modifier
+                        .padding(top = verticalSpacing)
+                        .fillMaxWidth(),
+                )
+
+                RefreshIndicatedHeadlineRow(
+                    headline = { Text(SelectorConfigurationDefaults.STEP_NAME_1) },
+                    onRefresh = { state.subjectSearcher.restartCurrentSearch() },
+                    result = state.subjectSearchSelectResult,
+                    Modifier.padding(top = verticalSpacing),
+                )
+
+                Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
+                    FastLinearProgressIndicator(
+                        state.subjectSearcher.isSearching,
+                        delayMillis = 0,
+                        minimumDurationMillis = 300,
                     )
+                }
+
+                AnimatedContent(
+                    state.subjectSearchSelectResult,
+                    transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+                ) { result ->
+                    if (result is SelectorTestSearchSubjectResult.Success) {
+                        SelectorTestSubjectResultLazyRow(
+                            items = result.subjects,
+                            state.selectedSubjectIndex,
+                            onSelect = { index, _ ->
+                                state.selectedSubjectIndex = index
+                            },
+                            modifier = Modifier.padding(top = verticalSpacing - 8.dp),
+                        )
+                    }
                 }
             }
         }
 
-        AnimatedContent(
-            state.selectedSubject,
-            Modifier.padding(contentPadding.only(PaddingValuesSides.Horizontal)),
-            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-        ) { selectedSubject ->
-            if (selectedSubject != null) {
+        val selectedSubject = state.selectedSubject
+        if (selectedSubject != null) {
+            item(span = StaggeredGridItemSpan.FullLine) {
                 Column {
                     RefreshIndicatedHeadlineRow(
                         headline = { Text(SelectorConfigurationDefaults.STEP_NAME_2) },
@@ -173,7 +168,7 @@ fun SharedTransitionScope.SelectorTestPane(
                         }
                     }
 
-                    Box(Modifier.height(12.dp), contentAlignment = Alignment.Center) {
+                    Box(Modifier.height(4.dp), contentAlignment = Alignment.Center) {
                         FastLinearProgressIndicator(
                             state.episodeListSearcher.isSearching,
                             delayMillis = 0,
@@ -182,65 +177,43 @@ fun SharedTransitionScope.SelectorTestPane(
                     }
                 }
             }
-        }
 
-        if (state.selectedSubject != null) {
-            AnimatedContent(
-                state.episodeListSearchSelectResult,
-                transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-            ) { result ->
-                val staggeredGridState = rememberLazyStaggeredGridState()
-                Column(
-                    Modifier
-                        .nestedScroll(connectedScrollState.nestedScrollConnection)
-                        .nestedScrollWorkaround(staggeredGridState, connectedScrollState),
-                ) {
-                    if (result is SelectorTestEpisodeListResult.Success) {
-                        var filterByChannel by remember { mutableStateOf<String?>(null) }
-                        if (result.channels != null) {
-                            Row(
+            val result = state.episodeListSearchSelectResult
+            if (result is SelectorTestEpisodeListResult.Success) {
+                if (result.channels != null) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Row(
+                            Modifier.padding(bottom = (verticalSpacing - 8.dp).coerceAtLeast(0.dp)),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text("${result.channels.size} 线路")
+                            LazyRow(
+                                Modifier,
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text("${result.channels.size} 线路")
-                                LazyRow(
-                                    Modifier,
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                ) {
-                                    items(result.channels) {
-                                        FilterChip(
-                                            selected = filterByChannel == it,
-                                            onClick = {
-                                                filterByChannel = if (filterByChannel == it) null else it
-                                            },
-                                            label = { Text(it) },
-                                        )
-                                    }
+                                items(result.channels) {
+                                    FilterChip(
+                                        selected = state.filterByChannel == it,
+                                        onClick = {
+                                            state.filterByChannel = if (state.filterByChannel == it) null else it
+                                        },
+                                        label = { Text(it) },
+                                    )
                                 }
                             }
-                        }
-
-
-                        val filteredEpisodes by remember(result) {
-                            derivedStateOf {
-                                result.episodes.filter {
-                                    filterByChannel == null || it.channel == filterByChannel
-                                }
-                            }
-                        }
-                        SelectorTestEpisodeListGrid(
-                            filteredEpisodes,
-                            Modifier.padding(top = verticalSpacing - 8.dp),
-                            state = staggeredGridState,
-                            contentPadding = contentPadding.only(PaddingValuesSides.Horizontal + PaddingValuesSides.Bottom),
-                        ) { episode ->
-                            SelectorTestEpisodeListGridDefaults.EpisodeCard(
-                                episode,
-                                { onViewEpisode(episode) },
-                                Modifier.sharedBounds(rememberSharedContentState(episode.id), animatedVisibilityScope),
-                            )
                         }
                     }
+                }
+
+                items(state.filteredEpisodes ?: emptyList()) { episode ->
+                    SelectorTestEpisodeListGridDefaults.EpisodeCard(
+                        episode,
+                        { onViewEpisode(episode) },
+                        Modifier
+                            .padding(bottom = verticalSpacing)
+                            .sharedBounds(rememberSharedContentState(episode.id), animatedVisibilityScope),
+                    )
                 }
             }
         }

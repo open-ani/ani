@@ -95,7 +95,6 @@ fun SelectorTestAndEpisodePane(
                     this,
                     Modifier.fillMaxSize(),
                     contentPadding = contentPadding,
-                    connectedScrollState = testConnectedScrollState,
                 )
             }
             composable<SelectorEpisodePaneRoutes.EPISODE> {

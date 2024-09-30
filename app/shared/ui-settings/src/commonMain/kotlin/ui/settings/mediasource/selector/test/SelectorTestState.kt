@@ -14,6 +14,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.CoroutineScope
@@ -182,6 +183,19 @@ class SelectorTestState(
                     },
                 )
             }
+        }
+    }
+
+    var filterByChannel by mutableStateOf<String?>(null)
+    val filteredEpisodes by derivedStateOf {
+        when (val result = episodeListSearchSelectResult) {
+            is SelectorTestEpisodeListResult.Success -> result.episodes.filter {
+                filterByChannel == null || it.channel == filterByChannel
+            }
+
+            is SelectorTestEpisodeListResult.ApiError -> null
+            SelectorTestEpisodeListResult.InvalidConfig -> null
+            is SelectorTestEpisodeListResult.UnknownError -> null
         }
     }
 
