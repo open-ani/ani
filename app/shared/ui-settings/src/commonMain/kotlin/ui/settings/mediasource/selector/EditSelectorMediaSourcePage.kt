@@ -249,7 +249,6 @@ fun EditSelectorMediaSourcePage(
                         layout = episodePaneLayout,
                         modifier = Modifier.consumeWindowInsets(paddingValues),
                         contentPadding = paddingValues,
-                        testConnectedScrollState = testConnectedScrollState,
                     )
                 }
             },

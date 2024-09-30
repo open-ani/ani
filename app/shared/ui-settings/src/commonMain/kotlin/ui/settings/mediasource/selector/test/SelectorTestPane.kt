@@ -18,17 +18,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowOutward
 import androidx.compose.material.icons.rounded.Link
@@ -68,14 +69,14 @@ fun SharedTransitionScope.SelectorTestPane(
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val verticalSpacing = currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Adaptive(300.dp),
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(300.dp),
         modifier,
-        rememberLazyStaggeredGridState(),
+        rememberLazyGridState(),
         contentPadding,
         horizontalArrangement = Arrangement.spacedBy(currentWindowAdaptiveInfo().windowSizeClass.cardHorizontalPadding),
     ) {
-        item(span = StaggeredGridItemSpan.FullLine) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Column {
                 Text(
                     "测试数据源",
@@ -124,7 +125,7 @@ fun SharedTransitionScope.SelectorTestPane(
 
         val selectedSubject = state.selectedSubject
         if (selectedSubject != null) {
-            item(span = StaggeredGridItemSpan.FullLine) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Column {
                     RefreshIndicatedHeadlineRow(
                         headline = { Text(SelectorConfigurationDefaults.STEP_NAME_2) },
@@ -176,9 +177,11 @@ fun SharedTransitionScope.SelectorTestPane(
             val result = state.episodeListSearchSelectResult
             if (result is SelectorTestEpisodeListResult.Success) {
                 if (result.channels != null) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         Row(
-                            Modifier.padding(bottom = (verticalSpacing - 8.dp).coerceAtLeast(0.dp)),
+                            Modifier
+                                .fillMaxWidth() // workaround for grid span issue https://youtrack.jetbrains.com/issue/CMP-2102
+                                .padding(bottom = (verticalSpacing - 8.dp).coerceAtLeast(0.dp)),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -210,6 +213,7 @@ fun SharedTransitionScope.SelectorTestPane(
                         episode,
                         { onViewEpisode(episode) },
                         Modifier
+                            .fillMaxSize()
                             .padding(bottom = verticalSpacing)
                             .sharedBounds(rememberSharedContentState(episode.id), animatedVisibilityScope),
                     )

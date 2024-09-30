@@ -62,9 +62,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
-import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
@@ -78,7 +76,6 @@ fun SelectorTestAndEpisodePane(
     layout: SelectorEpisodePaneLayout,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    testConnectedScrollState: ConnectedScrollState = rememberConnectedScrollState(),
     initialRoute: SelectorEpisodePaneRoutes = SelectorEpisodePaneRoutes.TEST,
 ) {
     val nestedNav = rememberNavController()
@@ -119,7 +116,7 @@ fun SelectorTestAndEpisodePane(
                         // list 展开, 能编辑配置
                         Card(
                             Modifier
-                                .sharedBounds(rememberSharedContentState(state.episodeState.lastNonNullId), this)
+//                                .sharedBounds(rememberSharedContentState(state.episodeState.lastNonNullId), this)
                                 .fillMaxSize(),
                             colors = cardColors,
                             shape = MaterialTheme.shapes.large,
