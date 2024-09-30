@@ -39,3 +39,27 @@ actual object QueryParser {
     @Throws(IllegalStateException::class)
     actual fun parseSelector(selector: String): Evaluator = QueryParser.parse(selector)
 }
+
+actual object Html {
+    actual fun parse(string: String): Document {
+        return Ksoup.parse(string, Parser.htmlParser())
+    }
+
+    actual fun parse(
+        string: String,
+        baseUrl: String,
+    ): Document {
+        return Ksoup.parse(string, baseUrl, Parser.htmlParser())
+    }
+
+    actual fun parse(source: Source): Document {
+        return Ksoup.parse(source.readString(), baseUri = "", Parser.htmlParser())
+    }
+
+    actual fun parse(
+        source: Source,
+        baseUrl: String,
+    ): Document {
+        return Ksoup.parse(source.readString(), baseUri = baseUrl, Parser.htmlParser())
+    }
+}

@@ -11,12 +11,17 @@ package me.him188.ani.app.data.source.media.source.web
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.request.accept
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonPrimitive
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.source.media.source.MediaListFilter
@@ -42,10 +47,9 @@ import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.ResourceLocation
 import me.him188.ani.datasources.api.topic.SubtitleLanguage
 import me.him188.ani.datasources.api.topic.titles.LabelFirstRawTitleParser
-import me.him188.ani.utils.ktor.toSource
 import me.him188.ani.utils.xml.Document
 import me.him188.ani.utils.xml.Element
-import me.him188.ani.utils.xml.Xml
+import me.him188.ani.utils.xml.Html
 
 data class SelectorSearchQuery(
     val subjectName: String,
@@ -337,8 +341,10 @@ class DefaultSelectorMediaSourceEngine(
         finalUrl: Url,
     ): ApiResponse<SearchSubjectResult> = runApiRequest {
         val document = try {
-            client.first().get(finalUrl).let { resp ->
-                Xml.parse(resp.bodyAsChannel().toSource())
+            client.first().get(finalUrl) {
+                accept(ContentType.Text.Html)
+            }.let { resp ->
+                parseResp(resp)
             }
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.NotFound) {
@@ -351,7 +357,6 @@ class DefaultSelectorMediaSourceEngine(
             throw e
         }
 
-
         SearchSubjectResult(
             finalUrl,
             document,
@@ -362,8 +367,18 @@ class DefaultSelectorMediaSourceEngine(
     public override suspend fun doHttpGet(uri: String): ApiResponse<Document> =
         runApiRequest {
             client.first().get(uri) {
+                accept(ContentType.Text.Html)
             }.let { resp ->
-                Xml.parse(resp.bodyAsChannel().toSource())
+                parseResp(resp)
             }
         }
+
+    private suspend fun parseResp(resp: HttpResponse): Document {
+        var body = resp.bodyAsText()
+        // 非常奇怪, 有时候会是一个字符串
+        if (body.startsWith("\"")) {
+            body = runCatching { Json.parseToJsonElement(body).jsonPrimitive.content }.getOrNull() ?: body
+        }
+        return Html.parse(body)
+    }
 }

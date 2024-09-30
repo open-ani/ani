@@ -36,3 +36,21 @@ actual object QueryParser {
         return org.jsoup.select.QueryParser.parse(selector)
     }
 }
+
+actual object Html {
+    actual fun parse(string: String): Document {
+        return Jsoup.parse(string)
+    }
+
+    actual fun parse(string: String, baseUrl: String): Document {
+        return Jsoup.parse(string, baseUrl)
+    }
+
+    actual fun parse(source: Source): Document {
+        return Jsoup.parse(source.asInputStream(), "UTF-8", "")
+    }
+
+    actual fun parse(source: Source, baseUrl: String): Document {
+        return Jsoup.parse(source.asInputStream(), "UTF-8", baseUrl)
+    }
+}
