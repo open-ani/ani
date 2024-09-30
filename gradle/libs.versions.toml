@@ -1,5 +1,6 @@
 [versions]
 jna = "5.13.0" # 不要轻易改这个版本, 它可能导致 VLC 兼容性问题
+jsonpathkt-kotlinx = "3.0.2"
 kotlin = "2.0.20"
 # kotlinx
 coroutines = "1.9.0-RC.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
@@ -65,6 +66,7 @@ android-library-gradle-plugin = { module = "com.android.library:com.android.libr
 android-application-gradle-plugin = { module = "com.android.application:com.android.application.gradle.plugin", version.ref = "android-gradle-plugin" }
 filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+jsonpathkt-kotlinx = { module = "com.eygraber:jsonpathkt-kotlinx", version.ref = "jsonpathkt-kotlinx" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu" }
 compose-multiplatfrom-gradle-plugin = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
