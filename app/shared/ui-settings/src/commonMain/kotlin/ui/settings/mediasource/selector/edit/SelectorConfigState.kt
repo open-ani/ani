@@ -70,6 +70,19 @@ class SelectorConfigState(
         SelectorMediaSourceArguments.Default.searchConfig.searchUseOnlyFirstWord,
     )
 
+    var rawBaseUrl by argumentsStorage.prop(
+        { it.searchConfig.rawBaseUrl },
+        { copy(searchConfig = searchConfig.copy(rawBaseUrl = it)) },
+        SelectorMediaSourceArguments.Default.searchConfig.rawBaseUrl,
+    )
+    val baseUrlPlaceholder by derivedStateOf {
+        if (rawBaseUrl.isBlank()) {
+            SelectorSearchConfig.guessBaseUrl(searchUrl)
+        } else {
+            null
+        }
+    }
+
     // region SubjectFormat
 
     val allSubjectFormats get() = SelectorSubjectFormat.entries

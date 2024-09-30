@@ -130,7 +130,7 @@ abstract class SelectorMediaSourceEngine {
         if (!formatConfig.isValid()) {
             return null
         }
-        val originalList = subjectFormat.select(document, config.baseUrl, formatConfig)
+        val originalList = subjectFormat.select(document, config.finalBaseUrl, formatConfig)
 
         return originalList
     }
@@ -166,7 +166,7 @@ abstract class SelectorMediaSourceEngine {
         }
         return channelFormat.select(
             subjectDetailsPage,
-            config.baseUrl,
+            config.finalBaseUrl,
             formatConfig,
         )
     }

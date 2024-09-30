@@ -117,7 +117,7 @@ internal fun SelectorConfigurationPane(
                 OutlinedTextField(
                     state.searchUrl, { state.searchUrl = it },
                     Modifier.fillMaxWidth().moveFocusOnEnter(),
-                    label = { Text("搜索链接*") },
+                    label = { Text("搜索链接") },
                     placeholder = {
                         Text(
                             "示例：https://www.nyacg.net/search.html?wd={keyword}",
@@ -130,6 +130,27 @@ internal fun SelectorConfigurationPane(
                                     替换规则：
                                     {keyword} 替换为条目 (番剧) 名称
                                 """.trimIndent(),
+                        )
+                    },
+                    isError = state.searchUrlIsError,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    shape = textFieldShape,
+                    enabled = state.enableEdit,
+                )
+                OutlinedTextField(
+                    state.rawBaseUrl, { state.rawBaseUrl = it },
+                    Modifier
+                        .padding(top = (verticalSpacing - 8.dp).coerceAtLeast(0.dp))
+                        .fillMaxWidth().moveFocusOnEnter(),
+                    label = { Text("Base URL (可选)") },
+                    placeholder = state.baseUrlPlaceholder?.let {
+                        {
+                            Text(it, color = MaterialTheme.colorScheme.outline)
+                        }
+                    },
+                    supportingText = {
+                        Text(
+                            """可选。用于拼接条目详情 (剧集列表) 页面 URL，将会影响步骤 2。默认自动从搜索链接生成""".trimIndent(),
                         )
                     },
                     isError = state.searchUrlIsError,

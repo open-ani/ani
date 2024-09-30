@@ -31,7 +31,7 @@ data class SelectorSearchConfig(
     // Phase 1, search
     val searchUrl: String = "", // required
     val searchUseOnlyFirstWord: Boolean = true,
-    val preferShortest: Boolean = true,
+    val rawBaseUrl: String = "", // if empty, guess
     // Phase 2, for search result, select subjects
     val subjectFormatId: SelectorFormatId = SelectorSubjectFormatA.id,
     val selectorSubjectFormatA: SelectorSubjectFormatA.Config = SelectorSubjectFormatA.Config(),
@@ -67,25 +67,8 @@ data class SelectorSearchConfig(
     val selectMedia: SelectMediaConfig = SelectMediaConfig(),
     val matchVideo: MatchVideoConfig = MatchVideoConfig(),
 ) { // TODO: add Engine version capabilities
-    val baseUrl by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        kotlin.runCatching {
-            URLBuilder(searchUrl).apply {
-                pathSegments = emptyList()
-                parameters.clear()
-            }.toString()
-        }.getOrElse {
-            val schemaIndex = searchUrl.indexOf("//")
-            if (schemaIndex == -1) {
-                searchUrl.removeSuffix("/")
-            } else {
-                val slashIndex = searchUrl.indexOf('/', startIndex = schemaIndex + 2)
-                if (slashIndex == -1) {
-                    searchUrl.removeSuffix("/")
-                } else {
-                    searchUrl.substring(0, slashIndex)
-                }
-            }
-        }
+    val finalBaseUrl by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        rawBaseUrl.ifBlank { guessBaseUrl(searchUrl) }
     }
 
     @Serializable
@@ -130,6 +113,27 @@ data class SelectorSearchConfig(
     companion object {
         @Stable
         val Empty = SelectorSearchConfig()
+
+        fun guessBaseUrl(searchUrl: String): String {
+            return kotlin.runCatching {
+                URLBuilder(searchUrl).apply {
+                    pathSegments = emptyList()
+                    parameters.clear()
+                }.toString()
+            }.getOrElse {
+                val schemaIndex = searchUrl.indexOf("//")
+                if (schemaIndex == -1) {
+                    searchUrl.removeSuffix("/")
+                } else {
+                    val slashIndex = searchUrl.indexOf('/', startIndex = schemaIndex + 2)
+                    if (slashIndex == -1) {
+                        searchUrl.removeSuffix("/")
+                    } else {
+                        searchUrl.substring(0, slashIndex)
+                    }
+                }
+            }
+        }
     }
 }
 
