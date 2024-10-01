@@ -13,7 +13,7 @@ import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.domain.mediasource.instance.MediaSourceSave
 import me.him188.ani.datasources.api.source.FactoryId
 import me.him188.ani.datasources.api.source.MediaSourceConfig
 import me.him188.ani.datasources.mikan.MikanCNMediaSource

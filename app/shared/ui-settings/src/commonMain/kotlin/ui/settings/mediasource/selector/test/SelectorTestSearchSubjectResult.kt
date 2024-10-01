@@ -11,11 +11,11 @@ package me.him188.ani.app.ui.settings.mediasource.selector.test
 
 import androidx.compose.runtime.Immutable
 import me.him188.ani.app.data.models.ApiFailure
-import me.him188.ani.app.data.source.media.source.MediaListFilters
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchQuery
-import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
-import me.him188.ani.app.data.source.media.source.web.asCandidate
-import me.him188.ani.app.data.source.media.source.web.toFilterContext
+import me.him188.ani.app.domain.mediasource.MediaListFilters
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchQuery
+import me.him188.ani.app.domain.mediasource.web.WebSearchSubjectInfo
+import me.him188.ani.app.domain.mediasource.web.asCandidate
+import me.him188.ani.app.domain.mediasource.web.toFilterContext
 import me.him188.ani.app.ui.settings.mediasource.RefreshResult
 import me.him188.ani.app.ui.settings.mediasource.rss.test.MatchTag
 import me.him188.ani.app.ui.settings.mediasource.rss.test.buildMatchTags

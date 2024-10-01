@@ -15,10 +15,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
-import me.him188.ani.app.data.source.media.fetch.MediaFetcher
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
-import me.him188.ani.app.data.source.media.instance.MediaSourceSave
+import me.him188.ani.app.domain.media.fetch.MediaFetcher
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.mediasource.instance.MediaSourceInstance
+import me.him188.ani.app.domain.mediasource.instance.MediaSourceSave
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceTemplate
 import me.him188.ani.app.ui.settings.tabs.media.source.SelectMediaSourceTemplateDialog
 import me.him188.ani.datasources.api.matcher.MediaSourceWebVideoMatcherLoader

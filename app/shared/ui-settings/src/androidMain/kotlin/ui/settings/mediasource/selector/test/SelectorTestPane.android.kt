@@ -23,9 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.ktor.http.Url
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.networkError
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceEngine
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
-import me.him188.ani.app.data.source.media.source.web.WebSearchSubjectInfo
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceEngine
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchConfig
+import me.him188.ani.app.domain.mediasource.web.WebSearchSubjectInfo
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.utils.platform.annotations.TestOnly
 import me.him188.ani.utils.xml.Document

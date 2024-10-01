@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withTimeoutOrNull
-import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceEngine
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
+import me.him188.ani.app.domain.media.resolver.WebViewVideoExtractor
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceEngine
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchConfig
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher
 import me.him188.ani.app.ui.settings.mediasource.launchCollectedInBackground

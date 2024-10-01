@@ -25,9 +25,9 @@ import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectProgressInfo
-import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.domain.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.tools.WeekFormatter
-import me.him188.ani.app.tools.caching.ContentPolicy
+import me.him188.ani.app.tools.ldc.ContentPolicy
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.datasources.api.EpisodeSort
 import me.him188.ani.datasources.api.PackedDate

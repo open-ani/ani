@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -15,16 +24,16 @@ import me.him188.ani.app.data.models.preference.MyCollectionsSettings
 import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.session.AuthState
-import me.him188.ani.app.data.source.session.SessionEvent
-import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.domain.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.domain.media.cache.MediaCacheManager
+import me.him188.ani.app.domain.session.AuthState
+import me.him188.ani.app.domain.session.SessionEvent
+import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.caching.LazyDataCache
-import me.him188.ani.app.tools.caching.RefreshOrderPolicy
-import me.him188.ani.app.tools.caching.getCachedData
+import me.him188.ani.app.tools.ldc.LazyDataCache
+import me.him188.ani.app.tools.ldc.RefreshOrderPolicy
+import me.him188.ani.app.tools.ldc.getCachedData
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.AuthState
 import me.him188.ani.app.ui.foundation.launchInBackground

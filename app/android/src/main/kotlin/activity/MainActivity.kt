@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.PlatformWindow

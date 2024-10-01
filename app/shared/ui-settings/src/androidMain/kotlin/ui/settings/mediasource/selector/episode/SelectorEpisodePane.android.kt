@@ -16,10 +16,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.source.media.resolver.TestWebViewVideoExtractor
-import me.him188.ani.app.data.source.media.source.codec.createTestMediaSourceCodecManager
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
+import me.him188.ani.app.domain.media.resolver.TestWebViewVideoExtractor
+import me.him188.ani.app.domain.mediasource.codec.createTestMediaSourceCodecManager
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchConfig
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf

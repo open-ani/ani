@@ -26,11 +26,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
-import me.him188.ani.app.data.source.media.TestMediaList
-import me.him188.ani.app.data.source.media.selector.DefaultMediaSelector
-import me.him188.ani.app.data.source.media.selector.MediaPreferenceItem
-import me.him188.ani.app.data.source.media.selector.MediaSelector
-import me.him188.ani.app.data.source.media.selector.MediaSelectorContext
+import me.him188.ani.app.domain.media.TestMediaList
+import me.him188.ani.app.domain.media.selector.DefaultMediaSelector
+import me.him188.ani.app.domain.media.selector.MediaPreferenceItem
+import me.him188.ani.app.domain.media.selector.MediaSelector
+import me.him188.ani.app.domain.media.selector.MediaSelectorContext
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope

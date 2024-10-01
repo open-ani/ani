@@ -28,9 +28,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
-import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscription
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.mediasource.instance.MediaSourceInstance
+import me.him188.ani.app.domain.mediasource.subscription.MediaSourceSubscription
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester

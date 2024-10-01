@@ -15,10 +15,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
-import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.web.format.SelectorChannelFormatIndexGrouped
+import me.him188.ani.app.domain.mediasource.web.format.SelectorChannelFormatNoChannel
+import me.him188.ani.app.domain.mediasource.web.format.SelectorFormatId
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.mediasource.rss.createTestSaveableStorage

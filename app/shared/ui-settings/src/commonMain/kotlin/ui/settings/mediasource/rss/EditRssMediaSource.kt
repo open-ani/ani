@@ -46,10 +46,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowWidthSizeClass
-import me.him188.ani.app.data.source.media.source.RssMediaSource
-import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.RssSearchConfig
-import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSource
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.RssSearchConfig
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides

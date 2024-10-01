@@ -29,13 +29,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import me.him188.ani.app.data.source.media.source.codec.FactoryNotFoundException
-import me.him188.ani.app.data.source.media.source.codec.MediaSourceArguments
-import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
-import me.him188.ani.app.data.source.media.source.codec.MediaSourceDecodeException
-import me.him188.ani.app.data.source.media.source.codec.UnsupportedVersionException
-import me.him188.ani.app.data.source.media.source.codec.decodeFromStringOrNull
-import me.him188.ani.app.data.source.media.source.codec.serializeToString
+import me.him188.ani.app.domain.mediasource.codec.FactoryNotFoundException
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceArguments
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceDecodeException
+import me.him188.ani.app.domain.mediasource.codec.UnsupportedVersionException
+import me.him188.ani.app.domain.mediasource.codec.decodeFromStringOrNull
+import me.him188.ani.app.domain.mediasource.codec.serializeToString
 import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 

@@ -27,10 +27,10 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormat
-import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatA
-import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatIndexed
-import me.him188.ani.app.data.source.media.source.web.format.SelectorSubjectFormatJsonPathIndexed
+import me.him188.ani.app.domain.mediasource.web.format.SelectorSubjectFormat
+import me.him188.ani.app.domain.mediasource.web.format.SelectorSubjectFormatA
+import me.him188.ani.app.domain.mediasource.web.format.SelectorSubjectFormatIndexed
+import me.him188.ani.app.domain.mediasource.web.format.SelectorSubjectFormatJsonPathIndexed
 import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
 
 @Composable

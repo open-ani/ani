@@ -11,9 +11,9 @@ package me.him188.ani.app.ui.settings.mediasource.selector.test
 
 import androidx.compose.runtime.Immutable
 import me.him188.ani.app.data.models.ApiFailure
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchQuery
-import me.him188.ani.app.data.source.media.source.web.WebSearchEpisodeInfo
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchConfig
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchQuery
+import me.him188.ani.app.domain.mediasource.web.WebSearchEpisodeInfo
 import me.him188.ani.app.ui.settings.mediasource.RefreshResult
 import me.him188.ani.app.ui.settings.mediasource.rss.test.MatchTag
 import me.him188.ani.app.ui.settings.mediasource.rss.test.buildMatchTags

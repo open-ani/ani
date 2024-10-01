@@ -21,9 +21,9 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.fold
-import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
-import me.him188.ani.app.data.source.media.source.RssSearchConfig
-import me.him188.ani.app.data.source.media.source.RssSearchQuery
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceEngine
+import me.him188.ani.app.domain.mediasource.rss.RssSearchConfig
+import me.him188.ani.app.domain.mediasource.rss.RssSearchQuery
 import me.him188.ani.app.ui.settings.mediasource.AbstractMediaSourceTestState
 import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState

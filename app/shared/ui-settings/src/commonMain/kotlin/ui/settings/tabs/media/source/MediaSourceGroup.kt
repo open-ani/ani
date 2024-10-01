@@ -70,8 +70,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.media.source.RssMediaSource
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSource
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSource
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSource
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen

@@ -39,7 +39,7 @@ import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
+import me.him188.ani.app.domain.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.settings.SettingsTab

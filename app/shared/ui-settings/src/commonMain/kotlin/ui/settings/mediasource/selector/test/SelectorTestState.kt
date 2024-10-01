@@ -20,9 +20,9 @@ import androidx.compose.ui.util.fastDistinctBy
 import kotlinx.coroutines.CoroutineScope
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.fold
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceEngine
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchConfig
-import me.him188.ani.app.data.source.media.source.web.SelectorSearchQuery
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceEngine
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchConfig
+import me.him188.ani.app.domain.mediasource.web.SelectorSearchQuery
 import me.him188.ani.app.ui.settings.mediasource.AbstractMediaSourceTestState
 import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher
 import me.him188.ani.datasources.api.EpisodeSort

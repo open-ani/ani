@@ -51,7 +51,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscription
+import me.him188.ani.app.domain.mediasource.subscription.MediaSourceSubscription
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults

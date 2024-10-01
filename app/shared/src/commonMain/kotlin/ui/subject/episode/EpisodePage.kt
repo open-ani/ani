@@ -81,8 +81,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
-import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
+import me.him188.ani.app.domain.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.domain.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.features.StreamType

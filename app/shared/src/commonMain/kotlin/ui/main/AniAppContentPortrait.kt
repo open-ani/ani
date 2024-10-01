@@ -33,8 +33,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import me.him188.ani.app.data.source.media.source.RssMediaSource
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSource
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSource
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSource
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext

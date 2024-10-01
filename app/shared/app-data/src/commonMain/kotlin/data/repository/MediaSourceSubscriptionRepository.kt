@@ -12,7 +12,7 @@ package me.him188.ani.app.data.repository
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.source.media.source.subscription.MediaSourceSubscription
+import me.him188.ani.app.domain.mediasource.subscription.MediaSourceSubscription
 import me.him188.ani.utils.platform.Uuid
 
 class MediaSourceSubscriptionRepository(

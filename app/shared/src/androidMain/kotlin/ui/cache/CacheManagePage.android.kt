@@ -15,8 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import me.him188.ani.app.data.source.media.TestMediaList
-import me.him188.ani.app.data.source.media.cache.engine.MediaStats
+import me.him188.ani.app.domain.media.TestMediaList
+import me.him188.ani.app.domain.media.cache.engine.MediaStats
 import me.him188.ani.app.tools.Progress
 import me.him188.ani.app.tools.toProgress
 import me.him188.ani.app.ui.cache.components.CacheEpisodePaused

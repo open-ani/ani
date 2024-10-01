@@ -33,7 +33,7 @@ import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 
 /**
- * @see me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
+ * @see me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceArguments
  */
 object SelectorConfigurationDefaults {
     const val STEP_NAME_1 = "步骤 1：搜索条目"

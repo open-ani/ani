@@ -1,19 +1,10 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright (C) 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
 package me.him188.ani.android
@@ -25,13 +16,13 @@ import android.util.Log
 import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.media.cache.MediaCacheNotificationTask
+import me.him188.ani.app.domain.media.cache.MediaCacheNotificationTask
 import me.him188.ani.app.platform.AndroidLoggingConfigurator
 import me.him188.ani.app.platform.JvmLogHelper
 import me.him188.ani.app.platform.createAppRootCoroutineScope
 import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.startCommonKoinModule
-import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.ui.settings.tabs.getLogsDir
 import me.him188.ani.app.ui.settings.tabs.media.DEFAULT_TORRENT_CACHE_DIR_NAME
 import org.koin.android.ext.android.getKoin

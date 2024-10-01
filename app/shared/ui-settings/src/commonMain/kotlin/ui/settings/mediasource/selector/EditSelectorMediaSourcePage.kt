@@ -45,10 +45,10 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor
-import me.him188.ani.app.data.source.media.source.codec.MediaSourceCodecManager
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.web.SelectorMediaSourceEngine
+import me.him188.ani.app.domain.media.resolver.WebViewVideoExtractor
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.web.SelectorMediaSourceEngine
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1

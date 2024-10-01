@@ -11,7 +11,7 @@ package me.him188.ani.app.ui.settings.mediasource.rss.test
 
 import androidx.compose.runtime.Immutable
 import me.him188.ani.app.data.models.ApiFailure
-import me.him188.ani.app.tools.rss.RssChannel
+import me.him188.ani.app.domain.rss.RssChannel
 import me.him188.ani.app.ui.settings.mediasource.RefreshResult
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.utils.xml.Element

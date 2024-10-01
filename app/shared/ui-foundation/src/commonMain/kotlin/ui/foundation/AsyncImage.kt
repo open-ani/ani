@@ -31,7 +31,7 @@ import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
 import me.him188.ani.app.data.models.preference.ProxyConfig
-import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
+import me.him188.ani.app.domain.media.fetch.toClientProxyConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.utils.ktor.createDefaultHttpClient
 import me.him188.ani.utils.ktor.proxy

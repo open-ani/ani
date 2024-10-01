@@ -29,10 +29,10 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormat
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatIndexGrouped
-import me.him188.ani.app.data.source.media.source.web.format.SelectorChannelFormatNoChannel
-import me.him188.ani.app.data.source.media.source.web.format.SelectorFormatId
+import me.him188.ani.app.domain.mediasource.web.format.SelectorChannelFormat
+import me.him188.ani.app.domain.mediasource.web.format.SelectorChannelFormatIndexGrouped
+import me.him188.ani.app.domain.mediasource.web.format.SelectorChannelFormatNoChannel
+import me.him188.ani.app.domain.mediasource.web.format.SelectorFormatId
 import me.him188.ani.app.ui.foundation.effects.moveFocusOnEnter
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
