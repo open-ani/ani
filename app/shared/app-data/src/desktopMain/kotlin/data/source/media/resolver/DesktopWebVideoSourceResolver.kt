@@ -32,7 +32,6 @@ import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instru
 import me.him188.ani.app.data.source.media.resolver.cef.RequestWillBeSent
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
-import me.him188.ani.app.platform.files
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.Media
@@ -41,11 +40,10 @@ import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.datasources.api.topic.ResourceLocation
-import me.him188.ani.utils.io.absolutePath
-import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.warn
 import me.him188.ani.utils.platform.currentTimeMillis
 import org.cef.CefApp
 import org.cef.CefApp.CefAppState
@@ -64,7 +62,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import javax.swing.SwingUtilities
 import kotlin.concurrent.thread
-import kotlin.coroutines.resume
 
 /**
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
@@ -150,7 +147,10 @@ class CefVideoExtractor(
         config: WebViewConfig,
         resourceMatcher: (String) -> Instruction
     ): WebResource? = withContext(Dispatchers.IO) {
-        val cefApp = AniCefApp.instance(context, proxyConfig)
+        val cefApp = AniCefApp.getInstance() ?: kotlin.run { 
+            logger.warn { "AniCefApp isn't initialized yet." }
+            return@withContext null
+        }
         val client = cefApp.createClient()
 
         val deferred = CompletableDeferred<WebResource>()
@@ -160,7 +160,7 @@ class CefVideoExtractor(
         try {
             val devToolsDeferred = CompletableDeferred<CefDevToolsClient>()
 
-            runOnEventDispatcherThread {
+            AniCefApp.runOnCefContext {
                 client.addLoadHandler(object : CefLoadHandlerAdapter() {
                     override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                         if (frame?.isMain == true && browser != null) {
@@ -201,13 +201,13 @@ class CefVideoExtractor(
                     Instruction.LoadPage -> {
                         if (browser.url == url) return false // don't recurse
                         logger.info { "CEF loading nested page: $url" }
-                        runOnEventDispatcherThread { browser.loadURL(url) }
+                        AniCefApp.runOnCefContext { browser.loadURL(url) }
                         return false
                     }
                 }
             }
 
-            runOnEventDispatcherThread {
+            AniCefApp.runOnCefContext {
                 // 获取到 DevTools 后就可以移除 load handler 了
                 browser.client.removeLoadHandler()
                 
@@ -245,11 +245,11 @@ class CefVideoExtractor(
             null
         } finally {
             // close browser and client asynchronously.
-            runOnEventDispatcherThread {
+            AniCefApp.runOnCefContext {
                 browser.close(true)
                 client.dispose()
-                logger.info { "CEF client is disposed." }
             }
+            logger.info { "CEF client is disposed." }
         }
     }
 }
@@ -269,6 +269,7 @@ private fun Cookie.toCefCookie() =
     )
 
 private object AniCefApp {
+    @Volatile
     private var app: CefApp? = null
     
     private val lock = Mutex()
@@ -280,17 +281,20 @@ private object AniCefApp {
      * Otherwise it will return the existing instance.
      */
     // not thread-safe
-    private fun createCefApp(context: Context, proxyConfig: ProxyConfig?): CefApp {
+    private fun createCefApp(
+        logDir: File, 
+        cacheDir: File,
+        proxyConfig: ProxyConfig?
+    ): CefApp {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
         return CefAppBuilder().apply {
             setInstallDir(File("cef"))
             cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DISABLE
-            cefSettings.log_file = context.files.dataDir
-                .resolve("logs")
+            cefSettings.log_file = logDir
                 .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
                 .absolutePath
             cefSettings.windowless_rendering_enabled = true
-            cefSettings.root_cache_path = context.files.cacheDir.resolve("cef_cache").absolutePath
+            cefSettings.root_cache_path = cacheDir.absolutePath
             addJcefArgs(
                 *buildList {
                     add("--disable-gpu")
@@ -312,13 +316,13 @@ private object AniCefApp {
     }
 
     /**
-     * Get Cef Application.
-     * 
-     * This method ensures the [proxyConfig] is applied to the returning [CefApp].
-     * 
-     * This method will block thread.
+     * Initialize singleton instance of [CefApp]. You can call [getInstance] later to get it.
      */
-    suspend fun instance(context: Context, proxyConfig: ProxyConfig?): CefApp {
+    suspend fun instance(
+        logDir: File,
+        cacheDir: File,
+        proxyConfig: ProxyConfig?
+    ): CefApp {
         val currentApp = app
         if (currentApp != null) return currentApp
 
@@ -326,33 +330,56 @@ private object AniCefApp {
             val currentApp2 = app
             if (currentApp2 != null) return currentApp2
             
-            val newApp = suspendCancellableCoroutine { cont ->
-                runOnEventDispatcherThread {
-                    cont.resume(createCefApp(context, proxyConfig))
-                }
-            }
+            val newApp = suspendCoroutineOnCefContext { createCefApp(logDir, cacheDir, proxyConfig) }
             
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                blockOnEventDispatcherThread { newApp.dispose() }
+                blockOnCefContext { newApp.dispose() }
             })
             app = newApp
+
             return newApp
         }
     }
-}
 
-private fun runOnEventDispatcherThread(block: Runnable) {
-    if (SwingUtilities.isEventDispatchThread()) {
-        block.run()
-    } else {
-        SwingUtilities.invokeLater(block)
+    /**
+     * Get singleton instance of [CefApp].
+     * 
+     * @return `null` if it hasn't initialized yet.
+     */
+    fun getInstance(): CefApp? {
+        return app
     }
-}
 
-private fun blockOnEventDispatcherThread(block: Runnable) {
-    if (SwingUtilities.isEventDispatchThread()) {
-        block.run()
-    } else {
-        SwingUtilities.invokeAndWait(block)
+    /**
+     * You should always call cef methods in Cef context.
+     */
+    fun runOnCefContext(block: () -> Unit) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            block()
+        } else {
+            SwingUtilities.invokeLater(block)
+        }
+    }
+
+    /**
+     * You should always call cef methods in Cef context.
+     */
+    fun blockOnCefContext(block: () -> Unit) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            block()
+        } else {
+            SwingUtilities.invokeAndWait(block)
+        }
+    }
+
+    /**
+     * Run in Cef context and get result.
+     */
+    suspend fun <T> suspendCoroutineOnCefContext(block: () -> T): T {
+        return suspendCancellableCoroutine { 
+            runOnCefContext {
+                it.resumeWith(runCatching(block))
+            }
+        }
     }
 }
