@@ -19,45 +19,60 @@
 ## 目录
 
 1. 开发工具: IDE, JDK, 推荐插件
-2. 代码风格: 格式化, 规范
-3. 模块结构: 整个项目范围的模块划分, 模块间依赖
-4. 依赖管理: 依赖版本管理
-5. 构建打包: 如何编译, 如何打包 APK, 如何调试
+2. 代码风格与代码规范
+3. 项目总体架构: 整个项目范围的模块划分, 模块间依赖
+4. 构建和打包: 如何编译, 如何打包 APK
+5. 运行调试版本 APP
 6. App 架构: 最主要的客户端模块的层级划分, 以及各层的职责
 7. 开发与调试: 源集结构, 预览 Compose UI, Navigation, 问答, 以及一些坑
 
 ## 1. 开发工具和环境
 
-请使用 Android Studio. Intellij IDEA 会无法预览 UI.
+### 准备 IDE
 
-- 需要 Android SDK 版本至少为 API 34
+强烈建议使用最新的正式版 Android Studio (AS).
 
-安装如下 IDE 插件:
+必须安装如下 IDE 插件:
 
-- Jetpack Compose
+- Jetpack Compose (AS 已内置)
+- Android Design Tools (AS 已内置)
 - Compose Multiplatform IDE Support
-- Kotlin Multiplatform (为了运行 iOS)
-- Compose colors preview (可选安装, 用于预览颜色)
+
+建议也安装:
+
+- Compose colors preview (用于预览颜色)
+- Kotlin Multiplatform (如果你需要运行 iOS APP)
+- JSONPath (用于高亮 JSONPath 语法)
 - ANTLR v4 (如果你要修改 BBCode 解析模块)
+
+### Clone 仓库
+
+建议使用 IDE clone 功能. 如果你要自己使用命令行 clone, 必须添加 `--recursive`:
+
+```shell
+git clone --recursive git@github.com:open-ani/ani.git
+# or 
+git clone --recursive https://github.com/open-ani/ani.git
+```
 
 > [!WARNING]
 > **Windows 特别提示**
 >
-> 建议设置 Git 使用 LF 并忽略文件权限.
+> 建议在 clone 项目后立即设置 Git 使用 LF 并忽略文件权限.
 >
 >   ```shell
 >   git config core.autocrlf false
 >   git config core.eol lf
 >   git config core.filemode false
->   git add --update --renormalize
 >   ```
 
-### 配置 Android NDK
+### 配置 Android SDK & NDK
 
-Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开发:
+项目包含使用 Android NDK 的 C++ 代码. 必须配置 NDK 才能编译:
 
 1. 打开 SDK Manager (Android Studio 中 Tools -> SDK Manager)
-2. 安装 NDK 和 Cmake 并更新到最新版本
+2. 安装 SDK 至少 34
+3. 安装 Android SDK Build-Tools, NDK 和 Cmake 并更新到最新版本
 
 ## 2. 代码风格与代码规范
 
@@ -80,7 +95,7 @@ Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开�
 - PR 审核将会比较严格. 在保证项目代码质量的同时, 我们也希望尽可能地帮助你提高技术水平.
   审核者技术有限, 如有意见不统一的情况, 请务必提出, 相互学习 :)
 
-## 项目总体架构
+## 3. 项目总体架构
 
 Ani 现在已经是一个不小的项目, 本章节将给你一个全局的了解.
 
@@ -280,10 +295,101 @@ flowchart TD
 > - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
 > - iOS 需要使用 Xcode 项目才能启动
 
-## 运行测试版本 APP
+## 4. 构建打包
 
-以下各个小节分别说明如何运行各个平台的测试. 如果遇到问题,
-请查看 [常见构建和运行问题](#常见构建和运行问题)
+如果遇到问题, 请查看 [常见构建和运行问题](#常见构建和运行问题)
+
+### 考虑禁用一些编译目标
+
+编译整个项目是对你的电脑的一个考验 :P
+
+在高性能个人机器上 (Apple M2 Max / AMD Ryzen 7 5800X / Intel i9-12900H + 64 GB 内存) 编译整个项目仍然可能需要
+10 分钟以上.
+
+**对于 macOS**: 由于 macOS 上支持构建 iOS (也默认开启), 对内存的需求会大幅上升. 如果你的电脑的内存为
+16
+GB 左右, 即使是 M3 Pro CPU, 编译和测试仍然需要 30 分钟. 如果你的电脑小于 32 GB, 建议禁用 iOS
+目标编译来缩短时间.
+
+> [!TIP] 禁用 iOS 目标
+>
+> 在项目根目录的 `local.properties` 中增加以下内容:
+>
+> ```properties
+> ani.enable.ios=false
+> ani.build.framework=false
+> ```
+
+**对于所有操作系统**, 都建议禁用你不需要的 Android 架构. 例如你的手机是 arm64-v8a (
+绝大部分手机都是
+), 那么可以设置只构建这个架构, 将大幅提升编译速度.
+
+> [!TIP] 只启用 Android arm64-v8a 架构
+>
+> 在项目根目录的 `local.properties` 中增加以下内容:
+>
+> ```properties
+> ani.android.abis=arm64-v8a
+> ```
+
+### 打包 Android APP
+
+执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
+，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
+
+在 IDE 上也可以选择 `Build -> Build Bundle(s) / APK(s) -> Build APK(s)` 来构建 APK.
+
+### 打包桌面应用
+
+要构建桌面应用，请参考 [Compose for Desktop]
+官方文档，或简单执行 `./gradlew createReleaseDistributable`
+，结果保存在 `app/desktop/build/compose/binaries` 中。
+
+一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
+
+### 运行测试
+
+`./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
+
+在 macOS 上, 这将会运行全部测试, 总共约 8000 个 (如果未启用 iOS 目标, 会少一些). 在 Windows 上只能运行安卓和
+JVM 平台测试, 无法运行
+iOS 测试.
+
+> [!TIP]
+> **重复运行测试**
+>
+> 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
+>
+> 可使用 `./gradlew clean check` 清空缓存并重新运行所有测试.
+
+### 常见构建和运行问题
+
+#### 提示找不到 `reorderable`
+
+未找到 `app/shared/reorderable`, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
+
+1. `git submodule update --init --recursive`
+2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
+3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
+
+#### 编译报错找不到 `Res.*`
+
+这是 Compose 的 bug, 请生成 Compose Multiplatform 资源:
+
+执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
+
+#### Android 触发断点恢复运行后, APP 无响应
+
+打开 `app.android` 的配置, 将 Debugger -> Debug type 改为 Java only.
+
+#### 启动 PC 版时报错 `ClassNotDefFoundError`
+
+打开 `Run Desktop` 的配置, 复制一份, 将 "Use classpath of module" 改为 `ani.app.desktop.test`.
+如果又遇到了, 则改回来 `ani.app.desktop.main`.
+
+## 5. 运行调试版本 APP
+
+以下各个小节分别说明如何运行各个平台的调试 APP (支持断点).
 
 ### 什么是 Run Configuration (运行配置)
 
@@ -327,74 +433,10 @@ Android Studio 的调试器同时支持调试 Kotlin 和 C++ 代码 (torrent 部
 
 在 Android Studio 中, 选择运行配置 `Run iOS Debug`, 点击按钮运行即可.
 
-### 常见构建和运行问题
-
-#### 提示找不到 `reorderable`
-
-未找到 `app/shared/reorderable`, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
-
-1. `git submodule update --init --recursive`
-2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
-3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
-
-#### 编译报错找不到 `Res.*`
-
-这是 Compose 的 bug, 请生成 Compose Multiplatform 资源:
-
-执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
-
-#### Android 触发断点恢复运行后, APP 无响应
-
-打开 `app.android` 的配置, 将 Debugger -> Debug type 改为 Java only.
-
-#### 启动 PC 版时报错 `ClassNotDefFoundError`
-
-打开 `Run Desktop` 的配置, 复制一份, 将 "Use classpath of module" 改为 `ani.app.desktop.test`.
-
-## 打包 APP
-
-### 打包 Android APP
-
-执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
-，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
-
-在 IDE 上
-
-### 打包桌面应用
-
-要构建桌面应用，请参考 [Compose for Desktop]
-官方文档，或简单执行 `./gradlew createReleaseDistributable`
-，结果保存在 `app/desktop/build/compose/binaries` 中。
-
-一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
-
-## 运行测试
-
-`./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
-
-在 macOS 上, 这将会运行全部测试, 总共约 8000 个. 在 Windows 上只能运行安卓和 JVM 平台测试, 无法运行
-iOS 测试.
-
-> [!TIP]
-> **重复运行测试**
->
-> 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
->
-> 可使用 `./gradlew clean check` 清空缓存并重新运行所有测试.
-
 ## 6. App 项目架构
 
-本节将介绍客户端共享模块 (`:app:shared`) 的架构设计.
-
-> 也就是对应目录 `app/shared` 里的内容.
-
-在 `:app:shared` 中,
-参照 [Android 应用程序模块化指南](https://developer.android.com/topic/modularization),
-Ani 按照功能进行了一定程度的模块化.
-
-`app/shared` 下有许多目录, 每个目录存放一个功能的所有相关代码:
-
-建议你打开 IDE 对照看.
+本节将介绍客户端共享模块 (`:app:shared`) 的架构设计, 也就是对应目录 `app/shared` 里的内容.
+建议搭配上面的架构图看.
 
 ### `data`: 数据层
 
@@ -579,3 +621,4 @@ navigator,
    > 这是为了设置改目录下的默认包名.
 5. 然后就可以在 `common` 里添加 `PersonDetailsPage`, `PersonDetailsViewModel` 等了. 可以参考
    已有的类似的页面的实现. 例如对于实现人员详情页面, 可以参考 `SubjectDetailsPage`.
+
