@@ -181,22 +181,11 @@ flowchart TD
         subgraph "BT"
             direction TB
             dmhy(dmhy)
-            acg.rip(acg.rip)
             mikan(mikan)
         end
 
-        subgraph "在线"
-            direction TB
-            data-sources:nyafun(nyafun) --> data-sources:web-base
-            data-sources:ntdm(ntdm) --> data-sources:web-base
-            data-sources:...(...) --> data-sources:web-base
-            class data-sources:... omitted
-            data-sources:web-base[:data-sources:web-base]
-        end
-
-        在线 --> data-sources:api
-        BT --> data-sources:api
-        data-sources:bangumi(:data-sources:bangumi<br/>Bangumi, 提供条目数据) --> data-sources:api
+        BT --> datasource:api
+        Ikaros(Ikaros) --> datasource:api
     end
 
     数据源 --> 基础工具
@@ -206,6 +195,7 @@ flowchart TD
     subgraph "弹幕"
         danmaku:api[:danmaku:api <br/> 多弹幕源接口]
         danmaku:dandanplay[:danmaku:dandanplay<br/> 弹弹 play] --> danmaku:api
+        :client[:client<br/> Ani 弹幕服务] --> danmaku:api
         danmaku:ui[:danmaku:ui<br/> 视频播放器 UI 的弹幕层] --> danmaku:api
     end
 
@@ -223,31 +213,61 @@ flowchart TD
     APP --> BitTorrent
 
     subgraph "APP"
+        direction LR
         android[":app:android <br/> Android 入口"] --> shared:application
         desktop[":app:desktop <br/> 桌面端入口"] --> shared:application
         ios[":app:ios <br/> 计划"] --> shared:application
-        shared:application[":app:shared:application<br/>APP 启动入口"] --> shared
-        shared:app-data[":app:shared:app-data<br/>数据层"]
-        shared:app-data --> shared:app-platform
-        shared:app-data --> client
-        shared:ui-foundation[":app:shared:ui-foundation<br/>UI 通用组件"] --> shared:app-platform
-        shared:app-platform[":app:shared:app-platform<br/>平台 API 适配"]
-        shared[":app:shared<br/>UI 和业务逻辑"] --> shared:app-data
-        shared --> shared:ui-foundation
-        client[":client<br/>Ani 云服务客户端 (弹幕+登录)"]
+        shared:application[":app:shared:application<br/>APP 启动入口"] --> app_business
+    %% shared:app-data --> client
+    %% client[":client<br/>Ani 云服务客户端 (弹幕+登录)"]
         style android fill: cyan, color: black
         style desktop fill: cyan, color: black
         style ios fill: cyan, stroke-dasharray: 4 4, color: black
 
-        subgraph "UI组件"
-            image-viewer[:app:shared:image-view<br/>图片查看器]
+        subgraph app_business ["业务层"]
+            direction LR
+            shared[":app:shared<br/>绝大部分 UI<br/>(各页面)"]
+            shared:ui-settings[":app:shared:ui-settings<br/>UI 设置页面部分"]
+            image-viewer[:app:shared:image-viewer<br/>图片查看器]
+            shared --> image-viewer
             video-player[:app:shared:video-player<br/>视频播放器]
-            placeholder[:app:shared:placeholder<br/>载入特效组件]
+            shared --> video-player
             reorderable[:app:shared:reorderable<br/>长按排序组件]
+            shared --> reorderable
+            shared --> shared:ui-settings
         end
 
-        UI组件 --> shared:ui-foundation
-        shared --> UI组件
+        app_business --> app_foundation
+
+        subgraph app_foundation ["ui-foundation"]
+            direction LR
+            animation(animation)
+            layout(layout)
+            richtext(RichText)
+            theme(theme)
+        end
+
+        app_foundation --> app_data
+
+        subgraph app_data [app-data 数据层]
+            direction LR
+        %% app_data:spacer(" ")
+        %% class app_data:spacer omitted
+            MediaSourceManager(MediaSourceManager)
+            MediaCaching(Media Caching)
+            room[(Room Database)]
+            datastore[(DataStore)]
+        end
+
+        app_data --> app_platform
+        subgraph app_platform ["`app-platform 平台层`"]
+            direction LR
+        %% app_platform:spacer2(" ")
+        %% class app_platform:spacer2 omitted
+            DateFormatter(DateFormatter)
+            permission(PermissionManager)
+            audio(AudioManager)
+        end
     end
 ```
 
@@ -456,17 +476,17 @@ Page (首页/我的收藏/个人中心).
 
 ### Ani 的数据层
 
-数据层主要包含两个部分: 单独的数据源 (`:data-sources`) 与放在 `app/shared/data`
+数据层主要包含两个部分: 单独的数据源 (`:datasource`) 与放在 `app/shared/data`
 目录的数据仓库 (`Repository`).
 
-各数据源位于 app 模块之外的项目根目录的 `data-sources` 目录下. 数据源列表:
+各数据源位于 app 模块之外的项目根目录的 `datasource` 目录下. 数据源列表:
 
-- `data-sources/bangumi`: Bangumi 索引数据源, 提供番剧索引, 观看记录等.
+- `datasource/bangumi`: Bangumi 索引数据源, 提供番剧索引, 观看记录等.
     - API 客户端使用其官方 OpenAPI 文档自动生成
-- `data-sources/api`: 下载数据源的抽象, 定义了数据源的接口以供接入多个下载数据源.
-- `data-sources/dmhy`: 动漫花园下载数据源, 只提供番剧下载链接.
-- `data-sources/acg.rip`: acg.rip 下载数据源, 只提供番剧下载链接.
-- `data-sources/mikan`: mikanani.me 下载数据源, 只提供番剧下载链接.
+- `datasource/api`: 下载数据源的抽象, 定义了数据源的接口以供接入多个下载数据源.
+- `datasource/dmhy`: 动漫花园下载数据源, 只提供番剧下载链接.
+- `datasource/acg.rip`: acg.rip 下载数据源, 只提供番剧下载链接.
+- `datasource/mikan`: mikanani.me 下载数据源, 只提供番剧下载链接.
 - ... 欢迎 PR 更多支持例如 SMB
 
 ## 7. 开发与调试
