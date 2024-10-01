@@ -155,7 +155,7 @@ class CefVideoExtractor(
         try {
             val devToolsDeferred = CompletableDeferred<CefDevToolsClient>()
 
-            SwingUtilities.invokeLater {
+            runOnEventDispatcherThread {
                 browser.client.addLoadHandler(object : CefLoadHandlerAdapter() {
                     override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                         if (frame?.isMain == true && browser != null) {
@@ -182,13 +182,13 @@ class CefVideoExtractor(
                     Instruction.LoadPage -> {
                         if (browser.url == url) return false // don't recurse
                         logger.info { "CEF loading nested page: $url" }
-                        SwingUtilities.invokeAndWait { browser.loadURL(url) }
+                        runOnEventDispatcherThread { browser.loadURL(url) }
                         return false
                     }
                 }
             }
 
-            SwingUtilities.invokeLater {
+            runOnEventDispatcherThread {
                 // 获取到 DevTools 后就可以移除 load handler 了
                 browser.client.removeLoadHandler()
                 
@@ -226,7 +226,7 @@ class CefVideoExtractor(
             null
         } finally {
             // close browser and client asynchronously.
-            SwingUtilities.invokeLater {
+            runOnEventDispatcherThread {
                 browser.close(true)
                 client.dispose()
                 logger.info { "CEF client is disposed." }
@@ -302,13 +302,13 @@ private object AniCefApp {
             if (currentApp2 != null) return currentApp2
             
             val newApp = suspendCancellableCoroutine { cont ->
-                SwingUtilities.invokeLater {
+                runOnEventDispatcherThread {
                     cont.resume(createCefApp(context, proxyConfig))
                 }
             }
             
-            Runtime.getRuntime().addShutdownHook(thread(start = false) { 
-                SwingUtilities.invokeAndWait { newApp.dispose() }
+            Runtime.getRuntime().addShutdownHook(thread(start = false) {
+                blockOnEventDispatcherThread { newApp.dispose() }
             })
             app = newApp
             return newApp
@@ -316,3 +316,18 @@ private object AniCefApp {
     }
 }
 
+private fun runOnEventDispatcherThread(block: Runnable) {
+    if (SwingUtilities.isEventDispatchThread()) {
+        block.run()
+    } else {
+        SwingUtilities.invokeLater(block)
+    }
+}
+
+private fun blockOnEventDispatcherThread(block: Runnable) {
+    if (SwingUtilities.isEventDispatchThread()) {
+        block.run()
+    } else {
+        SwingUtilities.invokeAndWait(block)
+    }
+}
