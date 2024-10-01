@@ -46,17 +46,22 @@ import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.currentTimeMillis
 import org.cef.CefApp
 import org.cef.CefApp.CefAppState
+import org.cef.CefSettings
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefDevToolsClient
 import org.cef.browser.CefFrame
+import org.cef.handler.CefDisplayHandlerAdapter
 import org.cef.handler.CefLoadHandlerAdapter
 import org.cef.network.CefCookie
 import org.cef.network.CefCookieManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 import javax.swing.SwingUtilities
 import kotlin.concurrent.thread
 import kotlin.coroutines.resume
@@ -156,13 +161,27 @@ class CefVideoExtractor(
             val devToolsDeferred = CompletableDeferred<CefDevToolsClient>()
 
             runOnEventDispatcherThread {
-                browser.client.addLoadHandler(object : CefLoadHandlerAdapter() {
+                client.addLoadHandler(object : CefLoadHandlerAdapter() {
                     override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                         if (frame?.isMain == true && browser != null) {
                             devToolsDeferred.complete(browser.devToolsClient)
                         }
                     }
                 })
+                client.addDisplayHandler(
+                    object : CefDisplayHandlerAdapter() {
+                        override fun onConsoleMessage(
+                            browser: CefBrowser?,
+                            level: CefSettings.LogSeverity?,
+                            message: String?,
+                            source: String?,
+                            line: Int
+                        ): Boolean {
+                            logger.info { "CEF client console: ${message?.replace("\n", "\\n")} ($source:$line)" }
+                            return super.onConsoleMessage(browser, level, message, source, line)
+                        }
+                    },
+                )
 
                 // start browser immediately
                 browser.createImmediately()
@@ -262,8 +281,14 @@ private object AniCefApp {
      */
     // not thread-safe
     private fun createCefApp(context: Context, proxyConfig: ProxyConfig?): CefApp {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
         return CefAppBuilder().apply {
             setInstallDir(File("cef"))
+            cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DISABLE
+            cefSettings.log_file = context.files.dataDir
+                .resolve("logs")
+                .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
+                .absolutePath
             cefSettings.windowless_rendering_enabled = true
             cefSettings.root_cache_path = context.files.cacheDir.resolve("cef_cache").absolutePath
             addJcefArgs(
