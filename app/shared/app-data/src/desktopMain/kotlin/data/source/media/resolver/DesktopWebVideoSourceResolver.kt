@@ -16,20 +16,16 @@ import io.ktor.util.date.toJvmDate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
-import me.friwi.jcefmaven.CefAppBuilder
-import me.friwi.jcefmaven.MavenCefAppHandlerAdapter
 import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
 import me.him188.ani.app.data.source.media.resolver.cef.RequestWillBeSent
+import me.him188.ani.app.platform.AniCefApp
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
@@ -44,9 +40,6 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
-import me.him188.ani.utils.platform.currentTimeMillis
-import org.cef.CefApp
-import org.cef.CefApp.CefAppState
 import org.cef.CefSettings
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefDevToolsClient
@@ -57,11 +50,6 @@ import org.cef.network.CefCookie
 import org.cef.network.CefCookieManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import javax.swing.SwingUtilities
-import kotlin.concurrent.thread
 
 /**
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
@@ -147,11 +135,10 @@ class CefVideoExtractor(
         config: WebViewConfig,
         resourceMatcher: (String) -> Instruction
     ): WebResource? = withContext(Dispatchers.IO) {
-        val cefApp = AniCefApp.getInstance() ?: kotlin.run { 
+        val client = AniCefApp.createClient() ?: kotlin.run { 
             logger.warn { "AniCefApp isn't initialized yet." }
             return@withContext null
         }
-        val client = cefApp.createClient()
 
         val deferred = CompletableDeferred<WebResource>()
         val browser = client.createBrowser("about:blank", true, true)
@@ -267,119 +254,3 @@ private fun Cookie.toCefCookie() =
         expires != null,
         expires?.toJvmDate()
     )
-
-private object AniCefApp {
-    @Volatile
-    private var app: CefApp? = null
-    
-    private val lock = Mutex()
-
-    /**
-     * Create a new [CefApp].
-     * 
-     * Note that you must terminate the last instance before creating new one.
-     * Otherwise it will return the existing instance.
-     */
-    // not thread-safe
-    private fun createCefApp(
-        logDir: File, 
-        cacheDir: File,
-        proxyConfig: ProxyConfig?
-    ): CefApp {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-        return CefAppBuilder().apply {
-            setInstallDir(File("cef"))
-            cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DISABLE
-            cefSettings.log_file = logDir
-                .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
-                .absolutePath
-            cefSettings.windowless_rendering_enabled = true
-            cefSettings.root_cache_path = cacheDir.absolutePath
-            addJcefArgs(
-                *buildList {
-                    add("--disable-gpu")
-                    add("--mute-audio")
-                    add("--force-dark-mode")
-                    proxyConfig?.let { add("--proxy-server=${it.url}") }
-                }.toTypedArray()
-            )
-
-            setAppHandler(object : MavenCefAppHandlerAdapter() {
-                override fun stateHasChanged(state: CefAppState?) {
-                    if (state == CefAppState.TERMINATED) {
-                        // cef app has shutdown, we need to initialize a new one while getting instance.
-                        app = null
-                    }
-                }
-            })
-        }.build()
-    }
-
-    /**
-     * Initialize singleton instance of [CefApp]. You can call [getInstance] later to get it.
-     */
-    suspend fun instance(
-        logDir: File,
-        cacheDir: File,
-        proxyConfig: ProxyConfig?
-    ): CefApp {
-        val currentApp = app
-        if (currentApp != null) return currentApp
-
-        lock.withLock {
-            val currentApp2 = app
-            if (currentApp2 != null) return currentApp2
-            
-            val newApp = suspendCoroutineOnCefContext { createCefApp(logDir, cacheDir, proxyConfig) }
-            
-            Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                blockOnCefContext { newApp.dispose() }
-            })
-            app = newApp
-
-            return newApp
-        }
-    }
-
-    /**
-     * Get singleton instance of [CefApp].
-     * 
-     * @return `null` if it hasn't initialized yet.
-     */
-    fun getInstance(): CefApp? {
-        return app
-    }
-
-    /**
-     * You should always call cef methods in Cef context.
-     */
-    fun runOnCefContext(block: () -> Unit) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            block()
-        } else {
-            SwingUtilities.invokeLater(block)
-        }
-    }
-
-    /**
-     * You should always call cef methods in Cef context.
-     */
-    fun blockOnCefContext(block: () -> Unit) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            block()
-        } else {
-            SwingUtilities.invokeAndWait(block)
-        }
-    }
-
-    /**
-     * Run in Cef context and get result.
-     */
-    suspend fun <T> suspendCoroutineOnCefContext(block: () -> T): T {
-        return suspendCancellableCoroutine { 
-            runOnCefContext {
-                it.resumeWith(runCatching(block))
-            }
-        }
-    }
-}
