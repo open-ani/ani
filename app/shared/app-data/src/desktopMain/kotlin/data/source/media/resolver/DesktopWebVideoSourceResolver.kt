@@ -188,7 +188,9 @@ class CefVideoExtractor(
                     Instruction.LoadPage -> {
                         if (browser.url == url) return false // don't recurse
                         logger.info { "CEF loading nested page: $url" }
-                        AniCefApp.runOnCefContext { browser.loadURL(url) }
+                        AniCefApp.runOnCefContext { 
+                            browser.executeJavaScript("window.location.href='$url';", "", 1) 
+                        }
                         return false
                     }
                 }
