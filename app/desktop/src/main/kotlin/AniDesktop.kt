@@ -221,7 +221,12 @@ object AniDesktop {
                                 .map { TorrentVideoSourceResolver(it) }
                                 .plus(LocalFileVideoSourceResolver())
                                 .plus(HttpStreamingVideoSourceResolver())
-                                .plus(DesktopWebVideoSourceResolver(get<MediaSourceManager>().webVideoMatcherLoader)),
+                                .plus(
+                                    DesktopWebVideoSourceResolver(
+                                        context, 
+                                        get<MediaSourceManager>().webVideoMatcherLoader
+                                    )
+                                ),
                         )
                     }
                     single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }

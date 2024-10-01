@@ -9,23 +9,30 @@
 
 package me.him188.ani.app.data.source.media.resolver
 
-import io.github.bonigarcia.wdm.WebDriverManager
+import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseServerSetCookieHeader
 import io.ktor.util.date.toJvmDate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.serialization.json.Json
+import me.friwi.jcefmaven.CefAppBuilder
+import me.friwi.jcefmaven.MavenCefAppHandlerAdapter
 import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
-import me.him188.ani.app.data.models.preference.WebViewDriver
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.source.media.resolver.WebViewVideoExtractor.Instruction
+import me.him188.ani.app.data.source.media.resolver.cef.RequestWillBeSent
 import me.him188.ani.app.platform.Context
+import me.him188.ani.app.platform.DesktopContext
+import me.him188.ani.app.platform.files
 import me.him188.ani.app.videoplayer.HttpStreamingVideoSource
 import me.him188.ani.app.videoplayer.data.VideoSource
 import me.him188.ani.datasources.api.Media
@@ -34,29 +41,31 @@ import me.him188.ani.datasources.api.matcher.WebVideoMatcher
 import me.him188.ani.datasources.api.matcher.WebVideoMatcherContext
 import me.him188.ani.datasources.api.matcher.WebViewConfig
 import me.him188.ani.datasources.api.topic.ResourceLocation
+import me.him188.ani.utils.io.absolutePath
+import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import org.cef.CefApp
+import org.cef.CefApp.CefAppState
+import org.cef.browser.CefBrowser
+import org.cef.browser.CefDevToolsClient
+import org.cef.browser.CefFrame
+import org.cef.handler.CefLoadHandlerAdapter
+import org.cef.network.CefCookie
+import org.cef.network.CefCookieManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.openqa.selenium.Cookie
-import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeOptions
-import org.openqa.selenium.devtools.HasDevTools
-import org.openqa.selenium.devtools.v129.network.Network
-import org.openqa.selenium.edge.EdgeDriver
-import org.openqa.selenium.edge.EdgeOptions
-import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.safari.SafariDriver
-import org.openqa.selenium.safari.SafariOptions
-import java.util.Optional
-import java.util.function.Consumer
-import java.util.logging.Level
+import java.io.File
+import javax.swing.SwingUtilities
+import kotlin.concurrent.thread
+import kotlin.coroutines.resume
 
 /**
  * 用 WebView 加载网站, 拦截 WebView 加载资源, 用各数据源提供的 [WebVideoMatcher]
  */
 class DesktopWebVideoSourceResolver(
+    private val context: DesktopContext,
     private val matcherLoader: MediaSourceWebVideoMatcherLoader
 ) : VideoSourceResolver, KoinComponent {
     private companion object {
@@ -95,8 +104,9 @@ class DesktopWebVideoSourceResolver(
                     .firstOrNull { it !is WebVideoMatcher.MatchResult.Continue }
             }
 
-            val webVideo = SeleniumWebViewVideoExtractor(config.configIfEnabledOrNull, resolverSettings)
+            val webVideo = CefVideoExtractor(config.configIfEnabledOrNull, resolverSettings)
                 .getVideoResourceUrl(
+                    this@DesktopWebVideoSourceResolver.context,
                     media.download.uri,
                     webViewConfig,
                     resourceMatcher = {
@@ -120,223 +130,189 @@ class DesktopWebVideoSourceResolver(
     }
 }
 
-class SeleniumWebViewVideoExtractor(
+class CefVideoExtractor(
     private val proxyConfig: ProxyConfig?,
     private val videoResolverSettings: VideoResolverSettings,
 ) : WebViewVideoExtractor {
     private companion object {
         private val logger = logger<WebViewVideoExtractor>()
-
-        init {
-            // disable logs
-            System.setProperty("webdriver.chrome.silentOutput", "true")
-            java.util.logging.Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF)
-            java.util.logging.Logger.getLogger("org.apache.hc.client5.http.wire").setLevel(Level.OFF)
-            java.util.logging.Logger.getLogger("org.openqa.selenium.devtools.Connection").setLevel(Level.OFF)
-        }
+        private val json = Json { ignoreUnknownKeys = true }
     }
-
 
     override suspend fun getVideoResourceUrl(
         context: Context,
         pageUrl: String,
         config: WebViewConfig,
         resourceMatcher: (String) -> Instruction
-    ): WebResource? = getVideoResourceUrl(pageUrl, config, resourceMatcher)
+    ): WebResource? = withContext(Dispatchers.IO) {
+        val cefApp = AniCefApp.instance(context, proxyConfig)
+        val client = cefApp.createClient()
 
-    suspend fun getVideoResourceUrl(
-        pageUrl: String,
-        webViewConfig: WebViewConfig,
-        resourceMatcher: (String) -> Instruction,
-    ): WebResource? {
         val deferred = CompletableDeferred<WebResource>()
+        val browser = client.createBrowser("about:blank", true, true)
+        browser.setCloseAllowed() // browser should be allowed to close.
+        
+        try {
+            val devToolsDeferred = CompletableDeferred<CefDevToolsClient>()
 
-        return try {
-            withContext(Dispatchers.IO) {
-                logger.info { "Starting Selenium to resolve video source from $pageUrl" }
-
-                val driver: RemoteWebDriver = createDriver()
-
-                // 不能 minimize, minimize 之后有些页面不加载了 :(
-//                driver.manage().window().minimize()
-
-                /**
-                 * @return if the url has been consumed
-                 */
-                fun handleUrl(url: String): Boolean {
-                    val matched = resourceMatcher(url)
-                    when (matched) {
-                        Instruction.Continue -> return false
-                        Instruction.FoundResource -> {
-                            deferred.complete(WebResource(url))
-                            return true
-                        }
-
-                        Instruction.LoadPage -> {
-                            if (driver.currentUrl == url) return false // don't recurse
-                            logger.info { "WebView loading nested page: $url" }
-                            val script = "window.location.href = '$url'"
-                            logger.info { "WebView executing: $script" }
-                            driver.executeScript(script)
-//                        decoratedDriver.get(url)
-                            return false
+            SwingUtilities.invokeLater {
+                browser.client.addLoadHandler(object : CefLoadHandlerAdapter() {
+                    override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
+                        if (frame?.isMain == true && browser != null) {
+                            devToolsDeferred.complete(browser.devToolsClient)
                         }
                     }
-                }
+                })
 
-                logger.info { "Using WebDriver: $driver" }
+                // start browser immediately
+                browser.createImmediately()
+            }
+            // 加载 data URL 不会耗费太长时间, 和设备的性能有关
+            val devTools = withTimeout(5000L) { devToolsDeferred.await() }
 
-                check(driver is HasDevTools) {
-                    "WebDriver must support DevTools"
-                }
-                val devTools = driver.devTools
-                devTools.createSession()
-//            devTools.send(Network.enable(Optional.of(10000000), Optional.of(10000000), Optional.of(10000000)))
-                devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()))
-                devTools.addListener(
-                    Network.requestWillBeSent(),
-                    Consumer {
-                        val url = it.request.url
-                        if (handleUrl(url)) {
-                            logger.info { "Found video resource via devtools: $url" }
-                        }
-                    },
-                )
-                devTools.send(Network.clearBrowserCache())
-
-                deferred.invokeOnCompletion {
-                    @Suppress("OPT_IN_USAGE")
-                    GlobalScope.launch {
-                        kotlin.runCatching {
-                            driver.quit()
-                        }.onFailure {
-                            logger.error(it) { "Failed to close selenium" }
-                        }
+            fun handleUrl(url: String): Boolean {
+                val matched = resourceMatcher(url)
+                when (matched) {
+                    Instruction.Continue -> return false
+                    Instruction.FoundResource -> {
+                        deferred.complete(WebResource(url))
+                        return true
                     }
-                }
 
-                driver.get(pageUrl)
-
-                for (t in webViewConfig.cookies) {
-                    try {
-                        val url = Url(pageUrl)
-                        driver.manage().addCookie(
-                            parseServerSetCookieHeader(t)
-                                .toDriverCookie(domain = url.host),
-                        )
-                    } catch (e: Exception) {
-                        logger.error(e) { "Failed to parse or add cookie, see cause" }
+                    Instruction.LoadPage -> {
+                        if (browser.url == url) return false // don't recurse
+                        logger.info { "CEF loading nested page: $url" }
+                        SwingUtilities.invokeAndWait { browser.loadURL(url) }
+                        return false
                     }
                 }
             }
 
+            SwingUtilities.invokeLater {
+                // 获取到 DevTools 后就可以移除 load handler 了
+                browser.client.removeLoadHandler()
+                
+                // set cookie
+                val cookieManager = CefCookieManager.getGlobalManager()
+                val url = Url(pageUrl)
+                for (cookie in config.cookies) {
+                    val ktorCookie = parseServerSetCookieHeader(cookie)
+                    cookieManager.setCookie(url.host, ktorCookie.toCefCookie())
+                }
+
+                // setup network
+                devTools.executeDevToolsMethod("Network.enable")
+                devTools.addEventListener { name, message ->
+                    if (name != "Network.requestWillBeSent") return@addEventListener
+                    val data = json.decodeFromString(RequestWillBeSent.serializer(), message)
+
+                    if (handleUrl(data.request.url)) {
+                        logger.info { "Found video resource via DevTools: ${data.request.url}" }
+                    }
+                }
+                devTools.executeDevToolsMethod("Network.clearBrowserCache")
+
+                logger.info { "Fetching $pageUrl" }
+                // load real page after setting up DevTools
+                browser.loadURL(pageUrl)
+            }
+            
             deferred.await()
         } catch (e: Throwable) {
+            logger.error(e) { "Failed to get video url." }
             if (deferred.isActive) {
-                deferred.cancel() // will quit driver
+                deferred.cancel()
             }
-            throw e
+            null
+        } finally {
+            // close browser and client asynchronously.
+            SwingUtilities.invokeLater {
+                browser.close(true)
+                client.dispose()
+                logger.info { "CEF client is disposed." }
+            }
         }
     }
+}
 
-    private fun io.ktor.http.Cookie.toDriverCookie(domain: String): Cookie {
-        return Cookie(name, value, domain, path, expires?.toJvmDate(), secure, httpOnly)
-    }
+private fun Cookie.toCefCookie() =
+    CefCookie(
+        name, 
+        value, 
+        domain, 
+        path, 
+        secure, 
+        httpOnly, 
+        null,
+        null,
+        expires != null,
+        expires?.toJvmDate()
+    )
 
-    private fun createDriver(): RemoteWebDriver {
-        return getPreferredDriverFactory()
-            .runCatching {
-                create(videoResolverSettings, proxyConfig)
-            }
-            .let {
-                // 依次尝试备用
-                var result = it
-                for (fallback in getFallbackDrivers()) {
-                    result = result.recoverCatching {
-                        fallback.create(videoResolverSettings, proxyConfig)
+private object AniCefApp {
+    private var app: CefApp? = null
+    
+    private val lock = Mutex()
+
+    /**
+     * Create a new [CefApp].
+     * 
+     * Note that you must terminate the last instance before creating new one.
+     * Otherwise it will return the existing instance.
+     */
+    // not thread-safe
+    private fun createCefApp(context: Context, proxyConfig: ProxyConfig?): CefApp {
+        return CefAppBuilder().apply {
+            setInstallDir(File("cef"))
+            cefSettings.windowless_rendering_enabled = true
+            cefSettings.root_cache_path = context.files.cacheDir.resolve("cef_cache").absolutePath
+            addJcefArgs(
+                *buildList {
+                    add("--disable-gpu")
+                    add("--mute-audio")
+                    add("--force-dark-mode")
+                    proxyConfig?.let { add("--proxy-server=${it.url}") }
+                }.toTypedArray()
+            )
+
+            setAppHandler(object : MavenCefAppHandlerAdapter() {
+                override fun stateHasChanged(state: CefAppState?) {
+                    if (state == CefAppState.TERMINATED) {
+                        // cef app has shutdown, we need to initialize a new one while getting instance.
+                        app = null
                     }
                 }
-                result
+            })
+        }.build()
+    }
+
+    /**
+     * Get Cef Application.
+     * 
+     * This method ensures the [proxyConfig] is applied to the returning [CefApp].
+     * 
+     * This method will block thread.
+     */
+    suspend fun instance(context: Context, proxyConfig: ProxyConfig?): CefApp {
+        val currentApp = app
+        if (currentApp != null) return currentApp
+
+        lock.withLock {
+            val currentApp2 = app
+            if (currentApp2 != null) return currentApp2
+            
+            val newApp = suspendCancellableCoroutine { cont ->
+                SwingUtilities.invokeLater {
+                    cont.resume(createCefApp(context, proxyConfig))
+                }
             }
-            .getOrThrow()
-        // TODO: update user settings if we fell back to a different driver
-    }
-
-
-    private fun getPreferredDriverFactory(): WebDriverFactory {
-        return when (videoResolverSettings.driver) {
-            WebViewDriver.CHROME -> WebDriverFactory.Chrome
-            WebViewDriver.EDGE -> WebDriverFactory.Edge
-            else -> WebDriverFactory.Chrome
+            
+            Runtime.getRuntime().addShutdownHook(thread(start = false) { 
+                SwingUtilities.invokeAndWait { newApp.dispose() }
+            })
+            app = newApp
+            return newApp
         }
-    }
-
-    private fun getFallbackDrivers(): List<WebDriverFactory> {
-        return listOf(
-            WebDriverFactory.Chrome,
-            WebDriverFactory.Edge,
-        )
     }
 }
 
-private sealed interface WebDriverFactory {
-    fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver
-
-    data object Edge : WebDriverFactory {
-        override fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver {
-            WebDriverManager.edgedriver().setup()
-            return EdgeDriver(
-                EdgeOptions().apply {
-//                addArguments("--log-level=3")
-                    addArguments(*DEFAULT_CHROMIUM_ARGS)
-                    proxyConfig?.let {
-                        addArguments("--proxy-server=${it.url}")
-                    }
-                },
-            )
-        }
-    }
-
-    data object Chrome : WebDriverFactory {
-        override fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver {
-            WebDriverManager.chromedriver().setup()
-            return ChromeDriver(
-                ChromeOptions().apply {
-//                addArguments("--log-level=3")
-                    addArguments(*DEFAULT_CHROMIUM_ARGS)
-                    proxyConfig?.let {
-                        addArguments("--proxy-server=${it.url}")
-                    }
-                },
-            )
-        }
-    }
-
-    @Deprecated("Safari is not supported")
-    data object Safari : WebDriverFactory {
-        /**
-         * SafariDriver does not support the use of proxies.
-         * https://github.com/SeleniumHQ/selenium/issues/10401#issuecomment-1054814944
-         */ // 而且还要求用户去设置里开启开发者模式
-        override fun create(videoResolverSettings: VideoResolverSettings, proxyConfig: ProxyConfig?): RemoteWebDriver {
-            WebDriverManager.safaridriver().setup()
-            return SafariDriver(
-                SafariOptions().apply {
-                    proxyConfig?.let {
-                        // Causes an exception
-                        setCapability("proxy", it.url)
-                    }
-                },
-            )
-        }
-    }
-
-    private companion object {
-        val DEFAULT_CHROMIUM_ARGS = arrayOf(
-            "--mute-audio",
-            "--force-dark-mode",
-            "--default-background-color",
-            "ff808080",
-        )
-    }
-}

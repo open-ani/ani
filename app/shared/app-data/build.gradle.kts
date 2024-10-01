@@ -70,8 +70,13 @@ kotlin {
         implementation(libs.kotlinx.serialization.json.io)
     }
     sourceSets.desktopMain.dependencies {
-        implementation(libs.selenium.java)
-        implementation(libs.webdrivermanager)
+        implementation(libs.jcefmaven)
+        when (getOsTriple()) {
+            "windows-x64" -> implementation(libs.jcef.natives.windows.amd64)
+            "macos-x64" -> implementation(libs.jcef.natives.macosx.amd64)
+            "macos-arm64" -> implementation(libs.jcef.natives.macosx.arm64)
+            "linux-x64" -> println("unsupported platform linux-x64")
+        }
     }
 }
 
