@@ -69,6 +69,10 @@ kotlin {
         implementation(libs.stately.common) // fixes koin bug
         implementation(libs.kotlinx.serialization.json.io)
     }
+    sourceSets.desktopMain.dependencies {
+        implementation(libs.selenium.java)
+        implementation(libs.webdrivermanager)
+    }
 }
 
 android {

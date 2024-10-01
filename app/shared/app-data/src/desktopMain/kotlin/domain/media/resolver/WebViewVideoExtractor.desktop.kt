@@ -16,5 +16,5 @@ actual fun WebViewVideoExtractor(
     proxyConfig: ProxyConfig?,
     videoResolverSettings: VideoResolverSettings
 ): WebViewVideoExtractor {
-    return CefVideoExtractor(proxyConfig, videoResolverSettings)
+    return SeleniumWebViewVideoExtractor(proxyConfig, videoResolverSettings)
 }
