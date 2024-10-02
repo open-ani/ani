@@ -53,7 +53,10 @@ sourceSets {
 extra.set("ani.jvm.target", 17)
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain {
+        vendor = JvmVendorSpec.JETBRAINS
+        version = JavaLanguageVersion.of(17)
+    }
 }
 
 compose.desktop {
