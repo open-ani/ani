@@ -53,14 +53,6 @@ kotlin {
     sourceSets.desktopMain.dependencies {
         api(libs.jna)
         api(libs.jna.platform)
-        
-        api(libs.jcefmaven)
-        when (getOsTriple()) {
-            "windows-x64" -> implementation(libs.jcef.natives.windows.amd64)
-            "macos-x64" -> implementation(libs.jcef.natives.macosx.amd64)
-            "macos-arm64" -> implementation(libs.jcef.natives.macosx.arm64)
-            "linux-x64" -> println("unsupported platform linux-x64")
-        }
     }
 }
 

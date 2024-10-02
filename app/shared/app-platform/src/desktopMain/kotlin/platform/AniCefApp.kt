@@ -9,17 +9,14 @@
 
 package me.him188.ani.app.platform
 
+import com.jetbrains.cef.JCefAppConfig
 import io.ktor.http.Url
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import me.friwi.jcefmaven.CefAppBuilder
-import me.friwi.jcefmaven.MavenCefAppHandlerAdapter
-import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.platform.currentTimeMillis
 import org.cef.CefApp
-import org.cef.CefApp.CefAppState
 import org.cef.CefClient
 import org.cef.CefSettings
 import org.cef.browser.CefBrowser
@@ -77,35 +74,23 @@ object AniCefApp {
         proxyServer: String? = null,
     ): CefApp {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-        return CefAppBuilder().apply {
-            setInstallDir(File("cef"))
-            cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DISABLE
-            cefSettings.log_file = logDir
-                .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
-                .absolutePath
-            cefSettings.windowless_rendering_enabled = true
-            cefSettings.root_cache_path = cacheDir.absolutePath
-            addJcefArgs(
-                *buildList {
-                    add("--disable-gpu")
-                    add("--mute-audio")
-                    add("--force-dark-mode")
-                    proxyServer?.let { add("--proxy-server=${it}") }
-                }.toTypedArray(),
-            )
-            
-            setProgressHandler { state, _ -> logger.info { "current state: $state" } }
-            setAppHandler(
-                object : MavenCefAppHandlerAdapter() {
-                    override fun stateHasChanged(state: CefAppState?) {
-                        if (state == CefAppState.TERMINATED) {
-                            // cef app has shutdown, we need to initialize a new one while getting instance.
-                            app = null
-                        }
-                    }
-                },
-            )
-        }.build()
+        val jcefConfig = JCefAppConfig.getInstance()
+
+        jcefConfig.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DISABLE
+        jcefConfig.cefSettings.log_file = logDir
+            .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
+            .absolutePath
+        jcefConfig.cefSettings.windowless_rendering_enabled = true
+        jcefConfig.cefSettings.cache_path = cacheDir.absolutePath
+        
+        jcefConfig.appArgsAsList.apply {
+            add("--disable-gpu")
+            add("--mute-audio")
+            add("--force-dark-mode")
+            proxyServer?.let { add("--proxy-server=${it}") }
+        }
+        
+        return CefApp.getInstance(jcefConfig.appArgs, jcefConfig.cefSettings)
     }
 
     /**
