@@ -15,16 +15,18 @@ import io.ktor.http.parseServerSetCookieHeader
 import io.ktor.util.date.toJvmDate
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import me.him188.ani.app.data.models.preference.ProxyConfig
 import me.him188.ani.app.data.models.preference.VideoResolverSettings
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.domain.media.resolver.WebViewVideoExtractor.Instruction
-import me.him188.ani.app.domain.media.resolver.cef.RequestWillBeSent
 import me.him188.ani.app.platform.AniCefApp
 import me.him188.ani.app.platform.Context
 import me.him188.ani.app.platform.DesktopContext
@@ -42,12 +44,14 @@ import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import org.cef.CefSettings
 import org.cef.browser.CefBrowser
-import org.cef.browser.CefDevToolsClient
 import org.cef.browser.CefFrame
+import org.cef.browser.CefRendering
+import org.cef.browser.CefRequestContext
 import org.cef.handler.CefDisplayHandlerAdapter
-import org.cef.handler.CefLoadHandlerAdapter
+import org.cef.handler.CefResourceRequestHandlerAdapter
 import org.cef.network.CefCookie
 import org.cef.network.CefCookieManager
+import org.cef.network.CefRequest
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -141,20 +145,30 @@ class CefVideoExtractor(
         }
 
         val deferred = CompletableDeferred<WebResource>()
-        val browser = client.createBrowser("about:blank", true, true)
+        var urlHandlerJob: Job? = null
+        
+        val requestUrl = Channel<String>(20)
+        val browser = client.createBrowser(
+            pageUrl, 
+            CefRendering.OFFSCREEN, 
+            true,
+            CefRequestContext.createContext { _, _, _, _, _, _, _ ->
+                object : CefResourceRequestHandlerAdapter() {
+                    override fun onBeforeResourceLoad(
+                        browser: CefBrowser?,
+                        frame: CefFrame?,
+                        request: CefRequest?
+                    ): Boolean {
+                        if (request != null) requestUrl.trySend(request.url)
+                        return super.onBeforeResourceLoad(browser, frame, request)
+                    }
+                }
+            }
+        )
         browser.setCloseAllowed() // browser should be allowed to close.
         
         try {
-            val devToolsDeferred = CompletableDeferred<CefDevToolsClient>()
-
             AniCefApp.runOnCefContext {
-                client.addLoadHandler(object : CefLoadHandlerAdapter() {
-                    override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
-                        if (frame?.isMain == true && browser != null) {
-                            devToolsDeferred.complete(browser.devToolsClient)
-                        }
-                    }
-                })
                 client.addDisplayHandler(
                     object : CefDisplayHandlerAdapter() {
                         override fun onConsoleMessage(
@@ -170,36 +184,6 @@ class CefVideoExtractor(
                     },
                 )
 
-                // start browser immediately
-                browser.createImmediately()
-            }
-            // 加载 data URL 不会耗费太长时间, 和设备的性能有关
-            val devTools = withTimeout(5000L) { devToolsDeferred.await() }
-
-            fun handleUrl(url: String): Boolean {
-                val matched = resourceMatcher(url)
-                when (matched) {
-                    Instruction.Continue -> return false
-                    Instruction.FoundResource -> {
-                        deferred.complete(WebResource(url))
-                        return true
-                    }
-
-                    Instruction.LoadPage -> {
-                        if (browser.url == url) return false // don't recurse
-                        logger.info { "CEF loading nested page: $url" }
-                        AniCefApp.runOnCefContext { 
-                            browser.executeJavaScript("window.location.href='$url';", "", 1) 
-                        }
-                        return false
-                    }
-                }
-            }
-
-            AniCefApp.runOnCefContext {
-                // 获取到 DevTools 后就可以移除 load handler 了
-                browser.client.removeLoadHandler()
-                
                 // set cookie
                 val cookieManager = CefCookieManager.getGlobalManager()
                 val url = Url(pageUrl)
@@ -208,21 +192,31 @@ class CefVideoExtractor(
                     cookieManager.setCookie(url.host, ktorCookie.toCefCookie())
                 }
 
-                // setup network
-                devTools.executeDevToolsMethod("Network.enable")
-                devTools.addEventListener { name, message ->
-                    if (name != "Network.requestWillBeSent") return@addEventListener
-                    val data = json.decodeFromString(RequestWillBeSent.serializer(), message)
+                logger.info { "Fetching $pageUrl" }
+                // start browser immediately
+                browser.createImmediately()
+            }
 
-                    if (handleUrl(data.request.url)) {
-                        logger.info { "Found video resource via DevTools: ${data.request.url}" }
+            urlHandlerJob = launch {
+                requestUrl.consumeAsFlow().collect { url ->
+                    val matched = resourceMatcher(url)
+                    when (matched) {
+                        Instruction.Continue -> return@collect
+                        Instruction.FoundResource -> {
+                            deferred.complete(WebResource(url))
+                            logger.info { "Found video stream resource: $url" }
+                        }
+
+                        Instruction.LoadPage -> {
+                            if (browser.url == url) return@collect // don't recurse
+                            logger.info { "CEF loading nested page: $url" }
+                            AniCefApp.runOnCefContext {
+                                browser.executeJavaScript("window.location.href='$url';", "", 1)
+                            }
+                            return@collect
+                        }
                     }
                 }
-                devTools.executeDevToolsMethod("Network.clearBrowserCache")
-
-                logger.info { "Fetching $pageUrl" }
-                // load real page after setting up DevTools
-                browser.loadURL(pageUrl)
             }
             
             deferred.await()
@@ -234,6 +228,7 @@ class CefVideoExtractor(
             null
         } finally {
             // close browser and client asynchronously.
+            urlHandlerJob?.cancel()
             AniCefApp.runOnCefContext {
                 browser.close(true)
                 client.dispose()

@@ -14,6 +14,7 @@ import io.ktor.http.Url
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.platform.currentTimeMillis
 import org.cef.CefApp
@@ -90,6 +91,7 @@ object AniCefApp {
             proxyServer?.let { add("--proxy-server=${it}") }
         }
         
+        CefApp.startup(emptyArray())
         return CefApp.getInstance(jcefConfig.appArgs, jcefConfig.cefSettings)
     }
 
@@ -123,8 +125,7 @@ object AniCefApp {
                 },
             )
             app = newApp
-
-            return
+            logger.info { "AniCefApp is initialized." }
         }
     }
 

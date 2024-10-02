@@ -71,6 +71,7 @@ compose.desktop {
                 "jdk.unsupported", // sun.misc.Unsafe used by androidx datastore
                 "java.management", // javax.management.MBeanRegistrationException
                 "java.net.http",
+                "jcef"
             )
             appResourcesRootDir.set(file("appResources"))
             targetFormats(
