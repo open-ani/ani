@@ -237,5 +237,8 @@ aws-s3control = { module = "software.amazon.awssdk:s3control", version.ref = "aw
 aws-secretsmanager = { module = "software.amazon.awssdk:secretsmanager", version.ref = "aws" }
 
 #htmlunit = { group = "net.sourceforge.htmlunit", name = "htmlunit", version = "2.70.0" }
-selenium-java = { group = "org.seleniumhq.selenium", name = "selenium-java", version = "4.25.0" }
-webdrivermanager = { group = "io.github.bonigarcia", name = "webdrivermanager", version = "5.9.2" }
+jcefmaven = { group = "me.friwi", name = "jcefmaven", version = "126.2.0" }
+jcef-natives-macosx-amd64 = { group = "me.friwi", name = "jcef-natives-macosx-amd64", version = "jcef-7a13412+cef-126.2.0+g5c56e98+chromium-126.0.6478.62" }
+jcef-natives-macosx-arm64 = { group = "me.friwi", name = "jcef-natives-macosx-arm64", version = "jcef-7a13412+cef-126.2.0+g5c56e98+chromium-126.0.6478.62" }
+jcef-natives-windows-amd64 = { group = "me.friwi", name = "jcef-natives-windows-amd64", version = "jcef-7a13412+cef-126.2.0+g5c56e98+chromium-126.0.6478.62" }
+
