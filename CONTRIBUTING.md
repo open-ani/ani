@@ -169,9 +169,9 @@ Compose Multiplatform 在 `desktop` 和 `ios` 均使用 [Skiko][Skiko] 渲染, �
 > 如果有一些功能只有一个平台需要, 例如 PC 上的隐藏鼠标指针功能, 你仍然需要为所有平台提供实现,
 > 将函数体留空即可.
 
-### 模块结构
+### 项目架构
 
-模块结构也对应源码目录结构.
+模块结构也对应源码目录结构. 对于具体的模块说明, 请查看 [6. App 项目架构](#6-app-项目架构).
 
 ```mermaid
 flowchart TD
@@ -349,7 +349,7 @@ GB 左右, 即使是 M3 Pro CPU, 编译和测试仍然需要 30 分钟. 如果�
 
 ### 运行测试
 
-`./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
+在 IDE 中双击 Ctrl, 执行 `./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
 
 在 macOS 上, 这将会运行全部测试, 总共约 8000 个 (如果未启用 iOS 目标, 会少一些). 在 Windows 上只能运行安卓和
 JVM 平台测试, 无法运行
@@ -438,24 +438,19 @@ Android Studio 的调试器同时支持调试 Kotlin 和 C++ 代码 (torrent 部
 本节将介绍客户端共享模块 (`:app:shared`) 的架构设计, 也就是对应目录 `app/shared` 里的内容.
 建议搭配上面的架构图看.
 
-### `data`: 数据层
+### `app-data`: 数据层
 
-包含所有外部数据和本地持久化存储的高级封装. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问,
-而是调用这里的接口.
+包含对 UI 需要使用到的所有数据的管理. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问, 而是调用这里的接口.
 
 数据层包含许多模块：
 
 * `models`: App UI 或其他组件使用的数据结构，外部数据源的数据结构将会转换到此包中数据结构.
 * `persistent`: 数据持久化包，例如轻量数据 preference 和大量数据 database.
 * `repository`: 数据仓库，通常是外部数据源与 App 交互的中间仓库.
+* `bangumi`: Bangumi 索引数据源的相关实现. 例如搜索条目
 * `source`: 数据源.
 
 App 主要通过 `repository` 和 `source` 与外部数据交互.
-
-data
-还提供了一个 [
-`MediaFetcher`](https://github.com/open-ani/ani/tree/master/app/shared/src/commonMain/kotlin/data/source/media/fetch/MediaFetcher.kt#L59),
-封装了对番剧的下载链接获取逻辑.
 
 ### `foundation`: 基础组件
 
