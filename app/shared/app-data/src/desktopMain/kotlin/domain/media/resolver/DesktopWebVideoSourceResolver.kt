@@ -139,7 +139,9 @@ class CefVideoExtractor(
         config: WebViewConfig,
         resourceMatcher: (String) -> Instruction
     ): WebResource? = withContext(Dispatchers.IO) {
-        val client = AniCefApp.createClient() ?: kotlin.run { 
+        val client = AniCefApp.suspendCoroutineOnCefContext {
+            AniCefApp.createClient() 
+        } ?: kotlin.run {
             logger.warn { "AniCefApp isn't initialized yet." }
             return@withContext null
         }
@@ -148,23 +150,25 @@ class CefVideoExtractor(
         var urlHandlerJob: Job? = null
         
         val requestUrl = Channel<String>(20)
-        val browser = client.createBrowser(
-            pageUrl, 
-            CefRendering.OFFSCREEN, 
-            true,
-            CefRequestContext.createContext { _, _, _, _, _, _, _ ->
-                object : CefResourceRequestHandlerAdapter() {
-                    override fun onBeforeResourceLoad(
-                        browser: CefBrowser?,
-                        frame: CefFrame?,
-                        request: CefRequest?
-                    ): Boolean {
-                        if (request != null) requestUrl.trySend(request.url)
-                        return super.onBeforeResourceLoad(browser, frame, request)
+        val browser = AniCefApp.suspendCoroutineOnCefContext {
+            client.createBrowser(
+                pageUrl,
+                CefRendering.OFFSCREEN,
+                true,
+                CefRequestContext.createContext { _, _, _, _, _, _, _ ->
+                    object : CefResourceRequestHandlerAdapter() {
+                        override fun onBeforeResourceLoad(
+                            browser: CefBrowser?,
+                            frame: CefFrame?,
+                            request: CefRequest?
+                        ): Boolean {
+                            if (request != null) requestUrl.trySend(request.url)
+                            return super.onBeforeResourceLoad(browser, frame, request)
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
         browser.setCloseAllowed() // browser should be allowed to close.
         
         try {
