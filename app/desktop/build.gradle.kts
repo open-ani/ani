@@ -63,7 +63,7 @@ compose.desktop {
     application {
         jvmArgs(
             "-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE",
-
+            "-Dsun.java2d.metal=true",
             // JCEF
             "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
             "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
