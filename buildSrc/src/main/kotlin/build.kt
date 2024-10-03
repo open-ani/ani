@@ -16,6 +16,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JvmVendorSpec
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.findByType
@@ -153,11 +154,15 @@ fun Project.configureJvmTarget() {
     }
 
     extensions.findByType(KotlinProjectExtension::class)?.apply {
-        jvmToolchain(ver.getMajorVersion().toInt())
+        jvmToolchain {
+            vendor.set(JvmVendorSpec.JETBRAINS)
+            languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
+        }
     }
 
     extensions.findByType(JavaPluginExtension::class)?.apply {
         toolchain {
+            vendor.set(JvmVendorSpec.JETBRAINS)
             languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
             sourceCompatibility = ver
             targetCompatibility = ver
