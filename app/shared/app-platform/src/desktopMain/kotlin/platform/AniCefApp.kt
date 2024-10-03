@@ -29,6 +29,7 @@ import org.cef.CefSettings
 import org.cef.browser.CefBrowser
 import org.cef.callback.CefAuthCallback
 import org.cef.handler.CefRequestHandlerAdapter
+import org.cef.misc.CefLog
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -122,32 +123,13 @@ object AniCefApp {
                 }
             })
         }
-
-//        val jogl = NativeLibraryLoader.getResourceDir("jogl")
-//        for (name in listOf(
-//            "libgluegen_rt.dylib",
-//            "libnativewindow_awt.dylib",
-//            "libnativewindow_macosx.dylib",
-//            "libjogl_desktop.dylib",
-//            "libjogl_cg.dylib",
-//            "libnewt_head.dylib",
-//        )) {
-//            val file = jogl.resolve(name)
-//            check(file.exists()) { "JOGL library not found: $file" }
-//            logger.info { "Loading library $file" }
-//            ProcessBuilder()
-//                .command("xattr", "-d", "com.apple.quarantine", file.absolutePath)
-//                .inheritIO()
-//                .start()
-//                .waitFor()
-//            System.load(file.absolutePath)
 //        }
 
         val jcefConfig = JCefAppConfig.getInstance()
 
         jcefConfig.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DEFAULT
         jcefConfig.cefSettings.log_file = logDir
-            .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
+            .resolve("cef-${dateFormat.format(Date(currentTimeMillis()))}.log")
             .absolutePath
         jcefConfig.cefSettings.windowless_rendering_enabled = true
         jcefConfig.cefSettings.cache_path = cacheDir.absolutePath
@@ -158,6 +140,7 @@ object AniCefApp {
             proxyServer?.let { add("--proxy-server=${it}") }
         }
 
+        CefLog.init(jcefConfig.cefSettings)
         CefApp.startup(emptyArray())
         return CefApp.getInstance(jcefConfig.appArgs, jcefConfig.cefSettings)
     }
