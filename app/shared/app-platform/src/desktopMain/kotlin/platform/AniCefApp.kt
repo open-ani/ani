@@ -10,13 +10,19 @@
 package me.him188.ani.app.platform
 
 import com.jetbrains.cef.JCefAppConfig
+import com.jogamp.common.jvm.JNILibLoaderBase
+import com.jogamp.common.jvm.JNILibLoaderBase.LoaderAction
 import io.ktor.http.Url
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.platform.NativeLibraryLoader
+import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.currentPlatform
 import me.him188.ani.utils.platform.currentTimeMillis
+import me.him188.ani.utils.platform.isAArch
 import org.cef.CefApp
 import org.cef.CefClient
 import org.cef.CefSettings
@@ -31,11 +37,12 @@ import kotlin.concurrent.thread
 
 object AniCefApp {
     private val logger = logger<AniCefApp>()
+
     @Volatile
     private var app: CefApp? = null
 
     private val lock = Mutex()
-    
+
     private var proxyServer: Url? = null
     private var proxyAuthUsername: String? = null
     private var proxyAuthPassword: String? = null
@@ -49,19 +56,19 @@ object AniCefApp {
             port: Int,
             realm: String?,
             scheme: String?,
-            callback: CefAuthCallback?
+            callback: CefAuthCallback?,
         ): Boolean {
             if (!isProxy) return false
             if (host != proxyServer?.host) return false
             if (port != proxyServer?.port) return false
             if (scheme != proxyServer?.protocol?.name) return false
-            
+
             if (callback == null) return false
             callback.Continue(proxyAuthUsername, proxyAuthPassword)
             return true
         }
     }
-    
+
     /**
      * Create a new [CefApp].
      *
@@ -75,29 +82,89 @@ object AniCefApp {
         proxyServer: String? = null,
     ): CefApp {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+
+        @Suppress("UnsafeDynamicallyLoadedCode")
+        if (currentPlatform().let { it is Platform.MacOS && it.isAArch() }) {
+            // macos-arm64 需要特殊加载. 因为 JBR 内置的是 x86 library
+            JNILibLoaderBase.setLoadingAction(object : LoaderAction {
+                override fun loadLibrary(p0: String?, p1: Boolean, p2: ClassLoader?): Boolean {
+                    if (!JNILibLoaderBase.isLoaded(p0)) {
+                        val file =
+                            NativeLibraryLoader.getResourceDir("jogl").resolve("lib$p0.dylib")
+                                .normalize()
+                        logger.info { "Loading library $file" }
+                        ProcessBuilder()
+                            .command("xattr", "-d", "com.apple.quarantine", file.absolutePath)
+                            .inheritIO()
+                            .start()
+                            .waitFor()
+                        System.load(file.absolutePath)
+                        return true
+                    }
+                    return true
+                }
+
+                override fun loadLibrary(
+                    p0: String?,
+                    p1: Array<out String>?,
+                    p2: Boolean,
+                    p3: ClassLoader?,
+                ) {
+                    if (!JNILibLoaderBase.isLoaded(p0)) {
+                        if (null != p1) {
+                            for (var5 in p1.indices) {
+                                this.loadLibrary(p1[var5], p2, p3)
+                            }
+                        }
+
+                        this.loadLibrary(p0, false, p3)
+                    }
+                }
+            })
+        }
+
+//        val jogl = NativeLibraryLoader.getResourceDir("jogl")
+//        for (name in listOf(
+//            "libgluegen_rt.dylib",
+//            "libnativewindow_awt.dylib",
+//            "libnativewindow_macosx.dylib",
+//            "libjogl_desktop.dylib",
+//            "libjogl_cg.dylib",
+//            "libnewt_head.dylib",
+//        )) {
+//            val file = jogl.resolve(name)
+//            check(file.exists()) { "JOGL library not found: $file" }
+//            logger.info { "Loading library $file" }
+//            ProcessBuilder()
+//                .command("xattr", "-d", "com.apple.quarantine", file.absolutePath)
+//                .inheritIO()
+//                .start()
+//                .waitFor()
+//            System.load(file.absolutePath)
+//        }
+
         val jcefConfig = JCefAppConfig.getInstance()
 
-        jcefConfig.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DISABLE
+        jcefConfig.cefSettings.log_severity = CefSettings.LogSeverity.LOGSEVERITY_DEFAULT
         jcefConfig.cefSettings.log_file = logDir
             .resolve("cef_${dateFormat.format(Date(currentTimeMillis()))}.log")
             .absolutePath
         jcefConfig.cefSettings.windowless_rendering_enabled = true
         jcefConfig.cefSettings.cache_path = cacheDir.absolutePath
-        
+
         jcefConfig.appArgsAsList.apply {
-            add("--disable-gpu")
             add("--mute-audio")
             add("--force-dark-mode")
             proxyServer?.let { add("--proxy-server=${it}") }
         }
-        
+
         CefApp.startup(emptyArray())
         return CefApp.getInstance(jcefConfig.appArgs, jcefConfig.cefSettings)
     }
 
     /**
-     * Initialize singleton instance of [CefApp]. 
-     * 
+     * Initialize singleton instance of [CefApp].
+     *
      * You can call [getInstance] later to get it.
      */
     suspend fun initialize(
@@ -114,7 +181,8 @@ object AniCefApp {
             val currentApp2 = app
             if (currentApp2 != null) return
 
-            val newApp = suspendCoroutineOnCefContext { createCefApp(logDir, cacheDir, proxyServer) }
+            val newApp =
+                suspendCoroutineOnCefContext { createCefApp(logDir, cacheDir, proxyServer) }
             this.proxyServer = proxyServer?.let(::Url)
             this.proxyAuthUsername = proxyAuthUsername
             this.proxyAuthPassword = proxyAuthPassword
@@ -131,7 +199,7 @@ object AniCefApp {
 
     /**
      * Create a new CEF client.
-     * 
+     *
      * You should dispose it if drop.
      *
      * @return `null` if CefApp hasn't initialized yet.
