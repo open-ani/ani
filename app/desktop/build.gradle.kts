@@ -149,22 +149,24 @@ afterEvaluate {
     when (os) {
         Os.Windows -> {}
         Os.MacOS -> {
-            tasks.withType(AbstractJPackageTask::class) {
-                val dirsNames = listOf("../Frameworks")
+            tasks.withType(AbstractJPackageTask::class)
+                .named { it == "createReleaseDistributable" || it == "createDistributable" }
+                .configureEach {
+                    val dirsNames = listOf("../Frameworks")
 
-                dirsNames.forEach { dirName ->
-                    val source = File(javaHome.get()).resolve(dirName).normalize()
-                    inputs.dir(source)
-                    val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
-                    outputs.dir(dest)
-                    doLast("copy $dirName") {
-                        exec {
-                            commandLine("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
-                        }.assertNormalExitValue()
-                        logger.info("Copied $dirName to $dest")
+                    dirsNames.forEach { dirName ->
+                        val source = File(javaHome.get()).resolve(dirName).normalize()
+                        inputs.dir(source)
+                        val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
+                        outputs.dir(dest)
+                        doLast("copy $dirName") {
+                            exec {
+                                commandLine("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
+                            }.assertNormalExitValue()
+                            logger.info("Copied $dirName to $dest")
+                        }
                     }
                 }
-            }
         }
 
         Os.Linux -> {}
