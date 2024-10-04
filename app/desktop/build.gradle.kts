@@ -11,6 +11,7 @@ import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
 import com.google.gson.Gson
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.kotlin.cli.common.isWindows
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.util.UUID
@@ -64,21 +65,30 @@ compose.desktop {
         jvmArgs(
             "-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE",
             "-Dsun.java2d.metal=true",
+            "-Djogamp.debug.JNILibLoader=true", // JCEF 加载 native 库的日志, 方便 debug
             // JCEF
             "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
             "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
-            "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
-            "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED",
         )
+        if (getOs() == Os.MacOS) {
+            jvmArgs(
+                "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
+                "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED",
+            )
+        }
         mainClass = "me.him188.ani.app.desktop.AniDesktop"
-//        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             modules(
                 "jdk.unsupported", // sun.misc.Unsafe used by androidx datastore
                 "java.management", // javax.management.MBeanRegistrationException
                 "java.net.http",
-                "jcef"
+                "jcef",
+                "gluegen.rt",
+                "jogl.all",
             )
+
+            // ./gradlew suggestRuntimeModules
+
             appResourcesRootDir.set(file("appResources"))
             targetFormats(
                 *buildList {
@@ -140,6 +150,34 @@ compose.desktop {
 //            this.configurationFiles.from(project(":app:shared").file("proguard-rules.pro"))
 //            this.configurationFiles.from(file("proguard-desktop.pro"))
 //        }
+    }
+}
+
+afterEvaluate {
+    val os = getOs()
+    when (os) {
+        Os.Windows -> {}
+        Os.MacOS -> {
+            tasks.withType(AbstractJPackageTask::class) {
+                val dirsNames = listOf("../Frameworks")
+
+                dirsNames.forEach { dirName ->
+                    val source = File(javaHome.get()).resolve(dirName).normalize()
+                    inputs.dir(source)
+                    val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
+                    outputs.dir(dest)
+                    doLast("copy $dirName") {
+                        exec {
+                            commandLine("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
+                        }.assertNormalExitValue()
+                        logger.info("Copied $dirName to $dest")
+                    }
+                }
+            }
+        }
+
+        Os.Linux -> {}
+        Os.Unknown -> {}
     }
 }
 

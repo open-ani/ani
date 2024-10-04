@@ -1,4 +1,5 @@
 [versions]
+gluegen-rt = "2.5.0"
 jna = "5.13.0" # 不要轻易改这个版本, 它可能导致 VLC 兼容性问题
 jsonpathkt-kotlinx = "3.0.2"
 kotlin = "2.0.20"
@@ -66,6 +67,7 @@ android-library-gradle-plugin = { module = "com.android.library:com.android.libr
 android-application-gradle-plugin = { module = "com.android.application:com.android.application.gradle.plugin", version.ref = "android-gradle-plugin" }
 filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+
 jsonpathkt-kotlinx = { module = "com.eygraber:jsonpathkt-kotlinx", version.ref = "jsonpathkt-kotlinx" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "atomicfu" }

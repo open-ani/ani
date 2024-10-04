@@ -153,7 +153,7 @@ class CefVideoExtractor(
         val browser = AniCefApp.suspendCoroutineOnCefContext {
             client.createBrowser(
                 pageUrl,
-                CefRendering.OFFSCREEN,
+                CefRendering.DEFAULT,
                 true,
                 CefRequestContext.createContext { _, _, _, _, _, _, _ ->
                     object : CefResourceRequestHandlerAdapter() {
@@ -166,7 +166,7 @@ class CefVideoExtractor(
                             return super.onBeforeResourceLoad(browser, frame, request)
                         }
                     }
-                }
+                },
             )
         }
         browser.setCloseAllowed() // browser should be allowed to close.
