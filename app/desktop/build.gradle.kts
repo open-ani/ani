@@ -51,15 +51,6 @@ sourceSets {
     }
 }
 
-extra.set("ani.jvm.target", 17)
-
-kotlin {
-    jvmToolchain {
-        vendor = DEFAULT_JVM_TOOLCHAIN_VENDOR
-        version = JavaLanguageVersion.of(17)
-    }
-}
-
 compose.desktop {
     application {
         jvmArgs(
