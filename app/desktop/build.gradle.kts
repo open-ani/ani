@@ -144,6 +144,28 @@ compose.desktop {
     }
 }
 
+//class FixCefFrameworkAction : Action<AbstractJPackageTask> {
+//    override fun execute(t: AbstractJPackageTask) {
+//
+//    }
+//}
+//val action: (AbstractJPackageTask).() -> Unit = {
+//    val dirsNames = listOf("../Frameworks")
+//
+//    dirsNames.forEach { dirName ->
+//        val source = File(javaHome.get()).resolve(dirName).normalize()
+//        inputs.dir(source)
+//        val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
+//        outputs.dir(dest)
+//        doLast("copy $dirName") {
+//            exec {
+//                commandLine("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
+//            }.assertNormalExitValue()
+//            logger.info("Copied $dirName to $dest")
+//        }
+//    }
+//}
+
 afterEvaluate {
     val os = getOs()
     when (os) {
@@ -160,9 +182,15 @@ afterEvaluate {
                         val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
                         outputs.dir(dest)
                         doLast("copy $dirName") {
-                            exec {
-                                commandLine("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
-                            }.assertNormalExitValue()
+                            ProcessBuilder().run {
+                                command("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
+                                inheritIO()
+                                start()
+                            }.waitFor().let {
+                                if (it != 0) {
+                                    throw GradleException("Failed to copy $dirName")
+                                }
+                            }
                             logger.info("Copied $dirName to $dest")
                         }
                     }
