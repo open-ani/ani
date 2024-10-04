@@ -11,6 +11,7 @@ import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
 import com.google.gson.Gson
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.kotlin.cli.common.isWindows
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
@@ -171,30 +172,38 @@ afterEvaluate {
     when (os) {
         Os.Windows -> {}
         Os.MacOS -> {
-            tasks.withType(AbstractJPackageTask::class)
-                .named { it == "createReleaseDistributable" || it == "createDistributable" }
-                .configureEach {
-                    val dirsNames = listOf("../Frameworks")
+            val createRuntimeImage = tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
+                val dirsNames = listOf(
+                    // From your (JBR's) Java Home to Packed Java Home 
+                    "../Frameworks" to "lib/",
+                )
 
-                    dirsNames.forEach { dirName ->
-                        val source = File(javaHome.get()).resolve(dirName).normalize()
-                        inputs.dir(source)
-                        val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
-                        outputs.dir(dest)
-                        doLast("copy $dirName") {
-                            ProcessBuilder().run {
-                                command("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
-                                inheritIO()
-                                start()
-                            }.waitFor().let {
-                                if (it != 0) {
-                                    throw GradleException("Failed to copy $dirName")
-                                }
+                dirsNames.forEach { (sourcePath, destPath) ->
+                    val source = File(javaHome.get()).resolve(sourcePath).normalize()
+                    inputs.dir(source)
+                    val dest = destinationDir.file(destPath)
+                    outputs.dir(dest)
+                    doLast("copy $sourcePath") {
+                        ProcessBuilder().run {
+                            command("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
+                            inheritIO()
+                            start()
+                        }.waitFor().let {
+                            if (it != 0) {
+                                throw GradleException("Failed to copy $sourcePath")
                             }
-                            logger.info("Copied $dirName to $dest")
                         }
+                        logger.info("Copied $source to $dest")
                     }
                 }
+            }
+
+            // CMP does not use result of `createRuntimeImage` for this task, so we fix it to make sure the frameworks are included
+            tasks.named("packageReleaseDmg", AbstractJPackageTask::class) {
+                dependsOn(createRuntimeImage)
+//                freeArgs.add("--runtime-image")
+//                freeArgs.add(createRuntimeImage.flatMap { it.destinationDir }.get().asFile.absolutePath)
+            }
         }
 
         Os.Linux -> {}

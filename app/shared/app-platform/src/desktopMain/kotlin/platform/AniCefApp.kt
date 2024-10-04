@@ -14,9 +14,10 @@ import io.ktor.http.Url
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import me.him188.ani.utils.logging.info
-import me.him188.ani.utils.logging.logger
+import me.him188.ani.utils.logging.*
+import me.him188.ani.utils.platform.currentPlatform
 import me.him188.ani.utils.platform.currentTimeMillis
+import me.him188.ani.utils.platform.isMacOS
 import org.cef.CefApp
 import org.cef.CefClient
 import org.cef.CefSettings
@@ -94,34 +95,50 @@ object AniCefApp {
             proxyServer?.let { add("--proxy-server=${it}") }
         }
 
+        if (currentPlatform().isMacOS()) {
+            // Fix framework paths when packaged
+            jcefConfig.appArgsAsList.apply {
+                removeAll { it.startsWith("--framework-dir-path") }
+                removeAll { it.startsWith("--browser-subprocess-path") }
+                removeAll { it.startsWith("--main-bundle-path") }
+                findMacOsFrameworkPath()?.let {
+                    // See `JCefAppConfig.getInstance` sources for why we use these paths.
+                    logger.info { "Found CEF framework at $it" }
+                    add("--framework-dir-path=${it.resolve("Chromium Embedded Framework.framework")}")
+                    add("--browser-subprocess-path=${it.resolve("jcef Helper.app/Contents/MacOS/jcef Helper")}")
+                    add("--main-bundle-path=${it.resolve("jcef Helper.app")}")
+                } ?: logger.error { "CEF framework not found" }
+            }
+        }
+
         CefLog.init(jcefConfig.cefSettings)
         CefApp.startup(jcefConfig.appArgs)
         return CefApp.getInstance(jcefConfig.appArgs, jcefConfig.cefSettings)
     }
 
-    private fun findMacOsFrameworkPath(): String? {
+    /**
+     * Returns `$JAVA_HOME/../Frameworks`
+     */
+    private fun findMacOsFrameworkPath(): File? {
         /*
         Absolute path: /Users/him188/Projects/ani/app/desktop/build/compose/binaries/main-release/app/Ani.app/Contents
         user.dir/Users/him188/Projects/ani/app/desktop/build/compose/binaries/main-release/app/Ani.app/Contents
         Java home: /Users/him188/Projects/ani/app/desktop/build/compose/binaries/main-release/app/Ani.app/Contents/runtime/Contents/Home
          */
         logger.info { "Absolute path: " + File(".").normalize().absolutePath }
-        logger.info { "user.dir" + File(System.getProperty("user.dir")).normalize().absolutePath }
+        logger.info { "user.dir: " + File(System.getProperty("user.dir")).normalize().absolutePath }
         logger.info { "Java home: " + System.getProperty("java.home") }
 
         val javaHome = File(System.getProperty("java.home"))
-        javaHome.resolve("../Frameworks/Chromium Embedded Framework.framework")
-            .normalize()
-            .takeIf { it.exists() }
-            ?.let {
-                return it.absolutePath
+        sequence {
+            yield(javaHome.resolve("../Frameworks/Chromium Embedded Framework.framework"))
+            yield(javaHome.resolve("Frameworks/Chromium Embedded Framework.framework"))
+            yield(javaHome.resolve("lib/Frameworks/Chromium Embedded Framework.framework"))
+        }.forEach {
+            if (it.exists()) {
+                return it.parentFile.normalize()
             }
-
-        javaHome.resolve("Frameworks/Chromium Embedded Framework.framework")
-            .takeIf { it.exists() }
-            ?.let {
-                return it.absolutePath
-            }
+        }
 
         return null
     }
