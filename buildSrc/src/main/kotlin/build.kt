@@ -126,12 +126,12 @@ fun KotlinSourceSet.configureKotlinOptIns() {
     }
 }
 
-val DEFAULT_JVM_TARGET = JavaVersion.VERSION_17
-
+val Project.DEFAULT_JVM_TOOLCHAIN_VENDOR
+    get() = getPropertyOrNull("jvm.toolchain.vendor")?.let { JvmVendorSpec.matching(it) }
 
 private fun Project.getProjectPreferredJvmTargetVersion() = extra.runCatching { get("ani.jvm.target") }.fold(
     onSuccess = { JavaVersion.toVersion(it.toString()) },
-    onFailure = { DEFAULT_JVM_TARGET },
+    onFailure = { JavaVersion.toVersion(getPropertyOrNull("jvm.toolchain.version")?.toInt() ?: 17) },
 )
 
 fun Project.configureJvmTarget() {
@@ -155,14 +155,14 @@ fun Project.configureJvmTarget() {
 
     extensions.findByType(KotlinProjectExtension::class)?.apply {
         jvmToolchain {
-            vendor.set(JvmVendorSpec.JETBRAINS)
+            vendor.set(DEFAULT_JVM_TOOLCHAIN_VENDOR)
             languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
         }
     }
 
     extensions.findByType(JavaPluginExtension::class)?.apply {
         toolchain {
-            vendor.set(JvmVendorSpec.JETBRAINS)
+            vendor.set(DEFAULT_JVM_TOOLCHAIN_VENDOR)
             languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
             sourceCompatibility = ver
             targetCompatibility = ver

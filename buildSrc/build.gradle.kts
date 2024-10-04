@@ -20,9 +20,8 @@ repositories {
 
 kotlin {
     jvmToolchain {
-        @Suppress("UnstableApiUsage")
-        vendor.set(JvmVendorSpec.JETBRAINS)
-        this.languageVersion = JavaLanguageVersion.of(17)
+        this.vendor.set(findProperty("jvm.toolchain.vendor")?.toString()?.let { JvmVendorSpec.matching(it) })
+        this.languageVersion = findProperty("jvm.toolchain.version")?.toString()?.let { JavaLanguageVersion.of(it) }
     }
     compilerOptions {
         optIn.add("org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi")
