@@ -13,7 +13,6 @@ import com.google.gson.Gson
 import org.gradle.internal.jvm.Jvm
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
-import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import org.jetbrains.kotlin.cli.common.isWindows
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.util.UUID
@@ -146,28 +145,6 @@ compose.desktop {
     }
 }
 
-//class FixCefFrameworkAction : Action<AbstractJPackageTask> {
-//    override fun execute(t: AbstractJPackageTask) {
-//
-//    }
-//}
-//val action: (AbstractJPackageTask).() -> Unit = {
-//    val dirsNames = listOf("../Frameworks")
-//
-//    dirsNames.forEach { dirName ->
-//        val source = File(javaHome.get()).resolve(dirName).normalize()
-//        inputs.dir(source)
-//        val dest = destinationDir.file("Ani.app/Contents/runtime/Contents/Home/$dirName")
-//        outputs.dir(dest)
-//        doLast("copy $dirName") {
-//            exec {
-//                commandLine("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
-//            }.assertNormalExitValue()
-//            logger.info("Copied $dirName to $dest")
-//        }
-//    }
-//}
-
 afterEvaluate {
     val os = getOs()
     when (os) {
@@ -215,13 +192,6 @@ afterEvaluate {
                         logger.info("Copied $source to $dest")
                     }
                 }
-            }
-
-            // CMP does not use result of `createRuntimeImage` for this task, so we fix it to make sure the frameworks are included
-            tasks.named("packageReleaseDmg", AbstractJPackageTask::class) {
-                dependsOn(createRuntimeImage)
-//                freeArgs.add("--runtime-image")
-//                freeArgs.add(createRuntimeImage.flatMap { it.destinationDir }.get().asFile.absolutePath)
             }
         }
 
