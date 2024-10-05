@@ -10,7 +10,6 @@
 import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
 import com.google.gson.Gson
-import org.gradle.internal.jvm.Jvm
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
 import org.jetbrains.kotlin.cli.common.isWindows
@@ -150,18 +149,20 @@ afterEvaluate {
     when (os) {
         Os.Windows -> {
             tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
-                val toolchainHome = Jvm.current().javacExecutable.parentFile
-                val additionalFiles = listOf(
-                    "jcef_helper.exe",
-                    "icudtl.dat",
-                    "v8_context_snapshot.bin"
+                val dirsNames = listOf(
+                    // From your (JBR's) Java Home to Packed Java Home 
+                    "bin/jcef_helper.exe" to "bin/jcef_helper.exe",
+                    "bin/icudtl.dat" to "bin/icudtl.dat",
+                    "bin/v8_context_snapshot.bin" to "bin/v8_context_snapshot.bin",
                 )
 
-                additionalFiles.forEach { file ->
-                    val source = toolchainHome.resolve(file).normalize()
-                    val dest = destinationDir.file("bin")
-                    doLast("copy $file") {
-                        source.copyTo(dest.get().asFile.normalize().absoluteFile.resolve(file))
+                dirsNames.forEach { (sourcePath, destPath) ->
+                    val source = File(javaHome.get()).resolve(sourcePath)
+                    inputs.file(source)
+                    val dest = destinationDir.file(destPath)
+                    outputs.file(dest)
+                    doLast("copy $sourcePath") {
+                        source.copyTo(dest.get().asFile)
                         logger.info("Copied $source to $dest")
                     }
                 }
