@@ -100,6 +100,11 @@ jobs:
         run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
         continue-on-error: true
 
+      - if: ${{ startsWith(matrix.os, 'macos') }}
+        name: Remove old JDKs
+        run: rm -rf /Users/runner/hostedtoolcache/Java_Zulu_jdk/
+        continue-on-error: true
+
       - name: Setup JBR 21
         uses: gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d
         with:
