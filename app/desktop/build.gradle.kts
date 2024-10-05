@@ -10,6 +10,7 @@
 import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
 import com.google.gson.Gson
+import org.gradle.internal.jvm.Jvm
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
@@ -170,7 +171,25 @@ compose.desktop {
 afterEvaluate {
     val os = getOs()
     when (os) {
-        Os.Windows -> {}
+        Os.Windows -> {
+            tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
+                val toolchainHome = Jvm.current().javacExecutable.parentFile
+                val additionalFiles = listOf(
+                    "jcef_helper.exe",
+                    "icudtl.dat",
+                    "v8_context_snapshot.bin"
+                )
+
+                additionalFiles.forEach { file ->
+                    val source = toolchainHome.resolve(file).normalize()
+                    val dest = destinationDir.file("bin")
+                    doLast("copy $file") {
+                        source.copyTo(dest.get().asFile.normalize().absoluteFile.resolve(file))
+                        logger.info("Copied $source to $dest")
+                    }
+                }
+            }
+        }
         Os.MacOS -> {
             val createRuntimeImage = tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
                 val dirsNames = listOf(
