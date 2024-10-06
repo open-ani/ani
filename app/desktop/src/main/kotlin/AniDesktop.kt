@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -58,6 +59,7 @@ import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.AniBuildConfigDesktop
+import me.him188.ani.app.platform.AniCefApp
 import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
@@ -221,7 +223,12 @@ object AniDesktop {
                                 .map { TorrentVideoSourceResolver(it) }
                                 .plus(LocalFileVideoSourceResolver())
                                 .plus(HttpStreamingVideoSourceResolver())
-                                .plus(DesktopWebVideoSourceResolver(get<MediaSourceManager>().webVideoMatcherLoader)),
+                                .plus(
+                                    DesktopWebVideoSourceResolver(
+                                        context, 
+                                        get<MediaSourceManager>().webVideoMatcherLoader
+                                    )
+                                ),
                         )
                     }
                     single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
@@ -231,6 +238,23 @@ object AniDesktop {
             )
         }.startCommonKoinModule(coroutineScope)
 
+        // Initialize CEF application.
+        coroutineScope.launch { 
+            val proxySettings = koin.koin.get<SettingsRepository>()
+                .proxySettings.flow
+                .firstOrNull()
+                ?.default
+                ?.configIfEnabledOrNull
+            
+            AniCefApp.initialize(
+                logDir = File(projectDirectories.dataDir).resolve("logs"),
+                cacheDir = File(projectDirectories.cacheDir).resolve("jcef-cache"),
+                proxyServer = proxySettings?.url,
+                proxyAuthUsername = proxySettings?.authorization?.username,
+                proxyAuthPassword = proxySettings?.authorization?.password
+            )
+        }
+        
         // 预先加载 VLC, https://github.com/open-ani/ani/issues/618
         coroutineScope.launch {
             kotlin.runCatching {

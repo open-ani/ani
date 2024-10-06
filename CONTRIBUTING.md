@@ -28,6 +28,9 @@
 
 ## 1. 开发工具和环境
 
+> [!IMPORTANT]
+> 这些步骤只需要几分钟即可完成, 请不要跳过. 跳过可能会导致花费更多时间解决问题.
+
 ### 准备 IDE
 
 强烈建议使用最新的正式版 Android Studio (AS).
@@ -65,6 +68,17 @@ git clone --recursive https://github.com/open-ani/ani.git
 >   git config core.eol lf
 >   git config core.filemode false
 >   ```
+
+### 准备 JDK (JetBrains Runtime with JCEF)
+
+由于 PC 端使用 [JCEF](https://github.com/jetbrains/jcef) (内置浏览器), JDK 必须使用 JetBrains
+Runtime (JCEF), 版本 21, 下文简称 JBR.
+
+需要自行安装 JBR. 在 Android Studio 或 IntelliJ IDEA 中, 如下图所示, 可打开设置
+`Build, Execution, Deployment -> Build Tools -> Gradle`, 修改 Gradle JDK 配置为 JBR (JCEF) 21.
+
+<img src=".readme/images/contributing/idea-settings-download-jdk.png" alt="download jbr" width="400"/>
+<img src=".readme/images/contributing/idea-settings-download-jdk-version.png" alt="choose version" width="200"/>
 
 ### 配置 Android SDK & NDK
 
@@ -334,7 +348,7 @@ GB 左右, 即使是 M3 Pro CPU, 编译和测试仍然需要 30 分钟. 如果�
 
 ### 打包 Android APP
 
-执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
+在 IDE 中双击 Ctrl, 执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
 ，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
 
 在 IDE 上也可以选择 `Build -> Build Bundle(s) / APK(s) -> Build APK(s)` 来构建 APK.
@@ -349,7 +363,7 @@ GB 左右, 即使是 M3 Pro CPU, 编译和测试仍然需要 30 分钟. 如果�
 
 ### 运行测试
 
-`./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
+在 IDE 中双击 Ctrl, 执行 `./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
 
 在 macOS 上, 这将会运行全部测试, 总共约 8000 个 (如果未启用 iOS 目标, 会少一些). 在 Windows 上只能运行安卓和
 JVM 平台测试, 无法运行

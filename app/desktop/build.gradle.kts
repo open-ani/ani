@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 OpenAni and contributors.
+ * Copyright (C) 2024 OpenAni and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
@@ -11,6 +11,7 @@ import com.android.utils.CpuArchitecture
 import com.android.utils.osArchitecture
 import com.google.gson.Gson
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJLinkTask
 import org.jetbrains.kotlin.cli.common.isWindows
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.util.UUID
@@ -50,25 +51,35 @@ sourceSets {
     }
 }
 
-extra.set("ani.jvm.target", 17)
-
-kotlin {
-    jvmToolchain(17)
-}
-
 compose.desktop {
     application {
         jvmArgs(
             "-Dorg.slf4j.simpleLogger.defaultLogLevel=TRACE",
+            "-Dsun.java2d.metal=true",
+            "-Djogamp.debug.JNILibLoader=true", // JCEF 加载 native 库的日志, 方便 debug
+            // JCEF
+            "--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
         )
+        if (getOs() == Os.MacOS) {
+            jvmArgs(
+                "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
+                "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED",
+            )
+        }
         mainClass = "me.him188.ani.app.desktop.AniDesktop"
-//        jvmArgs("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
         nativeDistributions {
             modules(
                 "jdk.unsupported", // sun.misc.Unsafe used by androidx datastore
                 "java.management", // javax.management.MBeanRegistrationException
                 "java.net.http",
+                "jcef",
+                "gluegen.rt",
+                "jogl.all",
             )
+
+            // ./gradlew suggestRuntimeModules
+
             appResourcesRootDir.set(file("appResources"))
             targetFormats(
                 *buildList {
@@ -130,6 +141,63 @@ compose.desktop {
 //            this.configurationFiles.from(project(":app:shared").file("proguard-rules.pro"))
 //            this.configurationFiles.from(file("proguard-desktop.pro"))
 //        }
+    }
+}
+
+afterEvaluate {
+    val os = getOs()
+    when (os) {
+        Os.Windows -> {
+            tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
+                val dirsNames = listOf(
+                    // From your (JBR's) Java Home to Packed Java Home 
+                    "bin/jcef_helper.exe" to "bin/jcef_helper.exe",
+                    "bin/icudtl.dat" to "bin/icudtl.dat",
+                    "bin/v8_context_snapshot.bin" to "bin/v8_context_snapshot.bin",
+                )
+
+                dirsNames.forEach { (sourcePath, destPath) ->
+                    val source = File(javaHome.get()).resolve(sourcePath)
+                    inputs.file(source)
+                    val dest = destinationDir.file(destPath)
+                    outputs.file(dest)
+                    doLast("copy $sourcePath") {
+                        source.copyTo(dest.get().asFile)
+                        logger.info("Copied $source to $dest")
+                    }
+                }
+            }
+        }
+        Os.MacOS -> {
+            val createRuntimeImage = tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
+                val dirsNames = listOf(
+                    // From your (JBR's) Java Home to Packed Java Home 
+                    "../Frameworks" to "lib/",
+                )
+
+                dirsNames.forEach { (sourcePath, destPath) ->
+                    val source = File(javaHome.get()).resolve(sourcePath).normalize()
+                    inputs.dir(source)
+                    val dest = destinationDir.file(destPath)
+                    outputs.dir(dest)
+                    doLast("copy $sourcePath") {
+                        ProcessBuilder().run {
+                            command("cp", "-r", source.absolutePath, dest.get().asFile.normalize().absolutePath)
+                            inheritIO()
+                            start()
+                        }.waitFor().let {
+                            if (it != 0) {
+                                throw GradleException("Failed to copy $sourcePath")
+                            }
+                        }
+                        logger.info("Copied $source to $dest")
+                    }
+                }
+            }
+        }
+
+        Os.Linux -> {}
+        Os.Unknown -> {}
     }
 }
 
