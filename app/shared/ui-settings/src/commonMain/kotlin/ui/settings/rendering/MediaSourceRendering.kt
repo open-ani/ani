@@ -31,7 +31,6 @@ import me.him188.ani.app.ui.foundation.Res
 import me.him188.ani.app.ui.foundation.acg_rip
 import me.him188.ani.app.ui.foundation.dmhy
 import me.him188.ani.app.ui.foundation.mikan
-import me.him188.ani.app.ui.foundation.xfdm
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import org.jetbrains.compose.resources.painterResource
 
@@ -41,7 +40,6 @@ fun MediaSourceInfo.getIconResourceOrNull(): Painter? {
         "mikan.png" -> Res.drawable.mikan
         "acg-rip.png" -> Res.drawable.acg_rip
         "dmhy.png" -> Res.drawable.dmhy
-        "xfdm.png" -> Res.drawable.xfdm
         else -> null
     }
     return res?.let { painterResource(it) }

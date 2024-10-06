@@ -55,15 +55,12 @@ data class MediaSourceSaves(
                 config = MediaSourceConfig.Default,
             )
 
-            val enabledWebSources: List<String> =
-                listOf("xfdm")
             val enabledBtSources: List<String> =
                 listOf(MikanCNMediaSource.ID, "dmhy")
             val disabledBtSources: List<String> = listOf()
 
             MediaSourceSaves(
                 buildList {
-                    enabledWebSources.forEach { add(createSave(it, FactoryId(it), isEnabled = true)) }
                     enabledBtSources.forEach { add(createSave(it, FactoryId(it), isEnabled = true)) }
                     disabledBtSources.forEach { add(createSave(it, FactoryId(it), isEnabled = false)) }
                 },
