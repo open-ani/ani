@@ -274,7 +274,7 @@ jobs:
         id: packageReleaseDistributionForCurrentOS
 
       # 只在打包错误时上传日志
-      - if: steps.packageReleaseDistributionForCurrentOS.conclusion == 'failure'
+      - if: always() # steps.packageReleaseDistributionForCurrentOS.conclusion == 'failure'
         name: Upload compose logs
         uses: actions/upload-artifact@v4
         with:
