@@ -86,7 +86,6 @@ jobs:
             
             [qb-enhanced]: https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest
             
-            - PC 首次播放在线数据源时, 可能需要加载 10-30 秒。
             - macOS
             安装后如果无法打开: [解决方案](https://github.com/open-ani/ani/wiki/macOS-%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88)
             - Windows
