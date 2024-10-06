@@ -6,7 +6,7 @@ uploaded.
 ### 下载
 
 <details>
-<summary>>> <h3>点我展开下载列表</h3> <<</summary>
+<summary>>> <h1>点我展开下载列表</h1> <<</summary>
 
 [//]: # (注意, `checkLatestVersion` 有字符串处理, 修改标题和分隔符前务必查询)
 
