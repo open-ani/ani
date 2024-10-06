@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.Res
-import me.him188.ani.app.ui.foundation.acg_rip
 import me.him188.ani.app.ui.foundation.dmhy
 import me.him188.ani.app.ui.foundation.mikan
 import me.him188.ani.datasources.api.source.MediaSourceInfo
@@ -38,7 +37,6 @@ import org.jetbrains.compose.resources.painterResource
 fun MediaSourceInfo.getIconResourceOrNull(): Painter? {
     val res = when (this.iconResourceId) {
         "mikan.png" -> Res.drawable.mikan
-        "acg-rip.png" -> Res.drawable.acg_rip
         "dmhy.png" -> Res.drawable.dmhy
         else -> null
     }

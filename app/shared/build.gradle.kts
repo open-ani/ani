@@ -123,7 +123,6 @@ kotlin {
     sourceSets.getByName("jvmMain").dependencies {
         // TODO: to be commonized
         api(projects.datasource.dmhy)
-        api(projects.datasource.acgRip)
         api(projects.datasource.jellyfin)
         api(projects.datasource.ikaros)
 

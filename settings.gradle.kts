@@ -81,7 +81,6 @@ includeProject(
 includeProject(":datasource:bangumi", "datasource/bangumi") // https://bangumi.tv
 //   BT 数据源
 includeProject(":datasource:dmhy", "datasource/bt/dmhy") // https://dmhy.org
-includeProject(":datasource:acg-rip", "datasource/bt/acg.rip") // https://acg.rip
 includeProject(":datasource:mikan", "datasource/bt/mikan") // https://mikanani.me/
 //   Web 数据源
 includeProject(":datasource:web-base", "datasource/web/web-base") // web 基础
