@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import me.him188.ani.app.domain.bangumi.BangumiSubjectProvider
 import me.him188.ani.app.data.models.map
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.models.runApiRequest
@@ -63,8 +62,7 @@ import me.him188.ani.app.data.repository.TokenRepositoryImpl
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
 import me.him188.ani.app.data.repository.WhatslinkEpisodeScreenshotRepository
-import me.him188.ani.app.domain.session.AniAuthClient
-import me.him188.ani.app.domain.update.UpdateManager
+import me.him188.ani.app.domain.bangumi.BangumiSubjectProvider
 import me.him188.ani.app.domain.danmaku.DanmakuManager
 import me.him188.ani.app.domain.danmaku.DanmakuManagerImpl
 import me.him188.ani.app.domain.media.cache.DefaultMediaAutoCacheService
@@ -81,12 +79,14 @@ import me.him188.ani.app.domain.media.fetch.toClientProxyConfig
 import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
 import me.him188.ani.app.domain.mediasource.subscription.MediaSourceSubscriptionUpdater
 import me.him188.ani.app.domain.mediasource.subscription.SubscriptionUpdateData
+import me.him188.ani.app.domain.search.SubjectProvider
+import me.him188.ani.app.domain.session.AniAuthClient
 import me.him188.ani.app.domain.session.BangumiSessionManager
 import me.him188.ani.app.domain.session.OpaqueSession
 import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.domain.session.unverifiedAccessToken
-import me.him188.ani.app.domain.search.SubjectProvider
 import me.him188.ani.app.domain.torrent.TorrentManager
+import me.him188.ani.app.domain.update.UpdateManager
 import me.him188.ani.app.ui.subject.episode.video.TorrentMediaCacheProgressState
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.state.CacheProgressStateFactoryManager
@@ -286,11 +286,11 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
 
     coroutineScope.launch {
         // TODO: 这里是自动删除旧版数据源. 在未来 3.14 左右就可以去除这个了
-        val removedFactoryIds = setOf("ntdm", "mxdongman", "nyafun")
-        val manager = koin.get<MediaSourceManager>()
-        for (instance in manager.allInstances.first()) {
+        val removedFactoryIds = setOf("ntdm", "mxdongman", "nyafun", "gugufan", "xfdm", "acg.rip")
+        val manager = koin.get<MediaSourceInstanceRepository>()
+        for (instance in manager.flow.first()) {
             if (instance.factoryId.value in removedFactoryIds) {
-                manager.removeInstance(instance.instanceId)
+                manager.remove(instanceId = instance.instanceId)
             }
         }
     }
