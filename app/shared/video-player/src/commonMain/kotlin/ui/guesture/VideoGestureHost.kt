@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.layout.systemGesturesPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.BrightnessHigh
@@ -75,7 +76,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -828,11 +828,7 @@ fun VideoGestureHost(
             Box(
                 Modifier.fillMaxWidth()
                     .ifThen(isSystemInFullscreen()) {
-                        height(
-                            with(LocalDensity.current) {
-                                WindowInsets.systemGestures.getTop(this).toDp()
-                            },
-                        )
+                        windowInsetsTopHeight(WindowInsets.systemGestures)
                     }
                     .combineClickableWithFamilyGesture(),
             )
