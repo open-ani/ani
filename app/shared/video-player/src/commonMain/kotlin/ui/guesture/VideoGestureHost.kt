@@ -25,13 +25,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemGestures
@@ -78,6 +75,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -831,8 +829,9 @@ fun VideoGestureHost(
                 Modifier.fillMaxWidth()
                     .ifThen(isSystemInFullscreen()) {
                         height(
-                            WindowInsets.systemGestures.only(WindowInsetsSides.Top).asPaddingValues()
-                                .calculateTopPadding(),
+                            with(LocalDensity.current) {
+                                WindowInsets.systemGestures.getTop(this).toDp()
+                            },
                         )
                     }
                     .combineClickableWithFamilyGesture(),
