@@ -11,12 +11,18 @@ package me.him188.ani.app.ui.settings.mediasource.rss
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
@@ -31,14 +37,20 @@ import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowWidthSizeClass
-import me.him188.ani.app.data.source.media.source.RssMediaSource
-import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSource
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.RssSearchConfig
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.ThreePaneScaffoldValueConverter.ExtraPaneForNestedDetails
@@ -48,6 +60,11 @@ import me.him188.ani.app.ui.foundation.layout.panePadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.settings.mediasource.DropdownMenuExport
+import me.him188.ani.app.ui.settings.mediasource.DropdownMenuImport
+import me.him188.ani.app.ui.settings.mediasource.ExportMediaSourceState
+import me.him188.ani.app.ui.settings.mediasource.ImportMediaSourceState
+import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssDetailPane
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.SideSheetPane
 import me.him188.ani.app.ui.settings.mediasource.rss.edit.RssEditPane
@@ -62,12 +79,18 @@ import me.him188.ani.datasources.api.Media
  */
 @Stable
 class EditRssMediaSourceState(
-    argumentsStorage: SaveableStorage<RssMediaSourceArguments>,
+    private val argumentsStorage: SaveableStorage<RssMediaSourceArguments>,
+    private val allowEditState: State<Boolean>,
     val instanceId: String,
+    codecManager: MediaSourceCodecManager,
 ) {
     private val arguments by argumentsStorage.containerState
     val isLoading by derivedStateOf { arguments == null }
     val isSaving by argumentsStorage.isSavingState
+
+    val enableEdit by derivedStateOf {
+        !isLoading && allowEditState.value
+    }
 
     var displayName by argumentsStorage.prop(
         RssMediaSourceArguments::name, { copy(name = it) },
@@ -106,6 +129,15 @@ class EditRssMediaSourceState(
             filterBySubjectName = filterBySubjectName,
         )
     }
+
+    val importState = ImportMediaSourceState<RssMediaSourceArguments>(
+        codecManager,
+        onImport = { argumentsStorage.set(it) },
+    )
+    val exportState = ExportMediaSourceState(
+        codecManager,
+        onExport = { argumentsStorage.container },
+    )
 }
 
 @Composable
@@ -137,31 +169,51 @@ fun EditRssMediaSourcePage(
         modifier
             .fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    AnimatedContent(
-                        navigator.currentDestination?.pane,
-                        transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-                    ) {
-                        when (it) {
-                            ListDetailPaneScaffoldRole.List -> Text(state.displayName)
-                            ListDetailPaneScaffoldRole.Detail -> Text("测试数据源")
-                            ListDetailPaneScaffoldRole.Extra -> Text("详情")
-                            else -> Text(state.displayName)
+            WindowDragArea {
+                TopAppBar(
+                    title = {
+                        AnimatedContent(
+                            navigator.currentDestination?.pane,
+                            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+                        ) {
+                            when (it) {
+                                ListDetailPaneScaffoldRole.List -> Text(state.displayName)
+                                ListDetailPaneScaffoldRole.Detail -> Text("测试数据源")
+                                ListDetailPaneScaffoldRole.Extra -> Text("详情")
+                                else -> Text(state.displayName)
+                            }
                         }
-                    }
-                },
-                navigationIcon = { TopAppBarGoBackButton() },
-                colors = AniThemeDefaults.topAppBarColors(),
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                actions = {
-                    if (navigator.scaffoldValue[ListDetailPaneScaffoldRole.Detail] == PaneAdaptedValue.Hidden) {
-                        TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
-                            Text("测试")
+                    },
+                    navigationIcon = { TopAppBarGoBackButton() },
+                    colors = AniThemeDefaults.topAppBarColors(),
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                    actions = {
+                        if (navigator.scaffoldValue[ListDetailPaneScaffoldRole.Detail] == PaneAdaptedValue.Hidden) {
+                            TextButton({ navigator.navigateTo(ListDetailPaneScaffoldRole.Detail) }) {
+                                Text("测试")
+                            }
                         }
-                    }
-                },
-            )
+                        Box {
+                            var showDropdown by remember { mutableStateOf(false) }
+                            IconButton({ showDropdown = true }) {
+                                Icon(Icons.Rounded.MoreVert, "更多")
+                            }
+                            DropdownMenu(showDropdown, { showDropdown = false }) {
+                                MediaSourceConfigurationDefaults.DropdownMenuImport(
+                                    state = state.importState,
+                                    onImported = { showDropdown = false },
+                                    enabled = !state.isLoading,
+                                )
+                                MediaSourceConfigurationDefaults.DropdownMenuExport(
+                                    state = state.exportState,
+                                    onDismissRequest = { showDropdown = false },
+                                    enabled = !state.isLoading,
+                                )
+                            }
+                        }
+                    },
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

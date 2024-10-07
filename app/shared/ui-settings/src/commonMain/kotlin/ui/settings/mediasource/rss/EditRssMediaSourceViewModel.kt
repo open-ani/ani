@@ -26,14 +26,15 @@ import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
-import me.him188.ani.app.data.source.media.fetch.updateMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.DefaultRssMediaSourceEngine
-import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.RssSearchConfig
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.media.fetch.toClientProxyConfig
+import me.him188.ani.app.domain.media.fetch.updateMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.DefaultRssMediaSourceEngine
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.RssSearchConfig
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.rss.RssParser
+import me.him188.ani.app.domain.rss.RssParser
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.settings.mediasource.rss.test.RssTestPaneState
 import me.him188.ani.datasources.api.source.HttpMediaSource
@@ -50,6 +51,7 @@ class EditRssMediaSourceViewModel(
 ) : AbstractViewModel(), KoinComponent {
     private val mediaSourceManager: MediaSourceManager by inject()
     private val settingsRepository: SettingsRepository by inject()
+    private val codecManager: MediaSourceCodecManager by inject()
 
     private val instanceId: MutableStateFlow<String> = MutableStateFlow(initialInstanceId)
 
@@ -65,12 +67,15 @@ class EditRssMediaSourceViewModel(
         coroutineScope {
             val saveTasker = MonoTasker(this)
             val arguments = mutableStateOf<RssMediaSourceArguments?>(null)
+            val allowEdit = mutableStateOf(false)
             launch {
-                val persisted = mediaSourceManager.instanceConfigFlow(instanceId).first()
+                val config = mediaSourceManager.instanceConfigFlow(instanceId).first()
+                val persisted = config
                     ?.deserializeArgumentsOrNull(RssMediaSourceArguments.serializer())
                     ?: RssMediaSourceArguments.Default
                 withContext(Dispatchers.Main) {
                     arguments.value = persisted
+                    allowEdit.value = config != null && config.subscriptionId == null
                 }
             }
             emit(
@@ -89,7 +94,9 @@ class EditRssMediaSourceViewModel(
                         },
                         isSavingState = derivedStateOf { saveTasker.isRunning },
                     ),
+                    allowEditState = allowEdit,
                     instanceId = instanceId,
+                    codecManager = codecManager,
                 ),
             )
         }

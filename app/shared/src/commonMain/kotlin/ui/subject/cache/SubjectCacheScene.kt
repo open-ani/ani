@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.cache
 
 import androidx.compose.foundation.layout.Column
@@ -38,17 +47,18 @@ import me.him188.ani.app.data.models.subject.nameCnOrName
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
 import me.him188.ani.app.data.repository.EpisodePreferencesRepository
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.media.cache.requester.CacheRequestStage
-import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequest
-import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequester
-import me.him188.ani.app.data.source.media.cache.requester.EpisodeCacheRequesterImpl
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.selector.MediaSelectorFactory
-import me.him188.ani.app.data.source.media.selector.eventHandling
+import me.him188.ani.app.domain.media.cache.MediaCacheManager
+import me.him188.ani.app.domain.media.cache.requester.CacheRequestStage
+import me.him188.ani.app.domain.media.cache.requester.EpisodeCacheRequest
+import me.him188.ani.app.domain.media.cache.requester.EpisodeCacheRequester
+import me.him188.ani.app.domain.media.cache.requester.EpisodeCacheRequesterImpl
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.media.selector.MediaSelectorFactory
+import me.him188.ani.app.domain.media.selector.eventHandling
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.launchInBackground
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
@@ -277,16 +287,18 @@ fun SubjectCachePageScaffold(
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = {
-                    title()
-                },
-                navigationIcon = {
-                    TopAppBarGoBackButton()
-                },
-                colors = appBarColors,
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                TopAppBar(
+                    title = {
+                        title()
+                    },
+                    navigationIcon = {
+                        TopAppBarGoBackButton()
+                    },
+                    colors = appBarColors,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

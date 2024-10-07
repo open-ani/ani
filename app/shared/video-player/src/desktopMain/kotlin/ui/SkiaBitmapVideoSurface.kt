@@ -82,8 +82,16 @@ class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVideoSurface
             bufferFormat: BufferFormat,
         ) {
             val allowedDrawFramesValue = allowedDrawFrames.value
-            if (!enableRendering.value && allowedDrawFramesValue <= 0) return
-            if (allowedDrawFrames.decrementAndGet() < 0) return
+
+            if (!enableRendering.value) {
+                if (allowedDrawFramesValue <= 0) {
+                    return
+                }
+                if (allowedDrawFrames.decrementAndGet() < 0) return
+            } else {
+                // 允许渲染, 不考虑 allowedDrawFrames
+            }
+
             SwingUtilities.invokeLater {
                 nativeBuffers[0].rewind()
                 nativeBuffers[0].get(frameBytes)

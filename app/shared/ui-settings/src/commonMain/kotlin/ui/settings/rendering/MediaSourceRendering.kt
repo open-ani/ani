@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.rendering
 
 import androidx.compose.foundation.Image
@@ -19,14 +28,8 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.LocalIsPreviewing
 import me.him188.ani.app.ui.foundation.Res
-import me.him188.ani.app.ui.foundation.acg_rip
 import me.him188.ani.app.ui.foundation.dmhy
-import me.him188.ani.app.ui.foundation.gugufan
 import me.him188.ani.app.ui.foundation.mikan
-import me.him188.ani.app.ui.foundation.mxdongman
-import me.him188.ani.app.ui.foundation.ntdm
-import me.him188.ani.app.ui.foundation.nyafun
-import me.him188.ani.app.ui.foundation.xfdm
 import me.him188.ani.datasources.api.source.MediaSourceInfo
 import org.jetbrains.compose.resources.painterResource
 
@@ -34,13 +37,7 @@ import org.jetbrains.compose.resources.painterResource
 fun MediaSourceInfo.getIconResourceOrNull(): Painter? {
     val res = when (this.iconResourceId) {
         "mikan.png" -> Res.drawable.mikan
-        "acg-rip.png" -> Res.drawable.acg_rip
         "dmhy.png" -> Res.drawable.dmhy
-        "gugufan.png" -> Res.drawable.gugufan
-        "mxdongman.png" -> Res.drawable.mxdongman
-        "ntdm.png" -> Res.drawable.ntdm
-        "nyafun.png" -> Res.drawable.nyafun
-        "xfdm.png" -> Res.drawable.xfdm
         else -> null
     }
     return res?.let { painterResource(it) }
@@ -64,9 +61,9 @@ fun MediaSourceIcon(
             )
         }
 
-        sourceInfo?.iconUrl != null -> {
+        sourceInfo != null -> {
             AsyncImage(
-                sourceInfo.iconUrl,
+                sourceInfo.iconUrl?.takeIf { it.isNotEmpty() } ?: MediaSourceIcons.getDefaultIconUrl(sourceInfo),
                 null,
                 modifier,
                 contentScale = ContentScale.Crop,
@@ -108,19 +105,9 @@ fun SmallMediaSourceIcon(
                 )
             }
 
-            info.iconUrl != null -> {
-                AsyncImage(
-                    info.iconUrl,
-                    null, Modifier.size(24.dp),
-                    contentScale = ContentScale.Crop,
-                    alignment = Alignment.Center,
-                    colorFilter = null,
-                )
-            }
-
             else -> {
-                Image(
-                    rememberVectorPainter(Icons.Rounded.DisplaySettings),
+                AsyncImage(
+                    info.iconUrl?.takeIf { it.isNotEmpty() } ?: MediaSourceIcons.getDefaultIconUrl(info),
                     null, Modifier.size(24.dp),
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center,

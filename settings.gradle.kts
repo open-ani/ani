@@ -1,19 +1,10 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright (C) 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
 rootProject.name = "ani"
@@ -28,7 +19,7 @@ pluginManagement {
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
 fun includeProject(projectPath: String, dir: String? = null) {
@@ -38,6 +29,7 @@ fun includeProject(projectPath: String, dir: String? = null) {
 
 // Utilities shared by client and server (targeting JVM)
 includeProject(":utils:platform") // 适配各个平台的基础 API
+includeProject(":utils:intellij-annotations")
 includeProject(":utils:logging") // shared by client and server (targets JVM)
 includeProject(":utils:serialization", "utils/serialization")
 includeProject(":utils:coroutines", "utils/coroutines")
@@ -45,6 +37,7 @@ includeProject(":utils:ktor-client", "utils/ktor-client")
 includeProject(":utils:io", "utils/io")
 includeProject(":utils:testing", "utils/testing")
 includeProject(":utils:xml")
+includeProject(":utils:jsonpath")
 includeProject(":utils:bbcode", "utils/bbcode")
 includeProject(":utils:bbcode:test-codegen")
 includeProject(":utils:ip-parser", "utils/ip-parser")
@@ -88,15 +81,9 @@ includeProject(
 includeProject(":datasource:bangumi", "datasource/bangumi") // https://bangumi.tv
 //   BT 数据源
 includeProject(":datasource:dmhy", "datasource/bt/dmhy") // https://dmhy.org
-includeProject(":datasource:acg-rip", "datasource/bt/acg.rip") // https://acg.rip
 includeProject(":datasource:mikan", "datasource/bt/mikan") // https://mikanani.me/
 //   Web 数据源
 includeProject(":datasource:web-base", "datasource/web/web-base") // web 基础
-includeProject(":datasource:nyafun", "datasource/web/nyafun") // https://nyafun.net/
-includeProject(":datasource:mxdongman", "datasource/web/mxdongman") // https://mxdm4.com/
-includeProject(":datasource:ntdm", "datasource/web/ntdm") // https://ntdm.tv/
-includeProject(":datasource:gugufan", "datasource/web/gugufan")
-includeProject(":datasource:xfdm", "datasource/web/xfdm")
 includeProject(":datasource:jellyfin", "datasource/jellyfin")
 includeProject(":datasource:ikaros", "datasource/ikaros") // https://ikaros.run/
 

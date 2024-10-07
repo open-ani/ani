@@ -51,11 +51,11 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.supervisorScope
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.subjectInfoFlow
-import me.him188.ani.app.data.source.media.cache.MediaCache
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.media.cache.MediaCacheState
-import me.him188.ani.app.data.source.media.cache.engine.MediaStats
-import me.him188.ani.app.data.source.media.cache.engine.sum
+import me.him188.ani.app.domain.media.cache.MediaCache
+import me.him188.ani.app.domain.media.cache.MediaCacheManager
+import me.him188.ani.app.domain.media.cache.MediaCacheState
+import me.him188.ani.app.domain.media.cache.engine.MediaStats
+import me.him188.ani.app.domain.media.cache.engine.sum
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.torrent.api.files.averageRate
 import me.him188.ani.app.ui.cache.components.CacheEpisodePaused
@@ -68,6 +68,7 @@ import me.him188.ani.app.ui.cache.components.CacheGroupState
 import me.him188.ani.app.ui.cache.components.CacheManagementOverallStats
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.produceState
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -109,7 +110,7 @@ class CacheManagementViewModel(
         }.produceState(emptyList()),
     )
 
-    private fun CoroutineScope.createCacheGroupStates(allCaches: List<MediaCache>) =
+    private fun CoroutineScope.createCacheGroupStates(allCaches: List<_root_ide_package_.me.him188.ani.app.domain.media.cache.MediaCache>) =
         allCaches.groupBy { it.origin.unwrapCached().mediaId }.map { (_, episodes) ->
             check(episodes.isNotEmpty())
 
@@ -162,7 +163,7 @@ class CacheManagementViewModel(
 
     private fun createGroupCommonInfo(
         subjectId: Int,
-        firstCache: MediaCache,
+        firstCache: _root_ide_package_.me.him188.ani.app.domain.media.cache.MediaCache,
         subjectDisplayName: String,
         imageUrl: String?,
     ) = CacheGroupCommonInfo(
@@ -173,7 +174,7 @@ class CacheManagementViewModel(
         imageUrl = imageUrl,
     )
 
-    private fun CoroutineScope.createCacheEpisode(mediaCache: MediaCache): CacheEpisodeState {
+    private fun CoroutineScope.createCacheEpisode(mediaCache: _root_ide_package_.me.him188.ani.app.domain.media.cache.MediaCache): CacheEpisodeState {
         val fileStats = mediaCache.fileStats
             .shareIn(this, started = SharingStarted.Eagerly, replay = 1)
         return CacheEpisodeState(
@@ -202,8 +203,8 @@ class CacheManagementViewModel(
                 .produceState(CacheEpisodeState.Stats.Unspecified, this),
             state = mediaCache.state.map {
                 when (it) {
-                    MediaCacheState.IN_PROGRESS -> CacheEpisodePaused.IN_PROGRESS
-                    MediaCacheState.PAUSED -> CacheEpisodePaused.PAUSED
+                    _root_ide_package_.me.him188.ani.app.domain.media.cache.MediaCacheState.IN_PROGRESS -> CacheEpisodePaused.IN_PROGRESS
+                    _root_ide_package_.me.him188.ani.app.domain.media.cache.MediaCacheState.PAUSED -> CacheEpisodePaused.PAUSED
                 }
             }.produceState(CacheEpisodePaused.IN_PROGRESS, this),
             onPause = { mediaCache.pause() },
@@ -264,16 +265,18 @@ fun CacheManagementPage(
     Scaffold(
         modifier,
         topBar = {
-            TopAppBar(
-                title = { Text("缓存管理") },
-                navigationIcon = {
-                    if (showBack) {
-                        TopAppBarGoBackButton()
-                    }
-                },
-                colors = appBarColors,
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-            )
+            WindowDragArea {
+                TopAppBar(
+                    title = { Text("缓存管理") },
+                    navigationIcon = {
+                        if (showBack) {
+                            TopAppBarGoBackButton()
+                        }
+                    },
+                    colors = appBarColors,
+                    windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                )
+            }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->

@@ -19,45 +19,74 @@
 ## 目录
 
 1. 开发工具: IDE, JDK, 推荐插件
-2. 代码风格: 格式化, 规范
-3. 模块结构: 整个项目范围的模块划分, 模块间依赖
-4. 依赖管理: 依赖版本管理
-5. 构建打包: 如何编译, 如何打包 APK, 如何调试
+2. 代码风格与代码规范
+3. 项目总体架构: 整个项目范围的模块划分, 模块间依赖
+4. 构建和打包: 如何编译, 如何打包 APK
+5. 运行调试版本 APP
 6. App 架构: 最主要的客户端模块的层级划分, 以及各层的职责
 7. 开发与调试: 源集结构, 预览 Compose UI, Navigation, 问答, 以及一些坑
 
 ## 1. 开发工具和环境
 
-请使用 Android Studio. Intellij IDEA 会无法预览 UI.
+> [!IMPORTANT]
+> 这些步骤只需要几分钟即可完成, 请不要跳过. 跳过可能会导致花费更多时间解决问题.
 
-- 需要 Android SDK 版本至少为 API 34
+### 准备 IDE
 
-安装如下 IDE 插件:
+强烈建议使用最新的正式版 Android Studio (AS).
 
-- Jetpack Compose
+必须安装如下 IDE 插件:
+
+- Jetpack Compose (AS 已内置)
+- Android Design Tools (AS 已内置)
 - Compose Multiplatform IDE Support
-- Kotlin Multiplatform (为了运行 iOS)
-- Compose colors preview (可选安装, 用于预览颜色)
+
+建议也安装:
+
+- Compose colors preview (用于预览颜色)
+- Kotlin Multiplatform (如果你需要运行 iOS APP)
+- JSONPath (用于高亮 JSONPath 语法)
 - ANTLR v4 (如果你要修改 BBCode 解析模块)
+
+### Clone 仓库
+
+建议使用 IDE clone 功能. 如果你要自己使用命令行 clone, 必须添加 `--recursive`:
+
+```shell
+git clone --recursive git@github.com:open-ani/ani.git
+# or 
+git clone --recursive https://github.com/open-ani/ani.git
+```
 
 > [!WARNING]
 > **Windows 特别提示**
 >
-> 建议设置 Git 使用 LF 并忽略文件权限.
+> 建议在 clone 项目后立即设置 Git 使用 LF 并忽略文件权限.
 >
 >   ```shell
 >   git config core.autocrlf false
 >   git config core.eol lf
 >   git config core.filemode false
->   git add --update --renormalize
 >   ```
 
-### 配置 Android NDK
+### 准备 JDK (JetBrains Runtime with JCEF)
 
-Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开发:
+由于 PC 端使用 [JCEF](https://github.com/jetbrains/jcef) (内置浏览器), JDK 必须使用 JetBrains
+Runtime (JCEF), 版本 21, 下文简称 JBR.
+
+需要自行安装 JBR. 在 Android Studio 或 IntelliJ IDEA 中, 如下图所示, 可打开设置
+`Build, Execution, Deployment -> Build Tools -> Gradle`, 修改 Gradle JDK 配置为 JBR (JCEF) 21.
+
+<img src=".readme/images/contributing/idea-settings-download-jdk.png" alt="download jbr" width="400"/>
+<img src=".readme/images/contributing/idea-settings-download-jdk-version.png" alt="choose version" width="200"/>
+
+### 配置 Android SDK & NDK
+
+项目包含使用 Android NDK 的 C++ 代码. 必须配置 NDK 才能编译:
 
 1. 打开 SDK Manager (Android Studio 中 Tools -> SDK Manager)
-2. 安装 NDK 和 Cmake 并更新到最新版本
+2. 安装 SDK 至少 34
+3. 安装 Android SDK Build-Tools, NDK 和 Cmake 并更新到最新版本
 
 ## 2. 代码风格与代码规范
 
@@ -80,7 +109,7 @@ Android 包含使用 Android NDK 的 C++ 代码. 你需要配置 NDK 才能开�
 - PR 审核将会比较严格. 在保证项目代码质量的同时, 我们也希望尽可能地帮助你提高技术水平.
   审核者技术有限, 如有意见不统一的情况, 请务必提出, 相互学习 :)
 
-## 项目总体架构
+## 3. 项目总体架构
 
 Ani 现在已经是一个不小的项目, 本章节将给你一个全局的了解.
 
@@ -154,9 +183,9 @@ Compose Multiplatform 在 `desktop` 和 `ios` 均使用 [Skiko][Skiko] 渲染, �
 > 如果有一些功能只有一个平台需要, 例如 PC 上的隐藏鼠标指针功能, 你仍然需要为所有平台提供实现,
 > 将函数体留空即可.
 
-### 模块结构
+### 项目架构
 
-模块结构也对应源码目录结构.
+模块结构也对应源码目录结构. 对于具体的模块说明, 请查看 [6. App 项目架构](#6-app-项目架构).
 
 ```mermaid
 flowchart TD
@@ -181,22 +210,11 @@ flowchart TD
         subgraph "BT"
             direction TB
             dmhy(dmhy)
-            acg.rip(acg.rip)
             mikan(mikan)
         end
 
-        subgraph "在线"
-            direction TB
-            data-sources:nyafun(nyafun) --> data-sources:web-base
-            data-sources:ntdm(ntdm) --> data-sources:web-base
-            data-sources:...(...) --> data-sources:web-base
-            class data-sources:... omitted
-            data-sources:web-base[:data-sources:web-base]
-        end
-
-        在线 --> data-sources:api
-        BT --> data-sources:api
-        data-sources:bangumi(:data-sources:bangumi<br/>Bangumi, 提供条目数据) --> data-sources:api
+        BT --> datasource:api
+        Ikaros(Ikaros) --> datasource:api
     end
 
     数据源 --> 基础工具
@@ -206,6 +224,7 @@ flowchart TD
     subgraph "弹幕"
         danmaku:api[:danmaku:api <br/> 多弹幕源接口]
         danmaku:dandanplay[:danmaku:dandanplay<br/> 弹弹 play] --> danmaku:api
+        :client[:client<br/> Ani 弹幕服务] --> danmaku:api
         danmaku:ui[:danmaku:ui<br/> 视频播放器 UI 的弹幕层] --> danmaku:api
     end
 
@@ -223,31 +242,61 @@ flowchart TD
     APP --> BitTorrent
 
     subgraph "APP"
+        direction LR
         android[":app:android <br/> Android 入口"] --> shared:application
         desktop[":app:desktop <br/> 桌面端入口"] --> shared:application
         ios[":app:ios <br/> 计划"] --> shared:application
-        shared:application[":app:shared:application<br/>APP 启动入口"] --> shared
-        shared:app-data[":app:shared:app-data<br/>数据层"]
-        shared:app-data --> shared:app-platform
-        shared:app-data --> client
-        shared:ui-foundation[":app:shared:ui-foundation<br/>UI 通用组件"] --> shared:app-platform
-        shared:app-platform[":app:shared:app-platform<br/>平台 API 适配"]
-        shared[":app:shared<br/>UI 和业务逻辑"] --> shared:app-data
-        shared --> shared:ui-foundation
-        client[":client<br/>Ani 云服务客户端 (弹幕+登录)"]
+        shared:application[":app:shared:application<br/>APP 启动入口"] --> app_business
+    %% shared:app-data --> client
+    %% client[":client<br/>Ani 云服务客户端 (弹幕+登录)"]
         style android fill: cyan, color: black
         style desktop fill: cyan, color: black
         style ios fill: cyan, stroke-dasharray: 4 4, color: black
 
-        subgraph "UI组件"
-            image-viewer[:app:shared:image-view<br/>图片查看器]
+        subgraph app_business ["业务层"]
+            direction LR
+            shared[":app:shared<br/>绝大部分 UI<br/>(各页面)"]
+            shared:ui-settings[":app:shared:ui-settings<br/>UI 设置页面部分"]
+            image-viewer[:app:shared:image-viewer<br/>图片查看器]
+            shared --> image-viewer
             video-player[:app:shared:video-player<br/>视频播放器]
-            placeholder[:app:shared:placeholder<br/>载入特效组件]
+            shared --> video-player
             reorderable[:app:shared:reorderable<br/>长按排序组件]
+            shared --> reorderable
+            shared --> shared:ui-settings
         end
 
-        UI组件 --> shared:ui-foundation
-        shared --> UI组件
+        app_business --> app_foundation
+
+        subgraph app_foundation ["ui-foundation"]
+            direction LR
+            animation(animation)
+            layout(layout)
+            richtext(RichText)
+            theme(theme)
+        end
+
+        app_foundation --> app_data
+
+        subgraph app_data [app-data 数据层]
+            direction LR
+        %% app_data:spacer(" ")
+        %% class app_data:spacer omitted
+            MediaSourceManager(MediaSourceManager)
+            MediaCaching(Media Caching)
+            room[(Room Database)]
+            datastore[(DataStore)]
+        end
+
+        app_data --> app_platform
+        subgraph app_platform ["`app-platform 平台层`"]
+            direction LR
+        %% app_platform:spacer2(" ")
+        %% class app_platform:spacer2 omitted
+            DateFormatter(DateFormatter)
+            permission(PermissionManager)
+            audio(AudioManager)
+        end
     end
 ```
 
@@ -260,10 +309,101 @@ flowchart TD
 > - Compose for Desktop 在多平台项目里面构建很难配置, 因此用单独的模块只用于打包.
 > - iOS 需要使用 Xcode 项目才能启动
 
-## 运行测试版本 APP
+## 4. 构建打包
 
-以下各个小节分别说明如何运行各个平台的测试. 如果遇到问题,
-请查看 [常见构建和运行问题](#常见构建和运行问题)
+如果遇到问题, 请查看 [常见构建和运行问题](#常见构建和运行问题)
+
+### 考虑禁用一些编译目标
+
+编译整个项目是对你的电脑的一个考验 :P
+
+在高性能个人机器上 (Apple M2 Max / AMD Ryzen 7 5800X / Intel i9-12900H + 64 GB 内存) 编译整个项目仍然可能需要
+10 分钟以上.
+
+**对于 macOS**: 由于 macOS 上支持构建 iOS (也默认开启), 对内存的需求会大幅上升. 如果你的电脑的内存为
+16
+GB 左右, 即使是 M3 Pro CPU, 编译和测试仍然需要 30 分钟. 如果你的电脑小于 32 GB, 建议禁用 iOS
+目标编译来缩短时间.
+
+> [!TIP] 禁用 iOS 目标
+>
+> 在项目根目录的 `local.properties` 中增加以下内容:
+>
+> ```properties
+> ani.enable.ios=false
+> ani.build.framework=false
+> ```
+
+**对于所有操作系统**, 都建议禁用你不需要的 Android 架构. 例如你的手机是 arm64-v8a (
+绝大部分手机都是
+), 那么可以设置只构建这个架构, 将大幅提升编译速度.
+
+> [!TIP] 只启用 Android arm64-v8a 架构
+>
+> 在项目根目录的 `local.properties` 中增加以下内容:
+>
+> ```properties
+> ani.android.abis=arm64-v8a
+> ```
+
+### 打包 Android APP
+
+在 IDE 中双击 Ctrl, 执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
+，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
+
+在 IDE 上也可以选择 `Build -> Build Bundle(s) / APK(s) -> Build APK(s)` 来构建 APK.
+
+### 打包桌面应用
+
+要构建桌面应用，请参考 [Compose for Desktop]
+官方文档，或简单执行 `./gradlew createReleaseDistributable`
+，结果保存在 `app/desktop/build/compose/binaries` 中。
+
+一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
+
+### 运行测试
+
+在 IDE 中双击 Ctrl, 执行 `./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
+
+在 macOS 上, 这将会运行全部测试, 总共约 8000 个 (如果未启用 iOS 目标, 会少一些). 在 Windows 上只能运行安卓和
+JVM 平台测试, 无法运行
+iOS 测试.
+
+> [!TIP]
+> **重复运行测试**
+>
+> 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
+>
+> 可使用 `./gradlew clean check` 清空缓存并重新运行所有测试.
+
+### 常见构建和运行问题
+
+#### 提示找不到 `reorderable`
+
+未找到 `app/shared/reorderable`, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
+
+1. `git submodule update --init --recursive`
+2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
+3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
+
+#### 编译报错找不到 `Res.*`
+
+这是 Compose 的 bug, 请生成 Compose Multiplatform 资源:
+
+执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
+
+#### Android 触发断点恢复运行后, APP 无响应
+
+打开 `app.android` 的配置, 将 Debugger -> Debug type 改为 Java only.
+
+#### 启动 PC 版时报错 `ClassNotDefFoundError`
+
+打开 `Run Desktop` 的配置, 复制一份, 将 "Use classpath of module" 改为 `ani.app.desktop.test`.
+如果又遇到了, 则改回来 `ani.app.desktop.main`.
+
+## 5. 运行调试版本 APP
+
+以下各个小节分别说明如何运行各个平台的调试 APP (支持断点).
 
 ### 什么是 Run Configuration (运行配置)
 
@@ -307,93 +447,24 @@ Android Studio 的调试器同时支持调试 Kotlin 和 C++ 代码 (torrent 部
 
 在 Android Studio 中, 选择运行配置 `Run iOS Debug`, 点击按钮运行即可.
 
-### 常见构建和运行问题
-
-#### 提示找不到 `reorderable`
-
-未找到 `app/shared/reorderable`, 这是因为没有正确 clone 导致的. 可尝试下列任一方法解决:
-
-1. `git submodule update --init --recursive`
-2. 使用 Android Studio 的 New Project from Version Control, 而不要使用命令行
-3. 使用命令行时确保带上 recursive 选项: `git clone --recursive git@github.com:open-ani/ani.git`
-
-#### 编译报错找不到 `Res.*`
-
-这是 Compose 的 bug, 请生成 Compose Multiplatform 资源:
-
-执行 `./gradlew generateComposeResClass` 即可生成一个 `Res` 类, 用于在 `:app:shared` 访问资源文件.
-
-#### Android 触发断点恢复运行后, APP 无响应
-
-打开 `app.android` 的配置, 将 Debugger -> Debug type 改为 Java only.
-
-#### 启动 PC 版时报错 `ClassNotDefFoundError`
-
-打开 `Run Desktop` 的配置, 复制一份, 将 "Use classpath of module" 改为 `ani.app.desktop.test`.
-
-## 打包 APP
-
-### 打包 Android APP
-
-执行 `./gradlew assembleRelease` 或 `./gradlew assembleDebug`
-，分别编译发布版或测试版。使用 `./gradlew installRelease` 或 `./gradlew installDebug` 还可以构建应用并安装到模拟器。
-
-在 IDE 上
-
-### 打包桌面应用
-
-要构建桌面应用，请参考 [Compose for Desktop]
-官方文档，或简单执行 `./gradlew createReleaseDistributable`
-，结果保存在 `app/desktop/build/compose/binaries` 中。
-
-一个操作系统只能构建对应的桌面应用，例如 Windows 只能构建 Windows 应用，而不能构建 macOS 应用。
-
-## 运行测试
-
-`./gradlew check` 可以运行所有测试，包括单元测试和 UI 测试。
-
-在 macOS 上, 这将会运行全部测试, 总共约 8000 个. 在 Windows 上只能运行安卓和 JVM 平台测试, 无法运行
-iOS 测试.
-
-> [!TIP]
-> **重复运行测试**
->
-> 由于启用了 Gradle build cache, 如果代码没有修改, test 就不会执行.
->
-> 可使用 `./gradlew clean check` 清空缓存并重新运行所有测试.
-
 ## 6. App 项目架构
 
-本节将介绍客户端共享模块 (`:app:shared`) 的架构设计.
+本节将介绍客户端共享模块 (`:app:shared`) 的架构设计, 也就是对应目录 `app/shared` 里的内容.
+建议搭配上面的架构图看.
 
-> 也就是对应目录 `app/shared` 里的内容.
+### `app-data`: 数据层
 
-在 `:app:shared` 中,
-参照 [Android 应用程序模块化指南](https://developer.android.com/topic/modularization),
-Ani 按照功能进行了一定程度的模块化.
-
-`app/shared` 下有许多目录, 每个目录存放一个功能的所有相关代码:
-
-建议你打开 IDE 对照看.
-
-### `data`: 数据层
-
-包含所有外部数据和本地持久化存储的高级封装. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问,
-而是调用这里的接口.
+包含对 UI 需要使用到的所有数据的管理. 后面介绍的 UI 层不会进行 HTTP 请求或是文件访问, 而是调用这里的接口.
 
 数据层包含许多模块：
 
 * `models`: App UI 或其他组件使用的数据结构，外部数据源的数据结构将会转换到此包中数据结构.
 * `persistent`: 数据持久化包，例如轻量数据 preference 和大量数据 database.
 * `repository`: 数据仓库，通常是外部数据源与 App 交互的中间仓库.
+* `bangumi`: Bangumi 索引数据源的相关实现. 例如搜索条目
 * `source`: 数据源.
 
 App 主要通过 `repository` 和 `source` 与外部数据交互.
-
-data
-还提供了一个 [
-`MediaFetcher`](https://github.com/open-ani/ani/tree/master/app/shared/src/commonMain/kotlin/data/source/media/fetch/MediaFetcher.kt#L59),
-封装了对番剧的下载链接获取逻辑.
 
 ### `foundation`: 基础组件
 
@@ -456,17 +527,17 @@ Page (首页/我的收藏/个人中心).
 
 ### Ani 的数据层
 
-数据层主要包含两个部分: 单独的数据源 (`:data-sources`) 与放在 `app/shared/data`
+数据层主要包含两个部分: 单独的数据源 (`:datasource`) 与放在 `app/shared/data`
 目录的数据仓库 (`Repository`).
 
-各数据源位于 app 模块之外的项目根目录的 `data-sources` 目录下. 数据源列表:
+各数据源位于 app 模块之外的项目根目录的 `datasource` 目录下. 数据源列表:
 
-- `data-sources/bangumi`: Bangumi 索引数据源, 提供番剧索引, 观看记录等.
+- `datasource/bangumi`: Bangumi 索引数据源, 提供番剧索引, 观看记录等.
     - API 客户端使用其官方 OpenAPI 文档自动生成
-- `data-sources/api`: 下载数据源的抽象, 定义了数据源的接口以供接入多个下载数据源.
-- `data-sources/dmhy`: 动漫花园下载数据源, 只提供番剧下载链接.
-- `data-sources/acg.rip`: acg.rip 下载数据源, 只提供番剧下载链接.
-- `data-sources/mikan`: mikanani.me 下载数据源, 只提供番剧下载链接.
+- `datasource/api`: 下载数据源的抽象, 定义了数据源的接口以供接入多个下载数据源.
+- `datasource/dmhy`: 动漫花园下载数据源, 只提供番剧下载链接.
+- `datasource/acg.rip`: acg.rip 下载数据源, 只提供番剧下载链接.
+- `datasource/mikan`: mikanani.me 下载数据源, 只提供番剧下载链接.
 - ... 欢迎 PR 更多支持例如 SMB
 
 ## 7. 开发与调试
@@ -559,3 +630,4 @@ navigator,
    > 这是为了设置改目录下的默认包名.
 5. 然后就可以在 `common` 里添加 `PersonDetailsPage`, `PersonDetailsViewModel` 等了. 可以参考
    已有的类似的页面的实现. 例如对于实现人员详情页面, 可以参考 `SubjectDetailsPage`.
+

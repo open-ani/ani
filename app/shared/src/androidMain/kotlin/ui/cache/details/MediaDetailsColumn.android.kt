@@ -11,7 +11,7 @@ package me.him188.ani.app.ui.cache.details
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.domain.media.TestMediaList
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.datasources.mikan.MikanCNMediaSource
 import me.him188.ani.utils.platform.annotations.TestOnly

@@ -26,12 +26,13 @@ jobs:
           # matrix properties can be booleans. Check for plain true and false.
           - os: windows-2019
             name: Windows x86_64
-            uploadApk: false
+            uploadApk: true
             arch: x64
             anitorrent: true
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
             run_tests: true
+            assemble: true
             gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
           - os: ubuntu-20.04
             name: Ubuntu x86_64 (Compile only)
@@ -41,15 +42,17 @@ jobs:
             anitorrent_separate_build: false
             compose_resource_triple: linux-x64
             run_tests: false # 只编译, 因为 test 不支持 linux
+            assemble: false
             gradleArgs: '-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8 -Dkotlin.daemon.jvm.options=-Xmx4096M'
           - os: macos-13
             name: macOS x86_64
-            uploadApk: true
+            uploadApk: false
             arch: x64
             anitorrent: true
             anitorrent_separate_build: true # macOS native 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
             run_tests: true
+            assemble: true
             gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4g
               -Dfile.encoding=UTF-8
@@ -97,11 +100,18 @@ jobs:
         run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
         continue-on-error: true
 
-      - uses: actions/setup-java@v4
+      - if: ${{ startsWith(matrix.os, 'macos') }}
+        name: Remove old JDKs
+        run: rm -rf /Users/runner/hostedtoolcache/Java_Zulu_jdk/
+        continue-on-error: true
+
+      - name: Setup JBR 21
+        uses: gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d
         with:
-          distribution: zulu
-          java-version: 17
-          architecture: ${{ matrix.arch }}
+          distribution: 'jetbrains'
+          java-version: 21
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies
@@ -159,7 +169,7 @@ jobs:
       - name: Explicitly generate Compose resources
         run: ./gradlew generateComposeResClass ${{ env.gradleArgs }}
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ matrix.uploadApk }}
         name: Prepare signing key
         id: android_signing_key
         uses: timheuer/base64-to-file@v1.1
@@ -185,6 +195,7 @@ jobs:
         run: ./gradlew compileKotlin ${{ env.gradleArgs }}
 
       - name: Assemble
+        if: ${{ matrix.assemble }}
         run: ./gradlew assemble ${{ env.gradleArgs }}
 
       - if: ${{ matrix.uploadApk }}
@@ -244,9 +255,6 @@ jobs:
           timeout_minutes: 60
           command: ./gradlew check ${{ env.gradleArgs }}
 
-      - name: Package Desktop
-        run: ./gradlew createReleaseDistributable ${{ env.gradleArgs }}
-
       - if: ${{ matrix.anitorrent }}
         name: Upload Anitorrent CMakeCache.txt
         uses: actions/upload-artifact@v4
@@ -261,12 +269,31 @@ jobs:
           name: anitorrent-${{ matrix.compose_resource_triple }}
           path: app/desktop/appResources/${{ matrix.compose_resource_triple }}/anitorrent
 
+      - name: Package Desktop
+        run: ./gradlew packageReleaseDistributionForCurrentOS ${{ env.gradleArgs }}
+        id: packageReleaseDistributionForCurrentOS
+
+      # 只在打包错误时上传日志
+      - if: always() # steps.packageReleaseDistributionForCurrentOS.conclusion == 'failure'
+        name: Upload compose logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-logs-${{ matrix.os }}-${{ matrix.arch }}
+          path: app/desktop/build/compose/logs
+
       - if: ${{ env.isMac == 'true' }}
-        name: Upload macOS packages
+        name: Upload macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: ani-macos-portable-${{ matrix.arch }}
+          path: app/desktop/build/compose/binaries/main-release/app/Ani.app
+
+      - if: ${{ env.isMac == 'true' }}
+        name: Upload macOS dmg
         uses: actions/upload-artifact@v4
         with:
           name: ani-macos-dmg-${{ matrix.arch }}
-          path: app/desktop/build/compose/binaries/main-release/dmg
+          path: app/desktop/build/compose/binaries/main-release/dmg/Ani-*.dmg
 
       - if: ${{ env.isWindows == 'true' }}
         name: Upload Windows packages

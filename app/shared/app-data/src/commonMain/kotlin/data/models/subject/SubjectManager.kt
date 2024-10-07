@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.models.subject
 
 import androidx.compose.runtime.Stable
@@ -37,23 +46,23 @@ import me.him188.ani.app.data.repository.toEpisodeInfo
 import me.him188.ani.app.data.repository.toSelfRatingInfo
 import me.him188.ani.app.data.repository.toSubjectCollectionItem
 import me.him188.ani.app.data.repository.toSubjectInfo
-import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.session.SessionManager
-import me.him188.ani.app.data.source.session.userInfoAsApiResponse
-import me.him188.ani.app.platform.ReplaceFileCorruptionHandler
-import me.him188.ani.app.platform.create
-import me.him188.ani.app.tools.caching.ContentPolicy
-import me.him188.ani.app.tools.caching.LazyDataCache
-import me.him188.ani.app.tools.caching.LazyDataCacheSave
-import me.him188.ani.app.tools.caching.MutationContext.replaceAll
-import me.him188.ani.app.tools.caching.addFirst
-import me.him188.ani.app.tools.caching.data
-import me.him188.ani.app.tools.caching.dataTransaction
-import me.him188.ani.app.tools.caching.getCachedData
-import me.him188.ani.app.tools.caching.mutate
-import me.him188.ani.app.tools.caching.removeFirstOrNull
-import me.him188.ani.app.tools.caching.setEach
+import me.him188.ani.app.domain.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.domain.media.cache.MediaCacheManager
+import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.session.userInfoAsApiResponse
+import me.him188.ani.app.data.persistent.ReplaceFileCorruptionHandler
+import me.him188.ani.app.data.persistent.create
+import me.him188.ani.app.tools.ldc.ContentPolicy
+import me.him188.ani.app.tools.ldc.LazyDataCache
+import me.him188.ani.app.tools.ldc.LazyDataCacheSave
+import me.him188.ani.app.tools.ldc.MutationContext.replaceAll
+import me.him188.ani.app.tools.ldc.addFirst
+import me.him188.ani.app.tools.ldc.data
+import me.him188.ani.app.tools.ldc.dataTransaction
+import me.him188.ani.app.tools.ldc.getCachedData
+import me.him188.ani.app.tools.ldc.mutate
+import me.him188.ani.app.tools.ldc.removeFirstOrNull
+import me.him188.ani.app.tools.ldc.setEach
 import me.him188.ani.datasources.api.paging.mapNotNull
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.bangumi.models.BangumiEpType

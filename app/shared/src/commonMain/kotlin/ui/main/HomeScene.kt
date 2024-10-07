@@ -73,11 +73,12 @@ import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.home.HomePage
+import me.him188.ani.app.ui.home.SearchPage
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.profile.ProfilePage
@@ -187,66 +188,68 @@ private fun HomeSceneLandscape(
         },
     ) {
         Row(modifier.background(AniThemeDefaults.navigationContainerColor)) {
-            // NavigationRail 宽度至少为 80.dp, 没有 horizontal padding
-            NavigationRail(
-                Modifier.fillMaxHeight(),
-                header = { UserAvatarInNavigation() },
-                windowInsets = windowInsets.only(WindowInsetsSides.Vertical + WindowInsetsSides.Start)
-                    .add(WindowInsets(top = 16.dp)), // 稍微多一点好看点
-                containerColor = AniThemeDefaults.navigationContainerColor,
-                contentColor = contentColorFor(AniThemeDefaults.navigationContainerColor),
-            ) {
-                Column(
-                    Modifier
-                        .padding(bottom = 16.dp)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+            WindowDragArea {
+                // NavigationRail 宽度至少为 80.dp, 没有 horizontal padding
+                NavigationRail(
+                    Modifier.fillMaxHeight(),
+                    header = { UserAvatarInNavigation() },
+                    windowInsets = windowInsets.only(WindowInsetsSides.Vertical + WindowInsetsSides.Start)
+                        .add(WindowInsets(top = 16.dp)), // 稍微多一点好看点
+                    containerColor = AniThemeDefaults.navigationContainerColor,
+                    contentColor = contentColorFor(AniThemeDefaults.navigationContainerColor),
                 ) {
-                    NavigationRailItem(
-                        pagerState.currentPage == 0,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(0)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                        label = { Text(text = "找番") },
-                    )
-                    NavigationRailItem(
-                        pagerState.currentPage == 1,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(1)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.Star, null) },
-                        label = { Text(text = "追番") },
-                    )
-                    NavigationRailItem(
-                        pagerState.currentPage == 2,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(2)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.DownloadDone, null) },
-                        label = { Text(text = "缓存") },
-                    )
+                    Column(
+                        Modifier
+                            .padding(bottom = 16.dp)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        NavigationRailItem(
+                            pagerState.currentPage == 0,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(0)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.TravelExplore, null) },
+                            label = { Text(text = "找番") },
+                        )
+                        NavigationRailItem(
+                            pagerState.currentPage == 1,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(1)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.Star, null) },
+                            label = { Text(text = "追番") },
+                        )
+                        NavigationRailItem(
+                            pagerState.currentPage == 2,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(2)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.DownloadDone, null) },
+                            label = { Text(text = "缓存") },
+                        )
 
-                    UpdateCheckerItem()
+                        UpdateCheckerItem()
 
-                    Spacer(Modifier.weight(1f))
+                        Spacer(Modifier.weight(1f))
 
-                    NavigationRailItem(
-                        pagerState.currentPage == 3,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(3)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.Settings, null) },
-                        label = { Text(text = "设置") },
-                    )
+                        NavigationRailItem(
+                            pagerState.currentPage == 3,
+                            onClick = {
+                                uiScope.launch {
+                                    pagerState.scrollToPage(3)
+                                }
+                            },
+                            icon = { Icon(Icons.Rounded.Settings, null) },
+                            label = { Text(text = "设置") },
+                        )
+                    }
                 }
             }
             VerticalDivider()
@@ -256,7 +259,7 @@ private fun HomeSceneLandscape(
                 VerticalPager(pagerState, userScrollEnabled = false) {
                     when (it) {
                         0 -> {
-                            HomePage(
+                            SearchPage(
                                 Modifier.fillMaxSize(),
                                 searchBarFocusRequester = searchBarFocusRequester,
                                 contentWindowInsets = windowInsets,
@@ -397,7 +400,7 @@ private fun HomeScenePortrait(
         ) {
             HorizontalPager(pagerState, userScrollEnabled = false) {
                 when (it) {
-                    0 -> HomePage(
+                    0 -> SearchPage(
                         contentPadding = contentPadding,
                         searchBarFocusRequester = searchBarFocusRequester,
                     )

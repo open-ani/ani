@@ -26,6 +26,8 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import me.him188.ani.app.ui.foundation.animation.EmphasizedAccelerateEasing
+import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
 import me.him188.ani.app.ui.foundation.animation.StandardAccelerate
 import me.him188.ani.app.ui.foundation.animation.StandardDecelerate
 
@@ -80,12 +82,27 @@ object AniThemeDefaults {
         // Follow M3 Clean fades
         val fadeIn = fadeIn(
             animationSpec = tween(
-                EasingDurations.standardDecelerate,
-                delayMillis = EasingDurations.standardAccelerate,
-                easing = StandardDecelerate,
+                EasingDurations.standardAccelerate,
+                delayMillis = EasingDurations.standardDecelerate,
+                easing = StandardAccelerate,
             ),
         )
-        val fadeOut = fadeOut(animationSpec = tween(EasingDurations.standardAccelerate, easing = StandardAccelerate))
+        val fadeOut = fadeOut(animationSpec = tween(EasingDurations.standardDecelerate, easing = StandardDecelerate))
+        fadeIn.togetherWith(fadeOut)
+    }
+
+    @Stable
+    val emphasizedAnimatedContentTransition: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
+        // Follow M3 Clean fades
+        val fadeIn = fadeIn(
+            animationSpec = tween(
+                EasingDurations.emphasizedAccelerate,
+                delayMillis = EasingDurations.emphasizedDecelerate,
+                easing = EmphasizedAccelerateEasing,
+            ),
+        )
+        val fadeOut =
+            fadeOut(animationSpec = tween(EasingDurations.emphasizedDecelerate, easing = EmphasizedDecelerateEasing))
         fadeIn.togetherWith(fadeOut)
     }
 }

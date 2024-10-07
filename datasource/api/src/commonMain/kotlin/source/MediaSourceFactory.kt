@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.datasources.api.source
 
 import io.ktor.client.HttpClientConfig
@@ -63,6 +72,9 @@ interface MediaSourceFactory { // SPI service load
     ): MediaSource
 }
 
+/**
+ * 本地配置. 导出时不会导出 [MediaSourceConfig], 而是导出 [arguments].
+ */
 @Serializable
 data class MediaSourceConfig(
     val proxy: ClientProxyConfig? = null,
@@ -77,8 +89,14 @@ data class MediaSourceConfig(
      * 新版本的参数列表, 各个数据源可以自己决定该数据的格式. 要使用此类型参数, 数据源必须拥有单独的配置 UI 界面.
      *
      * 用户为数据源配置的参数列表.
+     *
+     * 如需转换为 `MediaSourceArguments`, 使用 `MediaSourceCodecManager.deserializeArgument`.
      */
     val serializedArguments: JsonElement? = null,
+    /**
+     * 所属订阅的 ID. `null` 表示是本地自己添加的
+     */
+    val subscriptionId: String? = null,
 ) {
     companion object {
         val Default = MediaSourceConfig()
@@ -98,6 +116,7 @@ fun HttpClientConfig<*>.applyMediaSourceConfig(
 
 private val parametersJson = Json {
     ignoreUnknownKeys = true
+    encodeDefaults = true
 }
 
 fun <T> MediaSourceConfig.deserializeArgumentsOrNull(
@@ -110,4 +129,16 @@ fun <T> MediaSourceConfig.Companion.serializeArguments(
     value: T,
     json: Json = parametersJson,
 ): JsonElement = json.encodeToJsonElement(serializationStrategy, value)
+
+fun <T> MediaSourceConfig.Companion.deserializeArgumentsFromString(
+    deserializationStrategy: DeserializationStrategy<T>,
+    value: String,
+    json: Json = parametersJson,
+): T = json.decodeFromString(deserializationStrategy, value)
+
+fun <T> MediaSourceConfig.Companion.serializeArgumentsToString(
+    serializationStrategy: SerializationStrategy<T>,
+    value: T,
+    json: Json = parametersJson,
+): String = json.encodeToString(serializationStrategy, value)
 

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.media.source
 
 import androidx.compose.runtime.Immutable
@@ -13,13 +22,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.instance.MediaSourceInstance
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.mediasource.instance.MediaSourceInstance
+import me.him188.ani.app.domain.mediasource.subscription.MediaSourceSubscription
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.framework.ConnectionTestResult
 import me.him188.ani.app.ui.settings.framework.ConnectionTester
@@ -38,12 +49,13 @@ import kotlin.time.Duration.Companion.seconds
 
 class MediaSourceLoader(
     private val mediaSourceManager: MediaSourceManager,
+    subscriptions: Flow<List<MediaSourceSubscription>>,
     parentCoroutineContext: CoroutineContext,
 ) {
     private val scope = parentCoroutineContext.childScope()
 
     val mediaSourcesFlow = mediaSourceManager.allInstances
-        .map { instances ->
+        .combine(subscriptions) { instances, subscriptions ->
             instances.mapNotNull { instance ->
                 val factory = findFactory(instance.factoryId) ?: return@mapNotNull null
                 MediaSourcePresentation(
@@ -63,6 +75,9 @@ class MediaSourceLoader(
                         },
                     ),
                     instance,
+                    ownerSubscriptionUrl = instance.config.subscriptionId?.let { subscriptionId ->
+                        subscriptions.find { it.subscriptionId == subscriptionId }?.url
+                    },
                 )
             }
             // 不能 sort, 会用来 reorder
@@ -126,7 +141,7 @@ class MediaSourceGroupState(
 
 class EditMediaSourceState(
     private val getConfigFlow: (instanceId: String) -> Flow<MediaSourceConfig>,
-    private val onAdd: suspend (factoryId: FactoryId, config: MediaSourceConfig) -> Unit,
+    private val onAdd: suspend (factoryId: FactoryId, instanceId: String, config: MediaSourceConfig) -> Unit,
     private val onEdit: suspend (instanceId: String, config: MediaSourceConfig) -> Unit,
     private val onDelete: suspend (instanceId: String) -> Unit,
     private val onSetEnabled: suspend (instanceId: String, enabled: Boolean) -> Unit,
@@ -182,6 +197,7 @@ class EditMediaSourceState(
             is EditMediaSourceMode.Add -> {
                 onAdd(
                     state.factoryId,
+                    state.editingMediaSourceId,
                     state.createConfig(),
                 )
                 withContext(Dispatchers.Main) { cancelEdit() }
@@ -229,6 +245,8 @@ class MediaSourcePresentation(
     val parameters: MediaSourceParameters,
     val connectionTester: ConnectionTester,
     val instance: MediaSourceInstance,
+
+    val ownerSubscriptionUrl: String?,
 )
 
 /**

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.video
 
 import kotlinx.coroutines.CancellationException
@@ -12,13 +21,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.episode.displayName
-import me.him188.ani.app.data.source.media.resolver.EpisodeMetadata
-import me.him188.ani.app.data.source.media.resolver.ResolutionFailures
-import me.him188.ani.app.data.source.media.resolver.TorrentVideoSource
-import me.him188.ani.app.data.source.media.resolver.UnsupportedMediaException
-import me.him188.ani.app.data.source.media.resolver.VideoSourceResolutionException
-import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
-import me.him188.ani.app.data.source.media.selector.MediaSelector
+import me.him188.ani.app.domain.media.resolver.EpisodeMetadata
+import me.him188.ani.app.domain.media.resolver.ResolutionFailures
+import me.him188.ani.app.domain.media.resolver.TorrentVideoSource
+import me.him188.ani.app.domain.media.resolver.UnsupportedMediaException
+import me.him188.ani.app.domain.media.resolver.VideoSourceResolutionException
+import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
+import me.him188.ani.app.domain.media.selector.MediaSelector
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSourceInfoProvider
@@ -121,6 +130,7 @@ class PlayerLauncher(
                     ResolutionFailures.FETCH_TIMEOUT -> VideoLoadingState.ResolutionTimedOut
                     ResolutionFailures.ENGINE_ERROR -> VideoLoadingState.UnknownError(e)
                     ResolutionFailures.NETWORK_ERROR -> VideoLoadingState.NetworkError
+                    ResolutionFailures.NO_MATCHING_RESOURCE -> VideoLoadingState.NoMatchingFile
                 }
                 playerState.clearVideoSource()
             } catch (e: CancellationException) { // 切换数据源

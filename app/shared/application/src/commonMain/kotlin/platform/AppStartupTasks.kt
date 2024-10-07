@@ -11,8 +11,8 @@ package me.him188.ani.app.platform
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.session.AuthorizationCancelledException
-import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.domain.session.AuthorizationCancelledException
+import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import kotlin.coroutines.cancellation.CancellationException
 

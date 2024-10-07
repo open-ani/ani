@@ -9,6 +9,8 @@
 
 package me.him188.ani.app.ui.foundation
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -28,6 +30,8 @@ import me.him188.ani.app.tools.TimeFormatter
 import me.him188.ani.app.ui.foundation.navigation.LocalOnBackPressedDispatcherOwner
 import me.him188.ani.app.ui.foundation.navigation.OnBackPressedDispatcher
 import me.him188.ani.app.ui.foundation.navigation.OnBackPressedDispatcherOwner
+import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
+import me.him188.ani.app.ui.foundation.theme.aniLightColorTheme
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.NoOpToaster
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -81,7 +85,9 @@ inline fun ProvideFoundationCompositionLocalsForPreview(
             aniNavigator.setNavController(navController)
         }
         ProvidePlatformCompositionLocalsForPreview {
-            content()
+            MaterialTheme(colorScheme = if (isSystemInDarkTheme()) aniLightColorTheme() else aniDarkColorTheme()) {
+                content()
+            }
         }
     }
 }

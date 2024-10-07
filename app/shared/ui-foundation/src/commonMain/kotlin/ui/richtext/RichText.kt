@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.richtext
 
 import androidx.annotation.UiThread
@@ -30,6 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.UriHandler
@@ -212,14 +223,23 @@ object RichTextDefaults {
                             )
                         }
 
+                        val requestedColor = e.color.takeOrElse { contentColor }
                         val background by animateColorAsState(
-                            if (maskState[index] == true) MaterialTheme.colorScheme.surfaceDim else {
-                                if (e.code) colorScheme.surfaceContainer else Color.Unspecified
+                            when {
+                                maskState[index] == true -> {
+                                    requestedColor.copy(0.38f)
+                                        .compositeOver(colorScheme.surfaceDim)
+                                }
+
+                                e.code -> colorScheme.surfaceContainer
+                                else -> Color.Unspecified
                             },
                         )
                         val textColor by animateColorAsState(
-                            if (maskState[index] == true) MaterialTheme.colorScheme.surfaceDim else {
-                                if (e.color == Color.Unspecified) contentColor else e.color
+                            if (maskState[index] == true) {
+                                requestedColor.copy(0.38f).compositeOver(colorScheme.surfaceDim)
+                            } else {
+                                requestedColor
                             },
                         )
 

@@ -55,9 +55,10 @@ Windows 上构建 native 代码是*比较有挑战性*的. 使用 Visual Studio 
    - Windows 11 SDK
     - MSVC v___ - VS 2022 C++ x64/x86 生成工具
 2. 安装 [Vcpkg](https://github.com/microsoft/vcpkg):
-    ```shell
+    ```powershell
    git clone https://github.com/microsoft/vcpkg.git
-   cd vcpkg && bootstrap-vcpkg.bat
+   cd vcpkg
+   .\bootstrap-vcpkg.bat
     ```
 3. 安装 [Chocolatey](https://chocolatey.org/install), 以下为示例 CMD 命令, 不一定可用:
    ```shell
@@ -94,6 +95,8 @@ Windows 上构建 native 代码是*比较有挑战性*的. 使用 Visual Studio 
    
    # 如果提示找不到 CMake, 就添加以下一行手动指定位置
    CMAKE=C\:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe
+   # 也有可能是以下位置：
+   CMAKE=C\:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe
    ```
 10. 完成. 现在可以运行 `./gradlew desktop:run` 测试, 或者在 IDE 右上角选择 "Run Desktop" 配置.
 

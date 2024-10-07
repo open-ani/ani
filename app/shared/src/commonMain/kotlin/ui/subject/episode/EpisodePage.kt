@@ -81,10 +81,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.source.danmaku.protocol.DanmakuInfo
-import me.him188.ani.app.data.source.danmaku.protocol.DanmakuLocation
+import me.him188.ani.app.domain.danmaku.protocol.DanmakuInfo
+import me.him188.ani.app.domain.danmaku.protocol.DanmakuLocation
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
+import me.him188.ani.app.platform.features.StreamType
+import me.him188.ani.app.platform.features.getComponentAccessors
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.ImageViewer
@@ -117,6 +119,8 @@ import me.him188.ani.app.ui.subject.episode.notif.VideoNotifEffect
 import me.him188.ani.app.ui.subject.episode.video.VideoDanmakuState
 import me.him188.ani.app.ui.subject.episode.video.topbar.EpisodePlayerTitle
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
+import me.him188.ani.app.videoplayer.ui.guesture.NoOpLevelController
+import me.him188.ani.app.videoplayer.ui.guesture.asLevelController
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults.randomDanmakuPlaceholder
 import me.him188.ani.app.videoplayer.ui.progress.rememberMediaProgressSliderState
@@ -587,6 +591,12 @@ private fun EpisodeVideo(
     )
     val scope = rememberCoroutineScope()
 
+    // 必须在 UI 里, 跟随 context 变化. 否则 #958
+    val platformComponents by remember {
+        derivedStateOf {
+            context.getComponentAccessors()
+        }
+    }
     EpisodeVideoImpl(
         vm.playerState,
         expanded = expanded,
@@ -658,8 +668,16 @@ private fun EpisodeVideo(
         mediaSourceResultsPresentation = vm.mediaSourceResultsPresentation,
         episodeSelectorState = vm.episodeSelectorState,
         mediaSourceInfoProvider = vm.mediaSourceInfoProvider,
-        audioController = vm.audioController,
-        brightnessController = vm.brightnessController,
+        audioController = remember {
+            derivedStateOf {
+                platformComponents.audioManager?.asLevelController(StreamType.MUSIC) ?: NoOpLevelController
+            }
+        }.value,
+        brightnessController = remember {
+            derivedStateOf {
+                platformComponents.brightnessManager?.asLevelController() ?: NoOpLevelController
+            }
+        }.value,
         leftBottomTips = {
             AnimatedVisibility(
                 visible = vm.playerSkipOpEdState.showSkipTips,

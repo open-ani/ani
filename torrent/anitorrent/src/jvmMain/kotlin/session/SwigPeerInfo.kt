@@ -10,9 +10,7 @@ class SwigPeerInfo(
     native: peer_info_t,
 ) : PeerInfo {
     override val handle: HandleId = native.torrent_handle_id
-    override val id: String = buildString {
-        native.peer_id.forEach { append(it) }
-    }
+    override val id: CharArray = native.peer_id.toCharArray()
     override val client: String = native.client
     override val ipAddr: String = native.ip_addr
     override val ipPort: Int = native.ip_port

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.foundation.background
@@ -11,7 +20,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
@@ -19,20 +30,29 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +64,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import me.him188.ani.app.tools.formatDateTime
 import me.him188.ani.app.ui.foundation.widgets.FastLinearProgressIndicator
 import me.him188.ani.app.ui.media.renderSubtitleLanguage
+import me.him188.ani.app.ui.settings.rendering.MediaSourceIcon
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
 import me.him188.ani.datasources.api.Media
 import me.him188.ani.datasources.api.topic.FileSize
@@ -63,9 +84,9 @@ fun MediaSelectorView(
     sourceResults: @Composable LazyItemScope.() -> Unit,
     modifier: Modifier = Modifier,
     stickyHeaderBackgroundColor: Color = Color.Unspecified,
-    itemProgressBar: @Composable RowScope.(Media) -> Unit = {
+    itemProgressBar: @Composable RowScope.(MediaGroup) -> Unit = {
         FastLinearProgressIndicator(
-            state.selected == it,
+            state.selected in it.list,
             Modifier.fillMaxWidth().padding(horizontal = 4.dp),
             delayMillis = 300,
         )
@@ -117,30 +138,34 @@ fun MediaSelectorView(
                 }
             }
 
-            items(state.filteredCandidates, key = { it.mediaId }) { item ->
+            items(state.groupedMediaList, key = { it.groupId }) { group ->
                 Column {
                     val requester = remember { BringIntoViewRequester() }
                     // 记录 item 对应的 requester
-                    DisposableEffect(requester) {
-                        bringIntoViewRequesters[item] = requester
-                        onDispose {
-                            bringIntoViewRequesters.remove(item)
+                    for (item in group.list) {
+                        DisposableEffect(requester) {
+                            bringIntoViewRequesters[item] = requester
+                            onDispose {
+                                bringIntoViewRequesters.remove(item)
+                            }
                         }
                     }
-
                     MediaItem(
-                        item,
+                        group,
                         state.mediaSourceInfoProvider,
-                        state.selected == item,
+                        state.selected in group.list,
                         state,
-                        onClick = { onClickItem(item) },
+                        onSelect = {
+                            // 点击这个卡片时, 如果这个卡片是一个 group, 那么应当取用 group 的选中项目
+                            onClickItem(state.getGroupState(group.groupId).selectedItem ?: it)
+                        },
                         Modifier
                             .animateItem()
                             .fillMaxWidth()
                             .bringIntoViewRequester(requester),
                     )
                     Row(Modifier.height(8.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        itemProgressBar(item)
+                        itemProgressBar(group)
                     }
                 }
             }
@@ -175,34 +200,36 @@ fun MediaSelectorView(
  * 一个资源的卡片
  */
 @Composable
-private fun MediaItem(
-    media: Media,
+internal fun MediaItem(
+    group: MediaGroup,
     mediaSourceInfoProvider: MediaSourceInfoProvider,
     selected: Boolean,
     state: MediaSelectorPresentation,
-    onClick: () -> Unit,
+    onSelect: (Media) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val media: Media = group.first // 信息都一样的, 用第一个的就行
     ElevatedCard(
-        onClick,
+        { onSelect(media) },
         modifier.width(IntrinsicSize.Min),
         colors = CardDefaults.elevatedCardColors(
             containerColor = if (selected) MaterialTheme.colorScheme.secondaryContainer
             else MaterialTheme.colorScheme.surface,
         ),
     ) {
-        Column(Modifier.padding(all = 16.dp)) {
+        val horizontalPadding = 16.dp
+        Column(Modifier.padding(top = 16.dp, bottom = 8.dp)) {
             ProvideTextStyle(MaterialTheme.typography.titleSmall) {
-                Text(media.originalTitle)
+                Text(media.originalTitle, Modifier.padding(horizontal = horizontalPadding))
             }
 
             // Labels
             FlowRow(
                 Modifier
+                    .padding(horizontal = horizontalPadding)
                     .padding(top = 8.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (media.properties.size != FileSize.Zero && media.properties.size != FileSize.Unspecified) {
                     InputChip(
@@ -230,10 +257,10 @@ private fun MediaItem(
             // Bottom row: source, alliance, published time
             ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                 Row(
-                    Modifier
-                        .padding(top = 8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    Modifier.padding(
+                        start = horizontalPadding - 8.dp, // icon
+                        end = horizontalPadding,
+                    ).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // Layout note:
@@ -241,22 +268,12 @@ private fun MediaItem(
 
                     Row(
                         Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(MediaSourceIcons.location(media.location, media.kind), null)
-
-                            Text(
-                                mediaSourceInfoProvider.rememberMediaSourceInfo(media.mediaSourceId).value?.displayName
-                                    ?: "未知",
-                                maxLines = 1,
-                                softWrap = false,
-                            )
-                        }
+                        ExposedMediaSourceMenu(
+                            group, mediaSourceInfoProvider, state,
+                            onSelect = onSelect,
+                        )
 
                         Box(Modifier.weight(1f, fill = false), contentAlignment = Alignment.Center) {
                             Text(
@@ -270,10 +287,69 @@ private fun MediaItem(
 
                     Text(
                         formatDateTime(media.publishedTime, showTime = false),
+                        Modifier.padding(start = 16.dp),
                         maxLines = 1,
                         softWrap = false,
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExposedMediaSourceMenu(
+    group: MediaGroup,
+    mediaSourceInfoProvider: MediaSourceInfoProvider,
+    state: MediaSelectorPresentation,
+    onSelect: (Media) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showMenu by rememberSaveable { mutableStateOf(false) }
+    ExposedDropdownMenuBox(showMenu, { showMenu = it }, modifier) {
+        val currentItem = state.getGroupState(group.groupId).selectedItem ?: group.first
+        val currentSourceInfo by mediaSourceInfoProvider.rememberMediaSourceInfo(currentItem.mediaSourceId)
+        TextField(
+            value = currentSourceInfo?.displayName ?: "未知",
+            onValueChange = {},
+            Modifier
+                .widthIn(min = 48.dp) // override default
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            readOnly = true,
+            maxLines = 1,
+            leadingIcon = {
+                Icon(MediaSourceIcons.location(currentItem.location, currentItem.kind), null)
+            },
+            trailingIcon = if (group.list.size > 1) {
+                {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = showMenu,
+                        Modifier.menuAnchor(MenuAnchorType.SecondaryEditable),
+                    )
+                }
+            } else null,
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
+            ),
+        )
+        ExposedDropdownMenu(showMenu, { showMenu = false }) {
+            for (item in group.list) {
+                val sourceInfo by mediaSourceInfoProvider.rememberMediaSourceInfo(item.mediaSourceId)
+                DropdownMenuItem(
+                    text = { Text(sourceInfo?.displayName ?: "未知") },
+                    leadingIcon = { MediaSourceIcon(sourceInfo, Modifier.size(24.dp)) },
+                    onClick = {
+                        state.getGroupState(group.groupId).selectedItem = item
+                        onSelect(item)
+                        showMenu = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                )
             }
         }
     }

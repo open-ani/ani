@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.settings.mediasource.BackgroundSearcher.RestartSearchScope
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -50,6 +51,7 @@ abstract class BackgroundSearcher<TestData, TestResult>(
     protected abstract val testDataState: State<TestData>
 
     var searchResult: TestResult? by mutableStateOf(null)
+        internal set
 
     private val searchTasker = MonoTasker(backgroundScope)
 
@@ -82,15 +84,20 @@ abstract class BackgroundSearcher<TestData, TestResult>(
      * 在 UI 调用, 当测试数据变化时重新搜索
      */
     suspend fun observeChangeLoop() {
-        withContext(Dispatchers.Main.immediate) {
-            while (true) {
-                snapshotFlow { testDataState.value }
-                    .distinctUntilChanged()
-                    .debounce(0.5.seconds)
-                    .collect {
-                        restartSearch(it)
-                    }
+        try {
+            withContext(Dispatchers.Main.immediate) {
+                while (true) {
+                    snapshotFlow { testDataState.value }
+                        .distinctUntilChanged()
+                        .debounce(0.5.seconds)
+                        .collect {
+                            restartSearch(it)
+                        }
+                }
             }
+        } catch (e: CancellationException) {
+            searchTasker.cancel(kotlinx.coroutines.CancellationException("observeChangeLoop cancelled", e))
+            throw e
         }
     }
 
@@ -172,14 +179,19 @@ class DefaultBackgroundSearcher<TestData, TestResult>(
  * 在 [BackgroundSearcher.searchTasker] 启动协程, 执行 [block], 每 emit 的值都会被收集到 list 中, 然后由 flow 更新.
  * @param block 保证在后台线程执行
  *
- * @sample me.him188.ani.app.ui.settings.mediasource.selector.test.SelectorEpisodeState.searcher
+ * @sample me.him188.ani.app.ui.settings.mediasource.selector.episode.SelectorEpisodeState.searcher
  */
-inline fun <T> RestartSearchScope<StateFlow<PersistentList<T>>>.launchCollectedInBackground(
-    crossinline block: suspend SafeResultCollector<T>.() -> Unit,
-): RestartSearchScope.OK = launchRequestInBackground {
+inline fun <T, TestResult> RestartSearchScope<TestResult>.launchCollectedInBackground(
+    updateState: (flow: StateFlow<PersistentList<T>>) -> TestResult,
+    crossinline block: suspend SafeResultCollector<T>.(flow: StateFlow<PersistentList<T>>) -> TestResult,
+): RestartSearchScope.OK {
     val flow = MutableStateFlow(persistentListOf<T>())
-    block(SafeResultCollectorImpl(flow))
-    flow.asStateFlow()
+    val result = flow.asStateFlow()
+    complete(updateState(result))
+
+    return launchRequestInBackground {
+        block(SafeResultCollectorImpl(flow), flow)
+    }
 }
 
 // single class. 否则每次 inline 都会多一个 class.

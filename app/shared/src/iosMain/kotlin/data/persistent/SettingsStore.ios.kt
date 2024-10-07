@@ -1,13 +1,22 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.persistent
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.mutablePreferencesOf
-import kotlinx.io.files.Path
 import me.him188.ani.app.platform.Context
-import me.him188.ani.app.tools.caching.MemoryDataStore
+import me.him188.ani.app.tools.ldc.MemoryDataStore
+import me.him188.ani.utils.io.SystemDocumentDir
 import me.him188.ani.utils.io.SystemPath
-import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.createDirectories
 import me.him188.ani.utils.io.resolve
 
 /**
@@ -17,7 +26,6 @@ actual val Context.dataStoresImpl: PlatformDataStoreManager
     get() = IosPlatformDataStoreManager
 
 object IosPlatformDataStoreManager : PlatformDataStoreManager() {
-    // TODO: IOS IosPlatformDataStoreManager
     override val tokenStore: DataStore<Preferences> by lazy {
         MemoryDataStore(mutablePreferencesOf())
     }
@@ -28,5 +36,8 @@ object IosPlatformDataStoreManager : PlatformDataStoreManager() {
         MemoryDataStore(mutablePreferencesOf())
     }
 
-    override fun resolveDataStoreFile(name: String): SystemPath = Path(".").inSystem.resolve(name)
+    override fun resolveDataStoreFile(name: String): SystemPath =
+        SystemDocumentDir.resolve("datastores")
+            .apply { createDirectories() }
+            .resolve(name)
 }
