@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21) # Android recommends at least 3.21
-cmake_policy(SET CMP0167 NEW)
+#cmake_policy(SET CMP0167 NEW) # crashes android build
 
 project(anitorrent)
 
