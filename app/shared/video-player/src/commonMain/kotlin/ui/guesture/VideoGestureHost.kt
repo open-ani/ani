@@ -25,11 +25,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemGestures
@@ -773,9 +775,7 @@ fun VideoGestureHost(
             ) {
                 Row(
                     Modifier.matchParentSize()
-                        .ifThen(isSystemInFullscreen()) {
-                            systemGesturesPadding()
-                        }
+                        .systemGesturesPadding()
                         .ifThen(family.longPressForFastSkip) {
                             longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
                         },
@@ -830,7 +830,10 @@ fun VideoGestureHost(
             Box(
                 Modifier.fillMaxWidth()
                     .ifThen(isSystemInFullscreen()) {
-                        height(WindowInsets.systemGestures.asPaddingValues().calculateTopPadding())
+                        height(
+                            WindowInsets.systemGestures.only(WindowInsetsSides.Top).asPaddingValues()
+                                .calculateTopPadding(),
+                        )
                     }
                     .combineClickableWithFamilyGesture(),
             )
