@@ -99,20 +99,20 @@ jobs:
         name: Free space
         run: chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh
         continue-on-error: true
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 17
-          architecture: ${{ matrix.arch }}
       
-      #      - name: Setup JBR 21
-      #        uses: gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d
+      #      - uses: actions/setup-java@v4
       #        with:
-      #          distribution: 'jetbrains'
-      #          java-version: 21
-      #        env:
-      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #          distribution: zulu
+      #          java-version: 17
+      #          architecture: ${{ matrix.arch }}
+
+      - name: Setup JBR 21
+        uses: gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d
+        with:
+          distribution: 'jetbrains'
+          java-version: 21
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - if: ${{ env.isMac == 'true' }}
         name: Install Native Dependencies
