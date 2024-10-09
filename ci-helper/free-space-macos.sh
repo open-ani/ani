@@ -1,5 +1,14 @@
 #!/bin/zsh
 
+#
+# Copyright (C) 2024 OpenAni and contributors.
+#
+# 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+# Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+#
+# https://github.com/open-ani/ani/blob/main/LICENSE
+#
+
 echo "Before cleanup"
 df -h
 echo ""
@@ -38,10 +47,10 @@ sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/VisionOS.platfo
 
 # Building Anitorrent requires Xcode, and it requires a macOS SDK 
 ls /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/ || true
-sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/13.3 || true
-sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/14.0 || true
-sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/14.2 || true
-sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/14.4 || true
+#sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/13.3 || true
+#sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/14.0 || true
+#sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/14.2 || true
+#sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/14.4 || true
 
 ls /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/ || true
 sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.4.sdk || true
