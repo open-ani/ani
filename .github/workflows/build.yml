@@ -271,7 +271,7 @@ jobs:
           path: app/desktop/appResources/${{ matrix.compose_resource_triple }}/anitorrent
 
       - name: Package Desktop
-        run: ./gradlew packageReleaseDistributionForCurrentOS ${{ env.gradleArgs }}
+        run: ./gradlew packageReleaseDistributionForCurrentOS ${{ env.gradleArgs }} -Dcompose.desktop.verbose=true --info --stacktrace
         id: packageReleaseDistributionForCurrentOS
 
       # 只在打包错误时上传日志
