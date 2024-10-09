@@ -55,7 +55,7 @@ uploaded.
 ### 适用于电脑
 
 - macOS
-  安装后如果无法打开: [解决方案](https://github.com/open-ani/ani/wiki/macOS-%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88)
+  装后如果无法打开: [解决方案](https://github.com/open-ani/ani/wiki/macOS-%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88)
 - Windows
   打开时如果显示异常: [解决方案](https://github.com/open-ani/ani/wiki/Windows-%E4%B8%8B%E5%AD%97%E4%BD%93%E4%B8%8E%E8%83%8C%E6%99%AF%E9%A2%9C%E8%89%B2%E5%BC%82%E5%B8%B8)
 
@@ -63,10 +63,7 @@ uploaded.
 |------------------|---------------------------------------------------------------------------------|
 | Windows          | [主线][cf-win-x64] / [备线][ghproxy-win-x64] / [GitHub][github-win-x64]             |
 | macOS (M 系列芯片)   | [主线][cf-mac-aarch64] / [备线][ghproxy-mac-aarch64] / [GitHub][github-mac-aarch64] |
-| macOS (Intel 芯片) | [主线][cf-mac-x64] / [备线][ghproxy-mac-x64] / [GitHub][github-mac-x64]             |
-
-> MacBook 用户如果不知道自己是什么架构, 建议先尝试
-`macOS aarch64 (M 系列芯片)`: [主线][cf-mac-aarch64] / [备线][ghproxy-mac-aarch64] / [GitHub][github-mac-aarch64]
+| macOS (Intel 芯片) | 不再支持                                                                            |
 
 ### 适用于 Android 手机和平板
 
