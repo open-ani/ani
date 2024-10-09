@@ -152,6 +152,7 @@ jobs:
             anitorrent_separate_build: false # windows 单线程构建 anitorrent, 要一起跑节约时间
             compose_resource_triple: windows-x64
             run_tests: true
+            uploadDesktopInstallers: true
             gradleArgs: '"-Dorg.gradle.jvmargs=-Xmx4096m" "-Dfile.encoding=UTF-8" "-Dkotlin.daemon.jvm.options=-Xmx4096M"'
           - os: macos-13
             name: macOS x86_64
@@ -161,6 +162,7 @@ jobs:
             anitorrent_separate_build: true # macOS 构建快, 先构建 anitorrent, 再 assemble
             compose_resource_triple: macos-x64
             run_tests: true
+            uploadDesktopInstallers: false
             gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4096m
               -Dfile.encoding=UTF-8
@@ -174,6 +176,7 @@ jobs:
             anitorrent_separate_build: true
             compose_resource_triple: macos-arm64
             run_tests: true
+            uploadDesktopInstallers: true
             gradleArgs: >-
               -Dorg.gradle.jvmargs=-Xmx4096m
               -Dfile.encoding=UTF-8
@@ -338,6 +341,7 @@ jobs:
 
       - name: Upload Desktop Installers
         run: "./gradlew :ci-helper:uploadDesktopInstallers ${{ env.gradleArgs }}"
+        if: ${{ matrix.uploadDesktopInstallers }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
           GITHUB_REPOSITORY: ${{ secrets.GITHUB_REPOSITORY  }}

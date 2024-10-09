@@ -289,7 +289,7 @@ jobs:
           name: ani-macos-portable-${{ matrix.arch }}
           path: app/desktop/build/compose/binaries/main-release/app/Ani.app
 
-      - if: ${{ env.isMac == 'true' }}
+      - if: ${{ env.isMac == 'true' && matrix.arch != 'x64' }}
         name: Upload macOS dmg
         uses: actions/upload-artifact@v4
         with:
