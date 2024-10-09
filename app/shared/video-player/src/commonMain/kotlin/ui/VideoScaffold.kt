@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -31,20 +32,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.ui.foundation.theme.slightlyWeaken
-import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.guesture.VideoGestureHost
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerBar
 import me.him188.ani.app.videoplayer.ui.top.PlayerTopBar
@@ -188,20 +183,19 @@ fun VideoScaffold(
                             exit = fadeOut(),
                         ) {
                             val alwaysOnRequester = rememberAlwaysOnRequester(controllerState, "bottomBar")
-                            val scope = rememberUiMonoTasker()
-                            var didClickBottomBar by remember { mutableStateOf(0) }
                             Column(
                                 Modifier
                                     .hoverToRequestAlwaysOn(alwaysOnRequester)
-                                    .pointerInput(didClickBottomBar) {
-                                        awaitPointerEventScope {
-                                            //点击 bottom bar 里的按钮时 请求 always on
-                                            alwaysOnRequester.request()
-                                            didClickBottomBar++
-                                            scope.launch {
-                                                delay(VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION)
+                                    .pointerInput(Unit) {
+                                        awaitEachGesture {
+                                            val event = awaitPointerEvent()
+                                            if (event.changes.all { it.pressed }) {
+                                                //点击 bottom bar 里的按钮时 请求 always on
+                                                alwaysOnRequester.request()
+                                            }
+                                            val releaseEvent = awaitPointerEvent()
+                                            if (releaseEvent.changes.all { !it.pressed }) {
                                                 alwaysOnRequester.cancelRequest()
-                                                didClickBottomBar = 0
                                             }
                                         }
                                     }

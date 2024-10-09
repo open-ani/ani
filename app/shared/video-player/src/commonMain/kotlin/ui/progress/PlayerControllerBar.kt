@@ -97,6 +97,7 @@ import kotlin.math.roundToInt
 const val TAG_SELECT_EPISODE_ICON_BUTTON = "SelectEpisodeIconButton"
 const val TAG_SPEED_SWITCHER_TEXT_BUTTON = "SpeedSwitcherTextButton"
 const val TAG_SPEED_SWITCHER_DROPDOWN_MENU = "SpeedSwitcherDropdownMenu"
+const val TAG_DANMAKU_ICON_BUTTON = "DanmakuIconButton"
 
 @Stable
 object PlayerControllerDefaults {
@@ -132,7 +133,7 @@ object PlayerControllerDefaults {
     ) {
         IconButton(
             onClick = onClick,
-            modifier,
+            modifier.testTag(TAG_DANMAKU_ICON_BUTTON),
         ) {
             if (danmakuEnabled) {
                 Icon(Icons.Rounded.Subtitles, contentDescription = "禁用弹幕")

@@ -45,6 +45,7 @@ import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_MOUSE_MOVE_SHOW_C
 import me.him188.ani.app.videoplayer.ui.guesture.VIDEO_GESTURE_TOUCH_SHOW_CONTROLLER_DURATION
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSliderState
 import me.him188.ani.app.videoplayer.ui.progress.PlayerControllerDefaults
+import me.him188.ani.app.videoplayer.ui.progress.TAG_DANMAKU_ICON_BUTTON
 import me.him188.ani.app.videoplayer.ui.progress.TAG_MEDIA_PROGRESS_INDICATOR_TEXT
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER
 import me.him188.ani.app.videoplayer.ui.progress.TAG_PROGRESS_SLIDER_PREVIEW_POPUP
@@ -115,6 +116,8 @@ class EpisodeVideoControllerTest {
         get() = onNodeWithTag(TAG_PROGRESS_SLIDER, useUnmergedTree = true)
     private val SemanticsNodeInteractionsProvider.danmakuEditor
         get() = onNodeWithTag(TAG_DANMAKU_EDITOR, useUnmergedTree = true)
+    private val SemanticsNodeInteractionsProvider.danmakuIconButton
+        get() = onNodeWithTag(TAG_DANMAKU_ICON_BUTTON, useUnmergedTree = true)
 
     @Composable
     private fun Player(gestureFamily: GestureFamily, videoControllerState: VideoControllerState = controllerState) {
@@ -409,6 +412,34 @@ class EpisodeVideoControllerTest {
         }
     }
 
+    /**
+     * @see GestureFamily.autoHideController
+     */
+    @Test
+    fun `touch - autoHideController - click danmaku icon button and toggle controller visibility immediately`() =
+        runAniComposeUiTest {
+            setContent {
+                Player(GestureFamily.TOUCH)
+            }
+            runOnIdle {
+                assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+            }
+            val root = onAllNodes(isRoot()).onFirst()
+
+            mainClock.autoAdvance = false
+            root.performClick()
+            mainClock.advanceTimeUntil { topBar.exists() }
+            runOnIdle {
+                assertEquals(NORMAL_VISIBLE, controllerState.visibility)
+            }
+            danmakuIconButton.performClick()
+            root.performClick()
+            mainClock.advanceTimeUntil { topBar.doesNotExist() }
+            runOnIdle {
+                assertEquals(NORMAL_INVISIBLE, controllerState.visibility)
+            }
+        }
+    
     /**
      * @see GestureFamily.swipeToSeek
      */
