@@ -168,11 +168,21 @@ afterEvaluate {
                 }
             }
         }
+
         Os.MacOS -> {
             val createRuntimeImage = tasks.named("createRuntimeImage", AbstractJLinkTask::class) {
                 val dirsNames = listOf(
                     // From your (JBR's) Java Home to Packed Java Home 
                     "../Frameworks" to "lib/",
+//                    "../Frameworks/Chromium Embedded Framework.framework" to "lib/Frameworks/",
+//                    "../Frameworks/jcef Helper.app" to "lib/Frameworks/",
+//                    "../Frameworks/jcef Helper (Alerts).app" to "lib/Frameworks/",
+//                    "../Frameworks/jcef Helper (GPU).app" to "lib/Frameworks/",
+//                    "../Frameworks/jcef Helper (Plugin).app" to "lib/Frameworks/",
+//                    "../Frameworks/jcef Helper (Renderer).app" to "lib/Frameworks/",
+//                    "../Frameworks/Libraries" to "lib/Frameworks/",
+//                    "../Frameworks/Resources" to "lib/Frameworks/",
+//                    "../Frameworks/Chromium Embedded Framework" to "lib/Frameworks/Chromium Embedded Framework",
                 )
 
                 dirsNames.forEach { (sourcePath, destPath) ->
@@ -192,8 +202,39 @@ afterEvaluate {
                         }
                         logger.info("Copied $source to $dest")
                     }
+                    doLast("unsign $destPath") {
+                        dest.get().asFile.walk().filter { it.isFile }.forEach { file ->
+                            val ret = ProcessBuilder().run {
+                                command(
+                                    "/usr/bin/codesign",
+                                    "--deep",
+                                    "--remove-signature",
+                                    file.normalize().absolutePath,
+                                )
+                                inheritIO()
+                                start()
+                            }.waitFor()
+                            println("Unsigned ${file.normalize().absolutePath}: $ret")
+                        }
+                    }
                 }
             }
+//            tasks.named("packageReleaseDmg", AbstractJPackageTask::class) {
+//                appImage.get().asFile.resolve("Ani.app/Contents/runtime/Contents/Home/lib/Frameworks").also {
+//                    println("Unsigning: ${it.absolutePath}")
+//                    check(it.exists()) {
+//                        println(appImage.get().asFile.listFiles().joinToString(", "))
+//                    }
+//                }.walk().forEach { file ->
+//                    doFirst("unsign $file") {
+//                        ProcessBuilder().run {
+//                            command("/usr/bin/codesign", "--remove-signature", file.normalize().absolutePath)
+//                            inheritIO()
+//                            start()
+//                        }.waitFor()
+//                    }
+//                }
+//            }
         }
 
         Os.Linux -> {}
