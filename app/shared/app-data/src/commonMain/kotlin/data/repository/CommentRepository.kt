@@ -30,29 +30,10 @@ class BangumiCommentRepositoryImpl(
     private val logger = logger(CommentRepository::class)
 
     override fun getSubjectComments(subjectId: Int): PagedSource<SubjectComment> {
-        // 这个接口不支持按时间倒叙查询，所以先查询一条来获取评论总数，再从最后一页开始查询
         return PageBasedPagedSource { page ->
             try {
-                // 第一页先获取所有评论数量，获取失败则继续使用时间正序查询，也不会提供总计大小
-                // see: https://github.com/open-ani/ani/pull/634/files#r1716216199
-                if (page == 0) {
-                    try {
-                        // 查询一个不可能存在的评论，API 只会返回少量内容：一个空的数组和评论总大小
-                        val response = client.getNextApi().subjectComments(subjectId, 99999999, 1).body()
-                        setTotalSize(response.total)
-                    } catch (_: Exception) {
-                    }
-                }
-
-                val total = totalSize
-                val offset: Int = if (total == null) {
-                    page * 16
-                } else {
-                    (total - (page + 1) * 16).coerceAtLeast(0)
-                }
-
                 val response = client.getNextApi()
-                    .subjectComments(subjectId, 16, offset)
+                    .subjectComments(subjectId, 16, page * 16)
                     .body()
 
                 if (totalSize == null) {
