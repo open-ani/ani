@@ -34,8 +34,8 @@ jobs:
 
           modified_content="$file_content"
           # Replace 'string_to_find' with 'string_to_replace_with' in the content
-          modified_content="${modified_content//GIT_TAG/${{ steps.tag.outputs.tag }}}"
-          modified_content="${modified_content//TAG_VERSION/${{ steps.tag-version.outputs.substring }}}"
+          modified_content="${modified_content//\$GIT_TAG/${{ steps.tag.outputs.tag }}}"
+          modified_content="${modified_content//\$TAG_VERSION/${{ steps.tag-version.outputs.substring }}}"
 
           # Output the result as a step output
           echo "result<<EOF" >> $GITHUB_OUTPUT
