@@ -24,12 +24,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemGestures
+import androidx.compose.foundation.layout.systemGesturesPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.BrightnessHigh
@@ -83,6 +88,7 @@ import me.him188.ani.app.ui.foundation.effects.ComposeKey
 import me.him188.ani.app.ui.foundation.effects.onKey
 import me.him188.ani.app.ui.foundation.effects.onPointerEventMultiplatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.utils.fixToString
 import me.him188.ani.app.videoplayer.ui.VideoControllerState
@@ -461,7 +467,6 @@ fun VideoGestureHost(
             Box(
                 modifier
                     .focusRequester(keyboardFocus)
-                    .padding(top = 60.dp)
                     .ifThen(family.swipeToSeek) {
                         swipeToSeek(seekerState, Orientation.Horizontal)
                     }
@@ -674,18 +679,9 @@ fun VideoGestureHost(
                 }
             }
 
-            Box(
-                modifier
-                    .testTag("VideoGestureHost")
-                    .ifThen(needWorkaroundForFocusManager) {
-                        onFocusEvent {
-                            if (it.hasFocus) {
-                                focusManager.clearFocus()
-                            }
-                        }
-                    }
-                    .padding(top = 60.dp)
-                    .combinedClickable(
+            @Composable
+            fun Modifier.combineClickableWithFamilyGesture() = this then
+                    combinedClickable(
                         remember { MutableInteractionSource() },
                         indication = null,
                         onClick = remember(family) {
@@ -710,6 +706,17 @@ fun VideoGestureHost(
                             }
                         },
                     )
+            Box(
+                modifier
+                    .testTag("VideoGestureHost")
+                    .ifThen(needWorkaroundForFocusManager) {
+                        onFocusEvent {
+                            if (it.hasFocus) {
+                                focusManager.clearFocus()
+                            }
+                        }
+                    }
+                    .combineClickableWithFamilyGesture()
                     .ifThen(family.swipeToSeek && enableSwipeToSeek) {
                         val swipeToSeekRequester = rememberAlwaysOnRequester(controllerState, "swipeToSeek")
                         swipeToSeek(
@@ -766,6 +773,7 @@ fun VideoGestureHost(
             ) {
                 Row(
                     Modifier.matchParentSize()
+                        .systemGesturesPadding()
                         .ifThen(family.longPressForFastSkip) {
                             longPressFastSkip(fastSkipState, SkipDirection.FORWARD)
                         },
@@ -815,6 +823,15 @@ fun VideoGestureHost(
                     )
                 }
             }
+
+            // 状态栏区域响应点击手势
+            Box(
+                Modifier.fillMaxWidth()
+                    .ifThen(isSystemInFullscreen()) {
+                        windowInsetsTopHeight(WindowInsets.systemGestures)
+                    }
+                    .combineClickableWithFamilyGesture(),
+            )
         }
     }
 }
