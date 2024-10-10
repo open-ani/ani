@@ -86,8 +86,11 @@ jobs:
             
             ### 适用于电脑
             
-            - macOS 装后如果无法打开: [解决方案](https://github.com/open-ani/ani/wiki/macOS-%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88)
-            - Windows 打开时如果显示异常: [解决方案](https://github.com/open-ani/ani/wiki/Windows-%E4%B8%8B%E5%AD%97%E4%BD%93%E4%B8%8E%E8%83%8C%E6%99%AF%E9%A2%9C%E8%89%B2%E5%BC%82%E5%B8%B8)
+            [macos解决方案]: https://github.com/open-ani/ani/wiki/macOS-%E6%97%A0%E6%B3%95%E6%89%93%E5%BC%80%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88
+            [windows解决方案]: https://github.com/open-ani/ani/wiki/Windows-%E4%B8%8B%E5%AD%97%E4%BD%93%E4%B8%8E%E8%83%8C%E6%99%AF%E9%A2%9C%E8%89%B2%E5%BC%82%E5%B8%B8
+            
+            - macOS 安装后如果无法打开: [解决方案][macos解决方案]
+            - Windows 打开时如果显示异常: [解决方案][windows解决方案]
             
             | 操作系统和架构          | 下载                                                                              |
             |------------------|---------------------------------------------------------------------------------|
