@@ -20,6 +20,9 @@ jobs:
           index_of_str: "v"
           default_return_value: ${{ steps.tag.outputs.tag }}
 
+      - uses: actions/checkout@v4
+        # No need to be recursive
+
       - name: Generate Release Notes
         id: release-notes
         run: |
