@@ -99,7 +99,7 @@ private fun AniAppContentImpl(
     val windowInsets = ScaffoldDefaults.contentWindowInsets
         .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
 
-    NavHost(navController, startDestination = "/home", modifier) {
+    NavHost(navController, startDestination = "/main", modifier) {
         // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#e5b958f0-435d-4e84-aed4-8d1ea395fa5c
         val enterDuration = 500
         val exitDuration = 200
@@ -139,13 +139,13 @@ private fun AniAppContentImpl(
             WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.fillMaxSize(), windowInsets)
         }
         composable(
-            "/home",
+            "/main",
             enterTransition = enterTransition,
             exitTransition = exitTransition,
             popEnterTransition = popEnterTransition,
             popExitTransition = popExitTransition,
         ) {
-            HomeScene(windowInsets = windowInsets)
+            MainScene(windowInsets = windowInsets)
         }
         composable(
             "/bangumi-oauth",

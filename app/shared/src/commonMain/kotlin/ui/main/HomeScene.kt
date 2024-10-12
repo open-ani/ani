@@ -97,7 +97,7 @@ import me.him188.ani.utils.platform.isAndroid
 
 
 @Composable
-fun HomeScene(
+fun MainScene(
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets, // Compose for Desktop 目前不会考虑这个
 ) {
