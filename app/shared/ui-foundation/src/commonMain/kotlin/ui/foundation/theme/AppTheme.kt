@@ -43,15 +43,17 @@ object AniThemeDefaults {
         @Composable
         get() = MaterialTheme.colorScheme.surfaceContainer
 
-    // Use surface roles for more neutral backgrounds, and container colors for components like cards, sheets, and dialogs.
-    val appContentPaneColor: Color
+    val pageContentBackgroundColor
         @Composable
-        get() = MaterialTheme.colorScheme.surface
+        get() = MaterialTheme.colorScheme.surfaceContainerLowest
 
     @Composable
-    fun topAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+    fun topAppBarColors(): TopAppBarColors = transparentAppBarColors()
+
+    @Composable
+    fun transparentAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
+        containerColor = Color.Transparent,
+        scrolledContainerColor = Color.Transparent,
     )
 
     /**

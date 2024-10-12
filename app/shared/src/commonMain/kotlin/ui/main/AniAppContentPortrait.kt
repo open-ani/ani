@@ -240,9 +240,7 @@ private fun AniAppContentImpl(
                     viewModel {
                         SettingsViewModel()
                     },
-                    showBack = backStackEntry.arguments?.getBoolean("back") == true,
                     Modifier.fillMaxSize(),
-                    initialTab = initialTab,
                     contentWindowInsets = windowInsets,
                 )
             }
