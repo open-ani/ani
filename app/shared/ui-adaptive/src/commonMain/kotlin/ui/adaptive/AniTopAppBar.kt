@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -41,29 +43,31 @@ fun AniTopAppBar(
     colors: TopAppBarColors = AniThemeDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
-    TopAppBar(
-        title,
-        modifier,
-        navigationIcon,
-        actions = {
-            val horizontalPadding =
-                currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding // refer to design on figma
+    WindowDragArea {
+        TopAppBar(
+            title,
+            modifier.padding(all = 8.dp),
+            navigationIcon,
+            actions = {
+                val horizontalPadding =
+                    currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding // refer to design on figma
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                actions()
-                searchBar()
-            }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    actions()
+                    searchBar()
+                }
 
-            Box(Modifier.paddingIfNotEmpty(horizontal = horizontalPadding)) {
-                avatar()
-            }
-        },
-        expandedHeight,
-        windowInsets,
-        colors,
-        scrollBehavior,
-    )
+                Box(Modifier.paddingIfNotEmpty(horizontal = horizontalPadding)) {
+                    avatar()
+                }
+            },
+            expandedHeight,
+            windowInsets,
+            colors,
+            scrollBehavior,
+        )
+    }
 }

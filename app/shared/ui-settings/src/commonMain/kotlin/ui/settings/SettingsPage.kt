@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -40,7 +41,6 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -58,11 +58,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.Zero
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
+import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -106,6 +109,7 @@ fun SettingsPage(
         listPane = { topAppBarScrollBehavior ->
             PermanentDrawerSheet(
                 Modifier
+                    .fillMaxWidth()
                     .padding(vertical = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
                     .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                     .verticalScroll(rememberScrollState()),
@@ -123,17 +127,17 @@ fun SettingsPage(
                 }
 
                 @Composable
-                fun Title(text: String) {
+                fun Title(text: String, paddingTop: Dp = 20.dp) {
                     Text(
                         text,
                         Modifier
                             .padding(horizontal = 16.dp)
-                            .padding(top = 20.dp, bottom = 12.dp),
+                            .padding(top = paddingTop, bottom = 12.dp),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
 
-                Title("应用与界面")
+                Title("应用与界面", paddingTop = 0.dp)
                 Item(SettingsTab.APPEARANCE)
                 Item(SettingsTab.UPDATE)
 
@@ -162,7 +166,11 @@ fun SettingsPage(
             when (currentTab) {
                 SettingsTab.ABOUT -> AboutTab()
                 SettingsTab.DEBUG -> DebugTab(vm.debugSettingsState)
-                else -> SettingsTab(Modifier.padding(all = 16.dp)) {
+                else -> SettingsTab(
+                    Modifier
+                        .padding(bottom = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
+                        .padding(horizontal = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding - 8.dp),
+                ) {
                     when (currentTab) {
                         SettingsTab.APPEARANCE -> AppearanceGroup(vm.uiSettings)
                         SettingsTab.UPDATE -> SoftwareUpdateGroup(vm.softwareUpdateGroupState)
@@ -220,7 +228,7 @@ internal fun SettingsPageLayout(
             AnimatedPane1 {
                 Column {
                     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-                    TopAppBar(
+                    AniTopAppBar(
                         title = { Text("设置") },
                         colors = AniThemeDefaults.transparentAppBarColors(),
                         windowInsets = WindowInsets.Zero,
@@ -239,29 +247,28 @@ internal fun SettingsPageLayout(
         detailPane = {
             AnimatedPane1 {
                 val content = @Composable {
-                    Column {
-                        AnimatedContent(
-                            navigator.currentDestination?.content,
-                            Modifier.fillMaxSize(),
-                            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-                        ) { tab ->
-                            Column {
-                                tab?.let {
-                                    TopAppBar(
-                                        title = {
-                                            detailPaneTitle(it)
-                                        },
-                                        navigationIcon = {
-                                            TopAppBarGoBackButton {
-                                                navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
-                                            }
-                                        },
-                                        colors = AniThemeDefaults.transparentAppBarColors(),
-                                    )
-                                }
-
-                                detailPaneContent(tab)
+                    AnimatedContent(
+                        navigator.currentDestination?.content,
+                        Modifier.fillMaxSize(),
+                        transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+                    ) { tab ->
+                        Column {
+                            tab?.let {
+                                AniTopAppBar(
+                                    title = {
+                                        detailPaneTitle(it)
+                                    },
+                                    windowInsets = WindowInsets.Zero,
+                                    navigationIcon = {
+                                        TopAppBarGoBackButton {
+                                            navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
+                                        }
+                                    },
+                                    colors = AniThemeDefaults.transparentAppBarColors(),
+                                )
                             }
+
+                            detailPaneContent(tab)
                         }
                     }
                 }
