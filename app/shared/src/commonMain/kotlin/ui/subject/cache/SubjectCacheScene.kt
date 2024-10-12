@@ -247,7 +247,7 @@ fun SubjectCacheScene(
             val navigator = LocalNavigator.current
             AutoCacheGroup(
                 onClickGlobalCacheSettings = {
-                    navigator.navigateSettings(SettingsTab.MEDIA)
+                    navigator.navigateSettings(SettingsTab.CACHE)
                 },
                 onClickGlobalCacheManage = {
                     navigator.navigateCaches()

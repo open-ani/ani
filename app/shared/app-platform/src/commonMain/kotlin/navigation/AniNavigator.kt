@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -106,8 +105,8 @@ interface AniNavigator {
         }
     }
 
-    fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
-        navigator.navigate("/settings?tab=${tab.ordinal}&back=true")
+    fun navigateSettings(tab: SettingsTab? = null) {
+        navigator.navigate("/settings?tab=${tab?.ordinal.toString()}&back=true")
     }
 
     fun navigateEditMediaSource(
@@ -161,17 +160,23 @@ private class AniNavigatorImpl : AniNavigator {
  */
 @Immutable
 enum class SettingsTab {
-    APP,
-    MEDIA,
-    NETWORK,
-    ABOUT,
-    DEBUG
-    ;
+    APPEARANCE,
+    UPDATE,
 
-    companion object {
-        @Stable
-        val Default = MEDIA
-    }
+    PLAYER,
+    MEDIA_SUBSCRIPTION,
+    MEDIA_SOURCE,
+    MEDIA_SELECTOR,
+    DANMAKU,
+
+    PROXY,
+    BT,
+    CACHE,
+    STORAGE,
+
+    ABOUT,
+    DEBUG,
+    ;
 }
 
 

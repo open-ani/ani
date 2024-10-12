@@ -235,13 +235,12 @@ private fun AniAppContentImpl(
             ) { backStackEntry ->
                 val initialTab = backStackEntry.arguments?.getInt("tab")
                     ?.let { SettingsTab.entries.getOrNull(it) }
-                    ?: SettingsTab.MEDIA
 
                 SettingsPage(
                     viewModel {
                         SettingsViewModel()
                     },
-                    showBack = backStackEntry.arguments?.getBoolean("back") ?: false,
+                    showBack = backStackEntry.arguments?.getBoolean("back") == true,
                     Modifier.fillMaxSize(),
                     initialTab = initialTab,
                     contentWindowInsets = windowInsets,

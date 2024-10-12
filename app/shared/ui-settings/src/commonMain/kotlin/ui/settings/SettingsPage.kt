@@ -9,62 +9,74 @@
 
 package me.him188.ani.app.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.FilterList
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.SmartDisplay
+import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material.icons.rounded.Subscriptions
+import androidx.compose.material.icons.rounded.Subtitles
+import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material.icons.rounded.VpnKey
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
+import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.AniNavigator
-import me.him188.ani.app.navigation.OverrideNavigation
-import me.him188.ani.app.ui.foundation.LocalPlatform
-import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
+import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
-import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.layout.panePadding
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.foundation.widgets.LocalToaster
-import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
+import me.him188.ani.app.ui.settings.rendering.P2p
 import me.him188.ani.app.ui.settings.tabs.AboutTab
 import me.him188.ani.app.ui.settings.tabs.DebugTab
-import me.him188.ani.app.ui.settings.tabs.app.AppSettingsTab
-import me.him188.ani.app.ui.settings.tabs.media.AutoCacheGroup
+import me.him188.ani.app.ui.settings.tabs.app.AppearanceGroup
+import me.him188.ani.app.ui.settings.tabs.app.PlayerGroup
+import me.him188.ani.app.ui.settings.tabs.app.SoftwareUpdateGroup
 import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroup
 import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
 import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
-import me.him188.ani.app.ui.settings.tabs.media.VideoResolverGroup
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceGroup
 import me.him188.ani.app.ui.settings.tabs.media.source.MediaSourceSubscriptionGroup
 import me.him188.ani.app.ui.settings.tabs.network.DanmakuGroup
 import me.him188.ani.app.ui.settings.tabs.network.GlobalProxyGroup
-import me.him188.ani.app.ui.settings.tabs.network.OtherTestGroup
-import me.him188.ani.utils.platform.isMobile
 
 /**
  * @see renderPreferenceTab 查看名称
@@ -76,159 +88,222 @@ fun SettingsPage(
     vm: SettingsViewModel,
     showBack: Boolean,
     modifier: Modifier = Modifier,
-    initialTab: SettingsTab = SettingsTab.Default,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    initialTab: SettingsTab? = null,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val appBarColors = AniThemeDefaults.topAppBarColors()
-    Scaffold(
-        modifier,
-        topBar = {
-            WindowDragArea {
-                TopAppBar(
-                    title = { Text("设置") },
-                    navigationIcon = {
-                        if (showBack) {
-                            TopAppBarGoBackButton()
-                        }
-                    },
-                    colors = appBarColors,
-                    windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                )
+    val navigator: ThreePaneScaffoldNavigator<SettingsTab> = rememberListDetailPaneScaffoldNavigator<SettingsTab>(
+        initialDestinationHistory = listOf(
+            ThreePaneScaffoldDestinationItem(ListDetailPaneScaffoldRole.List),
+            ThreePaneScaffoldDestinationItem(ListDetailPaneScaffoldRole.Detail, initialTab),
+        ),
+    )
+    val currentTab by remember(navigator) {
+        derivedStateOf {
+            navigator.currentDestination?.content
+        }
+    }
+
+    SettingsPageScaffold(
+        navigator,
+        listPane = {
+            PermanentDrawerSheet {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Spacer(Modifier.height(24.dp))
+
+                    @Composable
+                    fun Item(item: SettingsTab) {
+                        NavigationDrawerItem(
+                            icon = { Icon(getIcon(item), contentDescription = null) },
+                            label = { Text(getName(item)) },
+                            selected = item == currentTab,
+                            onClick = { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, item) },
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
+
+                    @Composable
+                    fun Title(text: String) {
+                        Text(
+                            text,
+                            Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 20.dp, bottom = 12.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    Title("应用与界面")
+                    Item(SettingsTab.APPEARANCE)
+                    Item(SettingsTab.UPDATE)
+
+                    Title("数据源与播放")
+                    Item(SettingsTab.PLAYER)
+                    Item(SettingsTab.MEDIA_SUBSCRIPTION)
+                    Item(SettingsTab.MEDIA_SOURCE)
+                    Item(SettingsTab.MEDIA_SELECTOR)
+                    Item(SettingsTab.DANMAKU)
+
+                    Title("网络与存储")
+                    Item(SettingsTab.PROXY)
+                    Item(SettingsTab.BT)
+                    Item(SettingsTab.CACHE)
+                    Item(SettingsTab.STORAGE)
+
+                    Title("其他")
+                    Item(SettingsTab.ABOUT)
+                    Item(SettingsTab.DEBUG)
+
+                    Spacer(Modifier.height(24.dp))
+                }
             }
         },
-        contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-    ) { topBarPaddings ->
-        val pageCount by remember {
-            derivedStateOf {
-                SettingsTab.entries.run { if (vm.isInDebugMode) size else (size - 1) }
-            }
-        }
-        val pagerState = rememberPagerState(
-            initialPage = initialTab.ordinal,
-            pageCount = { pageCount },
-        )
+        detailPane = { currentTab ->
+            when (currentTab) {
+                SettingsTab.ABOUT -> AboutTab()
+                SettingsTab.DEBUG -> DebugTab(vm.debugSettingsState)
+                else -> SettingsTab(Modifier.padding(all = 16.dp)) {
+                    when (currentTab) {
+                        SettingsTab.APPEARANCE -> AppearanceGroup(vm.uiSettings)
+                        SettingsTab.UPDATE -> SoftwareUpdateGroup(vm.softwareUpdateGroupState)
+                        SettingsTab.PLAYER -> PlayerGroup(
+                            vm.videoScaffoldConfig,
+                            vm.danmakuFilterConfigState,
+                            vm.danmakuRegexFilterState,
+                            vm.isInDebugMode,
+                        )
 
-        val scope = rememberCoroutineScope()
+                        SettingsTab.MEDIA_SUBSCRIPTION -> MediaSourceSubscriptionGroup(
+                            vm.mediaSourceSubscriptionGroupState,
+                        )
 
-        // Pager with TabRow
-        Column(Modifier.padding(topBarPaddings).fillMaxSize()) {
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                indicator = @Composable { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-                    )
-                },
-                containerColor = appBarColors.containerColor,
-                contentColor = appBarColors.titleContentColor,
-                modifier = Modifier.fillMaxWidth(),
-                divider = {},
-            ) {
-                val tabs by remember {
-                    derivedStateOf {
-                        SettingsTab.entries
-                            .filter { if (vm.isInDebugMode) true else it != SettingsTab.DEBUG }
+                        SettingsTab.MEDIA_SOURCE -> MediaSourceGroup(
+                            vm.mediaSourceGroupState,
+                            vm.editMediaSourceState,
+                        )
+
+                        SettingsTab.MEDIA_SELECTOR -> MediaSelectionGroup(vm.mediaSelectionGroupState)
+                        SettingsTab.DANMAKU -> DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)
+                        SettingsTab.PROXY -> GlobalProxyGroup(vm.proxySettingsState)
+                        SettingsTab.BT -> TorrentEngineGroup(vm.torrentSettingsState)
+                        SettingsTab.CACHE -> CacheDirectoryGroup(vm.cacheDirectoryGroupState)
+                        SettingsTab.STORAGE -> CacheDirectoryGroup(vm.cacheDirectoryGroupState)
+                        SettingsTab.ABOUT -> {} // see above
+                        SettingsTab.DEBUG -> {}
+                        null -> {}
                     }
                 }
-                tabs.forEachIndexed { index, tabId ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                        text = {
-                            Text(text = renderPreferenceTab(tabId))
-                        },
-                    )
-                }
             }
-            HorizontalDivider()
+        },
+        modifier,
+        contentWindowInsets,
+    )
+}
 
-            OverrideNavigation(
-                remember(scope, pagerState) {
-                    { old ->
-                        object : AniNavigator by old {
-                            override fun navigateSettings(tab: SettingsTab) {
-                                scope.launch(start = CoroutineStart.UNDISPATCHED) {
-                                    pagerState.animateScrollToPage(tab.ordinal)
-                                }
-                            }
+@Composable
+fun SettingsPageScaffold(
+    navigator: ThreePaneScaffoldNavigator<SettingsTab>,
+    listPane: @Composable () -> Unit,
+    detailPane: @Composable (currentTab: SettingsTab?) -> Unit,
+    modifier: Modifier = Modifier,
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+) {
+    ListDetailPaneScaffold(
+        navigator.scaffoldDirective,
+        navigator.scaffoldValue,
+        listPane = {
+            AnimatedPane1 {
+                Column {
+                    Surface {
+                        ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
+                            Text("设置", Modifier.padding(horizontal = 16.dp))
                         }
                     }
-                },
-            ) {
-                HorizontalPager(
-                    state = pagerState,
-                    Modifier.fillMaxSize(),
-                    userScrollEnabled = LocalPlatform.current.isMobile(),
-                ) { index ->
-                    val type = SettingsTab.entries[index]
-                    Column(Modifier.fillMaxSize().padding(contentPadding)) {
-                        when (type) {
-                            SettingsTab.MEDIA -> {
-                                SettingsTab(Modifier.fillMaxSize()) {
-                                    VideoResolverGroup(vm.videoResolverSettingsState)
-                                    AutoCacheGroup(vm.mediaCacheSettingsState)
 
-                                    TorrentEngineGroup(vm.torrentSettingsState)
-                                    CacheDirectoryGroup(vm.cacheDirectoryGroupState)
-                                    MediaSelectionGroup(vm.mediaSelectionGroupState)
-                                }
-                            }
-
-                            SettingsTab.NETWORK -> {
-                                SettingsTab(Modifier.fillMaxSize()) {
-                                    GlobalProxyGroup(vm.proxySettingsState)
-                                    MediaSourceSubscriptionGroup(vm.mediaSourceSubscriptionGroupState)
-                                    MediaSourceGroup(vm.mediaSourceGroupState, vm.editMediaSourceState)
-                                    OtherTestGroup(vm.otherTesters)
-                                    DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)
-                                }
-                            }
-
-                            SettingsTab.ABOUT -> {
-                                val toaster = LocalToaster.current
-                                AboutTab(
-                                    modifier = Modifier.fillMaxSize(),
-                                    onTriggerDebugMode = {
-                                        if (vm.debugTriggerState.triggerDebugMode()) {
-                                            toaster.toast("已开启调试模式")
-                                        }
-                                    },
-                                )
-                            }
-
-                            SettingsTab.APP -> AppSettingsTab(
-                                vm.softwareUpdateGroupState,
-                                vm.uiSettings,
-                                vm.videoScaffoldConfig,
-                                vm.danmakuFilterConfigState,
-                                vm.danmakuRegexFilterState,
-                                vm.isInDebugMode,
-                                Modifier.fillMaxSize(),
-                            )
-
-                            SettingsTab.DEBUG -> DebugTab(
-                                vm.debugSettingsState,
-                                Modifier.fillMaxSize(),
-                                onDisableDebugMode = { scope.launch { pagerState.animateScrollToPage(0) } },
-                            )
+                    listPane()
+                }
+            }
+        },
+        detailPane = {
+            AnimatedPane1 {
+                Column {
+                    Card(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    ) {
+                        AnimatedContent(
+                            navigator.currentDestination?.content,
+                            Modifier.fillMaxSize(),
+                            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+                        ) { tab ->
+                            detailPane(tab)
                         }
                     }
                 }
             }
-        }
+        },
+        modifier
+            .background(MaterialTheme.colorScheme.background)
+            .padding(currentWindowAdaptiveInfo().windowSizeClass.panePadding)
+            .windowInsetsPadding(contentWindowInsets)
+            .consumeWindowInsets(contentWindowInsets),
+    )
+
+
+    val appBarColors = AniThemeDefaults.topAppBarColors()
+//    Scaffold(
+//        modifier,
+//        topBar = {
+//            WindowDragArea {
+//                TopAppBar(
+//                    title = { Text("设置") },
+//                    navigationIcon = {
+//                        if (showBack) {
+//                            TopAppBarGoBackButton()
+//                        }
+//                    },
+//                    colors = appBarColors,
+//                    windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+//                )
+//            }
+//        },
+//        contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+//    ) { scaffoldPadding ->
+//    }
+}
+
+@Stable
+private fun getIcon(tab: SettingsTab): ImageVector {
+    return when (tab) {
+        SettingsTab.APPEARANCE -> Icons.Rounded.Palette
+        SettingsTab.UPDATE -> Icons.Rounded.Update
+        SettingsTab.PLAYER -> Icons.Rounded.SmartDisplay
+        SettingsTab.MEDIA_SUBSCRIPTION -> Icons.Rounded.Subscriptions
+        SettingsTab.MEDIA_SOURCE -> Icons.Rounded.Subscriptions
+        SettingsTab.MEDIA_SELECTOR -> Icons.Rounded.FilterList
+        SettingsTab.DANMAKU -> Icons.Rounded.Subtitles
+        SettingsTab.PROXY -> Icons.Rounded.VpnKey
+        SettingsTab.BT -> Icons.Filled.P2p
+        SettingsTab.CACHE -> Icons.Rounded.Download
+        SettingsTab.STORAGE -> Icons.Rounded.Storage
+        SettingsTab.ABOUT -> Icons.Rounded.Info
+        SettingsTab.DEBUG -> Icons.Rounded.Science
     }
 }
 
-
-@Composable
-private fun renderPreferenceTab(
-    tab: SettingsTab,
-): String {
+@Stable
+private fun getName(tab: SettingsTab): String {
     return when (tab) {
-        SettingsTab.APP -> "应用与界面"
-        SettingsTab.NETWORK -> "数据源与网络"
-        SettingsTab.MEDIA -> "播放与缓存"
+        SettingsTab.APPEARANCE -> "界面"
+        SettingsTab.UPDATE -> "软件更新"
+        SettingsTab.PLAYER -> "播放器"
+        SettingsTab.MEDIA_SUBSCRIPTION -> "数据源订阅"
+        SettingsTab.MEDIA_SOURCE -> "数据源"
+        SettingsTab.MEDIA_SELECTOR -> "观看偏好"
+        SettingsTab.DANMAKU -> "弹幕"
+        SettingsTab.PROXY -> "代理"
+        SettingsTab.BT -> "BitTorrent"
+        SettingsTab.CACHE -> "缓存"
+        SettingsTab.STORAGE -> "存储空间"
         SettingsTab.ABOUT -> "关于"
         SettingsTab.DEBUG -> "调试"
     }

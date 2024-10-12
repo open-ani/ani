@@ -179,7 +179,7 @@ private fun HomeSceneLandscape(
                     }
                 }
 
-                override fun navigateSettings(tab: SettingsTab) {
+                override fun navigateSettings(tab: SettingsTab?) {
                     uiScope.launch {
                         pagerState.scrollToPage(3)
                     }
