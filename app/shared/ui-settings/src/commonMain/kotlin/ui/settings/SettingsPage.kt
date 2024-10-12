@@ -13,10 +13,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -62,6 +64,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.LocalPlatform
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
 import me.him188.ani.app.ui.foundation.layout.Zero
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
@@ -110,11 +113,14 @@ fun SettingsPage(
             PermanentDrawerSheet(
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
-                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    .ifThen(!LocalPlatform.current.hasScrollingBug()) {
+                        nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    }
                     .verticalScroll(rememberScrollState()),
                 drawerContainerColor = Color.Unspecified,
             ) {
+                val verticalPadding = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding
+
                 @Composable
                 fun Item(item: SettingsTab) {
                     NavigationDrawerItem(
@@ -137,6 +143,8 @@ fun SettingsPage(
                     )
                 }
 
+                Spacer(Modifier.height(verticalPadding)) // scrollable
+
                 Title("应用与界面", paddingTop = 0.dp)
                 Item(SettingsTab.APPEARANCE)
                 Item(SettingsTab.UPDATE)
@@ -157,6 +165,8 @@ fun SettingsPage(
                 Title("其他")
                 Item(SettingsTab.ABOUT)
                 Item(SettingsTab.DEBUG)
+
+                Spacer(Modifier.height(verticalPadding)) // scrollable
             }
         },
         detailPaneTitle = { currentTab ->
@@ -232,7 +242,7 @@ internal fun SettingsPageLayout(
                         title = { Text("设置") },
                         colors = AniThemeDefaults.transparentAppBarColors(),
                         windowInsets = WindowInsets.Zero,
-                        scrollBehavior = if (LocalPlatform.current.hasScrollingBug()) null else topAppBarScrollBehavior,
+                        scrollBehavior = topAppBarScrollBehavior,
                     )
 //                    Surface {
 //                        ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
