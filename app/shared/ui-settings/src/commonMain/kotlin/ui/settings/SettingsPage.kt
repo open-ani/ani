@@ -102,11 +102,6 @@ fun SettingsPage(
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     val navigator: ThreePaneScaffoldNavigator<SettingsTab> = rememberListDetailPaneScaffoldNavigator<SettingsTab>()
-    val currentTab by remember(navigator) {
-        derivedStateOf {
-            navigator.currentDestination?.content
-        }
-    }
 
     SettingsPageLayout(
         navigator,
@@ -120,6 +115,12 @@ fun SettingsPage(
                     .verticalScroll(rememberScrollState()),
                 drawerContainerColor = Color.Unspecified,
             ) {
+                val currentTab by remember(navigator) {
+                    derivedStateOf {
+                        navigator.currentDestination?.content
+                    }
+                }
+
                 val verticalPadding = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding
 
                 @Composable
@@ -174,13 +175,18 @@ fun SettingsPage(
             Text(getName(currentTab))
         },
         detailPaneContent = { currentTab ->
+            val tabModifier = Modifier
+                .padding(bottom = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
+                .padding(horizontal = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding - 8.dp)
             when (currentTab) {
-                SettingsTab.ABOUT -> AboutTab()
-                SettingsTab.DEBUG -> DebugTab(vm.debugSettingsState)
+                SettingsTab.ABOUT -> AboutTab(tabModifier)
+                SettingsTab.DEBUG -> DebugTab(
+                    vm.debugSettingsState,
+                    tabModifier,
+                )
+
                 else -> SettingsTab(
-                    Modifier
-                        .padding(bottom = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
-                        .padding(horizontal = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding - 8.dp),
+                    tabModifier,
                 ) {
                     when (currentTab) {
                         SettingsTab.APPEARANCE -> AppearanceGroup(vm.uiSettings)
