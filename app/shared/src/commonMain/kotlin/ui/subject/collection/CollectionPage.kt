@@ -74,7 +74,6 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.LocalPlatform
-import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -254,39 +253,35 @@ private fun CollectionPageLayout(
     Scaffold(
         modifier,
         topBar = {
-            val topAppBarColors = AniThemeDefaults.topAppBarColors()
             Column(modifier = Modifier.fillMaxWidth()) {
-                WindowDragArea {
-                    AniTopAppBar(
-                        title = { Text("追番") },
-                        windowInsets = windowInsets.only(WindowInsetsSides.Top),
-                        modifier = Modifier,
-                        actions = {
-                            sessionError()
+                AniTopAppBar(
+                    title = { Text("追番") },
+                    windowInsets = windowInsets.only(WindowInsetsSides.Top),
+                    modifier = Modifier,
+                    actions = {
+                        sessionError()
 
-                            TextButtonUpdateLogo()
+                        TextButtonUpdateLogo()
 
-                            if (LocalPlatform.current.isDesktop()) {
-                                // PC 无法下拉刷新
-                                val refreshTasker = rememberUiMonoTasker()
-                                IconButton(
-                                    {
-                                        val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
-                                        if (!refreshTasker.isRunning) {
-                                            refreshTasker.launch {
-                                                onRefresh(type)
-                                            }
+                        if (LocalPlatform.current.isDesktop()) {
+                            // PC 无法下拉刷新
+                            val refreshTasker = rememberUiMonoTasker()
+                            IconButton(
+                                {
+                                    val type = COLLECTION_TABS_SORTED[pagerState.currentPage]
+                                    if (!refreshTasker.isRunning) {
+                                        refreshTasker.launch {
+                                            onRefresh(type)
                                         }
-                                    },
-                                ) {
-                                    Icon(Icons.Rounded.Refresh, null)
-                                }
+                                    }
+                                },
+                            ) {
+                                Icon(Icons.Rounded.Refresh, null)
                             }
-                        },
-                        avatar = avatar,
-                        colors = topAppBarColors,
-                    )
-                }
+                        }
+                    },
+                    avatar = avatar,
+                )
 
                 filters(CollectionPageFilters)
             }

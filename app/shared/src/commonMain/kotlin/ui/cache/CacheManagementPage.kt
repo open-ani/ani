@@ -265,13 +265,13 @@ fun CacheManagementPage(
         topBar = {
             AniTopAppBar(
                 title = { Text("缓存管理") },
+                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 navigationIcon = {
                     if (showBack) {
                         TopAppBarGoBackButton()
                     }
                 },
                 colors = appBarColors,
-                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
             )
         },
         containerColor = Color.Unspecified,

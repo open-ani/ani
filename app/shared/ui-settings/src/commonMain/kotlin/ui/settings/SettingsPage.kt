@@ -265,14 +265,14 @@ internal fun SettingsPageLayout(
                     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
                     AniTopAppBar(
                         title = { Text("设置") },
-                        colors = AniThemeDefaults.transparentAppBarColors(),
                         windowInsets = WindowInsets.Zero,
-                        scrollBehavior = topAppBarScrollBehavior,
                         navigationIcon = {
                             if (showNavigationIcon) {
                                 TopAppBarGoBackButton()
                             }
                         },
+                        colors = AniThemeDefaults.transparentAppBarColors(),
+                        scrollBehavior = topAppBarScrollBehavior,
                     )
 //                    Surface {
 //                        ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
