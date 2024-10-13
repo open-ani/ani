@@ -38,9 +38,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
@@ -49,6 +52,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,6 +60,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -69,6 +76,7 @@ import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
+import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.PullToRefreshBox
 import me.him188.ani.app.ui.profile.SelfAvatar
@@ -124,7 +132,7 @@ fun CollectionPage(
             SelfAvatar(vm.authState, vm.selfInfo)
         },
         filters = {
-            CollectionTypeFilterButtons(
+            CollectionTypeScrollableTabRow(
                 pagerState,
                 Modifier.padding(horizontal = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding),
             ) { type ->
@@ -281,40 +289,6 @@ private fun CollectionPageLayout(
                 }
 
                 filters(CollectionPageFilters)
-
-//                ScrollableTabRow(
-//                    selectedTabIndex = pagerState.currentPage,
-//                    indicator = @Composable { tabPositions ->
-//                        TabRowDefaults.SecondaryIndicator(
-//                            Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
-//                        )
-//                    },
-//                    containerColor = topAppBarColors.containerColor,
-//                    contentColor = MaterialTheme.colorScheme.contentColorFor(topAppBarColors.containerColor),
-//                    divider = {},
-//                    modifier = Modifier.fillMaxWidth(),
-//                ) {
-//                    COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
-//                        Tab(
-//                            selected = pagerState.currentPage == index,
-//                            onClick = { uiScope.launch { pagerState.animateScrollToPage(index) } },
-//                            text = {
-//                                val type = COLLECTION_TABS_SORTED[index]
-//                                val cache = vm.collectionsByType(type).cache
-//                                val size by cache.totalSize.collectAsStateWithLifecycle(null)
-//                                if (size == null) {
-//                                    Text(text = collectionType.displayText())
-//                                } else {
-//                                    Text(
-//                                        text = remember(collectionType, size) {
-//                                            collectionType.displayText() + " " + size
-//                                        },
-//                                    )
-//                                }
-//                            },
-//                        )
-//                    }
-//                }
             }
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Top),
@@ -355,6 +329,44 @@ object CollectionPageFilters {
                 ) {
                     itemLabel(type)
                 }
+            }
+        }
+    }
+
+    @Composable
+    fun CollectionTypeScrollableTabRow(
+        pagerState: PagerState,
+        modifier: Modifier = Modifier,
+        itemLabel: @Composable (UnifiedCollectionType) -> Unit = { type ->
+            Text(type.displayText(), softWrap = false)
+        },
+    ) {
+        val uiScope = rememberCoroutineScope()
+        val widths = rememberSaveable { mutableStateListOf(*COLLECTION_TABS_SORTED.map { 24.dp }.toTypedArray()) }
+        ScrollableTabRow(
+            selectedTabIndex = pagerState.currentPage,
+            indicator = @Composable { tabPositions ->
+                TabRowDefaults.PrimaryIndicator(
+                    Modifier.pagerTabIndicatorOffset(pagerState, tabPositions),
+                    width = widths[pagerState.currentPage],
+                )
+            },
+            containerColor = Color.Unspecified,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            divider = {},
+            modifier = modifier.fillMaxWidth(),
+        ) {
+            COLLECTION_TABS_SORTED.forEachIndexed { index, collectionType ->
+                Tab(
+                    selected = pagerState.currentPage == index,
+                    onClick = { uiScope.launch { pagerState.animateScrollToPage(index) } },
+                    text = {
+                        val density = LocalDensity.current
+                        Box(Modifier.onPlaced { widths[index] = with(density) { it.size.width.toDp() } }) {
+                            itemLabel(collectionType)
+                        }
+                    },
+                )
             }
         }
     }
