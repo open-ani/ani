@@ -702,6 +702,44 @@
         },
         "deprecated": false
       }
+    },
+    "/v1/trending": {
+      "get": {
+        "tags": [ "Trending" ],
+        "summary": "获取热门排行",
+        "description": "获取热门排行",
+        "operationId": "getTrending",
+        "parameters": [ ],
+        "responses": {
+          "200": {
+            "description": "成功获取热门排行",
+            "headers": { },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Trending"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "trendingSubjectIds": [ {
+                        "bangumiId": 464376,
+                        "nameCn": "败犬女主太多了！",
+                        "imageLarge": "https://lain.bgm.tv/pic/cover/l/e4/dc/464376_NsZRw.jpg"
+                      }, {
+                        "bangumiId": 425998,
+                        "nameCn": "Re：从零开始的异世界生活 第三季 袭击篇",
+                        "imageLarge": "https://lain.bgm.tv/pic/cover/l/26/d6/425998_dnzr8.jpg"
+                      } ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
     }
   },
   "components": {
@@ -1006,6 +1044,40 @@
           "refreshToken": {
             "title": "String",
             "type": "string"
+          }
+        }
+      },
+      "TrendingSubject": {
+        "title": "TrendingSubject",
+        "required": [ "bangumiId", "imageLarge", "nameCn" ],
+        "type": "object",
+        "properties": {
+          "bangumiId": {
+            "title": "Int",
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageLarge": {
+            "title": "String",
+            "type": "string"
+          },
+          "nameCn": {
+            "title": "String",
+            "type": "string"
+          }
+        }
+      },
+      "Trending": {
+        "title": "Trending",
+        "required": [ "trendingSubjectIds" ],
+        "type": "object",
+        "properties": {
+          "trendingSubjectIds": {
+            "title": "List<TrendingSubject>",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrendingSubject"
+            }
           }
         }
       }
