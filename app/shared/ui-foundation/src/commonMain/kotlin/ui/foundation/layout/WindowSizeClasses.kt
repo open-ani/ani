@@ -101,3 +101,32 @@ private val zeroInsets = WindowInsets(0.dp) // single instance to be shared
 @Stable
 val WindowInsets.Companion.Zero: WindowInsets
     get() = zeroInsets
+
+private val WindowWidthSizeClass.ordinal
+    get() = when (this) {
+        WindowWidthSizeClass.COMPACT -> 0
+        WindowWidthSizeClass.MEDIUM -> 1
+        WindowWidthSizeClass.EXPANDED -> 2
+        else -> {
+            error("Unsupported WindowWidthSizeClass: $this")
+        }
+    }
+
+operator fun WindowWidthSizeClass.compareTo(other: WindowWidthSizeClass): Int {
+    return ordinal.compareTo(other.ordinal)
+}
+
+
+private val WindowHeightSizeClass.ordinal
+    get() = when (this) {
+        WindowHeightSizeClass.COMPACT -> 0
+        WindowHeightSizeClass.MEDIUM -> 1
+        WindowHeightSizeClass.EXPANDED -> 2
+        else -> {
+            error("Unsupported WindowHeightSizeClass: $this")
+        }
+    }
+
+operator fun WindowHeightSizeClass.compareTo(other: WindowHeightSizeClass): Int {
+    return ordinal.compareTo(other.ordinal)
+}
