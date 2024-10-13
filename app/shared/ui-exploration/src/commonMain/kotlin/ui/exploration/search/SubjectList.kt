@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.home.search
+package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

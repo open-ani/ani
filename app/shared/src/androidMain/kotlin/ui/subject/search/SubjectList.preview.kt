@@ -15,10 +15,10 @@ import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import me.him188.ani.app.ui.exploration.search.SubjectPreviewColumn
+import me.him188.ani.app.ui.exploration.search.SubjectPreviewListState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
-import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
-import me.him188.ani.app.ui.home.search.SubjectPreviewListState
 import me.him188.ani.app.ui.subject.details.TestSubjectInfo
 import me.him188.ani.utils.platform.annotations.TestOnly
 

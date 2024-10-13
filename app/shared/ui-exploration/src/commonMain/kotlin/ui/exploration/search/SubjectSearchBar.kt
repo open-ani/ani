@@ -1,4 +1,13 @@
-package me.him188.ani.app.ui.home.search
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
+package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -85,7 +94,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
-import androidx.constraintlayout.compose.layoutId
 import me.him188.ani.app.ui.foundation.interaction.clearFocusOnKeyboardDismiss
 import me.him188.ani.app.ui.foundation.widgets.OneshotTip
 import kotlin.math.max

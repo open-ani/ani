@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.home
+package me.him188.ani.app.ui.exploration
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,12 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.exploration.search.SearchViewModel
+import me.him188.ani.app.ui.exploration.search.SubjectPreviewColumn
+import me.him188.ani.app.ui.exploration.search.SubjectSearchBar
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
+import me.him188.ani.app.ui.foundation.session.SelfAvatar
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.home.search.SearchViewModel
-import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
-import me.him188.ani.app.ui.home.search.SubjectSearchBar
-import me.him188.ani.app.ui.profile.SelfAvatar
 
 @Composable
 fun ExplorationPage(
