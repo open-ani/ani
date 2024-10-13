@@ -340,7 +340,7 @@ private fun getName(tab: SettingsTab): String {
         SettingsTab.UPDATE -> "软件更新"
         SettingsTab.PLAYER -> "播放器"
         SettingsTab.MEDIA_SUBSCRIPTION -> "数据源订阅"
-        SettingsTab.MEDIA_SOURCE -> "数据源"
+        SettingsTab.MEDIA_SOURCE -> "数据源管理"
         SettingsTab.MEDIA_SELECTOR -> "观看偏好"
         SettingsTab.DANMAKU -> "弹幕"
         SettingsTab.PROXY -> "代理"
