@@ -76,11 +76,11 @@ import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
+import me.him188.ani.app.ui.foundation.session.SelfAvatar
+import me.him188.ani.app.ui.foundation.session.SessionTipsArea
+import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.PullToRefreshBox
-import me.him188.ani.app.ui.profile.SelfAvatar
-import me.him188.ani.app.ui.subject.collection.components.SessionTipsArea
-import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 import me.him188.ani.app.ui.subject.collection.progress.SubjectProgressButton
 import me.him188.ani.app.ui.subject.collection.progress.rememberEpisodeListState
 import me.him188.ani.app.ui.subject.collection.progress.rememberSubjectProgressState

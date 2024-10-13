@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.domain.session.SessionStatus
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.session.SessionTipsArea
+import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 
 @Composable
 private fun PreviewSessionTipsAreaImpl(

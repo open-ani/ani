@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.profile
+package me.him188.ani.app.ui.foundation.session
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -24,7 +24,6 @@ import me.him188.ani.app.domain.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
-import me.him188.ani.app.ui.subject.collection.components.SessionTipsIcon
 
 @Composable
 fun SelfAvatar(

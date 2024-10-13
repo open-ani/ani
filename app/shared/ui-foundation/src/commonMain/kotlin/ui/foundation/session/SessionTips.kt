@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-package me.him188.ani.app.ui.subject.collection.components
+package me.him188.ani.app.ui.foundation.session
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
