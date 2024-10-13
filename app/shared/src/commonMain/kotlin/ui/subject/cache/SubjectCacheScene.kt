@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
@@ -302,7 +304,7 @@ fun SubjectCachePageScaffold(
         },
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
-        Column(Modifier.padding(paddingValues)) {
+        Column(Modifier.padding(paddingValues).verticalScroll(rememberScrollState())) {
 //            Surface(Modifier.fillMaxWidth(), color = appBarColors.containerColor) {
 //                Row(Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
 //                    ProvideTextStyle(MaterialTheme.typography.titleMedium) {

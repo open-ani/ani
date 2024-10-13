@@ -186,48 +186,54 @@ fun SettingsPage(
         },
         detailPaneContent = { currentTab ->
             val tabModifier = Modifier
-                .padding(bottom = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
                 .padding(horizontal = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding - 8.dp)
-            when (currentTab) {
-                SettingsTab.ABOUT -> AboutTab(tabModifier)
-                SettingsTab.DEBUG -> DebugTab(
-                    vm.debugSettingsState,
-                    tabModifier,
-                )
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                when (currentTab) {
+                    SettingsTab.ABOUT -> AboutTab(tabModifier)
+                    SettingsTab.DEBUG -> DebugTab(
+                        vm.debugSettingsState,
+                        tabModifier,
+                    )
 
-                else -> SettingsTab(
-                    tabModifier,
-                ) {
-                    when (currentTab) {
-                        SettingsTab.APPEARANCE -> AppearanceGroup(vm.uiSettings)
-                        SettingsTab.UPDATE -> SoftwareUpdateGroup(vm.softwareUpdateGroupState)
-                        SettingsTab.PLAYER -> PlayerGroup(
-                            vm.videoScaffoldConfig,
-                            vm.danmakuFilterConfigState,
-                            vm.danmakuRegexFilterState,
-                            vm.isInDebugMode,
-                        )
+                    else -> SettingsTab(
+                        tabModifier,
+                    ) {
+                        when (currentTab) {
+                            SettingsTab.APPEARANCE -> AppearanceGroup(vm.uiSettings)
+                            SettingsTab.UPDATE -> SoftwareUpdateGroup(vm.softwareUpdateGroupState)
+                            SettingsTab.PLAYER -> PlayerGroup(
+                                vm.videoScaffoldConfig,
+                                vm.danmakuFilterConfigState,
+                                vm.danmakuRegexFilterState,
+                                vm.isInDebugMode,
+                            )
 
-                        SettingsTab.MEDIA_SUBSCRIPTION -> MediaSourceSubscriptionGroup(
-                            vm.mediaSourceSubscriptionGroupState,
-                        )
+                            SettingsTab.MEDIA_SUBSCRIPTION -> MediaSourceSubscriptionGroup(
+                                vm.mediaSourceSubscriptionGroupState,
+                            )
 
-                        SettingsTab.MEDIA_SOURCE -> MediaSourceGroup(
-                            vm.mediaSourceGroupState,
-                            vm.editMediaSourceState,
-                        )
+                            SettingsTab.MEDIA_SOURCE -> MediaSourceGroup(
+                                vm.mediaSourceGroupState,
+                                vm.editMediaSourceState,
+                            )
 
-                        SettingsTab.MEDIA_SELECTOR -> MediaSelectionGroup(vm.mediaSelectionGroupState)
-                        SettingsTab.DANMAKU -> DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)
-                        SettingsTab.PROXY -> GlobalProxyGroup(vm.proxySettingsState)
-                        SettingsTab.BT -> TorrentEngineGroup(vm.torrentSettingsState)
-                        SettingsTab.CACHE -> AutoCacheGroup(vm.mediaCacheSettingsState)
-                        SettingsTab.STORAGE -> CacheDirectoryGroup(vm.cacheDirectoryGroupState)
-                        SettingsTab.ABOUT -> {} // see above
-                        SettingsTab.DEBUG -> {}
-                        null -> {}
+                            SettingsTab.MEDIA_SELECTOR -> MediaSelectionGroup(vm.mediaSelectionGroupState)
+                            SettingsTab.DANMAKU -> DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)
+                            SettingsTab.PROXY -> GlobalProxyGroup(vm.proxySettingsState)
+                            SettingsTab.BT -> TorrentEngineGroup(vm.torrentSettingsState)
+                            SettingsTab.CACHE -> AutoCacheGroup(vm.mediaCacheSettingsState)
+                            SettingsTab.STORAGE -> CacheDirectoryGroup(vm.cacheDirectoryGroupState)
+                            SettingsTab.ABOUT -> {} // see above
+                            SettingsTab.DEBUG -> {}
+                            null -> {}
+                        }
                     }
                 }
+                Spacer(
+                    Modifier.height(
+                        currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding,
+                    ),
+                )
             }
         },
         modifier,
@@ -375,7 +381,7 @@ fun SettingsTab(
     content: @Composable SettingsScope.() -> Unit,
 ) {
     Column(
-        modifier.verticalScroll(rememberScrollState()),
+        modifier,
         verticalArrangement = Arrangement.spacedBy(
             currentWindowAdaptiveInfo().windowSizeClass.cardVerticalPadding,
         ),
