@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.video.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -5,6 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
@@ -105,7 +116,7 @@ fun EpisodeVideoSettings(
     modifier: Modifier = Modifier,
     useThinSlider: Boolean = true
 ) {
-    SettingsTab(modifier) {
+    SettingsTab(modifier.verticalScroll(rememberScrollState())) {
         Column {
             Surface(Modifier.fillMaxWidth(), color = SettingsDefaults.groupBackgroundColor) {
                 FlowRow(

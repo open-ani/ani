@@ -1,10 +1,18 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -70,7 +78,7 @@ interface AniNavigator {
     }
 
     fun navigateHome() {
-        navigator.navigate("/home")
+        navigator.navigate("/main")
     }
 
     fun navigateSearch(requestFocus: Boolean = false) {
@@ -97,8 +105,8 @@ interface AniNavigator {
         }
     }
 
-    fun navigateSettings(tab: SettingsTab = SettingsTab.Default) {
-        navigator.navigate("/settings?tab=${tab.ordinal}&back=true")
+    fun navigateSettings(tab: SettingsTab? = null) {
+        navigator.navigate("/settings?tab=${tab?.ordinal.toString()}&back=true")
     }
 
     fun navigateEditMediaSource(
@@ -152,17 +160,23 @@ private class AniNavigatorImpl : AniNavigator {
  */
 @Immutable
 enum class SettingsTab {
-    APP,
-    MEDIA,
-    NETWORK,
-    ABOUT,
-    DEBUG
-    ;
+    APPEARANCE,
+    UPDATE,
 
-    companion object {
-        @Stable
-        val Default = MEDIA
-    }
+    PLAYER,
+    MEDIA_SUBSCRIPTION,
+    MEDIA_SOURCE,
+    MEDIA_SELECTOR,
+    DANMAKU,
+
+    PROXY,
+    BT,
+    CACHE,
+    STORAGE,
+
+    ABOUT,
+    DEBUG,
+    ;
 }
 
 

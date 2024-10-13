@@ -27,8 +27,10 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.domain.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.domain.media.cache.MediaCacheManager
 import me.him188.ani.app.domain.session.AuthState
+import me.him188.ani.app.domain.session.OpaqueSession
 import me.him188.ani.app.domain.session.SessionEvent
 import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.session.userInfo
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.tools.ldc.LazyDataCache
@@ -93,6 +95,11 @@ class MyCollectionsViewModel : AbstractViewModel(), KoinComponent {
         .map { it.myCollections }
         .produceState(MyCollectionsSettings.Default)
     val authState: AuthState = AuthState()
+
+    @OptIn(OpaqueSession::class)
+    val selfInfo by sessionManager.userInfo.produceState(null)
+
+
     val episodeListStateFactory: EpisodeListStateFactory = EpisodeListStateFactory(
         settingsRepository,
         subjectManager,

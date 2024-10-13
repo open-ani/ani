@@ -12,15 +12,19 @@ package me.him188.ani.app.ui.main
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -32,6 +36,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import me.him188.ani.app.domain.mediasource.rss.RssMediaSource
 import me.him188.ani.app.domain.mediasource.web.SelectorMediaSource
@@ -70,19 +75,34 @@ import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.datasources.api.source.FactoryId
 import kotlin.math.roundToInt
 
+/**
+ * UI 入口点. 包含所有子页面, 以及组合这些子页面的方式 (navigation).
+ */
 @Composable
-fun AniAppContentPortrait(
+fun AniAppContent(aniNavigator: AniNavigator) {
+    val navigator = rememberNavController()
+    aniNavigator.setNavController(navigator)
+
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        CompositionLocalProvider(LocalNavigator provides aniNavigator) {
+            AniAppContentImpl(aniNavigator, Modifier.fillMaxSize())
+        }
+    }
+}
+
+@Composable
+private fun AniAppContentImpl(
     aniNavigator: AniNavigator,
     modifier: Modifier = Modifier
 ) {
     val navController = aniNavigator.navigator
-    CompositionLocalProvider(LocalNavigator provides aniNavigator) {
+    // 必须传给所有 Scaffold 和 TopAppBar. 注意, 如果你不传, 你的 UI 很可能会在 macOS 不工作.
+    val windowInsetsWithoutTitleBar = ScaffoldDefaults.contentWindowInsets
+    val windowInsets = ScaffoldDefaults.contentWindowInsets
+        .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
 
-        // 必须传给所有 Scaffold 和 TopAppBar. 注意, 如果你不传, 你的 UI 很可能会在 macOS 不工作.
-        val windowInsets = ScaffoldDefaults.contentWindowInsets
-            .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
-
-        NavHost(navController, startDestination = "/home", modifier) {
+    SharedTransitionLayout {
+        NavHost(navController, startDestination = "/main", modifier) {
             // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#e5b958f0-435d-4e84-aed4-8d1ea395fa5c
             val enterDuration = 500
             val exitDuration = 200
@@ -122,13 +142,13 @@ fun AniAppContentPortrait(
                 WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.fillMaxSize(), windowInsets)
             }
             composable(
-                "/home",
+                "/main",
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) {
-                HomeScene(windowInsets = windowInsets)
+                MainScene(windowInsets = windowInsetsWithoutTitleBar)
             }
             composable(
                 "/bangumi-oauth",
@@ -216,16 +236,15 @@ fun AniAppContentPortrait(
             ) { backStackEntry ->
                 val initialTab = backStackEntry.arguments?.getInt("tab")
                     ?.let { SettingsTab.entries.getOrNull(it) }
-                    ?: SettingsTab.MEDIA
 
                 SettingsPage(
                     viewModel {
                         SettingsViewModel()
                     },
-                    showBack = backStackEntry.arguments?.getBoolean("back") ?: false,
                     Modifier.fillMaxSize(),
-                    initialTab = initialTab,
                     contentWindowInsets = windowInsets,
+                    initialTab,
+                    showNavigationIcon = true,
                 )
             }
             composable(

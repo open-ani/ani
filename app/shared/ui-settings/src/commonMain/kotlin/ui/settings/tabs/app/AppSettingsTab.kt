@@ -88,23 +88,23 @@ fun AppSettingsTab(
 ) {
     SettingsTab(modifier) {
         SoftwareUpdateGroup(softwareUpdateGroupState)
-        UISettingsGroup(uiSettings)
+        AppearanceGroup(uiSettings)
         PlayerGroup(
             videoScaffoldConfig,
             danmakuFilterConfig,
             danmakuRegexFilterState,
-            showDebug
+            showDebug,
         )
         AppSettingsTabPlatform()
     }
 }
 
 @Composable
-private fun SettingsScope.UISettingsGroup(
+fun SettingsScope.AppearanceGroup(
     state: SettingsState<UISettings>,
 ) {
     val uiSettings by state
-    Group(title = { Text("通用") }) {
+    Group(title = { Text("界面") }) {
         if (LocalPlatform.current.isAndroid()) {
             SwitchItem(
                 uiSettings.theme.dynamicTheme,
@@ -241,7 +241,7 @@ class SoftwareUpdateGroupState(
 }
 
 @Composable
-private fun SettingsScope.SoftwareUpdateGroup(
+fun SettingsScope.SoftwareUpdateGroup(
     state: SoftwareUpdateGroupState,
     modifier: Modifier = Modifier,
 ) {
@@ -384,7 +384,7 @@ private fun SettingsScope.SoftwareUpdateGroup(
 }
 
 @Composable
-private fun SettingsScope.PlayerGroup(
+fun SettingsScope.PlayerGroup(
     videoScaffoldConfig: SettingsState<VideoScaffoldConfig>,
     danmakuFilterConfig: SettingsState<DanmakuFilterConfig>,
     danmakuRegexFilterState: DanmakuRegexFilterState,

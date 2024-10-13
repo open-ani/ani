@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.animation.AnimatedVisibility
@@ -39,69 +48,72 @@ internal fun SettingsScope.AutoCacheGroup(
                 mediaCacheSettingsState.update(mediaCacheSettings.copy(enabled = it))
             },
             title = { Text("启用自动缓存") },
-            description = { Text("启用后下面的设置才有效") },
         )
 
-        HorizontalDividerItem()
+        AnimatedVisibility(mediaCacheSettings.enabled) {
+            Column {
+                HorizontalDividerItem()
 
-        var maxCount by remember(mediaCacheSettings) { mutableFloatStateOf(mediaCacheSettings.maxCountPerSubject.toFloat()) }
-        SliderItem(
-            title = { Text("最大自动缓存话数") },
-            description = {
-                Column {
-                    Text("若手动缓存数量超过该设置值，将不会自动缓存")
-                    Row {
-                        Text(remember(maxCount) { autoCacheDescription(maxCount) })
-                        if (maxCount == 10f) {
-                            Text("可能会占用大量空间", color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                }
-            },
-        ) {
-            Slider(
-                value = maxCount,
-                onValueChange = { maxCount = it },
-                valueRange = 0f..10f,
-                onValueChangeFinished = {
-                    mediaCacheSettingsState.update(mediaCacheSettings.copy(maxCountPerSubject = maxCount.roundToInt()))
-                },
-                steps = 9,
-            )
-        }
-
-        HorizontalDividerItem()
-
-        var mostRecentOnly by remember(mediaCacheSettings) {
-            mutableStateOf(mediaCacheSettings.mostRecentOnly)
-        } // for preview
-        SwitchItem(
-            checked = mostRecentOnly,
-            onCheckedChange = {
-                mostRecentOnly = it
-                mediaCacheSettingsState.update(mediaCacheSettings.copy(mostRecentOnly = it))
-            },
-            title = { Text("仅缓存最近看过的番剧") },
-        )
-
-        AnimatedVisibility(mostRecentOnly) {
-            SubGroup {
-                var mostRecentCount by remember(mediaCacheSettings) { mutableFloatStateOf(mediaCacheSettings.mostRecentCount.toFloat()) }
+                var maxCount by remember(mediaCacheSettings) { mutableFloatStateOf(mediaCacheSettings.maxCountPerSubject.toFloat()) }
                 SliderItem(
-                    title = { Text("缓存数量") },
+                    title = { Text("最大自动缓存话数") },
                     description = {
-                        Text("当前设置: 仅缓存最近看过的 ${mostRecentCount.roundToInt()} 部番剧")
+                        Column {
+                            Text("若手动缓存数量超过该设置值，将不会自动缓存")
+                            Row {
+                                Text(remember(maxCount) { autoCacheDescription(maxCount) })
+                                if (maxCount == 10f) {
+                                    Text("可能会占用大量空间", color = MaterialTheme.colorScheme.error)
+                                }
+                            }
+                        }
                     },
                 ) {
                     Slider(
-                        value = mostRecentCount,
-                        onValueChange = { mostRecentCount = it },
+                        value = maxCount,
+                        onValueChange = { maxCount = it },
+                        valueRange = 0f..10f,
                         onValueChangeFinished = {
-                            mediaCacheSettingsState.update(mediaCacheSettings.copy(mostRecentCount = mostRecentCount.roundToInt()))
+                            mediaCacheSettingsState.update(mediaCacheSettings.copy(maxCountPerSubject = maxCount.roundToInt()))
                         },
-                        valueRange = 0f..30f,
-                        steps = 30 - 1,
+                        steps = 9,
                     )
+                }
+
+                HorizontalDividerItem()
+
+                var mostRecentOnly by remember(mediaCacheSettings) {
+                    mutableStateOf(mediaCacheSettings.mostRecentOnly)
+                } // for preview
+                SwitchItem(
+                    checked = mostRecentOnly,
+                    onCheckedChange = {
+                        mostRecentOnly = it
+                        mediaCacheSettingsState.update(mediaCacheSettings.copy(mostRecentOnly = it))
+                    },
+                    title = { Text("仅缓存最近看过的番剧") },
+                )
+
+                AnimatedVisibility(mostRecentOnly) {
+                    SubGroup {
+                        var mostRecentCount by remember(mediaCacheSettings) { mutableFloatStateOf(mediaCacheSettings.mostRecentCount.toFloat()) }
+                        SliderItem(
+                            title = { Text("缓存数量") },
+                            description = {
+                                Text("当前设置: 仅缓存最近看过的 ${mostRecentCount.roundToInt()} 部番剧")
+                            },
+                        ) {
+                            Slider(
+                                value = mostRecentCount,
+                                onValueChange = { mostRecentCount = it },
+                                onValueChangeFinished = {
+                                    mediaCacheSettingsState.update(mediaCacheSettings.copy(mostRecentCount = mostRecentCount.roundToInt()))
+                                },
+                                valueRange = 0f..30f,
+                                steps = 30 - 1,
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -1,26 +1,32 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowOutward
-import androidx.compose.material.icons.rounded.DisplaySettings
 import androidx.compose.material.icons.rounded.Hd
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.util.fastAll
+import me.him188.ani.app.data.models.preference.MediaPreference
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
-import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.ui.settings.SettingsTab
+import me.him188.ani.app.ui.media.renderResolution
+import me.him188.ani.app.ui.media.renderSubtitleLanguage
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.DropdownItem
 import me.him188.ani.app.ui.settings.framework.components.SelectableItem
@@ -28,11 +34,7 @@ import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SorterItem
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextFieldItem
-import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.app.ui.settings.rendering.MediaSourceIcons
-import me.him188.ani.app.data.models.preference.MediaPreference
-import me.him188.ani.app.ui.media.renderResolution
-import me.him188.ani.app.ui.media.renderSubtitleLanguage
 import me.him188.ani.datasources.api.source.MediaSourceKind
 import me.him188.ani.datasources.api.topic.FileSize.Companion.megaBytes
 import me.him188.ani.datasources.api.topic.Resolution
@@ -88,23 +90,6 @@ internal fun SettingsScope.MediaSelectionGroup(
     ) {
         val textAny = "任意"
         val textNone = "无"
-
-        val navigator by rememberUpdatedState(LocalNavigator.current)
-        TextItem(
-            icon = { Icon(Icons.Rounded.DisplaySettings, null) },
-            action = {
-                IconButton({ navigator.navigateSettings(SettingsTab.NETWORK) }) {
-                    Icon(Icons.Rounded.ArrowOutward, null)
-                }
-            },
-            onClick = {
-                navigator.navigateSettings(SettingsTab.NETWORK)
-            },
-        ) {
-            Text("数据源")
-        }
-
-        HorizontalDividerItem()
 
         SorterItem(
             values = { state.sortedLanguages },
@@ -270,8 +255,8 @@ internal fun SettingsScope.MediaSelectionGroup(
                         mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it),
                     )
                 },
-                title = { Text("完结后隐藏单集 BT 资源") },
-                description = { Text("在番剧完结后，单集资源通常会没有速度") },
+                title = { Text("完结一年后隐藏单集 BT 资源") },
+                description = { Text("在番剧完结一年后，单集资源通常会没有速度") },
             )
 
             HorizontalDividerItem()

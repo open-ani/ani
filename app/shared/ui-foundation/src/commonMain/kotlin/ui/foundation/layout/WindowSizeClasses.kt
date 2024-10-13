@@ -10,6 +10,7 @@
 package me.him188.ani.app.ui.foundation.layout
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.dp
@@ -94,3 +95,9 @@ val WindowSizeClass.cardHorizontalPadding
 @Stable
 val WindowSizeClass.cardVerticalPadding
     get() = if (windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 16.dp else 20.dp
+
+private val zeroInsets = WindowInsets(0.dp) // single instance to be shared
+
+@Stable
+val WindowInsets.Companion.Zero: WindowInsets
+    get() = zeroInsets

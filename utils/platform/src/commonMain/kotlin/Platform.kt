@@ -140,3 +140,5 @@ inline fun Platform.isAndroid(): Boolean {
     contract { returns(true) implies (this@isAndroid is Platform.Android) }
     return this is Platform.Android
 }
+
+inline fun Platform.hasScrollingBug() = isDesktop()
