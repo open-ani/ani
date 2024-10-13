@@ -239,6 +239,8 @@ private fun AniAppContentImpl(
                     },
                     Modifier.fillMaxSize(),
                     contentWindowInsets = windowInsets,
+                    initialTab,
+                    showNavigationIcon = true,
                 )
             }
             composable(

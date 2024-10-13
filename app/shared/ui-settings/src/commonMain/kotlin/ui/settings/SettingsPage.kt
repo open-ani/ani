@@ -48,6 +48,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
@@ -100,8 +101,17 @@ fun SettingsPage(
     vm: SettingsViewModel,
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    initialTab: SettingsTab? = null,
+    showNavigationIcon: Boolean = false,
 ) {
-    val navigator: ThreePaneScaffoldNavigator<SettingsTab> = rememberListDetailPaneScaffoldNavigator<SettingsTab>()
+    val navigator: ThreePaneScaffoldNavigator<SettingsTab> = rememberListDetailPaneScaffoldNavigator(
+        initialDestinationHistory = buildList {
+            add(ThreePaneScaffoldDestinationItem(ListDetailPaneScaffoldRole.List))
+            if (initialTab != null) {
+                add(ThreePaneScaffoldDestinationItem(ListDetailPaneScaffoldRole.Detail, initialTab))
+            }
+        },
+    )
 
     SettingsPageLayout(
         navigator,
@@ -222,6 +232,7 @@ fun SettingsPage(
         },
         modifier,
         contentWindowInsets,
+        showNavigationIcon = showNavigationIcon,
     )
 }
 
@@ -233,6 +244,7 @@ internal fun SettingsPageLayout(
     detailPaneContent: @Composable (currentTab: SettingsTab?) -> Unit,
     modifier: Modifier = Modifier,
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    showNavigationIcon: Boolean = false,
 ) {
     BackHandler(navigator.canNavigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)) {
         navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
@@ -250,6 +262,11 @@ internal fun SettingsPageLayout(
                         colors = AniThemeDefaults.transparentAppBarColors(),
                         windowInsets = WindowInsets.Zero,
                         scrollBehavior = topAppBarScrollBehavior,
+                        navigationIcon = {
+                            if (showNavigationIcon) {
+                                TopAppBarGoBackButton()
+                            }
+                        },
                     )
 //                    Surface {
 //                        ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
