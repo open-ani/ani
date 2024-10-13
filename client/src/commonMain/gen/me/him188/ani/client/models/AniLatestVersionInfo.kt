@@ -32,9 +32,9 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param downloadUrlAlternativesMap
- * @param publishTime
- * @param qrcodeUrls
+ * @param downloadUrlAlternativesMap 
+ * @param publishTime 
+ * @param qrcodeUrls 
  * @param version 
  */
 @Serializable

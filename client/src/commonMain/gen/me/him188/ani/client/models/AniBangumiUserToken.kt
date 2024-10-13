@@ -32,8 +32,8 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param accessToken
- * @param expiresIn
+ * @param accessToken 
+ * @param expiresIn 
  * @param refreshToken 
  * @param userId 
  */

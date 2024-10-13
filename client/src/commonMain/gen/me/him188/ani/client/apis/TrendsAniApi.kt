@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 /**
  *
  * Please note:
@@ -15,7 +24,6 @@
 
 package me.him188.ani.client.apis
 
-
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
@@ -25,8 +33,9 @@ import me.him188.ani.client.infrastructure.HttpResponse
 import me.him188.ani.client.infrastructure.RequestConfig
 import me.him188.ani.client.infrastructure.RequestMethod
 import me.him188.ani.client.infrastructure.wrap
+import me.him188.ani.client.models.AniTrends
 
-open class DefaultAniApi : ApiClient {
+open class TrendsAniApi : ApiClient {
 
     constructor(
         baseUrl: String = ApiClient.BASE_URL,
@@ -46,15 +55,16 @@ open class DefaultAniApi : ApiClient {
     ) : super(baseUrl = baseUrl, httpClient = httpClient)
 
     /**
-     *
-     *
-     * @return void
+     * 获取热门排行
+     * 获取热门排行
+     * @return AniTrends
      */
-    open suspend fun faviconIcoGet(): HttpResponse<Unit> {
+    @Suppress("UNCHECKED_CAST")
+    open suspend fun getTrends(): HttpResponse<AniTrends> {
 
         val localVariableAuthNames = listOf<String>()
 
-        val localVariableBody =
+        val localVariableBody = 
             io.ktor.client.utils.EmptyContent
 
         val localVariableQuery = mutableMapOf<String, List<String>>()
@@ -62,69 +72,7 @@ open class DefaultAniApi : ApiClient {
 
         val localVariableConfig = RequestConfig<kotlin.Any?>(
             RequestMethod.GET,
-            "/favicon.ico",
-            query = localVariableQuery,
-            headers = localVariableHeaders,
-            requiresAuthentication = false,
-        )
-
-        return request(
-            localVariableConfig,
-            localVariableBody,
-            localVariableAuthNames,
-        ).wrap()
-    }
-
-
-    /**
-     *
-     *
-     * @return void
-     */
-    open suspend fun statusGet(): HttpResponse<Unit> {
-
-        val localVariableAuthNames = listOf<String>()
-
-        val localVariableBody =
-            io.ktor.client.utils.EmptyContent
-
-        val localVariableQuery = mutableMapOf<String, List<String>>()
-        val localVariableHeaders = mutableMapOf<String, String>()
-
-        val localVariableConfig = RequestConfig<kotlin.Any?>(
-            RequestMethod.GET,
-            "/status",
-            query = localVariableQuery,
-            headers = localVariableHeaders,
-            requiresAuthentication = false,
-        )
-
-        return request(
-            localVariableConfig,
-            localVariableBody,
-            localVariableAuthNames,
-        ).wrap()
-    }
-
-
-    /**
-     *
-     *
-     * @return void
-     */
-    open suspend fun v1LoginBangumiPost(): HttpResponse<Unit> {
-
-        val localVariableAuthNames = listOf<String>()
-
-        val localVariableBody =
-            io.ktor.client.utils.EmptyContent
-
-        val localVariableQuery = mutableMapOf<String, List<String>>()
-        val localVariableHeaders = mutableMapOf<String, String>()
-
-        val localVariableConfig = RequestConfig<kotlin.Any?>(
-            RequestMethod.POST,
-            "/v1/login/bangumi",
+            "/v1/trends",
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,

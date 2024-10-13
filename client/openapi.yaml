@@ -703,12 +703,12 @@
         "deprecated": false
       }
     },
-    "/v1/trending": {
+    "/v1/trends": {
       "get": {
-        "tags": [ "Trending" ],
+        "tags": [ "Trends" ],
         "summary": "获取热门排行",
         "description": "获取热门排行",
-        "operationId": "getTrending",
+        "operationId": "getTrends",
         "parameters": [ ],
         "responses": {
           "200": {
@@ -717,19 +717,19 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Trending"
+                  "$ref": "#/components/schemas/Trends"
                 },
                 "examples": {
                   "example": {
                     "value": {
-                      "trendingSubjectIds": [ {
-                        "bangumiId": 464376,
-                        "nameCn": "败犬女主太多了！",
-                        "imageLarge": "https://lain.bgm.tv/pic/cover/l/e4/dc/464376_NsZRw.jpg"
-                      }, {
+                      "trendingSubjects": [ {
                         "bangumiId": 425998,
                         "nameCn": "Re：从零开始的异世界生活 第三季 袭击篇",
                         "imageLarge": "https://lain.bgm.tv/pic/cover/l/26/d6/425998_dnzr8.jpg"
+                      }, {
+                        "bangumiId": 464376,
+                        "nameCn": "败犬女主太多了！",
+                        "imageLarge": "https://lain.bgm.tv/pic/cover/l/e4/dc/464376_NsZRw.jpg"
                       } ]
                     }
                   }
@@ -1067,12 +1067,12 @@
           }
         }
       },
-      "Trending": {
-        "title": "Trending",
-        "required": [ "trendingSubjectIds" ],
+      "Trends": {
+        "title": "Trends",
+        "required": [ "trendingSubjects" ],
         "type": "object",
         "properties": {
-          "trendingSubjectIds": {
+          "trendingSubjects": {
             "title": "List<TrendingSubject>",
             "type": "array",
             "items": {

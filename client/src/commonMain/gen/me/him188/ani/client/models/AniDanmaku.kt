@@ -31,8 +31,8 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param danmakuInfo
- * @param id
+ * @param danmakuInfo 
+ * @param id 
  * @param senderId 
  */
 @Serializable

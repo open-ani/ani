@@ -32,9 +32,9 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param description
- * @param downloadUrlAlternatives
- * @param publishTime
+ * @param description 
+ * @param downloadUrlAlternatives 
+ * @param publishTime 
  * @param version 
  */
 @Serializable

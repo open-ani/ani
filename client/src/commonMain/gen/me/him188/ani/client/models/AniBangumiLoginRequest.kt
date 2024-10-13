@@ -32,9 +32,9 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * @param bangumiToken
- * @param clientArch
- * @param clientOS
+ * @param bangumiToken 
+ * @param clientArch 
+ * @param clientOS 
  * @param clientVersion 
  */
 @Serializable

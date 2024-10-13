@@ -30,11 +30,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * 
  *
- *
- * @param bangumiId
- * @param imageLarge
- * @param nameCn
+ * @param bangumiId 
+ * @param imageLarge 
+ * @param nameCn 
  */
 @Serializable
 
