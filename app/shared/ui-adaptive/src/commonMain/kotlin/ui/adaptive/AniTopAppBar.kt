@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
@@ -25,11 +26,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
+import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 
+/**
+ * 小屏幕上使用默认 TopAppBar 高度, 使用 36dp 头像; MEDIUM 及以上上增加额外 padding(all=8.dp), 并使用 48dp 头像
+ *
+ * 默认颜色为 [AniThemeDefaults.topAppBarColors]
+ *
+ * @see TopAppBar
+ */
 @Composable
 fun AniTopAppBar(
     title: @Composable () -> Unit,
@@ -43,14 +53,18 @@ fun AniTopAppBar(
     colors: TopAppBarColors = AniThemeDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     WindowDragArea {
         TopAppBar(
             title,
-            modifier.padding(all = 8.dp),
+            modifier
+                .ifThen(windowSizeClass.windowWidthSizeClass.isAtLeastMedium && windowSizeClass.windowHeightSizeClass.isAtLeastMedium) {
+                    padding(all = 8.dp)
+                },
             navigationIcon,
             actions = {
                 val horizontalPadding =
-                    currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding // refer to design on figma
+                    windowSizeClass.paneHorizontalPadding // refer to design on figma
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.End),
@@ -61,7 +75,15 @@ fun AniTopAppBar(
                 }
 
                 Box(Modifier.paddingIfNotEmpty(horizontal = horizontalPadding)) {
-                    avatar()
+                    val maxSize =
+                        if (windowSizeClass.windowWidthSizeClass.isAtLeastMedium && windowSizeClass.windowWidthSizeClass.isAtLeastMedium) {
+                            48.dp
+                        } else {
+                            36.dp
+                        }
+                    Box(Modifier.sizeIn(maxHeight = maxSize, maxWidth = maxSize)) {
+                        avatar()
+                    }
                 }
             },
             expandedHeight,
