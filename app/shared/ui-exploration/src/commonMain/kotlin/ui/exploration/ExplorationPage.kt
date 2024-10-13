@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
@@ -25,7 +26,9 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,21 +40,59 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.repository.TrendsRepository
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.adaptive.NavTitleHeader
 import me.him188.ani.app.ui.exploration.search.SearchViewModel
 import me.him188.ani.app.ui.exploration.search.SubjectPreviewColumn
 import me.him188.ani.app.ui.exploration.search.SubjectSearchBar
+import me.him188.ani.app.ui.exploration.trending.TrendingSubjectsCarousel
+import me.him188.ani.app.ui.exploration.trending.TrendingSubjectsState
+import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.session.SelfAvatar
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
+import me.him188.ani.utils.coroutines.retryUntilSuccess
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
+class ExplorationPageViewModel : AbstractViewModel(), KoinComponent {
+    private val trendsRepository: TrendsRepository by inject()
+
+    val state: ExplorationPageState = ExplorationPageState(
+        TrendingSubjectsState(
+            suspend { trendsRepository.getTrending() }
+                .asFlow()
+                .map { it.getOrNull() }
+                .retryUntilSuccess()
+                .map { it?.subjects }
+                .produceState(null),
+        ),
+    )
+}
 
 @Composable
 fun ExplorationPage(
     modifier: Modifier = Modifier,
+    vm: ExplorationPageViewModel = viewModel<ExplorationPageViewModel> { ExplorationPageViewModel() },
     searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val searchViewModel = viewModel { SearchViewModel() }
+    ExplorationPage(vm.state, modifier, searchBarFocusRequester, contentWindowInsets)
+}
+
+@Composable
+fun ExplorationPage(
+    state: ExplorationPageState,
+    modifier: Modifier = Modifier,
+    searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
+    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+) {
+    val searchViewModel = viewModel { SearchViewModel() } // TODO remove
     val snackBarHostState = remember { SnackbarHostState() }
     val layoutDirection = LocalLayoutDirection.current
 
@@ -116,14 +157,39 @@ fun ExplorationPage(
         },
         contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { topBarPadding ->
-        Column(Modifier.fillMaxSize()) {
+        val horizontalPadding = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding
+        val horizontalContentPadding =
+            PaddingValues(horizontal = horizontalPadding)
+
+        if (searchViewModel.searchActive && searchViewModel.editingQuery.isNotBlank()) {
             SubjectPreviewColumn(
                 searchViewModel.previewListState,
                 contentPadding = topBarPadding,
             )
+        } else {
+            Column(Modifier.padding(topBarPadding)) {
+                NavTitleHeader(
+                    title = { Text("最高热度") },
+                    contentPadding = horizontalContentPadding,
+                )
+
+                val navigator = LocalNavigator.current
+                TrendingSubjectsCarousel(
+                    state.trendingSubjectsState,
+                    onClick = {
+                        navigator.navigateSubjectDetails(it.bangumiId)
+                    },
+                    contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 8.dp),
+                )
+            }
         }
     }
 }
+
+@Stable
+class ExplorationPageState(
+    val trendingSubjectsState: TrendingSubjectsState
+)
 
 
 //@Composable

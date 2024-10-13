@@ -15,7 +15,6 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -59,6 +58,7 @@ import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepositoryImpl
 import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
+import me.him188.ani.app.data.repository.TrendsRepository
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
 import me.him188.ani.app.data.repository.WhatslinkEpisodeScreenshotRepository
@@ -151,6 +151,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SubjectSearchRepository> {
         get<AniDatabase>().run { SubjectSearchRepositoryImpl(searchHistory(), searchTag()) }
     }
+    single<TrendsRepository> { TrendsRepository(lazy { get<AniAuthClient>().trendsApi }) }
 
     single<DanmakuManager> {
         DanmakuManagerImpl(

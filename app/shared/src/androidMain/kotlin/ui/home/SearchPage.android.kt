@@ -7,17 +7,29 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package me.him188.ani.app.ui.home
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.remember
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.ui.exploration.ExplorationPage
+import me.him188.ani.app.ui.exploration.ExplorationPageState
+import me.him188.ani.app.ui.exploration.trending.createTestTrendingSubjectsState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
-@Preview(backgroundColor = 0xFF000000, showBackground = true)
-internal fun PreviewHomePagePortrait() {
+@PreviewSizeClasses
+@PreviewLightDark
+internal fun PreviewExplorationPage() {
     ProvideCompositionLocalsForPreview {
-        ExplorationPage()
+        ExplorationPage(
+            remember {
+                ExplorationPageState(createTestTrendingSubjectsState())
+            },
+        )
     }
 }

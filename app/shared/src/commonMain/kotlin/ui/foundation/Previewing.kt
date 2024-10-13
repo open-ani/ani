@@ -33,6 +33,8 @@ import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
 import me.him188.ani.app.domain.session.PreviewSessionManager
 import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -40,8 +42,6 @@ import me.him188.ani.app.navigation.NoopBrowserNavigator
 import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.ldc.MemoryDataStore
-import me.him188.ani.app.domain.torrent.DefaultTorrentManager
-import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
@@ -96,9 +96,11 @@ fun ProvideCompositionLocalsForPreview(
                     single<PermissionManager> { GrantedPermissionManager }
                     single<BrowserNavigator> { NoopBrowserNavigator }
                     single<SettingsRepository> { PreferencesRepositoryImpl(MemoryDataStore(mutablePreferencesOf())) }
-                    single<DanmakuRegexFilterRepository> { DanmakuRegexFilterRepositoryImpl(
-                        MemoryDataStore(listOf())
-                    ) }
+                    single<DanmakuRegexFilterRepository> {
+                        DanmakuRegexFilterRepositoryImpl(
+                            MemoryDataStore(listOf()),
+                        )
+                    }
                     module()
                 },
             )

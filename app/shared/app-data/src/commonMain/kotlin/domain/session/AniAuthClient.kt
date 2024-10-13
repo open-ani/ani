@@ -25,6 +25,7 @@ import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.platform.getAniUserAgent
 import me.him188.ani.client.apis.BangumiOAuthAniApi
+import me.him188.ani.client.apis.TrendsAniApi
 import me.him188.ani.client.models.AniBangumiUserToken
 import me.him188.ani.client.models.AniRefreshBangumiTokenRequest
 import me.him188.ani.utils.ktor.registerLogging
@@ -61,14 +62,19 @@ class AniAuthClient : AutoCloseable {
         }
     }
 
-    private val client = BangumiOAuthAniApi(
+    val trendsApi = TrendsAniApi(
+        baseUrl = currentAniBuildConfig.aniAuthServerUrl,
+        httpClient,
+    )
+
+    private val oauthApi = BangumiOAuthAniApi(
         baseUrl = currentAniBuildConfig.aniAuthServerUrl,
         httpClient,
     )
 
     suspend fun getResult(requestId: String) = runApiRequest {
         try {
-            client.getBangumiToken(requestId)
+            oauthApi.getBangumiToken(requestId)
                 .typedBody<AniBangumiUserToken>(typeInfo<AniBangumiUserToken>())
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.NotFound) {
@@ -79,7 +85,7 @@ class AniAuthClient : AutoCloseable {
     }
 
     suspend fun refreshAccessToken(refreshToken: String) = runApiRequest {
-        client.refreshBangumiToken(AniRefreshBangumiTokenRequest(refreshToken)).body()
+        oauthApi.refreshBangumiToken(AniRefreshBangumiTokenRequest(refreshToken)).body()
     }
 
     override fun close() {

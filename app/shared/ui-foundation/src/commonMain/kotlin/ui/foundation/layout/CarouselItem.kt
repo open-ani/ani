@@ -16,13 +16,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.carousel.CarouselItemScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,17 +49,21 @@ private val carouselBrush = Brush.verticalGradient(
  * @see CarouselItemDefaults.itemSize
  */
 @Composable // Preview: PreviewTrendingSubjectsCarousel
-fun CarouselItem(
+fun CarouselItemScope.CarouselItem(
     label: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     supportingText: @Composable () -> Unit = {},
     overlay: @Composable () -> Unit = {},
     colors: CarouselItemColors = CarouselItemDefaults.colors(),
+    shape: Shape = MaterialTheme.shapes.extraLarge,
     image: @Composable () -> Unit,
 ) {
+    val maskShape = rememberMaskShape(shape)
     Box(modifier) {
-        image()
-        Box(Modifier.matchParentSize().background(carouselBrush)) {
+        Box(Modifier.clip(maskShape)) {
+            image()
+        }
+        Box(Modifier.matchParentSize().background(carouselBrush, maskShape)) {
             Column(
                 Modifier
                     .align(Alignment.BottomStart)
@@ -114,7 +121,7 @@ object CarouselItemDefaults {
         }
         return CarouselItemSize(
             preferredWidth = preferredWidth,
-            imageHeight = 213.dp,
+            imageHeight = 213.dp, // 120.dp / 9 * 16
         )
     }
 }
