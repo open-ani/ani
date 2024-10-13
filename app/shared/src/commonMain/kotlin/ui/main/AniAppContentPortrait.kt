@@ -21,6 +21,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScaffoldDefaults
@@ -47,6 +49,7 @@ import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPage
 import me.him188.ani.app.ui.cache.details.MediaCacheDetailsPageViewModel
 import me.him188.ani.app.ui.cache.details.MediaDetailsLazyGrid
 import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBar
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.profile.BangumiOAuthViewModel
 import me.him188.ani.app.ui.profile.auth.BangumiOAuthScene
@@ -94,8 +97,9 @@ private fun AniAppContentImpl(
 ) {
     val navController = aniNavigator.navigator
     // 必须传给所有 Scaffold 和 TopAppBar. 注意, 如果你不传, 你的 UI 很可能会在 macOS 不工作.
+    val windowInsetsWithoutTitleBar = ScaffoldDefaults.contentWindowInsets
     val windowInsets = ScaffoldDefaults.contentWindowInsets
-//        .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
+        .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
 
     SharedTransitionLayout {
         NavHost(navController, startDestination = "/main", modifier) {
@@ -144,7 +148,7 @@ private fun AniAppContentImpl(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) {
-                MainScene(windowInsets = windowInsets)
+                MainScene(windowInsets = windowInsetsWithoutTitleBar)
             }
             composable(
                 "/bangumi-oauth",
