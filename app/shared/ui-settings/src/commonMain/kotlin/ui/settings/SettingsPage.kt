@@ -80,6 +80,7 @@ import me.him188.ani.app.ui.settings.tabs.DebugTab
 import me.him188.ani.app.ui.settings.tabs.app.AppearanceGroup
 import me.him188.ani.app.ui.settings.tabs.app.PlayerGroup
 import me.him188.ani.app.ui.settings.tabs.app.SoftwareUpdateGroup
+import me.him188.ani.app.ui.settings.tabs.media.AutoCacheGroup
 import me.him188.ani.app.ui.settings.tabs.media.CacheDirectoryGroup
 import me.him188.ani.app.ui.settings.tabs.media.MediaSelectionGroup
 import me.him188.ani.app.ui.settings.tabs.media.TorrentEngineGroup
@@ -204,7 +205,7 @@ fun SettingsPage(
                         SettingsTab.DANMAKU -> DanmakuGroup(vm.danmakuSettingsState, vm.danmakuServerTesters)
                         SettingsTab.PROXY -> GlobalProxyGroup(vm.proxySettingsState)
                         SettingsTab.BT -> TorrentEngineGroup(vm.torrentSettingsState)
-                        SettingsTab.CACHE -> CacheDirectoryGroup(vm.cacheDirectoryGroupState)
+                        SettingsTab.CACHE -> AutoCacheGroup(vm.mediaCacheSettingsState)
                         SettingsTab.STORAGE -> CacheDirectoryGroup(vm.cacheDirectoryGroupState)
                         SettingsTab.ABOUT -> {} // see above
                         SettingsTab.DEBUG -> {}
