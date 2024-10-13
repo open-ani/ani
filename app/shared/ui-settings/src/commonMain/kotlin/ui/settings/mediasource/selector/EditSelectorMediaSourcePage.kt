@@ -213,6 +213,7 @@ fun EditSelectorMediaSourcePage(
                 }
             }
         },
+        containerColor = AniThemeDefaults.pageContentBackgroundColor,
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { paddingValues ->
         BackHandler(navigator.canNavigateBack()) {
