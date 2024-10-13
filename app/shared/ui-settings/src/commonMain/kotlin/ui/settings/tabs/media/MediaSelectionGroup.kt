@@ -255,8 +255,8 @@ internal fun SettingsScope.MediaSelectionGroup(
                         mediaSelectorSettings.copy(hideSingleEpisodeForCompleted = it),
                     )
                 },
-                title = { Text("完结后隐藏单集 BT 资源") },
-                description = { Text("在番剧完结后，单集资源通常会没有速度") },
+                title = { Text("完结一年后隐藏单集 BT 资源") },
+                description = { Text("在番剧完结一年后，单集资源通常会没有速度") },
             )
 
             HorizontalDividerItem()
