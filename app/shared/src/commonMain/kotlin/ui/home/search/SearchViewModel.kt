@@ -33,8 +33,12 @@ import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.domain.search.SubjectProvider
 import me.him188.ani.app.domain.search.SubjectSearchQuery
+import me.him188.ani.app.domain.session.OpaqueSession
+import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.session.userInfo
 import me.him188.ani.app.tools.search.SubjectSearcher
 import me.him188.ani.app.ui.foundation.AbstractViewModel
+import me.him188.ani.app.ui.foundation.AuthState
 import me.him188.ani.utils.coroutines.update
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -46,6 +50,12 @@ class SearchViewModel(
     private val subjectProvider: SubjectProvider by inject()
     private val settings: SettingsRepository by inject()
     private val _search: SubjectSearchRepository by inject()
+    private val sessionManager: SessionManager by inject()
+
+    val authState = AuthState()
+
+    @OptIn(OpaqueSession::class)
+    val selfInfo by sessionManager.userInfo.produceState(null)
 
     // search bar state
     var searchActive by mutableStateOf(false)

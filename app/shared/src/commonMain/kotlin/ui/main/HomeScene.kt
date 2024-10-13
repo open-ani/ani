@@ -67,7 +67,7 @@ import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.home.SearchPage
+import me.him188.ani.app.ui.home.ExplorationPage
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -149,7 +149,7 @@ private fun MainSceneContent(
                             }
                         },
                         icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                        label = { Text(text = "找番") },
+                        label = { Text(text = "探索") },
                     )
 
                     item(
@@ -197,7 +197,7 @@ private fun MainSceneContent(
                 TabContent(layoutType = layoutType) {
                     when (pageIndex) {
                         0 -> {
-                            SearchPage(
+                            ExplorationPage(
                                 Modifier.fillMaxSize(),
                                 searchBarFocusRequester = searchBarFocusRequester,
                                 contentWindowInsets = windowInsets,

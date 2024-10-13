@@ -9,19 +9,15 @@
 
 package me.him188.ani.app.ui.home
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -29,7 +25,6 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,22 +33,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.home.search.SearchViewModel
 import me.him188.ani.app.ui.home.search.SubjectPreviewColumn
 import me.him188.ani.app.ui.home.search.SubjectSearchBar
+import me.him188.ani.app.ui.profile.SelfAvatar
 
 @Composable
-fun SearchPage(
+fun ExplorationPage(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
     searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
@@ -77,65 +71,55 @@ fun SearchPage(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        containerColor = Color.Unspecified,
+        containerColor = AniThemeDefaults.pageContentBackgroundColor,
         topBar = {
-            Box {
-                SubjectSearchBar(
-                    initialActive = searchViewModel.searchActive,
-                    initialSearchText = searchViewModel.editingQuery,
-                    editingTagMode = isEditingSearchTags,
-                    searchTag = searchTag,
-                    showDeleteTagTip = showDeleteTagTip,
-                    searchHistory = searchHistory,
-                    contentPadding = contentPadding,
-                    modifier = Modifier.fillMaxWidth().focusRequester(searchBarFocusRequester),
-                    onActiveChange = { active -> searchViewModel.searchActive = active },
-                    onSearchFilterEvent = { event -> searchViewModel.handleSearchFilterEvent(event) },
-                    onDeleteHistory = { historyId -> searchViewModel.deleteSearchHistory(historyId) },
-                    onStartEditingTagMode = { isEditingSearchTags = true },
-                    onSearch = { query, fromHistory ->
-                        searchViewModel.editingQuery = query
-                        if (!fromHistory && searchHistory.none { it.content == query }) {
-                            searchViewModel.pushSearchHistory(query)
-                        }
-                        searchViewModel.search(query)
-                    },
-                    windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                )
-
-                Crossfade(
-                    targetState = isEditingSearchTags,
-                    modifier = Modifier.zIndex(1.1f),
-                ) {
-                    if (it) {
-                        TopAppBar(
-                            title = { Text("删除标签") },
-                            navigationIcon = {
-                                IconButton({ isEditingSearchTags = false }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                        contentDescription = "exit delete search tag mode",
-                                    )
-                                }
-                            },
-                            colors = AniThemeDefaults.topAppBarColors(),
-                            windowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                        )
+            AniTopAppBar(
+                title = { Text("探索") },
+                windowInsets = contentWindowInsets,
+                searchIconButton = {
+                    IconButton(
+                        {
+                            //TODO
+                        },
+                    ) {
+                        Icon(Icons.Rounded.Search, "搜索")
                     }
-                }
-            }
+                },
+                searchBar = {
+                    SubjectSearchBar(
+                        initialActive = searchViewModel.searchActive,
+                        initialSearchText = searchViewModel.editingQuery,
+                        editingTagMode = isEditingSearchTags,
+                        searchTag = searchTag,
+                        showDeleteTagTip = showDeleteTagTip,
+                        searchHistory = searchHistory,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.fillMaxWidth().focusRequester(searchBarFocusRequester),
+                        onActiveChange = { active -> searchViewModel.searchActive = active },
+                        onSearchFilterEvent = { event -> searchViewModel.handleSearchFilterEvent(event) },
+                        onDeleteHistory = { historyId -> searchViewModel.deleteSearchHistory(historyId) },
+                        onStartEditingTagMode = { isEditingSearchTags = true },
+                        onSearch = { query, fromHistory ->
+                            searchViewModel.editingQuery = query
+                            if (!fromHistory && searchHistory.none { it.content == query }) {
+                                searchViewModel.pushSearchHistory(query)
+                            }
+                            searchViewModel.search(query)
+                        },
+                        windowInsets = contentWindowInsets,
+                    )
+                },
+                avatar = {
+                    SelfAvatar(searchViewModel.authState, searchViewModel.selfInfo)
+                },
+            )
         },
         contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { topBarPadding ->
         Column(Modifier.fillMaxSize()) {
             SubjectPreviewColumn(
                 searchViewModel.previewListState,
-                contentPadding = PaddingValues(
-                    top = topBarPadding.calculateTopPadding(),
-                    bottom = contentPadding.calculateBottomPadding(),
-                    start = contentPadding.calculateStartPadding(layoutDirection),
-                    end = contentPadding.calculateEndPadding(layoutDirection),
-                ),
+                contentPadding = topBarPadding,
             )
         }
     }
