@@ -342,7 +342,7 @@ object CollectionPageFilters {
         },
     ) {
         val uiScope = rememberCoroutineScope()
-        val widths = rememberSaveable { mutableStateListOf(*COLLECTION_TABS_SORTED.map { 24.dp }.toTypedArray()) }
+        val widths = remember { mutableStateListOf(*COLLECTION_TABS_SORTED.map { 24.dp }.toTypedArray()) }
         ScrollableTabRow(
             selectedTabIndex = pagerState.currentPage,
             indicator = @Composable { tabPositions ->
