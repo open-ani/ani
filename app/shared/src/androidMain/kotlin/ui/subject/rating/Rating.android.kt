@@ -13,14 +13,14 @@ package me.him188.ani.app.ui.subject.rating
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.subject.details.TestRatingInfo
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 @Preview
 fun PreviewRating() {
-    ProvideCompositionLocalsForPreview {
+    ProvideFoundationCompositionLocalsForPreview {
         Rating(
             rating = TestRatingInfo,
             selfRatingScore = 0,
@@ -32,7 +32,7 @@ fun PreviewRating() {
 @Composable
 @Preview
 fun PreviewRatingWithSelf() {
-    ProvideCompositionLocalsForPreview {
+    ProvideFoundationCompositionLocalsForPreview {
         Rating(
             rating = TestRatingInfo,
             selfRatingScore = 7,
