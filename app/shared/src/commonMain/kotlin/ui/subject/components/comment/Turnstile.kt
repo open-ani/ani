@@ -35,6 +35,14 @@ interface TurnstileState {
     // reload turnstile
     @UiThread
     fun reload()
+    
+    companion object {
+        /**
+         * Callback URI for solving Cloudflare Turnstile at Bangumi.
+         * You can intercept the request or register a system-wide URI handler.
+         */
+        const val CALLBACK_INTERCEPTION_PREFIX = "ani://bangumi-turnstile-callback"
+    }
 }
 
 expect fun createTurnstileState(url: String): TurnstileState

@@ -12,8 +12,8 @@ package me.him188.ani.app.ui.subject.components.comment
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
-import android.webkit.JavascriptInterface
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout.LayoutParams
 import android.widget.Toast
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -54,20 +54,15 @@ class AndroidTurnstileState(
             value?.applySettings()
             value?.restoreOrLoadPage()
         }
-    
-    private val callbackTokenChannel = Channel<String>()
-    private val eventHost = TurnstileEventHost { type, message ->
-        when (type) {
-            "solveCaptcha" -> callbackTokenChannel.trySend(message)
-            "tokenExpired", "timeout" -> reload()
-            "error" -> reload()
-        }
-    }
-    
+
+
+
     var isDarkTheme: Boolean = false
     // WebView 重新创建的时候会使用此 state bundle 恢复状态
     private var webViewStateBundle: Bundle? = null
-
+    
+    private val callbackTokenChannel = Channel<String>()
+    
     override val tokenFlow: Flow<String>
         get() = callbackTokenChannel.receiveAsFlow()
     
@@ -80,7 +75,16 @@ class AndroidTurnstileState(
             javaScriptEnabled = true
             domStorageEnabled = true
             setBackgroundColor(Color.TRANSPARENT)
-            
+        }
+        
+        webViewClient = object : WebViewClient() {
+            override fun onLoadResource(view: WebView?, url: String?) {
+                if (url == null) return
+                if (!url.startsWith(TurnstileState.CALLBACK_INTERCEPTION_PREFIX)) return
+                val responseToken = CALLBACK_REGEX.matchEntire(url)?.groupValues?.getOrNull(1) ?: return
+                
+                callbackTokenChannel.trySend(responseToken)
+            }
         }
     }
     
@@ -99,6 +103,10 @@ class AndroidTurnstileState(
 
     override fun reload() {
         webView?.reloadPage()
+    }
+    
+    companion object {
+        private val CALLBACK_REGEX = Regex("^${TurnstileState.CALLBACK_INTERCEPTION_PREFIX}/?\\?token=(.+)$")
     }
 }
 
@@ -137,16 +145,6 @@ actual fun ActualTurnstile(
             state.webView = webView
         }
     )
-}
-
-private class TurnstileEventHost(
-    private val onEvent: (type: String, message: String) -> Unit
-) {
-    @JavascriptInterface
-    @Suppress("unused")
-    fun emit(type: String, message: String) {
-        onEvent(type, message)
-    }
 }
 
 /**

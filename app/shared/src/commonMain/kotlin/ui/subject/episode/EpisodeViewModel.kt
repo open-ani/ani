@@ -600,7 +600,9 @@ private class EpisodeViewModelImpl(
         backgroundScope = backgroundScope,
     )
     
-    override val turnstileState = TurnstileState(BANGUMI_NEXT_API_HOST, "0x4AAAAAAABkMYinukE8nzYS")
+    override val turnstileState = TurnstileState(
+        "${BANGUMI_NEXT_API_HOST}/turnstile?redirect_uri=$${TurnstileState.CALLBACK_INTERCEPTION_PREFIX}"
+    )
 
     override val commentEditorState: CommentEditorState = CommentEditorState(
         showExpandEditCommentButton = true,
