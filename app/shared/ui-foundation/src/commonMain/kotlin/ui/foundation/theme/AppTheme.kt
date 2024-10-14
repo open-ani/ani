@@ -1,23 +1,22 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright (C) 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
+
+@file:Suppress("ConstPropertyName")
 
 package me.him188.ani.app.ui.foundation.theme
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +26,10 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import me.him188.ani.app.ui.foundation.animation.EmphasizedAccelerateEasing
+import me.him188.ani.app.ui.foundation.animation.EmphasizedDecelerateEasing
+import me.him188.ani.app.ui.foundation.animation.StandardAccelerate
+import me.him188.ani.app.ui.foundation.animation.StandardDecelerate
 
 @Stable
 object AniThemeDefaults {
@@ -40,15 +43,26 @@ object AniThemeDefaults {
         @Composable
         get() = MaterialTheme.colorScheme.surfaceContainer
 
-    // Use surface roles for more neutral backgrounds, and container colors for components like cards, sheets, and dialogs.
-    val appContentPaneColor: Color
+    val pageContentBackgroundColor
         @Composable
-        get() = MaterialTheme.colorScheme.surface
+        get() = MaterialTheme.colorScheme.surfaceContainerLowest
 
+    /**
+     * 默认的 [TopAppBarColors], 期望用于 [pageContentBackgroundColor] 的容器之内
+     */
     @Composable
     fun topAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+    )
+
+    /**
+     * 透明背景颜色, 注意不能用在可滚动的场景, 因为滚动后 TopAppBar 背景将能看到后面的其他元素
+     */
+    @Composable
+    fun transparentAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
+        containerColor = Color.Transparent,
+        scrolledContainerColor = Color.Transparent,
     )
 
     /**
@@ -70,4 +84,50 @@ object AniThemeDefaults {
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             contentColor = contentColorFor(MaterialTheme.colorScheme.surfaceContainerHigh),
         )
+
+    /**
+     * 适用中小型组件.
+     */
+    @Stable
+    val standardAnimatedContentTransition: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
+        // Follow M3 Clean fades
+        val fadeIn = fadeIn(
+            animationSpec = tween(
+                EasingDurations.standardAccelerate,
+                delayMillis = EasingDurations.standardDecelerate,
+                easing = StandardAccelerate,
+            ),
+        )
+        val fadeOut = fadeOut(animationSpec = tween(EasingDurations.standardDecelerate, easing = StandardDecelerate))
+        fadeIn.togetherWith(fadeOut)
+    }
+
+    @Stable
+    val emphasizedAnimatedContentTransition: AnimatedContentTransitionScope<*>.() -> ContentTransform = {
+        // Follow M3 Clean fades
+        val fadeIn = fadeIn(
+            animationSpec = tween(
+                EasingDurations.emphasizedAccelerate,
+                delayMillis = EasingDurations.emphasizedDecelerate,
+                easing = EmphasizedAccelerateEasing,
+            ),
+        )
+        val fadeOut =
+            fadeOut(animationSpec = tween(EasingDurations.emphasizedDecelerate, easing = EmphasizedDecelerateEasing))
+        fadeIn.togetherWith(fadeOut)
+    }
+}
+
+/**
+ * M3 推荐的 [tween] 动画时长
+ */
+@Stable
+object EasingDurations {
+    // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#6409707e-1253-449c-b588-d27fe53bd025
+    const val emphasized = 500
+    const val emphasizedDecelerate = 400
+    const val emphasizedAccelerate = 200
+    const val standard = 300
+    const val standardDecelerate = 250
+    const val standardAccelerate = 200
 }

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.android
 
 import android.content.Intent
@@ -10,18 +19,19 @@ import kotlinx.io.files.Path
 import me.him188.ani.android.activity.MainActivity
 import me.him188.ani.android.navigation.AndroidBrowserNavigator
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.media.resolver.AndroidWebVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.media.resolver.AndroidWebVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.AndroidPermissionManager
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.tools.torrent.DefaultTorrentManager
-import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.tools.update.AndroidUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
@@ -153,7 +163,7 @@ fun getAndroidModules(
                 .map { TorrentVideoSourceResolver(it) }
                 .plus(LocalFileVideoSourceResolver())
                 .plus(HttpStreamingVideoSourceResolver())
-                .plus(AndroidWebVideoSourceResolver()),
+                .plus(AndroidWebVideoSourceResolver(get<MediaSourceManager>().webVideoMatcherLoader)),
         )
     }
     single<UpdateInstaller> { AndroidUpdateInstaller() }

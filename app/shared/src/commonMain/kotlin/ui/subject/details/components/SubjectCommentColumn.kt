@@ -1,6 +1,16 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.details.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,11 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.tools.formatDateTime
-import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.richtext.RichText
 import me.him188.ani.app.ui.subject.components.comment.Comment
@@ -33,7 +41,8 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
     onClickImage: (String) -> Unit,
     connectedScrollState: ConnectedScrollState,
     modifier: Modifier = Modifier,
-    lazyListState: LazyListState = rememberLazyListState()
+    lazyListState: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     Box(modifier, contentAlignment = Alignment.TopCenter) {
         CommentColumn(
@@ -41,9 +50,9 @@ fun SubjectDetailsDefaults.SubjectCommentColumn(
             listState = lazyListState,
             modifier = Modifier
                 .widthIn(max = BottomSheetDefaults.SheetMaxWidth)
-                .fillMaxHeight()
-                .nestedScrollWorkaround(lazyListState, connectedScrollState)
-                .nestedScroll(connectedScrollState.nestedScrollConnection),
+                .fillMaxHeight(),
+            contentPadding = contentPadding,
+            connectedScrollState = connectedScrollState,
         ) { _, comment ->
             SubjectComment(
                 comment = comment,

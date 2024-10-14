@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.foundation.Canvas
@@ -258,7 +267,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
             object : MediaEventAdapter() {
                 override fun mediaParsedChanged(media: Media, newStatus: MediaParsedStatus) {
                     if (newStatus == MediaParsedStatus.DONE) {
-                        videoProperties.value = createVideoProperties()
+                        createVideoProperties()?.let {
+                            videoProperties.value = it
+                        }
                         state.value = PlaybackState.READY
                     }
                 }
@@ -267,8 +278,12 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
         player.events().addMediaPlayerEventListener(
             object : MediaPlayerEventAdapter() {
                 override fun lengthChanged(mediaPlayer: MediaPlayer, newLength: Long) {
+                    // 对于 m3u8, 这个 callback 会先调用
                     videoProperties.value = videoProperties.value?.copy(
                         durationMillis = newLength,
+                    ) ?: VideoProperties(
+                        title = null,
+                        durationMillis = newLength, // 至少要把 length 放进去, 否则会一直显示缓冲
                     )
                 }
 
@@ -454,19 +469,9 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     private fun createVideoProperties(): VideoProperties? {
         val info = player.media().info() ?: return null
         val title = player.titles().titleDescriptions().firstOrNull()
-        val video = info.videoTracks().firstOrNull() ?: return null
-        val audio = info.audioTracks().firstOrNull() ?: return null
         return VideoProperties(
             title = title?.name(),
-            heightPx = video.height(),
-            widthPx = video.width(),
-            videoBitrate = video.bitRate(),
-            audioBitrate = audio.bitRate(),
-            frameRate = video.frameRate().toFloat(),
             durationMillis = info.duration(),
-            fileLengthBytes = 0,
-            fileHash = null,
-            filename = title?.name() ?: "",
         )
     }
 
@@ -478,6 +483,7 @@ class VlcjVideoPlayerState(parentCoroutineContext: CoroutineContext) : PlayerSta
     override fun seekTo(positionMillis: Long) {
         currentPositionMillis.value = positionMillis
         player.controls().setTime(positionMillis)
+        surface.allowedDrawFrames.value = 2 // 多渲染一帧, 防止 race 问题π
     }
 
 }

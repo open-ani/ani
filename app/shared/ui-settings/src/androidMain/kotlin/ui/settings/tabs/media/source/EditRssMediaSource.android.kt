@@ -24,11 +24,13 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.ktor.http.Url
 import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.runApiRequest
-import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
-import me.him188.ani.app.data.source.media.source.RssMediaSourceEngine
-import me.him188.ani.app.data.source.media.source.RssSearchConfig
-import me.him188.ani.app.data.source.media.source.RssSearchQuery
-import me.him188.ani.app.tools.rss.RssParser
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceEngine
+import me.him188.ani.app.domain.mediasource.rss.RssSearchConfig
+import me.him188.ani.app.domain.mediasource.rss.RssSearchQuery
+import me.him188.ani.app.domain.mediasource.codec.createTestMediaSourceCodecManager
+import me.him188.ani.app.domain.rss.RssParser
+import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
@@ -83,7 +85,7 @@ internal object TestRssMediaSourceEngine : RssMediaSourceEngine() {
 @OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
-fun PreviewEditRssMediaSourcePagePhone()  {
+fun PreviewEditRssMediaSourcePagePhone() = ProvideFoundationCompositionLocalsForPreview {
     val (edit, test) = rememberTestEditRssMediaSourceStateAndRssTestPaneState()
     EditRssMediaSourcePage(edit, test, {})
 }
@@ -91,7 +93,7 @@ fun PreviewEditRssMediaSourcePagePhone()  {
 @OptIn(TestOnly::class)
 @Composable
 @PreviewLightDark
-fun PreviewEditRssMediaSourcePagePhoneTest()  {
+fun PreviewEditRssMediaSourcePagePhoneTest() = ProvideFoundationCompositionLocalsForPreview {
     val navigator = rememberListDetailPaneScaffoldNavigator()
     val (edit, test) = rememberTestEditRssMediaSourceStateAndRssTestPaneState()
     EditRssMediaSourcePage(
@@ -107,7 +109,7 @@ fun PreviewEditRssMediaSourcePagePhoneTest()  {
 @Composable
 @Preview(device = Devices.PIXEL_TABLET)
 @Preview(device = Devices.PIXEL_TABLET, uiMode = UI_MODE_NIGHT_YES or UI_MODE_TYPE_NORMAL)
-fun PreviewEditRssMediaSourcePageLaptop()  {
+fun PreviewEditRssMediaSourcePageLaptop() = ProvideFoundationCompositionLocalsForPreview {
     val (edit, test) = rememberTestEditRssMediaSourceStateAndRssTestPaneState()
     EditRssMediaSourcePage(edit, test, {})
 }
@@ -135,7 +137,9 @@ internal fun rememberTestEditRssMediaSourceState() = remember {
             {},
             stateOf(false),
         ),
+        allowEditState = stateOf(true),
         instanceId = "test-id",
+        codecManager = createTestMediaSourceCodecManager(),
     )
 }
 

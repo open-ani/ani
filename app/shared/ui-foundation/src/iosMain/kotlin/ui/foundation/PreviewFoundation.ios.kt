@@ -12,11 +12,11 @@ package me.him188.ani.app.ui.foundation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import kotlinx.io.files.Path
 import me.him188.ani.app.platform.IosContext
 import me.him188.ani.app.platform.IosContextFiles
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.SystemCacheDir
+import me.him188.ani.utils.io.SystemDocumentDir
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
@@ -26,7 +26,10 @@ internal actual inline fun ProvidePlatformCompositionLocalsForPreview(crossinlin
     CompositionLocalProvider(
         LocalContext provides remember {
             IosContext(
-                IosContextFiles(Path(".").inSystem, Path(".").inSystem),
+                IosContextFiles(
+                    cacheDir = SystemCacheDir,
+                    dataDir = SystemDocumentDir,
+                ),
             )
         },
     ) {

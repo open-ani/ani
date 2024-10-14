@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.collection.progress
 
 import androidx.compose.runtime.Composable
@@ -22,7 +31,7 @@ import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.setEpisodeWatched
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.tools.MonoTasker
-import me.him188.ani.app.tools.caching.ContentPolicy
+import me.him188.ani.app.tools.ldc.ContentPolicy
 import me.him188.ani.datasources.api.topic.UnifiedCollectionType
 import me.him188.ani.datasources.api.topic.isDoneOrDropped
 import kotlin.coroutines.CoroutineContext

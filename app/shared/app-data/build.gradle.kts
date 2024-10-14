@@ -25,6 +25,7 @@ plugins {
 kotlin {
     sourceSets.commonMain.dependencies {
         implementation(projects.app.shared.appPlatform)
+        implementation(projects.utils.intellijAnnotations)
         api(projects.app.shared.videoPlayer.videoPlayerApi)
         api(projects.app.shared.videoPlayer.torrentSource)
         api(libs.kotlinx.coroutines.core)
@@ -37,6 +38,7 @@ kotlin {
         api(projects.utils.xml)
         api(projects.client)
         api(projects.utils.ipParser)
+        api(projects.utils.jsonpath)
         
         api(projects.torrent.torrentApi)
         api(projects.torrent.anitorrent)
@@ -66,10 +68,6 @@ kotlin {
     sourceSets.nativeMain.dependencies {
         implementation(libs.stately.common) // fixes koin bug
         implementation(libs.kotlinx.serialization.json.io)
-    }
-    sourceSets.desktopMain.dependencies {
-        implementation(libs.selenium.java)
-        implementation(libs.webdrivermanager)
     }
 }
 

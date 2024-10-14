@@ -1,36 +1,37 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright (C) 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalog
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JvmVendorSpec
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
@@ -69,6 +70,7 @@ val optInAnnotations = arrayOf(
     "org.jetbrains.compose.resources.ExperimentalResourceApi",
     "kotlin.ExperimentalStdlibApi",
     "androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
+    "androidx.compose.animation.ExperimentalSharedTransitionApi",
 )
 
 val testLanguageFeatures: List<String> = listOf(
@@ -81,9 +83,35 @@ fun Project.configureKotlinOptIns() {
         configureKotlinOptIns()
     }
 
+    val libs = versionCatalogLibs()
+    val (major, minor) = libs["kotlin"].split('.')
+    val kotlinVersion = KotlinVersion.valueOf("KOTLIN_${major}_${minor}")
+
+    val options = kotlinCommonCompilerOptions()
+    options.apply {
+        languageVersion.set(kotlinVersion)
+    }
+    // ksp task extends KotlinCompile
+    project.tasks.withType(KotlinCompile::class.java) {
+        @Suppress("MISSING_DEPENDENCY_SUPERCLASS_IN_TYPE_ARGUMENT")
+        compilerOptions.languageVersion.set(kotlinVersion)
+    }
+
     for (name in testLanguageFeatures) {
         enableLanguageFeatureForTestSourceSets(name)
     }
+}
+
+private fun Project.versionCatalogLibs(): VersionCatalog =
+    project.extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+private operator fun VersionCatalog.get(name: String): String = findVersion(name).get().displayName
+
+private fun Project.kotlinCommonCompilerOptions(): KotlinCommonCompilerOptions = when (val ext = kotlinExtension) {
+    is KotlinJvmProjectExtension -> ext.compilerOptions
+    is KotlinAndroidProjectExtension -> ext.compilerOptions
+    is KotlinMultiplatformExtension -> ext.compilerOptions
+    else -> error("Unsupported kotlinExtension: ${ext::class}")
 }
 
 fun KotlinSourceSet.configureKotlinOptIns() {
@@ -98,12 +126,12 @@ fun KotlinSourceSet.configureKotlinOptIns() {
     }
 }
 
-val DEFAULT_JVM_TARGET = JavaVersion.VERSION_17
-
+val Project.DEFAULT_JVM_TOOLCHAIN_VENDOR
+    get() = getPropertyOrNull("jvm.toolchain.vendor")?.let { JvmVendorSpec.matching(it) }
 
 private fun Project.getProjectPreferredJvmTargetVersion() = extra.runCatching { get("ani.jvm.target") }.fold(
     onSuccess = { JavaVersion.toVersion(it.toString()) },
-    onFailure = { DEFAULT_JVM_TARGET },
+    onFailure = { JavaVersion.toVersion(getPropertyOrNull("jvm.toolchain.version")?.toInt() ?: 17) },
 )
 
 fun Project.configureJvmTarget() {
@@ -126,11 +154,15 @@ fun Project.configureJvmTarget() {
     }
 
     extensions.findByType(KotlinProjectExtension::class)?.apply {
-        jvmToolchain(ver.getMajorVersion().toInt())
+        jvmToolchain {
+            vendor.set(DEFAULT_JVM_TOOLCHAIN_VENDOR)
+            languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
+        }
     }
 
     extensions.findByType(JavaPluginExtension::class)?.apply {
         toolchain {
+            vendor.set(DEFAULT_JVM_TOOLCHAIN_VENDOR)
             languageVersion.set(JavaLanguageVersion.of(ver.getMajorVersion()))
             sourceCompatibility = ver
             targetCompatibility = ver

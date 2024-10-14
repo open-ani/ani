@@ -10,6 +10,7 @@
 package me.him188.ani.app.ui.foundation.layout
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.unit.dp
@@ -94,3 +95,38 @@ val WindowSizeClass.cardHorizontalPadding
 @Stable
 val WindowSizeClass.cardVerticalPadding
     get() = if (windowHeightSizeClass == WindowHeightSizeClass.COMPACT) 16.dp else 20.dp
+
+private val zeroInsets = WindowInsets(0.dp) // single instance to be shared
+
+@Stable
+val WindowInsets.Companion.Zero: WindowInsets
+    get() = zeroInsets
+
+private val WindowWidthSizeClass.ordinal
+    get() = when (this) {
+        WindowWidthSizeClass.COMPACT -> 0
+        WindowWidthSizeClass.MEDIUM -> 1
+        WindowWidthSizeClass.EXPANDED -> 2
+        else -> {
+            error("Unsupported WindowWidthSizeClass: $this")
+        }
+    }
+
+operator fun WindowWidthSizeClass.compareTo(other: WindowWidthSizeClass): Int {
+    return ordinal.compareTo(other.ordinal)
+}
+
+
+private val WindowHeightSizeClass.ordinal
+    get() = when (this) {
+        WindowHeightSizeClass.COMPACT -> 0
+        WindowHeightSizeClass.MEDIUM -> 1
+        WindowHeightSizeClass.EXPANDED -> 2
+        else -> {
+            error("Unsupported WindowHeightSizeClass: $this")
+        }
+    }
+
+operator fun WindowHeightSizeClass.compareTo(other: WindowHeightSizeClass): Int {
+    return ordinal.compareTo(other.ordinal)
+}

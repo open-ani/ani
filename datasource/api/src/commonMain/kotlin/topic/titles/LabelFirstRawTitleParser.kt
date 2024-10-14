@@ -10,6 +10,7 @@
 package me.him188.ani.datasources.api.topic.titles
 
 import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.EpisodeType
 import me.him188.ani.datasources.api.SubtitleKind
 import me.him188.ani.datasources.api.topic.EpisodeRange
 import me.him188.ani.datasources.api.topic.FrameRate
@@ -50,6 +51,17 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                         || word.contains("Blu-Ray", ignoreCase = true)
                     ) {
                         builder.episodeRange = EpisodeRange.unknownSeason()
+                    }
+                }
+            }
+
+            // #382 单集特典类型
+            // 特典映像/[DBD-Raws] [龙猫] [特典映像] [01][1080P][BDRip][HEVC-10bit][AC3].mkv
+            builder.episodeRange?.let { range ->
+                if (range is EpisodeRange.Single) {
+                    if (words.any { it == "特典" || it == "特典映像" }) {
+                        builder.episodeRange =
+                            EpisodeRange.single(EpisodeSort.Special(EpisodeType.SP, range.value.number))
                     }
                 }
             }
@@ -238,7 +250,7 @@ class LabelFirstRawTitleParser : RawTitleParser() {
                             return@map EpisodeRange.single(EpisodeSort(episode))
                         }
                     }
-                    
+
                     EpisodeRange.season(it.drop(1).toIntOrNull())
                 }.toList(),
         )

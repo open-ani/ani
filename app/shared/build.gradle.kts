@@ -50,6 +50,7 @@ kotlin {
 
     sourceSets.commonMain.dependencies {
         api(projects.utils.platform)
+        api(projects.utils.intellijAnnotations)
         api(libs.kotlinx.coroutines.core)
         api(libs.kotlinx.serialization.json)
         api(libs.kotlinx.serialization.json.io)
@@ -67,6 +68,8 @@ kotlin {
         api(projects.app.shared.videoPlayer)
         api(projects.app.shared.videoPlayer.torrentSource)
         api(projects.app.shared.uiSettings)
+        api(projects.app.shared.uiExploration)
+        api(projects.app.shared.uiAdaptive)
 
         // Compose
         api(compose.foundation)
@@ -122,12 +125,6 @@ kotlin {
     sourceSets.getByName("jvmMain").dependencies {
         // TODO: to be commonized
         api(projects.datasource.dmhy)
-        api(projects.datasource.acgRip)
-        api(projects.datasource.nyafun)
-        api(projects.datasource.mxdongman)
-        api(projects.datasource.ntdm)
-        api(projects.datasource.gugufan)
-        api(projects.datasource.xfdm)
         api(projects.datasource.jellyfin)
         api(projects.datasource.ikaros)
 
@@ -159,9 +156,6 @@ kotlin {
         api(libs.androidx.compose.material3)
 
         api(libs.coil)
-
-        implementation(libs.androidx.media3.ui)
-        implementation(libs.androidx.media3.exoplayer)
 
         api(libs.logback.android)
     }

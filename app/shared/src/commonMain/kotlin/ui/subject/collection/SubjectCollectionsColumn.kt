@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +45,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +57,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.CoroutineScope
+import me.him188.ani.app.data.models.episode.EpisodeCollection
+import me.him188.ani.app.data.models.episode.EpisodeInfo
 import me.him188.ani.app.data.models.subject.SubjectCollection
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.foundation.AsyncImage
 import me.him188.ani.app.ui.foundation.ifThen
@@ -56,6 +70,10 @@ import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
 import me.him188.ani.app.ui.subject.collection.components.EditCollectionTypeDropDown
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.details.components.COVER_WIDTH_TO_HEIGHT_RATIO
+import me.him188.ani.app.ui.subject.rating.TestSelfRatingInfo
+import me.him188.ani.datasources.api.EpisodeSort
+import me.him188.ani.datasources.api.topic.UnifiedCollectionType
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Stable
 class SubjectCollectionColumnState(
@@ -269,3 +287,110 @@ private fun SubjectCollectionItemContent(
 }
 
 
+@TestOnly
+val TestSubjectCollections
+    get() = buildList {
+        var id = 0
+        val eps = listOf(
+            EpisodeCollection(
+                episodeInfo = EpisodeInfo(
+                    id = 6385,
+                    name = "Diana Houston",
+                    nameCn = "Nita O'Donnell",
+                    comment = 5931,
+                    duration = "",
+                    desc = "gubergren",
+                    disc = 2272,
+                    sort = EpisodeSort(1),
+                    ep = EpisodeSort(1),
+                ),
+                collectionType = UnifiedCollectionType.DONE,
+            ),
+            EpisodeCollection(
+                episodeInfo = EpisodeInfo(
+                    id = 6386,
+                    name = "Diana Houston",
+                    nameCn = "Nita O'Donnell",
+                    sort = EpisodeSort(2),
+                    comment = 5931,
+                    duration = "",
+                    desc = "gubergren",
+                    disc = 2272,
+                    ep = EpisodeSort(2),
+                ),
+                collectionType = UnifiedCollectionType.DONE,
+            ),
+
+            )
+        add(
+            testSubjectCollection(++id, eps, UnifiedCollectionType.DOING),
+        )
+        add(
+            testSubjectCollection(++id, eps, UnifiedCollectionType.DOING),
+        )
+        add(
+            testSubjectCollection(++id, eps, UnifiedCollectionType.DOING),
+        )
+        add(
+            testSubjectCollection(++id, eps, collectionType = UnifiedCollectionType.WISH),
+        )
+        repeat(10) {
+            add(
+                testSubjectCollection(
+                    ++id,
+                    episodes = eps + EpisodeCollection(
+                        episodeInfo = EpisodeInfo(
+                            id = 6386,
+                            name = "Diana Houston",
+                            nameCn = "Nita O'Donnell",
+                            sort = EpisodeSort(2),
+                            comment = 5931,
+                            duration = "",
+                            desc = "gubergren",
+                            disc = 2272,
+                            ep = EpisodeSort(2),
+                        ),
+                        collectionType = UnifiedCollectionType.DONE,
+                    ),
+                    collectionType = UnifiedCollectionType.WISH,
+                ),
+            )
+        }
+    }
+
+@TestOnly
+@Composable
+internal fun rememberTestSubjectCollectionColumnState(
+    cachedData: List<SubjectCollection> = TestSubjectCollections,
+    hasMore: Boolean = false,
+    isKnownEmpty: Boolean = false,
+): SubjectCollectionColumnState {
+    val scope = rememberCoroutineScope()
+    return remember {
+        SubjectCollectionColumnState(
+            cachedData = mutableStateOf(cachedData),
+            hasMore = mutableStateOf(hasMore),
+            isKnownAuthorizedAndEmpty = mutableStateOf(isKnownEmpty),
+            onRequestMore = {},
+            onAutoRefresh = {},
+            onManualRefresh = {},
+            backgroundScope = scope,
+        )
+    }
+}
+
+@TestOnly
+private fun testSubjectCollection(
+    id: Int,
+    episodes: List<EpisodeCollection>,
+    collectionType: UnifiedCollectionType,
+) = SubjectCollection(
+    info = SubjectInfo.Empty.copy(
+        id,
+        nameCn = "中文条目名称",
+        name = "Subject Name",
+    ),
+    episodes = episodes,
+    collectionType = collectionType,
+    selfRatingInfo = TestSelfRatingInfo,
+)

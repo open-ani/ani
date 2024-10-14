@@ -11,7 +11,8 @@ package me.him188.ani.app.ui.settings.tabs.media.source
 
 import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.test.TestScope
-import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.codec.createTestMediaSourceCodecManager
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
@@ -33,7 +34,9 @@ class EditRssMediaSourceStateTest {
                 onSave = { argumentsState.value = it },
                 isSavingState = stateOf(false),
             ),
+            allowEditState = stateOf(true),
             mediaSourceId,
+            createTestMediaSourceCodecManager(),
         )
     }
 

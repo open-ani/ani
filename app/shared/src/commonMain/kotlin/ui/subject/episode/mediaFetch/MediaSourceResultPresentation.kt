@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.mediaFetch
 
 import androidx.compose.runtime.Composable
@@ -19,14 +28,14 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
-import me.him188.ani.app.data.source.media.TestMediaList
-import me.him188.ani.app.data.source.media.fetch.FilteredMediaSourceResults
-import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchResult
-import me.him188.ani.app.data.source.media.fetch.MediaSourceFetchState
-import me.him188.ani.app.data.source.media.fetch.emptyMediaSourceResults
-import me.him188.ani.app.data.source.media.fetch.isDisabled
-import me.him188.ani.app.data.source.media.fetch.isFailedOrAbandoned
-import me.him188.ani.app.data.source.media.fetch.isWorking
+import me.him188.ani.app.domain.media.TestMediaList
+import me.him188.ani.app.domain.media.fetch.FilteredMediaSourceResults
+import me.him188.ani.app.domain.media.fetch.MediaSourceFetchResult
+import me.him188.ani.app.domain.media.fetch.MediaSourceFetchState
+import me.him188.ani.app.domain.media.fetch.emptyMediaSourceResults
+import me.him188.ani.app.domain.media.fetch.isDisabled
+import me.him188.ani.app.domain.media.fetch.isFailedOrAbandoned
+import me.him188.ani.app.domain.media.fetch.isWorking
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
@@ -135,7 +144,7 @@ class MediaSourceResultsPresentation(
     val totalSourceCount by derivedStateOf { list.count { it.kind != MediaSourceKind.LocalCache } } // 缓存数据源属于内部的, 用户应当无感
 }
 
-private val EmptyMediaSourceResultsPresentation by lazy(LazyThreadSafetyMode.NONE) {
+private val EmptyMediaSourceResultsPresentation by lazy {
     MediaSourceResultsPresentation(emptyMediaSourceResults(), EmptyCoroutineContext)
 }
 

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.app
 
 import androidx.compose.animation.AnimatedVisibility
@@ -30,7 +39,7 @@ import me.him188.ani.app.data.models.preference.FullscreenSwitchMode
 import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
-import me.him188.ani.app.data.source.danmaku.protocol.ReleaseClass
+import me.him188.ani.app.domain.danmaku.protocol.ReleaseClass
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -79,23 +88,23 @@ fun AppSettingsTab(
 ) {
     SettingsTab(modifier) {
         SoftwareUpdateGroup(softwareUpdateGroupState)
-        UISettingsGroup(uiSettings)
+        AppearanceGroup(uiSettings)
         PlayerGroup(
             videoScaffoldConfig,
             danmakuFilterConfig,
             danmakuRegexFilterState,
-            showDebug
+            showDebug,
         )
         AppSettingsTabPlatform()
     }
 }
 
 @Composable
-private fun SettingsScope.UISettingsGroup(
+fun SettingsScope.AppearanceGroup(
     state: SettingsState<UISettings>,
 ) {
     val uiSettings by state
-    Group(title = { Text("通用") }) {
+    Group(title = { Text("界面") }) {
         if (LocalPlatform.current.isAndroid()) {
             SwitchItem(
                 uiSettings.theme.dynamicTheme,
@@ -232,7 +241,7 @@ class SoftwareUpdateGroupState(
 }
 
 @Composable
-private fun SettingsScope.SoftwareUpdateGroup(
+fun SettingsScope.SoftwareUpdateGroup(
     state: SoftwareUpdateGroupState,
     modifier: Modifier = Modifier,
 ) {
@@ -290,21 +299,21 @@ private fun SettingsScope.SoftwareUpdateGroup(
             },
             title = { Text("更新类型") },
         )
-        HorizontalDividerItem()
-        SwitchItem(
-            updateSettings.inAppDownload,
-            { state.updateSettings.update(updateSettings.copy(inAppDownload = it)) },
-            title = { Text("应用内下载") },
-            description = {
-                if (updateSettings.inAppDownload) {
-                    Text("省去跳转浏览器步骤")
-                } else {
-                    Text("已关闭，将会跳转到外部浏览器完成下载")
-                }
-            },
-            enabled = updateSettings.autoCheckUpdate,
-        )
         if (!LocalPlatform.current.isIos()) {
+            HorizontalDividerItem()
+            SwitchItem(
+                updateSettings.inAppDownload,
+                { state.updateSettings.update(updateSettings.copy(inAppDownload = it)) },
+                title = { Text("应用内下载") },
+                description = {
+                    if (updateSettings.inAppDownload) {
+                        Text("省去跳转浏览器步骤")
+                    } else {
+                        Text("已关闭，将会跳转到外部浏览器完成下载")
+                    }
+                },
+                enabled = updateSettings.autoCheckUpdate,
+            )
             AnimatedVisibility(updateSettings.inAppDownload) {
                 Column {
                     HorizontalDividerItem()
@@ -375,7 +384,7 @@ private fun SettingsScope.SoftwareUpdateGroup(
 }
 
 @Composable
-private fun SettingsScope.PlayerGroup(
+fun SettingsScope.PlayerGroup(
     videoScaffoldConfig: SettingsState<VideoScaffoldConfig>,
     danmakuFilterConfig: SettingsState<DanmakuFilterConfig>,
     danmakuRegexFilterState: DanmakuRegexFilterState,

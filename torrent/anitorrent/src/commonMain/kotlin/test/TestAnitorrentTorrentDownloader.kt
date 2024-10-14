@@ -112,7 +112,7 @@ class TestTorrentDescriptor(
 @TestOnly
 class TestPeerInfo(
     override val handle: HandleId,
-    override val id: String,
+    override val id: CharArray,
     override val client: String,
     override val ipAddr: String,
     override val ipPort: Int,

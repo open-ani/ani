@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.details
 
 import androidx.compose.animation.AnimatedVisibility
@@ -9,8 +18,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +45,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,10 +70,14 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
+import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
 import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
+import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
+import me.him188.ani.app.ui.foundation.layout.only
+import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
@@ -140,7 +156,7 @@ fun SubjectDetailsScene(
             )
         },
         connectedScrollState = connectedScrollState,
-        detailsTab = {
+        detailsTab = { contentPadding ->
             SubjectDetailsDefaults.DetailsTab(
                 info = vm.subjectDetailsState.info,
                 staff = vm.subjectDetailsState.persons,
@@ -150,9 +166,10 @@ fun SubjectDetailsScene(
                     .nestedScrollWorkaround(vm.detailsTabLazyListState, connectedScrollState)
                     .nestedScroll(connectedScrollState.nestedScrollConnection),
                 vm.detailsTabLazyListState,
+                contentPadding = contentPadding,
             )
         },
-        commentsTab = {
+        commentsTab = { contentPadding ->
             SubjectDetailsDefaults.SubjectCommentColumn(
                 state = vm.subjectCommentState,
                 onClickUrl = {
@@ -162,6 +179,7 @@ fun SubjectDetailsScene(
                 connectedScrollState,
                 Modifier.fillMaxSize(),
                 lazyListState = vm.commentTabLazyListState,
+                contentPadding = contentPadding,
             )
         },
         discussionsTab = {
@@ -205,9 +223,9 @@ fun SubjectDetailsPage(
     rating: @Composable () -> Unit,
     selectEpisodeButton: @Composable BoxScope.() -> Unit,
     connectedScrollState: ConnectedScrollState,
-    detailsTab: @Composable () -> Unit,
-    commentsTab: @Composable () -> Unit,
-    discussionsTab: @Composable () -> Unit,
+    detailsTab: @Composable (contentPadding: PaddingValues) -> Unit,
+    commentsTab: @Composable (contentPadding: PaddingValues) -> Unit,
+    discussionsTab: @Composable (contentPadding: PaddingValues) -> Unit,
     modifier: Modifier = Modifier,
     showTopBar: Boolean = true,
     showBlurredBackground: Boolean = true,
@@ -228,33 +246,41 @@ fun SubjectDetailsPage(
     Scaffold(
         topBar = {
             if (showTopBar) {
-                Box {
-                    // 透明背景的, 总是显示
-                    TopAppBar(
-                        title = {},
-                        navigationIcon = { TopAppBarGoBackButton() },
-                        actions = {
-                            IconButton(onClickOpenExternal) {
-                                Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
-                            }
-                        },
-                        colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
-                        windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
-                    )
-
-                    // 有背景, 仅在滚动一段距离后使用
-                    AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                WindowDragArea {
+                    Box {
+                        // 透明背景的, 总是显示
                         TopAppBar(
-                            title = { Text(state.info.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            title = {},
                             navigationIcon = { TopAppBarGoBackButton() },
                             actions = {
                                 IconButton(onClickOpenExternal) {
                                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                                 }
                             },
-                            colors = AniThemeDefaults.topAppBarColors(),
+                            colors = AniThemeDefaults.topAppBarColors().copy(containerColor = Color.Transparent),
                             windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                         )
+
+                        // 有背景, 仅在滚动一段距离后使用
+                        AnimatedVisibility(connectedScrollState.isScrolledTop, enter = fadeIn(), exit = fadeOut()) {
+                            TopAppBar(
+                                title = {
+                                    Text(
+                                        state.info.displayName,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
+                                navigationIcon = { TopAppBarGoBackButton() },
+                                actions = {
+                                    IconButton(onClickOpenExternal) {
+                                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
+                                    }
+                                },
+                                colors = AniThemeDefaults.topAppBarColors(),
+                                windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
+                            )
+                        }
                     }
                 }
             }
@@ -262,14 +288,26 @@ fun SubjectDetailsPage(
         modifier = modifier,
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { scaffoldPadding ->
-        FastLinearProgressIndicator(
-            indicatorState,
-            Modifier.zIndex(2f)
-                .ifThen(!showTopBar) { padding(top = 4.dp) }
-                .padding(scaffoldPadding).padding(horizontal = 4.dp).fillMaxWidth(),
-        )
+        // 这个页面比较特殊. 背景需要绘制到 TopBar 等区域以内, 也就是要无视 scaffoldPadding.
 
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        // 在背景之上显示的封面和标题等信息
+        val headerContentPadding = scaffoldPadding.only(PaddingValuesSides.Horizontal + PaddingValuesSides.Top)
+        // 从 tab row 开始的区域
+        val remainingContentPadding = scaffoldPadding.only(PaddingValuesSides.Horizontal + PaddingValuesSides.Bottom)
+
+        Box(
+            Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            FastLinearProgressIndicator(
+                indicatorState,
+                Modifier.zIndex(2f)
+                    .ifThen(!showTopBar) { padding(top = 4.dp) }
+                    .padding(scaffoldPadding) // does not consume insets
+                    .padding(horizontal = 4.dp)
+                    .fillMaxWidth(),
+            )
+
             AnimatedVisibility(
                 isContentReady,
                 Modifier.wrapContentSize(),
@@ -281,7 +319,7 @@ fun SubjectDetailsPage(
             ) {
                 Column(Modifier.widthIn(max = 1300.dp).fillMaxHeight()) {
                     Box(Modifier.connectedScrollContainer(connectedScrollState)) {
-                        // 虚化渐变背景
+                        // 虚化渐变背景, 需要绘制到 scaffoldPadding 以外区域
                         if (showBlurredBackground) {
                             SubjectBlurredBackground(
                                 coverImageUrl = if (isContentReady) state.coverImageUrl else null,
@@ -290,10 +328,11 @@ fun SubjectDetailsPage(
                         }
 
                         // 标题和封面, 以及收藏数据, 可向上滑动
+                        // 需要满足 scaffoldPadding 的 horizontal 和 top
                         Column(
                             Modifier
-                                .padding(scaffoldPadding)
-                                .connectedScrollTarget(connectedScrollState),
+                                .padding(headerContentPadding)
+                                .consumeWindowInsets(headerContentPadding),
                         ) {
                             SubjectDetailsHeader(
                                 state.info,
@@ -303,7 +342,9 @@ fun SubjectDetailsPage(
                                 collectionAction = collectionActions,
                                 selectEpisodeButton = selectEpisodeButton,
                                 rating = rating,
-                                Modifier.fillMaxWidth()
+                                Modifier
+                                    .connectedScrollTarget(connectedScrollState)
+                                    .fillMaxWidth()
                                     .ifThen(!showTopBar) { padding(top = 16.dp) }
                                     .padding(horizontal = 16.dp),
                             )
@@ -317,8 +358,9 @@ fun SubjectDetailsPage(
                     // Pager with TabRow
                     Column(
                         Modifier
-                            .padding(bottom = 16.dp)
-                            .fillMaxHeight(),
+                            .fillMaxHeight()
+                            .padding(remainingContentPadding)
+                            .consumeWindowInsets(remainingContentPadding),
                     ) {
                         val tabContainerColor by animateColorAsState(
                             if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
@@ -357,10 +399,12 @@ fun SubjectDetailsPage(
                         ) { index ->
                             val type = SubjectDetailsTab.entries[index]
                             Column(Modifier.padding()) {
+                                val paddingValues =
+                                    PaddingValues(bottom = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding)
                                 when (type) {
-                                    SubjectDetailsTab.DETAILS -> detailsTab()
-                                    SubjectDetailsTab.COMMENTS -> commentsTab()
-                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab()
+                                    SubjectDetailsTab.DETAILS -> detailsTab(paddingValues)
+                                    SubjectDetailsTab.COMMENTS -> commentsTab(paddingValues)
+                                    SubjectDetailsTab.DISCUSSIONS -> discussionsTab(paddingValues)
                                 }
                             }
                         }

@@ -12,9 +12,14 @@ namespace anilt {
     }
 
     peer_info_t parse_peer_info(const lt::torrent_handle &th, const lt::peer_info &info) {
+        // peer_id 一定是 160 位的, digest32<160>::data() 返回其 char pointer. 
+        // 所以 vector 的大小为 20
+        std::vector<char> peer_id(20);
+        memcpy(&peer_id[0], info.pid.data(), 20);
+        
         const peer_info_t info_t = {
             th.id(),
-            info.pid.data(),
+            peer_id,
             info.client,
             info.ip.address().to_string(),
             info.ip.port(),

@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs
 
 import androidx.compose.foundation.clickable
@@ -49,12 +58,12 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.data.source.media.cache.MediaAutoCacheService
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.session.OpaqueSession
-import me.him188.ani.app.data.source.session.SessionManager
-import me.him188.ani.app.data.source.session.isSessionVerified
-import me.him188.ani.app.data.source.session.unverifiedAccessTokenOrNull
+import me.him188.ani.app.domain.media.cache.MediaAutoCacheService
+import me.him188.ani.app.domain.media.cache.MediaCacheManager
+import me.him188.ani.app.domain.session.OpaqueSession
+import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.session.isSessionVerified
+import me.him188.ani.app.domain.session.unverifiedAccessTokenOrNull
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.currentAniBuildConfig
@@ -101,7 +110,7 @@ class AboutTabViewModel : AbstractViewModel(), KoinComponent {
                 put("isDebug", buildConfig.isDebug.toString())
                 if (buildConfig.isDebug) {
                     put("accessToken", session.unverifiedAccessTokenOrNull)
-                    put("data/source/session", session.toString())
+                    put("domain/session", session.toString())
                 }
                 put("processingRequest.state", processingRequest.toString())
                 put("sessionManager.isSessionValid", isSessionValid.toString())
@@ -136,8 +145,8 @@ private const val MIKAN = "https://mikanime.tv/"
 @OptIn(DelicateCoroutinesApi::class, TestOnly::class)
 @Composable
 fun AboutTab(
-    vm: AboutTabViewModel = viewModel { AboutTabViewModel() },
     modifier: Modifier = Modifier,
+    vm: AboutTabViewModel = viewModel { AboutTabViewModel() },
     onTriggerDebugMode: () -> Unit = { },
 ) {
     val context by rememberUpdatedState(LocalContext.current)

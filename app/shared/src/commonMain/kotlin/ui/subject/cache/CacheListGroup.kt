@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 @file:Suppress("PropertyName")
 
 package me.him188.ani.app.ui.subject.cache
@@ -57,7 +66,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.MediaSelectorSettings
-import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.domain.media.cache.EpisodeCacheStatus
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.tools.getOrZero
@@ -157,6 +166,7 @@ fun SettingsScope.EpisodeCacheListGroup(
                 MediaSelectorView(
                     selectorPresentation,
                     sourceResults = { MediaSourceResultsView(sourceResults, selectorPresentation) },
+                    stickyHeaderBackgroundColor = BottomSheetDefaults.ContainerColor,
                     modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                         .navigationBarsPadding()
                         .fillMaxHeight() // 防止添加筛选后数量变少导致 bottom sheet 高度变化

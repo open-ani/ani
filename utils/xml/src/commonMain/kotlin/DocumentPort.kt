@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.utils.xml
 
 /*
@@ -193,7 +202,21 @@ expect abstract class Element : Node {
      * @see .textNodes
      */
     open fun text(): String
+
+    @Deprecated("This will throw if the cssQuery in invalid. Use the overload that uses a evaluator instead.")
+    fun select(cssQuery: String): Elements
+    fun select(evaluator: Evaluator): Elements
+
+    fun childrenSize(): Int
+    fun children(): Elements
 }
+
+/**
+ * @see QueryParser.parseSelector
+ * @see QueryParser.parseSelectorOrNull
+ */
+@Suppress("EXPECT_ACTUAL_INCOMPATIBILITY")
+expect abstract class Evaluator
 
 @Suppress("EXPECT_ACTUAL_INCOMPATIBILITY")
 expect abstract class Elements : List<Element> {

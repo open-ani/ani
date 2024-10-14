@@ -9,6 +9,7 @@
 
 package me.him188.ani.app.ui.settings.mediasource.rss.edit
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -31,33 +31,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.ui.foundation.text.ProvideTextStyleContentColor
-import me.him188.ani.app.ui.settings.SettingsViewModel
+import me.him188.ani.app.ui.settings.mediasource.MediaSourceConfigurationDefaults
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceState
 
 @Composable
 fun RssEditPane(
     state: EditRssMediaSourceState,
-    onClickTest: () -> Unit,
-    showTestButton: Boolean,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    showDebugFields: Boolean = viewModel<SettingsViewModel> { SettingsViewModel() }.isInDebugMode,
+    outlinedTextFieldShape: Shape = MediaSourceConfigurationDefaults.outlinedTextFieldShape
 ) {
-    Column(
-        modifier
-            .padding(contentPadding),
-    ) {
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()),
-        ) {
+    Column(modifier.verticalScroll(rememberScrollState())) {
+        Column(Modifier.padding(contentPadding)) {
             // 大图标和标题
             MediaSourceHeadline(state.displayIconUrl, state.displayName)
 
-            val textFieldShape = MaterialTheme.shapes.medium
             Column(
                 Modifier.focusGroup()
                     .fillMaxHeight()
@@ -66,28 +58,16 @@ fun RssEditPane(
                 val listItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
 
                 Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                    if (showDebugFields) {
-                        OutlinedTextField(
-                            state.instanceId, { },
-                            Modifier
-                                .fillMaxWidth(),
-                            label = { Text("[debug] instanceId") },
-                            placeholder = { Text("设置显示在列表中的名称") },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                            readOnly = true,
-                            shape = textFieldShape,
-                        )
-                    }
-
                     OutlinedTextField(
-                        state.displayName, { state.displayName = it.trim() },
+                        state.displayName, { state.displayName = it },
                         Modifier
                             .fillMaxWidth(),
                         label = { Text("名称*") },
                         placeholder = { Text("设置显示在列表中的名称") },
                         isError = state.displayNameIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = textFieldShape,
+                        shape = outlinedTextFieldShape,
+                        enabled = state.enableEdit,
                     )
                     OutlinedTextField(
                         state.iconUrl, { state.iconUrl = it.trim() },
@@ -95,7 +75,8 @@ fun RssEditPane(
                             .fillMaxWidth(),
                         label = { Text("图标链接") },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = textFieldShape,
+                        shape = outlinedTextFieldShape,
+                        enabled = state.enableEdit,
                     )
                 }
 
@@ -130,25 +111,42 @@ fun RssEditPane(
                         },
                         isError = state.searchUrlIsError,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        shape = textFieldShape,
+                        shape = outlinedTextFieldShape,
+                        enabled = state.enableEdit,
                     )
 
                     ListItem(
                         headlineContent = { Text("使用剧集序号过滤") },
+                        Modifier.clickable(
+                            enabled = state.enableEdit,
+                        ) { state.filterByEpisodeSort = !state.filterByEpisodeSort },
                         supportingContent = { Text("要求资源标题包含剧集序号。适用于数据源可能搜到无关内容的情况") },
-                        trailingContent = { Switch(state.filterByEpisodeSort, { state.filterByEpisodeSort = it }) },
+                        trailingContent = {
+                            Switch(
+                                state.filterByEpisodeSort, { state.filterByEpisodeSort = it },
+                                enabled = state.enableEdit,
+                            )
+                        },
                         colors = listItemColors,
                     )
 
                     ListItem(
                         headlineContent = { Text("使用条目名称过滤") },
+                        Modifier.clickable(
+                            enabled = state.enableEdit,
+                        ) { state.filterBySubjectName = !state.filterBySubjectName },
                         supportingContent = { Text("要求资源标题包含条目名称。适用于数据源可能搜到无关内容的情况") },
-                        trailingContent = { Switch(state.filterBySubjectName, { state.filterBySubjectName = it }) },
+                        trailingContent = {
+                            Switch(
+                                state.filterBySubjectName, { state.filterBySubjectName = it },
+                                enabled = state.enableEdit,
+                            )
+                        },
                         colors = listItemColors,
                     )
                 }
 
-                Row(Modifier.align(Alignment.End).padding(top = 20.dp, bottom = 12.dp)) {
+                Row(Modifier.align(Alignment.End).padding(top = 20.dp)) {
                     ProvideTextStyleContentColor(
                         MaterialTheme.typography.labelMedium,
                         MaterialTheme.colorScheme.outline,
@@ -156,17 +154,6 @@ fun RssEditPane(
                         Text("提示：修改自动保存")
                     }
                 }
-            }
-        }
-
-        if (showTestButton) {
-            FilledTonalButton(
-                onClick = onClickTest,
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-            ) {
-                Text("测试")
             }
         }
     }

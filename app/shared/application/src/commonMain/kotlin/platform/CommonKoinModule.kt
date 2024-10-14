@@ -1,34 +1,33 @@
 /*
- * Ani
- * Copyright (C) 2022-2024 Him188
+ * Copyright (C) 2024 OpenAni and contributors.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
 package me.him188.ani.app.platform
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import me.him188.ani.app.data.models.map
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
+import me.him188.ani.app.data.models.runApiRequest
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.models.subject.SubjectManagerImpl
 import me.him188.ani.app.data.persistent.createDatabaseBuilder
@@ -49,6 +48,7 @@ import me.him188.ani.app.data.repository.EpisodeRepositoryImpl
 import me.him188.ani.app.data.repository.EpisodeScreenshotRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepository
 import me.him188.ani.app.data.repository.MediaSourceInstanceRepositoryImpl
+import me.him188.ani.app.data.repository.MediaSourceSubscriptionRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepository
 import me.him188.ani.app.data.repository.MikanIndexCacheRepositoryImpl
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
@@ -59,45 +59,54 @@ import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepositoryImpl
 import me.him188.ani.app.data.repository.TokenRepository
 import me.him188.ani.app.data.repository.TokenRepositoryImpl
+import me.him188.ani.app.data.repository.TrendsRepository
 import me.him188.ani.app.data.repository.UserRepository
 import me.him188.ani.app.data.repository.UserRepositoryImpl
 import me.him188.ani.app.data.repository.WhatslinkEpisodeScreenshotRepository
-import me.him188.ani.app.data.source.AniAuthClient
-import me.him188.ani.app.data.source.UpdateManager
-import me.him188.ani.app.data.source.danmaku.DanmakuManager
-import me.him188.ani.app.data.source.danmaku.DanmakuManagerImpl
-import me.him188.ani.app.data.source.media.cache.DefaultMediaAutoCacheService
-import me.him188.ani.app.data.source.media.cache.MediaAutoCacheService
-import me.him188.ani.app.data.source.media.cache.MediaCacheManager
-import me.him188.ani.app.data.source.media.cache.MediaCacheManagerImpl
-import me.him188.ani.app.data.source.media.cache.createWithKoin
-import me.him188.ani.app.data.source.media.cache.engine.DummyMediaCacheEngine
-import me.him188.ani.app.data.source.media.cache.engine.TorrentMediaCacheEngine
-import me.him188.ani.app.data.source.media.cache.storage.DirectoryMediaCacheStorage
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManager
-import me.him188.ani.app.data.source.media.fetch.MediaSourceManagerImpl
-import me.him188.ani.app.data.source.media.fetch.toClientProxyConfig
-import me.him188.ani.app.data.source.session.BangumiSessionManager
-import me.him188.ani.app.data.source.session.OpaqueSession
-import me.him188.ani.app.data.source.session.SessionManager
-import me.him188.ani.app.data.source.session.unverifiedAccessToken
-import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.domain.bangumi.BangumiSubjectProvider
+import me.him188.ani.app.domain.danmaku.DanmakuManager
+import me.him188.ani.app.domain.danmaku.DanmakuManagerImpl
+import me.him188.ani.app.domain.media.cache.DefaultMediaAutoCacheService
+import me.him188.ani.app.domain.media.cache.MediaAutoCacheService
+import me.him188.ani.app.domain.media.cache.MediaCacheManager
+import me.him188.ani.app.domain.media.cache.MediaCacheManagerImpl
+import me.him188.ani.app.domain.media.cache.createWithKoin
+import me.him188.ani.app.domain.media.cache.engine.DummyMediaCacheEngine
+import me.him188.ani.app.domain.media.cache.engine.TorrentMediaCacheEngine
+import me.him188.ani.app.domain.media.cache.storage.DirectoryMediaCacheStorage
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.media.fetch.MediaSourceManagerImpl
+import me.him188.ani.app.domain.media.fetch.toClientProxyConfig
+import me.him188.ani.app.domain.mediasource.codec.MediaSourceCodecManager
+import me.him188.ani.app.domain.mediasource.subscription.MediaSourceSubscriptionUpdater
+import me.him188.ani.app.domain.mediasource.subscription.SubscriptionUpdateData
+import me.him188.ani.app.domain.search.SubjectProvider
+import me.him188.ani.app.domain.session.AniAuthClient
+import me.him188.ani.app.domain.session.BangumiSessionManager
+import me.him188.ani.app.domain.session.OpaqueSession
+import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.session.unverifiedAccessToken
+import me.him188.ani.app.domain.torrent.TorrentManager
+import me.him188.ani.app.domain.update.UpdateManager
 import me.him188.ani.app.ui.subject.episode.video.TorrentMediaCacheProgressState
 import me.him188.ani.app.videoplayer.torrent.TorrentVideoData
 import me.him188.ani.app.videoplayer.ui.state.CacheProgressStateFactoryManager
-import me.him188.ani.datasources.api.subject.SubjectProvider
 import me.him188.ani.datasources.bangumi.BangumiClient
-import me.him188.ani.datasources.bangumi.BangumiSubjectProvider
 import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.datasources.bangumi.createBangumiClient
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.io.resolve
+import me.him188.ani.utils.ktor.createDefaultHttpClient
+import me.him188.ani.utils.ktor.proxy
+import me.him188.ani.utils.ktor.registerLogging
+import me.him188.ani.utils.ktor.userAgent
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import org.koin.core.KoinApplication
 import org.koin.dsl.module
+import kotlin.time.Duration.Companion.minutes
 
 fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScope: CoroutineScope) = module {
     // Repositories
@@ -133,6 +142,9 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<MediaSourceInstanceRepository> {
         MediaSourceInstanceRepositoryImpl(getContext().dataStores.mediaSourceSaveStore)
     }
+    single<MediaSourceSubscriptionRepository> {
+        MediaSourceSubscriptionRepository(getContext().dataStores.mediaSourceSubscriptionStore)
+    }
     single<EpisodePlayHistoryRepository> {
         EpisodePlayHistoryRepositoryImpl(getContext().dataStores.episodeHistoryStore)
     }
@@ -140,6 +152,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     single<SubjectSearchRepository> {
         get<AniDatabase>().run { SubjectSearchRepositoryImpl(searchHistory(), searchTag()) }
     }
+    single<TrendsRepository> { TrendsRepository(lazy { get<AniAuthClient>().trendsApi }) }
 
     single<DanmakuManager> {
         DanmakuManagerImpl(
@@ -203,10 +216,39 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     }
 
 
+    single<MediaSourceCodecManager> {
+        MediaSourceCodecManager()
+    }
     single<MediaSourceManager> {
         MediaSourceManagerImpl(
             additionalSources = {
                 get<MediaCacheManager>().storagesIncludingDisabled.map { it.cacheMediaSource }
+            },
+        )
+    }
+    single<MediaSourceSubscriptionUpdater> {
+        val settings = get<SettingsRepository>()
+        val client = settings.proxySettings.flow.map { it.default }.map { proxySettings ->
+            createDefaultHttpClient {
+                userAgent(getAniUserAgent())
+                proxy(proxySettings.configIfEnabledOrNull?.toClientProxyConfig())
+            }.apply {
+                registerLogging(logger<MediaSourceSubscriptionUpdater>())
+            }
+        }.onReplacement {
+            it.close()
+        }.shareIn(coroutineScope, started = SharingStarted.Lazily, replay = 1)
+        MediaSourceSubscriptionUpdater(
+            get<MediaSourceSubscriptionRepository>(),
+            get<MediaSourceManager>(),
+            get<MediaSourceCodecManager>(),
+            requestSubscription = {
+                client.first().runApiRequest { get(it.url) }.map { response ->
+                    MediaSourceCodecManager.Companion.json.decodeFromString(
+                        SubscriptionUpdateData.serializer(),
+                        response.bodyAsText(),
+                    )
+                }
             },
         )
     }
@@ -233,6 +275,25 @@ fun KoinApplication.startCommonKoinModule(coroutineScope: CoroutineScope): KoinA
         val manager = koin.get<MediaCacheManager>()
         for (storage in manager.storages) {
             storage.first()?.restorePersistedCaches()
+        }
+    }
+
+    coroutineScope.launch {
+        val subscriptionUpdater = koin.get<MediaSourceSubscriptionUpdater>()
+        while (currentCoroutineContext().isActive) {
+            val nextDelay = subscriptionUpdater.updateAllOutdated()
+            delay(nextDelay.coerceAtLeast(1.minutes))
+        }
+    }
+
+    coroutineScope.launch {
+        // TODO: 这里是自动删除旧版数据源. 在未来 3.14 左右就可以去除这个了
+        val removedFactoryIds = setOf("ntdm", "mxdongman", "nyafun", "gugufan", "xfdm", "acg.rip")
+        val manager = koin.get<MediaSourceInstanceRepository>()
+        for (instance in manager.flow.first()) {
+            if (instance.factoryId.value in removedFactoryIds) {
+                manager.remove(instanceId = instance.instanceId)
+            }
         }
     }
 

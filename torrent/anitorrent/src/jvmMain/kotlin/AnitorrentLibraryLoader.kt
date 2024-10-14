@@ -15,8 +15,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import me.him188.ani.app.torrent.api.TorrentLibraryLoader
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
-import me.him188.ani.utils.platform.Arch
-import me.him188.ani.utils.platform.Platform
+import me.him188.ani.utils.platform.NativeLibraryLoader
 import me.him188.ani.utils.platform.currentPlatform
 import me.him188.ani.utils.platform.isAndroid
 import java.io.File
@@ -40,38 +39,7 @@ object AnitorrentLibraryLoader : TorrentLibraryLoader {
     }
 
     // appResources/macos-arm64/anitorrent
-    private fun getAnitorrentResourceDir(): File {
-        val platform = currentPlatform() as Platform.Desktop
-        val libRelative = "anitorrent"
-        System.getProperty("compose.application.resources.dir")?.let {
-            val file = File(it).resolve(libRelative)
-            if (file.exists()) {
-                return file
-            }
-        }
-
-        val arch = when (platform.arch) {
-            Arch.X86_64 -> "x64"
-            Arch.AARCH64 -> "arm64"
-            Arch.ARMV7A, Arch.ARMV8A -> throw UnsatisfiedLinkError("Unsupported architecture: ${platform.arch}")
-        }
-
-        val triple = when (platform) {
-            is Platform.MacOS -> "macos-$arch"
-            is Platform.Windows -> "windows-$arch"
-            is Platform.Linux -> "linux-$arch"
-        }
-
-        System.getProperty("user.dir")?.let { File(it) }?.resolve("../appResources/$triple")
-            ?.resolve(libRelative)
-            ?.let {
-                if (it.exists()) {
-                    return it
-                }
-            }
-
-        throw UnsatisfiedLinkError("Anitorrent resource directory not found")
-    }
+    private fun getAnitorrentResourceDir(): File = NativeLibraryLoader.getResourceDir("anitorrent")
 
     @Suppress("UnsafeDynamicallyLoadedCode") // This code only runs on desktop
     private fun loadLibrary(libraryFilename: String) {

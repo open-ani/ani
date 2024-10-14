@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 OpenAni and contributors.
+ * Copyright (C) 2024 OpenAni and contributors.
  *
  * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,12 +28,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.io.files.Path
-import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
+import kotlinx.coroutines.flow.map
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
+import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.app.domain.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
@@ -48,11 +52,13 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
-import me.him188.ani.app.tools.torrent.DefaultTorrentManager
-import me.him188.ani.app.tools.torrent.TorrentManager
+import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.tools.update.IosUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
+import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.foundation.TestGlobalLifecycle
+import me.him188.ani.app.ui.foundation.getDefaultImageLoader
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
@@ -66,9 +72,10 @@ import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.ui.main.AniAppContent
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
+import me.him188.ani.utils.io.SystemCacheDir
 import me.him188.ani.utils.io.SystemDocumentDir
 import me.him188.ani.utils.io.SystemPath
-import me.him188.ani.utils.io.inSystem
+import me.him188.ani.utils.io.createDirectories
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.context.startKoin
@@ -81,14 +88,14 @@ fun MainViewController(): UIViewController {
 
     val context = IosContext(
         IosContextFiles(
-            cacheDir = Path(SystemDocumentDir).resolve("cache").inSystem,
-            dataDir = Path(SystemDocumentDir).resolve("data").inSystem,
+            cacheDir = SystemCacheDir.apply { createDirectories() },
+            dataDir = SystemDocumentDir.apply { createDirectories() },
         ),
-    ) // TODO IOS
+    )
 
     val koin = startKoin {
         modules(getCommonKoinModule({ context }, scope))
-        modules(getIosModules(Path(SystemDocumentDir).resolve("torrent").inSystem, scope)) // TODO IOS
+        modules(getIosModules(SystemDocumentDir.resolve("torrent"), scope))
     }.startCommonKoinModule(scope).koin
 
     koin.get<TorrentManager>() // start sharing, connect to DHT now
@@ -102,15 +109,27 @@ fun MainViewController(): UIViewController {
                 get() = TestGlobalLifecycle // TODO: ios lifecycle
         },
     )
-
+    val proxyConfig = koin.get<SettingsRepository>().proxySettings.flow.map {
+        it.default.configIfEnabledOrNull
+    }
     return ComposeUIViewController {
         AniApp {
+            val proxy by proxyConfig.collectAsStateWithLifecycle(null)
+
+            val coilContext = LocalPlatformContext.current
+            val imageLoader by remember(coilContext) {
+                derivedStateOf {
+                    getDefaultImageLoader(coilContext, proxyConfig = proxy)
+                }
+            }
+
             CompositionLocalProvider(
                 LocalContext provides context,
                 LocalPlatformWindow provides remember {
                     PlatformWindow()
                 },
                 LocalOnBackPressedDispatcherOwner provides onBackPressedDispatcherOwner,
+                LocalImageLoader provides imageLoader,
             ) {
                 Box(
                     Modifier.background(color = MaterialTheme.colorScheme.background)

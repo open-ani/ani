@@ -1,9 +1,19 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.videoplayer.ui
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeImageBitmap
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
@@ -29,6 +39,11 @@ class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVideoSurface
     private val composeBitmap = mutableStateOf<ImageBitmap?>(null)
 
     val enableRendering = MutableStateFlow(false)
+
+    /**
+     * 即使 [enableRendering]
+     */
+    val allowedDrawFrames = atomic(0)
     val bitmap by composeBitmap
 
     fun clearBitmap() {
@@ -66,7 +81,17 @@ class SkiaBitmapVideoSurface : VideoSurface(VideoSurfaceAdapters.getVideoSurface
             nativeBuffers: Array<ByteBuffer>,
             bufferFormat: BufferFormat,
         ) {
-            if (!enableRendering.value) return
+            val allowedDrawFramesValue = allowedDrawFrames.value
+
+            if (!enableRendering.value) {
+                if (allowedDrawFramesValue <= 0) {
+                    return
+                }
+                if (allowedDrawFrames.decrementAndGet() < 0) return
+            } else {
+                // 允许渲染, 不考虑 allowedDrawFrames
+            }
+
             SwingUtilities.invokeLater {
                 nativeBuffers[0].rewind()
                 nativeBuffers[0].get(frameBytes)

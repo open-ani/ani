@@ -12,7 +12,7 @@ package me.him188.ani.app.ui.settings.mediasource.rss
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import me.him188.ani.app.data.source.media.source.RssMediaSourceArguments
+import me.him188.ani.app.domain.mediasource.rss.RssMediaSourceArguments
 import me.him188.ani.utils.platform.annotations.TestOnly
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -89,6 +89,13 @@ class SaveableStorage<Container : Any>(
             val arguments = container ?: return
             onSave(arguments.copy(value))
         }
+    }
+
+    /**
+     * 立即覆盖当前整个容器
+     */
+    fun set(container: Container) {
+        onSave(container)
     }
 }
 

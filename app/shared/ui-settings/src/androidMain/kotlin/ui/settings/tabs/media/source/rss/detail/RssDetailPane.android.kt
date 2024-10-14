@@ -11,7 +11,7 @@ package me.him188.ani.app.ui.settings.tabs.media.source.rss.detail
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import me.him188.ani.app.data.source.media.TestMediaList
+import me.him188.ani.app.domain.media.TestMediaList
 import me.him188.ani.app.ui.foundation.preview.PreviewTabletLightDark
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssDetailPane
 import me.him188.ani.app.ui.settings.mediasource.rss.detail.RssViewingItem

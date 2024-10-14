@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.models.preference
 
 import androidx.compose.runtime.Immutable
@@ -47,6 +56,15 @@ constructor(
         @Suppress("DEPRECATION_ERROR")
         val Default = MediaSelectorSettings(
             preferKind = MediaSourceKind.WEB, // 新用户
+        )
+
+        /**
+         * 用于测试, 显示所有 media
+         */
+        @Stable
+        @Suppress("DEPRECATION_ERROR")
+        val AllVisible = Default.copy(
+            hideSingleEpisodeForCompleted = false,
         )
     }
 }

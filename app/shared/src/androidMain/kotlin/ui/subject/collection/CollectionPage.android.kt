@@ -7,24 +7,19 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package me.him188.ani.app.ui.subject.collection
 
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.runBlocking
-import me.him188.ani.app.data.models.subject.SelfRatingInfo
-import me.him188.ani.app.tools.caching.mutate
+import me.him188.ani.app.tools.ldc.mutate
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
-
-internal val TestSelfRatingInfo = SelfRatingInfo(
-    score = 7,
-    comment = "test",
-    tags = listOf("My tag"),
-    isPrivate = false,
-)
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 @Preview
@@ -43,10 +38,6 @@ private fun PreviewCollectionPage() {
             }
         }
 
-        WindowInsets.ime
-        CollectionPane(
-            onClickCaches = {},
-            showCacheButton = true,
-        )
+        CollectionPage(WindowInsets(0.dp))
     }
 }

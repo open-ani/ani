@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 @file:Suppress("TestFunctionName")
 
 package me.him188.ani.datasources.api.title
@@ -38,6 +47,14 @@ class TitleParserTest : PatternBasedTitleParserTestSuite() {
         val r = parse("""[Up to 21℃] 怪人的沙拉碗 / Henjin no Salad Bowl - S01E05 (Baha 1920x1080 AVC AAC MP4)""")
         assertEquals("05..05", r.episodeRange.toString())
         assertEquals("CHT", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
+        assertEquals("1080P", r.resolution.toString())
+    }
+
+    @Test
+    fun special() {
+        val r = parse("特典映像/[DBD-Raws] [龙猫] [特典映像] [01][1080P][BDRip][HEVC-10bit][AC3].mkv")
+        assertEquals("SP01..SP01", r.episodeRange.toString())
+        assertEquals("", r.subtitleLanguages.sortedBy { it.id }.joinToString { it.id })
         assertEquals("1080P", r.resolution.toString())
     }
 }

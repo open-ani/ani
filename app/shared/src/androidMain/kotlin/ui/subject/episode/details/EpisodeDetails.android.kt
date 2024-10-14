@@ -7,6 +7,8 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package me.him188.ani.app.ui.subject.episode.details
 
 import androidx.compose.foundation.layout.Column
@@ -23,15 +25,15 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.data.models.subject.SubjectInfo
-import me.him188.ani.app.data.source.media.TestMediaList
-import me.him188.ani.app.data.source.media.cache.EpisodeCacheStatus
-import me.him188.ani.app.data.source.session.AuthState
-import me.him188.ani.app.data.source.session.SessionStatus
+import me.him188.ani.app.domain.media.TestMediaList
+import me.him188.ani.app.domain.media.cache.EpisodeCacheStatus
+import me.him188.ani.app.domain.session.AuthState
+import me.him188.ani.app.domain.session.SessionStatus
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.rememberBackgroundScope
 import me.him188.ani.app.ui.subject.collection.components.EditableSubjectCollectionTypeState
-import me.him188.ani.app.ui.subject.details.components.createTestAiringLabelState
-import me.him188.ani.app.ui.subject.details.components.rememberTestEditableSubjectCollectionTypeState
+import me.him188.ani.app.ui.subject.collection.components.createTestAiringLabelState
+import me.him188.ani.app.ui.subject.collection.components.rememberTestEditableSubjectCollectionTypeState
 import me.him188.ani.app.ui.subject.episode.EpisodePresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.MediaSelectorPresentation
 import me.him188.ani.app.ui.subject.episode.mediaFetch.rememberTestMediaSelectorPresentation

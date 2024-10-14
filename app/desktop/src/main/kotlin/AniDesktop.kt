@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,24 +34,32 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.files.Path
+import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
-import me.him188.ani.app.data.source.UpdateManager
-import me.him188.ani.app.data.source.media.resolver.DesktopWebVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.HttpStreamingVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.LocalFileVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.TorrentVideoSourceResolver
-import me.him188.ani.app.data.source.media.resolver.VideoSourceResolver
-import me.him188.ani.app.data.source.session.SessionManager
+import me.him188.ani.app.domain.media.fetch.MediaSourceManager
+import me.him188.ani.app.domain.media.resolver.DesktopWebVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.HttpStreamingVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
+import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
+import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
+import me.him188.ani.app.domain.update.UpdateManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.AniBuildConfigDesktop
+import me.him188.ani.app.platform.AniCefApp
 import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.ExtraWindowProperties
@@ -67,16 +75,17 @@ import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
 import me.him188.ani.app.platform.window.setTitleBarColor
-import me.him188.ani.app.tools.torrent.DefaultTorrentManager
-import me.him188.ani.app.tools.torrent.TorrentManager
 import me.him188.ani.app.tools.update.DesktopUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
+import me.him188.ani.app.ui.foundation.LocalImageLoader
 import me.him188.ani.app.ui.foundation.LocalWindowState
+import me.him188.ani.app.ui.foundation.getDefaultImageLoader
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.isSystemInFullscreen
 import me.him188.ani.app.ui.foundation.navigation.LocalOnBackPressedDispatcherOwner
 import me.him188.ani.app.ui.foundation.navigation.SkikoOnBackPressedDispatcherOwner
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toast
 import me.him188.ani.app.ui.foundation.widgets.ToastViewModel
@@ -98,7 +107,9 @@ import me.him188.ani.utils.platform.isMacOS
 import org.jetbrains.compose.resources.painterResource
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 import java.io.File
+import kotlin.time.measureTime
 
 
 private val logger by lazy { logger("Ani") }
@@ -163,6 +174,11 @@ object AniDesktop {
             ExtraWindowProperties(),
         )
 
+        val time = measureTime {
+            SingleInstanceChecker.instance.ensureSingleInstance()
+        }
+        logger.info { "Single instance check took $time" }
+
         val coroutineScope = createAppRootCoroutineScope()
 
         coroutineScope.launch(Dispatchers.IO) {
@@ -207,7 +223,12 @@ object AniDesktop {
                                 .map { TorrentVideoSourceResolver(it) }
                                 .plus(LocalFileVideoSourceResolver())
                                 .plus(HttpStreamingVideoSourceResolver())
-                                .plus(DesktopWebVideoSourceResolver()),
+                                .plus(
+                                    DesktopWebVideoSourceResolver(
+                                        context, 
+                                        get<MediaSourceManager>().webVideoMatcherLoader
+                                    )
+                                ),
                         )
                     }
                     single<UpdateInstaller> { DesktopUpdateInstaller.currentOS() }
@@ -217,6 +238,23 @@ object AniDesktop {
             )
         }.startCommonKoinModule(coroutineScope)
 
+        // Initialize CEF application.
+        coroutineScope.launch { 
+            val proxySettings = koin.koin.get<SettingsRepository>()
+                .proxySettings.flow
+                .firstOrNull()
+                ?.default
+                ?.configIfEnabledOrNull
+            
+            AniCefApp.initialize(
+                logDir = File(projectDirectories.dataDir).resolve("logs"),
+                cacheDir = File(projectDirectories.cacheDir).resolve("jcef-cache"),
+                proxyServer = proxySettings?.url,
+                proxyAuthUsername = proxySettings?.authorization?.username,
+                proxyAuthPassword = proxySettings?.authorization?.password
+            )
+        }
+        
         // 预先加载 VLC, https://github.com/open-ani/ani/issues/618
         coroutineScope.launch {
             kotlin.runCatching {
@@ -274,6 +312,7 @@ object AniDesktop {
                     LocalPlatformWindow provides remember(window.windowHandle) {
                         PlatformWindow(
                             windowHandle = window.windowHandle,
+                            windowScope = this,
                         )
                     },
                     LocalOnBackPressedDispatcherOwner provides backPressedDispatcherOwner,
@@ -313,7 +352,19 @@ private fun FrameWindowScope.MainWindowContent(
     aniNavigator: AniNavigator,
 ) {
     AniApp {
-        window.setTitleBarColor(NavigationRailDefaults.ContainerColor)
+        val proxyConfig = KoinPlatform.getKoin().get<SettingsRepository>().proxySettings.flow.map {
+            it.default.configIfEnabledOrNull
+        }
+        val proxy by proxyConfig.collectAsStateWithLifecycle(null)
+
+        val coilContext = LocalPlatformContext.current
+        val imageLoader by remember(coilContext) {
+            derivedStateOf {
+                getDefaultImageLoader(coilContext, proxyConfig = proxy)
+            }
+        }
+
+        window.setTitleBarColor(AniThemeDefaults.navigationContainerColor)
 
         Box(
             Modifier
@@ -337,6 +388,7 @@ private fun FrameWindowScope.MainWindowContent(
                             vm.show(text)
                         }
                     },
+                    LocalImageLoader provides imageLoader,
                 ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
                         AniAppContent(aniNavigator)
