@@ -26,6 +26,9 @@ import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -148,7 +151,18 @@ private fun AniAppContentImpl(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) {
-                MainScene(windowInsets = windowInsetsWithoutTitleBar)
+                val navigationLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+                    currentWindowAdaptiveInfo(),
+                )
+
+                MainScene(
+                    windowInsets =
+                        // macOS 上的手机状态需要有顶部的 insets
+                        if (navigationLayoutType == NavigationSuiteType.NavigationBar) windowInsets
+                        // 横屏状态不需要有
+                        else windowInsetsWithoutTitleBar,
+                    navigationLayoutType = navigationLayoutType,
+                )
             }
             composable(
                 "/bangumi-oauth",
