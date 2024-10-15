@@ -601,7 +601,7 @@ private class EpisodeViewModelImpl(
     )
     
     override val turnstileState = TurnstileState(
-        "${BANGUMI_NEXT_API_HOST}/turnstile?redirect_uri=$${TurnstileState.CALLBACK_INTERCEPTION_PREFIX}"
+        "${BANGUMI_NEXT_API_HOST}/p1/turnstile?redirect_uri=${TurnstileState.CALLBACK_INTERCEPTION_PREFIX}"
     )
 
     override val commentEditorState: CommentEditorState = CommentEditorState(

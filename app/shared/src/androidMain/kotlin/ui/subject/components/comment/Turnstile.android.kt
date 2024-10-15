@@ -12,6 +12,8 @@ package me.him188.ani.app.ui.subject.components.comment
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout.LayoutParams
@@ -40,6 +42,7 @@ import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.widgets.LocalToaster
 import me.him188.ani.app.ui.foundation.widgets.Toaster
+import java.io.InputStream
 
 @Stable
 class AndroidTurnstileState(
@@ -55,8 +58,6 @@ class AndroidTurnstileState(
             value?.restoreOrLoadPage()
         }
 
-
-
     var isDarkTheme: Boolean = false
     // WebView 重新创建的时候会使用此 state bundle 恢复状态
     private var webViewStateBundle: Bundle? = null
@@ -65,6 +66,10 @@ class AndroidTurnstileState(
     
     override val tokenFlow: Flow<String>
         get() = callbackTokenChannel.receiveAsFlow()
+
+    private fun concatUrl(): String {
+        return "${url}&theme=${if (isDarkTheme) "dark" else "light"}"
+    }
     
     @SuppressLint("SetJavaScriptEnabled")
     private fun WebView.applySettings() {
@@ -78,18 +83,24 @@ class AndroidTurnstileState(
         }
         
         webViewClient = object : WebViewClient() {
-            override fun onLoadResource(view: WebView?, url: String?) {
-                if (url == null) return
-                if (!url.startsWith(TurnstileState.CALLBACK_INTERCEPTION_PREFIX)) return
-                val responseToken = CALLBACK_REGEX.matchEntire(url)?.groupValues?.getOrNull(1) ?: return
-                
-                callbackTokenChannel.trySend(responseToken)
+            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                if (request?.url != null) {
+                    val requestUrl = request.url.toString()
+                    if (requestUrl.startsWith(TurnstileState.CALLBACK_INTERCEPTION_PREFIX)) {
+                        val responseToken = CALLBACK_REGEX.matchEntire(requestUrl)?.groupValues?.getOrNull(1)
+                        if (responseToken != null) {
+                            callbackTokenChannel.trySend(responseToken)
+                            return WebResourceResponse("text/plain", "utf-8", createEmptyInputStream())
+                        }
+                    }
+                }
+                return super.shouldInterceptRequest(view, request)
             }
         }
     }
     
     private fun WebView.reloadPage() {
-        loadUrl(this@AndroidTurnstileState.url)
+        loadUrl(concatUrl())
     }
     
     private fun WebView.restoreOrLoadPage() {
@@ -103,6 +114,12 @@ class AndroidTurnstileState(
 
     override fun reload() {
         webView?.reloadPage()
+    }
+    
+    private fun createEmptyInputStream(): InputStream {
+        return object : InputStream() {
+            override fun read(): Int = -1
+        }
     }
     
     companion object {
