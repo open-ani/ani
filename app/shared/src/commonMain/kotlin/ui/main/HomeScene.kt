@@ -87,6 +87,9 @@ import me.him188.ani.utils.platform.isAndroid
 fun MainScene(
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets, // Compose for Desktop 目前不会考虑这个
+    navigationLayoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+        currentWindowAdaptiveInfo(),
+    ),
 ) {
     if (LocalPlatform.current.isAndroid()) {
         val context = LocalContext.current
@@ -96,13 +99,16 @@ fun MainScene(
         }
     }
 
-    MainSceneContent(windowInsets, modifier)
+    MainSceneContent(windowInsets, modifier, navigationLayoutType)
 }
 
 @Composable
 private fun MainSceneContent(
     windowInsets: WindowInsets,
     modifier: Modifier = Modifier,
+    navigationLayoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+        currentWindowAdaptiveInfo(),
+    ),
 ) {
     val pagerState = rememberPagerState(1) { 4 }
     val uiScope = rememberCoroutineScope()
@@ -128,7 +134,6 @@ private fun MainSceneContent(
             }
         },
     ) {
-        val layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo())
         AniNavigationSuiteLayout(
             navigationSuite = {
                 AniNavigationSuite(
@@ -189,12 +194,12 @@ private fun MainSceneContent(
                 }
             },
             modifier,
-            layoutType = layoutType,
+            layoutType = navigationLayoutType,
             containerColor = AniThemeDefaults.navigationContainerColor,
         ) {
             val navigator by rememberUpdatedState(LocalNavigator.current)
             HorizontalPager(pagerState, Modifier.fillMaxSize(), userScrollEnabled = false) { pageIndex ->
-                TabContent(layoutType = layoutType) {
+                TabContent(layoutType = navigationLayoutType) {
                     when (pageIndex) {
                         0 -> {
                             ExplorationPage(

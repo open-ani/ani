@@ -26,7 +26,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -57,6 +56,7 @@ import me.him188.ani.app.domain.media.cache.engine.sum
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.torrent.api.files.averageRate
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.cache.components.CacheEpisodePaused
 import me.him188.ani.app.ui.cache.components.CacheEpisodeState
 import me.him188.ani.app.ui.cache.components.CacheGroupCard
@@ -264,7 +264,7 @@ fun CacheManagementPage(
         modifier,
         topBar = {
             AniTopAppBar(
-                title = { Text("缓存管理") },
+                title = { AniTopAppBarDefaults.Title("缓存管理") },
                 windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                 navigationIcon = {
                     if (showBack) {
