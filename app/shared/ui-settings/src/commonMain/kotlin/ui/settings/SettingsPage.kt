@@ -64,6 +64,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
@@ -182,7 +183,7 @@ fun SettingsPage(
             }
         },
         detailPaneTitle = { currentTab ->
-            Text(getName(currentTab))
+            AniTopAppBarDefaults.Title(getName(currentTab))
         },
         detailPaneContent = { currentTab ->
             val tabModifier = Modifier
@@ -264,7 +265,7 @@ internal fun SettingsPageLayout(
                 Column {
                     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
                     AniTopAppBar(
-                        title = { Text("设置") },
+                        title = { AniTopAppBarDefaults.Title("设置") },
                         windowInsets = WindowInsets.Zero,
                         navigationIcon = {
                             if (showNavigationIcon) {

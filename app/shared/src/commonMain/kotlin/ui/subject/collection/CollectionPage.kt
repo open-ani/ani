@@ -73,6 +73,7 @@ import me.him188.ani.app.domain.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
@@ -255,7 +256,7 @@ private fun CollectionPageLayout(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 AniTopAppBar(
-                    title = { Text("追番") },
+                    title = { AniTopAppBarDefaults.Title("追番") },
                     windowInsets = windowInsets.only(WindowInsetsSides.Top),
                     modifier = Modifier,
                     actions = {

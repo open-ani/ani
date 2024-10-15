@@ -24,12 +24,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -50,6 +52,8 @@ import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
  * Design: [NavigationSuiteScaffold on Figma](https://www.figma.com/design/LET1n9mmDa6npDTIlUuJjU/Main?node-id=15-605&t=gmFJS6LFQudIIXfK-4)
  *
  * 默认颜色为 [AniThemeDefaults.topAppBarColors]
+ *
+ * @param title use [AniTopAppBarDefaults.Title]
  *
  * @see TopAppBar
  */
@@ -104,6 +108,14 @@ fun AniTopAppBar(
             colors,
             scrollBehavior,
         )
+    }
+}
+
+@Stable
+object AniTopAppBarDefaults {
+    @Composable
+    fun Title(text: String) {
+        Text(text, softWrap = false, maxLines = 1)
     }
 }
 

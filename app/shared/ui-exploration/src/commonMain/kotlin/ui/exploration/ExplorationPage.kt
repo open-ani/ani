@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.repository.TrendsRepository
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.adaptive.NavTitleHeader
 import me.him188.ani.app.ui.exploration.search.SearchViewModel
 import me.him188.ani.app.ui.exploration.search.SubjectPreviewColumn
@@ -115,7 +116,7 @@ fun ExplorationPage(
         containerColor = AniThemeDefaults.pageContentBackgroundColor,
         topBar = {
             AniTopAppBar(
-                title = { Text("探索") },
+                title = { AniTopAppBarDefaults.Title("探索") },
                 windowInsets = contentWindowInsets,
                 searchIconButton = {
                     IconButton(
