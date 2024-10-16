@@ -9,13 +9,11 @@
 
 @file:OptIn(TestOnly::class)
 
-package me.him188.ani.app.ui.exploration.trending
+package me.him188.ani.app.ui.exploration.trends
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
 import me.him188.ani.app.ui.foundation.stateOf
@@ -38,11 +36,4 @@ private fun PreviewTrendingSubjectsCarouselImpl() {
         },
         {},
     )
-}
-
-@Composable
-private fun checkWindowWidthSizeClass(expected: WindowWidthSizeClass) {
-    check(currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == expected) {
-        currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
-    }
 }

@@ -50,8 +50,8 @@ import me.him188.ani.app.ui.adaptive.NavTitleHeader
 import me.him188.ani.app.ui.exploration.search.SearchViewModel
 import me.him188.ani.app.ui.exploration.search.SubjectPreviewColumn
 import me.him188.ani.app.ui.exploration.search.SubjectSearchBar
-import me.him188.ani.app.ui.exploration.trending.TrendingSubjectsCarousel
-import me.him188.ani.app.ui.exploration.trending.TrendingSubjectsState
+import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsCarousel
+import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler

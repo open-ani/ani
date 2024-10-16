@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.ExplorationPageState
-import me.him188.ani.app.ui.exploration.trending.createTestTrendingSubjectsState
+import me.him188.ani.app.ui.exploration.trends.createTestTrendingSubjectsState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
 import me.him188.ani.utils.platform.annotations.TestOnly
