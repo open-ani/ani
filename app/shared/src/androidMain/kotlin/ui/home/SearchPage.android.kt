@@ -13,12 +13,16 @@ package me.him188.ani.app.ui.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import me.him188.ani.app.domain.session.TestUserInfo
+import me.him188.ani.app.domain.session.createTestAuthState
 import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.ExplorationPageState
 import me.him188.ani.app.ui.exploration.trends.createTestTrendingSubjectsState
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
+import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
@@ -26,10 +30,16 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 @PreviewLightDark
 internal fun PreviewExplorationPage() {
     ProvideCompositionLocalsForPreview {
+        val scope = rememberCoroutineScope()
         ExplorationPage(
             remember {
-                ExplorationPageState(createTestTrendingSubjectsState())
+                ExplorationPageState(
+                    authState = createTestAuthState(scope),
+                    selfInfoState = stateOf(TestUserInfo),
+                    createTestTrendingSubjectsState(),
+                )
             },
+            {},
         )
     }
 }

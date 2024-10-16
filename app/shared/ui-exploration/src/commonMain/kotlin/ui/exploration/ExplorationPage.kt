@@ -23,136 +23,84 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
-import me.him188.ani.app.data.repository.TrendsRepository
+import me.him188.ani.app.data.models.UserInfo
+import me.him188.ani.app.domain.session.AuthState
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.adaptive.NavTitleHeader
-import me.him188.ani.app.ui.exploration.search.SearchViewModel
-import me.him188.ani.app.ui.exploration.search.SubjectPreviewColumn
-import me.him188.ani.app.ui.exploration.search.SubjectSearchBar
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsCarousel
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
-import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
-import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.session.SelfAvatar
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.utils.coroutines.retryUntilSuccess
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-class ExplorationPageViewModel : AbstractViewModel(), KoinComponent {
-    private val trendsRepository: TrendsRepository by inject()
-
-    val state: ExplorationPageState = ExplorationPageState(
-        TrendingSubjectsState(
-            suspend { trendsRepository.getTrending() }
-                .asFlow()
-                .map { it.getOrNull() }
-                .retryUntilSuccess()
-                .map { it?.subjects }
-                .produceState(null),
-        ),
-    )
-}
-
-@Composable
-fun ExplorationPage(
-    modifier: Modifier = Modifier,
-    vm: ExplorationPageViewModel = viewModel<ExplorationPageViewModel> { ExplorationPageViewModel() },
-    searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+@Stable
+class ExplorationPageState(
+    val authState: AuthState,
+    selfInfoState: State<UserInfo?>,
+    val trendingSubjectsState: TrendingSubjectsState,
 ) {
-    ExplorationPage(vm.state, modifier, searchBarFocusRequester, contentWindowInsets)
+    val selfInfo by selfInfoState
 }
 
 @Composable
 fun ExplorationPage(
     state: ExplorationPageState,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier,
-    searchBarFocusRequester: FocusRequester = remember { FocusRequester() },
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
-    val searchViewModel = viewModel { SearchViewModel() } // TODO remove
-    val snackBarHostState = remember { SnackbarHostState() }
-    val layoutDirection = LocalLayoutDirection.current
-
-    val searchTag by searchViewModel.searchTags.collectAsStateWithLifecycle()
-    val showDeleteTagTip = searchViewModel.oneshotActionConfig.deleteSearchTagTip
-    val searchHistory by searchViewModel.searchHistories.collectAsStateWithLifecycle()
-    val nsfw by searchViewModel.nsfw
-    val airDate by searchViewModel.airDate.collectAsStateWithLifecycle()
-    val rating by searchViewModel.rating.collectAsStateWithLifecycle()
-
-    var isEditingSearchTags by remember { mutableStateOf(false) }
-
-    BackHandler(isEditingSearchTags) {
-        isEditingSearchTags = false
-    }
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackBarHostState) },
         containerColor = AniThemeDefaults.pageContentBackgroundColor,
         topBar = {
             AniTopAppBar(
                 title = { AniTopAppBarDefaults.Title("探索") },
                 windowInsets = contentWindowInsets,
+                Modifier.fillMaxWidth(),
                 searchIconButton = {
-                    IconButton(
-                        {
-                            //TODO
-                        },
-                    ) {
+                    IconButton(onSearch) {
                         Icon(Icons.Rounded.Search, "搜索")
                     }
                 },
                 searchBar = {
-                    SubjectSearchBar(
-                        initialActive = searchViewModel.searchActive,
-                        initialSearchText = searchViewModel.editingQuery,
-                        editingTagMode = isEditingSearchTags,
-                        searchTag = searchTag,
-                        showDeleteTagTip = showDeleteTagTip,
-                        searchHistory = searchHistory,
-                        contentPadding = PaddingValues(0.dp),
-                        modifier = Modifier.fillMaxWidth().focusRequester(searchBarFocusRequester),
-                        onActiveChange = { active -> searchViewModel.searchActive = active },
-                        onSearchFilterEvent = { event -> searchViewModel.handleSearchFilterEvent(event) },
-                        onDeleteHistory = { historyId -> searchViewModel.deleteSearchHistory(historyId) },
-                        onStartEditingTagMode = { isEditingSearchTags = true },
-                        onSearch = { query, fromHistory ->
-                            searchViewModel.editingQuery = query
-                            if (!fromHistory && searchHistory.none { it.content == query }) {
-                                searchViewModel.pushSearchHistory(query)
-                            }
-                            searchViewModel.search(query)
+                    SearchBar(
+                        inputField = {
+                            var query by rememberSaveable { mutableStateOf("") }
+                            SearchBarDefaults.InputField(
+                                query = query,
+                                onQueryChange = { query = it },
+                                onSearch = {
+                                    onSearch()
+                                },
+                                expanded = false,
+                                onExpandedChange = {
+                                    onSearch()
+                                },
+                                placeholder = { Text("搜索") },
+                                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                            )
                         },
-                        windowInsets = contentWindowInsets,
-                    )
+                        expanded = false,
+                        onExpandedChange = {},
+                    ) {}
                 },
                 avatar = {
-                    SelfAvatar(searchViewModel.authState, searchViewModel.selfInfo)
+                    SelfAvatar(state.authState, state.selfInfo)
                 },
             )
         },
@@ -162,36 +110,20 @@ fun ExplorationPage(
         val horizontalContentPadding =
             PaddingValues(horizontal = horizontalPadding)
 
-        if (searchViewModel.searchActive && searchViewModel.editingQuery.isNotBlank()) {
-            SubjectPreviewColumn(
-                searchViewModel.previewListState,
-                contentPadding = topBarPadding,
+        Column(Modifier.padding(topBarPadding)) {
+            NavTitleHeader(
+                title = { Text("最高热度") },
+                contentPadding = horizontalContentPadding,
             )
-        } else {
-            Column(Modifier.padding(topBarPadding)) {
-                NavTitleHeader(
-                    title = { Text("最高热度") },
-                    contentPadding = horizontalContentPadding,
-                )
 
-                val navigator = LocalNavigator.current
-                TrendingSubjectsCarousel(
-                    state.trendingSubjectsState,
-                    onClick = {
-                        navigator.navigateSubjectDetails(it.bangumiId)
-                    },
-                    contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 8.dp),
-                )
-            }
+            val navigator = LocalNavigator.current
+            TrendingSubjectsCarousel(
+                state.trendingSubjectsState,
+                onClick = {
+                    navigator.navigateSubjectDetails(it.bangumiId)
+                },
+                contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 8.dp),
+            )
         }
     }
 }
-
-@Stable
-class ExplorationPageState(
-    val trendingSubjectsState: TrendingSubjectsState
-)
-
-
-//@Composable
-//internal expect fun PreviewHomePage()
