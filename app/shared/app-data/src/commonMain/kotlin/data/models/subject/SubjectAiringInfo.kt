@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.models.subject
 
 import androidx.compose.runtime.Immutable
@@ -117,6 +126,10 @@ data class SubjectAiringInfo(
 @Stable
 val SubjectAiringInfo.isOnAir: Boolean
     get() = kind == SubjectAiringKind.ON_AIR
+
+@Stable
+val SubjectAiringInfo.hasStarted: Boolean
+    get() = isOnAir || isCompleted
 
 /**
  * 即将开播 (已经播出了第一集, 但还未播出最后一集)
