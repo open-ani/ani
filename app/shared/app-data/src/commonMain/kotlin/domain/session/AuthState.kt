@@ -13,11 +13,14 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -59,3 +62,29 @@ fun <T> T.launchAuthorize(navigator: AniNavigator)
         skipOnGuest = false,
     )  //  use SessionManager's lifecycle
 }
+
+@TestOnly
+fun createTestAuthState(
+    backgroundScope: CoroutineScope,
+    value: SessionStatus = SessionStatus.Verified("test", TestUserInfo),
+): AuthState {
+    return AuthState(
+        mutableStateOf(value),
+        launchAuthorize = {},
+        retry = {},
+        backgroundScope,
+    )
+}
+
+@Stable
+@TestOnly
+val TestUserInfo
+    get() = UserInfo(
+        id = 1,
+        username = "Tester",
+        nickname = "Tester",
+    )
+
+@Stable
+@TestOnly
+val TestSelfInfo get() = TestUserInfo
