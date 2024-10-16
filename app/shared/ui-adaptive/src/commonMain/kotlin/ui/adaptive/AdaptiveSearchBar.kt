@@ -10,7 +10,6 @@
 package me.him188.ani.app.ui.adaptive
 
 import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -22,12 +21,8 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.ui.foundation.layout.compareTo
 import kotlin.jvm.JvmField
@@ -87,35 +82,6 @@ interface AdaptiveSearchLayoutScope : SharedTransitionScope {
 //
 //    @Composable
 //    fun SearchBar()
-}
-
-@Composable
-fun AdaptiveSearchLayout(
-    initialRoute: AdaptiveSearchLayoutRoute = AdaptiveSearchLayoutRoute.List,
-    onRouteChange: (AdaptiveSearchLayoutRoute) -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable AdaptiveSearchLayoutScope.() -> Unit,
-) {
-    SharedTransitionLayout {
-        val sharedTransitionScope = this@SharedTransitionLayout
-        NavHost(
-            rememberNavController(),
-            startDestination = initialRoute,
-            modifier,
-        ) {
-            composable(AdaptiveSearchLayoutRoute.List.value) {
-                val scope = remember(sharedTransitionScope, this@composable) {
-                    object : AdaptiveSearchLayoutScope, SharedTransitionScope by sharedTransitionScope {
-                        override val animatedContentScope: AnimatedContentScope get() = this@composable
-                    }
-                }
-                content(scope)
-            }
-            composable(AdaptiveSearchLayoutRoute.Search.value) {
-
-            }
-        }
-    }
 }
 
 @JvmInline
