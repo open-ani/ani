@@ -18,12 +18,14 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
@@ -65,8 +67,8 @@ fun AniTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     avatar: @Composable () -> Unit = {},
-    searchIconButton: @Composable () -> Unit = {},
-    searchBar: @Composable () -> Unit = {},
+    searchIconButton: @Composable (() -> Unit)? = null,
+    searchBar: @Composable (() -> Unit)? = null,
     expandedHeight: Dp = TopAppBarDefaults.TopAppBarExpandedHeight,
     colors: TopAppBarColors = AniThemeDefaults.topAppBarColors(),
     scrollBehavior: TopAppBarScrollBehavior? = null,
@@ -115,16 +117,16 @@ fun AniTopAppBar(
 object AniTopAppBarDefaults {
     @Composable
     fun Title(text: String) {
-        Text(text, softWrap = false, maxLines = 1)
+        Text(text, Modifier.width(IntrinsicSize.Max), softWrap = false, maxLines = 1)
     }
 }
 
 @Composable
 private fun AdaptiveSearchBar(
     windowSizeClass: WindowSizeClass,
-    searchIconButton: @Composable () -> Unit,
+    searchIconButton: @Composable (() -> Unit)?,
     modifier: Modifier = Modifier,
-    searchBar: @Composable () -> Unit,
+    searchBar: @Composable (() -> Unit)?,
 ) {
     BoxWithConstraints(modifier) {
         AnimatedContent(
@@ -134,18 +136,28 @@ private fun AdaptiveSearchBar(
             contentAlignment = Alignment.CenterEnd,
         ) { size ->
             when (size) {
-                SearchBarSize.ICON_BUTTON -> searchIconButton()
-                SearchBarSize.MEDIUM -> Box(
-                    Modifier.sizeIn(minWidth = 240.dp, maxWidth = 360.dp),
-                ) {
-                    searchBar()
+                SearchBarSize.ICON_BUTTON -> if (searchIconButton != null) {
+                    searchIconButton()
                 }
 
-                SearchBarSize.EXPANDED -> Box(
-                    Modifier.sizeIn(minWidth = 360.dp, maxWidth = 480.dp),
-                ) {
-                    searchBar()
-                }
+                SearchBarSize.MEDIUM ->
+                    if (searchBar != null) {
+                        Box(
+                            Modifier.sizeIn(minWidth = 240.dp, maxWidth = 360.dp),
+                        ) {
+                            searchBar()
+                        }
+                    }
+
+                SearchBarSize.EXPANDED ->
+                    if (searchBar != null) {
+                        Box(
+                            Modifier.sizeIn(minWidth = 360.dp, maxWidth = 480.dp),
+                        ) {
+
+                            searchBar()
+                        }
+                    }
             }
         }
     }
