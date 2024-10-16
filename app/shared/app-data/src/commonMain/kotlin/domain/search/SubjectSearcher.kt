@@ -9,22 +9,40 @@
 
 package me.him188.ani.app.domain.search
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import me.him188.ani.app.data.models.ApiResponse
+import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.tools.ldc.LazyDataCache
 import me.him188.ani.app.ui.foundation.BackgroundScope
 import me.him188.ani.app.ui.foundation.HasBackgroundScope
 import kotlin.coroutines.CoroutineContext
 
-class SubjectSearcher(
+interface SubjectSearcher {
+    /**
+     * 唯一 ID, 每次调用 [search] 时增加
+     */
+    val searchId: StateFlow<Int>
+
+    val list: Flow<List<SubjectInfo>>
+    val hasMore: Flow<Boolean>
+
+    suspend fun requestMore(): Boolean?
+    fun clear()
+    fun search(query: SubjectSearchQuery)
+}
+
+class SubjectSearcherImpl(
     private val subjectProvider: SubjectProvider,
     parentCoroutineContext: CoroutineContext,
-) : HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
+) : SubjectSearcher, HasBackgroundScope by BackgroundScope(parentCoroutineContext) {
     private val currentQuery: MutableStateFlow<SubjectSearchQuery?> = MutableStateFlow(null)
 
     private val ldc = currentQuery.map { query ->
@@ -35,18 +53,20 @@ class SubjectSearcher(
             debugName = "SubjectSearcher.ldc",
         )
     }.shareInBackground(started = SharingStarted.Lazily)
+    override val searchId: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    val list = ldc.flatMapLatest { it?.cachedDataFlow ?: flowOf(emptyList()) }
-    val hasMore = ldc.flatMapLatest { it?.isCompleted ?: flowOf(true) }
+    override val list: Flow<List<SubjectInfo>> = ldc.flatMapLatest { it?.cachedDataFlow ?: flowOf(emptyList()) }
+    override val hasMore: Flow<Boolean> = ldc.flatMapLatest { it?.isCompleted ?: flowOf(true) }
         .map { !it }
 
-    suspend fun requestMore() = ldc.first()?.requestMore()
+    override suspend fun requestMore() = ldc.first()?.requestMore()
 
-    fun clear() {
+    override fun clear() {
         currentQuery.value = null
     }
 
-    fun search(query: SubjectSearchQuery) {
+    override fun search(query: SubjectSearchQuery) {
+        searchId.update { it + 1 }
         currentQuery.value = query
     }
 }

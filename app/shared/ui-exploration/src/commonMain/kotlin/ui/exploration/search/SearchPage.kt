@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.subject.SubjectManager
@@ -49,7 +50,6 @@ import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-
 
 @Composable
 fun SearchPage(
@@ -130,31 +130,10 @@ fun SearchPageResultColumn(
 }
 
 @Stable
-class SearchPageViewModel : AbstractViewModel(), KoinComponent {
-    private val subjectProvider: SubjectProvider by inject()
-    private val subjectManager: SubjectManager by inject()
-
-    private val searcher = SubjectSearcher(subjectProvider, backgroundScope.coroutineContext)
-    private val queryState = mutableStateOf("")
-
-    val state = SearchPageState(
-        searchHistoryState = mutableStateOf(emptyList()),
-        suggestionsState = mutableStateOf(emptyList()),
-        onSearch = { searcher.search(SubjectSearchQuery(keyword = queryState.value)) },
-        onRequestPlay = { info ->
-            subjectManager.subjectCollectionFlow(info.id).first().episodes.firstOrNull()?.let {
-                SearchPageState.EpisodeTarget(info.id, it.episodeInfo.id)
-            }
-        },
-        queryState = queryState,
-        backgroundScope,
-    )
-}
-
-@Stable
 class SearchPageState(
     searchHistoryState: State<List<String>>,
     suggestionsState: State<List<String>>,
+    searchResultItemsState: State<List<SubjectPreviewItemInfo>>,
     val onSearch: () -> Unit,
     val onRequestPlay: suspend (SubjectPreviewItemInfo) -> EpisodeTarget?,
     queryState: MutableState<String> = mutableStateOf(""),
@@ -173,7 +152,7 @@ class SearchPageState(
         queryState = queryState,
     )
 
-    val searchResultItems: List<SubjectPreviewItemInfo> = emptyList()
+    val searchResultItems: List<SubjectPreviewItemInfo> by searchResultItemsState
     var selectedItemIndex: Int by mutableIntStateOf(0)
     val selectedItem by derivedStateOf { searchResultItems.getOrNull(selectedItemIndex) }
 
@@ -189,6 +168,27 @@ class SearchPageState(
     }
 }
 
+
+fun createTestSearchPageState(backgroundScope: CoroutineScope): SearchPageState {
+    val results = mutableStateOf<List<SubjectPreviewItemInfo>>(emptyList())
+    return SearchPageState(
+        searchHistoryState = mutableStateOf(emptyList()),
+        suggestionsState = mutableStateOf(emptyList()),
+        searchResultItemsState = results,
+        onSearch = {
+            backgroundScope.launch {
+                delay(1500)
+                results.value = listOf()
+            }
+        },
+        onRequestPlay = { info ->
+            delay(3000)
+            SearchPageState.EpisodeTarget(1, 2)
+        },
+        queryState = mutableStateOf(""),
+        backgroundScope = backgroundScope,
+    )
+}
 
 @Composable
 fun SearchPageLayout(

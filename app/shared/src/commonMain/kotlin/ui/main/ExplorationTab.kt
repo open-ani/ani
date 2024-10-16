@@ -22,18 +22,23 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.him188.ani.app.data.models.subject.SubjectManager
+import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.data.repository.TrendsRepository
 import me.him188.ani.app.domain.search.SubjectProvider
 import me.him188.ani.app.domain.search.SubjectSearchQuery
-import me.him188.ani.app.domain.search.SubjectSearcher
+import me.him188.ani.app.domain.search.SubjectSearcherImpl
 import me.him188.ani.app.domain.session.OpaqueSession
 import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.domain.session.userInfo
@@ -41,6 +46,7 @@ import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.ExplorationPageState
 import me.him188.ani.app.ui.exploration.search.SearchPage
 import me.him188.ani.app.ui.exploration.search.SearchPageState
+import me.him188.ani.app.ui.exploration.search.SubjectPreviewItemInfo
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.AuthState
@@ -56,6 +62,7 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
     private val trendsRepository: TrendsRepository by inject()
     private val sessionManager: SessionManager by inject()
     private val searchHistoryRepository: SubjectSearchRepository by inject()
+    private val bangumiRelatedCharactersRepository: BangumiRelatedCharactersRepository by inject()
 
     private val authState = AuthState()
 
@@ -65,7 +72,7 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
     private val subjectProvider: SubjectProvider by inject()
     private val subjectManager: SubjectManager by inject()
 
-    private val searcher = SubjectSearcher(subjectProvider, backgroundScope.coroutineContext)
+    private val searcher = SubjectSearcherImpl(subjectProvider, backgroundScope.coroutineContext)
     private val queryState = mutableStateOf("")
 
     val explorationPageState: ExplorationPageState = ExplorationPageState(
@@ -81,10 +88,26 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
         ),
     )
 
+    private val searchResultItemsFlow = searcher.searchId.transformLatest {
+//        val jobs = mutableMapOf<Int, Deferred<List<RelatedPersonInfo>>>()
+        coroutineScope {
+            emitAll(
+                combine(searcher.list) { (searchResultItems) ->
+                    searchResultItems.map {
+//                        jobs.getOrPut(it.id) {
+//                            async { bangumiRelatedCharactersRepository.relatedCharactersFlow(it.id).first() }
+//                        }
+                        SubjectPreviewItemInfo.compute(it, null, null)
+                    }
+                },
+            )
+        }
+    }
     val searchPageState: SearchPageState = SearchPageState(
         searchHistoryState = searchHistoryRepository.getHistoryFlow().produceState(emptyList()),
         suggestionsState = searchHistoryRepository.getHistoryFlow()
             .produceState(emptyList()),// todo: suggestions
+        searchResultItemsState = searchResultItemsFlow.produceState(emptyList()),
         onSearch = { searcher.search(SubjectSearchQuery(keyword = queryState.value)) },
         onRequestPlay = { info ->
             subjectManager.subjectCollectionFlow(info.id).first().episodes.firstOrNull()?.let {
