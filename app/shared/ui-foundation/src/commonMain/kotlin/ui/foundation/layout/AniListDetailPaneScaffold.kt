@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 
 
 /**
@@ -44,6 +45,9 @@ fun <T> AniListDetailPaneScaffold(
     modifier: Modifier = Modifier,
     layoutParameters: ListDetailLayoutParameters = ListDetailLayoutParameters.calculate(navigator.scaffoldDirective),
 ) {
+    BackHandler(navigator.canNavigateBack()) {
+        navigator.navigateBack()
+    }
     ListDetailPaneScaffold(
         navigator.scaffoldDirective,
         navigator.scaffoldValue,
