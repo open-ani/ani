@@ -16,7 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.CarouselItemDefaults.Text
 import me.him188.ani.app.ui.foundation.layout.Zero
+import me.him188.ani.utils.platform.annotations.TestOnly
 
+@OptIn(TestOnly::class)
 @Composable
 @Preview
 fun PreviewSearchPage() = ProvideFoundationCompositionLocalsForPreview {

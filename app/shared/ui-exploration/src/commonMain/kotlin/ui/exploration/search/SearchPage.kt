@@ -34,22 +34,15 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import me.him188.ani.app.data.models.subject.SubjectManager
-import me.him188.ani.app.domain.search.SubjectProvider
-import me.him188.ani.app.domain.search.SubjectSearchQuery
-import me.him188.ani.app.domain.search.SubjectSearcher
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
-import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 fun SearchPage(
@@ -168,7 +161,7 @@ class SearchPageState(
     }
 }
 
-
+@TestOnly
 fun createTestSearchPageState(backgroundScope: CoroutineScope): SearchPageState {
     val results = mutableStateOf<List<SubjectPreviewItemInfo>>(emptyList())
     return SearchPageState(
