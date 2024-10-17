@@ -85,12 +85,14 @@ object AniCefApp {
         jcefConfig.cefSettings.log_file = logDir
             .resolve("cef-${dateFormat.format(Date(currentTimeMillis()))}.log")
             .absolutePath
-        jcefConfig.cefSettings.windowless_rendering_enabled = true
+        jcefConfig.cefSettings.windowless_rendering_enabled = false
+        jcefConfig.cefSettings.no_sandbox = true
         jcefConfig.cefSettings.cache_path = cacheDir.absolutePath
 
         jcefConfig.appArgsAsList.apply {
             add("--mute-audio")
             add("--force-dark-mode")
+            add("--enable-chrome-runtime")
 
             proxyServer?.let { add("--proxy-server=${it}") }
         }

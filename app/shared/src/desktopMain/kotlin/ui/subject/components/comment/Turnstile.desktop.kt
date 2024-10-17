@@ -10,6 +10,8 @@
 package me.him188.ani.app.ui.subject.components.comment
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -30,14 +33,13 @@ import org.cef.browser.CefRequestContext
 import org.cef.handler.CefResourceRequestHandlerAdapter
 import org.cef.network.CefRequest
 import java.awt.Component
-import kotlin.properties.Delegates
 
 @Stable
 class DesktopTurnstileState(
     override val url: String
 ) : TurnstileState {
-    private var client: CefClient by Delegates.notNull()
-    private var browser: CefBrowser by Delegates.notNull()
+    private var client: CefClient? = null
+    private var browser: CefBrowser? = null
 
     var isDarkTheme: Boolean = false
 
@@ -52,9 +54,12 @@ class DesktopTurnstileState(
     
     fun initializeBrowser(): Component = runBlocking { 
         AniCefApp.suspendCoroutineOnCefContext {
-            client = AniCefApp.createClient()
+            val newClient = AniCefApp.createClient()
                 ?: throw IllegalStateException("AniCefApp should be initialized.")
-            browser = client.createBrowser(
+            
+            client = newClient
+            
+            val newBrowser = newClient.createBrowser(
                 concatUrl(),
                 CefRendering.DEFAULT,
                 true,
@@ -77,22 +82,22 @@ class DesktopTurnstileState(
                 },
             )
             
-            browser.setCloseAllowed()
-            
-            browser.uiComponent
+            browser = newBrowser
+            newBrowser.setCloseAllowed()
+            newBrowser.uiComponent.apply {  }
         }
     }
 
     override fun reload() {
         AniCefApp.runOnCefContext { 
-            browser.loadURL(concatUrl())
+            browser?.loadURL(concatUrl())
         }
     }
     
     fun dispose() {
         AniCefApp.blockOnCefContext {
-            browser.close(true)
-            client.dispose()
+            browser?.close(true)
+            client?.dispose()
         }
     }
 
@@ -120,14 +125,13 @@ actual fun ActualTurnstile(
             state.isDarkTheme = isDark
             state.initializeBrowser()
         },
-        update = {
-            state.isDarkTheme = isDark
-            state.reload()
+        update = { component ->
+            
         },
-        modifier = modifier
+        modifier = modifier.fillMaxWidth().height(100.dp)
     )
     
-    DisposableEffect(state.url) {
+    DisposableEffect(Unit) {
         onDispose { 
             state.dispose()
         }
