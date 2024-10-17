@@ -21,28 +21,16 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.tools.MonoTasker
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
-import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Composable
 fun SearchPage(
@@ -101,7 +89,7 @@ fun SearchPage(
 }
 
 @Composable
-fun SearchPageResultColumn(
+internal fun SearchPageResultColumn(
     onViewDetails: (index: Int) -> Unit,
     onPlay: (info: SubjectPreviewItemInfo) -> Unit,
     list: List<SubjectPreviewItemInfo>,
@@ -122,69 +110,9 @@ fun SearchPageResultColumn(
     }
 }
 
-@Stable
-class SearchPageState(
-    searchHistoryState: State<List<String>>,
-    suggestionsState: State<List<String>>,
-    searchResultItemsState: State<List<SubjectPreviewItemInfo>>,
-    val onSearch: () -> Unit,
-    val onRequestPlay: suspend (SubjectPreviewItemInfo) -> EpisodeTarget?,
-    queryState: MutableState<String> = mutableStateOf(""),
-    backgroundScope: CoroutineScope,
-) {
-    // to navigate to episode page
-    data class EpisodeTarget(
-        val subjectId: Int,
-        val episodeId: Int,
-    )
-
-    val query by queryState
-    val suggestionSearchBarState = SuggestionSearchBarState(
-        historyState = searchHistoryState,
-        suggestionsState = suggestionsState,
-        queryState = queryState,
-    )
-
-    val searchResultItems: List<SubjectPreviewItemInfo> by searchResultItemsState
-    var selectedItemIndex: Int by mutableIntStateOf(0)
-    val selectedItem by derivedStateOf { searchResultItems.getOrNull(selectedItemIndex) }
-
-    val playTasker = MonoTasker(backgroundScope)
-    var playingItem: SubjectPreviewItemInfo? by mutableStateOf(null)
-        private set
-
-    suspend fun requestPlay(info: SubjectPreviewItemInfo): EpisodeTarget? {
-        playingItem = info
-        return playTasker.async {
-            onRequestPlay(info)
-        }.await()
-    }
-}
-
-@TestOnly
-fun createTestSearchPageState(backgroundScope: CoroutineScope): SearchPageState {
-    val results = mutableStateOf<List<SubjectPreviewItemInfo>>(emptyList())
-    return SearchPageState(
-        searchHistoryState = mutableStateOf(emptyList()),
-        suggestionsState = mutableStateOf(emptyList()),
-        searchResultItemsState = results,
-        onSearch = {
-            backgroundScope.launch {
-                delay(1500)
-                results.value = listOf()
-            }
-        },
-        onRequestPlay = { info ->
-            delay(3000)
-            SearchPageState.EpisodeTarget(1, 2)
-        },
-        queryState = mutableStateOf(""),
-        backgroundScope = backgroundScope,
-    )
-}
 
 @Composable
-fun SearchPageLayout(
+internal fun SearchPageLayout(
     navigator: ThreePaneScaffoldNavigator<*>,
     windowInsets: WindowInsets,
     searchBar: @Composable () -> Unit,

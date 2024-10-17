@@ -10,22 +10,28 @@
 package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.CarouselItemDefaults.Text
 import me.him188.ani.app.ui.foundation.layout.Zero
+import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @OptIn(TestOnly::class)
 @Composable
+@PreviewSizeClasses
 @Preview
 fun PreviewSearchPage() = ProvideFoundationCompositionLocalsForPreview {
     val scope = rememberCoroutineScope()
-    SearchPage(
-        createTestSearchPageState(scope),
-        WindowInsets.Zero,
-        { Text("Hello, World!") },
-    )
+    Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest) {
+        SearchPage(
+            createTestSearchPageState(scope),
+            WindowInsets.Zero,
+            { Text("Hello, World!") },
+        )
+    }
 }
