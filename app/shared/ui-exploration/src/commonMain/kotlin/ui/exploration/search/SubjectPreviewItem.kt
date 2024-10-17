@@ -61,7 +61,7 @@ class SubjectPreviewItemInfo(
                         .filterTo(ArrayList(10)) { it.kind == CanonicalTagKind.Genre }
                         .apply { sortByDescending { it.count } }
                         .take(3)
-                        .joinToString(" / ")
+                        .joinToString(" / "),
                 )
             }
             val staff = relatedPersonList?.let {
@@ -88,7 +88,7 @@ class SubjectPreviewItemInfo(
                             // mostSignificantCharacters
                             .flatMap { it.actors }
                             .map { it.displayName }
-                            .joinToString(" · ")
+                            .joinToString(" · "),
                     )
                 }
             }
@@ -142,13 +142,15 @@ internal val TestSubjectPreviewItemInfos
 
 @Composable
 fun SubjectPreviewItem(
-    onViewDetails: () -> Unit,
+    selected: Boolean,
+    onClick: () -> Unit,
     onPlay: () -> Unit,
     info: SubjectPreviewItemInfo,
     modifier: Modifier = Modifier,
 ) {
     SubjectItemLayout(
-        onClick = onViewDetails,
+        selected = selected,
+        onClick = onClick,
         image = {
             SubjectItemDefaults.Image(info.imageUrl)
         },

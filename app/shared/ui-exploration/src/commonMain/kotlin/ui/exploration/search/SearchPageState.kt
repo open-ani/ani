@@ -19,18 +19,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asFlow
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.tools.MonoTasker
+import me.him188.ani.app.tools.ldc.LazyDataCache
+import me.him188.ani.app.ui.search.LdcSearchState
+import me.him188.ani.app.ui.search.SearchState
+import me.him188.ani.app.ui.search.TestSearchState
+import me.him188.ani.datasources.api.paging.SinglePagePagedSource
 import me.him188.ani.utils.platform.annotations.TestOnly
 
 @Stable
 class SearchPageState(
     searchHistoryState: State<List<String>>,
     suggestionsState: State<List<String>>,
-    searchResultItemsState: State<List<SubjectPreviewItemInfo>>,
-    val onSearch: () -> Unit,
     val onRequestPlay: suspend (SubjectPreviewItemInfo) -> EpisodeTarget?,
     queryState: MutableState<String> = mutableStateOf(""),
+    val searchState: SearchState<SubjectPreviewItemInfo>,
     backgroundScope: CoroutineScope,
 ) {
     // to navigate to episode page
@@ -44,11 +49,11 @@ class SearchPageState(
         historyState = searchHistoryState,
         suggestionsState = suggestionsState,
         queryState = queryState,
+        searchState = searchState,
     )
 
-    val searchResultItems: List<SubjectPreviewItemInfo> by searchResultItemsState
     var selectedItemIndex: Int by mutableIntStateOf(0)
-    val selectedItem by derivedStateOf { searchResultItems.getOrNull(selectedItemIndex) }
+    val selectedItem by derivedStateOf { searchState.items.getOrNull(selectedItemIndex) }
 
     val playTasker = MonoTasker(backgroundScope)
     var playingItem: SubjectPreviewItemInfo? by mutableStateOf(null)
@@ -63,23 +68,47 @@ class SearchPageState(
 }
 
 @TestOnly
-fun createTestSearchPageState(backgroundScope: CoroutineScope): SearchPageState {
+fun createTestSearchPageState(
+    backgroundScope: CoroutineScope,
+    searchState: SearchState<SubjectPreviewItemInfo> = TestSearchState(
+        TestSubjectPreviewItemInfos,
+    )
+): SearchPageState {
     val results = mutableStateOf<List<SubjectPreviewItemInfo>>(emptyList())
     return SearchPageState(
         searchHistoryState = mutableStateOf(emptyList()),
         suggestionsState = mutableStateOf(emptyList()),
-        searchResultItemsState = results,
-        onSearch = {
-            backgroundScope.launch {
-                delay(1500)
-                results.value = listOf()
-            }
-        },
-        onRequestPlay = { info ->
+        onRequestPlay = {
             delay(3000)
             SearchPageState.EpisodeTarget(1, 2)
         },
         queryState = mutableStateOf(""),
+        searchState = searchState,
         backgroundScope = backgroundScope,
+    )
+}
+
+@TestOnly
+fun createTestInteractiveSubjectSearchState(scope: CoroutineScope): SearchState<SubjectPreviewItemInfo> {
+    return LdcSearchState(
+        {
+            LazyDataCache(
+                {
+                    ApiResponse.success(
+                        SinglePagePagedSource {
+                            TestSubjectPreviewItemInfos.asFlow()
+                        },
+                    )
+                },
+            )
+        },
+        scope.coroutineContext,
+    )
+}
+
+@TestOnly
+fun createTestFinishedSubjectSearchState(): SearchState<SubjectPreviewItemInfo> {
+    return TestSearchState(
+        TestSubjectPreviewItemInfos,
     )
 }

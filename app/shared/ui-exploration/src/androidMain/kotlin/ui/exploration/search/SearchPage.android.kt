@@ -7,14 +7,18 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+@file:OptIn(TestOnly::class)
+
 package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.layout.CarouselItemDefaults.Text
 import me.him188.ani.app.ui.foundation.layout.Zero
@@ -27,11 +31,28 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 @Preview
 fun PreviewSearchPage() = ProvideFoundationCompositionLocalsForPreview {
     val scope = rememberCoroutineScope()
+    val searchPageState = createTestSearchPageState(scope)
+    SideEffect {
+        searchPageState.searchState.startSearch()
+    }
     Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest) {
         SearchPage(
-            createTestSearchPageState(scope),
+            searchPageState,
             WindowInsets.Zero,
             { Text("Hello, World!") },
+        )
+    }
+}
+
+@Composable
+@PreviewLightDark
+fun PreviewSearchPageResultColumn() = ProvideFoundationCompositionLocalsForPreview {
+    val scope = rememberCoroutineScope()
+    Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest) {
+        SearchPageResultColumn(
+            state = createTestFinishedSubjectSearchState(),
+            selectedItemIndex = { 1 },
+            {}, {},
         )
     }
 }

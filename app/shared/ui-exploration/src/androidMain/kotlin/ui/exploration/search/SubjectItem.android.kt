@@ -22,8 +22,9 @@ import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
 @PreviewLightDark
 fun PreviewSubjectItemLayout() = ProvideFoundationCompositionLocalsForPreview {
     SubjectItemLayout(
+        selected = false,
         {},
-        image = { SubjectItemDefaults.Image("a", null, Modifier.fillMaxSize()) },
+        image = { SubjectItemDefaults.Image("a", Modifier.fillMaxSize(), null) },
         title = { maxLines ->
             Text("关于我转生变成史莱姆这档事 第三季", maxLines = maxLines)
         },

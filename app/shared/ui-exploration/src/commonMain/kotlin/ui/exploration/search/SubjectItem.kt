@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,13 +52,14 @@ import me.him188.ani.app.ui.foundation.layout.compareTo
 
 /**
  * Design: [SubjectItem on Figma](https://www.figma.com/design/LET1n9mmDa6npDTIlUuJjU/Main?node-id=101-877&t=gmFJS6LFQudIIXfK-4)
- * 
+ *
  * @param image see [SubjectItemDefaults.Image]
  * @param title remember to use `maxLines`
  * @param actions see [SubjectItemDefaults.ActionPlay]
  */
 @Composable
 fun SubjectItemLayout(
+    selected: Boolean,
     onClick: () -> Unit,
     image: @Composable () -> Unit,
     title: @Composable (maxLines: Int) -> Unit,
@@ -67,7 +70,7 @@ fun SubjectItemLayout(
     modifier: Modifier = Modifier,
     layout: SubjectItemLayoutParameters = SubjectItemLayoutParameters.calculate(currentWindowAdaptiveInfo().windowSizeClass),
     typography: SubjectItemTypography = SubjectItemTypography.calculate(currentWindowAdaptiveInfo().windowSizeClass),
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLowest,
+    colors: SubjectItemColors = SubjectItemDefaults.colors()
 ) {
     val shape = layout.shape
     Surface(
@@ -77,7 +80,7 @@ fun SubjectItemLayout(
             .height(IntrinsicSize.Min)
             .defaultMinSize(minWidth = layout.minWidth)
             .width(IntrinsicSize.Min),
-        color = containerColor,
+        color = colors.containerColorFor(selected),
         shape = shape,
     ) {
         Row {
@@ -104,7 +107,10 @@ fun SubjectItemLayout(
                         extraInfo()
                     }
                 }
-                Row(verticalAlignment = Alignment.Bottom) {
+                Row(
+                    Modifier.heightIn(min = 48.dp),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
                     Box(Modifier.weight(1f).padding(bottom = 8.dp)) {
                         rating()
                     }
@@ -120,13 +126,13 @@ object SubjectItemDefaults {
     @Composable
     fun Image(
         model: Any?,
+        modifier: Modifier = Modifier,
         contentDescription: String? = null,
-        modifier: Modifier = Modifier
     ) {
         AsyncImage(
             model,
             contentDescription,
-            modifier,
+            modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
             alignment = Alignment.Center,
         )
@@ -141,6 +147,12 @@ object SubjectItemDefaults {
             Icon(Icons.Rounded.PlayArrow, contentDescription = "播放", Modifier.size(28.dp))
         }
     }
+
+    @Composable
+    fun colors(
+        containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        selectedContainerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    ) = SubjectItemColors(containerColor, selectedContainerColor)
 }
 
 @Immutable
@@ -220,4 +232,14 @@ class SubjectItemLayoutParameters(
             return COMPACT
         }
     }
+}
+
+@Immutable
+data class SubjectItemColors(
+    private val containerColor: Color,
+    private val selectedContainerColor: Color,
+) {
+    @Stable
+    fun containerColorFor(selected: Boolean) =
+        if (selected) selectedContainerColor else containerColor
 }

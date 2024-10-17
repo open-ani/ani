@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import me.him188.ani.app.data.models.ApiResponse
 import me.him188.ani.app.data.models.subject.SubjectManager
 import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
 import me.him188.ani.app.data.repository.SubjectSearchRepository
@@ -42,6 +43,7 @@ import me.him188.ani.app.domain.search.SubjectSearcherImpl
 import me.him188.ani.app.domain.session.OpaqueSession
 import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.domain.session.userInfo
+import me.him188.ani.app.tools.ldc.LazyDataCache
 import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.ExplorationPageState
 import me.him188.ani.app.ui.exploration.search.SearchPage
@@ -50,8 +52,10 @@ import me.him188.ani.app.ui.exploration.search.SubjectPreviewItemInfo
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.AuthState
+import me.him188.ani.app.ui.search.LdcSearchState
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
+import me.him188.ani.datasources.api.paging.map
 import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.coroutines.retryUntilSuccess
 import org.koin.core.component.KoinComponent
@@ -107,14 +111,27 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
         searchHistoryState = searchHistoryRepository.getHistoryFlow().produceState(emptyList()),
         suggestionsState = searchHistoryRepository.getHistoryFlow()
             .produceState(emptyList()),// todo: suggestions
-        searchResultItemsState = searchResultItemsFlow.produceState(emptyList()),
-        onSearch = { searcher.search(SubjectSearchQuery(keyword = queryState.value)) },
         onRequestPlay = { info ->
             subjectManager.subjectCollectionFlow(info.id).first().episodes.firstOrNull()?.let {
                 SearchPageState.EpisodeTarget(info.id, it.episodeInfo.id)
             }
         },
         queryState = queryState,
+        searchState = LdcSearchState(
+            createLdc = {
+                LazyDataCache(
+                    createSource = {
+                        ApiResponse.success(
+                            subjectProvider.startSearch(SubjectSearchQuery(keyword = queryState.value))
+                                .map { SubjectPreviewItemInfo.compute(it, null, null) },
+                        )
+                    },
+                    getKey = { it.id },
+                    debugName = "ExplorationTabViewModel.searchPageState.ldc",
+                )
+            },
+            backgroundScope.coroutineContext,
+        ),
         backgroundScope,
     )
 

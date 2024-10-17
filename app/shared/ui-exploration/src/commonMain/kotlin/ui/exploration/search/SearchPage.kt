@@ -10,27 +10,32 @@
 package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
+import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
+import me.him188.ani.app.ui.search.SearchDefaults
+import me.him188.ani.app.ui.search.SearchState
 
 @Composable
 fun SearchPage(
@@ -50,17 +55,18 @@ fun SearchPage(
         searchBar = {
             SuggestionSearchBar(
                 state.suggestionSearchBarState,
-                onSearch = {
-                    state.onSearch()
-                },
+                Modifier.fillMaxWidth(),
+                placeholder = { Text("搜索") },
             )
         },
         searchResultList = {
             val aniNavigator = LocalNavigator.current
             val scope = rememberCoroutineScope()
             SearchPageResultColumn(
-                onViewDetails = {
-                    state.selectedItemIndex = it
+                state.searchState,
+                selectedItemIndex = { state.selectedItemIndex },
+                onClick = { index ->
+                    state.selectedItemIndex = index
                     navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
                 },
                 onPlay = { info ->
@@ -71,7 +77,6 @@ fun SearchPage(
                         }
                     }
                 },
-                state.searchResultItems,
             )
         },
         detailContent = {
@@ -79,7 +84,7 @@ fun SearchPage(
                 state.selectedItemIndex,
                 transitionSpec = AniThemeDefaults.emphasizedAnimatedContentTransition,
             ) { index ->
-                state.searchResultItems.getOrNull(index)?.let {
+                state.searchState.items.getOrNull(index)?.let {
                     detailContent(it.id)
                 }
             }
@@ -90,26 +95,31 @@ fun SearchPage(
 
 @Composable
 internal fun SearchPageResultColumn(
-    onViewDetails: (index: Int) -> Unit,
+    state: SearchState<SubjectPreviewItemInfo>,
+    selectedItemIndex: () -> Int,
+    onClick: (index: Int) -> Unit,
     onPlay: (info: SubjectPreviewItemInfo) -> Unit,
-    list: List<SubjectPreviewItemInfo>,
     modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier) {
+    SearchDefaults.ResultColumn(
+        state,
+        modifier,
+    ) {
         itemsIndexed(
-            list,
+            state.items,
             key = { _, it -> it.id },
             contentType = { _, _ -> 1 },
         ) { index, info ->
             SubjectPreviewItem(
-                onViewDetails = { onViewDetails(index) },
+                selected = index == selectedItemIndex(),
+                onClick = { onClick(index) },
                 onPlay = { onPlay(info) },
                 info = info,
+                Modifier.padding(vertical = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding / 2),
             )
         }
     }
 }
-
 
 @Composable
 internal fun SearchPageLayout(
@@ -133,9 +143,9 @@ internal fun SearchPageLayout(
             )
         },
         listPaneContent = {
-            Box(Modifier.paneContentPadding()) {
+            Column(Modifier.preferredWidth(440.dp).paneContentPadding()) {
                 // Use TopAppBar as a container for scroll behavior
-                Row {
+                Row(Modifier.fillMaxWidth()) {
                     searchBar()
                 }
 //                TopAppBar(

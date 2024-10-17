@@ -10,6 +10,7 @@
 package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -36,18 +37,20 @@ import androidx.compose.ui.Modifier
 import me.him188.ani.app.ui.adaptive.AdaptiveSearchBar
 import me.him188.ani.app.ui.foundation.interaction.onEnterKeyEvent
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
+import me.him188.ani.app.ui.search.SearchState
 
 @Stable
-class SuggestionSearchBarState(
+class SuggestionSearchBarState<T>(
     historyState: State<List<String>>, // must be distinct
     suggestionsState: State<List<String>>, // must be distinct
     queryState: MutableState<String> = mutableStateOf(""),
+    private val searchState: SearchState<T>,
 ) {
     var query by queryState
     var expanded by mutableStateOf(false)
 
     val previewType by derivedStateOf {
-        if (query == "") SuggestionSearchPreviewType.HISTORY else SuggestionSearchPreviewType.SUGGESTIONS
+        if (query.isEmpty()) SuggestionSearchPreviewType.HISTORY else SuggestionSearchPreviewType.SUGGESTIONS
     }
 
     val history by historyState
@@ -55,6 +58,12 @@ class SuggestionSearchBarState(
 
     fun clear() {
         query = ""
+        expanded = false
+        searchState.clear()
+    }
+
+    fun startSearch() {
+        searchState.startSearch()
         expanded = false
     }
 }
@@ -66,9 +75,8 @@ enum class SuggestionSearchPreviewType {
 }
 
 @Composable
-fun SuggestionSearchBar(
-    state: SuggestionSearchBarState,
-    onSearch: () -> Unit,
+fun <T> SuggestionSearchBar(
+    state: SuggestionSearchBarState<T>,
     modifier: Modifier = Modifier,
     placeholder: @Composable (() -> Unit)? = null,
 ) {
@@ -81,16 +89,19 @@ fun SuggestionSearchBar(
                 expanded = state.expanded,
                 onExpandedChange = { state.expanded = it },
                 Modifier.onEnterKeyEvent {
-                    onSearch()
+                    state.startSearch()
                     true
                 },
                 placeholder = placeholder,
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = {
-                    IconButton({ state.clear() }) {
-                        Icon(Icons.Default.Close, contentDescription = null)
+                trailingIcon =
+                if (state.query.isNotEmpty()) {
+                    {
+                        IconButton({ state.clear() }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                        }
                     }
-                },
+                } else null,
             )
         },
         expanded = state.expanded,
@@ -103,10 +114,10 @@ fun SuggestionSearchBar(
         }
         AnimatedContent(
             valuesState,
-            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition
+            transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
         ) { values ->
             LazyColumn {
-                items(values, key = { it }) {
+                items(values, key = { it }, contentType = { 1 }) {
                     ListItem(
                         leadingContent = if (state.previewType == SuggestionSearchPreviewType.HISTORY) {
                             { Icon(Icons.Default.History, contentDescription = null) }
@@ -114,6 +125,10 @@ fun SuggestionSearchBar(
                             null
                         },
                         headlineContent = { Text(it) },
+                        modifier = Modifier.clickable {
+                            state.query = it
+                            state.startSearch()
+                        },
                         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                     )
                 }
