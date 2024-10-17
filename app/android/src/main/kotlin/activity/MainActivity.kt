@@ -9,12 +9,8 @@
 
 package me.him188.ani.android.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.view.WindowInsets
-import android.view.WindowInsetsController
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -126,26 +122,6 @@ class MainActivity : AniComponentActivity() {
                 AppStartupTasks.verifySession(sessionManager, aniNavigator)
             }.onFailure {
                 logger.error(it)
-            }
-        }
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val controller = window.insetsController ?: return
-            if (hasFocus && requestedOrientation == android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            } else {
-                controller.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_DEFAULT
-                } else {
-                    @Suppress("DEPRECATION")
-                    @SuppressLint("WrongConstant")
-                    controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_BARS_BY_SWIPE
-                }
             }
         }
     }
