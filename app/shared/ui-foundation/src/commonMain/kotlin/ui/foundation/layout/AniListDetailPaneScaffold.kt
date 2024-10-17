@@ -17,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
@@ -122,9 +123,13 @@ data class ListDetailLayoutParameters(
         @Composable
         fun calculate(directive: PaneScaffoldDirective): ListDetailLayoutParameters {
             val isTwoPane = directive.maxHorizontalPartitions > 1
+            val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
             return if (isTwoPane) {
                 ListDetailLayoutParameters(
-                    listPaneContentPaddingValues = PaddingValues(start = 24.dp, end = 0.dp),
+                    listPaneContentPaddingValues = PaddingValues(
+                        start = windowSizeClass.paneHorizontalPadding,
+                        end = 0.dp, // ListDetail 两个 pane 之间自带 24.dp
+                    ),
                     detailPaneContentPaddingValues = PaddingValues(0.dp),
                     detailPaneShape = MaterialTheme.shapes.extraLarge.copy(
                         topEnd = ZeroCornerSize,
@@ -134,8 +139,8 @@ data class ListDetailLayoutParameters(
                 )
             } else {
                 ListDetailLayoutParameters(
-                    listPaneContentPaddingValues = PaddingValues(start = 24.dp),
-                    detailPaneContentPaddingValues = PaddingValues(horizontal = 24.dp),
+                    listPaneContentPaddingValues = PaddingValues(horizontal = windowSizeClass.paneHorizontalPadding),
+                    detailPaneContentPaddingValues = PaddingValues(horizontal = windowSizeClass.paneHorizontalPadding),
                     detailPaneShape = RectangleShape,
                     detailPaneColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
                 )
