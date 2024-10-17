@@ -20,9 +20,7 @@ import androidx.compose.ui.awt.SwingPanel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import me.him188.ani.app.platform.AniCefApp
 import org.cef.CefClient
@@ -36,29 +34,26 @@ import java.awt.Component
 
 @Stable
 class DesktopTurnstileState(
-    override val url: String
+    override val url: String,
 ) : TurnstileState {
     private var client: CefClient? = null
     private var browser: CefBrowser? = null
 
     var isDarkTheme: Boolean = false
 
-    private val callbackTokenChannel = Channel<String>()
+    override val tokenFlow: MutableSharedFlow<String> = MutableSharedFlow(extraBufferCapacity = 1)
 
-    override val tokenFlow: Flow<String>
-        get() = callbackTokenChannel.receiveAsFlow()
-    
     private fun concatUrl(): String {
         return "${url}&theme=${if (isDarkTheme) "dark" else "light"}"
     }
-    
-    fun initializeBrowser(): Component = runBlocking { 
+
+    fun initializeBrowser(): Component = runBlocking {
         AniCefApp.suspendCoroutineOnCefContext {
             val newClient = AniCefApp.createClient()
                 ?: throw IllegalStateException("AniCefApp should be initialized.")
-            
+
             client = newClient
-            
+
             val newBrowser = newClient.createBrowser(
                 concatUrl(),
                 CefRendering.DEFAULT,
@@ -68,41 +63,43 @@ class DesktopTurnstileState(
                         override fun onBeforeResourceLoad(
                             browser: CefBrowser?,
                             frame: CefFrame?,
-                            request: CefRequest?
+                            request: CefRequest?,
                         ): Boolean {
                             val requestUrl = request?.url
+                            println("Request URL: $requestUrl")
                             if (requestUrl != null &&
-                                requestUrl.startsWith(TurnstileState.CALLBACK_INTERCEPTION_PREFIX)) {
-                                val responseToken = CALLBACK_REGEX.matchEntire(url)?.groupValues?.getOrNull(1)
-                                if (responseToken != null) callbackTokenChannel.trySend(responseToken)
+                                requestUrl.startsWith(TurnstileState.CALLBACK_INTERCEPTION_PREFIX)
+                            ) {
+                                tokenFlow.tryEmit(
+                                    requestUrl.substringAfter(
+                                        TurnstileState.CALLBACK_INTERCEPTION_PREFIX
+                                    )
+                                )
+                                return true
                             }
                             return super.onBeforeResourceLoad(browser, frame, request)
                         }
                     }
                 },
             )
-            
+
             browser = newBrowser
             newBrowser.setCloseAllowed()
-            newBrowser.uiComponent.apply {  }
+            newBrowser.uiComponent.apply { }
         }
     }
 
     override fun reload() {
-        AniCefApp.runOnCefContext { 
+        AniCefApp.runOnCefContext {
             browser?.loadURL(concatUrl())
         }
     }
-    
+
     fun dispose() {
         AniCefApp.blockOnCefContext {
             browser?.close(true)
             client?.dispose()
         }
-    }
-
-    companion object {
-        private val CALLBACK_REGEX = Regex("^${TurnstileState.CALLBACK_INTERCEPTION_PREFIX}/?\\?token=(.+)$")
     }
 }
 
@@ -114,11 +111,11 @@ actual fun createTurnstileState(url: String): TurnstileState {
 actual fun ActualTurnstile(
     state: TurnstileState,
     constraints: Constraints,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     check(state is DesktopTurnstileState)
     val isDark = isSystemInDarkTheme()
-    
+
     SwingPanel(
         background = Color.Transparent,
         factory = {
@@ -126,13 +123,13 @@ actual fun ActualTurnstile(
             state.initializeBrowser()
         },
         update = { component ->
-            
+
         },
         modifier = modifier.fillMaxWidth().height(100.dp)
     )
-    
+
     DisposableEffect(Unit) {
-        onDispose { 
+        onDispose {
             state.dispose()
         }
     }

@@ -41,7 +41,7 @@ interface TurnstileState {
          * Callback URI for solving Cloudflare Turnstile at Bangumi.
          * You can intercept the request or register a system-wide URI handler.
          */
-        const val CALLBACK_INTERCEPTION_PREFIX = "ani://bangumi-turnstile-callback"
+        const val CALLBACK_INTERCEPTION_PREFIX = "ani://bangumi-turnstile-callback?token="
     }
 }
 
