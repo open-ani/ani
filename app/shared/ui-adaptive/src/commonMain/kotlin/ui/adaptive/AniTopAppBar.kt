@@ -22,8 +22,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -64,7 +62,7 @@ import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 @Composable
 fun AniTopAppBar(
     title: @Composable () -> Unit,
-    windowInsets: WindowInsets,
+    windowInsets: WindowInsets, // You would like to add only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
@@ -108,7 +106,7 @@ fun AniTopAppBar(
                 }
             },
             expandedHeight,
-            windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+            windowInsets,
             colors,
             scrollBehavior,
         )

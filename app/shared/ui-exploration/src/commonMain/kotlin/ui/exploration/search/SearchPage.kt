@@ -24,6 +24,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
@@ -52,6 +56,7 @@ import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.keyboardDirectionToSelectItem
 import me.him188.ani.app.ui.foundation.interaction.keyboardPageToScroll
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
+import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -63,6 +68,7 @@ import me.him188.ani.app.ui.search.SearchState
 fun SearchPage(
     state: SearchPageState,
     windowInsets: WindowInsets,
+    onClickSettings: () -> Unit,
     detailContent: @Composable (subjectId: Int) -> Unit,
     modifier: Modifier = Modifier,
     navigator: ThreePaneScaffoldNavigator<*> = rememberListDetailPaneScaffoldNavigator(),
@@ -74,6 +80,7 @@ fun SearchPage(
     SearchPageLayout(
         navigator,
         windowInsets,
+        onClickSettings = onClickSettings,
         searchBar = { contentPadding ->
             SuggestionSearchBar(
                 state.suggestionSearchBarState,
@@ -180,6 +187,7 @@ internal fun SearchPageResultColumn(
 internal fun SearchPageLayout(
     navigator: ThreePaneScaffoldNavigator<*>,
     windowInsets: WindowInsets,
+    onClickSettings: () -> Unit,
     searchBar: @Composable (contentPadding: Modifier) -> Unit,
     searchResultList: @Composable () -> Unit,
     detailContent: @Composable () -> Unit,
@@ -191,10 +199,17 @@ internal fun SearchPageLayout(
         listPaneTopAppBar = {
             AniTopAppBar(
                 title = { Text("搜索") },
-                windowInsets,
+                windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 Modifier.fillMaxWidth(),
                 navigationIcon = {
                     TopAppBarGoBackButton()
+                },
+                actions = {
+                    if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass.isAtLeastMedium) {
+                        IconButton(onClick = onClickSettings) {
+                            Icon(Icons.Rounded.Settings, "设置")
+                        }
+                    }
                 },
             )
         },

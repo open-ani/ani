@@ -15,14 +15,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
@@ -36,8 +36,6 @@ import androidx.compose.material.icons.rounded.Subscriptions
 import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material.icons.rounded.VpnKey
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
@@ -45,9 +43,7 @@ import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -68,12 +64,11 @@ import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
-import me.him188.ani.app.ui.foundation.layout.AnimatedPane1
+import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
 import me.him188.ani.app.ui.foundation.layout.Zero
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
-import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.foundation.widgets.TopAppBarGoBackButton
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
@@ -117,76 +112,29 @@ fun SettingsPage(
 
     SettingsPageLayout(
         navigator,
-        listPane = { topAppBarScrollBehavior ->
-            PermanentDrawerSheet(
-                Modifier
-                    .fillMaxWidth()
-                    .ifThen(!LocalPlatform.current.hasScrollingBug()) {
-                        nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                    }
-                    .verticalScroll(rememberScrollState()),
-                drawerContainerColor = Color.Unspecified,
-            ) {
-                val currentTab by remember(navigator) {
-                    derivedStateOf {
-                        navigator.currentDestination?.content
-                    }
-                }
+        navItems = {
+            Title("应用与界面", paddingTop = 0.dp)
+            Item(SettingsTab.APPEARANCE)
+            Item(SettingsTab.UPDATE)
 
-                val verticalPadding = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding
+            Title("数据源与播放")
+            Item(SettingsTab.PLAYER)
+            Item(SettingsTab.MEDIA_SUBSCRIPTION)
+            Item(SettingsTab.MEDIA_SOURCE)
+            Item(SettingsTab.MEDIA_SELECTOR)
+            Item(SettingsTab.DANMAKU)
 
-                @Composable
-                fun Item(item: SettingsTab) {
-                    NavigationDrawerItem(
-                        icon = { Icon(getIcon(item), contentDescription = null) },
-                        label = { Text(getName(item)) },
-                        selected = item == currentTab,
-                        onClick = { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, item) },
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                }
+            Title("网络与存储")
+            Item(SettingsTab.PROXY)
+            Item(SettingsTab.BT)
+            Item(SettingsTab.CACHE)
+            Item(SettingsTab.STORAGE)
 
-                @Composable
-                fun Title(text: String, paddingTop: Dp = 20.dp) {
-                    Text(
-                        text,
-                        Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(top = paddingTop, bottom = 12.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-
-                Spacer(Modifier.height(verticalPadding)) // scrollable
-
-                Title("应用与界面", paddingTop = 0.dp)
-                Item(SettingsTab.APPEARANCE)
-                Item(SettingsTab.UPDATE)
-
-                Title("数据源与播放")
-                Item(SettingsTab.PLAYER)
-                Item(SettingsTab.MEDIA_SUBSCRIPTION)
-                Item(SettingsTab.MEDIA_SOURCE)
-                Item(SettingsTab.MEDIA_SELECTOR)
-                Item(SettingsTab.DANMAKU)
-
-                Title("网络与存储")
-                Item(SettingsTab.PROXY)
-                Item(SettingsTab.BT)
-                Item(SettingsTab.CACHE)
-                Item(SettingsTab.STORAGE)
-
-                Title("其他")
-                Item(SettingsTab.ABOUT)
-                Item(SettingsTab.DEBUG)
-
-                Spacer(Modifier.height(verticalPadding)) // scrollable
-            }
+            Title("其他")
+            Item(SettingsTab.ABOUT)
+            Item(SettingsTab.DEBUG)
         },
-        detailPaneTitle = { currentTab ->
-            AniTopAppBarDefaults.Title(getName(currentTab))
-        },
-        detailPaneContent = { currentTab ->
+        tabContent = { currentTab ->
             val tabModifier = Modifier
                 .padding(horizontal = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding - 8.dp)
             Column(Modifier.verticalScroll(rememberScrollState())) {
@@ -247,99 +195,116 @@ fun SettingsPage(
 @Composable
 internal fun SettingsPageLayout(
     navigator: ThreePaneScaffoldNavigator<SettingsTab>,
-    listPane: @Composable (topAppBarScrollBehavior: TopAppBarScrollBehavior) -> Unit,
-    detailPaneTitle: @Composable (tab: SettingsTab) -> Unit,
-    detailPaneContent: @Composable (currentTab: SettingsTab?) -> Unit,
+    navItems: @Composable (SettingsDrawerScope.() -> Unit),
+    tabContent: @Composable (currentTab: SettingsTab?) -> Unit,
     modifier: Modifier = Modifier,
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     showNavigationIcon: Boolean = false,
 ) {
-    BackHandler(navigator.canNavigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)) {
-        navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
+    val currentTab by remember(navigator) {
+        derivedStateOf {
+            navigator.currentDestination?.content
+        }
     }
 
-    ListDetailPaneScaffold(
-        navigator.scaffoldDirective,
-        navigator.scaffoldValue,
-        listPane = {
-            AnimatedPane1 {
+    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    AniListDetailPaneScaffold(
+        navigator,
+        listPaneTopAppBar = {
+            AniTopAppBar(
+                title = { AniTopAppBarDefaults.Title("设置") },
+                windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+                navigationIcon = {
+                    if (showNavigationIcon) {
+                        TopAppBarGoBackButton()
+                    }
+                },
+                colors = AniThemeDefaults.transparentAppBarColors(),
+                scrollBehavior = topAppBarScrollBehavior,
+            )
+        },
+        listPaneContent = {
+            PermanentDrawerSheet(
+                Modifier
+                    .consumeWindowInsets(windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                    .fillMaxWidth()
+                    .ifThen(!LocalPlatform.current.hasScrollingBug()) {
+                        nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    }
+                    .verticalScroll(rememberScrollState()),
+                drawerContainerColor = Color.Unspecified,
+            ) {
+                val scope = remember(this, navigator) {
+                    object : SettingsDrawerScope(), ColumnScope by this {
+                        @Composable
+                        override fun Item(item: SettingsTab) {
+                            NavigationDrawerItem(
+                                icon = { Icon(getIcon(item), contentDescription = null) },
+                                label = { Text(getName(item)) },
+                                selected = item == currentTab,
+                                onClick = { navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, item) },
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                        }
+                    }
+                }
+
+
+                val verticalPadding = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding
+
+                Spacer(Modifier.height(verticalPadding)) // scrollable
+                navItems(scope)
+                Spacer(Modifier.height(verticalPadding)) // scrollable
+            }
+        },
+        detailPaneTopAppBar = {}, // empty because our detailPaneContent already has it
+        detailPaneContent = {
+            AnimatedContent(
+                navigator.currentDestination?.content,
+                Modifier.fillMaxSize(),
+                transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
+            ) { tab ->
                 Column {
-                    val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-                    AniTopAppBar(
-                        title = { AniTopAppBarDefaults.Title("设置") },
-                        windowInsets = WindowInsets.Zero,
-                        navigationIcon = {
-                            if (showNavigationIcon) {
-                                TopAppBarGoBackButton()
-                            }
-                        },
-                        colors = AniThemeDefaults.transparentAppBarColors(),
-                        scrollBehavior = topAppBarScrollBehavior,
-                    )
-//                    Surface {
-//                        ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
-//                            Text("设置", Modifier.padding(horizontal = 16.dp))
-//                        }
-//                    }
+                    tab?.let {
+                        AniTopAppBar(
+                            title = {
+                                currentTab?.let { currentTab ->
+                                    AniTopAppBarDefaults.Title(getName(currentTab))
+                                }
+                            },
+                            windowInsets = WindowInsets.Zero,
+                            navigationIcon = {
+                                TopAppBarGoBackButton {
+                                    navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
+                                }
+                            },
+                            colors = AniThemeDefaults.transparentAppBarColors(),
+                        )
+                    }
 
-                    listPane(topAppBarScrollBehavior)
+                    tabContent(tab)
                 }
             }
         },
-        detailPane = {
-            AnimatedPane1 {
-                val content = @Composable {
-                    AnimatedContent(
-                        navigator.currentDestination?.content,
-                        Modifier.fillMaxSize(),
-                        transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-                    ) { tab ->
-                        Column {
-                            tab?.let {
-                                AniTopAppBar(
-                                    title = {
-                                        detailPaneTitle(it)
-                                    },
-                                    windowInsets = WindowInsets.Zero,
-                                    navigationIcon = {
-                                        TopAppBarGoBackButton {
-                                            navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
-                                        }
-                                    },
-                                    colors = AniThemeDefaults.transparentAppBarColors(),
-                                )
-                            }
-
-                            detailPaneContent(tab)
-                        }
-                    }
-                }
-
-                val decorated = @Composable {
-                    // PC 上套一个 card
-                    if (navigator.scaffoldDirective.maxHorizontalPartitions > 1) {
-                        Card(
-                            shape = MaterialTheme.shapes.extraLarge.copy(
-                                topEnd = ZeroCornerSize,
-                                bottomEnd = ZeroCornerSize,
-                            ),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                        ) {
-                            content()
-                        }
-                    } else {
-                        content()
-                    }
-                }
-
-                decorated()
-            }
-        },
-        modifier
-//            .padding(currentWindowAdaptiveInfo().windowSizeClass.panePadding)
-            .windowInsetsPadding(contentWindowInsets)
-            .consumeWindowInsets(contentWindowInsets),
+        modifier,
     )
+}
+
+@Stable
+abstract class SettingsDrawerScope internal constructor() : ColumnScope {
+    @Composable
+    abstract fun Item(item: SettingsTab)
+
+    @Composable
+    fun Title(text: String, paddingTop: Dp = 20.dp) {
+        Text(
+            text,
+            Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = paddingTop, bottom = 12.dp),
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
 }
 
 @Stable

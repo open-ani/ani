@@ -257,7 +257,7 @@ private fun CollectionPageLayout(
             Column(modifier = Modifier.fillMaxWidth()) {
                 AniTopAppBar(
                     title = { AniTopAppBarDefaults.Title("追番") },
-                    windowInsets = windowInsets.only(WindowInsetsSides.Top),
+                    windowInsets = windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                     modifier = Modifier,
                     actions = {
                         sessionError()

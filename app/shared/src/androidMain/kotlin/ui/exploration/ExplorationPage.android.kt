@@ -38,6 +38,7 @@ internal fun PreviewExplorationPage() {
                 )
             },
             {},
+            {},
         )
     }
 }

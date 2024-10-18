@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material3.FloatingActionButton
@@ -78,8 +77,6 @@ import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.profile.AccountViewModel
-import me.him188.ani.app.ui.settings.SettingsPage
-import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.subject.collection.CollectionPage
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
@@ -149,7 +146,6 @@ private fun MainSceneContent(
                     MainScenePage.Exploration -> Icons.Rounded.TravelExplore
                     MainScenePage.Collection -> Icons.Rounded.Star
                     MainScenePage.CacheManagement -> Icons.Rounded.DownloadDone
-                    MainScenePage.Settings -> Icons.Rounded.Settings
                     MainScenePage.Search -> Icons.Rounded.Search
                 }
 
@@ -158,7 +154,6 @@ private fun MainSceneContent(
                     MainScenePage.Exploration -> "探索"
                     MainScenePage.Collection -> "追番"
                     MainScenePage.CacheManagement -> "缓存"
-                    MainScenePage.Settings -> "设置"
                     MainScenePage.Search -> "搜索"
                 }
 
@@ -193,8 +188,9 @@ private fun MainSceneContent(
                         ExplorationPage(
                             viewModel { ExplorationPageViewModel() }.explorationPageState,
                             onSearch = { onNavigateToPage(MainScenePage.Search) },
+                            onClickSettings = { navigator.navigateSettings() },
                             modifier.fillMaxSize(),
-                            contentWindowInsets = windowInsets,
+                            windowInsets = windowInsets,
                         )
                     }
 
@@ -211,14 +207,6 @@ private fun MainSceneContent(
                         windowInsets = windowInsets,
                     )
 
-                    MainScenePage.Settings -> SettingsPage(
-                        viewModel {
-                            SettingsViewModel()
-                        },
-                        Modifier.fillMaxSize(),
-                        contentWindowInsets = windowInsets,
-                    )
-
                     MainScenePage.Search -> {
                         val vm = viewModel { SearchViewModel() }
                         BackHandler(true) {
@@ -227,6 +215,7 @@ private fun MainSceneContent(
                         SearchPage(
                             vm.searchPageState,
                             windowInsets,
+                            onClickSettings = { navigator.navigateSettings() },
                             detailContent = {
                                 vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
                                     SubjectDetailsScene(it)

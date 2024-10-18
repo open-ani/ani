@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -39,6 +40,7 @@ import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.adaptive.NavTitleHeader
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsCarousel
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
+import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.session.SelfAvatar
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -56,8 +58,9 @@ class ExplorationPageState(
 fun ExplorationPage(
     state: ExplorationPageState,
     onSearch: () -> Unit,
+    onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -65,21 +68,26 @@ fun ExplorationPage(
         topBar = {
             AniTopAppBar(
                 title = { AniTopAppBarDefaults.Title("探索") },
-                windowInsets = contentWindowInsets,
+                windowInsets = windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 Modifier.fillMaxWidth(),
                 searchIconButton = {
                     IconButton(onSearch) {
                         Icon(Icons.Rounded.Search, "搜索")
                     }
                 },
-                searchBar = {
+                actions = {
+                    if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass.isAtLeastMedium) {
+                        IconButton(onClick = onClickSettings) {
+                            Icon(Icons.Rounded.Settings, "设置")
+                        }
+                    }
                 },
                 avatar = {
                     SelfAvatar(state.authState, state.selfInfo)
                 },
             )
         },
-        contentWindowInsets = contentWindowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+        contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
     ) { topBarPadding ->
         val horizontalPadding = currentWindowAdaptiveInfo().windowSizeClass.paneHorizontalPadding
         val horizontalContentPadding =

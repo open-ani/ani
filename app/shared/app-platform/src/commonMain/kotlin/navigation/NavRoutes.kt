@@ -75,7 +75,6 @@ enum class MainScenePage {
     Exploration,
     Collection,
     CacheManagement,
-    Settings,
     Search, ;
 
     companion object {
