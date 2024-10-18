@@ -197,6 +197,7 @@ private fun MainSceneContent(
                     MainScenePage.Collection -> CollectionPage(
                         windowInsets = windowInsets,
                         onClickSearch = { onNavigateToPage(MainScenePage.Search) },
+                        onClickSettings = { navigator.navigateSettings() },
                         Modifier.fillMaxSize(),
                     )
 

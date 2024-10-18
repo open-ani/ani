@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.HowToReg
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -75,6 +76,7 @@ import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
 import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.foundation.LocalPlatform
+import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.pagerTabIndicatorOffset
 import me.him188.ani.app.ui.foundation.session.SelfAvatar
@@ -106,6 +108,7 @@ val COLLECTION_TABS_SORTED = listOf(
 fun CollectionPage(
     windowInsets: WindowInsets,
     onClickSearch: () -> Unit,
+    onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val vm = viewModel { MyCollectionsViewModel() } // TODO: remove vm
@@ -124,6 +127,7 @@ fun CollectionPage(
     CollectionPageLayout(
         windowInsets,
         pagerState,
+        onClickSettings = onClickSettings,
         sessionError = {
             if (!showSessionErrorInList) {
                 SessionTipsIcon(vm.authState)
@@ -244,6 +248,7 @@ fun CollectionPage(
 private fun CollectionPageLayout(
     windowInsets: WindowInsets,
     pagerState: PagerState,
+    onClickSettings: () -> Unit,
     sessionError: @Composable () -> Unit,
     avatar: @Composable () -> Unit,
     filters: @Composable CollectionPageFilters.() -> Unit,
@@ -278,6 +283,12 @@ private fun CollectionPageLayout(
                                 },
                             ) {
                                 Icon(Icons.Rounded.Refresh, null)
+                            }
+                        }
+
+                        if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass.isAtLeastMedium) {
+                            IconButton(onClick = onClickSettings) {
+                                Icon(Icons.Rounded.Settings, "设置")
                             }
                         }
                     },
