@@ -38,6 +38,6 @@ private fun PreviewCollectionPage() {
             }
         }
 
-        CollectionPage(WindowInsets(0.dp))
+        CollectionPage(WindowInsets(0.dp), {})
     }
 }

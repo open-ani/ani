@@ -57,15 +57,14 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
 @Composable
 internal fun ExplorationTab(
     windowInsets: WindowInsets,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier,
     vm: ExplorationTabViewModel = viewModel { ExplorationTabViewModel() },
 ) {
     val navigator = LocalNavigator.current
     ExplorationPage(
         vm.explorationPageState,
-        onSearch = {
-            navigator.navigateSearch()
-        },
+        onSearch = onSearch,
         modifier.fillMaxSize(),
         contentWindowInsets = windowInsets,
     )

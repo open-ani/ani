@@ -20,7 +20,7 @@ sealed class NavRoutes {
 
     @Serializable
     data class Main(
-        val page: MainScenePage,
+        val initialPage: MainScenePage,
         val requestSearchFocus: Boolean = false,
     ) : NavRoutes()
 

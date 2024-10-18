@@ -9,7 +9,14 @@
 
 package me.him188.ani.app.navigation
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.CompletableDeferred
 import me.him188.ani.datasources.api.source.FactoryId
@@ -67,19 +74,11 @@ interface AniNavigator {
         navigator.navigate(NavRoutes.Welcome)
     }
 
-    fun navigateExploration() {
-        navigateMain(MainScenePage.Exploration)
-    }
-
-    fun navigateSearch(requestFocus: Boolean = false) {
-        navigateMain(MainScenePage.Search, requestFocus)
-    }
-
     fun navigateMain(
         page: MainScenePage,
         requestFocus: Boolean = false
     ) {
-        navigator.navigate(NavRoutes.Main(page, requestFocus))
+        navigator.popBackStack<NavRoutes.Main>(inclusive = false)
     }
 
     /**
@@ -152,19 +151,19 @@ val LocalNavigator = compositionLocalOf<AniNavigator> {
     error("Navigator not found")
 }
 
-//@Composable
-//inline fun OverrideNavigation(
-//    noinline newNavigator: @DisallowComposableCalls (AniNavigator) -> AniNavigator,
-//    crossinline content: @Composable () -> Unit
-//) {
-//    val current by rememberUpdatedState(LocalNavigator.current)
-//    val newNavigatorUpdated by rememberUpdatedState(newNavigator)
-//    val new by remember {
-//        derivedStateOf {
-//            newNavigatorUpdated(current)
-//        }
-//    }
-//    CompositionLocalProvider(LocalNavigator provides new) {
-//        content()
-//    }
-//}
+@Composable
+inline fun OverrideNavigation(
+    noinline newNavigator: @DisallowComposableCalls (AniNavigator) -> AniNavigator,
+    crossinline content: @Composable () -> Unit
+) {
+    val current by rememberUpdatedState(LocalNavigator.current)
+    val newNavigatorUpdated by rememberUpdatedState(newNavigator)
+    val new by remember {
+        derivedStateOf {
+            newNavigatorUpdated(current)
+        }
+    }
+    CompositionLocalProvider(LocalNavigator provides new) {
+        content()
+    }
+}

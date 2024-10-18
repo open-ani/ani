@@ -14,7 +14,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,11 +32,14 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -48,6 +50,7 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.MainScenePage
 import me.him188.ani.app.navigation.NavRoutes
+import me.him188.ani.app.navigation.OverrideNavigation
 import me.him188.ani.app.navigation.SettingsTab
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.cache.CacheManagementPage
@@ -148,22 +151,10 @@ private fun AniAppContentImpl(
                 WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.fillMaxSize(), windowInsets)
             }
             composable<NavRoutes.Main>(
-                enterTransition = {
-                    if (initialState.destination.hasRoute<NavRoutes.Main>()) fadeIn(snap())
-                    else enterTransition()
-                },
-                exitTransition = {
-                    if (targetState.destination.hasRoute<NavRoutes.Main>()) fadeOut(snap())
-                    else exitTransition()
-                },
-                popEnterTransition = {
-                    if (initialState.destination.hasRoute<NavRoutes.Main>()) fadeIn(snap())
-                    popEnterTransition()
-                },
-                popExitTransition = {
-                    if (targetState.destination.hasRoute<NavRoutes.Main>()) fadeOut(snap())
-                    else popExitTransition()
-                },
+                enterTransition = enterTransition,
+                exitTransition = exitTransition,
+                popEnterTransition = popEnterTransition,
+                popExitTransition = popExitTransition,
                 typeMap = mapOf(
                     typeOf<MainScenePage>() to MainScenePage.NavType,
                 ),
@@ -172,17 +163,28 @@ private fun AniAppContentImpl(
                 val navigationLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
                     currentWindowAdaptiveInfo(),
                 )
+                var currentPage by rememberSaveable { mutableStateOf(route.initialPage) }
 
-                MainScene(
-                    page = route.page,
-                    windowInsets =
-                    // macOS 上的手机状态需要有顶部的 insets
-                    if (navigationLayoutType == NavigationSuiteType.NavigationBar) windowInsets
-                    // 横屏状态不需要有
-                    else windowInsetsWithoutTitleBar,
-                    onNavigateToPage = { aniNavigator.navigateMain(it) },
-                    navigationLayoutType = navigationLayoutType,
-                )
+                OverrideNavigation(
+                    {
+                        object : AniNavigator by it {
+                            override fun navigateMain(page: MainScenePage, requestFocus: Boolean) {
+                                currentPage = page
+                            }
+                        }
+                    },
+                ) {
+                    MainScene(
+                        page = currentPage,
+                        windowInsets =
+                        // macOS 上的手机状态需要有顶部的 insets
+                        if (navigationLayoutType == NavigationSuiteType.NavigationBar) windowInsets
+                        // 横屏状态不需要有
+                        else windowInsetsWithoutTitleBar,
+                        onNavigateToPage = { currentPage = it },
+                        navigationLayoutType = navigationLayoutType,
+                    )
+                }
             }
             composable<NavRoutes.BangumiOAuth>(
                 enterTransition = enterTransition,

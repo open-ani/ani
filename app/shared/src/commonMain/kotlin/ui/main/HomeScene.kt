@@ -10,6 +10,11 @@
 package me.him188.ani.app.ui.main
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -121,11 +126,8 @@ private fun MainSceneContent(
             AniNavigationSuite(
                 windowInsets,
                 navigationRailHeader = {
-                    val navigator = LocalNavigator.current
                     FloatingActionButton(
-                        {
-                            navigator.navigateSearch(true)
-                        },
+                        { onNavigateToPage(MainScenePage.Search) },
                         Modifier
                             .desktopTitleBarPadding()
                             .padding(vertical = 48.dp),
@@ -177,17 +179,31 @@ private fun MainSceneContent(
         AnimatedContent(
             page,
             Modifier.fillMaxSize(),
-            transitionSpec = AniThemeDefaults.emphasizedAnimatedContentTransition,
+            transitionSpec = {
+                val fadeIn = fadeIn(
+                    animationSpec = tween(
+                        150,
+                        delayMillis = 75,
+                        easing = CubicBezierEasing(0f, 0f, 1f, 1f),
+                    ),
+                )
+                val fadeOut = fadeOut(animationSpec = tween(75, easing = CubicBezierEasing(0f, 0f, 1f, 1f)))
+                fadeIn togetherWith fadeOut
+            },
         ) { page ->
             TabContent(layoutType = navigationLayoutType) {
                 when (page) {
                     MainScenePage.Exploration -> {
-                        ExplorationTab(windowInsets)
+                        ExplorationTab(
+                            windowInsets,
+                            onSearch = { onNavigateToPage(MainScenePage.Search) },
+                        )
                     }
 
                     MainScenePage.Collection -> CollectionPage(
                         windowInsets = windowInsets,
-                        Modifier,
+                        onClickSearch = { onNavigateToPage(MainScenePage.Search) },
+                        Modifier.fillMaxSize(),
                     )
 
                     MainScenePage.CacheManagement -> CacheManagementPage(
