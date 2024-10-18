@@ -32,7 +32,6 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +43,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import me.him188.ani.app.data.models.subject.SubjectCollection
 import me.him188.ani.app.data.models.subject.SubjectInfo
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.AsyncImage
@@ -53,8 +51,7 @@ import me.him188.ani.app.ui.foundation.layout.isWidthAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.paddingIfNotEmpty
 import me.him188.ani.app.ui.subject.collection.components.AiringLabel
 import me.him188.ani.app.ui.subject.collection.components.AiringLabelState
-import me.him188.ani.datasources.api.PackedDate
-import me.him188.ani.datasources.api.seasonMonth
+import me.him188.ani.app.ui.subject.renderSubjectSeason
 
 const val COVER_WIDTH_TO_HEIGHT_RATIO = 849 / 1200f
 
@@ -296,16 +293,4 @@ fun SubjectDetailsHeaderWide(
             }
         }
     }
-}
-
-@Stable
-val SubjectCollection.date get() = renderSubjectSeason(info.airDate)
-
-@Stable
-fun renderSubjectSeason(date: PackedDate): String {
-    if (date == PackedDate.Invalid) return "TBA"
-    if (date.seasonMonth == 0) {
-        return date.toString()
-    }
-    return "${date.year} 年 ${date.seasonMonth} 月"
 }

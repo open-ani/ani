@@ -17,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 
 
 /**
@@ -42,26 +44,24 @@ fun <T> AniListDetailPaneScaffold(
     detailPaneTopAppBar: @Composable () -> Unit,
     detailPaneContent: @Composable PaneScope.() -> Unit,
     modifier: Modifier = Modifier,
+    listPanePreferredWidth: Dp = Dp.Unspecified,
     layoutParameters: ListDetailLayoutParameters = ListDetailLayoutParameters.calculate(navigator.scaffoldDirective),
 ) {
+    BackHandler(navigator.canNavigateBack()) {
+        navigator.navigateBack()
+    }
     ListDetailPaneScaffold(
         navigator.scaffoldDirective,
         navigator.scaffoldValue,
         listPane = {
             val threePaneScaffoldScope = this
-            AnimatedPane1 {
+            AnimatedPane1(Modifier.preferredWidth(listPanePreferredWidth)) {
                 Column {
                     listPaneTopAppBar()
-                    val scope = remember(layoutParameters) {
+                    val scope = remember(layoutParameters, threePaneScaffoldScope) {
                         object : PaneScope {
                             override fun Modifier.paneContentPadding(): Modifier =
                                 Modifier.padding(layoutParameters.listPaneContentPaddingValues)
-
-                            override fun Modifier.preferredWidth(width: Dp): Modifier {
-                                return threePaneScaffoldScope.run {
-                                    Modifier.preferredWidth(width)
-                                }
-                            }
                         }
                     }
                     listPaneContent(scope)
@@ -76,16 +76,10 @@ fun <T> AniListDetailPaneScaffold(
                     colors = layoutParameters.detailPaneColors,
                 ) {
                     detailPaneTopAppBar()
-                    val scope = remember(layoutParameters) {
+                    val scope = remember(layoutParameters, threePaneScaffoldScope) {
                         object : PaneScope {
                             override fun Modifier.paneContentPadding(): Modifier =
                                 Modifier.padding(layoutParameters.detailPaneContentPaddingValues)
-
-                            override fun Modifier.preferredWidth(width: Dp): Modifier {
-                                return threePaneScaffoldScope.run {
-                                    Modifier.preferredWidth(width)
-                                }
-                            }
                         }
                     }
                     detailPaneContent(scope)
@@ -103,8 +97,6 @@ interface PaneScope {
      */
     @Stable
     fun Modifier.paneContentPadding(): Modifier
-
-    fun Modifier.preferredWidth(width: Dp): Modifier
 }
 
 @Immutable
@@ -118,9 +110,13 @@ data class ListDetailLayoutParameters(
         @Composable
         fun calculate(directive: PaneScaffoldDirective): ListDetailLayoutParameters {
             val isTwoPane = directive.maxHorizontalPartitions > 1
+            val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
             return if (isTwoPane) {
                 ListDetailLayoutParameters(
-                    listPaneContentPaddingValues = PaddingValues(start = 24.dp, end = 0.dp),
+                    listPaneContentPaddingValues = PaddingValues(
+                        start = windowSizeClass.paneHorizontalPadding,
+                        end = 0.dp, // ListDetail 两个 pane 之间自带 24.dp
+                    ),
                     detailPaneContentPaddingValues = PaddingValues(0.dp),
                     detailPaneShape = MaterialTheme.shapes.extraLarge.copy(
                         topEnd = ZeroCornerSize,
@@ -130,8 +126,8 @@ data class ListDetailLayoutParameters(
                 )
             } else {
                 ListDetailLayoutParameters(
-                    listPaneContentPaddingValues = PaddingValues(start = 24.dp),
-                    detailPaneContentPaddingValues = PaddingValues(horizontal = 24.dp),
+                    listPaneContentPaddingValues = PaddingValues(horizontal = windowSizeClass.paneHorizontalPadding),
+                    detailPaneContentPaddingValues = PaddingValues(horizontal = windowSizeClass.paneHorizontalPadding),
                     detailPaneShape = RectangleShape,
                     detailPaneColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
                 )
