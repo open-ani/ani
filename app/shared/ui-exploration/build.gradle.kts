@@ -26,6 +26,9 @@ kotlin {
     }
     sourceSets.commonTest.dependencies {
     }
+    sourceSets.jvmTest.dependencies {
+        implementation(kotlin("reflect"))
+    }
     sourceSets.androidMain.dependencies {
     }
     sourceSets.desktopMain.dependencies {

@@ -21,10 +21,12 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldLayout
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
+import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 
 /**
  * @param navigationSuite use [AniNavigationSuite]
@@ -39,11 +41,11 @@ fun AniNavigationSuiteLayout(
     layoutType: NavigationSuiteType =
         NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo()),
 //    navigationSuiteColors: NavigationSuiteColors = NavigationSuiteDefaults.colors(), // Ani modified
-    containerColor: Color = NavigationSuiteScaffoldDefaults.containerColor,
-    contentColor: Color = NavigationSuiteScaffoldDefaults.contentColor,
+    navigationContainerColor: Color = AniThemeDefaults.navigationContainerColor,
+    navigationContentColor: Color = contentColorFor(AniThemeDefaults.navigationContainerColor),
     content: @Composable () -> Unit = {},
 ) {
-    Surface(modifier = modifier, color = containerColor, contentColor = contentColor) {
+    Surface(modifier = modifier, color = navigationContainerColor, contentColor = navigationContentColor) {
         NavigationSuiteScaffoldLayout(
             navigationSuite = {
                 WindowDragArea { // Ani modified: add WindowDragArea

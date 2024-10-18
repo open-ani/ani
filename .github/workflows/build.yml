@@ -144,7 +144,12 @@ jobs:
         run: chmod -R 777 *
 
       - name: Clean and download dependencies
-        run: ./gradlew clean ${{ env.gradleArgs }}
+        if: ${{ matrix.run_tests }}
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 3
+          timeout_minutes: 60
+          command: ./gradlew clean ${{ env.gradleArgs }}
 
       - name: Update version name
         run: ./gradlew updateDevVersionNameFromGit ${{ env.gradleArgs }}

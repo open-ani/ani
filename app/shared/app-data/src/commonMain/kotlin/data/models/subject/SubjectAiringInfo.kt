@@ -120,6 +120,23 @@ data class SubjectAiringInfo(
     }
 }
 
+// Mainly for SubjectAiringLabel
+@Stable
+fun SubjectAiringInfo.computeTotalEpisodeText(): String? {
+    return if (kind == SubjectAiringKind.UPCOMING && episodeCount == 0) {
+        // 剧集还未知
+        null
+    } else {
+        when (kind) {
+            SubjectAiringKind.COMPLETED -> "全 $episodeCount 话"
+
+            SubjectAiringKind.ON_AIR,
+            SubjectAiringKind.UPCOMING,
+                -> "预定全 $episodeCount 话"
+        }
+    }
+}
+
 /**
  * 正在播出 (第一集还未开播, 将在未来开播)
  */

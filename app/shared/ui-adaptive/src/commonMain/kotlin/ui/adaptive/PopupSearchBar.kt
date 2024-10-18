@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,18 +70,21 @@ fun PopupSearchBar(
     val cornerSizeDp by animateDpAsState(
         if (expanded) 0.dp else 28.dp,
         animationSpec =
-        if (expanded)
+        if (expanded) {
+            // 现在要展开
+            tween(
+                durationMillis = 300,
+                delayMillis = 0,
+                easing = AnimationEnterEasing,
+            )
+        } else {
+            // 现在要收起来
             tween(
                 durationMillis = AnimationExitDurationMillis,
-                delayMillis = AnimationDelayMillis,
+                delayMillis = AnimationExitDurationMillis, // 先等 list 收起来
                 easing = AnimationExitEasing,
             )
-        else
-            tween(
-                durationMillis = AnimationEnterDurationMillis,
-                delayMillis = AnimationDelayMillis,
-                easing = AnimationEnterEasing,
-            ),
+        },
     )
     Surface(
         shape = MaterialTheme.shapes.extraLarge.copy(
@@ -91,7 +95,7 @@ fun PopupSearchBar(
         contentColor = contentColorFor(colors.containerColor),
         tonalElevation = tonalElevation,
         shadowElevation = shadowElevation,
-        modifier = modifier.zIndex(1f).width(SearchBarMinWidth),
+        modifier = modifier.zIndex(1f).widthIn(min = SearchBarMinWidth),
     ) {
         Column {
             var size by remember { mutableStateOf(IntSize.Zero) }

@@ -51,10 +51,11 @@ object AniThemeDefaults {
      * 默认的 [TopAppBarColors], 期望用于 [pageContentBackgroundColor] 的容器之内
      */
     @Composable
-    fun topAppBarColors(): TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-    )
+    fun topAppBarColors(containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLowest): TopAppBarColors =
+        TopAppBarDefaults.topAppBarColors(
+            containerColor = containerColor,
+            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        )
 
     /**
      * 透明背景颜色, 注意不能用在可滚动的场景, 因为滚动后 TopAppBar 背景将能看到后面的其他元素

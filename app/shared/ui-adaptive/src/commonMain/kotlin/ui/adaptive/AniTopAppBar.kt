@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -106,7 +108,7 @@ fun AniTopAppBar(
                 }
             },
             expandedHeight,
-            windowInsets,
+            windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
             colors,
             scrollBehavior,
         )

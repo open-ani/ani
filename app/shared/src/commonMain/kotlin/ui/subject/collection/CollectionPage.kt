@@ -105,6 +105,7 @@ val COLLECTION_TABS_SORTED = listOf(
 @Composable
 fun CollectionPage(
     windowInsets: WindowInsets,
+    onClickSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val vm = viewModel { MyCollectionsViewModel() } // TODO: remove vm
@@ -180,7 +181,7 @@ fun CollectionPage(
             vm.authState.isKnownGuest && showSessionErrorInList -> {
                 SessionTipsArea(
                     vm.authState,
-                    guest = { GuestTips(vm.authState) },
+                    guest = { GuestTips(vm.authState, onClickSearch) },
                     Modifier.padding(top = 32.dp)
                         .padding(horizontal = 16.dp),
                 )
@@ -199,8 +200,7 @@ fun CollectionPage(
 
                     Text("~ 空空如也 ~", style = MaterialTheme.typography.titleMedium)
 
-                    val navigator = LocalNavigator.current
-                    Button({ navigator.navigateSearch() }, Modifier.fillMaxWidth()) {
+                    Button(onClickSearch, Modifier.fillMaxWidth()) {
                         Icon(Icons.Rounded.Search, null)
                         Text("搜索", Modifier.padding(start = 8.dp))
                     }
@@ -465,6 +465,7 @@ private fun UnifiedCollectionType.displayText(): String {
 @Composable
 private fun GuestTips(
     authState: AuthState,
+    onClickSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -477,7 +478,7 @@ private fun GuestTips(
                 Text("登录", Modifier.padding(start = 8.dp))
             }
 
-            Button({ navigator.navigateSearch() }, Modifier.weight(1f)) {
+            Button(onClickSearch, Modifier.weight(1f)) {
                 Icon(Icons.Rounded.Search, null)
                 Text("搜索", Modifier.padding(start = 8.dp))
             }
