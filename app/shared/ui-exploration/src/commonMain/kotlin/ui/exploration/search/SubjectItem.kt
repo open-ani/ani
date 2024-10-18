@@ -93,18 +93,23 @@ fun SubjectItemLayout(
                 Modifier.padding(layout.bodyPaddings),
                 verticalArrangement = layout.bodyVerticalArrangement,
             ) {
-                Row(Modifier.width(IntrinsicSize.Max)) {
-                    ProvideTextStyle(typography.titleStyle) {
-                        title(typography.titleMaxLines)
+                Column(
+                    Modifier.weight(1f).padding(layout.textsPaddings),
+                    verticalArrangement = layout.bodyVerticalArrangement,
+                ) {
+                    Row(Modifier.width(IntrinsicSize.Max)) {
+                        ProvideTextStyle(typography.titleStyle) {
+                            title(typography.titleMaxLines)
+                        }
                     }
-                }
-                ProvideTextStyle(typography.tagsStyle) {
-                    tags()
-                }
-                Spacer(Modifier.weight(1f))
-                Column(verticalArrangement = layout.extraInfoVerticalArrangement) {
-                    ProvideTextStyle(typography.extraInfoStyle) {
-                        extraInfo()
+                    ProvideTextStyle(typography.tagsStyle) {
+                        tags()
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Column(verticalArrangement = layout.extraInfoVerticalArrangement) {
+                        ProvideTextStyle(typography.extraInfoStyle) {
+                            extraInfo()
+                        }
                     }
                 }
                 Row(
@@ -194,6 +199,7 @@ class SubjectItemLayoutParameters(
     val shape: Shape,
     val imageSize: DpSize,
     val bodyPaddings: PaddingValues,
+    val textsPaddings: PaddingValues,
     val bodyVerticalArrangement: Arrangement.Vertical,
     val extraInfoVerticalArrangement: Arrangement.Vertical,
 ) {
@@ -205,7 +211,8 @@ class SubjectItemLayoutParameters(
                 minWidth = 410.dp,
                 shape = MaterialTheme.shapes.extraLarge,
                 imageSize = DpSize(158.dp, 223.dp),
-                bodyPaddings = PaddingValues(start = 16.dp, top = 8.dp),
+                bodyPaddings = PaddingValues(start = 16.dp, top = 12.dp),
+                textsPaddings = PaddingValues(end = 16.dp),
                 bodyVerticalArrangement = Arrangement.spacedBy(4.dp),
                 extraInfoVerticalArrangement = Arrangement.spacedBy(8.dp),
             )
@@ -217,6 +224,7 @@ class SubjectItemLayoutParameters(
                 shape = MaterialTheme.shapes.large,
                 imageSize = DpSize(114.dp, 161.dp),
                 bodyPaddings = PaddingValues(start = 12.dp, top = 8.dp),
+                textsPaddings = PaddingValues(end = 12.dp),
                 bodyVerticalArrangement = Arrangement.spacedBy(2.dp),
                 extraInfoVerticalArrangement = Arrangement.spacedBy(4.dp),
             )

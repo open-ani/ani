@@ -44,6 +44,7 @@ fun <T> AniListDetailPaneScaffold(
     detailPaneTopAppBar: @Composable () -> Unit,
     detailPaneContent: @Composable PaneScope.() -> Unit,
     modifier: Modifier = Modifier,
+    listPanePreferredWidth: Dp = Dp.Unspecified,
     layoutParameters: ListDetailLayoutParameters = ListDetailLayoutParameters.calculate(navigator.scaffoldDirective),
 ) {
     BackHandler(navigator.canNavigateBack()) {
@@ -54,19 +55,13 @@ fun <T> AniListDetailPaneScaffold(
         navigator.scaffoldValue,
         listPane = {
             val threePaneScaffoldScope = this
-            AnimatedPane1 {
+            AnimatedPane1(Modifier.preferredWidth(listPanePreferredWidth)) {
                 Column {
                     listPaneTopAppBar()
                     val scope = remember(layoutParameters, threePaneScaffoldScope) {
                         object : PaneScope {
                             override fun Modifier.paneContentPadding(): Modifier =
                                 Modifier.padding(layoutParameters.listPaneContentPaddingValues)
-
-                            override fun Modifier.preferredWidth(width: Dp): Modifier {
-                                return threePaneScaffoldScope.run {
-                                    Modifier.preferredWidth(width)
-                                }
-                            }
                         }
                     }
                     listPaneContent(scope)
@@ -85,12 +80,6 @@ fun <T> AniListDetailPaneScaffold(
                         object : PaneScope {
                             override fun Modifier.paneContentPadding(): Modifier =
                                 Modifier.padding(layoutParameters.detailPaneContentPaddingValues)
-
-                            override fun Modifier.preferredWidth(width: Dp): Modifier {
-                                return threePaneScaffoldScope.run {
-                                    Modifier.preferredWidth(width)
-                                }
-                            }
                         }
                     }
                     detailPaneContent(scope)
@@ -108,8 +97,6 @@ interface PaneScope {
      */
     @Stable
     fun Modifier.paneContentPadding(): Modifier
-
-    fun Modifier.preferredWidth(width: Dp): Modifier
 }
 
 @Immutable

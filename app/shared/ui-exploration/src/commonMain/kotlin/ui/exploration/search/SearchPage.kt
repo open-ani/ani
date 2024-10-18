@@ -151,6 +151,7 @@ internal fun SearchPageResultColumn(
                 onPlay = { onPlay(info) },
                 info = info,
                 Modifier
+                    .fillMaxWidth()
                     .bringIntoViewRequester(requester)
                     .padding(vertical = currentWindowAdaptiveInfo().windowSizeClass.paneVerticalPadding / 2),
             )
@@ -187,7 +188,7 @@ internal fun SearchPageLayout(
             )
         },
         listPaneContent = {
-            Column(Modifier.preferredWidth(440.dp).paneContentPadding()) {
+            Column(Modifier.paneContentPadding()) {
                 // Use TopAppBar as a container for scroll behavior
                 Row(Modifier.fillMaxWidth()) {
                     searchBar()
@@ -208,5 +209,6 @@ internal fun SearchPageLayout(
             detailContent()
         },
         modifier,
+        listPanePreferredWidth = 480.dp,
     )
 }
