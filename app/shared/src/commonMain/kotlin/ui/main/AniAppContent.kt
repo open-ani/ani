@@ -14,6 +14,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,15 +37,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavType
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import me.him188.ani.app.domain.mediasource.rss.RssMediaSource
 import me.him188.ani.app.domain.mediasource.web.SelectorMediaSource
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.navigation.MainScenePage
+import me.him188.ani.app.navigation.NavRoutes
+import me.him188.ani.app.navigation.SettingsTab
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
@@ -61,7 +65,6 @@ import me.him188.ani.app.ui.profile.auth.BangumiTokenAuthViewModel
 import me.him188.ani.app.ui.profile.auth.WelcomeScene
 import me.him188.ani.app.ui.profile.auth.WelcomeViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
-import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourcePage
 import me.him188.ani.app.ui.settings.mediasource.rss.EditRssMediaSourceViewModel
@@ -77,6 +80,7 @@ import me.him188.ani.app.ui.subject.episode.EpisodeScene
 import me.him188.ani.app.ui.subject.episode.EpisodeViewModel
 import me.him188.ani.datasources.api.source.FactoryId
 import kotlin.math.roundToInt
+import kotlin.reflect.typeOf
 
 /**
  * UI 入口点. 包含所有子页面, 以及组合这些子页面的方式 (navigation).
@@ -105,7 +109,7 @@ private fun AniAppContentImpl(
         .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
 
     SharedTransitionLayout {
-        NavHost(navController, startDestination = "/main", modifier) {
+        NavHost(navController, startDestination = NavRoutes.Main(MainScenePage.Exploration), modifier) {
             // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#e5b958f0-435d-4e84-aed4-8d1ea395fa5c
             val enterDuration = 500
             val exitDuration = 200
@@ -135,8 +139,7 @@ private fun AniAppContentImpl(
                     .plus(fadeOut(tween(exitDuration, easing = exitEasing)))
             }
 
-            composable(
-                "/welcome",
+            composable<NavRoutes.Welcome>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
@@ -144,28 +147,44 @@ private fun AniAppContentImpl(
             ) { // 由 SessionManager.requireAuthorize 跳转到
                 WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.fillMaxSize(), windowInsets)
             }
-            composable(
-                "/main",
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition,
-            ) {
+            composable<NavRoutes.Main>(
+                enterTransition = {
+                    if (initialState.destination.hasRoute<NavRoutes.Main>()) fadeIn(snap())
+                    else enterTransition()
+                },
+                exitTransition = {
+                    if (targetState.destination.hasRoute<NavRoutes.Main>()) fadeOut(snap())
+                    else exitTransition()
+                },
+                popEnterTransition = {
+                    if (initialState.destination.hasRoute<NavRoutes.Main>()) fadeIn(snap())
+                    popEnterTransition()
+                },
+                popExitTransition = {
+                    if (targetState.destination.hasRoute<NavRoutes.Main>()) fadeOut(snap())
+                    else popExitTransition()
+                },
+                typeMap = mapOf(
+                    typeOf<MainScenePage>() to MainScenePage.NavType,
+                ),
+            ) { backStack ->
+                val route = backStack.toRoute<NavRoutes.Main>()
                 val navigationLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
                     currentWindowAdaptiveInfo(),
                 )
 
                 MainScene(
+                    page = route.page,
                     windowInsets =
                     // macOS 上的手机状态需要有顶部的 insets
                     if (navigationLayoutType == NavigationSuiteType.NavigationBar) windowInsets
                     // 横屏状态不需要有
                     else windowInsetsWithoutTitleBar,
+                    onNavigateToPage = { aniNavigator.navigateMain(it) },
                     navigationLayoutType = navigationLayoutType,
                 )
             }
-            composable(
-                "/bangumi-oauth",
+            composable<NavRoutes.BangumiOAuth>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
@@ -173,8 +192,7 @@ private fun AniAppContentImpl(
             ) {
                 BangumiOAuthScene(viewModel { BangumiOAuthViewModel() }, windowInsets = windowInsets)
             }
-            composable(
-                "/bangumi-token-auth",
+            composable<NavRoutes.BangumiTokenAuth>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
@@ -186,83 +204,60 @@ private fun AniAppContentImpl(
                     windowInsets,
                 )
             }
-            composable(
-                "/subjects/{subjectId}",
-                arguments = listOf(navArgument("subjectId") { type = NavType.IntType }),
+            composable<NavRoutes.SubjectDetail>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { backStackEntry ->
-                val subjectId = backStackEntry.arguments?.getInt("subjectId") ?: run {
-                    navController.popBackStack()
-                    return@composable
+                val details = backStackEntry.toRoute<NavRoutes.SubjectDetail>()
+                val vm = viewModel<SubjectDetailsViewModel>(key = details.subjectId.toString()) {
+                    SubjectDetailsViewModel(details.subjectId)
                 }
-                val vm = viewModel<SubjectDetailsViewModel> { SubjectDetailsViewModel(subjectId) }
                 SideEffect { vm.navigator = aniNavigator }
                 SubjectDetailsScene(vm, windowInsets = windowInsets)
             }
-            composable(
-                "/subjects/{subjectId}/episodes/{episodeId}?fullscreen={fullscreen}",
-                arguments = listOf(
-                    navArgument("subjectId") { type = NavType.IntType },
-                    navArgument("episodeId") { type = NavType.IntType },
-                    navArgument("fullscreen") { type = NavType.BoolType },
-                ),
+            composable<NavRoutes.EpisodeDetail>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { backStackEntry ->
-                val subjectId = backStackEntry.arguments?.getInt("subjectId") ?: run {
-                    navController.popBackStack()
-                    return@composable
-                }
-
-                val episodeId = backStackEntry.arguments?.getInt("episodeId") ?: run {
-                    navController.popBackStack()
-                    return@composable
-                }
-                val initialIsFullscreen = backStackEntry.arguments?.getBoolean("fullscreen") ?: false
+                val route = backStackEntry.toRoute<NavRoutes.EpisodeDetail>()
                 val context = LocalContext.current
                 val vm = viewModel<EpisodeViewModel>(
-                    key = "$subjectId-$episodeId",
+                    key = route.toString(),
                 ) {
                     EpisodeViewModel(
-                        initialSubjectId = subjectId,
-                        initialEpisodeId = episodeId,
-                        initialIsFullscreen = initialIsFullscreen,
+                        initialSubjectId = route.subjectId,
+                        initialEpisodeId = route.episodeId,
+                        initialIsFullscreen = false,
                         context,
                     )
                 }
                 EpisodeScene(vm, Modifier.fillMaxSize(), windowInsets)
             }
-            composable(
-                "/settings?tab={tab}&back={back}",
-                arguments = listOf(
-                    navArgument("tab") { type = NavType.IntType },
-                    navArgument("back") { type = NavType.BoolType },
-                ),
+            composable<NavRoutes.Settings>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
+                typeMap = mapOf(
+                    typeOf<SettingsTab>() to SettingsTab.NavType,
+                ),
             ) { backStackEntry ->
-                val initialTab = backStackEntry.arguments?.getInt("tab")
-                    ?.let { SettingsTab.entries.getOrNull(it) }
-
+                val route = backStackEntry.toRoute<NavRoutes.Settings>()
                 SettingsPage(
                     viewModel {
                         SettingsViewModel()
                     },
                     Modifier.fillMaxSize(),
                     contentWindowInsets = windowInsets,
-                    initialTab,
+                    route.tab,
                     showNavigationIcon = true,
                 )
             }
-            composable(
-                "/caches",
+            composable<NavRoutes.Caches>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
@@ -275,55 +270,39 @@ private fun AniAppContentImpl(
                     windowInsets = windowInsets,
                 )
             }
-            composable(
-                "/caches/{cacheId}",
+            composable<NavRoutes.CacheDetail>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
-                arguments = listOf(navArgument("cacheId") { type = NavType.StringType }),
             ) { backStackEntry ->
-                val cacheId = backStackEntry.arguments?.getString("cacheId") ?: run {
-                    navController.popBackStack()
-                    return@composable
-                }
+                val route = backStackEntry.toRoute<NavRoutes.CacheDetail>()
                 MediaCacheDetailsPage(
-                    viewModel(key = cacheId) { MediaCacheDetailsPageViewModel(cacheId) },
+                    viewModel(key = route.toString()) { MediaCacheDetailsPageViewModel(route.cacheId) },
                     Modifier.fillMaxSize(),
                     windowInsets = windowInsets,
                 )
             }
-            composable(
-                "/subjects/{subjectId}/caches",
-                arguments = listOf(navArgument("subjectId") { type = NavType.IntType }),
+            composable<NavRoutes.SubjectCaches>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { backStackEntry ->
-                val subjectId = backStackEntry.arguments?.getInt("subjectId") ?: run {
-                    navController.popBackStack()
-                    return@composable
-                }
+                val route = backStackEntry.toRoute<NavRoutes.SubjectCaches>()
                 // Don't use rememberViewModel to save memory
-                val vm = remember(subjectId) { SubjectCacheViewModelImpl(subjectId) }
+                val vm = remember(route.subjectId) { SubjectCacheViewModelImpl(route.subjectId) }
                 SubjectCacheScene(vm, Modifier.fillMaxSize(), windowInsets)
             }
-            composable(
-                "/settings/media-source/edit?factoryId={factoryId}&mediaSourceInstanceId={mediaSourceInstanceId}",
-                arguments = listOf(
-                    navArgument("factoryId") { type = NavType.StringType },
-                    navArgument("mediaSourceInstanceId") { type = NavType.StringType },
-                ),
+            composable<NavRoutes.EditMediaSource>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) { backStackEntry ->
-                val factoryIdString = backStackEntry.arguments?.getString("factoryId") ?: error("factoryId is required")
-                val factoryId = FactoryId(factoryIdString)
-                val mediaSourceInstanceId = backStackEntry.arguments?.getString("mediaSourceInstanceId")
-                    ?: error("mediaSourceInstanceId is required")
+                val route = backStackEntry.toRoute<NavRoutes.EditMediaSource>()
+                val factoryId = FactoryId(route.factoryId)
+                val mediaSourceInstanceId = route.mediaSourceInstanceId
                 when (factoryId) {
                     RssMediaSource.FactoryId -> EditRssMediaSourcePage(
                         viewModel<EditRssMediaSourceViewModel>(key = mediaSourceInstanceId) {
@@ -355,8 +334,7 @@ private fun AniAppContentImpl(
                     else -> error("Unknown factoryId: $factoryId")
                 }
             }
-            composable(
-                "/settings/torrent-peer/edit",
+            composable<NavRoutes.TorrentPeerSettings>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
                 popEnterTransition = popEnterTransition,

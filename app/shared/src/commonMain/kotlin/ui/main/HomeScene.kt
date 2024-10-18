@@ -9,13 +9,12 @@
 
 package me.him188.ani.app.ui.main
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
@@ -40,24 +39,23 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.navigation.OverrideNavigation
+import me.him188.ani.app.navigation.MainScenePage
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuite
@@ -75,7 +73,6 @@ import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.settings.SettingsPage
-import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.subject.collection.CollectionPage
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
@@ -90,7 +87,9 @@ import me.him188.ani.utils.platform.isAndroid
 
 @Composable
 fun MainScene(
+    page: MainScenePage,
     modifier: Modifier = Modifier,
+    onNavigateToPage: (MainScenePage) -> Unit,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets, // Compose for Desktop 目前不会考虑这个
     navigationLayoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
@@ -104,148 +103,120 @@ fun MainScene(
         }
     }
 
-    MainSceneContent(windowInsets, modifier, navigationLayoutType)
+    MainSceneContent(page, windowInsets, onNavigateToPage, modifier, navigationLayoutType)
 }
 
 @Composable
 private fun MainSceneContent(
+    page: MainScenePage,
     windowInsets: WindowInsets,
+    onNavigateToPage: (MainScenePage) -> Unit,
     modifier: Modifier = Modifier,
     navigationLayoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
     ),
 ) {
-    val pagerState = rememberPagerState(1) { 4 }
-    val uiScope = rememberCoroutineScope()
-
-    OverrideNavigation(
-        { old ->
-            object : AniNavigator by old {
-                override fun navigateSettings(tab: SettingsTab?) {
-                    uiScope.launch {
-                        pagerState.scrollToPage(3)
+    AniNavigationSuiteLayout(
+        navigationSuite = {
+            AniNavigationSuite(
+                windowInsets,
+                navigationRailHeader = {
+                    val navigator = LocalNavigator.current
+                    FloatingActionButton(
+                        {
+                            navigator.navigateSearch(true)
+                        },
+                        Modifier
+                            .desktopTitleBarPadding()
+                            .padding(vertical = 48.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                    ) {
+                        Icon(Icons.Rounded.Search, "搜索")
                     }
+                },
+                colors = NavigationSuiteDefaults.colors(
+                    navigationDrawerContainerColor = AniThemeDefaults.navigationContainerColor,
+                    navigationBarContainerColor = AniThemeDefaults.navigationContainerColor,
+                    navigationRailContainerColor = AniThemeDefaults.navigationContainerColor,
+                ),
+                navigationRailItemSpacing = 8.dp,
+            ) {
+                @Stable
+                fun getIcon(page: MainScenePage): ImageVector = when (page) {
+                    MainScenePage.Exploration -> Icons.Rounded.TravelExplore
+                    MainScenePage.Collection -> Icons.Rounded.Star
+                    MainScenePage.CacheManagement -> Icons.Rounded.DownloadDone
+                    MainScenePage.Settings -> Icons.Rounded.Settings
+                    MainScenePage.Search -> Icons.Rounded.Search
+                }
+
+                @Stable
+                fun getText(page: MainScenePage): String = when (page) {
+                    MainScenePage.Exploration -> "探索"
+                    MainScenePage.Collection -> "追番"
+                    MainScenePage.CacheManagement -> "缓存"
+                    MainScenePage.Settings -> "设置"
+                    MainScenePage.Search -> "搜索"
+                }
+
+                for (entry in MainScenePage.visibleEntries) {
+                    item(
+                        page == entry,
+                        onClick = { onNavigateToPage(entry) },
+                        icon = { Icon(getIcon(entry), null) },
+                        label = { Text(text = getText(entry)) },
+                    )
                 }
             }
         },
+        modifier,
+        layoutType = navigationLayoutType,
+        containerColor = AniThemeDefaults.navigationContainerColor,
     ) {
-        AniNavigationSuiteLayout(
-            navigationSuite = {
-                AniNavigationSuite(
-                    windowInsets,
-                    navigationRailHeader = {
-                        val navigator = LocalNavigator.current
-                        FloatingActionButton(
-                            {
-                                navigator.navigateSearch(true)
-                            },
-                            Modifier
-                                .desktopTitleBarPadding()
-                                .padding(vertical = 48.dp),
-                            elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
-                        ) {
-                            Icon(Icons.Rounded.Search, "搜索")
-                        }
-                    },
-                    colors = NavigationSuiteDefaults.colors(
-                        navigationDrawerContainerColor = AniThemeDefaults.navigationContainerColor,
-                        navigationBarContainerColor = AniThemeDefaults.navigationContainerColor,
-                        navigationRailContainerColor = AniThemeDefaults.navigationContainerColor,
-                    ),
-                    navigationRailItemSpacing = 8.dp,
-                ) {
-                    item(
-                        pagerState.currentPage == 0,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(0)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                        label = { Text(text = "探索") },
+        val navigator by rememberUpdatedState(LocalNavigator.current)
+        AnimatedContent(
+            page,
+            Modifier.fillMaxSize(),
+            transitionSpec = AniThemeDefaults.emphasizedAnimatedContentTransition,
+        ) { page ->
+            TabContent(layoutType = navigationLayoutType) {
+                when (page) {
+                    MainScenePage.Exploration -> {
+                        ExplorationTab(windowInsets)
+                    }
+
+                    MainScenePage.Collection -> CollectionPage(
+                        windowInsets = windowInsets,
+                        Modifier,
                     )
 
-                    item(
-                        pagerState.currentPage == 1,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(1)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.Star, null) },
-                        label = { Text(text = "追番") },
-                    )
-                    item(
-                        pagerState.currentPage == 2,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(2)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.DownloadDone, null) },
-                        label = { Text(text = "缓存") },
+                    MainScenePage.CacheManagement -> CacheManagementPage(
+                        viewModel { CacheManagementViewModel(navigator) },
+                        showBack = false,
+                        Modifier.fillMaxSize(),
+                        windowInsets = windowInsets,
                     )
 
-                    // TODO: 检查更新
-//                    UpdateCheckerItem()
-
-                    item(
-                        pagerState.currentPage == 3,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(3)
-                            }
+                    MainScenePage.Settings -> SettingsPage(
+                        viewModel {
+                            SettingsViewModel()
                         },
-                        icon = { Icon(Icons.Rounded.Settings, null) },
-                        label = { Text(text = "设置") },
+                        Modifier.fillMaxSize(),
+                        contentWindowInsets = windowInsets,
                     )
-                }
-            },
-            modifier,
-            layoutType = navigationLayoutType,
-            containerColor = AniThemeDefaults.navigationContainerColor,
-        ) {
-            val navigator by rememberUpdatedState(LocalNavigator.current)
-            HorizontalPager(pagerState, Modifier.fillMaxSize(), userScrollEnabled = false) { pageIndex ->
-                TabContent(layoutType = navigationLayoutType) {
-                    when (pageIndex) {
-                        0 -> {
-                            ExplorationTab(windowInsets)
-                        }
 
-                        1 -> CollectionPage(
-                            windowInsets = windowInsets,
-                            Modifier,
-                        )
-
-                        2 -> CacheManagementPage(
-                            viewModel { CacheManagementViewModel(navigator) },
-                            showBack = false,
-                            Modifier.fillMaxSize(),
-                            windowInsets = windowInsets,
-                        )
-
-                        3 -> SettingsPage(
-                            viewModel {
-                                SettingsViewModel()
+                    MainScenePage.Search -> {
+                        val vm = viewModel { SearchViewModel() }
+                        SearchPage(
+                            vm.searchPageState,
+                            windowInsets,
+                            detailContent = {
+                                vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
+                                    SubjectDetailsScene(it)
+                                }
                             },
                             Modifier.fillMaxSize(),
-                            contentWindowInsets = windowInsets,
                         )
-
-                        4 -> {
-                            val vm = viewModel { SearchViewModel() }
-                            SearchPage(
-                                vm.searchPageState,
-                                windowInsets,
-                                detailContent = {
-                                    vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
-                                        SubjectDetailsScene(it)
-                                    }
-                                },
-                                Modifier.fillMaxSize(),
-                            )
-                        }
                     }
                 }
             }
