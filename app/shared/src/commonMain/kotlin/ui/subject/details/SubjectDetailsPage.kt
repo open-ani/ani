@@ -36,7 +36,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -243,6 +242,8 @@ fun SubjectDetailsPage(
         isContentReady = true
     }
 
+    val backgroundColor = AniThemeDefaults.pageContentBackgroundColor
+    val stickyTopBarColor = AniThemeDefaults.navigationContainerColor
     Scaffold(
         topBar = {
             if (showTopBar) {
@@ -277,7 +278,7 @@ fun SubjectDetailsPage(
                                         Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                                     }
                                 },
-                                colors = AniThemeDefaults.topAppBarColors(),
+                                colors = AniThemeDefaults.topAppBarColors(containerColor = stickyTopBarColor),
                                 windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                             )
                         }
@@ -287,6 +288,7 @@ fun SubjectDetailsPage(
         },
         modifier = modifier,
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+        containerColor = backgroundColor,
     ) { scaffoldPadding ->
         // 这个页面比较特殊. 背景需要绘制到 TopBar 等区域以内, 也就是要无视 scaffoldPadding.
 
@@ -324,6 +326,7 @@ fun SubjectDetailsPage(
                             SubjectBlurredBackground(
                                 coverImageUrl = if (isContentReady) state.coverImageUrl else null,
                                 Modifier.matchParentSize(),
+                                backgroundColor = backgroundColor,
                             )
                         }
 
@@ -363,7 +366,7 @@ fun SubjectDetailsPage(
                             .consumeWindowInsets(remainingContentPadding),
                     ) {
                         val tabContainerColor by animateColorAsState(
-                            if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
+                            if (connectedScrollState.isScrolledTop) stickyTopBarColor else backgroundColor,
                             tween(),
                         )
                         ScrollableTabRow(

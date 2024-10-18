@@ -34,7 +34,7 @@ fun SubjectBlurredBackground(
             .blur(if (currentWindowAdaptiveInfo().isWidthAtLeastMedium) 32.dp else 16.dp)
             .backgroundWithGradient(
                 coverImageUrl, backgroundColor,
-                brush = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) {
+                brush = if (backgroundColor.luminance() < 0.5f) {
                     Brush.verticalGradient(
                         0f to surfaceColor.copy(alpha = 0xA2.toFloat() / 0xFF),
                         0.4f to surfaceColor.copy(alpha = 0xA2.toFloat() / 0xFF),
