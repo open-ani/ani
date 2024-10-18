@@ -13,50 +13,20 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.transformLatest
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import me.him188.ani.app.data.models.ApiResponse
-import me.him188.ani.app.data.models.subject.SubjectManager
-import me.him188.ani.app.data.repository.BangumiRelatedCharactersRepository
-import me.him188.ani.app.data.repository.SubjectSearchRepository
 import me.him188.ani.app.data.repository.TrendsRepository
-import me.him188.ani.app.domain.search.SubjectProvider
-import me.him188.ani.app.domain.search.SubjectSearchQuery
-import me.him188.ani.app.domain.search.SubjectSearcherImpl
 import me.him188.ani.app.domain.session.OpaqueSession
 import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.domain.session.userInfo
-import me.him188.ani.app.tools.ldc.LazyDataCache
+import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.ExplorationPageState
-import me.him188.ani.app.ui.exploration.search.SearchPage
-import me.him188.ani.app.ui.exploration.search.SearchPageState
-import me.him188.ani.app.ui.exploration.search.SubjectPreviewItemInfo
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
 import me.him188.ani.app.ui.foundation.AuthState
-import me.him188.ani.app.ui.search.LdcSearchState
-import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
-import me.him188.ani.app.ui.subject.details.SubjectDetailsViewModel
-import me.him188.ani.datasources.api.paging.map
-import me.him188.ani.utils.coroutines.onReplacement
 import me.him188.ani.utils.coroutines.retryUntilSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -65,19 +35,10 @@ import org.koin.core.component.inject
 class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
     private val trendsRepository: TrendsRepository by inject()
     private val sessionManager: SessionManager by inject()
-    private val searchHistoryRepository: SubjectSearchRepository by inject()
-    private val bangumiRelatedCharactersRepository: BangumiRelatedCharactersRepository by inject()
-
     private val authState = AuthState()
 
     @OptIn(OpaqueSession::class)
     private val selfInfoState = sessionManager.userInfo.produceState(null)
-
-    private val subjectProvider: SubjectProvider by inject()
-    private val subjectManager: SubjectManager by inject()
-
-    private val searcher = SubjectSearcherImpl(subjectProvider, backgroundScope.coroutineContext)
-    private val queryState = mutableStateOf("")
 
     val explorationPageState: ExplorationPageState = ExplorationPageState(
         authState,
@@ -91,65 +52,6 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
                 .produceState(null),
         ),
     )
-
-    private val searchResultItemsFlow = searcher.searchId.transformLatest {
-//        val jobs = mutableMapOf<Int, Deferred<List<RelatedPersonInfo>>>()
-        coroutineScope {
-            emitAll(
-                combine(searcher.list) { (searchResultItems) ->
-                    searchResultItems.map {
-//                        jobs.getOrPut(it.id) {
-//                            async { bangumiRelatedCharactersRepository.relatedCharactersFlow(it.id).first() }
-//                        }
-                        SubjectPreviewItemInfo.compute(it, null, null)
-                    }
-                },
-            )
-        }
-    }
-    val searchPageState: SearchPageState = SearchPageState(
-        searchHistoryState = searchHistoryRepository.getHistoryFlow().produceState(emptyList()),
-        suggestionsState = searchHistoryRepository.getHistoryFlow()
-            .produceState(emptyList()),// todo: suggestions
-        onRequestPlay = { info ->
-            subjectManager.subjectCollectionFlow(info.id).first().episodes.firstOrNull()?.let {
-                SearchPageState.EpisodeTarget(info.id, it.episodeInfo.id)
-            }
-        },
-        queryState = queryState,
-        searchState = LdcSearchState(
-            createLdc = {
-                LazyDataCache(
-                    createSource = {
-                        ApiResponse.success(
-                            subjectProvider.startSearch(SubjectSearchQuery(keyword = queryState.value))
-                                .map { SubjectPreviewItemInfo.compute(it, null, null) },
-                        )
-                    },
-                    getKey = { it.id },
-                    debugName = "ExplorationTabViewModel.searchPageState.ldc",
-                )
-            },
-            backgroundScope.coroutineContext,
-        ),
-        backgroundScope,
-    )
-
-    val subjectDetailsViewModelFlow = snapshotFlow { searchPageState.selectedItem }
-        .flowOn(Dispatchers.Main)
-        .map {
-            SubjectDetailsViewModel(it?.id ?: return@map null)
-        }
-        .onReplacement {
-            it?.cancelScope()
-        }
-        .flowOn(Dispatchers.Default)
-        .shareInBackground()
-
-    override fun onCleared() {
-        super.onCleared()
-        subjectDetailsViewModelFlow.replayCache.firstOrNull()?.cancelScope()
-    }
 }
 
 @Composable
@@ -158,46 +60,13 @@ internal fun ExplorationTab(
     modifier: Modifier = Modifier,
     vm: ExplorationTabViewModel = viewModel { ExplorationTabViewModel() },
 ) {
-    val navController = rememberNavController()
-    NavHost(
-        navController,
-        startDestination = Routes.EXPLORATION,
-        modifier,
-    ) {
-        composable<Routes.EXPLORATION> {
-            ExplorationPage(
-                vm.explorationPageState,
-                onSearch = {
-                    navController.navigate(Routes.SEARCH) {
-                        launchSingleTop = true
-                    }
-                },
-                Modifier.fillMaxSize(),
-                contentWindowInsets = windowInsets,
-            )
-        }
-        composable<Routes.SEARCH> {
-            SearchPage(
-                vm.searchPageState,
-                windowInsets,
-                detailContent = {
-                    vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
-                        SubjectDetailsScene(it)
-                    }
-                },
-                Modifier.fillMaxSize(),
-            )
-        }
-    }
-}
-
-@Serializable
-private sealed class Routes {
-    @Serializable
-    @SerialName("EXPLORATION")
-    data object EXPLORATION : Routes()
-
-    @Serializable
-    @SerialName("SEARCH")
-    data object SEARCH : Routes()
+    val navigator = LocalNavigator.current
+    ExplorationPage(
+        vm.explorationPageState,
+        onSearch = {
+            navigator.navigateSearch()
+        },
+        modifier.fillMaxSize(),
+        contentWindowInsets = windowInsets,
+    )
 }

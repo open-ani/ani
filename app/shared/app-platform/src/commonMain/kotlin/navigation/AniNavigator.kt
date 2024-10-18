@@ -82,7 +82,7 @@ interface AniNavigator {
     }
 
     fun navigateSearch(requestFocus: Boolean = false) {
-        navigator.navigate("/home?tab=search")
+        navigator.navigate("/search?requestFocus=$requestFocus")
     }
 
     /**

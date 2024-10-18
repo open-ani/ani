@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.AniNavigator
@@ -63,6 +64,7 @@ import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuite
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuiteLayout
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
+import me.him188.ani.app.ui.exploration.search.SearchPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
@@ -76,6 +78,7 @@ import me.him188.ani.app.ui.settings.SettingsPage
 import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.subject.collection.CollectionPage
+import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.app.ui.update.AutoUpdateViewModel
 import me.him188.ani.app.ui.update.ChangelogDialog
 import me.him188.ani.app.ui.update.FailedToInstallDialog
@@ -118,14 +121,6 @@ private fun MainSceneContent(
     OverrideNavigation(
         { old ->
             object : AniNavigator by old {
-                override fun navigateSearch(requestFocus: Boolean) {
-                    uiScope.launch {
-                        pagerState.scrollToPage(0)
-                        if (requestFocus) {
-                        }
-                    }
-                }
-
                 override fun navigateSettings(tab: SettingsTab?) {
                     uiScope.launch {
                         pagerState.scrollToPage(3)
@@ -237,6 +232,20 @@ private fun MainSceneContent(
                             Modifier.fillMaxSize(),
                             contentWindowInsets = windowInsets,
                         )
+
+                        4 -> {
+                            val vm = viewModel { SearchViewModel() }
+                            SearchPage(
+                                vm.searchPageState,
+                                windowInsets,
+                                detailContent = {
+                                    vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
+                                        SubjectDetailsScene(it)
+                                    }
+                                },
+                                Modifier.fillMaxSize(),
+                            )
+                        }
                     }
                 }
             }

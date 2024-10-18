@@ -164,7 +164,7 @@ internal fun SearchPageResultColumn(
                 bringIntoViewRequesters[state.items.getOrNull(it)?.id]?.bringIntoView()
             }
     }
-}   
+}
 
 @Composable
 internal fun SearchPageLayout(

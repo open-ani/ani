@@ -157,10 +157,10 @@ private fun AniAppContentImpl(
 
                 MainScene(
                     windowInsets =
-                        // macOS 上的手机状态需要有顶部的 insets
-                        if (navigationLayoutType == NavigationSuiteType.NavigationBar) windowInsets
-                        // 横屏状态不需要有
-                        else windowInsetsWithoutTitleBar,
+                    // macOS 上的手机状态需要有顶部的 insets
+                    if (navigationLayoutType == NavigationSuiteType.NavigationBar) windowInsets
+                    // 横屏状态不需要有
+                    else windowInsetsWithoutTitleBar,
                     navigationLayoutType = navigationLayoutType,
                 )
             }
