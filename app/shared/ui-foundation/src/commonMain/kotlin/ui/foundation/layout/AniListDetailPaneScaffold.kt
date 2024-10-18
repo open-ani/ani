@@ -57,7 +57,7 @@ fun <T> AniListDetailPaneScaffold(
             AnimatedPane1 {
                 Column {
                     listPaneTopAppBar()
-                    val scope = remember(layoutParameters) {
+                    val scope = remember(layoutParameters, threePaneScaffoldScope) {
                         object : PaneScope {
                             override fun Modifier.paneContentPadding(): Modifier =
                                 Modifier.padding(layoutParameters.listPaneContentPaddingValues)
@@ -81,7 +81,7 @@ fun <T> AniListDetailPaneScaffold(
                     colors = layoutParameters.detailPaneColors,
                 ) {
                     detailPaneTopAppBar()
-                    val scope = remember(layoutParameters) {
+                    val scope = remember(layoutParameters, threePaneScaffoldScope) {
                         object : PaneScope {
                             override fun Modifier.paneContentPadding(): Modifier =
                                 Modifier.padding(layoutParameters.detailPaneContentPaddingValues)
