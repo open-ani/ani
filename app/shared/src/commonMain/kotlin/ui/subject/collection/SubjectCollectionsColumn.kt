@@ -148,7 +148,7 @@ fun SubjectCollectionsColumn(
         horizontalArrangement = Arrangement.spacedBy(spacedBy),
         contentPadding = PaddingValues(horizontal = spacedBy),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {} // 添加新 item 时保持到顶部
+        item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(1.dp)) } // 添加新 item 时保持到顶部
 
         items(state.cachedData, key = { it.subjectId }) { collection ->
             Box(Modifier.ifThen(enableAnimation) { animateItem() }) {
@@ -162,12 +162,14 @@ fun SubjectCollectionsColumn(
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                         CircularProgressIndicator()
                     }
+                } else {
+                    Spacer(Modifier.height(1.dp))
                 }
                 state.requestMore()
             }
         }
 
-        item(span = { GridItemSpan(maxLineSpan) }) {}
+        item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(1.dp)) }
     }
 }
 
