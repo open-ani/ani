@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -94,7 +95,7 @@ fun PopupSearchBar(
         contentColor = contentColorFor(colors.containerColor),
         tonalElevation = tonalElevation,
         shadowElevation = shadowElevation,
-        modifier = modifier.zIndex(1f).width(SearchBarMinWidth),
+        modifier = modifier.zIndex(1f).widthIn(min = SearchBarMinWidth),
     ) {
         Column {
             var size by remember { mutableStateOf(IntSize.Zero) }

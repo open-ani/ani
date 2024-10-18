@@ -11,6 +11,7 @@ package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -88,7 +89,7 @@ fun <T> SuggestionSearchBar(
                 onSearch = { state.expanded = false },
                 expanded = state.expanded,
                 onExpandedChange = { state.expanded = it },
-                Modifier.onEnterKeyEvent {
+                Modifier.fillMaxWidth().onEnterKeyEvent {
                     state.startSearch()
                     true
                 },

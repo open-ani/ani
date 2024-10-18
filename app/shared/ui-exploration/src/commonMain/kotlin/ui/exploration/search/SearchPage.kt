@@ -71,7 +71,7 @@ fun SearchPage(
         searchBar = {
             SuggestionSearchBar(
                 state.suggestionSearchBarState,
-                Modifier.fillMaxWidth(),
+                Modifier,
                 placeholder = { Text("搜索") },
             )
         },
