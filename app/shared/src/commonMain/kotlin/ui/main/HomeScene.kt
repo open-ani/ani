@@ -74,6 +74,7 @@ import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.profile.AccountViewModel
@@ -220,6 +221,9 @@ private fun MainSceneContent(
 
                     MainScenePage.Search -> {
                         val vm = viewModel { SearchViewModel() }
+                        BackHandler(true) {
+                            onNavigateToPage(MainScenePage.Exploration)
+                        }
                         SearchPage(
                             vm.searchPageState,
                             windowInsets,
