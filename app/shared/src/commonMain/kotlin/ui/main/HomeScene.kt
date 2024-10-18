@@ -66,6 +66,7 @@ import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuite
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuiteLayout
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
+import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.search.SearchPage
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
@@ -188,9 +189,11 @@ private fun MainSceneContent(
             TabContent(layoutType = navigationLayoutType) {
                 when (page) {
                     MainScenePage.Exploration -> {
-                        ExplorationTab(
-                            windowInsets,
+                        ExplorationPage(
+                            viewModel { ExplorationPageViewModel() }.explorationPageState,
                             onSearch = { onNavigateToPage(MainScenePage.Search) },
+                            modifier.fillMaxSize(),
+                            contentWindowInsets = windowInsets,
                         )
                     }
 

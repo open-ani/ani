@@ -9,20 +9,13 @@
 
 package me.him188.ani.app.ui.main
 
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.repository.TrendsRepository
 import me.him188.ani.app.domain.session.OpaqueSession
 import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.domain.session.userInfo
-import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.ExplorationPageState
 import me.him188.ani.app.ui.exploration.trends.TrendingSubjectsState
 import me.him188.ani.app.ui.foundation.AbstractViewModel
@@ -32,7 +25,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Stable
-class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
+class ExplorationPageViewModel : AbstractViewModel(), KoinComponent {
     private val trendsRepository: TrendsRepository by inject()
     private val sessionManager: SessionManager by inject()
     private val authState = AuthState()
@@ -51,21 +44,5 @@ class ExplorationTabViewModel : AbstractViewModel(), KoinComponent {
                 .map { it?.subjects }
                 .produceState(null),
         ),
-    )
-}
-
-@Composable
-internal fun ExplorationTab(
-    windowInsets: WindowInsets,
-    onSearch: () -> Unit,
-    modifier: Modifier = Modifier,
-    vm: ExplorationTabViewModel = viewModel { ExplorationTabViewModel() },
-) {
-    val navigator = LocalNavigator.current
-    ExplorationPage(
-        vm.explorationPageState,
-        onSearch = onSearch,
-        modifier.fillMaxSize(),
-        contentWindowInsets = windowInsets,
     )
 }
