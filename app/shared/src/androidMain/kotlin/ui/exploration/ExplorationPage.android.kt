@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import me.him188.ani.app.domain.session.TestUserInfo
 import me.him188.ani.app.domain.session.createTestAuthState
 import me.him188.ani.app.ui.exploration.trends.createTestTrendingSubjectsState
-import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.preview.PreviewSizeClasses
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.utils.platform.annotations.TestOnly
@@ -27,7 +27,7 @@ import me.him188.ani.utils.platform.annotations.TestOnly
 @PreviewSizeClasses
 @PreviewLightDark
 internal fun PreviewExplorationPage() {
-    ProvideCompositionLocalsForPreview {
+    ProvideFoundationCompositionLocalsForPreview {
         val scope = rememberCoroutineScope()
         ExplorationPage(
             remember {

@@ -23,17 +23,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
@@ -78,26 +73,6 @@ fun ExplorationPage(
                     }
                 },
                 searchBar = {
-                    SearchBar(
-                        inputField = {
-                            var query by rememberSaveable { mutableStateOf("") }
-                            SearchBarDefaults.InputField(
-                                query = query,
-                                onQueryChange = { query = it },
-                                onSearch = {
-                                    onSearch()
-                                },
-                                expanded = false,
-                                onExpandedChange = {
-                                    onSearch()
-                                },
-                                placeholder = { Text("搜索") },
-                                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                            )
-                        },
-                        expanded = false,
-                        onExpandedChange = {},
-                    ) {}
                 },
                 avatar = {
                     SelfAvatar(state.authState, state.selfInfo)
