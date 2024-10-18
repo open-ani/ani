@@ -69,18 +69,21 @@ fun PopupSearchBar(
     val cornerSizeDp by animateDpAsState(
         if (expanded) 0.dp else 28.dp,
         animationSpec =
-        if (expanded)
+        if (expanded) {
+            // 现在要展开
+            tween(
+                durationMillis = 300,
+                delayMillis = 0,
+                easing = AnimationEnterEasing,
+            )
+        } else {
+            // 现在要收起来
             tween(
                 durationMillis = AnimationExitDurationMillis,
-                delayMillis = AnimationDelayMillis,
+                delayMillis = AnimationExitDurationMillis, // 先等 list 收起来
                 easing = AnimationExitEasing,
             )
-        else
-            tween(
-                durationMillis = AnimationEnterDurationMillis,
-                delayMillis = AnimationDelayMillis,
-                easing = AnimationEnterEasing,
-            ),
+        },
     )
     Surface(
         shape = MaterialTheme.shapes.extraLarge.copy(
