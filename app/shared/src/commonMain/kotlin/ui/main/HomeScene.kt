@@ -10,8 +10,7 @@
 package me.him188.ani.app.ui.main
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -173,22 +172,17 @@ private fun MainSceneContent(
         },
         modifier,
         layoutType = navigationLayoutType,
-        containerColor = AniThemeDefaults.navigationContainerColor,
     ) {
         val navigator by rememberUpdatedState(LocalNavigator.current)
         AnimatedContent(
             page,
             Modifier.fillMaxSize(),
             transitionSpec = {
-                val fadeIn = fadeIn(
-                    animationSpec = tween(
-                        150,
-                        delayMillis = 75,
-                        easing = CubicBezierEasing(0f, 0f, 1f, 1f),
-                    ),
-                )
-                val fadeOut = fadeOut(animationSpec = tween(75, easing = CubicBezierEasing(0f, 0f, 1f, 1f)))
-                fadeIn togetherWith fadeOut
+//                val easing = CubicBezierEasing(0f, 0f, 1f, 1f)
+//                val fadeIn = fadeIn(tween(25, easing = easing))
+//                val fadeOut = fadeOut(tween(25, easing = easing))
+//                fadeIn togetherWith fadeOut
+                fadeIn(snap()) togetherWith fadeOut(snap())
             },
         ) { page ->
             TabContent(layoutType = navigationLayoutType) {
