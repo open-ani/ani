@@ -11,6 +11,7 @@ package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -37,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.ui.adaptive.AdaptiveSearchBar
 import me.him188.ani.app.ui.foundation.interaction.onEnterKeyEvent
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 import me.him188.ani.app.ui.search.SearchState
 
@@ -79,8 +81,13 @@ enum class SuggestionSearchPreviewType {
 fun <T> SuggestionSearchBar(
     state: SuggestionSearchBarState<T>,
     modifier: Modifier = Modifier,
+    inputFieldModifier: Modifier = Modifier,
+    windowInsets: WindowInsets = SearchBarDefaults.windowInsets,
     placeholder: @Composable (() -> Unit)? = null,
 ) {
+    BackHandler(state.expanded) {
+        state.expanded = false
+    }
     AdaptiveSearchBar(
         inputField = {
             SearchBarDefaults.InputField(
@@ -89,14 +96,14 @@ fun <T> SuggestionSearchBar(
                 onSearch = { state.expanded = false },
                 expanded = state.expanded,
                 onExpandedChange = { state.expanded = it },
-                Modifier.fillMaxWidth().onEnterKeyEvent {
+                inputFieldModifier.fillMaxWidth().onEnterKeyEvent {
                     state.startSearch()
                     true
                 },
                 placeholder = placeholder,
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon =
-                if (state.query.isNotEmpty()) {
+                if (state.query.isNotEmpty() || state.expanded) {
                     {
                         IconButton({ state.clear() }) {
                             Icon(Icons.Default.Close, contentDescription = null)
@@ -108,6 +115,7 @@ fun <T> SuggestionSearchBar(
         expanded = state.expanded,
         onExpandedChange = { state.expanded = it },
         modifier,
+        windowInsets = windowInsets,
     ) {
         val valuesState = when (state.previewType) {
             SuggestionSearchPreviewType.HISTORY -> state.history

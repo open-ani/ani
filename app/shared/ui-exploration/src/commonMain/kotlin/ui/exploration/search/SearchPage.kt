@@ -11,10 +11,14 @@ package me.him188.ani.app.ui.exploration.search
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -37,12 +41,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.adaptive.AniTopAppBar
+import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.keyboardDirectionToSelectItem
 import me.him188.ani.app.ui.foundation.interaction.keyboardPageToScroll
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
@@ -68,10 +74,11 @@ fun SearchPage(
     SearchPageLayout(
         navigator,
         windowInsets,
-        searchBar = {
+        searchBar = { contentPadding ->
             SuggestionSearchBar(
                 state.suggestionSearchBarState,
-                Modifier,
+                Modifier.ifThen(!state.suggestionSearchBarState.expanded) { contentPadding },
+                windowInsets = windowInsets,
                 placeholder = { Text("搜索") },
             )
         },
@@ -166,14 +173,18 @@ internal fun SearchPageResultColumn(
     }
 }
 
+/**
+ * @param searchBar contentPadding: 页面的左右 24.dp 边距
+ */
 @Composable
 internal fun SearchPageLayout(
     navigator: ThreePaneScaffoldNavigator<*>,
     windowInsets: WindowInsets,
-    searchBar: @Composable () -> Unit,
+    searchBar: @Composable (contentPadding: Modifier) -> Unit,
     searchResultList: @Composable () -> Unit,
     detailContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    searchBarHeight: Dp = 64.dp,
 ) {
     AniListDetailPaneScaffold(
         navigator,
@@ -188,11 +199,11 @@ internal fun SearchPageLayout(
             )
         },
         listPaneContent = {
-            Column(Modifier.paneContentPadding()) {
+            Box(
+                Modifier
+                    .consumeWindowInsets(windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
+            ) {
                 // Use TopAppBar as a container for scroll behavior
-                Row(Modifier.fillMaxWidth()) {
-                    searchBar()
-                }
 //                TopAppBar(
 //                    title = { searchBar() },
 //                    scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
@@ -201,7 +212,17 @@ internal fun SearchPageLayout(
 ////                    },
 //                    colors = AniThemeDefaults.topAppBarColors(),
 //                )
-                searchResultList()
+                Column(
+                    Modifier
+                        .paneContentPadding()
+                        .padding(top = searchBarHeight),
+                ) {
+                    searchResultList()
+                }
+
+                Row(Modifier.fillMaxWidth()) {
+                    searchBar(Modifier.paneContentPadding())
+                }
             }
         },
         detailPaneTopAppBar = {}, // empty because our detailPaneContent already has it

@@ -9,8 +9,6 @@
 
 package me.him188.ani.app.ui.adaptive
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.DockedSearchBar
@@ -19,14 +17,10 @@ import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import me.him188.ani.app.ui.foundation.layout.compareTo
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmInline
 
 /**
  * @see DockedSearchBar
@@ -71,30 +65,3 @@ fun AdaptiveSearchBar(
     }
 }
 
-
-interface AdaptiveSearchLayoutScope : SharedTransitionScope {
-    val animatedContentScope: AnimatedContentScope
-//
-//    /**
-//     * Attach to the search bar in the top bar
-//     */
-//    fun Modifier.searchBarPivot()
-//
-//    @Composable
-//    fun SearchBar()
-}
-
-@JvmInline
-@Immutable
-value class AdaptiveSearchLayoutRoute(
-    @JvmField internal val value: String,
-) {
-    @Stable
-    companion object {
-        @Stable
-        val List = AdaptiveSearchLayoutRoute("list")
-
-        @Stable
-        val Search = AdaptiveSearchLayoutRoute("search")
-    }
-}
