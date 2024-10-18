@@ -10,9 +10,9 @@
 package me.him188.ani.app.ui.main
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -20,9 +20,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRailItem
@@ -46,7 +49,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
@@ -65,6 +67,7 @@ import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
@@ -111,7 +114,6 @@ private fun MainSceneContent(
 ) {
     val pagerState = rememberPagerState(1) { 4 }
     val uiScope = rememberCoroutineScope()
-    val searchBarFocusRequester = remember { FocusRequester() }
 
     OverrideNavigation(
         { old ->
@@ -120,7 +122,6 @@ private fun MainSceneContent(
                     uiScope.launch {
                         pagerState.scrollToPage(0)
                         if (requestFocus) {
-                            searchBarFocusRequester.requestFocus()
                         }
                     }
                 }
@@ -137,7 +138,20 @@ private fun MainSceneContent(
             navigationSuite = {
                 AniNavigationSuite(
                     windowInsets,
-                    navigationRailHeader = { Spacer(Modifier.size(48.dp)) },
+                    navigationRailHeader = {
+                        val navigator = LocalNavigator.current
+                        FloatingActionButton(
+                            {
+                                navigator.navigateSearch(true)
+                            },
+                            Modifier
+                                .desktopTitleBarPadding()
+                                .padding(vertical = 48.dp),
+                            elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                        ) {
+                            Icon(Icons.Rounded.Search, "搜索")
+                        }
+                    },
                     colors = NavigationSuiteDefaults.colors(
                         navigationDrawerContainerColor = AniThemeDefaults.navigationContainerColor,
                         navigationBarContainerColor = AniThemeDefaults.navigationContainerColor,
