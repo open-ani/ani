@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
@@ -318,7 +319,10 @@ internal fun SettingsPageLayout(
                     // PC 上套一个 card
                     if (navigator.scaffoldDirective.maxHorizontalPartitions > 1) {
                         Card(
-                            shape = MaterialTheme.shapes.extraLarge,
+                            shape = MaterialTheme.shapes.extraLarge.copy(
+                                topEnd = ZeroCornerSize,
+                                bottomEnd = ZeroCornerSize,
+                            ),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                         ) {
                             content()
