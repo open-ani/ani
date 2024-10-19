@@ -22,7 +22,7 @@ interface MeteredNetworkDetector {
     /**
      * Dispose listeners or callbacks which may be created at initializing detector.
      */
-    fun dispose() { }
+    fun dispose()
 }
 
 

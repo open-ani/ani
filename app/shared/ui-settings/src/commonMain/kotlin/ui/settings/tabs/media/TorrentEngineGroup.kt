@@ -91,7 +91,7 @@ internal fun SettingsScope.TorrentEngineGroup(
                 checked = torrentSettings.limitUploadOnMeteredNetwork,
                 onCheckedChange = { torrentSettingsState.update(torrentSettings.copy(limitUploadOnMeteredNetwork = it)) },
                 title = { Text("计费网络限制上传") },
-                description = { Text("在 Android 移动流量或 Windows 计费网络环境下限制 BT 上传为 1 KB/s") }
+                description = { Text("在计费网络环境下限制上传速度为 1 KB/s") }
             )
         }
         val navigator by rememberUpdatedState(LocalNavigator.current)

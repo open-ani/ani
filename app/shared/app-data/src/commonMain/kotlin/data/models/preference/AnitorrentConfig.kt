@@ -24,7 +24,7 @@ data class AnitorrentConfig(
      * * Android 移动流量
      * * Windows 计费 Wi-Fi
      */
-    val limitUploadOnMeteredNetwork: Boolean = false,
+    val limitUploadOnMeteredNetwork: Boolean = true,
     @Transient private val _placeholder: Int = 0,
 ) {
     companion object {

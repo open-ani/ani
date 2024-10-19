@@ -33,13 +33,13 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
     private val flow = flow {
         while (true) {
             emit(getIsMetered())
-            kotlinx.coroutines.delay(3000)
+            kotlinx.coroutines.delay(60000)
         }
     }
     override val isMeteredNetworkFlow: Flow<Boolean> = flow
     
     private fun getIsMetered(): Boolean {
-        var networkConnectionCost: INetworkConnectionCost? = null
+        var networkCostManager: INetworkCostManager? = null
 
         try {
             val coInitializeHResult = Ole32.INSTANCE.CoInitializeEx(null, Ole32.COINIT_MULTITHREADED)
@@ -55,10 +55,10 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
             )
             COMUtils.checkRC(coCreateInstanceHResult)
             
-            networkConnectionCost = INetworkConnectionCost(pNetworkCostManager)
+            networkCostManager = INetworkCostManager(pNetworkCostManager)
             val pCost = IntByReference()
             
-            val getCostResult = networkConnectionCost.GetCost(pCost)
+            val getCostResult = networkCostManager.GetCost(pCost)
             COMUtils.checkRC(getCostResult)
             
             return (pCost.value and NLM_CONNECTION_COST_FIXED) != 0
@@ -66,12 +66,16 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
             logger.warn(ex) { "Failed to get network status." }
             return false
         } finally {
-            networkConnectionCost?.Release()
+            networkCostManager?.Release()
             Ole32.INSTANCE.CoUninitialize()
         }
     }
+
+    override fun dispose() {
+        
+    }
     
-    private class INetworkConnectionCost(pointer: PointerByReference) : Unknown(pointer.value) {
+    private class INetworkCostManager(pointer: PointerByReference) : Unknown(pointer.value) {
         @Suppress("FunctionName")
         fun GetCost(cost: IntByReference): HRESULT {
             return _invokeNativeObject(3, arrayOf(pointer, cost, null), HRESULT::class.java) as HRESULT
@@ -99,6 +103,7 @@ actual fun createMeteredNetworkDetector(context: Context): MeteredNetworkDetecto
         is Platform.Windows -> WindowsMeteredNetworkDetector()
         else -> object : MeteredNetworkDetector {
             override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
+            override fun dispose() { }
         }
     }
 }

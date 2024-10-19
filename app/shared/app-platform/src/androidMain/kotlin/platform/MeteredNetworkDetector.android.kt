@@ -15,7 +15,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
 @SuppressLint("MissingPermission")
@@ -23,7 +23,7 @@ private class AndroidMeteredNetworkDetector(
     private val context: Context
 ) : MeteredNetworkDetector {
 
-    private val flow = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
+    private val flow = MutableStateFlow(false)
     override val isMeteredNetworkFlow: Flow<Boolean> = flow
 
     private val connectivityManager by lazy {
