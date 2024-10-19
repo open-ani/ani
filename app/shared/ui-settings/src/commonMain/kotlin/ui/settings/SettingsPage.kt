@@ -295,9 +295,7 @@ internal fun SettingsPageLayout(
                     tab?.let {
                         AniTopAppBar(
                             title = {
-                                currentTab?.let { currentTab ->
-                                    AniTopAppBarDefaults.Title(getName(currentTab))
-                                }
+                                AniTopAppBarDefaults.Title(getName(tab))
                             },
                             windowInsets = windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                             navigationIcon = {
