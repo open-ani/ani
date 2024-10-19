@@ -31,6 +31,7 @@ import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.NavRoutes
 import me.him188.ani.app.platform.AppStartupTasks
+import me.him188.ani.app.platform.MeteredNetworkDetector
 import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager.Companion.EXTRA_REQUEST_CODE
@@ -51,6 +52,8 @@ import org.koin.mp.KoinPlatformTools
 
 class MainActivity : AniComponentActivity() {
     private val sessionManager: SessionManager by inject()
+    private val meteredNetworkDetector: MeteredNetworkDetector by inject()
+    
     private val logger = logger(MainActivity::class)
 
     private val aniNavigator = AniNavigator()

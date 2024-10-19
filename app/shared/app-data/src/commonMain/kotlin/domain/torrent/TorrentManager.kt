@@ -11,11 +11,15 @@ package me.him188.ani.app.domain.torrent
 
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import me.him188.ani.app.data.models.preference.AnitorrentConfig
 import me.him188.ani.app.data.models.preference.ProxySettings
 import me.him188.ani.app.data.models.preference.TorrentPeerConfig
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.domain.torrent.engines.AnitorrentEngine
+import me.him188.ani.app.platform.MeteredNetworkDetector
+import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.resolve
@@ -46,6 +50,7 @@ class DefaultTorrentManager(
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
     private val proxySettingsFlow: Flow<ProxySettings>,
     private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
+    private val isMeteredNetworkFlow: Flow<Boolean>,
     private val peerFilterConfig: Flow<TorrentPeerConfig>,
     val platform: Platform,
 ) : TorrentManager {
@@ -53,7 +58,10 @@ class DefaultTorrentManager(
 
     override val anitorrent: AnitorrentEngine by lazy {
         AnitorrentEngine(
-            anitorrentConfigFlow,
+            combine(anitorrentConfigFlow, isMeteredNetworkFlow) { config, isMetered ->
+                val isUploadLimited = isMetered && config.limitUploadOnMeteredNetwork 
+                config.copy(uploadRateLimit = if (isUploadLimited) 1.kiloBytes else config.uploadRateLimit)
+            },
             proxySettingsFlow,
             peerFilterConfig,
             saveDir(TorrentEngineType.Anitorrent),
@@ -80,6 +88,7 @@ class DefaultTorrentManager(
         fun create(
             parentCoroutineContext: CoroutineContext,
             settingsRepository: SettingsRepository,
+            meteredNetworkDetector: MeteredNetworkDetector,
             baseSaveDir: () -> SystemPath,
             platform: Platform = currentPlatform(),
         ): DefaultTorrentManager {
@@ -91,6 +100,7 @@ class DefaultTorrentManager(
                 },
                 settingsRepository.proxySettings.flow,
                 settingsRepository.anitorrentConfig.flow,
+                meteredNetworkDetector.isMeteredNetworkFlow.distinctUntilChanged(),
                 settingsRepository.torrentPeerConfig.flow,
                 platform,
             )

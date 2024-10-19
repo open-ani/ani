@@ -18,6 +18,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
+import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
 import me.him188.ani.datasources.api.topic.FileSize
 import me.him188.ani.datasources.api.topic.FileSize.Companion.Unspecified
@@ -85,6 +86,12 @@ internal fun SettingsScope.TorrentEngineGroup(
                     torrentSettingsState.update(torrentSettings.copy(uploadRateLimit = it))
                 },
                 title = { Text("上传速度限制") },
+            )
+            SwitchItem(
+                checked = torrentSettings.limitUploadOnMeteredNetwork,
+                onCheckedChange = { torrentSettingsState.update(torrentSettings.copy(limitUploadOnMeteredNetwork = it)) },
+                title = { Text("计费网络限制上传") },
+                description = { Text("在 Android 移动流量或 Windows 计费网络环境下限制 BT 上传为 1 KB/s") }
             )
         }
         val navigator by rememberUpdatedState(LocalNavigator.current)

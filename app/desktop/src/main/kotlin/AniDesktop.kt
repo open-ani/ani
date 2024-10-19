@@ -202,6 +202,7 @@ object AniDesktop {
                         DefaultTorrentManager.create(
                             coroutineScope.coroutineContext,
                             get(),
+                            get(),
                             baseSaveDir = {
                                 val saveDir = runBlocking {
                                     get<SettingsRepository>().mediaCacheSettings.flow.first().saveDir

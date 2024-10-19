@@ -90,6 +90,7 @@ fun ProvideCompositionLocalsForPreview(
                         DefaultTorrentManager.create(
                             coroutineScope.coroutineContext,
                             get(),
+                            get(),
                             baseSaveDir = { Path("preview-cache").inSystem },
                         )
                     }

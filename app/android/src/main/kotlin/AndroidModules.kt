@@ -25,13 +25,13 @@ import me.him188.ani.app.domain.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
+import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.AndroidPermissionManager
 import me.him188.ani.app.platform.PermissionManager
 import me.him188.ani.app.platform.notification.AndroidNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
-import me.him188.ani.app.domain.torrent.DefaultTorrentManager
-import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.tools.update.AndroidUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.videoplayer.ExoPlayerStateFactory
@@ -150,6 +150,7 @@ fun getAndroidModules(
 
         DefaultTorrentManager.create(
             coroutineScope.coroutineContext,
+            get(),
             get(),
             baseSaveDir = { Path(cacheDir).inSystem },
         )
