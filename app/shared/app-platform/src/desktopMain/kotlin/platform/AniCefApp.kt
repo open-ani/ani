@@ -171,7 +171,7 @@ object AniCefApp {
 
             Runtime.getRuntime().addShutdownHook(
                 thread(start = false) {
-                    blockOnCefContext { newApp.dispose() }
+                    runOnCefContext { newApp.dispose() }
                 },
             )
             app = newApp

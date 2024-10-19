@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import me.him188.ani.app.platform.DesktopContext
 import me.him188.ani.app.platform.LocalContext
 import java.awt.Desktop
+import kotlin.system.exitProcess
 
 @Composable
 internal actual fun ColumnScope.PlatformDebugInfoItems() {
@@ -20,5 +21,12 @@ internal actual fun ColumnScope.PlatformDebugInfoItems() {
         },
     ) {
         Text("打开日志目录")
+    }
+    FilledTonalButton(
+        {
+            exitProcess(0)
+        }
+    ) {
+        Text("exitProcess(0)")
     }
 }
