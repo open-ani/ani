@@ -32,7 +32,7 @@ sealed class NavRoutes {
 
     @Serializable
     data class Settings(
-        val tab: SettingsTab,
+        val tab: SettingsTab? = null,
     ) : NavRoutes()
 
     @Serializable
@@ -109,8 +109,6 @@ enum class SettingsTab {
     ;
 
     companion object {
-        val DEFAULT = APPEARANCE
-
         @Stable
         val NavType by lazy(LazyThreadSafetyMode.PUBLICATION) {
             EnumNavType(kotlin.enums.enumEntries<SettingsTab>())

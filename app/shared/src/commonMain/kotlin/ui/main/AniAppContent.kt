@@ -259,7 +259,7 @@ private fun AniAppContentImpl(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
                 typeMap = mapOf(
-                    typeOf<SettingsTab>() to SettingsTab.NavType,
+                    typeOf<SettingsTab?>() to SettingsTab.NavType,
                 ),
             ) { backStackEntry ->
                 val route = backStackEntry.toRoute<NavRoutes.Settings>()

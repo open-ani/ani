@@ -101,7 +101,7 @@ interface AniNavigator {
         }
     }
 
-    fun navigateSettings(tab: SettingsTab = SettingsTab.DEFAULT) {
+    fun navigateSettings(tab: SettingsTab? = null) {
         navigator.navigate(NavRoutes.Settings(tab))
     }
 
