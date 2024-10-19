@@ -12,6 +12,7 @@ package me.him188.ani.app.ui.exploration.trends
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
@@ -40,14 +41,18 @@ fun TrendingSubjectsCarousel(
     modifier: Modifier = Modifier,
 ) {
     val size = CarouselItemDefaults.itemSize()
+    val carouselState = rememberCarouselState(initialItem = 0) {
+        state.numItems
+    }
     HorizontalMultiBrowseCarousel(
-        rememberCarouselState(initialItem = 0) {
-            state.numItems
-        },
+        carouselState,
         preferredItemWidth = size.preferredWidth,
-        modifier.fillMaxWidth(),
+        modifier.padding(contentPadding).fillMaxWidth(),
         itemSpacing = itemSpacing,
-        contentPadding = contentPadding,
+//        flingBehavior = CarouselDefaults.multiBrowseFlingBehavior(
+//            carouselState,
+//            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium),
+//        ),
     ) { index ->
         val item = state.subjects?.getOrNull(index)
         CarouselItem(

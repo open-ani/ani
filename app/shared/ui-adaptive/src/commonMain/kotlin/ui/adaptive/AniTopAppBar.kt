@@ -62,7 +62,7 @@ import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
 @Composable
 fun AniTopAppBar(
     title: @Composable () -> Unit,
-    windowInsets: WindowInsets,
+    windowInsets: WindowInsets, // You would like to add only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     modifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},

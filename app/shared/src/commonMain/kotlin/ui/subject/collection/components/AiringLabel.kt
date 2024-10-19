@@ -29,6 +29,7 @@ import me.him188.ani.app.data.models.subject.ContinueWatchingStatus
 import me.him188.ani.app.data.models.subject.SubjectAiringInfo
 import me.him188.ani.app.data.models.subject.SubjectAiringKind
 import me.him188.ani.app.data.models.subject.SubjectProgressInfo
+import me.him188.ani.app.data.models.subject.computeTotalEpisodeText
 import me.him188.ani.app.data.models.subject.isOnAir
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.subject.collection.progress.TestSubjectProgressInfos
@@ -122,18 +123,7 @@ class AiringLabelState(
      */
     val totalEpisodesText by derivedStateOf {
         val airingInfo = airingInfo ?: return@derivedStateOf null
-        if (airingInfo.kind == SubjectAiringKind.UPCOMING && airingInfo.episodeCount == 0) {
-            // 剧集还未知
-            null
-        } else {
-            when (airingInfo.kind) {
-                SubjectAiringKind.COMPLETED -> "全 ${airingInfo.episodeCount} 话"
-
-                SubjectAiringKind.ON_AIR,
-                SubjectAiringKind.UPCOMING,
-                    -> "预定全 ${airingInfo.episodeCount} 话"
-            }
-        }
+        airingInfo.computeTotalEpisodeText()
     }
 }
 

@@ -1,6 +1,16 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import me.him188.ani.app.data.persistent.database.dao.SearchHistoryDao
 import me.him188.ani.app.data.persistent.database.dao.SearchTagDao
 import me.him188.ani.app.data.persistent.database.eneity.SearchHistoryEntity
@@ -9,11 +19,11 @@ import org.koin.core.component.KoinComponent
 
 interface SubjectSearchRepository {
     suspend fun addHistory(history: SearchHistoryEntity)
-    fun getHistoryFlow(): Flow<List<SearchHistoryEntity>>
+    fun getHistoryFlow(): Flow<List<String>>
     suspend fun deleteHistoryBySeq(seq: Int)
 
     suspend fun addTag(tag: SearchTagEntity)
-    fun getTagFlow(): Flow<List<SearchTagEntity>>
+    fun getTagFlow(): Flow<List<String>>
     suspend fun deleteTagByName(content: String)
     suspend fun increaseCountByName(content: String)
     suspend fun deleteTagById(id: Int)
@@ -28,8 +38,8 @@ class SubjectSearchRepositoryImpl(
         searchHistory.insert(history)
     }
 
-    override fun getHistoryFlow(): Flow<List<SearchHistoryEntity>> {
-        return searchHistory.getFlow()
+    override fun getHistoryFlow(): Flow<List<String>> {
+        return searchHistory.getFlow().map { list -> list.map { it.content } }
     }
 
     override suspend fun deleteHistoryBySeq(seq: Int) {
@@ -40,8 +50,8 @@ class SubjectSearchRepositoryImpl(
         searchTag.insert(tag)
     }
 
-    override fun getTagFlow(): Flow<List<SearchTagEntity>> {
-        return searchTag.getFlow()
+    override fun getTagFlow(): Flow<List<String>> {
+        return searchTag.getFlow().map { list -> list.map { it.content } }
     }
 
     override suspend fun deleteTagByName(content: String) {

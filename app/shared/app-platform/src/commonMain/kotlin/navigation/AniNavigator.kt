@@ -12,7 +12,6 @@ package me.him188.ani.app.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisallowComposableCalls
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -50,63 +49,60 @@ interface AniNavigator {
 //    }
 
     fun popUntilNotWelcome() {
-        navigator.popBackStack("/welcome", inclusive = true)
+        navigator.popBackStack(NavRoutes.Welcome, inclusive = true)
     }
 
     fun popUntilNotAuth() {
-        navigator.popBackStack("/bangumi-token-oauth", inclusive = true)
-        navigator.popBackStack("/bangumi-oauth", inclusive = true)
+        navigator.popBackStack(NavRoutes.BangumiTokenAuth, inclusive = true)
+        navigator.popBackStack(NavRoutes.BangumiOAuth, inclusive = true)
     }
 
     fun navigateSubjectDetails(subjectId: Int) {
-        navigator.navigate("/subjects/$subjectId")
+        navigator.navigate(NavRoutes.SubjectDetail(subjectId))
     }
 
     fun navigateSubjectCaches(subjectId: Int) {
-        navigator.navigate("/subjects/$subjectId/caches")
+        navigator.navigate(NavRoutes.SubjectCaches(subjectId))
     }
 
     fun navigateEpisodeDetails(subjectId: Int, episodeId: Int, fullscreen: Boolean = false) {
-        navigator.popBackStack("/subjects/$subjectId/episodes/$episodeId", inclusive = true)
-        navigator.navigate(
-            "/subjects/$subjectId/episodes/$episodeId?fullscreen=$fullscreen",
-        )
+        navigator.popBackStack(NavRoutes.EpisodeDetail(subjectId, episodeId), inclusive = true)
+        navigator.navigate(NavRoutes.EpisodeDetail(subjectId, episodeId))
     }
 
     fun navigateWelcome() {
-        navigator.navigate("/welcome")
+        navigator.navigate(NavRoutes.Welcome)
     }
 
-    fun navigateHome() {
-        navigator.navigate("/main")
-    }
-
-    fun navigateSearch(requestFocus: Boolean = false) {
-        navigator.navigate("/home?tab=search")
+    fun navigateMain(
+        page: MainScenePage,
+        requestFocus: Boolean = false
+    ) {
+        navigator.popBackStack<NavRoutes.Main>(inclusive = false)
     }
 
     /**
      * 登录页面
      */
     fun navigateBangumiOAuthOrTokenAuth() {
-        navigator.navigate("/bangumi-oauth") {
+        navigator.navigate(NavRoutes.BangumiOAuth) {
             launchSingleTop = true
         }
     }
 
     fun navigateBangumiTokenAuth() {
         navigator.navigate(
-            "/bangumi-token-auth",
+            NavRoutes.BangumiTokenAuth,
         ) {
             launchSingleTop = true
-            popUpTo("/bangumi-oauth") {
+            popUpTo(NavRoutes.BangumiOAuth) {
                 inclusive = true
             }
         }
     }
 
     fun navigateSettings(tab: SettingsTab? = null) {
-        navigator.navigate("/settings?tab=${tab?.ordinal.toString()}&back=true")
+        navigator.navigate(NavRoutes.Settings(tab))
     }
 
     fun navigateEditMediaSource(
@@ -114,25 +110,20 @@ interface AniNavigator {
         mediaSourceInstanceId: String,
     ) {
         navigator.navigate(
-            buildString {
-                append("/settings/media-source/edit?factoryId=")
-                append(factoryId.value)
-                append("&mediaSourceInstanceId=")
-                append(mediaSourceInstanceId)
-            },
+            NavRoutes.EditMediaSource(factoryId.value, mediaSourceInstanceId),
         )
     }
 
     fun navigateTorrentPeerSettings() {
-        navigator.navigate("/settings/torrent-peer/edit")
+        navigator.navigate(NavRoutes.TorrentPeerSettings)
     }
 
     fun navigateCaches() {
-        navigator.navigate("/caches")
+        navigator.navigate(NavRoutes.Caches)
     }
 
     fun navigateCacheDetails(cacheId: String) {
-        navigator.navigate("/caches/$cacheId")
+        navigator.navigate(NavRoutes.CacheDetail(cacheId))
     }
 }
 
@@ -152,33 +143,6 @@ private class AniNavigatorImpl : AniNavigator {
         return _navigator.await()
     }
 }
-
-
-// TODO: remove this from nav
-/**
- * @see renderPreferenceTab 查看名称
- */
-@Immutable
-enum class SettingsTab {
-    APPEARANCE,
-    UPDATE,
-
-    PLAYER,
-    MEDIA_SUBSCRIPTION,
-    MEDIA_SOURCE,
-    MEDIA_SELECTOR,
-    DANMAKU,
-
-    PROXY,
-    BT,
-    CACHE,
-    STORAGE,
-
-    ABOUT,
-    DEBUG,
-    ;
-}
-
 
 /**
  * It is always provided.

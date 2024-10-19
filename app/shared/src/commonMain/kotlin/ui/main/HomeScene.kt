@@ -9,83 +9,68 @@
 
 package me.him188.ani.app.ui.main
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
-import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.TravelExplore
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
-import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
-import me.him188.ani.app.navigation.OverrideNavigation
+import me.him188.ani.app.navigation.MainScenePage
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuite
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuiteLayout
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.exploration.ExplorationPage
-import me.him188.ani.app.ui.external.placeholder.placeholder
+import me.him188.ani.app.ui.exploration.search.SearchPage
 import me.him188.ani.app.ui.foundation.LocalPlatform
-import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
+import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
-import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
+import me.him188.ani.app.ui.foundation.navigation.BackHandler
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.profile.AccountViewModel
-import me.him188.ani.app.ui.settings.SettingsPage
-import me.him188.ani.app.ui.settings.SettingsTab
-import me.him188.ani.app.ui.settings.SettingsViewModel
 import me.him188.ani.app.ui.subject.collection.CollectionPage
-import me.him188.ani.app.ui.update.AutoUpdateViewModel
-import me.him188.ani.app.ui.update.ChangelogDialog
-import me.him188.ani.app.ui.update.FailedToInstallDialog
-import me.him188.ani.app.ui.update.UpdateLogoIcon
-import me.him188.ani.app.ui.update.UpdateLogoLabel
-import me.him188.ani.app.ui.update.handleClickLogo
+import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
 import me.him188.ani.utils.platform.isAndroid
 
 
 @Composable
 fun MainScene(
+    page: MainScenePage,
     modifier: Modifier = Modifier,
+    onNavigateToPage: (MainScenePage) -> Unit,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets, // Compose for Desktop 目前不会考虑这个
     navigationLayoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
@@ -99,134 +84,122 @@ fun MainScene(
         }
     }
 
-    MainSceneContent(windowInsets, modifier, navigationLayoutType)
+    MainSceneContent(page, windowInsets, onNavigateToPage, modifier, navigationLayoutType)
 }
 
 @Composable
 private fun MainSceneContent(
+    page: MainScenePage,
     windowInsets: WindowInsets,
+    onNavigateToPage: (MainScenePage) -> Unit,
     modifier: Modifier = Modifier,
     navigationLayoutType: NavigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
         currentWindowAdaptiveInfo(),
     ),
 ) {
-    val pagerState = rememberPagerState(1) { 4 }
-    val uiScope = rememberCoroutineScope()
-    val searchBarFocusRequester = remember { FocusRequester() }
-
-    OverrideNavigation(
-        { old ->
-            object : AniNavigator by old {
-                override fun navigateSearch(requestFocus: Boolean) {
-                    uiScope.launch {
-                        pagerState.scrollToPage(0)
-                        if (requestFocus) {
-                            searchBarFocusRequester.requestFocus()
-                        }
+    AniNavigationSuiteLayout(
+        navigationSuite = {
+            AniNavigationSuite(
+                windowInsets,
+                navigationRailHeader = {
+                    FloatingActionButton(
+                        { onNavigateToPage(MainScenePage.Search) },
+                        Modifier
+                            .desktopTitleBarPadding()
+                            .padding(vertical = 48.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                    ) {
+                        Icon(Icons.Rounded.Search, "搜索")
                     }
+                },
+                colors = NavigationSuiteDefaults.colors(
+                    navigationDrawerContainerColor = AniThemeDefaults.navigationContainerColor,
+                    navigationBarContainerColor = AniThemeDefaults.navigationContainerColor,
+                    navigationRailContainerColor = AniThemeDefaults.navigationContainerColor,
+                ),
+                navigationRailItemSpacing = 8.dp,
+            ) {
+                @Stable
+                fun getIcon(page: MainScenePage): ImageVector = when (page) {
+                    MainScenePage.Exploration -> Icons.Rounded.TravelExplore
+                    MainScenePage.Collection -> Icons.Rounded.Star
+                    MainScenePage.CacheManagement -> Icons.Rounded.DownloadDone
+                    MainScenePage.Search -> Icons.Rounded.Search
                 }
 
-                override fun navigateSettings(tab: SettingsTab?) {
-                    uiScope.launch {
-                        pagerState.scrollToPage(3)
-                    }
+                @Stable
+                fun getText(page: MainScenePage): String = when (page) {
+                    MainScenePage.Exploration -> "探索"
+                    MainScenePage.Collection -> "追番"
+                    MainScenePage.CacheManagement -> "缓存"
+                    MainScenePage.Search -> "搜索"
+                }
+
+                for (entry in MainScenePage.visibleEntries) {
+                    item(
+                        page == entry,
+                        onClick = { onNavigateToPage(entry) },
+                        icon = { Icon(getIcon(entry), null) },
+                        label = { Text(text = getText(entry)) },
+                    )
                 }
             }
         },
+        modifier,
+        layoutType = navigationLayoutType,
     ) {
-        AniNavigationSuiteLayout(
-            navigationSuite = {
-                AniNavigationSuite(
-                    windowInsets,
-                    navigationRailHeader = { Spacer(Modifier.size(48.dp)) },
-                    colors = NavigationSuiteDefaults.colors(
-                        navigationDrawerContainerColor = AniThemeDefaults.navigationContainerColor,
-                        navigationBarContainerColor = AniThemeDefaults.navigationContainerColor,
-                        navigationRailContainerColor = AniThemeDefaults.navigationContainerColor,
-                    ),
-                    navigationRailItemSpacing = 8.dp,
-                ) {
-                    item(
-                        pagerState.currentPage == 0,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(0)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.TravelExplore, null) },
-                        label = { Text(text = "探索") },
-                    )
-
-                    item(
-                        pagerState.currentPage == 1,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(1)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.Star, null) },
-                        label = { Text(text = "追番") },
-                    )
-                    item(
-                        pagerState.currentPage == 2,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(2)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.DownloadDone, null) },
-                        label = { Text(text = "缓存") },
-                    )
-
-                    // TODO: 检查更新
-//                    UpdateCheckerItem()
-
-                    item(
-                        pagerState.currentPage == 3,
-                        onClick = {
-                            uiScope.launch {
-                                pagerState.scrollToPage(3)
-                            }
-                        },
-                        icon = { Icon(Icons.Rounded.Settings, null) },
-                        label = { Text(text = "设置") },
-                    )
-                }
+        val navigator by rememberUpdatedState(LocalNavigator.current)
+        AnimatedContent(
+            page,
+            Modifier.fillMaxSize(),
+            transitionSpec = {
+//                val easing = CubicBezierEasing(0f, 0f, 1f, 1f)
+//                val fadeIn = fadeIn(tween(25, easing = easing))
+//                val fadeOut = fadeOut(tween(25, easing = easing))
+//                fadeIn togetherWith fadeOut
+                fadeIn(snap()) togetherWith fadeOut(snap())
             },
-            modifier,
-            layoutType = navigationLayoutType,
-            containerColor = AniThemeDefaults.navigationContainerColor,
-        ) {
-            val navigator by rememberUpdatedState(LocalNavigator.current)
-            HorizontalPager(pagerState, Modifier.fillMaxSize(), userScrollEnabled = false) { pageIndex ->
-                TabContent(layoutType = navigationLayoutType) {
-                    when (pageIndex) {
-                        0 -> {
-                            ExplorationPage(
-                                Modifier.fillMaxSize(),
-                                searchBarFocusRequester = searchBarFocusRequester,
-                                contentWindowInsets = windowInsets,
-                            )
+        ) { page ->
+            TabContent(layoutType = navigationLayoutType) {
+                when (page) {
+                    MainScenePage.Exploration -> {
+                        ExplorationPage(
+                            viewModel { ExplorationPageViewModel() }.explorationPageState,
+                            onSearch = { onNavigateToPage(MainScenePage.Search) },
+                            onClickSettings = { navigator.navigateSettings() },
+                            modifier.fillMaxSize(),
+                            windowInsets = windowInsets,
+                        )
+                    }
+
+                    MainScenePage.Collection -> CollectionPage(
+                        windowInsets = windowInsets,
+                        onClickSearch = { onNavigateToPage(MainScenePage.Search) },
+                        onClickSettings = { navigator.navigateSettings() },
+                        Modifier.fillMaxSize(),
+                    )
+
+                    MainScenePage.CacheManagement -> CacheManagementPage(
+                        viewModel { CacheManagementViewModel(navigator) },
+                        showBack = false,
+                        Modifier.fillMaxSize(),
+                        windowInsets = windowInsets,
+                    )
+
+                    MainScenePage.Search -> {
+                        val vm = viewModel { SearchViewModel() }
+                        BackHandler(true) {
+                            onNavigateToPage(MainScenePage.Exploration)
                         }
-
-                        1 -> CollectionPage(
-                            windowInsets = windowInsets,
-                            Modifier,
-                        )
-
-                        2 -> CacheManagementPage(
-                            viewModel { CacheManagementViewModel(navigator) },
-                            showBack = false,
-                            Modifier.fillMaxSize(),
-                            windowInsets = windowInsets,
-                        )
-
-                        3 -> SettingsPage(
-                            viewModel {
-                                SettingsViewModel()
+                        SearchPage(
+                            vm.searchPageState,
+                            windowInsets,
+                            detailContent = {
+                                vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
+                                    SubjectDetailsScene(it)
+                                }
                             },
                             Modifier.fillMaxSize(),
-                            contentWindowInsets = windowInsets,
                         )
                     }
                 }
@@ -234,6 +207,7 @@ private fun MainSceneContent(
         }
     }
 }
+
 
 @Composable
 private fun TabContent(
@@ -259,70 +233,5 @@ private fun TabContent(
         color = AniThemeDefaults.pageContentBackgroundColor,
     ) {
         content()
-    }
-}
-
-@Composable
-private fun UpdateCheckerItem(
-    vm: AutoUpdateViewModel = viewModel { AutoUpdateViewModel() },
-) {
-    SideEffect {
-        vm.startAutomaticCheckLatestVersion()
-    }
-    var showDialog by rememberSaveable { mutableStateOf(false) }
-    val context by rememberUpdatedState(LocalContext.current)
-    val uriHandler = LocalUriHandler.current
-    if (showDialog) {
-        vm.latestVersion?.let {
-            ChangelogDialog(
-                latestVersion = it,
-                onDismissRequest = { showDialog = false },
-                onStartDownload = { vm.startDownload(it, uriHandler) },
-                currentVersion = vm.currentVersion,
-            )
-        }
-    }
-    if (vm.hasUpdate) {
-        var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
-        if (installationError != null) {
-            FailedToInstallDialog({ installationError = null }, { vm.logoState })
-        }
-
-        NavigationRailItem(
-            false,
-            onClick = {
-                vm.handleClickLogo(
-                    context,
-                    uriHandler,
-                    onInstallationError = { installationError = it },
-                    showChangelogDialog = { showDialog = true },
-                )
-            },
-            icon = { UpdateLogoIcon(vm.logoState) },
-            label = { UpdateLogoLabel(vm.logoState) },
-        )
-    }
-}
-
-@Composable
-private fun UserAvatarInNavigation(modifier: Modifier = Modifier) {
-    Box(modifier) {
-        val vm = viewModel { AccountViewModel() }
-        if (vm.authState.isLoading || vm.authState.isKnownLoggedIn) {
-            // 加载中时展示 placeholder
-            AvatarImage(
-                url = vm.selfInfo?.avatarUrl,
-                Modifier.size(48.dp).clip(CircleShape).placeholder(vm.selfInfo == null),
-            )
-        } else {
-            if (vm.authState.isKnownGuest) {
-                val navigator = LocalNavigator.current
-                TextButton({ vm.authState.launchAuthorize(navigator) }) {
-                    Text("登录")
-                }
-            } else {
-                SessionTipsIcon(vm.authState, showLabel = false)
-            }
-        }
     }
 }

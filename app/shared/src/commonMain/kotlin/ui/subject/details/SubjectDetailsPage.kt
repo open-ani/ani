@@ -36,7 +36,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -69,6 +68,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalPlatform
+import me.him188.ani.app.ui.foundation.animation.StandardDecelerate
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
@@ -76,6 +76,7 @@ import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
+import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.only
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
@@ -243,6 +244,8 @@ fun SubjectDetailsPage(
         isContentReady = true
     }
 
+    val backgroundColor = AniThemeDefaults.pageContentBackgroundColor
+    val stickyTopBarColor = AniThemeDefaults.navigationContainerColor
     Scaffold(
         topBar = {
             if (showTopBar) {
@@ -277,7 +280,7 @@ fun SubjectDetailsPage(
                                         Icon(Icons.AutoMirrored.Outlined.OpenInNew, null)
                                     }
                                 },
-                                colors = AniThemeDefaults.topAppBarColors(),
+                                colors = AniThemeDefaults.topAppBarColors(containerColor = stickyTopBarColor),
                                 windowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top),
                             )
                         }
@@ -287,6 +290,7 @@ fun SubjectDetailsPage(
         },
         modifier = modifier,
         contentWindowInsets = windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
+        containerColor = backgroundColor,
     ) { scaffoldPadding ->
         // 这个页面比较特殊. 背景需要绘制到 TopBar 等区域以内, 也就是要无视 scaffoldPadding.
 
@@ -311,11 +315,16 @@ fun SubjectDetailsPage(
             AnimatedVisibility(
                 isContentReady,
                 Modifier.wrapContentSize(),
-                // 从中间往上滑
-                enter = fadeIn(tween(500)) + slideInVertically(
-                    tween(600),
-                    initialOffsetY = { 150.coerceAtMost(it) },
-                ),
+                enter = if (currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass.isAtLeastMedium) {
+                    // 大屏幕采用简单的淡入
+                    fadeIn(tween(200, easing = StandardDecelerate))
+                } else {
+                    // 从中间往上滑
+                    fadeIn(tween(500)) + slideInVertically(
+                        tween(600),
+                        initialOffsetY = { 150.coerceAtMost(it) },
+                    )
+                },
             ) {
                 Column(Modifier.widthIn(max = 1300.dp).fillMaxHeight()) {
                     Box(Modifier.connectedScrollContainer(connectedScrollState)) {
@@ -324,6 +333,7 @@ fun SubjectDetailsPage(
                             SubjectBlurredBackground(
                                 coverImageUrl = if (isContentReady) state.coverImageUrl else null,
                                 Modifier.matchParentSize(),
+                                backgroundColor = backgroundColor,
                             )
                         }
 
@@ -363,7 +373,7 @@ fun SubjectDetailsPage(
                             .consumeWindowInsets(remainingContentPadding),
                     ) {
                         val tabContainerColor by animateColorAsState(
-                            if (connectedScrollState.isScrolledTop) TabRowDefaults.secondaryContainerColor else MaterialTheme.colorScheme.background,
+                            if (connectedScrollState.isScrolledTop) stickyTopBarColor else backgroundColor,
                             tween(),
                         )
                         ScrollableTabRow(
