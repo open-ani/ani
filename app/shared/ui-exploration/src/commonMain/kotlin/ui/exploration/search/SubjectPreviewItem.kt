@@ -56,10 +56,18 @@ class SubjectPreviewItemInfo(
                     append("全 ${subjectInfo.totalEpisodes} 话")
                     append(" · ")
                 }
+
+                val sourceTag = subjectInfo.tags
+                    .firstOrNull { it.kind == CanonicalTagKind.Source }
+                    ?.let { sequenceOf(it) }.orEmpty()
+
+                val genreTags = subjectInfo.tags
+                    .filterTo(ArrayList(10)) { it.kind == CanonicalTagKind.Genre }
+                    .apply { sortByDescending { it.count } }
+                    .asSequence()
+
                 append(
-                    subjectInfo.tags
-                        .filterTo(ArrayList(10)) { it.kind == CanonicalTagKind.Genre }
-                        .apply { sortByDescending { it.count } }
+                    (sourceTag + genreTags)
                         .take(3)
                         .joinToString(" / "),
                 )
