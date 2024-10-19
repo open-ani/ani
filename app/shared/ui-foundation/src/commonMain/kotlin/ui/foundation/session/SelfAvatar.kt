@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.domain.session.AuthState
@@ -67,7 +68,11 @@ fun SelfAvatar(
             }
         }
 
-        DropdownMenu(showMenu, onDismissRequest = { showMenu = false }) {
+        DropdownMenu(
+            showMenu,
+            offset = DpOffset(x = 0.dp, y = 8.dp),
+            onDismissRequest = { showMenu = false },
+        ) {
             SelfAvatarMenus(handler, onClickAny = { showMenu = false })
         }
     }
