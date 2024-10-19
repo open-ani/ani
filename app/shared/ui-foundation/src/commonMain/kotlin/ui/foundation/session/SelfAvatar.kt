@@ -68,7 +68,7 @@ fun SelfAvatar(
         }
 
         DropdownMenu(showMenu, onDismissRequest = { showMenu = false }) {
-            SelfAvatarMenus(handler)
+            SelfAvatarMenus(handler, onClickAny = { showMenu = false })
         }
     }
 }
@@ -95,10 +95,14 @@ fun rememberSelfAvatarActionHandler(): SelfAvatarActionHandler {
 @Composable
 private fun SelfAvatarMenus(
     handler: SelfAvatarActionHandler,
+    onClickAny: () -> Unit,
 ) {
     DropdownMenuItem(
         text = { Text("设置") },
-        onClick = { handler.onClickSettings() },
+        onClick = {
+            handler.onClickSettings()
+            onClickAny()
+        },
         leadingIcon = { Icon(Icons.Rounded.Settings, null) },
     )
 }
