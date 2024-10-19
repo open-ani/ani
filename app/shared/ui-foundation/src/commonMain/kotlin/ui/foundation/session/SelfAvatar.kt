@@ -32,12 +32,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.him188.ani.app.data.models.UserInfo
 import me.him188.ani.app.domain.session.AuthState
+import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.tools.rememberUiMonoTasker
 import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.avatar.AvatarImage
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import kotlin.coroutines.CoroutineContext
 
 @Composable
 fun SelfAvatar(
@@ -81,13 +88,22 @@ fun SelfAvatar(
 @Stable
 interface SelfAvatarActionHandler {
     fun onClickSettings()
+    suspend fun onLogout()
 }
 
 private class DefaultSelfAvatarActionHandler(
     private val navigator: AniNavigator,
-) : SelfAvatarActionHandler {
+    private val dispatcher: CoroutineContext = Dispatchers.Default,
+) : SelfAvatarActionHandler, KoinComponent {
+    private val sessionManager: SessionManager by inject()
     override fun onClickSettings() {
         navigator.navigateSettings()
+    }
+
+    override suspend fun onLogout() {
+        withContext(dispatcher) {
+            sessionManager.clearSession()
+        }
     }
 }
 
@@ -109,5 +125,16 @@ private fun SelfAvatarMenus(
             onClickAny()
         },
         leadingIcon = { Icon(Icons.Rounded.Settings, null) },
+    )
+    val logoutTasker = rememberUiMonoTasker()
+    DropdownMenuItem(
+        text = { Text("退出登录") },
+        onClick = {
+            logoutTasker.launch {
+                handler.onLogout()
+                onClickAny()
+            }
+        },
+        enabled = !logoutTasker.isRunning,
     )
 }

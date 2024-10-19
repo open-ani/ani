@@ -432,6 +432,7 @@ class BangumiSessionManager(
         if (curr !is GuestSession) {
             events.tryEmit(SessionEvent.Logout)
         }
+        refreshCounter.value++
     }
 
     @TestOnly
