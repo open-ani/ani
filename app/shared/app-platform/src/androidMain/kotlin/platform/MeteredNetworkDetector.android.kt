@@ -9,46 +9,69 @@
 
 package me.him188.ani.app.platform
 
-import android.content.BroadcastReceiver
-import android.content.Intent
-import android.content.IntentFilter
+import android.annotation.SuppressLint
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 
+@SuppressLint("MissingPermission")
 private class AndroidMeteredNetworkDetector(
     private val context: Context
-) : BroadcastReceiver(), MeteredNetworkDetector {
+) : MeteredNetworkDetector {
+
     private val flow = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
     override val isMeteredNetworkFlow: Flow<Boolean> = flow
-    
-    private val connectivityManager by lazy { 
-        context.getSystemService(ConnectivityManager::class.java) 
+
+    private val connectivityManager by lazy {
+        context.getSystemService(ConnectivityManager::class.java)
     }
-    
+
+    // Create a NetworkCallback to detect network changes
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) { // 连接 WiFi
+            flow.tryEmit(getCurrentIsMetered())
+        }
+
+        override fun onLost(network: Network) { // 断开 WiFi
+            flow.tryEmit(getCurrentIsMetered())
+        }
+
+        // WiFi 设置变更 (设置为计费网络)
+        // 连接/断开 WiFi 不会触发 onCapabilitiesChanged
+        override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+            val isMetered = !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+            flow.tryEmit(isMetered)
+        }
+    }
+
     init {
-        context.registerReceiver(this, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
-        // emit first value
+        // Register the NetworkCallback instead of using BroadcastReceiver
+        val networkRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+            .build()
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+
+        // Emit the first value
         flow.tryEmit(getCurrentIsMetered())
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        flow.tryEmit(getCurrentIsMetered())
-    }
-    
     private fun getCurrentIsMetered(): Boolean {
         val activeNetwork = connectivityManager.activeNetwork ?: return false
         val activeNetworkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
-        
-        return !activeNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+
+        // Return whether the network is metered or not
+        val isMetered = !activeNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+        return isMetered
     }
 
     override fun dispose() {
-        context.unregisterReceiver(this)
+        // Unregister the network callback when no longer needed
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
-    
 }
 
 actual fun createMeteredNetworkDetector(context: Context): MeteredNetworkDetector {
