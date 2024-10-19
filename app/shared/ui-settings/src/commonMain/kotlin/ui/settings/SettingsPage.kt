@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -65,7 +66,6 @@ import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
-import me.him188.ani.app.ui.foundation.layout.Zero
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
@@ -97,7 +97,7 @@ typealias SettingsTab = me.him188.ani.app.navigation.SettingsTab
 fun SettingsPage(
     vm: SettingsViewModel,
     modifier: Modifier = Modifier,
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     initialTab: SettingsTab? = null,
     showNavigationIcon: Boolean = false,
 ) {
@@ -187,7 +187,7 @@ fun SettingsPage(
             }
         },
         modifier,
-        contentWindowInsets,
+        windowInsets,
         showNavigationIcon = showNavigationIcon,
     )
 }
@@ -226,7 +226,7 @@ internal fun SettingsPageLayout(
         listPaneContent = {
             PermanentDrawerSheet(
                 Modifier
-                    .consumeWindowInsets(windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
+                    .consumeWindowInsets(windowInsets.only(WindowInsetsSides.Top))
                     .fillMaxWidth()
                     .ifThen(!LocalPlatform.current.hasScrollingBug()) {
                         nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
@@ -272,7 +272,7 @@ internal fun SettingsPageLayout(
                                     AniTopAppBarDefaults.Title(getName(currentTab))
                                 }
                             },
-                            windowInsets = WindowInsets.Zero,
+                            windowInsets = windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                             navigationIcon = {
                                 TopAppBarGoBackButton {
                                     navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
@@ -286,7 +286,9 @@ internal fun SettingsPageLayout(
                 }
             }
         },
-        modifier,
+        modifier
+            .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+            .consumeWindowInsets(windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
     )
 }
 

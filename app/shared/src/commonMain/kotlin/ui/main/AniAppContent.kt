@@ -161,7 +161,7 @@ private fun AniAppContentImpl(
                         SettingsViewModel()
                     },
                     Modifier.fillMaxSize(),
-                    contentWindowInsets = windowInsets,
+                    windowInsets = windowInsets,
                 )
             }
             composable<NavRoutes.Main>(
@@ -268,7 +268,7 @@ private fun AniAppContentImpl(
                         SettingsViewModel()
                     },
                     Modifier.fillMaxSize(),
-                    contentWindowInsets = windowInsets,
+                    windowInsets = windowInsets,
                     route.tab,
                     showNavigationIcon = true,
                 )
