@@ -50,7 +50,7 @@ import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.logger
 import org.koin.android.ext.android.inject
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 import org.koin.mp.KoinPlatformTools
 
 class MainActivity : AniComponentActivity() {
@@ -96,7 +96,7 @@ class MainActivity : AniComponentActivity() {
             }
         }
 
-        val settingsRepository = GlobalContext.get().get<SettingsRepository>()
+        val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
         val proxyConfig = settingsRepository.proxySettings.flow.map {
             it.default.configIfEnabledOrNull
         }
