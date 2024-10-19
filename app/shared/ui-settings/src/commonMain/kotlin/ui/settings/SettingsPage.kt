@@ -56,6 +56,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -67,6 +68,7 @@ import me.him188.ani.app.ui.adaptive.AniTopAppBarDefaults
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.layout.AniListDetailPaneScaffold
+import me.him188.ani.app.ui.foundation.layout.ListDetailLayoutParameters
 import me.him188.ani.app.ui.foundation.layout.cardVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.paneHorizontalPadding
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
@@ -110,6 +112,7 @@ fun SettingsPage(
             }
         },
     )
+    val layoutParameters = ListDetailLayoutParameters.calculate(navigator.scaffoldDirective)
 
     SettingsPageLayout(
         navigator,
@@ -190,6 +193,7 @@ fun SettingsPage(
         modifier,
         windowInsets,
         showNavigationIcon = showNavigationIcon,
+        layoutParameters = layoutParameters,
     )
 }
 
@@ -201,15 +205,31 @@ internal fun SettingsPageLayout(
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     containerColor: Color = AniThemeDefaults.pageContentBackgroundColor,
+    layoutParameters: ListDetailLayoutParameters = ListDetailLayoutParameters.calculate(navigator.scaffoldDirective),
     showNavigationIcon: Boolean = false,
 ) = Surface(color = containerColor) {
+    val layoutParametersState by rememberUpdatedState(layoutParameters)
+
+    @Stable
+    fun SettingsTab?.orDefault(): SettingsTab? {
+        return if (layoutParametersState.isSinglePane) {
+            // 单页模式, 自动选择传入的 tab
+            this
+        } else {
+            // 双页模式, 默认选择第一个 tab, 以免右边很空
+            this ?: SettingsTab.entries.first()
+        }
+    }
+
     val currentTab by remember(navigator) {
         derivedStateOf {
-            navigator.currentDestination?.content
+            navigator.currentDestination?.content.orDefault()
         }
     }
 
     val topAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+
     AniListDetailPaneScaffold(
         navigator,
         listPaneTopAppBar = {
@@ -265,7 +285,8 @@ internal fun SettingsPageLayout(
                 navigator.currentDestination?.content,
                 Modifier.fillMaxSize(),
                 transitionSpec = AniThemeDefaults.standardAnimatedContentTransition,
-            ) { tab ->
+            ) { navigationTab ->
+                val tab = navigationTab.orDefault()
                 Column {
                     tab?.let {
                         AniTopAppBar(
@@ -293,6 +314,7 @@ internal fun SettingsPageLayout(
         modifier
             .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .consumeWindowInsets(windowInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
+        layoutParameters = layoutParameters,
     )
 }
 

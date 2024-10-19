@@ -32,6 +32,11 @@ sealed class NavRoutes {
 
     @Serializable
     data class Settings(
+        /**
+         * 如果指定了 [tab]，则直接跳转到指定的设置页. 在按返回时将回到上一页, 而不是设置页的导航 (list).
+         *
+         * 如果为 `null`, 则正常打开设置页的导航.
+         */
         val tab: SettingsTab? = null,
     ) : NavRoutes()
 
