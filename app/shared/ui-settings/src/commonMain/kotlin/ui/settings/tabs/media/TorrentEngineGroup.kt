@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.settings.tabs.media
 
 import androidx.compose.foundation.layout.RowScope
@@ -14,7 +23,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import me.him188.ani.app.data.models.preference.AnitorrentConfig
+import me.him188.ani.app.data.models.preference.supportsLimitUploadOnMeteredNetwork
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SettingsScope
 import me.him188.ani.app.ui.settings.framework.components.SliderItem
@@ -87,12 +98,14 @@ internal fun SettingsScope.TorrentEngineGroup(
                 },
                 title = { Text("上传速度限制") },
             )
-            SwitchItem(
-                checked = torrentSettings.limitUploadOnMeteredNetwork,
-                onCheckedChange = { torrentSettingsState.update(torrentSettings.copy(limitUploadOnMeteredNetwork = it)) },
-                title = { Text("计费网络限制上传") },
-                description = { Text("在计费网络环境下限制上传速度为 1 KB/s") }
-            )
+            if (LocalPlatform.current.supportsLimitUploadOnMeteredNetwork()) {
+                SwitchItem(
+                    checked = torrentSettings.limitUploadOnMeteredNetwork,
+                    onCheckedChange = { torrentSettingsState.update(torrentSettings.copy(limitUploadOnMeteredNetwork = it)) },
+                    title = { Text("计费网络限制上传") },
+                    description = { Text("在计费网络环境下限制上传速度为 1 KB/s") },
+                )
+            }
         }
         val navigator by rememberUpdatedState(LocalNavigator.current)
         TextItem(
