@@ -137,7 +137,9 @@ fun SettingsPage(
 
             Title("其他")
             Item(SettingsTab.ABOUT)
-            Item(SettingsTab.DEBUG)
+            if (vm.isInDebugMode) {
+                Item(SettingsTab.DEBUG)
+            }
         },
         tabContent = { currentTab ->
             val tabModifier = Modifier
