@@ -68,6 +68,7 @@ import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.foundation.ImageViewer
 import me.him188.ani.app.ui.foundation.LocalPlatform
+import me.him188.ani.app.ui.foundation.animation.StandardDecelerate
 import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.interaction.nestedScrollWorkaround
@@ -75,6 +76,7 @@ import me.him188.ani.app.ui.foundation.layout.ConnectedScrollState
 import me.him188.ani.app.ui.foundation.layout.PaddingValuesSides
 import me.him188.ani.app.ui.foundation.layout.connectedScrollContainer
 import me.him188.ani.app.ui.foundation.layout.connectedScrollTarget
+import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
 import me.him188.ani.app.ui.foundation.layout.only
 import me.him188.ani.app.ui.foundation.layout.paneVerticalPadding
 import me.him188.ani.app.ui.foundation.layout.rememberConnectedScrollState
@@ -313,11 +315,16 @@ fun SubjectDetailsPage(
             AnimatedVisibility(
                 isContentReady,
                 Modifier.wrapContentSize(),
-                // 从中间往上滑
-                enter = fadeIn(tween(500)) + slideInVertically(
-                    tween(600),
-                    initialOffsetY = { 150.coerceAtMost(it) },
-                ),
+                enter = if (currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass.isAtLeastMedium) {
+                    // 大屏幕采用简单的淡入
+                    fadeIn(tween(200, easing = StandardDecelerate))
+                } else {
+                    // 从中间往上滑
+                    fadeIn(tween(500)) + slideInVertically(
+                        tween(600),
+                        initialOffsetY = { 150.coerceAtMost(it) },
+                    )
+                },
             ) {
                 Column(Modifier.widthIn(max = 1300.dp).fillMaxHeight()) {
                     Box(Modifier.connectedScrollContainer(connectedScrollState)) {
