@@ -352,7 +352,7 @@ private fun getName(tab: SettingsTab): String {
 }
 
 @Composable
-fun SettingsTab(
+private fun SettingsTab(
     modifier: Modifier = Modifier,
     content: @Composable SettingsScope.() -> Unit,
 ) {
