@@ -40,6 +40,9 @@ import me.him188.ani.app.data.models.preference.UISettings
 import me.him188.ani.app.data.models.preference.UpdateSettings
 import me.him188.ani.app.data.models.preference.VideoScaffoldConfig
 import me.him188.ani.app.domain.danmaku.protocol.ReleaseClass
+import me.him188.ani.app.navigation.MainScenePage
+import me.him188.ani.app.navigation.getIcon
+import me.him188.ani.app.navigation.getText
 import me.him188.ani.app.platform.currentAniBuildConfig
 import me.him188.ani.app.ui.foundation.LocalPlatform
 import me.him188.ani.app.ui.settings.SettingsTab
@@ -104,6 +107,20 @@ fun SettingsScope.AppearanceGroup(
     state: SettingsState<UISettings>,
 ) {
     val uiSettings by state
+
+    DropdownItem(
+        selected = { uiSettings.mainSceneInitialPage },
+        values = { MainScenePage.visibleEntries },
+        itemText = { Text(it.getText()) },
+        onSelect = {
+            state.update(uiSettings.copy(mainSceneInitialPage = it))
+        },
+        itemIcon = { Icon(it.getIcon(), null) },
+        title = { Text("初始页面") },
+        description = { Text("启动 APP 时进入的页面") },
+    )
+
+
     Group(title = { Text("主题") }) {
         if (LocalPlatform.current.isAndroid()) {
             SwitchItem(

@@ -89,13 +89,16 @@ import kotlin.reflect.typeOf
  * UI 入口点. 包含所有子页面, 以及组合这些子页面的方式 (navigation).
  */
 @Composable
-fun AniAppContent(aniNavigator: AniNavigator) {
+fun AniAppContent(
+    aniNavigator: AniNavigator,
+    initialRoute: NavRoutes,
+) {
     val navigator = rememberNavController()
     aniNavigator.setNavController(navigator)
 
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         CompositionLocalProvider(LocalNavigator provides aniNavigator) {
-            AniAppContentImpl(aniNavigator, Modifier.fillMaxSize())
+            AniAppContentImpl(aniNavigator, initialRoute, Modifier.fillMaxSize())
         }
     }
 }
@@ -103,7 +106,8 @@ fun AniAppContent(aniNavigator: AniNavigator) {
 @Composable
 private fun AniAppContentImpl(
     aniNavigator: AniNavigator,
-    modifier: Modifier = Modifier
+    initialRoute: NavRoutes,
+    modifier: Modifier = Modifier,
 ) {
     val navController = aniNavigator.navigator
     // 必须传给所有 Scaffold 和 TopAppBar. 注意, 如果你不传, 你的 UI 很可能会在 macOS 不工作.
@@ -112,7 +116,7 @@ private fun AniAppContentImpl(
         .add(WindowInsets.desktopTitleBar()) // Compose 目前不支持这个所以我们要自己加上
 
     SharedTransitionLayout {
-        NavHost(navController, startDestination = NavRoutes.Main(MainScenePage.Exploration), modifier) {
+        NavHost(navController, startDestination = initialRoute, modifier) {
             // https://m3.material.io/styles/motion/easing-and-duration/applying-easing-and-duration#e5b958f0-435d-4e84-aed4-8d1ea395fa5c
             val enterDuration = 500
             val exitDuration = 200
@@ -123,24 +127,38 @@ private fun AniAppContentImpl(
             val enterEasing = EmphasizedDecelerateEasing
             val exitEasing = LinearOutSlowInEasing
 
-            val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-                slideInHorizontally(tween(enterDuration, easing = enterEasing)) { (it * (1f / 5)).roundToInt() }
-                    .plus(fadeIn(tween(enterDuration, easing = enterEasing)))
-            }
+            val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? =
+                {
+                    slideInHorizontally(
+                        tween(
+                            enterDuration,
+                            easing = enterEasing
+                        )
+                    ) { (it * (1f / 5)).roundToInt() }
+                        .plus(fadeIn(tween(enterDuration, easing = enterEasing)))
+                }
 
-            val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
-                fadeOut(tween(exitDuration, easing = exitEasing))
-            }
+            val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? =
+                {
+                    fadeOut(tween(exitDuration, easing = exitEasing))
+                }
 
-            val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
-                fadeIn(tween(enterDuration, easing = enterEasing))
-            }
+            val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? =
+                {
+                    fadeIn(tween(enterDuration, easing = enterEasing))
+                }
 
             // 从页面 A 回到上一个页面 B, 切走页面 A 的动画
-            val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
-                slideOutHorizontally(tween(exitDuration, easing = exitEasing)) { (it * (1f / 7)).roundToInt() }
-                    .plus(fadeOut(tween(exitDuration, easing = exitEasing)))
-            }
+            val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? =
+                {
+                    slideOutHorizontally(
+                        tween(
+                            exitDuration,
+                            easing = exitEasing
+                        )
+                    ) { (it * (1f / 7)).roundToInt() }
+                        .plus(fadeOut(tween(exitDuration, easing = exitEasing)))
+                }
 
             composable<NavRoutes.Welcome>(
                 enterTransition = enterTransition,
@@ -174,9 +192,10 @@ private fun AniAppContentImpl(
                 ),
             ) { backStack ->
                 val route = backStack.toRoute<NavRoutes.Main>()
-                val navigationLayoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
-                    currentWindowAdaptiveInfo(),
-                )
+                val navigationLayoutType =
+                    NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
+                        currentWindowAdaptiveInfo(),
+                    )
                 var currentPage by rememberSaveable { mutableStateOf(route.initialPage) }
 
                 OverrideNavigation(
@@ -206,7 +225,10 @@ private fun AniAppContentImpl(
                 popEnterTransition = popEnterTransition,
                 popExitTransition = popExitTransition,
             ) {
-                BangumiOAuthScene(viewModel { BangumiOAuthViewModel() }, windowInsets = windowInsets)
+                BangumiOAuthScene(
+                    viewModel { BangumiOAuthViewModel() },
+                    windowInsets = windowInsets
+                )
             }
             composable<NavRoutes.BangumiTokenAuth>(
                 enterTransition = enterTransition,

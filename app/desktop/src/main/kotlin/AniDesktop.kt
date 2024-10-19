@@ -58,6 +58,7 @@ import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.DesktopBrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.navigation.NavRoutes
 import me.him188.ani.app.platform.AniBuildConfigDesktop
 import me.him188.ani.app.platform.AniCefApp
 import me.him188.ani.app.platform.AppStartupTasks
@@ -351,8 +352,9 @@ object AniDesktop {
 private fun FrameWindowScope.MainWindowContent(
     aniNavigator: AniNavigator,
 ) {
+    val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
     AniApp {
-        val proxyConfig = KoinPlatform.getKoin().get<SettingsRepository>().proxySettings.flow.map {
+        val proxyConfig = settingsRepository.proxySettings.flow.map {
             it.default.configIfEnabledOrNull
         }
         val proxy by proxyConfig.collectAsStateWithLifecycle(null)
@@ -391,7 +393,10 @@ private fun FrameWindowScope.MainWindowContent(
                     LocalImageLoader provides imageLoader,
                 ) {
                     Box(Modifier.padding(all = paddingByWindowSize)) {
-                        AniAppContent(aniNavigator)
+                        val uiSettings by settingsRepository.uiSettings.flow.collectAsStateWithLifecycle(null)
+                        uiSettings?.let {
+                            AniAppContent(aniNavigator, NavRoutes.Main(it.mainSceneInitialPage))
+                        }
                         Toast({ showing }, { Text(content) })
                     }
                 }

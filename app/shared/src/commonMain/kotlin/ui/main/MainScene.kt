@@ -19,10 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.DownloadDone
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -36,18 +33,18 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.MainScenePage
+import me.him188.ani.app.navigation.getIcon
+import me.him188.ani.app.navigation.getText
 import me.him188.ani.app.platform.LocalContext
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuite
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuiteLayout
@@ -119,28 +116,12 @@ private fun MainSceneContent(
                 ),
                 navigationRailItemSpacing = 8.dp,
             ) {
-                @Stable
-                fun getIcon(page: MainScenePage): ImageVector = when (page) {
-                    MainScenePage.Exploration -> Icons.Rounded.TravelExplore
-                    MainScenePage.Collection -> Icons.Rounded.Star
-                    MainScenePage.CacheManagement -> Icons.Rounded.DownloadDone
-                    MainScenePage.Search -> Icons.Rounded.Search
-                }
-
-                @Stable
-                fun getText(page: MainScenePage): String = when (page) {
-                    MainScenePage.Exploration -> "探索"
-                    MainScenePage.Collection -> "追番"
-                    MainScenePage.CacheManagement -> "缓存"
-                    MainScenePage.Search -> "搜索"
-                }
-
                 for (entry in MainScenePage.visibleEntries) {
                     item(
                         page == entry,
                         onClick = { onNavigateToPage(entry) },
-                        icon = { Icon(getIcon(entry), null) },
-                        label = { Text(text = getText(entry)) },
+                        icon = { Icon(entry.getIcon(), null) },
+                        label = { Text(text = entry.getText()) },
                     )
                 }
             }

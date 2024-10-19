@@ -37,9 +37,12 @@ import me.him188.ani.app.domain.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
+import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.navigation.LocalNavigator
+import me.him188.ani.app.navigation.NavRoutes
 import me.him188.ani.app.navigation.NoopBrowserNavigator
 import me.him188.ani.app.platform.GrantedPermissionManager
 import me.him188.ani.app.platform.IosContext
@@ -52,8 +55,6 @@ import me.him188.ani.app.platform.getCommonKoinModule
 import me.him188.ani.app.platform.notification.NoopNotifManager
 import me.him188.ani.app.platform.notification.NotifManager
 import me.him188.ani.app.platform.startCommonKoinModule
-import me.him188.ani.app.domain.torrent.DefaultTorrentManager
-import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.tools.update.IosUpdateInstaller
 import me.him188.ani.app.tools.update.UpdateInstaller
 import me.him188.ani.app.ui.foundation.LocalImageLoader
@@ -109,7 +110,8 @@ fun MainViewController(): UIViewController {
                 get() = TestGlobalLifecycle // TODO: ios lifecycle
         },
     )
-    val proxyConfig = koin.get<SettingsRepository>().proxySettings.flow.map {
+    val settingsRepository = koin.get<SettingsRepository>()
+    val proxyConfig = settingsRepository.proxySettings.flow.map {
         it.default.configIfEnabledOrNull
     }
     return ComposeUIViewController {
@@ -157,7 +159,10 @@ fun MainViewController(): UIViewController {
                             },
                         ) {
                             Box(Modifier.padding(all = paddingByWindowSize)) {
-                                AniAppContent(aniNavigator)
+                                val uiSettings by settingsRepository.uiSettings.flow.collectAsStateWithLifecycle(null)
+                                uiSettings?.let {
+                                    AniAppContent(aniNavigator, NavRoutes.Main(it.mainSceneInitialPage))
+                                }
                                 Toast({ showing }, { Text(content) })
                             }
                         }

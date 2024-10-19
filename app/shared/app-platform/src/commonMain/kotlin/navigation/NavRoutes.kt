@@ -9,6 +9,11 @@
 
 package me.him188.ani.app.navigation
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlinx.serialization.Serializable
@@ -121,3 +126,18 @@ enum class SettingsTab {
     }
 }
 
+@Stable
+fun MainScenePage.getIcon() = when (this) {
+    MainScenePage.Exploration -> Icons.Rounded.TravelExplore
+    MainScenePage.Collection -> Icons.Rounded.Star
+    MainScenePage.CacheManagement -> Icons.Rounded.DownloadDone
+    MainScenePage.Search -> Icons.Rounded.Search
+}
+
+@Stable
+fun MainScenePage.getText(): String = when (this) {
+    MainScenePage.Exploration -> "探索"
+    MainScenePage.Collection -> "追番"
+    MainScenePage.CacheManagement -> "缓存"
+    MainScenePage.Search -> "搜索"
+}

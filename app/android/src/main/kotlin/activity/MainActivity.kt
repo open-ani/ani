@@ -33,6 +33,7 @@ import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.domain.session.SessionManager
 import me.him188.ani.app.navigation.AniNavigator
+import me.him188.ani.app.navigation.NavRoutes
 import me.him188.ani.app.platform.AppStartupTasks
 import me.him188.ani.app.platform.PlatformWindow
 import me.him188.ani.app.platform.notification.AndroidNotifManager
@@ -95,7 +96,8 @@ class MainActivity : AniComponentActivity() {
             }
         }
 
-        val proxyConfig = GlobalContext.get().get<SettingsRepository>().proxySettings.flow.map {
+        val settingsRepository = GlobalContext.get().get<SettingsRepository>()
+        val proxyConfig = settingsRepository.proxySettings.flow.map {
             it.default.configIfEnabledOrNull
         }
         setContent {
@@ -116,7 +118,10 @@ class MainActivity : AniComponentActivity() {
                     },
                     LocalImageLoader provides imageLoader,
                 ) {
-                    AniAppContent(aniNavigator)
+                    val uiSettings by settingsRepository.uiSettings.flow.collectAsStateWithLifecycle(null)
+                    uiSettings?.let {
+                        AniAppContent(aniNavigator, NavRoutes.Main(it.mainSceneInitialPage))
+                    }
                 }
             }
         }
