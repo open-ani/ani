@@ -20,14 +20,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @SuppressLint("MissingPermission")
 private class AndroidMeteredNetworkDetector(
-    private val context: Context
+    context: Context
 ) : MeteredNetworkDetector {
+    private val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+
     private val flow = MutableStateFlow(getCurrentIsMetered())
     override val isMeteredNetworkFlow: Flow<Boolean> get() = flow
-
-    private val connectivityManager by lazy {
-        context.getSystemService(ConnectivityManager::class.java)
-    }
 
     // Create a NetworkCallback to detect network changes
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
