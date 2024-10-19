@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -126,15 +129,37 @@ private fun SelfAvatarMenus(
         },
         leadingIcon = { Icon(Icons.Rounded.Settings, null) },
     )
+
     val logoutTasker = rememberUiMonoTasker()
+    var showLogoutConfirmation by rememberSaveable { mutableStateOf(false) }
     DropdownMenuItem(
-        text = { Text("退出登录") },
-        onClick = {
-            logoutTasker.launch {
-                handler.onLogout()
-                onClickAny()
-            }
-        },
+        text = { Text("退出登录", color = MaterialTheme.colorScheme.error) },
+        leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Logout, null) },
+        onClick = { showLogoutConfirmation = true },
         enabled = !logoutTasker.isRunning,
     )
+    if (showLogoutConfirmation) {
+        AlertDialog(
+            { showLogoutConfirmation = false },
+            text = { Text("确定要退出登录吗?") },
+            confirmButton = {
+                TextButton(
+                    {
+                        logoutTasker.launch {
+                            handler.onLogout()
+                            onClickAny()
+                        }
+                        showLogoutConfirmation = false
+                    },
+                ) {
+                    Text("退出登录", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton({ showLogoutConfirmation = false }) {
+                    Text("取消")
+                }
+            },
+        )
+    }
 }
