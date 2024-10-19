@@ -37,10 +37,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
-import me.him188.ani.app.ui.foundation.ifThen
 import me.him188.ani.app.ui.foundation.interaction.WindowDragArea
 import me.him188.ani.app.ui.foundation.layout.compareTo
 import me.him188.ani.app.ui.foundation.layout.isAtLeastMedium
@@ -75,12 +75,15 @@ fun AniTopAppBar(
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     WindowDragArea {
+        val additionalPadding =
+            if (windowSizeClass.windowWidthSizeClass.isAtLeastMedium && windowSizeClass.windowHeightSizeClass.isAtLeastMedium) {
+                8.dp
+            } else {
+                0.dp
+            }
         TopAppBar(
             title,
-            modifier
-                .ifThen(windowSizeClass.windowWidthSizeClass.isAtLeastMedium && windowSizeClass.windowHeightSizeClass.isAtLeastMedium) {
-                    padding(all = 8.dp)
-                },
+            modifier.padding(all = additionalPadding),
             navigationIcon,
             actions = {
                 val horizontalPadding =
@@ -99,7 +102,12 @@ fun AniTopAppBar(
                     actions()
                 }
 
-                Box(Modifier.paddingIfNotEmpty(start = horizontalPadding)) {
+                Box(
+                    Modifier.paddingIfNotEmpty(
+                        start = horizontalPadding,
+                        end = (horizontalPadding - 4.dp - additionalPadding).coerceAtLeast(0.dp), // `actions` 自带 4
+                    ),
+                ) {
                     Box(Modifier.size(48.dp)) {
                         avatar()
                     }
