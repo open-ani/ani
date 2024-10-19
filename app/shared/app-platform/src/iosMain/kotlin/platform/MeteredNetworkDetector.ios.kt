@@ -8,8 +8,5 @@
  */
 
 actual fun createMeteredNetworkDetector(context: Context): MeteredNetworkDetector {
-    return object : MeteredNetworkDetector {
-        override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
-        override fun dispose() { }
-    }
+    return NoopMeteredNetworkDetector
 }

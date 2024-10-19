@@ -10,10 +10,11 @@
 package me.him188.ani.app.platform
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Platform-dependent network type detector.
- * 
+ *
  * Use [createMeteredNetworkDetector] to create instance.
  */
 interface MeteredNetworkDetector {
@@ -23,6 +24,13 @@ interface MeteredNetworkDetector {
      * Dispose listeners or callbacks which may be created at initializing detector.
      */
     fun dispose()
+}
+
+object NoopMeteredNetworkDetector : MeteredNetworkDetector {
+    override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
+
+    override fun dispose() {
+    }
 }
 
 

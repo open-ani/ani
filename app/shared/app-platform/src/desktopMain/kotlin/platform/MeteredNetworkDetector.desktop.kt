@@ -20,7 +20,6 @@ import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import me.him188.ani.utils.logging.logger
 import me.him188.ani.utils.logging.warn
 import me.him188.ani.utils.platform.Platform
@@ -72,9 +71,9 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
     }
 
     override fun dispose() {
-        
+
     }
-    
+
     private class INetworkCostManager(pointer: PointerByReference) : Unknown(pointer.value) {
         @Suppress("FunctionName")
         fun GetCost(cost: IntByReference): HRESULT {
@@ -101,16 +100,8 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
 actual fun createMeteredNetworkDetector(context: Context): MeteredNetworkDetector {
     return when (currentPlatformDesktop()) {
         is Platform.Windows -> WindowsMeteredNetworkDetector()
-        is Platform.MacOS -> object : MeteredNetworkDetector {
-            // macos API 要用 swift 才能实现
-            override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
-            override fun dispose() { }
-        }
-
-        else -> object : MeteredNetworkDetector {
-            override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
-            override fun dispose() { }
-        }
+        is Platform.MacOS -> NoopMeteredNetworkDetector // macos API 要用 swift 才能实现
+        is Platform.Linux -> NoopMeteredNetworkDetector
     }
 }
 
