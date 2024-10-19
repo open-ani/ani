@@ -168,20 +168,6 @@ private fun AniAppContentImpl(
             ) { // 由 SessionManager.requireAuthorize 跳转到
                 WelcomeScene(viewModel { WelcomeViewModel() }, Modifier.fillMaxSize(), windowInsets)
             }
-            composable<NavRoutes.Welcome>(
-                enterTransition = enterTransition,
-                exitTransition = exitTransition,
-                popEnterTransition = popEnterTransition,
-                popExitTransition = popExitTransition,
-            ) { // 由 SessionManager.requireAuthorize 跳转到
-                SettingsPage(
-                    viewModel {
-                        SettingsViewModel()
-                    },
-                    Modifier.fillMaxSize(),
-                    windowInsets = windowInsets,
-                )
-            }
             composable<NavRoutes.Main>(
                 enterTransition = enterTransition,
                 exitTransition = exitTransition,
