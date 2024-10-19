@@ -14,12 +14,9 @@ import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DownloadDone
@@ -30,61 +27,42 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import me.him188.ani.app.navigation.LocalNavigator
 import me.him188.ani.app.navigation.MainScenePage
 import me.him188.ani.app.platform.LocalContext
-import me.him188.ani.app.tools.update.InstallationFailureReason
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuite
 import me.him188.ani.app.ui.adaptive.navigation.AniNavigationSuiteLayout
 import me.him188.ani.app.ui.cache.CacheManagementPage
 import me.him188.ani.app.ui.cache.CacheManagementViewModel
 import me.him188.ani.app.ui.exploration.ExplorationPage
 import me.him188.ani.app.ui.exploration.search.SearchPage
-import me.him188.ani.app.ui.external.placeholder.placeholder
 import me.him188.ani.app.ui.foundation.LocalPlatform
-import me.him188.ani.app.ui.foundation.avatar.AvatarImage
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
 import me.him188.ani.app.ui.foundation.navigation.BackHandler
-import me.him188.ani.app.ui.foundation.session.SessionTipsIcon
 import me.him188.ani.app.ui.foundation.theme.AniThemeDefaults
-import me.him188.ani.app.ui.profile.AccountViewModel
 import me.him188.ani.app.ui.subject.collection.CollectionPage
 import me.him188.ani.app.ui.subject.details.SubjectDetailsScene
-import me.him188.ani.app.ui.update.AutoUpdateViewModel
-import me.him188.ani.app.ui.update.ChangelogDialog
-import me.him188.ani.app.ui.update.FailedToInstallDialog
-import me.him188.ani.app.ui.update.UpdateLogoIcon
-import me.him188.ani.app.ui.update.UpdateLogoLabel
-import me.him188.ani.app.ui.update.handleClickLogo
 import me.him188.ani.utils.platform.isAndroid
 
 
@@ -256,70 +234,5 @@ private fun TabContent(
         color = AniThemeDefaults.pageContentBackgroundColor,
     ) {
         content()
-    }
-}
-
-@Composable
-private fun UpdateCheckerItem(
-    vm: AutoUpdateViewModel = viewModel { AutoUpdateViewModel() },
-) {
-    SideEffect {
-        vm.startAutomaticCheckLatestVersion()
-    }
-    var showDialog by rememberSaveable { mutableStateOf(false) }
-    val context by rememberUpdatedState(LocalContext.current)
-    val uriHandler = LocalUriHandler.current
-    if (showDialog) {
-        vm.latestVersion?.let {
-            ChangelogDialog(
-                latestVersion = it,
-                onDismissRequest = { showDialog = false },
-                onStartDownload = { vm.startDownload(it, uriHandler) },
-                currentVersion = vm.currentVersion,
-            )
-        }
-    }
-    if (vm.hasUpdate) {
-        var installationError by remember { mutableStateOf<InstallationFailureReason?>(null) }
-        if (installationError != null) {
-            FailedToInstallDialog({ installationError = null }, { vm.logoState })
-        }
-
-        NavigationRailItem(
-            false,
-            onClick = {
-                vm.handleClickLogo(
-                    context,
-                    uriHandler,
-                    onInstallationError = { installationError = it },
-                    showChangelogDialog = { showDialog = true },
-                )
-            },
-            icon = { UpdateLogoIcon(vm.logoState) },
-            label = { UpdateLogoLabel(vm.logoState) },
-        )
-    }
-}
-
-@Composable
-private fun UserAvatarInNavigation(modifier: Modifier = Modifier) {
-    Box(modifier) {
-        val vm = viewModel { AccountViewModel() }
-        if (vm.authState.isLoading || vm.authState.isKnownLoggedIn) {
-            // 加载中时展示 placeholder
-            AvatarImage(
-                url = vm.selfInfo?.avatarUrl,
-                Modifier.size(48.dp).clip(CircleShape).placeholder(vm.selfInfo == null),
-            )
-        } else {
-            if (vm.authState.isKnownGuest) {
-                val navigator = LocalNavigator.current
-                TextButton({ vm.authState.launchAuthorize(navigator) }) {
-                    Text("登录")
-                }
-            } else {
-                SessionTipsIcon(vm.authState, showLabel = false)
-            }
-        }
     }
 }
