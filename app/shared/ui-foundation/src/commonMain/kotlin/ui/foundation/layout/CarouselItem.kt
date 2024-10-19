@@ -117,7 +117,7 @@ object CarouselItemDefaults {
         val preferredWidth = if (windowSizeClass.windowWidthSizeClass >= WindowWidthSizeClass.MEDIUM) {
             300.dp
         } else {
-            120.dp
+            240.dp
         }
         return CarouselItemSize(
             preferredWidth = preferredWidth,
