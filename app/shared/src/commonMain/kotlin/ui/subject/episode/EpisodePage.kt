@@ -198,9 +198,7 @@ private fun EpisodeSceneContent(
     }
 
     SideEffect {
-        scope.launch {
-            context.setSystemBarVisible(!vm.isFullscreen)
-        }
+        context.setSystemBarVisible(!vm.isFullscreen)
     }
     
     BoxWithConstraints(modifier) {
