@@ -16,6 +16,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.him188.ani.utils.logging.logger
 
 
 @SuppressLint("MissingPermission")
@@ -23,6 +24,7 @@ private class AndroidMeteredNetworkDetector(
     context: Context
 ) : MeteredNetworkDetector {
     private val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
+    private val logger by lazy { logger<AndroidMeteredNetworkDetector>() }
 
     private val flow = MutableStateFlow(getCurrentIsMetered())
     override val isMeteredNetworkFlow: Flow<Boolean> get() = flow
@@ -41,6 +43,7 @@ private class AndroidMeteredNetworkDetector(
         // 连接/断开 WiFi 不会触发 onCapabilitiesChanged
         override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
             val isMetered = !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+            log { "onCapabilitiesChanged: isMetered=$isMetered" }
             flow.tryEmit(isMetered)
         }
     }
@@ -62,12 +65,19 @@ private class AndroidMeteredNetworkDetector(
 
         // Return whether the network is metered or not
         val isMetered = !activeNetworkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+        log { "getCurrentIsMetered: isMetered=$isMetered" }
         return isMetered
     }
 
     override fun dispose() {
         // Unregister the network callback when no longer needed
         connectivityManager.unregisterNetworkCallback(networkCallback)
+    }
+
+    private inline fun log(message: () -> String) {
+        if (BuildConfig.DEBUG) {
+            logger.debug(message())
+        }
     }
 }
 
