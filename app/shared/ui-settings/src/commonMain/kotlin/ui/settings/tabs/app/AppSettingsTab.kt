@@ -463,14 +463,14 @@ fun SettingsScope.PlayerGroup(
             },
             title = { Text("选择数据源后自动关闭弹窗") },
         )
-        if (LocalPlatform.current.isMobile() && showDebug) {
+        if (LocalPlatform.current.isMobile()) {
             HorizontalDividerItem()
             SwitchItem(
                 checked = config.autoFullscreenOnLandscapeMode,
                 onCheckedChange = {
                     videoScaffoldConfig.update(config.copy(autoFullscreenOnLandscapeMode = it))
                 },
-                title = { Text("重力感应旋屏") },
+                title = { Text("旋转屏幕时自动全屏") },
             )
         }
         HorizontalDividerItem()
