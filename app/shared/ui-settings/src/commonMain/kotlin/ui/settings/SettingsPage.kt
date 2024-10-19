@@ -234,6 +234,7 @@ internal fun SettingsPageLayout(
         null
     }
 
+    val listPaneScrollState = rememberScrollState()
     AniListDetailPaneScaffold(
         navigator,
         listPaneTopAppBar = {
@@ -257,7 +258,7 @@ internal fun SettingsPageLayout(
                     .ifThen(!LocalPlatform.current.hasScrollingBug()) {
                         topAppBarScrollBehavior?.let { nestedScroll(it.nestedScrollConnection) }
                     }
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(listPaneScrollState),
                 drawerContainerColor = Color.Unspecified,
             ) {
                 val scope = remember(this, navigator) {
