@@ -104,7 +104,7 @@ fun SettingsScope.AppearanceGroup(
     state: SettingsState<UISettings>,
 ) {
     val uiSettings by state
-    Group(title = { Text("界面") }) {
+    Group(title = { Text("主题") }) {
         if (LocalPlatform.current.isAndroid()) {
             SwitchItem(
                 uiSettings.theme.dynamicTheme,
