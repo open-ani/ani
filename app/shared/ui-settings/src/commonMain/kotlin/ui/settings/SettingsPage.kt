@@ -42,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -199,8 +200,9 @@ internal fun SettingsPageLayout(
     tabContent: @Composable (currentTab: SettingsTab?) -> Unit,
     modifier: Modifier = Modifier,
     windowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    containerColor: Color = AniThemeDefaults.pageContentBackgroundColor,
     showNavigationIcon: Boolean = false,
-) {
+) = Surface(color = containerColor) {
     val currentTab by remember(navigator) {
         derivedStateOf {
             navigator.currentDestination?.content
