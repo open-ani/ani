@@ -351,8 +351,9 @@ private fun getName(tab: SettingsTab): String {
     }
 }
 
+// a lot of call-sites, don't make it internal
 @Composable
-private fun SettingsTab(
+fun SettingsTab(
     modifier: Modifier = Modifier,
     content: @Composable SettingsScope.() -> Unit,
 ) {
