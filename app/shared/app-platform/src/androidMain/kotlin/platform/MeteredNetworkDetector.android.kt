@@ -22,9 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 private class AndroidMeteredNetworkDetector(
     private val context: Context
 ) : MeteredNetworkDetector {
-
-    private val flow = MutableStateFlow(false)
-    override val isMeteredNetworkFlow: Flow<Boolean> = flow
+    private val flow = MutableStateFlow(getCurrentIsMetered())
+    override val isMeteredNetworkFlow: Flow<Boolean> get() = flow
 
     private val connectivityManager by lazy {
         context.getSystemService(ConnectivityManager::class.java)
