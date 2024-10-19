@@ -29,7 +29,7 @@ import me.him188.ani.utils.platform.currentPlatformDesktop
 
 private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
     private val logger = logger<MeteredNetworkDetector>()
-    
+
     private val flow = flow {
         while (true) {
             emit(getIsMetered())
@@ -37,7 +37,7 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
         }
     }
     override val isMeteredNetworkFlow: Flow<Boolean> = flow
-    
+
     private fun getIsMetered(): Boolean {
         var networkCostManager: INetworkCostManager? = null
 
@@ -54,13 +54,13 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
                 pNetworkCostManager,
             )
             COMUtils.checkRC(coCreateInstanceHResult)
-            
+
             networkCostManager = INetworkCostManager(pNetworkCostManager)
             val pCost = IntByReference()
-            
+
             val getCostResult = networkCostManager.GetCost(pCost)
             COMUtils.checkRC(getCostResult)
-            
+
             return (pCost.value and NLM_CONNECTION_COST_FIXED) != 0
         } catch (ex: COMException) {
             logger.warn(ex) { "Failed to get network status." }
@@ -81,12 +81,12 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
             return _invokeNativeObject(3, arrayOf(pointer, cost, null), HRESULT::class.java) as HRESULT
         }
     }
-    
+
     @Suppress("unused")
     companion object {
         private val CLSID_NetworkListManager = Guid.CLSID("{DCB00C01-570F-4A9B-8D69-199FDBA5723B}")
         private val IID_INetworkCostManager = Guid.IID("{DCB00008-570F-4A9B-8D69-199FDBA5723B}")
-        
+
         private const val NLM_CONNECTION_COST_UNKNOWN = 0
         private const val NLM_CONNECTION_COST_UNRESTRICTED = 0x1
         private const val NLM_CONNECTION_COST_FIXED = 0x2
@@ -101,6 +101,12 @@ private class WindowsMeteredNetworkDetector : MeteredNetworkDetector {
 actual fun createMeteredNetworkDetector(context: Context): MeteredNetworkDetector {
     return when (currentPlatformDesktop()) {
         is Platform.Windows -> WindowsMeteredNetworkDetector()
+        is Platform.MacOS -> object : MeteredNetworkDetector {
+            // macos API 要用 swift 才能实现
+            override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
+            override fun dispose() { }
+        }
+
         else -> object : MeteredNetworkDetector {
             override val isMeteredNetworkFlow: Flow<Boolean> = flowOf(false)
             override fun dispose() { }
