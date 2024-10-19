@@ -97,7 +97,7 @@ compose.desktop {
 
             val projectVersion = project.version.toString() // 3.0.0-beta22
             macOS {
-                dockName = "Ani"
+                dockName = "Animeko"
                 pkgPackageVersion = projectVersion
                 pkgPackageBuildVersion = projectVersion
                 iconFile.set(file("icons/a_512x512.icns"))

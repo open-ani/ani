@@ -7,7 +7,7 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-rootProject.name = "ani"
+rootProject.name = "animeko"
 
 pluginManagement {
     repositories {

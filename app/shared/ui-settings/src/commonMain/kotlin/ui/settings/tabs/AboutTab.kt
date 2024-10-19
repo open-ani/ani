@@ -154,7 +154,7 @@ fun AboutTab(
 
     SettingsTab(modifier) {
         Group(
-            title = { Text("关于 Ani") },
+            title = { Text("关于 Animeko") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp)) {
                 val style by rememberUpdatedState(
@@ -166,7 +166,7 @@ fun AboutTab(
                     derivedStateOf {
                         buildAnnotatedString {
                             pushStyle(style)
-                            append("Ani 完全免费无广告且开源, 源代码可在 ")
+                            append("Animeko 完全免费无广告且开源, 源代码可在 ")
                             pushLink(
                                 LinkAnnotation.Url(
                                     GITHUB_REPO,
@@ -203,7 +203,7 @@ fun AboutTab(
             title = { Text("鸣谢") },
         ) {
             Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Ani 使用了许多爱好者用爱发电维护的免费服务.", style = MaterialTheme.typography.bodyMedium)
+                Text("Animeko 使用了许多爱好者用爱发电维护的免费服务.", style = MaterialTheme.typography.bodyMedium)
 
                 Text("特别感谢:", style = MaterialTheme.typography.bodyMedium)
 

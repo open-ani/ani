@@ -185,12 +185,12 @@ fun WelcomePage(
                 ) {
                     item {
                         Column(Modifier.animateItem()) {
-                            Text("欢迎使用 Ani", style = MaterialTheme.typography.headlineMedium)
+                            Text("欢迎使用 Animeko", style = MaterialTheme.typography.headlineMedium)
 
                             ProvideTextStyle(MaterialTheme.typography.bodyLarge) {
                                 Row(Modifier.padding(top = 8.dp).align(Alignment.Start)) {
                                     Text(
-                                        """一站式在线弹幕追番平台""",
+                                        """一站式在线弹幕追番平台 (简称 Ani)""",
                                         color = MaterialTheme.colorScheme.primary,
                                     )
                                 }
