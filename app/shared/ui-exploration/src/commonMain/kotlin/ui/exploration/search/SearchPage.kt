@@ -63,7 +63,6 @@ import me.him188.ani.app.ui.search.SearchState
 fun SearchPage(
     state: SearchPageState,
     windowInsets: WindowInsets,
-    onClickSettings: () -> Unit,
     detailContent: @Composable (subjectId: Int) -> Unit,
     modifier: Modifier = Modifier,
     navigator: ThreePaneScaffoldNavigator<*> = rememberListDetailPaneScaffoldNavigator(),
@@ -75,7 +74,6 @@ fun SearchPage(
     SearchPageLayout(
         navigator,
         windowInsets,
-        onClickSettings = onClickSettings,
         searchBar = { contentPadding ->
             SuggestionSearchBar(
                 state.suggestionSearchBarState,
@@ -182,7 +180,6 @@ internal fun SearchPageResultColumn(
 internal fun SearchPageLayout(
     navigator: ThreePaneScaffoldNavigator<*>,
     windowInsets: WindowInsets,
-    onClickSettings: () -> Unit,
     searchBar: @Composable (contentPadding: Modifier) -> Unit,
     searchResultList: @Composable () -> Unit,
     detailContent: @Composable () -> Unit,

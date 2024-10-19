@@ -194,7 +194,6 @@ private fun MainSceneContent(
                         SearchPage(
                             vm.searchPageState,
                             windowInsets,
-                            onClickSettings = { navigator.navigateSettings() },
                             detailContent = {
                                 vm.subjectDetailsViewModelFlow.collectAsStateWithLifecycle(null).value?.let {
                                     SubjectDetailsScene(it)

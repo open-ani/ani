@@ -39,7 +39,6 @@ fun PreviewSearchPage() = ProvideFoundationCompositionLocalsForPreview {
         SearchPage(
             searchPageState,
             WindowInsets.Zero,
-            {},
             { Text("Hello, World!") },
         )
     }
