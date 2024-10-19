@@ -7,6 +7,8 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+package me.him188.ani.app.platform
+
 actual fun createMeteredNetworkDetector(context: Context): MeteredNetworkDetector {
     return NoopMeteredNetworkDetector
 }
