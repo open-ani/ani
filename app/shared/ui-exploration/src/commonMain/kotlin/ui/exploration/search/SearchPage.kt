@@ -231,8 +231,7 @@ internal fun SearchPageLayout(
                 }
             }
         },
-        detailPaneTopAppBar = {}, // empty because our detailPaneContent already has it
-        detailPaneContent = {
+        detailPane = {
             detailContent()
         },
         modifier,

@@ -24,7 +24,9 @@ import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
@@ -40,9 +42,8 @@ import me.him188.ani.app.ui.foundation.navigation.BackHandler
 fun <T> AniListDetailPaneScaffold(
     navigator: ThreePaneScaffoldNavigator<T>,
     listPaneTopAppBar: @Composable () -> Unit,
-    listPaneContent: @Composable PaneScope.() -> Unit,
-    detailPaneTopAppBar: @Composable () -> Unit,
-    detailPaneContent: @Composable PaneScope.() -> Unit,
+    listPaneContent: @Composable (PaneScope.() -> Unit),
+    detailPane: @Composable (PaneScope.() -> Unit),
     modifier: Modifier = Modifier,
     listPanePreferredWidth: Dp = Dp.Unspecified,
     layoutParameters: ListDetailLayoutParameters = ListDetailLayoutParameters.calculate(navigator.scaffoldDirective),
@@ -50,6 +51,7 @@ fun <T> AniListDetailPaneScaffold(
     BackHandler(navigator.canNavigateBack()) {
         navigator.navigateBack()
     }
+    val layoutParametersState by rememberUpdatedState(layoutParameters)
     ListDetailPaneScaffold(
         navigator.scaffoldDirective,
         navigator.scaffoldValue,
@@ -58,10 +60,13 @@ fun <T> AniListDetailPaneScaffold(
             AnimatedPane1(Modifier.preferredWidth(listPanePreferredWidth)) {
                 Column {
                     listPaneTopAppBar()
-                    val scope = remember(layoutParameters, threePaneScaffoldScope) {
+                    val scope = remember(threePaneScaffoldScope) {
                         object : PaneScope {
+                            override val listDetailLayoutParameters: ListDetailLayoutParameters
+                                get() = layoutParametersState
+
                             override fun Modifier.paneContentPadding(): Modifier =
-                                Modifier.padding(layoutParameters.listPaneContentPaddingValues)
+                                Modifier.padding(layoutParametersState.listPaneContentPaddingValues)
                         }
                     }
                     listPaneContent(scope)
@@ -75,14 +80,16 @@ fun <T> AniListDetailPaneScaffold(
                     shape = layoutParameters.detailPaneShape,
                     colors = layoutParameters.detailPaneColors,
                 ) {
-                    detailPaneTopAppBar()
-                    val scope = remember(layoutParameters, threePaneScaffoldScope) {
+                    val scope = remember(threePaneScaffoldScope) {
                         object : PaneScope {
+                            override val listDetailLayoutParameters: ListDetailLayoutParameters
+                                get() = layoutParametersState
+
                             override fun Modifier.paneContentPadding(): Modifier =
-                                Modifier.padding(layoutParameters.detailPaneContentPaddingValues)
+                                Modifier.padding(layoutParametersState.detailPaneContentPaddingValues)
                         }
                     }
-                    detailPaneContent(scope)
+                    detailPane(scope)
                 }
             }
         },
@@ -92,6 +99,8 @@ fun <T> AniListDetailPaneScaffold(
 
 @Stable
 interface PaneScope {
+    val listDetailLayoutParameters: ListDetailLayoutParameters
+
     /**
      * 增加自动的 content padding
      */
@@ -105,6 +114,7 @@ data class ListDetailLayoutParameters(
     val detailPaneContentPaddingValues: PaddingValues,
     val detailPaneShape: Shape,
     val detailPaneColors: CardColors,
+    val isSinglePane: Boolean,
 ) {
     companion object {
         @Composable
@@ -123,6 +133,7 @@ data class ListDetailLayoutParameters(
                         bottomEnd = ZeroCornerSize,
                     ),
                     detailPaneColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    isSinglePane = false,
                 )
             } else {
                 ListDetailLayoutParameters(
@@ -130,6 +141,7 @@ data class ListDetailLayoutParameters(
                     detailPaneContentPaddingValues = PaddingValues(horizontal = windowSizeClass.paneHorizontalPadding),
                     detailPaneShape = RectangleShape,
                     detailPaneColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+                    isSinglePane = true,
                 )
             }
         }

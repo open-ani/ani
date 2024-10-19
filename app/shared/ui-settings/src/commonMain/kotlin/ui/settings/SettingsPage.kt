@@ -257,8 +257,8 @@ internal fun SettingsPageLayout(
                 Spacer(Modifier.height(verticalPadding)) // scrollable
             }
         },
-        detailPaneTopAppBar = {}, // empty because our detailPaneContent already has it
-        detailPaneContent = {
+        // empty because our detailPaneContent already has it
+        detailPane = {
             AnimatedContent(
                 navigator.currentDestination?.content,
                 Modifier.fillMaxSize(),
@@ -274,8 +274,10 @@ internal fun SettingsPageLayout(
                             },
                             windowInsets = windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                             navigationIcon = {
-                                TopAppBarGoBackButton {
-                                    navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
+                                if (listDetailLayoutParameters.isSinglePane) {
+                                    TopAppBarGoBackButton {
+                                        navigator.navigateBack(BackNavigationBehavior.PopUntilScaffoldValueChange)
+                                    }
                                 }
                             },
                             colors = AniThemeDefaults.transparentAppBarColors(),
