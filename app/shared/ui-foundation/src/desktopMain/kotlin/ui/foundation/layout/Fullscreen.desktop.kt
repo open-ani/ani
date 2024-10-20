@@ -42,3 +42,6 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
         windowState.placement = if (fullscreen) WindowPlacement.Fullscreen else WindowPlacement.Floating
     }
 }
+
+actual fun Context.setSystemBarVisible(visible: Boolean) {
+}

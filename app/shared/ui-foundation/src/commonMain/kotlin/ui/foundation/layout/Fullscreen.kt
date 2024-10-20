@@ -24,6 +24,8 @@ import me.him188.ani.app.platform.Context
  */
 expect suspend fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean)
 
+expect fun Context.setSystemBarVisible(visible: Boolean)
+
 @Suppress("NOTHING_TO_INLINE", "KotlinRedundantDiagnosticSuppress")
 @Composable
 inline fun isSystemInFullscreen(): Boolean = isSystemInFullscreenImpl()

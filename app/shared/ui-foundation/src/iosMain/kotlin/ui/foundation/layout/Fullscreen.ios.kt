@@ -14,3 +14,6 @@ actual fun isSystemInFullscreenImpl(): Boolean {
 actual suspend fun Context.setRequestFullScreen(window: PlatformWindowMP, fullscreen: Boolean) {
     TODO("Not yet implemented setRequestFullScreen")
 }
+
+actual fun Context.setSystemBarVisible(visible: Boolean) {
+}
