@@ -11,8 +11,10 @@ package me.him188.ani.utils.coroutines
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO as _IO
 
 /**
  * 跟 `Dispatchers.IO` 一样, 但是在禁用 ios 编译目标后也可以使用 (import 不会被 IDE 自动清除)
  */
-expect val Dispatchers.IO_: CoroutineDispatcher
+actual val Dispatchers.IO_: CoroutineDispatcher
+    get() = _IO

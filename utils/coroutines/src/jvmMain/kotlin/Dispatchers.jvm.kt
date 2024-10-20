@@ -15,4 +15,5 @@ import kotlinx.coroutines.Dispatchers
 /**
  * 跟 `Dispatchers.IO` 一样, 但是在禁用 ios 编译目标后也可以使用 (import 不会被 IDE 自动清除)
  */
-expect val Dispatchers.IO_: CoroutineDispatcher
+actual val Dispatchers.IO_: CoroutineDispatcher
+    get() = IO
