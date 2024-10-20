@@ -92,6 +92,7 @@ Runtime (JCEF), 版本 21 或 17, 下文简称 JBR.
 
 ### 格式化
 
+;
 建议在 IDE 的 Commit 页面, 点击右下角设置, 勾选 "Reformat code" 和 "Optimize imports".
 在提交时将会自动格式化代码.
 
@@ -450,6 +451,9 @@ Android Studio 的调试器同时支持调试 Kotlin 和 C++ 代码 (torrent 部
 在 Android Studio 中, 选择运行配置 `Run iOS Debug`, 点击按钮运行即可.
 
 ## 6. App 项目架构
+
+> [!IMPORTANT]
+> TODO: 此文档可能有些内容已经过时. 如有疑问欢迎在开发者群询问.
 
 本节将介绍客户端共享模块 (`:app:shared`) 的架构设计, 也就是对应目录 `app/shared` 里的内容.
 建议搭配上面的架构图看.
