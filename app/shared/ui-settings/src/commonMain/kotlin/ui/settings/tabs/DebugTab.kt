@@ -22,7 +22,7 @@ import me.him188.ani.app.ui.settings.SettingsTab
 import me.him188.ani.app.ui.settings.framework.SettingsState
 import me.him188.ani.app.ui.settings.framework.components.SwitchItem
 import me.him188.ani.app.ui.settings.framework.components.TextItem
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun DebugTab(
@@ -66,7 +66,7 @@ fun DebugTab(
                 Text("supportsLimitUploadOnMeteredNetwork: $networkDetector")
             }
             TextItem {
-                val networkDetector = GlobalContext.get().get<MeteredNetworkDetector>()
+                val networkDetector = KoinPlatform.getKoin().get<MeteredNetworkDetector>()
                 val isMetered by networkDetector.isMeteredNetworkFlow.collectAsStateWithLifecycle(false)
                 Text("isMetered: $isMetered")
             }
