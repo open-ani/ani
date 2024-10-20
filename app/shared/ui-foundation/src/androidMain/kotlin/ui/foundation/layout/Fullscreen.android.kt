@@ -108,7 +108,7 @@ private fun isInFullscreenMode(context: Context): Boolean {
     }
 }
 
-actual suspend fun Context.setSystemBarVisible(visible: Boolean) {
+actual fun Context.setSystemBarVisible(visible: Boolean) {
     if (this !is Activity) return
     if (visible) {
         // show bars

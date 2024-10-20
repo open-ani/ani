@@ -43,5 +43,5 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindow, fullscre
     }
 }
 
-actual suspend fun Context.setSystemBarVisible(visible: Boolean) {
+actual fun Context.setSystemBarVisible(visible: Boolean) {
 }

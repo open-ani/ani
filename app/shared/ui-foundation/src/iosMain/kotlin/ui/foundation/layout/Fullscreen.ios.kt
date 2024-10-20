@@ -15,5 +15,5 @@ actual suspend fun Context.setRequestFullScreen(window: PlatformWindowMP, fullsc
     TODO("Not yet implemented setRequestFullScreen")
 }
 
-actual suspend fun Context.setSystemBarVisible(visible: Boolean) {
+actual fun Context.setSystemBarVisible(visible: Boolean) {
 }
