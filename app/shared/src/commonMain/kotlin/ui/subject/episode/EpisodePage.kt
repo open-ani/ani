@@ -99,7 +99,6 @@ import me.him188.ani.app.ui.foundation.effects.DarkStatusBarAppearance
 import me.him188.ani.app.ui.foundation.effects.OnLifecycleEvent
 import me.him188.ani.app.ui.foundation.effects.ScreenOnEffect
 import me.him188.ani.app.ui.foundation.effects.ScreenRotationEffect
-import me.him188.ani.app.ui.foundation.isInDebugMode
 import me.him188.ani.app.ui.foundation.layout.LocalPlatformWindow
 import me.him188.ani.app.ui.foundation.layout.desktopTitleBarPadding
 import me.him188.ani.app.ui.foundation.layout.setRequestFullScreen
@@ -190,8 +189,8 @@ private fun EpisodeSceneContent(
     VideoNotifEffect(vm)
 
     DarkStatusBarAppearance()
-    
-    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode && isInDebugMode()) {
+
+    if (vm.videoScaffoldConfig.autoFullscreenOnLandscapeMode) {
         ScreenRotationEffect {
             vm.isFullscreen = it
         }

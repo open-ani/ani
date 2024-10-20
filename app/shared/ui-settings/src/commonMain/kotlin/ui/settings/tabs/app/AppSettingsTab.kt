@@ -446,7 +446,7 @@ fun SettingsScope.PlayerGroup(
             },
             title = { Text("选择数据源后自动关闭弹窗") },
         )
-        if (LocalPlatform.current.isMobile() && showDebug) {
+        if (LocalPlatform.current.isMobile()) {
             HorizontalDividerItem()
             SwitchItem(
                 checked = config.autoFullscreenOnLandscapeMode,
