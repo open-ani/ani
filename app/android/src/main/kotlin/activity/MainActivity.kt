@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import me.him188.ani.app.data.models.preference.configIfEnabledOrNull
 import me.him188.ani.app.data.repository.SettingsRepository
 import me.him188.ani.app.domain.session.SessionManager
+import me.him188.ani.app.domain.torrent.service.TorrentServiceConnection
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.NavRoutes
 import me.him188.ani.app.platform.AppStartupTasks
@@ -58,6 +59,12 @@ class MainActivity : AniComponentActivity() {
     private val logger = logger(MainActivity::class)
 
     private val aniNavigator = AniNavigator()
+    
+    private val torrentServiceConnector = TorrentServiceConnection(this)
+    
+    init {
+        lifecycle.addObserver(torrentServiceConnector)
+    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -133,6 +140,11 @@ class MainActivity : AniComponentActivity() {
                 logger.error(it)
             }
         }
+    }
+
+    override fun onDestroy() {
+        lifecycle.removeObserver(torrentServiceConnector)
+        super.onDestroy()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

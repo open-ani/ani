@@ -16,6 +16,7 @@ plugins {
     `ani-mpp-lib-targets`
     kotlin("plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
+    id("kotlin-parcelize")
 
     id("com.google.devtools.ksp")
     id("androidx.room")
@@ -64,6 +65,8 @@ kotlin {
         implementation(libs.androidx.compose.ui.tooling.preview)
         implementation(libs.androidx.compose.ui.tooling)
         implementation(libs.androidx.browser)
+        api(libs.androidx.lifecycle.runtime.ktx)
+        api(libs.androidx.lifecycle.service)
     }
     sourceSets.nativeMain.dependencies {
         implementation(libs.stately.common) // fixes koin bug
@@ -73,6 +76,9 @@ kotlin {
 
 android {
     namespace = "me.him188.ani.app.data"
+    buildFeatures { 
+        aidl = true
+    }
 }
 
 room {

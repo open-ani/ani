@@ -9,20 +9,15 @@
 
 package me.him188.ani.app.domain.torrent
 
-/**
- * 管理本地 BT 下载器的实现. 根据配置选择不同的下载器.
- *
- * 目前支持的下载实现:
- * - anitorrent
- * - remote_anitorrent, 与 anitorrent 共用一个 ID
- */
-interface TorrentManager {
-    val engines: List<TorrentEngine>
-}
+import me.him188.ani.app.data.repository.SettingsRepository
+import me.him188.ani.utils.io.SystemPath
 
-enum class TorrentEngineType(
-    val id: String,
-) {
-    Anitorrent("anitorrent"),
-    RemoteAnitorrent("anitorrent")
+/**
+ * Android 远程 BT 管理器, 通过 AIDL IPC 与 AniTorrentService 通信
+ */
+class RemoteTorrentManager(
+    settingsRepository: SettingsRepository,
+    baseSaveDir: () -> SystemPath
+) : TorrentManager {
+    override val engines: List<TorrentEngine> = listOf()
 }

@@ -51,7 +51,7 @@ import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
 import me.him188.ani.app.domain.session.SessionManager
-import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.DesktopTorrentManager
 import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.domain.update.UpdateManager
 import me.him188.ani.app.navigation.AniNavigator
@@ -199,7 +199,7 @@ object AniDesktop {
 //                single<AuthorizationNavigator> { AndroidAuthorizationNavigator() }
 //                single<BrowserNavigator> { AndroidBrowserNavigator() }
                     single<TorrentManager> {
-                        DefaultTorrentManager.create(
+                        DesktopTorrentManager.create(
                             coroutineScope.coroutineContext,
                             get(),
                             baseSaveDir = {

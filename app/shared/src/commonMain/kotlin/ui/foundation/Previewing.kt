@@ -22,7 +22,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import kotlinx.io.files.Path
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepository
 import me.him188.ani.app.data.repository.DanmakuRegexFilterRepositoryImpl
 import me.him188.ani.app.data.repository.PreferencesRepositoryImpl
@@ -33,7 +32,7 @@ import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
 import me.him188.ani.app.domain.session.PreviewSessionManager
 import me.him188.ani.app.domain.session.SessionManager
-import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.TorrentEngine
 import me.him188.ani.app.domain.torrent.TorrentManager
 import me.him188.ani.app.navigation.AniNavigator
 import me.him188.ani.app.navigation.BrowserNavigator
@@ -47,7 +46,6 @@ import me.him188.ani.app.ui.foundation.widgets.Toaster
 import me.him188.ani.app.ui.main.AniApp
 import me.him188.ani.app.videoplayer.ui.state.DummyPlayerState
 import me.him188.ani.app.videoplayer.ui.state.PlayerStateFactory
-import me.him188.ani.utils.io.inSystem
 import me.him188.ani.utils.platform.annotations.TestOnly
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -87,11 +85,9 @@ fun ProvideCompositionLocalsForPreview(
                         )
                     }
                     single<TorrentManager> {
-                        DefaultTorrentManager.create(
-                            coroutineScope.coroutineContext,
-                            get(),
-                            baseSaveDir = { Path("preview-cache").inSystem },
-                        )
+                        object : TorrentManager {
+                            override val engines: List<TorrentEngine> = emptyList()
+                        }
                     }
                     single<PermissionManager> { GrantedPermissionManager }
                     single<BrowserNavigator> { NoopBrowserNavigator }
