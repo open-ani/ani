@@ -15,7 +15,6 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -94,6 +93,7 @@ import me.him188.ani.app.videoplayer.ui.state.CacheProgressStateFactoryManager
 import me.him188.ani.datasources.bangumi.BangumiClient
 import me.him188.ani.datasources.bangumi.DelegateBangumiClient
 import me.him188.ani.datasources.bangumi.createBangumiClient
+import me.him188.ani.utils.coroutines.IO_
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.coroutines.childScopeContext
 import me.him188.ani.utils.coroutines.onReplacement
@@ -172,7 +172,7 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
         getContext().createDatabaseBuilder()
             .fallbackToDestructiveMigrationOnDowngrade(true)
             .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.IO)
+            .setQueryCoroutineContext(Dispatchers.IO_)
             .build()
     }
 
@@ -262,6 +262,8 @@ fun KoinApplication.getCommonKoinModule(getContext: () -> Context, coroutineScop
     CacheProgressStateFactoryManager.register(TorrentVideoData::class) { videoData, state ->
         TorrentMediaCacheProgressState(videoData.pieces) { state.value }
     }
+    
+    single<MeteredNetworkDetector> { createMeteredNetworkDetector(getContext()) }
 }
 
 
