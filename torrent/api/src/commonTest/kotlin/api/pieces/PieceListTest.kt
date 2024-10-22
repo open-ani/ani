@@ -42,14 +42,14 @@ internal class PieceListTest {
         assertEquals(false, list.isEmpty())
 
         assertEquals(true, list.containsAbsolutePieceIndex(0))
-        assertEquals(Piece(0), list.get(0))
+        assertEquals(Piece(0), list.getByPieceIndex(0))
 
         assertFailsWith<IndexOutOfBoundsException> {
-            list.get(1)
+            list.getByPieceIndex(1)
         }
 
         list.run {
-            val piece0 = get(0)
+            val piece0 = getByPieceIndex(0)
             assertEquals(0, piece0.pieceIndex)
             assertEquals(10, piece0.dataOffset)
             assertEquals(10, piece0.dataStartOffset)
@@ -79,17 +79,17 @@ internal class PieceListTest {
         assertEquals(false, list.isEmpty())
 
         assertEquals(true, list.containsAbsolutePieceIndex(0))
-        assertEquals(Piece(0), list.get(0))
+        assertEquals(Piece(0), list.getByPieceIndex(0))
 
         assertEquals(true, list.containsAbsolutePieceIndex(1))
-        assertEquals(Piece(1), list.get(1))
+        assertEquals(Piece(1), list.getByPieceIndex(1))
 
         assertFailsWith<IndexOutOfBoundsException> {
-            list.get(2)
+            list.getByPieceIndex(2)
         }
 
         list.run {
-            val piece = get(0)
+            val piece = getByPieceIndex(0)
             assertEquals(0, piece.pieceIndex)
             assertEquals(10, piece.dataOffset)
             assertEquals(10, piece.dataStartOffset)
@@ -98,7 +98,7 @@ internal class PieceListTest {
         }
 
         list.run {
-            val piece = get(1)
+            val piece = getByPieceIndex(1)
             assertEquals(1, piece.pieceIndex)
             assertEquals(110, piece.dataOffset)
             assertEquals(110, piece.dataStartOffset)
@@ -120,7 +120,7 @@ internal class PieceListTest {
     fun `getByAbsolutePieceIndex fails when -1`() {
         val list = PieceList.create(2, 10L, getPieceSize = { 100L })
         assertFailsWith<IndexOutOfBoundsException> {
-            list.get(-1)
+            list.getByPieceIndex(-1)
         }
     }
 
@@ -128,7 +128,7 @@ internal class PieceListTest {
     fun `getByAbsolutePieceIndex fails when OOB`() {
         val list = PieceList.create(2, 10L, getPieceSize = { 100L })
         assertFailsWith<IndexOutOfBoundsException> {
-            list.get(2)
+            list.getByPieceIndex(2)
         }
     }
 
@@ -136,10 +136,10 @@ internal class PieceListTest {
     fun `getByAbsolutePieceIndex fails when OOB with initialPieceIndex`() {
         val list = PieceList.create(2, 10L, 5) { 100L }
         assertFailsWith<IndexOutOfBoundsException> {
-            list.get(4)
+            list.getByPieceIndex(4)
         }
         assertFailsWith<IndexOutOfBoundsException> {
-            list.get(7)
+            list.getByPieceIndex(7)
         }
     }
 
@@ -155,10 +155,10 @@ internal class PieceListTest {
         assertEquals(false, list.isEmpty())
 
         assertEquals(true, list.containsAbsolutePieceIndex(0))
-        assertEquals(Piece(0), list.get(0))
+        assertEquals(Piece(0), list.getByPieceIndex(0))
 
         list.run {
-            val piece0 = get(0)
+            val piece0 = getByPieceIndex(0)
             assertEquals(0, piece0.pieceIndex)
             assertEquals(100, piece0.dataOffset)
             assertEquals(100, piece0.dataStartOffset)
@@ -167,7 +167,7 @@ internal class PieceListTest {
         }
 
         list.run {
-            val piece0 = get(3)
+            val piece0 = getByPieceIndex(3)
             assertEquals(3, piece0.pieceIndex)
             assertEquals(700, piece0.dataOffset)
             assertEquals(700, piece0.dataStartOffset)
@@ -188,10 +188,10 @@ internal class PieceListTest {
         assertEquals(false, list.isEmpty())
 
         assertEquals(true, list.containsAbsolutePieceIndex(0))
-        assertEquals(Piece(0), list.get(0))
+        assertEquals(Piece(0), list.getByPieceIndex(0))
 
         list.run {
-            val piece0 = get(0)
+            val piece0 = getByPieceIndex(0)
             assertEquals(0, piece0.pieceIndex)
             assertEquals(100, piece0.dataOffset)
             assertEquals(100, piece0.dataStartOffset)
@@ -200,7 +200,7 @@ internal class PieceListTest {
         }
 
         list.run {
-            val piece0 = get(3)
+            val piece0 = getByPieceIndex(3)
             assertEquals(3, piece0.pieceIndex)
             assertEquals(700, piece0.dataOffset)
             assertEquals(700, piece0.dataStartOffset)

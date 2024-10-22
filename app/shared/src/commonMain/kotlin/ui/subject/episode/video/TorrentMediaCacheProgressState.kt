@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.video
 
 import androidx.compose.runtime.MutableIntState
@@ -6,20 +15,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
+import me.him188.ani.app.torrent.api.pieces.count
+import me.him188.ani.app.torrent.api.pieces.forEachIndexed
+import me.him188.ani.app.torrent.api.pieces.mapIndexed
+import me.him188.ani.app.torrent.api.pieces.mapTo
+import me.him188.ani.app.torrent.api.pieces.sumOf
 import me.him188.ani.app.videoplayer.ui.state.Chunk
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
 import me.him188.ani.app.videoplayer.ui.state.UpdatableMediaCacheProgressState
 
 class TorrentMediaCacheProgressState(
-    pieces: List<Piece>,
+    pieces: PieceList,
     isFinished: () -> Boolean,
 ) : UpdatableMediaCacheProgressState {
     private class State(
         // size 不能变, 会同时在后台更新和 UI 读取. 否则会 ConcurrentModificationException
         val currentChunkStates: MutableList<ChunkState>,
-        val pieces: List<Piece>,
+        val pieces: PieceList,
         val totalSize: Long,
         val version: MutableIntState,
         var alreadyFinished: Boolean = false,
@@ -28,8 +42,8 @@ class TorrentMediaCacheProgressState(
     private val state = kotlin.run {
         val totalSize = pieces.sumOf { it.size }
 
-        val lastStates = pieces.mapTo(ArrayList(pieces.size)) { piece ->
-            piece.state.value.toChunkState()
+        val lastStates = pieces.mapTo(ArrayList(pieces.count)) { piece ->
+            piece.state.toChunkState()
         }
 
         State(
@@ -45,8 +59,9 @@ class TorrentMediaCacheProgressState(
         if (state.alreadyFinished) return
         var anyChanged = false
         var allFinished = true
-        for ((index, item) in state.pieces.withIndex()) { // compiler can optimize this
-            val chunkState = item.state.value.toChunkState()
+
+        state.pieces.forEachIndexed { index, item ->
+            val chunkState = item.state.toChunkState()
             if (chunkState != state.currentChunkStates[index]) {
                 // 变了
                 anyChanged = true

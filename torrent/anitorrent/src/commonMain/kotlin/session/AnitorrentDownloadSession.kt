@@ -394,7 +394,7 @@ class AnitorrentDownloadSession(
     fun onPieceDownloading(pieceIndex: Int) {
         useTorrentInfoOrLaunch { info ->
             with(info.allPiecesInTorrent) {
-                get(pieceIndex).compareAndSetState(
+                getByPieceIndex(pieceIndex).compareAndSetState(
                     PieceState.READY,
                     PieceState.DOWNLOADING,
                 )
@@ -414,7 +414,7 @@ class AnitorrentDownloadSession(
         pieceIndex: Int
     ) {
         with(info.allPiecesInTorrent) {
-            info.allPiecesInTorrent.get(pieceIndex).state = PieceState.FINISHED
+            info.allPiecesInTorrent.getByPieceIndex(pieceIndex).state = PieceState.FINISHED
         }
         for (file in openFiles) {
             if (pieceIndex in file.entry.pieceIndexRange) {

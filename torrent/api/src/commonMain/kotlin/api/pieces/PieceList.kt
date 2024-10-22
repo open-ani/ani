@@ -62,16 +62,16 @@ class PieceListSlice(
     override val dataOffsets: LongArray = delegate.dataOffsets.copyOfRange(startIndex, endIndex)
     override val initialPieceIndex: Int = delegate.initialPieceIndex + startIndex
     override var Piece.state: PieceState
-        get() = with(delegate) { delegate.get(pieceIndex).state }
+        get() = with(delegate) { delegate.getByPieceIndex(pieceIndex).state }
         set(value) {
             with(delegate) {
-                delegate.get(pieceIndex).state = value
+                delegate.getByPieceIndex(pieceIndex).state = value
             }
         }
 
     override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
         with(delegate) {
-            return delegate.get(pieceIndex).compareAndSetState(expect, update)
+            return delegate.getByPieceIndex(pieceIndex).compareAndSetState(expect, update)
         }
     }
 }
@@ -135,7 +135,7 @@ abstract class PieceList protected constructor(
     /**
      * @throws IndexOutOfBoundsException
      */
-    fun get(pieceIndex: Int): Piece {
+    fun getByPieceIndex(pieceIndex: Int): Piece {
         if (!containsAbsolutePieceIndex(pieceIndex)) {
             throw IndexOutOfBoundsException(
                 "pieceIndex $pieceIndex out of bounds " +
@@ -218,6 +218,10 @@ abstract class PieceList protected constructor(
     }
 }
 
+inline val PieceList.listIndices: IntRange get() = sizes.indices
+
+inline val PieceList.pieceIndices: IntRange get() = initialPieceIndex until initialPieceIndex + sizes.size
+
 /**
  * 此列表包含的 piece 数量
  */
@@ -261,6 +265,27 @@ inline fun PieceList.forEach(block: PieceList.(Piece) -> Unit) {
     for (i in sizes.indices) {
         block(createPieceByListIndexUnsafe(i))
     }
+}
+
+inline fun PieceList.forEachIndexed(block: PieceList.(index: Int, Piece) -> Unit) {
+    for (i in sizes.indices) {
+        block(i, createPieceByListIndexUnsafe(i))
+    }
+}
+
+inline fun <C : MutableCollection<E>, E> PieceList.mapTo(destination: C, transform: PieceList.(Piece) -> E): C {
+    for (i in sizes.indices) {
+        destination.add(transform(createPieceByListIndexUnsafe(i)))
+    }
+    return destination
+}
+
+inline fun <R> PieceList.mapIndexed(transform: PieceList.(index: Int, Piece) -> R): List<R> {
+    val list = ArrayList<R>(this.count)
+    for (i in sizes.indices) {
+        list.add(transform(i, createPieceByListIndexUnsafe(i)))
+    }
+    return list
 }
 
 inline fun PieceList.sumOf(block: PieceList.(Piece) -> Long): Long {
