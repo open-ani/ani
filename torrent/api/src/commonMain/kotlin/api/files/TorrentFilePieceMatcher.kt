@@ -9,7 +9,14 @@
 
 package me.him188.ani.app.torrent.api.files
 
+import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PieceList
+import me.him188.ani.app.torrent.api.pieces.first
+import me.him188.ani.app.torrent.api.pieces.forEachIndexed
+import me.him188.ani.app.torrent.api.pieces.indexOfFirst
+import me.him188.ani.app.torrent.api.pieces.indexOfLast
+import me.him188.ani.app.torrent.api.pieces.last
+import me.him188.ani.app.torrent.api.pieces.slice
 
 // TorrentFilePieceMatcherTest
 object TorrentFilePieceMatcher {
@@ -21,39 +28,43 @@ object TorrentFilePieceMatcher {
      * guaranteed to be continuous and sorted
      */
     fun matchPiecesForFile(allPieces: PieceList, offset: Long, length: Long): PieceList = with(allPieces) {
-        TODO("matchPiecesForFile")
-//        return allPieces
-//            .asSequence()
-//            .filter { piece ->
-//                piece.dataOffset >= offset && piece.dataOffset < offset + length
-//                        || (piece.dataOffset < offset && piece.dataLastOffset >= offset)
-//            }
-//            .toMutableList()
-//            .apply { sortBy { it.dataOffset } }
-//            .also { pieces ->
-//                // 检验 pieces 的大小等于文件大小
-//                if (pieces.isEmpty()) {
-//                    if (length == 0L) {
-//                        return@also
-//                    }
-//                    throw IllegalStateException("No pieces found for file offset $offset and length $length")
-//                }
-//
-//                // Check continuous
-//                pieces.forEachIndexed { index, piece ->
-//                    if (index == 0) {
-//                        return@forEachIndexed
-//                    }
-//                    if (piece.dataOffset != pieces[index - 1].dataLastOffset + 1) {
-//                        throw IllegalStateException("Pieces offset is not continuous: lastOffset ${pieces[index - 1].dataLastOffset + 1} -> currently visiting ${piece.dataOffset}")
-//                    }
-//                }
-//
-//                check(pieces.last().dataLastOffset - pieces.first().dataStartOffset + 1 >= length) {
-//                    "Pieces size is less than file size: ${pieces.last().dataLastOffset - pieces.first().dataStartOffset + 1} < $length"
-//                }
-//
-//                check(pieces is RandomAccess)
-//            }
+//        .filter { piece ->
+////                piece.dataOffset >= offset && piece.dataOffset < offset + length
+////                        || (piece.dataOffset < offset && piece.dataLastOffset >= offset)
+////            }
+        val predicate: PieceList.(Piece) -> Boolean = { piece ->
+            (piece.dataStartOffset >= offset && piece.dataStartOffset < offset + length)
+                    || (piece.dataStartOffset < offset && piece.dataLastOffset >= offset)
+        }
+        val startIndex = allPieces.indexOfFirst(predicate)
+        val endIndex = allPieces.indexOfLast(predicate)
+        if (startIndex == -1 || endIndex == -1) {
+            if (length == 0L) {
+                return PieceList.Empty
+            }
+            throw IllegalStateException("No pieces found for file offset $offset and length $length")
+        }
+        allPieces.slice(
+            startIndex = startIndex,
+            endIndex = endIndex + 1,
+        ).also { pieces ->
+            // Check continuous
+            pieces.forEachIndexed { index, piece ->
+                if (index == 0) {
+                    return@forEachIndexed
+                }
+                if (piece.dataOffset != pieces.getByPieceIndex(piece.pieceIndex - 1).dataLastOffset + 1) {
+                    throw IllegalStateException(
+                        "Pieces offset is not continuous: lastOffset " +
+                                "${pieces.getByPieceIndex(index - 1).dataLastOffset + 1}" +
+                                " -> currently visiting ${piece.dataOffset}",
+                    )
+                }
+            }
+
+            check(pieces.last().dataLastOffset - pieces.first().dataStartOffset + 1 >= length) {
+                "Pieces size is less than file size: ${pieces.last().dataLastOffset - pieces.first().dataStartOffset + 1} < $length"
+            }
+        }
     }
 }

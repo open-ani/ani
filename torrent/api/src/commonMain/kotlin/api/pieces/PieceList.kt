@@ -49,13 +49,13 @@ class PieceListImpl(
 
 class PieceListSlice(
     private val delegate: PieceList,
-    private val startIndex: Int,
+    startIndex: Int,
     endIndex: Int,
 ) : PieceList() {
     init {
         require(startIndex >= 0) { "startIndex < 0" }
         require(endIndex <= delegate.sizes.size) { "endIndex > list.sizes.size" }
-        require(startIndex < endIndex) { "startIndex >= endIndex" }
+        require(startIndex <= endIndex) { "startIndex >= endIndex" }
     }
 
     override val sizes: LongArray = delegate.sizes.copyOfRange(startIndex, endIndex)
@@ -79,12 +79,11 @@ class PieceListSlice(
 fun PieceList.slice(startIndex: Int, endIndex: Int): PieceList {
     require(startIndex >= 0) { "startIndex < 0" }
     require(endIndex <= sizes.size) { "endIndex > sizes.size" }
-    require(startIndex < endIndex) { "startIndex >= endIndex" }
+    require(startIndex <= endIndex) { "startIndex >= endIndex" }
     return PieceListSlice(this, startIndex, endIndex)
 }
 
-abstract class PieceList protected constructor(
-) {
+sealed class PieceList {
     @PublishedApi
     internal abstract val sizes: LongArray // immutable
 
@@ -103,7 +102,7 @@ abstract class PieceList protected constructor(
     abstract fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean
 
     @PublishedApi
-    internal inline val Piece.indexInList get() = pieceIndex
+    internal inline val Piece.indexInList get() = pieceIndex - initialPieceIndex
 
     /**
      * 该 piece 的数据长度 bytes
@@ -169,6 +168,8 @@ abstract class PieceList protected constructor(
     internal val subscriptions: MutableStateFlow<List<Subscription>> = MutableStateFlow(emptyList())
 
     companion object {
+        val Empty = create(0) { 0 }
+        
         fun create(
             numPieces: Int,
             initialDataOffset: Long = 0L,
@@ -331,6 +332,18 @@ inline fun PieceList.minOf(block: PieceList.(Piece) -> Long): Long {
  */
 inline fun PieceList.indexOfFirst(predicate: PieceList.(Piece) -> Boolean): Int {
     for (i in sizes.indices) {
+        if (predicate(createPieceByListIndexUnsafe(i))) {
+            return i
+        }
+    }
+    return -1
+}
+
+/**
+ * @see kotlin.collections.indexOfLast
+ */
+inline fun PieceList.indexOfLast(predicate: PieceList.(Piece) -> Boolean): Int {
+    for (i in sizes.indices.reversed()) {
         if (predicate(createPieceByListIndexUnsafe(i))) {
             return i
         }
