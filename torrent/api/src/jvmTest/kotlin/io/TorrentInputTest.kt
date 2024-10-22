@@ -91,7 +91,7 @@ internal sealed class TorrentInputTest {
 
     private val tempFile by lazy {
         tempDir.resolve("test.txt").apply {
-            parentFile.mkdirs()
+            parentFile!!.mkdirs()
             writeText(sampleText)
         }
     }
