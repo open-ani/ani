@@ -88,7 +88,7 @@ private fun buildPiecesWithStep(
     state: PieceState
 ): PieceList = PieceList.create(16, 0) { 1_000 }.apply {
     // simulate non-consecutive cache
-    for (i in initialPieceIndex until initialPieceIndex + sizes.size step 2) {
+    for (i in initialPieceIndex until endPieceIndex step 2) {
         this.getByPieceIndex(i).state = state
     }
 }

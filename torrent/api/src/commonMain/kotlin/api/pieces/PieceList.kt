@@ -52,9 +52,8 @@ sealed class PieceList(
     /**
      * 第 0 个元素的 piece index. 如果列表为空则为 `0`.
      */
-    @PublishedApi
     @JvmField
-    internal val initialPieceIndex: Int
+    val initialPieceIndex: Int
 ) {
     /**
      * 所有 piece 的大小之和 bytes
@@ -65,8 +64,7 @@ sealed class PieceList(
      * exclusive
      */
     @JvmField
-    @PublishedApi
-    internal val endPieceIndex = initialPieceIndex + sizes.size
+    val endPieceIndex = initialPieceIndex + sizes.size
 
     abstract var Piece.state: PieceState
     abstract fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean
