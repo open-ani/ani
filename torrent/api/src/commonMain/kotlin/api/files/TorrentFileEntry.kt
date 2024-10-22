@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.torrent.api.files
 
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -17,6 +26,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
 import me.him188.ani.app.torrent.api.TorrentSession
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
@@ -87,7 +97,7 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
      * @throws IllegalStateException 当未匹配到正确大小的 pieces 时抛出
      * @return 一定是 [RandomAccess] List
      */
-    val pieces: List<Piece>
+    val pieces: PieceList
 
     /**
      * 是否支持边下边播
@@ -200,7 +210,7 @@ abstract class AbstractTorrentFileEntry(
      *
      * must support [RandomAccess]
      */
-    abstract override val pieces: List<Piece>
+    abstract override val pieces: PieceList
 
     final override val pathInTorrent: String get() = relativePath.substringAfter("/")
 
@@ -253,14 +263,3 @@ abstract class AbstractTorrentFileEntry(
     }
 }
 
-fun TorrentFileEntry.findPieceByPieceIndex(pieceIndex: Int): Piece? {
-    val pieces = pieces
-    val first = pieces.firstOrNull() ?: return null
-    // Random-access get
-    return pieces.getOrNull(pieceIndex - first.pieceIndex)?.also {
-        check(it.pieceIndex == pieceIndex) {
-            "Piece index mismatch: expected $pieceIndex, actual ${it.pieceIndex}. " +
-                    "This is because [piece] is not supported which it should be."
-        }
-    }
-}

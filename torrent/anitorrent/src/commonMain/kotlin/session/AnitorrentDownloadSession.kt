@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.torrent.anitorrent.session
 
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -29,11 +38,13 @@ import me.him188.ani.app.torrent.api.files.TorrentFileEntry
 import me.him188.ani.app.torrent.api.files.TorrentFileHandle
 import me.him188.ani.app.torrent.api.files.TorrentFilePieceMatcher
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PiecePriorities
 import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
-import me.him188.ani.app.torrent.api.pieces.lastIndex
-import me.him188.ani.app.torrent.api.pieces.startIndex
+import me.him188.ani.app.torrent.api.pieces.first
+import me.him188.ani.app.torrent.api.pieces.last
+import me.him188.ani.app.torrent.api.pieces.sumOf
 import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
@@ -130,7 +141,7 @@ class AnitorrentDownloadSession(
     private val prioritizer = createPiecePriorities()
 
     inner class AnitorrentEntry(
-        override val pieces: List<Piece>,
+        override val pieces: PieceList,
         index: Int,
         val offset: Long,
         length: Long, saveDirectory: SystemPath, relativePath: String,
@@ -145,18 +156,22 @@ class AnitorrentDownloadSession(
         /**
          * 是 [Piece.pieceIndex], 不是 file offset
          */
-        val pieceIndexRange =
-            if (pieces.isEmpty()) IntRange.EMPTY else pieces.first().pieceIndex..pieces.last().pieceIndex
+        val pieceIndexRange = with(pieces) {
+            if (pieces.isEmpty()) IntRange.EMPTY else pieces.first().absolutePieceIndex..pieces.last().absolutePieceIndex
+        }
 
-        val controller: TorrentDownloadController = TorrentDownloadController(
-            pieces,
-            prioritizer,
-            // libtorrent 可能会平均地请求整个 window, 所以不能太大
-            windowSize = (8 * 1024 * 1024 / (pieces.firstOrNull()?.size ?: 1024L)).toInt().coerceIn(2, 64),
-            headerSize = 2 * 1024 * 1024,
-            footerSize = (0.5 * 1024 * 1024).toLong(),
-            possibleFooterSize = 8 * 1024 * 1024,
-        )
+        val controller: TorrentDownloadController = with(pieces) {
+            val pieceSize = if (pieces.isEmpty()) 1024 else pieces.first().size
+            TorrentDownloadController(
+                pieces,
+                prioritizer,
+                // libtorrent 可能会平均地请求整个 window, 所以不能太大
+                windowSize = (8 * 1024 * 1024 / pieceSize).toInt().coerceIn(2, 64),
+                headerSize = 2 * 1024 * 1024,
+                footerSize = (0.5 * 1024 * 1024).toLong(),
+                possibleFooterSize = 8 * 1024 * 1024,
+            )
+        }
 
         inner class EntryHandle : AbstractTorrentFileHandle() {
             override val entry get() = this@AnitorrentEntry
@@ -216,13 +231,15 @@ class AnitorrentDownloadSession(
         }
 
         private fun updatePieceDeadlinesForSeek(requested: Piece) {
-            if (!controller.isDownloading(requested.pieceIndex)) {
-                logger.info { "[TorrentDownloadControl] $torrentId: Resetting deadlines to download ${requested.pieceIndex}" }
-                handle.clearPieceDeadlines()
-                controller.onSeek(requested.pieceIndex) // will request further pieces
-            } else {
-                logger.info { "[TorrentDownloadControl] $torrentId: Requested piece ${requested.pieceIndex} is already downloading" }
-                return
+            with(pieces) {
+                if (!controller.isDownloading(requested.absolutePieceIndex)) {
+                    logger.info { "[TorrentDownloadControl] $torrentId: Resetting deadlines to download ${requested.absolutePieceIndex}" }
+                    handle.clearPieceDeadlines()
+                    controller.onSeek(requested.absolutePieceIndex) // will request further pieces
+                } else {
+                    logger.info { "[TorrentDownloadControl] $torrentId: Requested piece ${requested.absolutePieceIndex} is already downloading" }
+                    return
+                }
             }
         }
     }
@@ -233,15 +250,11 @@ class AnitorrentDownloadSession(
      */
     inner class TorrentInfo(
         val name: String,
-        val allPiecesInTorrent: List<Piece>,
+        val allPiecesInTorrent: PieceList,
         val entries: List<AnitorrentEntry>,
     ) {
-        init {
-            check(allPiecesInTorrent is RandomAccess)
-        }
-
         override fun toString(): String {
-            return "TorrentInfo(name=$name, numPieces=${allPiecesInTorrent.size}, entries.size=${entries.size})"
+            return "TorrentInfo(name=$name, numPieces=${allPiecesInTorrent.count}, entries.size=${entries.size})"
         }
     }
 
@@ -296,7 +309,7 @@ class AnitorrentDownloadSession(
         }
         logger.info { "initializeTorrentInfo" }
         val allPiecesInTorrent =
-            Piece.buildPieces(info.numPieces) {
+            PieceList.buildPieces(info.numPieces) {
                 if (it == info.numPieces - 1) {
                     info.lastPieceSize
                 } else info.pieceLength
@@ -316,13 +329,8 @@ class AnitorrentDownloadSession(
                 ).also { pieces ->
                     logPieces(pieces, path)
                 }
-                val filePieces = if (list is RandomAccess) {
-                    list
-                } else {
-                    ArrayList(list)
-                }
                 AnitorrentEntry(
-                    pieces = filePieces,
+                    pieces = list,
                     index = index,
                     offset = currentOffset,
                     length = size,
@@ -330,7 +338,7 @@ class AnitorrentDownloadSession(
                     relativePath = path,
                     isDebug = false,
                     parentCoroutineContext = Dispatchers.IO,
-                    initialDownloadedBytes = calculateTotalFinishedSize(filePieces).coerceAtMost(size),
+                    initialDownloadedBytes = calculateTotalFinishedSize(list).coerceAtMost(size),
                 ).also {
                     currentOffset += size
                 }
@@ -383,10 +391,12 @@ class AnitorrentDownloadSession(
 
     fun onPieceDownloading(pieceIndex: Int) {
         useTorrentInfoOrLaunch { info ->
-            info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.compareAndSet(
-                PieceState.READY,
-                PieceState.DOWNLOADING,
-            )
+            with(info.allPiecesInTorrent) {
+                getByAbsolutePieceIndex(pieceIndex).compareAndSetState(
+                    PieceState.READY,
+                    PieceState.DOWNLOADING,
+                )
+            }
         }
     }
 
@@ -401,7 +411,9 @@ class AnitorrentDownloadSession(
         info: TorrentInfo,
         pieceIndex: Int
     ) {
-        info.allPiecesInTorrent.getOrNull(pieceIndex)?.state?.value = PieceState.FINISHED
+        with(info.allPiecesInTorrent) {
+            info.allPiecesInTorrent.getByAbsolutePieceIndex(pieceIndex).state = PieceState.FINISHED
+        }
         for (file in openFiles) {
             if (pieceIndex in file.entry.pieceIndexRange) {
                 file.entry.controller.onPieceDownloaded(pieceIndex)
@@ -467,7 +479,7 @@ class AnitorrentDownloadSession(
     override suspend fun getFiles(): List<TorrentFileEntry> = this.actualTorrentInfo.await().entries
 
     override fun getPeers() = handle.getPeers()
-    
+
     @Volatile
     private var closed = false
 
@@ -553,19 +565,20 @@ class AnitorrentDownloadSession(
 }
 
 
-private fun AnitorrentDownloadSession.logPieces(pieces: List<Piece>, pathInTorrent: String) {
-    logger.info {
-        val start = pieces.minByOrNull { it.startIndex }
-        val end = pieces.maxByOrNull { it.lastIndex }
-        if (start == null || end == null) {
-            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
-                    "index range: start=$start, end=$end"
-        } else {
-            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
-                    "index range: ${start.pieceIndex..end.pieceIndex}, " +
-                    "offset range: $start..$end"
-        }
-    }
+private fun AnitorrentDownloadSession.logPieces(pieces: PieceList, pathInTorrent: String): Unit = with(pieces) {
+    TODO("logPieces")
+//    logger.info {
+//        val start = pieces.minByOrNull { it.startIndex }
+//        val end = pieces.maxByOrNull { it.lastIndex }
+//        if (start == null || end == null) {
+//            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
+//                    "index range: start=$start, end=$end"
+//        } else {
+//            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
+//                    "index range: ${start.pieceIndex..end.pieceIndex}, " +
+//                    "offset range: $start..$end"
+//        }
+//    }
 }
 
 val TorrentDescriptor.fileSequence
@@ -578,8 +591,9 @@ val TorrentDescriptor.fileSequence
         }
     }
 
-private fun calculateTotalFinishedSize(pieces: List<Piece>): Long =
-    pieces.sumOf { if (it.state.value == PieceState.FINISHED) it.size else 0 }
+private fun calculateTotalFinishedSize(pieces: PieceList) = with(pieces) {
+    pieces.sumOf { if (it.state == PieceState.FINISHED) it.size else 0 }
+}
 
 private fun TorrentHandleState.isMetadataReady(): Boolean {
     return when (this) {
