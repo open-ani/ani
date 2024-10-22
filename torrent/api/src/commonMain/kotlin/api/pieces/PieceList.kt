@@ -347,17 +347,21 @@ inline fun PieceList.takeWhile(predicate: PieceList.(Piece) -> Boolean): List<Pi
 /**
  * @see kotlin.collections.binarySearch
  */
-inline fun PieceList.binarySearch(predicate: PieceList.(Piece) -> Int): Int {
+inline fun PieceList.binarySearch(
+    fromIndex: Int = 0,
+    toIndex: Int = count,
+    comparator: PieceList.(Piece) -> Int,
+): Int {
     // TODO: check, this is written by Copilot
-    var low = 0
-    var high = sizes.size - 1
+    var low = fromIndex
+    var high = toIndex - 1
     while (low <= high) {
         val mid = (low + high).ushr(1)
-        val result = predicate(createPieceByListIndexUnsafe(mid))
+        val cmp = comparator(createPieceByListIndexUnsafe(mid))
         when {
-            result < 0 -> high = mid - 1
-            result > 0 -> low = mid + 1
-            else -> return mid
+            cmp < 0 -> low = mid + 1
+            cmp > 0 -> high = mid - 1
+            else -> return mid // key found
         }
     }
     return -1
