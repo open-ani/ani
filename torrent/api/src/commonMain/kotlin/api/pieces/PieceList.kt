@@ -11,7 +11,13 @@ package me.him188.ani.app.torrent.api.pieces
 
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.minus
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.plus
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class PieceListImpl(
     @PublishedApi
@@ -32,6 +38,7 @@ class PieceListImpl(
         get() = states[pieceIndex]
         set(value) {
             states[pieceIndex] = value
+            notifyPieceStateChanges(this)
         }
 
     private val lock = SynchronizedObject()
@@ -43,6 +50,59 @@ class PieceListImpl(
                 return true
             }
             return false
+        }
+    }
+
+    // use object identity
+    class Subscription(
+        val pieceIndex: Int,
+        val onStateChange: PieceList.(Subscription, Piece) -> Unit,
+    )
+
+    private val subscriptions: MutableStateFlow<PersistentList<Subscription>> = MutableStateFlow(persistentListOf())
+
+    /**
+     * Call related subscribers
+     */
+    private fun notifyPieceStateChanges(changedPiece: Piece) {
+        val subscriptions = subscriptions.value
+        for (subscription in subscriptions) {
+            if (subscription.pieceIndex == changedPiece.pieceIndex) {
+                subscription.onStateChange(this, subscription, changedPiece)
+            }
+        }
+    }
+
+    private fun subscribe(pieceIndex: Int, onStateChange: PieceList.(Subscription, Piece) -> Unit): Subscription {
+        val subscriptions = subscriptions
+        while (true) {
+            val prevValue = subscriptions.value
+            val sub = Subscription(pieceIndex, onStateChange)
+            val nextValue = prevValue.plus(sub)
+            if (subscriptions.compareAndSet(prevValue, nextValue)) {
+                return sub
+            }
+        }
+    }
+
+    private fun unsubscribe(subscription: Subscription) {
+        subscriptions.update { list ->
+            list.minus(subscription)
+        }
+    }
+
+    override suspend fun Piece.awaitFinished() {
+        val piece = this
+        suspendCancellableCoroutine { cont ->
+            val sub = subscribe(piece.pieceIndex) { subscription, piece ->
+                if (piece.state == PieceState.FINISHED) {
+                    cont.resumeWith(Result.success(Unit))
+                    unsubscribe(subscription)
+                }
+            }
+            cont.invokeOnCancellation {
+                unsubscribe(sub)
+            }
         }
     }
 }
@@ -62,16 +122,22 @@ class PieceListSlice(
     override val dataOffsets: LongArray = delegate.dataOffsets.copyOfRange(startIndex, endIndex)
     override val initialPieceIndex: Int = delegate.initialPieceIndex + startIndex
     override var Piece.state: PieceState
-        get() = with(delegate) { delegate.getByPieceIndex(pieceIndex).state }
+        get() = with(delegate) { state }
         set(value) {
             with(delegate) {
-                delegate.getByPieceIndex(pieceIndex).state = value
+                state = value
             }
         }
 
     override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
         with(delegate) {
-            return delegate.getByPieceIndex(pieceIndex).compareAndSetState(expect, update)
+            return compareAndSetState(expect, update)
+        }
+    }
+
+    override suspend fun Piece.awaitFinished() {
+        with(delegate) {
+            awaitFinished()
         }
     }
 }
@@ -159,21 +225,7 @@ sealed class PieceList {
 //        return createPieceByListIndex(listIndex)
 //    }
 
-    suspend inline fun Piece.awaitFinished() {
-        val piece = this
-        TODO("Piece.awaitFinished")
-//        if (piece.state.value != PieceState.FINISHED) {
-//            piece.state.takeWhile { it != PieceState.FINISHED }.collect()
-//        }
-    }
-
-
-    class Subscription(
-        val pieceIndex: Int,
-        val onStateChange: PieceList.(Piece) -> Unit,
-    )
-
-    internal val subscriptions: MutableStateFlow<List<Subscription>> = MutableStateFlow(emptyList())
+    abstract suspend fun Piece.awaitFinished()
 
     companion object {
         val Empty = create(0) { 0 }
