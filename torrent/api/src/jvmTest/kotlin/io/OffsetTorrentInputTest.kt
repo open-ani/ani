@@ -68,7 +68,7 @@ internal class OffsetTorrentInputTest {
         input.close()
     }
 
-    fun runTest(block: suspend PieceList.() -> Unit) {
+    private fun runTest(block: suspend PieceList.() -> Unit) {
         kotlinx.coroutines.test.runTest {
             block(logicalPieces)
         }
