@@ -20,137 +20,32 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.jvm.JvmField
 
-class PieceListImpl(
-    sizes: LongArray, // immutable
-    dataOffsets: LongArray, // immutable
-    private val states: Array<PieceState>, // mutable
-    initialPieceIndex: Int, // 第 0 个元素的 piece index
-) : PieceList(sizes, dataOffsets, initialPieceIndex) {
-    init {
-        require(sizes.size == dataOffsets.size) { "sizes.size != dataOffsets.size" }
-        require(sizes.size == states.size) { "sizes.size != states.size" }
-    }
-
-    override var Piece.state: PieceState
-        get() = states[pieceIndex]
-        set(value) {
-            states[pieceIndex] = value
-            notifyPieceStateChanges(this)
-        }
-
-    private val lock = SynchronizedObject()
-
-    override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
-        synchronized(lock) {
-            if (state == expect) {
-                state = update
-                return true
-            }
-            return false
-        }
-    }
-
-    // use object identity
-    class Subscription(
-        val pieceIndex: Int,
-        val onStateChange: PieceList.(Subscription, Piece) -> Unit,
-    )
-
-    private val subscriptions: MutableStateFlow<PersistentList<Subscription>> = MutableStateFlow(persistentListOf())
-
-    /**
-     * Call related subscribers
-     */
-    private fun notifyPieceStateChanges(changedPiece: Piece) {
-        val subscriptions = subscriptions.value
-        for (subscription in subscriptions) {
-            if (subscription.pieceIndex == changedPiece.pieceIndex) {
-                subscription.onStateChange(this, subscription, changedPiece)
-            }
-        }
-    }
-
-    private fun subscribe(pieceIndex: Int, onStateChange: PieceList.(Subscription, Piece) -> Unit): Subscription {
-        val subscriptions = subscriptions
-        while (true) {
-            val prevValue = subscriptions.value
-            val sub = Subscription(pieceIndex, onStateChange)
-            val nextValue = prevValue.plus(sub)
-            if (subscriptions.compareAndSet(prevValue, nextValue)) {
-                return sub
-            }
-        }
-    }
-
-    private fun unsubscribe(subscription: Subscription) {
-        subscriptions.update { list ->
-            list.minus(subscription)
-        }
-    }
-
-    override suspend fun Piece.awaitFinished() {
-        val piece = this
-        suspendCancellableCoroutine { cont ->
-            val sub = subscribe(piece.pieceIndex) { subscription, piece ->
-                if (piece.state == PieceState.FINISHED) {
-                    cont.resumeWith(Result.success(Unit))
-                    unsubscribe(subscription)
-                }
-            }
-            cont.invokeOnCancellation {
-                unsubscribe(sub)
-            }
-        }
-    }
-}
-
-class PieceListSlice(
-    private val delegate: PieceList,
-    startIndex: Int,
-    endIndex: Int,
-) : PieceList(
-    sizes = delegate.sizes.copyOfRange(startIndex, endIndex),
-    dataOffsets = delegate.dataOffsets.copyOfRange(startIndex, endIndex),
-    initialPieceIndex = delegate.initialPieceIndex + startIndex,
-) {
-    init {
-        require(startIndex >= 0) { "startIndex < 0" }
-        require(endIndex <= delegate.sizes.size) { "endIndex > list.sizes.size" }
-        require(startIndex <= endIndex) { "startIndex >= endIndex" }
-    }
-
-    override var Piece.state: PieceState
-        get() = with(delegate) { state }
-        set(value) {
-            with(delegate) {
-                state = value
-            }
-        }
-
-    override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
-        with(delegate) {
-            return compareAndSetState(expect, update)
-        }
-    }
-
-    override suspend fun Piece.awaitFinished() {
-        with(delegate) {
-            awaitFinished()
-        }
-    }
-}
-
-fun PieceList.slice(startIndex: Int, endIndex: Int): PieceList {
-    require(startIndex >= 0) { "startIndex < 0" }
-    require(endIndex <= sizes.size) { "endIndex > sizes.size" }
-    require(startIndex <= endIndex) { "startIndex >= endIndex" }
-    return PieceListSlice(this, startIndex, endIndex)
-}
-
+/**
+ * 高性能 [Piece] 集合. 每个 [PieceList] 一定包含连续的 [Piece.pieceIndex]. 可能为空.
+ *
+ * [PieceList] 类似于一个 `List<Piece>`, 但不提供 index 方式访问.
+ * [PieceList] 只允许通过 [Piece.pieceIndex] 访问: [PieceList.getByPieceIndex].
+ *
+ *
+ * [PieceList] 可以被 [slice] 为一个子集. 子集合与原集合共享相同的数据, 即修改子集合的 [PieceList.state] 会反映到原集合, 反之亦然.
+ *
+ * 子集合与原集合还共享 [Piece.pieceIndex] 空间.
+ * 例如, 从 [Piece.pieceIndex] 范围为 `0..99` 的集合中 slice 出中间 10 个, 即 `50..59`,
+ * 则这 10 个 [Piece] 可以同时在原集合和子集合中使用.
+ *
+ * @see Piece
+ */
 sealed class PieceList(
+    // 这些 array 大小必须相同
+    /**
+     * 每个 piece 的大小 bytes.
+     */
     @PublishedApi
     @JvmField
     internal val sizes: LongArray, // immutable
+    /**
+     * piece 的数据偏移量, 即在种子文件中的 offset bytes.
+     */
     @PublishedApi
     @JvmField
     internal val dataOffsets: LongArray,// immutable
@@ -161,6 +56,9 @@ sealed class PieceList(
     @JvmField
     internal val initialPieceIndex: Int
 ) {
+    /**
+     * 所有 piece 的大小之和 bytes
+     */
     val totalSize: Long by lazy(LazyThreadSafetyMode.PUBLICATION) { sizes.sum() }
 
     abstract var Piece.state: PieceState
@@ -201,7 +99,8 @@ sealed class PieceList(
      */
     @OptIn(RawPieceConstructor::class)
     @PublishedApi
-    internal fun createPieceByListIndexUnsafe(listIndex: Int): Piece =
+    // inline is needed to help compiler vectorization
+    internal inline fun createPieceByListIndexUnsafe(listIndex: Int): Piece =
         Piece(initialPieceIndex + listIndex)
 
     /**
@@ -224,6 +123,10 @@ sealed class PieceList(
 //        return createPieceByListIndex(listIndex)
 //    }
 
+    /**
+     * 挂起当前协程, 直到该 piece 下载完成.
+     * 支持 cancellation.
+     */
     abstract suspend fun Piece.awaitFinished()
 
     companion object {
@@ -278,8 +181,144 @@ sealed class PieceList(
     }
 }
 
+private class PieceListImpl(
+    sizes: LongArray, // immutable
+    dataOffsets: LongArray, // immutable
+    private val states: Array<PieceState>, // mutable
+    initialPieceIndex: Int, // 第 0 个元素的 piece index
+) : PieceList(sizes, dataOffsets, initialPieceIndex) {
+    init {
+        require(sizes.size == dataOffsets.size) { "sizes.size != dataOffsets.size" }
+        require(sizes.size == states.size) { "sizes.size != states.size" }
+    }
+
+    private val subscriptions = PieceListSubscriptions()
+
+    override var Piece.state: PieceState
+        get() = states[pieceIndex]
+        set(value) {
+            states[pieceIndex] = value
+            subscriptions.notifyPieceStateChanges(this@PieceListImpl, this)
+        }
+
+    private val lock = SynchronizedObject()
+
+    override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
+        synchronized(lock) {
+            if (state == expect) {
+                state = update
+                return true
+            }
+            return false
+        }
+    }
+
+    override suspend fun Piece.awaitFinished() {
+        val piece = this
+        suspendCancellableCoroutine { cont ->
+            val subscriptions = subscriptions
+            val sub = subscriptions.subscribe(piece.pieceIndex) { subscription, piece ->
+                if (piece.state == PieceState.FINISHED) {
+                    cont.resumeWith(Result.success(Unit))
+                    subscriptions.unsubscribe(subscription)
+                }
+            }
+            cont.invokeOnCancellation {
+                subscriptions.unsubscribe(sub)
+            }
+        }
+    }
+}
+
+class PieceListSubscriptions {
+    // use object identity
+    class Subscription(
+        val pieceIndex: Int,
+        val onStateChange: PieceList.(Subscription, Piece) -> Unit,
+    )
+
+    private val subscriptions: MutableStateFlow<PersistentList<Subscription>> = MutableStateFlow(persistentListOf())
+
+    /**
+     * Call related subscribers
+     */
+    fun notifyPieceStateChanges(pieceList: PieceList, changedPiece: Piece) {
+        val subscriptions = subscriptions.value
+        for (subscription in subscriptions) {
+            if (subscription.pieceIndex == changedPiece.pieceIndex) {
+                subscription.onStateChange(pieceList, subscription, changedPiece)
+            }
+        }
+    }
+
+    fun subscribe(pieceIndex: Int, onStateChange: PieceList.(Subscription, Piece) -> Unit): Subscription {
+        val subscriptions = subscriptions
+        while (true) {
+            val prevValue = subscriptions.value
+            val sub = Subscription(pieceIndex, onStateChange)
+            val nextValue = prevValue.plus(sub)
+            if (subscriptions.compareAndSet(prevValue, nextValue)) {
+                return sub
+            }
+        }
+    }
+
+    fun unsubscribe(subscription: Subscription) {
+        subscriptions.update { list ->
+            list.minus(subscription)
+        }
+    }
+}
+
+private class PieceListSlice(
+    private val delegate: PieceList,
+    startIndex: Int,
+    endIndex: Int,
+) : PieceList(
+    sizes = delegate.sizes.copyOfRange(startIndex, endIndex),
+    dataOffsets = delegate.dataOffsets.copyOfRange(startIndex, endIndex),
+    initialPieceIndex = delegate.initialPieceIndex + startIndex,
+) {
+    init {
+        require(startIndex >= 0) { "startIndex < 0" }
+        require(endIndex <= delegate.sizes.size) { "endIndex > list.sizes.size" }
+        require(startIndex <= endIndex) { "startIndex >= endIndex" }
+    }
+
+    override var Piece.state: PieceState
+        get() = with(delegate) { state }
+        set(value) {
+            with(delegate) {
+                state = value
+            }
+        }
+
+    override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
+        with(delegate) {
+            return compareAndSetState(expect, update)
+        }
+    }
+
+    override suspend fun Piece.awaitFinished() {
+        with(delegate) {
+            awaitFinished()
+        }
+    }
+}
+
+fun PieceList.slice(startIndex: Int, endIndex: Int): PieceList {
+    require(startIndex >= 0) { "startIndex < 0" }
+    require(endIndex <= sizes.size) { "endIndex > sizes.size" }
+    require(startIndex <= endIndex) { "startIndex >= endIndex" }
+    return PieceListSlice(this, startIndex, endIndex)
+}
+
 inline val PieceList.listIndices: IntRange get() = sizes.indices
 
+/**
+ * 此集合的所包含 piece 范围.
+ */
+// inline is needed for compiler optimization
 inline val PieceList.pieceIndices: IntRange get() = initialPieceIndex until initialPieceIndex + sizes.size
 
 /**
@@ -308,7 +347,7 @@ fun PieceList.containsAbsolutePieceIndex(absolutePieceIndex: Int): Boolean =
     absolutePieceIndex in initialPieceIndex until initialPieceIndex + sizes.size
 
 ///////////////////////////////////////////////////////////////////////////
-// Collection extensions
+// region Collection extensions
 ///////////////////////////////////////////////////////////////////////////
 
 fun PieceList.first(): Piece {
@@ -503,3 +542,4 @@ inline fun PieceList.binarySearch(
     return -1
 }
 
+// endregion Collection extensions

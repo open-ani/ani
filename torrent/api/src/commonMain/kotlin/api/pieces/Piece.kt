@@ -12,10 +12,25 @@ package me.him188.ani.app.torrent.api.pieces
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmInline
 
+/**
+ * 表示 torrent 任务中的一个 piece.
+ *
+ * [Piece] 本质上 [pieceIndex] 的包装, 即它只表示一个 piece 的位置, 而不包含其大小和数据等信息.
+ *
+ * [PieceList] 才包含每个 piece 的数据范围, 大小等信息. [Piece] 需要在一个 [PieceList] 中使用, 才可以获取到更多的信息, 用法示例:
+ * ```
+ * val size: Long = with(pieceList) {
+ *     piece.size
+ * }
+ * ```
+ */
 @JvmInline
 value class Piece
 /**
- * You should always prefer [PieceList.createPieceByListIndexUnsafe]
+ * 你通常不应该直接构造 [Piece] 实例.
+ * 一般使用 [PieceList.first], [PieceList.forEach], [PieceList.getByPieceIndex] 等方法来获取.
+ *
+ * 如果你在实现 helper functions, 可以考虑 [PieceList.createPieceByListIndexUnsafe].
  */
 @RawPieceConstructor constructor(
     /**
@@ -27,7 +42,7 @@ value class Piece
 
     companion object {
         /**
-         * Replacement for `null`.
+         * Replacement for `null` to avoid boxing.
          */
         @OptIn(RawPieceConstructor::class)
         val Invalid = Piece(-1)
