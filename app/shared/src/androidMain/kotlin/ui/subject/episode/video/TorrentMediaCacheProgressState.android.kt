@@ -26,7 +26,6 @@ import kotlinx.coroutines.delay
 import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.forEach
-import me.him188.ani.app.torrent.api.pieces.pieceIndices
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
@@ -89,7 +88,7 @@ private fun buildPiecesWithStep(
     state: PieceState
 ): PieceList = PieceList.create(16, 0) { 1_000 }.apply {
     // simulate non-consecutive cache
-    for (i in pieceIndices step 2) {
+    for (i in initialPieceIndex until initialPieceIndex + sizes.size step 2) {
         this.getByPieceIndex(i).state = state
     }
 }

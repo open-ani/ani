@@ -61,6 +61,13 @@ sealed class PieceList(
      */
     val totalSize: Long by lazy(LazyThreadSafetyMode.PUBLICATION) { sizes.sum() }
 
+    /**
+     * exclusive
+     */
+    @JvmField
+    @PublishedApi
+    internal val endPieceIndex = initialPieceIndex + sizes.size
+
     abstract var Piece.state: PieceState
     abstract fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean
 
@@ -313,14 +320,6 @@ fun PieceList.slice(startIndex: Int, endIndex: Int): PieceList {
     return PieceListSlice(this, startIndex, endIndex)
 }
 
-inline val PieceList.listIndices: IntRange get() = sizes.indices
-
-/**
- * 此集合的所包含 piece 范围.
- */
-// inline is needed for compiler optimization
-inline val PieceList.pieceIndices: IntRange get() = initialPieceIndex until initialPieceIndex + sizes.size
-
 /**
  * 此列表包含的 piece 数量
  */
@@ -342,9 +341,9 @@ fun PieceList.asSequence(): Sequence<Piece> = object : Sequence<Piece> {
     }
 }
 
-//fun PieceList.containsListIndex(listIndex: Int): Boolean = listIndex in sizes.indices
-fun PieceList.containsAbsolutePieceIndex(absolutePieceIndex: Int): Boolean =
-    absolutePieceIndex in initialPieceIndex until initialPieceIndex + sizes.size
+fun PieceList.containsAbsolutePieceIndex(absolutePieceIndex: Int): Boolean {
+    return absolutePieceIndex in initialPieceIndex until endPieceIndex
+}
 
 ///////////////////////////////////////////////////////////////////////////
 // region Collection extensions
@@ -362,12 +361,14 @@ fun PieceList.last(): Piece {
 
 @OptIn(RawPieceConstructor::class)
 inline fun PieceList.forEach(block: PieceList.(Piece) -> Unit) {
-    for (i in pieceIndices) {
+    // Kotlin compiler won't inline ranges so we have to manually write here
+    for (i in initialPieceIndex until endPieceIndex) {
         block(Piece(i))
     }
 }
 
 inline fun PieceList.forEachIndexed(block: PieceList.(index: Int, Piece) -> Unit) {
+    val sizes = sizes
     for (i in sizes.indices) {
         block(i, createPieceByListIndexUnsafe(i))
     }
@@ -479,7 +480,8 @@ inline fun PieceList.pieceIndexOfFirst(predicate: PieceList.(Piece) -> Boolean):
  */
 @OptIn(RawPieceConstructor::class)
 inline fun PieceList.pieceIndexOfLast(predicate: PieceList.(Piece) -> Boolean): Int {
-    for (i in pieceIndices.reversed()) {
+    // help compiler
+    for (i in (initialPieceIndex until endPieceIndex).reversed()) {
         if (predicate(Piece(i))) {
             return i
         }
