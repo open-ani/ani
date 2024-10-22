@@ -9,6 +9,7 @@
 
 package me.him188.ani.app.torrent.api.pieces
 
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmInline
 
 @JvmInline
@@ -20,7 +21,7 @@ value class Piece
     /**
      * 在一个 torrent file 中的 index.
      */
-    val pieceIndex: Int,
+    @JvmField val pieceIndex: Int,
 ) {
     override fun toString(): String = "Piece($pieceIndex)"
 

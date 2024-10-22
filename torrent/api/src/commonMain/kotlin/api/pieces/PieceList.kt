@@ -375,10 +375,10 @@ inline fun PieceList.minBy(block: PieceList.(Piece) -> Long): Piece {
 /**
  * @see kotlin.collections.indexOfFirst
  */
-inline fun PieceList.indexOfFirst(predicate: PieceList.(Piece) -> Boolean): Int {
-    for (i in sizes.indices) {
-        if (predicate(createPieceByListIndexUnsafe(i))) {
-            return i
+inline fun PieceList.pieceIndexOfFirst(predicate: PieceList.(Piece) -> Boolean): Int {
+    forEach { p ->
+        if (predicate(p)) {
+            return p.pieceIndex
         }
     }
     return -1
@@ -387,9 +387,10 @@ inline fun PieceList.indexOfFirst(predicate: PieceList.(Piece) -> Boolean): Int 
 /**
  * @see kotlin.collections.indexOfLast
  */
-inline fun PieceList.indexOfLast(predicate: PieceList.(Piece) -> Boolean): Int {
-    for (i in sizes.indices.reversed()) {
-        if (predicate(createPieceByListIndexUnsafe(i))) {
+@OptIn(RawPieceConstructor::class)
+inline fun PieceList.pieceIndexOfLast(predicate: PieceList.(Piece) -> Boolean): Int {
+    for (i in pieceIndices.reversed()) {
+        if (predicate(Piece(i))) {
             return i
         }
     }
@@ -402,12 +403,12 @@ inline fun PieceList.indexOfLast(predicate: PieceList.(Piece) -> Boolean): Int {
 inline fun PieceList.dropWhile(predicate: PieceList.(Piece) -> Boolean): List<Piece> {
     val list = mutableListOf<Piece>()
     var found = false
-    for (i in sizes.indices) {
-        if (!found && predicate(createPieceByListIndexUnsafe(i))) {
-            continue
+    forEach { p ->
+        if (!found && predicate(p)) {
+            return@forEach
         }
         found = true
-        list.add(createPieceByListIndexUnsafe(i))
+        list.add(p)
     }
     return list
 }
@@ -417,11 +418,11 @@ inline fun PieceList.dropWhile(predicate: PieceList.(Piece) -> Boolean): List<Pi
  */
 inline fun PieceList.takeWhile(predicate: PieceList.(Piece) -> Boolean): List<Piece> {
     val list = mutableListOf<Piece>()
-    for (i in sizes.indices) {
-        if (predicate(createPieceByListIndexUnsafe(i))) {
-            list.add(createPieceByListIndexUnsafe(i))
+    forEach { p ->
+        if (predicate(p)) {
+            list.add(p)
         } else {
-            break
+            return list
         }
     }
     return list
@@ -430,17 +431,18 @@ inline fun PieceList.takeWhile(predicate: PieceList.(Piece) -> Boolean): List<Pi
 /**
  * @see kotlin.collections.binarySearch
  */
+@OptIn(RawPieceConstructor::class)
 inline fun PieceList.binarySearch(
     fromIndex: Int = 0,
     toIndex: Int = count,
     comparator: PieceList.(Piece) -> Int,
 ): Int {
     // TODO: check, this is written by Copilot
-    var low = fromIndex
-    var high = toIndex - 1
+    var low = createPieceByListIndexUnsafe(fromIndex).pieceIndex
+    var high = createPieceByListIndexUnsafe(toIndex - 1).pieceIndex
     while (low <= high) {
         val mid = (low + high).ushr(1)
-        val cmp = comparator(createPieceByListIndexUnsafe(mid))
+        val cmp = comparator(Piece(mid))
         when {
             cmp < 0 -> low = mid + 1
             cmp > 0 -> high = mid - 1

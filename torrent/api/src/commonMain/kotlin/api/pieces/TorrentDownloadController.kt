@@ -69,10 +69,10 @@ class TorrentDownloadController(
     private val possibleFooterRange = pieces.dropWhile { it.dataLastOffset < totalSize - possibleFooterSize }
         .let {
             if (it.isEmpty()) IntRange.EMPTY
-            else with(pieces) { it.first().pieceIndex..it.last().pieceIndex }
+            else it.first().pieceIndex..it.last().pieceIndex
         }
 
-    private val lastIndex = pieces.indexOfFirst { it.dataLastOffset >= totalSize - footerSize } - 1
+    private val lastIndex = pieces.pieceIndexOfFirst { it.dataLastOffset >= totalSize - footerSize } - 1
 
     private var currentWindowStart = 0
 

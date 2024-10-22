@@ -13,9 +13,9 @@ import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.first
 import me.him188.ani.app.torrent.api.pieces.forEachIndexed
-import me.him188.ani.app.torrent.api.pieces.indexOfFirst
-import me.him188.ani.app.torrent.api.pieces.indexOfLast
 import me.him188.ani.app.torrent.api.pieces.last
+import me.him188.ani.app.torrent.api.pieces.pieceIndexOfFirst
+import me.him188.ani.app.torrent.api.pieces.pieceIndexOfLast
 import me.him188.ani.app.torrent.api.pieces.slice
 
 // TorrentFilePieceMatcherTest
@@ -36,8 +36,8 @@ object TorrentFilePieceMatcher {
             (piece.dataStartOffset >= offset && piece.dataStartOffset < offset + length)
                     || (piece.dataStartOffset < offset && piece.dataLastOffset >= offset)
         }
-        val startIndex = allPieces.indexOfFirst(predicate)
-        val endIndex = allPieces.indexOfLast(predicate)
+        val startIndex = allPieces.pieceIndexOfFirst(predicate)
+        val endIndex = allPieces.pieceIndexOfLast(predicate)
         if (startIndex == -1 || endIndex == -1) {
             if (length == 0L) {
                 return PieceList.Empty
