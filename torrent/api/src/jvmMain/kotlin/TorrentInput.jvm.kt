@@ -15,7 +15,7 @@ import me.him188.ani.app.torrent.api.pieces.Piece
 import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.binarySearch
-import me.him188.ani.app.torrent.api.pieces.containsListIndex
+import me.him188.ani.app.torrent.api.pieces.containsAbsolutePieceIndex
 import me.him188.ani.app.torrent.api.pieces.last
 import me.him188.ani.app.torrent.api.pieces.maxOf
 import me.him188.ani.app.torrent.api.pieces.minOf
@@ -156,8 +156,8 @@ class TorrentInput(
 
                 if (accSize >= cap) return cap
 
-                if (!pieces.containsListIndex(curr.listIndex + 1)) return accSize
-                val next = pieces.getByListIndex(curr.listIndex + 1)
+                if (!pieces.containsAbsolutePieceIndex(curr.absolutePieceIndex + 1)) return accSize
+                val next = pieces.getByAbsolutePieceIndex(curr.absolutePieceIndex + 1)
                 currOffset = curr.dataLastOffset.coerceAtMost(logicalLastOffset) + 1
                 curr = next
             }
@@ -197,8 +197,8 @@ class TorrentInput(
 
                 if (accSize >= cap) return cap
 
-                if (!pieces.containsListIndex(curr.listIndex - 1)) return accSize
-                val next = pieces.getByListIndex(curr.listIndex - 1)
+                if (!pieces.containsAbsolutePieceIndex(curr.absolutePieceIndex - 1)) return accSize
+                val next = pieces.getByAbsolutePieceIndex(curr.absolutePieceIndex - 1)
                 currOffset = curr.dataStartOffset.coerceAtLeast(logicalStartOffset)
                 curr = next
             }

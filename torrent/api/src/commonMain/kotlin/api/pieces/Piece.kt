@@ -14,18 +14,24 @@ import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.jvm.JvmInline
 
+@RequiresOptIn(
+    "This is a raw constructor, use it only when you know what you are doing.",
+    level = RequiresOptIn.Level.ERROR,
+)
+annotation class RawPieceConstructor
+
 @JvmInline
-value class Piece(
+value class Piece @RawPieceConstructor constructor(
     /**
-     * 在一个 [PieceList] 中的 index
+     * 在一个 torrent file 中的 index.
      */
-    val listIndex: Int,
+    val pieceIndex: Int,
 ) {
     init {
-        require(listIndex >= 0) { "listIndex < 0" }
+        require(pieceIndex >= 0) { "pieceIndex < 0" }
     }
 
-    override fun toString(): String = "Piece($listIndex)"
+    override fun toString(): String = "Piece($pieceIndex)"
 }
 
 class PieceListImpl(
@@ -77,16 +83,16 @@ class PieceListSlice(
     override val dataOffsets: LongArray = delegate.dataOffsets.copyOfRange(startIndex, endIndex)
     override val initialPieceIndex: Int = delegate.initialPieceIndex + startIndex
     override var Piece.state: PieceState
-        get() = with(delegate) { delegate.getByAbsolutePieceIndex(startIndex + listIndex).state }
+        get() = with(delegate) { delegate.getByAbsolutePieceIndex(pieceIndex).state }
         set(value) {
             with(delegate) {
-                delegate.getByAbsolutePieceIndex(startIndex + listIndex).state = value
+                delegate.getByAbsolutePieceIndex(pieceIndex).state = value
             }
         }
 
     override fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean {
         with(delegate) {
-            return delegate.getByAbsolutePieceIndex(startIndex + listIndex).compareAndSetState(expect, update)
+            return delegate.getByAbsolutePieceIndex(pieceIndex).compareAndSetState(expect, update)
         }
     }
 }
@@ -118,17 +124,20 @@ abstract class PieceList protected constructor(
     abstract var Piece.state: PieceState
     abstract fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean
 
-    inline val Piece.absolutePieceIndex get() = initialPieceIndex + listIndex
+    inline val Piece.absolutePieceIndex get() = pieceIndex
+
+    @PublishedApi
+    internal inline val Piece.indexInList get() = pieceIndex
 
     /**
      * 该 piece 的数据长度 bytes
      */
-    inline val Piece.size get() = sizes[absolutePieceIndex]
+    inline val Piece.size get() = sizes[indexInList]
 
     /**
      * 在种子所能下载的所有文件数据中的 offset bytes
      */
-    inline val Piece.dataOffset get() = dataOffsets[absolutePieceIndex]
+    inline val Piece.dataOffset get() = dataOffsets[indexInList]
 
     // extensions
 
@@ -136,8 +145,13 @@ abstract class PieceList protected constructor(
     val Piece.dataLastOffset: Long get() = dataOffset + size - 1
     inline val Piece.offsetRange: LongRange get() = dataStartOffset..dataLastOffset
 
-    fun getByAbsolutePieceIndex(pieceIndex: Int): Piece = Piece(pieceIndex - initialPieceIndex)
-    fun getByListIndex(listIndex: Int): Piece = Piece(listIndex)
+    @OptIn(RawPieceConstructor::class)
+    @PublishedApi
+    internal fun createPieceByListIndex(listIndex: Int): Piece =
+        Piece(initialPieceIndex + listIndex)
+
+    fun getByAbsolutePieceIndex(pieceIndex: Int): Piece = createPieceByListIndex(pieceIndex - initialPieceIndex)
+    fun getByListIndex(listIndex: Int): Piece = createPieceByListIndex(listIndex)
 
     suspend inline fun Piece.awaitFinished() {
         val piece = this
@@ -207,7 +221,7 @@ fun PieceList.asSequence(): Sequence<Piece> = object : Sequence<Piece> {
     override fun iterator(): Iterator<Piece> = object : Iterator<Piece> {
         private var index = 0
         override fun hasNext(): Boolean = index < sizes.size
-        override fun next(): Piece = Piece(index++)
+        override fun next(): Piece = createPieceByListIndex(index++)
     }
 }
 
@@ -217,24 +231,24 @@ fun PieceList.containsAbsolutePieceIndex(absolutePieceIndex: Int): Boolean =
 
 fun PieceList.first(): Piece {
     if (isEmpty()) throw NoSuchElementException()
-    return Piece(0)
+    return createPieceByListIndex(0)
 }
 
 fun PieceList.last(): Piece {
     if (isEmpty()) throw NoSuchElementException()
-    return Piece(sizes.size - 1)
+    return createPieceByListIndex(sizes.size - 1)
 }
 
 inline fun PieceList.forEach(block: PieceList.(Piece) -> Unit) {
     for (i in sizes.indices) {
-        block(Piece(i))
+        block(createPieceByListIndex(i))
     }
 }
 
 inline fun PieceList.sumOf(block: PieceList.(Piece) -> Long): Long {
     var sum = 0L
     for (i in sizes.indices) {
-        sum += block(Piece(i))
+        sum += block(createPieceByListIndex(i))
     }
     return sum
 }
@@ -246,7 +260,7 @@ inline fun PieceList.maxOf(block: PieceList.(Piece) -> Long): Long {
     }
     var max = Long.MIN_VALUE
     for (i in sizes.indices) {
-        val value = block(Piece(i))
+        val value = block(createPieceByListIndex(i))
         if (value > max) {
             max = value
         }
@@ -261,7 +275,7 @@ inline fun PieceList.minOf(block: PieceList.(Piece) -> Long): Long {
     }
     var min = Long.MAX_VALUE
     for (i in sizes.indices) {
-        val value = block(Piece(i))
+        val value = block(createPieceByListIndex(i))
         if (value < min) {
             min = value
         }
@@ -271,7 +285,7 @@ inline fun PieceList.minOf(block: PieceList.(Piece) -> Long): Long {
 
 inline fun PieceList.indexOfFirst(predicate: PieceList.(Piece) -> Boolean): Int {
     for (i in sizes.indices) {
-        if (predicate(Piece(i))) {
+        if (predicate(createPieceByListIndex(i))) {
             return i
         }
     }
@@ -282,11 +296,11 @@ inline fun PieceList.dropWhile(predicate: PieceList.(Piece) -> Boolean): List<Pi
     val list = mutableListOf<Piece>()
     var found = false
     for (i in sizes.indices) {
-        if (!found && predicate(Piece(i))) {
+        if (!found && predicate(createPieceByListIndex(i))) {
             continue
         }
         found = true
-        list.add(Piece(i))
+        list.add(createPieceByListIndex(i))
     }
     return list
 }
@@ -294,8 +308,8 @@ inline fun PieceList.dropWhile(predicate: PieceList.(Piece) -> Boolean): List<Pi
 inline fun PieceList.takeWhile(predicate: PieceList.(Piece) -> Boolean): List<Piece> {
     val list = mutableListOf<Piece>()
     for (i in sizes.indices) {
-        if (predicate(Piece(i))) {
-            list.add(Piece(i))
+        if (predicate(createPieceByListIndex(i))) {
+            list.add(createPieceByListIndex(i))
         } else {
             break
         }
@@ -309,7 +323,7 @@ inline fun PieceList.binarySearch(predicate: PieceList.(Piece) -> Int): Int {
     var high = sizes.size - 1
     while (low <= high) {
         val mid = (low + high).ushr(1)
-        val result = predicate(Piece(mid))
+        val result = predicate(createPieceByListIndex(mid))
         when {
             result < 0 -> high = mid - 1
             result > 0 -> low = mid + 1
