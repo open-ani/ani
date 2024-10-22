@@ -53,11 +53,11 @@ object TorrentFilePieceMatcher {
                 if (index == 0) {
                     return@forEachIndexed
                 }
-                if (piece.dataOffset != pieces.getByPieceIndex(piece.pieceIndex - 1).dataLastOffset + 1) {
+                if (piece.dataStartOffset != pieces.getByPieceIndex(piece.pieceIndex - 1).dataLastOffset + 1) {
                     throw IllegalStateException(
                         "Pieces offset is not continuous: lastOffset " +
                                 "${pieces.getByPieceIndex(index - 1).dataLastOffset + 1}" +
-                                " -> currently visiting ${piece.dataOffset}",
+                                " -> currently visiting ${piece.dataOffsetRange}",
                     )
                 }
             }

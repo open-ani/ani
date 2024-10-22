@@ -47,7 +47,7 @@ internal class PieceTest {
         val list = pieces
         assertEquals(
             "[0..4, 5..9, 10..14, 15..19, 20..24, 25..29, 30..34, 35..39, 40..44, 45..49]",
-            with(list) { list.asSequence().map { it.offsetRange } }.toList().toString(),
+            with(list) { list.asSequence().map { it.dataOffsetRange } }.toList().toString(),
         )
     }
 }

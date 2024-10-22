@@ -66,7 +66,7 @@ class TorrentInput(
      *
      * 这里的 "逻辑上" 的第一个 piece 指的是包含文件的第一个 byte 的 piece.
      */
-    private val logicalStartOffset: Long = pieces.minOf { it.dataOffset }, // 默认为第一个 piece 开头
+    private val logicalStartOffset: Long = pieces.minOf { it.dataStartOffset }, // 默认为第一个 piece 开头
     private val onWait: suspend (Piece) -> Unit = { },
     /**
      * 每个方向 (前/后) 的最大的 buffer 大小.
@@ -82,7 +82,7 @@ class TorrentInput(
     private val logicalLastOffset = logicalStartOffset + size - 1
 
     init {
-        val pieceSum = pieces.maxOf { it.dataOffset + it.size } - logicalStartOffset
+        val pieceSum = pieces.maxOf { it.dataStartOffset + it.size } - logicalStartOffset
         check(pieceSum >= size) {
             "file length ${file.length()} is larger than pieces' range $pieceSum"
         }

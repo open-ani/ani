@@ -45,7 +45,7 @@ internal sealed class TorrentInputTest {
         @Test
         fun seekReadLastPiece() = runTest {
             logicalPieces.last().state = (PieceState.FINISHED)
-            input.seek(logicalPieces.last().dataOffset + 2)
+            input.seek(logicalPieces.last().dataStartOffset + 2)
             input.readBytes().decodeToString().run {
                 assertEquals("Lorem Ipsum.", this)
                 assertEquals(sampleTextByteArray.size % 16 - 2, length)
@@ -59,7 +59,7 @@ internal sealed class TorrentInputTest {
         @Test
         fun seekReadLastPiece() = runTest {
             logicalPieces.last().state = (PieceState.FINISHED)
-            input.seek(logicalPieces.last().dataOffset - 1000 + 2)
+            input.seek(logicalPieces.last().dataStartOffset - 1000 + 2)
             input.readBytes().run {
                 assertEquals("Lorem Ipsum.", String(this))
                 assertEquals(sampleTextByteArray.size % 16 - 2, size)

@@ -22,11 +22,15 @@ value class Piece
      */
     val pieceIndex: Int,
 ) {
-    init {
-        require(pieceIndex >= 0) { "pieceIndex < 0" }
-    }
-
     override fun toString(): String = "Piece($pieceIndex)"
+
+    companion object {
+        /**
+         * Replacement for `null`.
+         */
+        @OptIn(RawPieceConstructor::class)
+        val Invalid = Piece(-1)
+    }
 }
 
 @RequiresOptIn(

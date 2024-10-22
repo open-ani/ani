@@ -46,6 +46,8 @@ import me.him188.ani.app.torrent.api.pieces.count
 import me.him188.ani.app.torrent.api.pieces.first
 import me.him188.ani.app.torrent.api.pieces.isEmpty
 import me.him188.ani.app.torrent.api.pieces.last
+import me.him188.ani.app.torrent.api.pieces.maxBy
+import me.him188.ani.app.torrent.api.pieces.minBy
 import me.him188.ani.app.torrent.api.pieces.sumOf
 import me.him188.ani.app.torrent.io.TorrentInput
 import me.him188.ani.utils.io.SeekableInput
@@ -568,19 +570,17 @@ class AnitorrentDownloadSession(
 
 
 private fun AnitorrentDownloadSession.logPieces(pieces: PieceList, pathInTorrent: String): Unit = with(pieces) {
-    TODO("logPieces")
-//    logger.info {
-//        val start = pieces.minByOrNull { it.startIndex }
-//        val end = pieces.maxByOrNull { it.lastIndex }
-//        if (start == null || end == null) {
-//            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
-//                    "index range: start=$start, end=$end"
-//        } else {
-//            "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.size} pieces, " +
-//                    "index range: ${start.pieceIndex..end.pieceIndex}, " +
-//                    "offset range: $start..$end"
-//        }
-//    }
+    if (pieces.isEmpty()) {
+        logger.warn { "[$handleId] File '$pathInTorrent' piece initialized, empty pieces" }
+        return@with
+    }
+    logger.info {
+        val start = pieces.minBy { it.dataStartOffset }
+        val end = pieces.maxBy { it.dataLastOffset }
+        "[$handleId] File '$pathInTorrent' piece initialized, ${pieces.count} pieces, " +
+                "index range: ${start.pieceIndex..end.pieceIndex}, " +
+                "offset range: $start..$end"
+    }
 }
 
 val TorrentDescriptor.fileSequence

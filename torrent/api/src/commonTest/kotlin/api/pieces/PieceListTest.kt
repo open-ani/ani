@@ -51,7 +51,6 @@ internal class PieceListTest {
         list.run {
             val piece0 = getByPieceIndex(0)
             assertEquals(0, piece0.pieceIndex)
-            assertEquals(10, piece0.dataOffset)
             assertEquals(10, piece0.dataStartOffset)
             assertEquals(109, piece0.dataLastOffset)
             assertEquals(100, piece0.size)
@@ -91,7 +90,6 @@ internal class PieceListTest {
         list.run {
             val piece = getByPieceIndex(0)
             assertEquals(0, piece.pieceIndex)
-            assertEquals(10, piece.dataOffset)
             assertEquals(10, piece.dataStartOffset)
             assertEquals(109, piece.dataLastOffset)
             assertEquals(100, piece.size)
@@ -100,7 +98,6 @@ internal class PieceListTest {
         list.run {
             val piece = getByPieceIndex(1)
             assertEquals(1, piece.pieceIndex)
-            assertEquals(110, piece.dataOffset)
             assertEquals(110, piece.dataStartOffset)
             assertEquals(110 + 100 - 1, piece.dataLastOffset)
             assertEquals(100, piece.size)
@@ -160,7 +157,6 @@ internal class PieceListTest {
         list.run {
             val piece0 = getByPieceIndex(0)
             assertEquals(0, piece0.pieceIndex)
-            assertEquals(100, piece0.dataOffset)
             assertEquals(100, piece0.dataStartOffset)
             assertEquals(299, piece0.dataLastOffset)
             assertEquals(200, piece0.size)
@@ -169,7 +165,6 @@ internal class PieceListTest {
         list.run {
             val piece0 = getByPieceIndex(3)
             assertEquals(3, piece0.pieceIndex)
-            assertEquals(700, piece0.dataOffset)
             assertEquals(700, piece0.dataStartOffset)
             assertEquals(799, piece0.dataLastOffset)
             assertEquals(100, piece0.size)
@@ -193,7 +188,6 @@ internal class PieceListTest {
         list.run {
             val piece0 = getByPieceIndex(0)
             assertEquals(0, piece0.pieceIndex)
-            assertEquals(100, piece0.dataOffset)
             assertEquals(100, piece0.dataStartOffset)
             assertEquals(299, piece0.dataLastOffset)
             assertEquals(200, piece0.size)
@@ -202,7 +196,6 @@ internal class PieceListTest {
         list.run {
             val piece0 = getByPieceIndex(3)
             assertEquals(3, piece0.pieceIndex)
-            assertEquals(700, piece0.dataOffset)
             assertEquals(700, piece0.dataStartOffset)
             assertEquals(798, piece0.dataLastOffset)
             assertEquals(99, piece0.size)

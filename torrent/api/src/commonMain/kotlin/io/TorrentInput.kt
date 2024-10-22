@@ -27,7 +27,7 @@ import me.him188.ani.utils.io.length
 expect fun TorrentInput(
     file: SystemPath,
     pieces: PieceList, // must support random access
-    logicalStartOffset: Long = pieces.minOf { it.dataOffset }, // 默认为第一个 piece 开头
+    logicalStartOffset: Long = pieces.minOf { it.dataStartOffset }, // 默认为第一个 piece 开头
     onWait: suspend (Piece) -> Unit = { },
     bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
     size: Long = file.length()

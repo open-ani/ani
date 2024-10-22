@@ -109,16 +109,24 @@ sealed class PieceList {
      */
     inline val Piece.size get() = sizes[indexInList]
 
+    // extensions
+
     /**
      * 在种子所能下载的所有文件数据中的 offset bytes
      */
-    inline val Piece.dataOffset get() = dataOffsets[indexInList]
+    inline val Piece.dataStartOffset: Long get() = dataOffsets[indexInList]
 
-    // extensions
+    /**
+     * inclusive
+     */
+    inline val Piece.dataLastOffset: Long get() = dataOffsets[indexInList] + size - 1
 
-    val Piece.dataStartOffset: Long get() = dataOffset
-    val Piece.dataLastOffset: Long get() = dataOffset + size - 1
-    inline val Piece.offsetRange: LongRange get() = dataStartOffset..dataLastOffset
+    /**
+     * exclusive
+     */
+    inline val Piece.dataEndOffset: Long get() = dataOffsets[indexInList] + size
+
+    inline val Piece.dataOffsetRange: LongRange get() = dataStartOffset..dataLastOffset
 
     /**
      * 根据 piece 在此列表中的顺序, 计算出它的真实 [Piece.pieceIndex], 然后创建一个 [Piece] 实例.
@@ -169,7 +177,7 @@ sealed class PieceList {
 
     companion object {
         val Empty = create(0) { 0 }
-        
+
         fun create(
             numPieces: Int,
             initialDataOffset: Long = 0L,
@@ -262,9 +270,10 @@ fun PieceList.last(): Piece {
     return createPieceByListIndexUnsafe(sizes.size - 1)
 }
 
+@OptIn(RawPieceConstructor::class)
 inline fun PieceList.forEach(block: PieceList.(Piece) -> Unit) {
-    for (i in sizes.indices) {
-        block(createPieceByListIndexUnsafe(i))
+    for (i in pieceIndices) {
+        block(Piece(i))
     }
 }
 
@@ -275,24 +284,24 @@ inline fun PieceList.forEachIndexed(block: PieceList.(index: Int, Piece) -> Unit
 }
 
 inline fun <C : MutableCollection<E>, E> PieceList.mapTo(destination: C, transform: PieceList.(Piece) -> E): C {
-    for (i in sizes.indices) {
-        destination.add(transform(createPieceByListIndexUnsafe(i)))
+    forEach { p ->
+        destination.add(transform(p))
     }
     return destination
 }
 
 inline fun <R> PieceList.mapIndexed(transform: PieceList.(index: Int, Piece) -> R): List<R> {
     val list = ArrayList<R>(this.count)
-    for (i in sizes.indices) {
-        list.add(transform(i, createPieceByListIndexUnsafe(i)))
+    forEachIndexed { index, p ->
+        list.add(transform(index, p))
     }
     return list
 }
 
 inline fun PieceList.sumOf(block: PieceList.(Piece) -> Long): Long {
     var sum = 0L
-    for (i in sizes.indices) {
-        sum += block(createPieceByListIndexUnsafe(i))
+    forEach { p ->
+        sum += block(p)
     }
     return sum
 }
@@ -303,8 +312,8 @@ inline fun PieceList.maxOf(block: PieceList.(Piece) -> Long): Long {
         throw NoSuchElementException()
     }
     var max = Long.MIN_VALUE
-    for (i in sizes.indices) {
-        val value = block(createPieceByListIndexUnsafe(i))
+    forEach { p ->
+        val value = block(p)
         if (value > max) {
             max = value
         }
@@ -318,13 +327,49 @@ inline fun PieceList.minOf(block: PieceList.(Piece) -> Long): Long {
         throw NoSuchElementException()
     }
     var min = Long.MAX_VALUE
-    for (i in sizes.indices) {
-        val value = block(createPieceByListIndexUnsafe(i))
+    forEach { p ->
+        val value = block(p)
         if (value < min) {
             min = value
         }
     }
     return min
+}
+
+inline fun PieceList.maxBy(block: PieceList.(Piece) -> Long): Piece {
+    val sizes = sizes
+    if (sizes.isEmpty()) {
+        throw NoSuchElementException()
+    }
+    var max = Long.MIN_VALUE
+    var maxPiece: Piece = Piece.Invalid
+    forEach { p ->
+        val value = block(p)
+        if (value > max) {
+            max = value
+            maxPiece = p
+        }
+    }
+    check(maxPiece != Piece.Invalid)
+    return maxPiece
+}
+
+inline fun PieceList.minBy(block: PieceList.(Piece) -> Long): Piece {
+    val sizes = sizes
+    if (sizes.isEmpty()) {
+        throw NoSuchElementException()
+    }
+    var min = Long.MAX_VALUE
+    var minPiece: Piece = Piece.Invalid
+    forEach { p ->
+        val value = block(p)
+        if (value < min) {
+            min = value
+            minPiece = p
+        }
+    }
+    check(minPiece != Piece.Invalid)
+    return minPiece
 }
 
 /**
