@@ -148,8 +148,22 @@ abstract class PieceList protected constructor(
     internal fun createPieceByListIndex(listIndex: Int): Piece =
         Piece(initialPieceIndex + listIndex)
 
-    fun getByAbsolutePieceIndex(pieceIndex: Int): Piece = createPieceByListIndex(pieceIndex - initialPieceIndex)
-    fun getByListIndex(listIndex: Int): Piece = createPieceByListIndex(listIndex)
+    fun getByAbsolutePieceIndex(pieceIndex: Int): Piece {
+        if (!containsAbsolutePieceIndex(pieceIndex)) {
+            throw IndexOutOfBoundsException(
+                "pieceIndex $pieceIndex out of bounds " +
+                        "${initialPieceIndex}..${initialPieceIndex + sizes.size}",
+            )
+        }
+        return createPieceByListIndex(pieceIndex - initialPieceIndex)
+    }
+
+//    fun getByListIndex(listIndex: Int): Piece {
+//        if (!containsListIndex(listIndex)) {
+//            throw IndexOutOfBoundsException("listIndex $listIndex out of bounds")
+//        }
+//        return createPieceByListIndex(listIndex)
+//    }
 
     suspend inline fun Piece.awaitFinished() {
         val piece = this
@@ -168,9 +182,10 @@ abstract class PieceList protected constructor(
     internal val subscriptions: MutableStateFlow<List<Subscription>> = MutableStateFlow(emptyList())
 
     companion object {
-        fun buildPieces(
+        fun create(
             numPieces: Int,
             initialDataOffset: Long = 0L,
+            initialPieceIndex: Int = 0,
             getPieceSize: (index: Int) -> Long,
         ): PieceList {
             val sizes = LongArray(numPieces) { getPieceSize(it) }
@@ -183,16 +198,17 @@ abstract class PieceList protected constructor(
                 pieceOffset += sizes[i]
             }
 
-            return PieceListImpl(sizes, offsets, states, 0)
+            return PieceListImpl(sizes, offsets, states, initialPieceIndex)
         }
 
-        fun buildPieces(
+        fun create(
             totalSize: Long,
             pieceSize: Long,
             initial: Long = 0L,
+            initialPieceIndex: Int = 0,
         ): PieceList {
             if (totalSize % pieceSize == 0L) {
-                return buildPieces((totalSize / pieceSize).toInt(), initial) { pieceSize }
+                return create((totalSize / pieceSize).toInt(), initial, getPieceSize = { pieceSize })
             }
 
             val numPieces = (totalSize / pieceSize).toInt() + 1
@@ -209,7 +225,7 @@ abstract class PieceList protected constructor(
             sizes[numPieces - 1] = totalSize % pieceSize
             offsets[numPieces - 1] = totalSize - (totalSize % pieceSize) + initial
 
-            return PieceListImpl(sizes, offsets, states, 0)
+            return PieceListImpl(sizes, offsets, states, initialPieceIndex)
         }
 
     }
@@ -224,7 +240,7 @@ fun PieceList.asSequence(): Sequence<Piece> = object : Sequence<Piece> {
     }
 }
 
-fun PieceList.containsListIndex(listIndex: Int): Boolean = listIndex in sizes.indices
+//fun PieceList.containsListIndex(listIndex: Int): Boolean = listIndex in sizes.indices
 fun PieceList.containsAbsolutePieceIndex(absolutePieceIndex: Int): Boolean =
     absolutePieceIndex in initialPieceIndex until initialPieceIndex + sizes.size
 

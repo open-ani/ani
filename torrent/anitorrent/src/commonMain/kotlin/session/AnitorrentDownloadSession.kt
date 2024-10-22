@@ -309,7 +309,7 @@ class AnitorrentDownloadSession(
         }
         logger.info { "initializeTorrentInfo" }
         val allPiecesInTorrent =
-            PieceList.buildPieces(info.numPieces) {
+            PieceList.create(info.numPieces) {
                 if (it == info.numPieces - 1) {
                     info.lastPieceSize
                 } else info.pieceLength

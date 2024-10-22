@@ -40,7 +40,7 @@ internal class OffsetTorrentInputTest {
 
     // 第一个 piece 前 8 bytes 和最后一个 piece 后 8 bytes 是垃圾
     private val logicalPieces =
-        PieceList.buildPieces(
+        PieceList.create(
             sampleTextByteArray.size.toLong() + 16, // 576 + 16
             16, initial = 1000,
         )

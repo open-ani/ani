@@ -40,7 +40,7 @@ internal val sampleTextByteArray = sampleText.toByteArray()
  */
 internal sealed class TorrentInputTest {
     class NoShift : TorrentInputTest() {
-        override val logicalPieces = PieceList.buildPieces(sampleTextByteArray.size.toLong(), 16)
+        override val logicalPieces = PieceList.create(sampleTextByteArray.size.toLong(), 16)
 
         @Test
         fun seekReadLastPiece() = runTest {
@@ -54,7 +54,7 @@ internal sealed class TorrentInputTest {
     }
 
     class WithShift : TorrentInputTest() {
-        override val logicalPieces = PieceList.buildPieces(sampleTextByteArray.size.toLong(), 16, initial = 1000)
+        override val logicalPieces = PieceList.create(sampleTextByteArray.size.toLong(), 16, initial = 1000)
 
         @Test
         fun seekReadLastPiece() = runTest {

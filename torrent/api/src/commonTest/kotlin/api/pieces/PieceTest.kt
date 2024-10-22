@@ -13,7 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class PieceTest {
-    private val pieces = PieceList.buildPieces(10) { 5 }
+    private val pieces = PieceList.create(10) { 5 }
 
     @Test
     fun pieceIndex() {
