@@ -157,7 +157,7 @@ class AnitorrentDownloadSession(
          * 是 [Piece.pieceIndex], 不是 file offset
          */
         val pieceIndexRange = with(pieces) {
-            if (pieces.isEmpty()) IntRange.EMPTY else pieces.first().absolutePieceIndex..pieces.last().absolutePieceIndex
+            if (pieces.isEmpty()) IntRange.EMPTY else pieces.first().pieceIndex..pieces.last().pieceIndex
         }
 
         val controller: TorrentDownloadController = with(pieces) {
@@ -232,12 +232,12 @@ class AnitorrentDownloadSession(
 
         private fun updatePieceDeadlinesForSeek(requested: Piece) {
             with(pieces) {
-                if (!controller.isDownloading(requested.absolutePieceIndex)) {
-                    logger.info { "[TorrentDownloadControl] $torrentId: Resetting deadlines to download ${requested.absolutePieceIndex}" }
+                if (!controller.isDownloading(requested.pieceIndex)) {
+                    logger.info { "[TorrentDownloadControl] $torrentId: Resetting deadlines to download ${requested.pieceIndex}" }
                     handle.clearPieceDeadlines()
-                    controller.onSeek(requested.absolutePieceIndex) // will request further pieces
+                    controller.onSeek(requested.pieceIndex) // will request further pieces
                 } else {
-                    logger.info { "[TorrentDownloadControl] $torrentId: Requested piece ${requested.absolutePieceIndex} is already downloading" }
+                    logger.info { "[TorrentDownloadControl] $torrentId: Requested piece ${requested.pieceIndex} is already downloading" }
                     return
                 }
             }

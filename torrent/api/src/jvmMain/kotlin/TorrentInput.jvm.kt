@@ -156,8 +156,8 @@ class TorrentInput(
 
                 if (accSize >= cap) return cap
 
-                if (!pieces.containsAbsolutePieceIndex(curr.absolutePieceIndex + 1)) return accSize
-                val next = pieces.getByAbsolutePieceIndex(curr.absolutePieceIndex + 1)
+                if (!pieces.containsAbsolutePieceIndex(curr.pieceIndex + 1)) return accSize
+                val next = pieces.getByAbsolutePieceIndex(curr.pieceIndex + 1)
                 currOffset = curr.dataLastOffset.coerceAtMost(logicalLastOffset) + 1
                 curr = next
             }
@@ -197,8 +197,8 @@ class TorrentInput(
 
                 if (accSize >= cap) return cap
 
-                if (!pieces.containsAbsolutePieceIndex(curr.absolutePieceIndex - 1)) return accSize
-                val next = pieces.getByAbsolutePieceIndex(curr.absolutePieceIndex - 1)
+                if (!pieces.containsAbsolutePieceIndex(curr.pieceIndex - 1)) return accSize
+                val next = pieces.getByAbsolutePieceIndex(curr.pieceIndex - 1)
                 currOffset = curr.dataStartOffset.coerceAtLeast(logicalStartOffset)
                 curr = next
             }

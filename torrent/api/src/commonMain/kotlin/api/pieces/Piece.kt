@@ -50,9 +50,9 @@ class PieceListImpl(
     }
 
     override var Piece.state: PieceState
-        get() = states[absolutePieceIndex]
+        get() = states[pieceIndex]
         set(value) {
-            states[absolutePieceIndex] = value
+            states[pieceIndex] = value
         }
 
     private val lock = SynchronizedObject()
@@ -123,8 +123,6 @@ abstract class PieceList protected constructor(
 
     abstract var Piece.state: PieceState
     abstract fun Piece.compareAndSetState(expect: PieceState, update: PieceState): Boolean
-
-    inline val Piece.absolutePieceIndex get() = pieceIndex
 
     @PublishedApi
     internal inline val Piece.indexInList get() = pieceIndex
@@ -217,6 +215,7 @@ abstract class PieceList protected constructor(
     }
 }
 
+// TODO: mark as TestOnly
 fun PieceList.asSequence(): Sequence<Piece> = object : Sequence<Piece> {
     override fun iterator(): Iterator<Piece> = object : Iterator<Piece> {
         private var index = 0

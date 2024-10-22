@@ -1,8 +1,19 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.torrent.io
 
-import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
+import me.him188.ani.app.torrent.api.pieces.asSequence
+import me.him188.ani.app.torrent.api.pieces.first
+import me.him188.ani.app.torrent.api.pieces.last
 import me.him188.ani.utils.io.readAllBytes
 import me.him188.ani.utils.io.readBytes
 import me.him188.ani.utils.io.readExactBytes
@@ -29,7 +40,7 @@ internal class OffsetTorrentInputTest {
 
     // 第一个 piece 前 8 bytes 和最后一个 piece 后 8 bytes 是垃圾
     private val logicalPieces =
-        Piece.buildPieces(
+        PieceList.buildPieces(
             sampleTextByteArray.size.toLong() + 16, // 576 + 16
             16, initial = 1000,
         )
@@ -57,6 +68,12 @@ internal class OffsetTorrentInputTest {
         input.close()
     }
 
+    fun runTest(block: suspend PieceList.() -> Unit) {
+        kotlinx.coroutines.test.runTest {
+            block(logicalPieces)
+        }
+    }
+
     @Test
     fun findPiece() {
         assertEquals(0, input.findPieceIndex(0))
@@ -71,7 +88,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun readFirstPieceNoSuspend() = runTest {
-        logicalPieces.first().state.emit(PieceState.FINISHED)
+        logicalPieces.first().state = (PieceState.FINISHED)
         input.readBytes().run {
             assertEquals(8, size)
             assertEquals("Lorem Ip", String(this))
@@ -81,14 +98,14 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun seekFirstNoSuspend() = runTest {
-        logicalPieces.first().state.emit(PieceState.FINISHED)
+        logicalPieces.first().state = (PieceState.FINISHED)
         input.seek(1)
         assertEquals(1L, input.position)
     }
 
     @Test
     fun seekReadSecondPiece() = runTest {
-        logicalPieces[1].state.emit(PieceState.FINISHED) // logically 16..<32 is finished
+        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED) // logically 16..<32 is finished
         input.seek(16)
         assertEquals(16L, input.position) // logically 24
         input.readBytes().run {
@@ -100,7 +117,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun seekReadSecondPieceMiddle() = runTest {
-        logicalPieces[1].state.emit(PieceState.FINISHED)
+        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -111,8 +128,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `seek buffer both direction`() = runTest {
-        logicalPieces[0].state.emit(PieceState.FINISHED)
-        logicalPieces[1].state.emit(PieceState.FINISHED)
+        logicalPieces.getByAbsolutePieceIndex(0).state = (PieceState.FINISHED)
+        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
         input.seek(17) // 17 18 19 20 21 22 23
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -123,8 +140,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `seek buffer both direction then seek back`() = runTest {
-        logicalPieces[0].state.emit(PieceState.FINISHED)
-        logicalPieces[1].state.emit(PieceState.FINISHED)
+        logicalPieces.getByAbsolutePieceIndex(0).state = (PieceState.FINISHED)
+        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -140,7 +157,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, initial zero`() = runTest {
-        logicalPieces[0].state.value = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(8, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
@@ -148,7 +165,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, from intermediate`() = runTest {
-        logicalPieces[0].state.value = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(2, input.computeMaxBufferSizeForward(6, 100000))
         assertEquals(6, input.computeMaxBufferSizeBackward(6, 100000))
@@ -156,7 +173,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, over buffer`() = runTest {
-        logicalPieces[0].state.value = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(0, input.computeMaxBufferSizeForward(8, 100000)) // 8+8=16, 超过了第一个 buffer
         assertEquals(0, input.computeMaxBufferSizeBackward(8, 100000))
@@ -164,8 +181,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer multiple finished pieces, from intermediate`() = runTest {
-        logicalPieces[0].state.value = PieceState.FINISHED
-        logicalPieces[1].state.value = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(8 + 16, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
@@ -176,16 +193,16 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `compute forward ignore trailing garbage`() = runTest {
-        logicalPieces.last().state.value = PieceState.FINISHED
+        logicalPieces.last().state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(1, input.computeMaxBufferSizeForward(sampleText.lastIndex.toLong(), 100000))
     }
 
     @Test
     fun `buffer zero byte (corner case)`() = runTest {
-        logicalPieces[0].state.value = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(0, input.computeMaxBufferSizeForward(logicalPieces[0].size, 100000))
+        assertEquals(0, input.computeMaxBufferSizeForward(logicalPieces.getByAbsolutePieceIndex(0).size, 100000))
     }
 
     @Test
@@ -201,7 +218,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `compute backward when just after first piece while first not ready`() = runTest {
-        logicalPieces[1].state.value = PieceState.FINISHED
+        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED
         assertEquals(0, input.computeMaxBufferSizeBackward(7, 100000)) // piece 0
         assertEquals(0, input.computeMaxBufferSizeBackward(8, 100000)) // piece 1 first byte
         assertEquals(1, input.computeMaxBufferSizeBackward(9, 100000))
@@ -209,15 +226,15 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `compute backward when backward piece not ready`() = runTest {
-        logicalPieces[1].state.value = PieceState.FINISHED // 16..<32
+        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED // 16..<32
         assertEquals(26 - 16, input.computeMaxBufferSizeBackward(18, 100000)) // logically from 18+8=26
     }
 
 
     @Test
     fun `reuse zero byte`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         input.seek(30)
@@ -232,8 +249,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `double prepareBuffer`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         // buffer size is 20
@@ -254,8 +271,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `reuse buffer from previous start`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         // buffer size is 20
@@ -275,8 +292,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `new buffer includes entire previous as head`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         // buffer size is 20
@@ -297,8 +314,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `new buffer includes entire previous as tail`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         // buffer size is 20
@@ -317,8 +334,10 @@ internal class OffsetTorrentInputTest {
     @TestFactory
     fun `reuse buffer from previous end`() = (20L..60L step 4).map { index ->
         DynamicTest.dynamicTest("$index") {
-            for (logicalPiece in logicalPieces) {
-                logicalPiece.state.value = PieceState.FINISHED
+            with(logicalPieces) {
+                for (logicalPiece in logicalPieces.asSequence()) {
+                    logicalPiece.state = PieceState.FINISHED
+                }
             }
 
             // buffer size is 20
@@ -343,10 +362,10 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer when piece not ready, then ready and re-buffer`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
-        logicalPieces[2].state.value = PieceState.DOWNLOADING // 48..<64
+        logicalPieces.getByAbsolutePieceIndex(2).state = PieceState.DOWNLOADING // 48..<64
 
         // buffer size is 20
 
@@ -355,7 +374,7 @@ internal class OffsetTorrentInputTest {
         assertEquals(3..<24L, input.bufferedOffsetRange) // piece 2 (logically 32..<48) is not ready, so we cap at 24
         // logically buffered ..<32 which is end of piece 1
 
-        logicalPieces[2].state.value = PieceState.FINISHED // 现在 2 号 piece 好了
+        logicalPieces.getByAbsolutePieceIndex(2).state = PieceState.FINISHED // 现在 2 号 piece 好了
 
         input.seek(32) // logically 32+8=40, piece index 2
         input.prepareBuffer()
@@ -366,8 +385,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `seek no reuse`() = runTest {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         // buffer size is 20
@@ -386,9 +405,9 @@ internal class OffsetTorrentInputTest {
     }
 
     @Test
-    fun `random seek and read`() {
-        for (logicalPiece in logicalPieces) {
-            logicalPiece.state.value = PieceState.FINISHED
+    fun `random seek and read`() = runTest {
+        for (logicalPiece in logicalPieces.asSequence()) {
+            logicalPiece.state = PieceState.FINISHED
         }
 
         val random = Random(2352151)

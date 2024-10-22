@@ -69,7 +69,7 @@ class TorrentDownloadController(
     private val possibleFooterRange = pieces.dropWhile { it.dataLastOffset < totalSize - possibleFooterSize }
         .let {
             if (it.isEmpty()) IntRange.EMPTY
-            else with(pieces) { it.first().absolutePieceIndex..it.last().absolutePieceIndex }
+            else with(pieces) { it.first().pieceIndex..it.last().pieceIndex }
         }
 
     private val lastIndex = pieces.indexOfFirst { it.dataLastOffset >= totalSize - footerSize } - 1
@@ -145,7 +145,7 @@ class TorrentDownloadController(
     private fun addFooterPieces() {
         for (footerPiece in footerPieces) {
             if (with(pieces) { footerPiece.state } != PieceState.FINISHED) {
-                downloadingPieces.addIfNotExist(with(pieces) { footerPiece.absolutePieceIndex })
+                downloadingPieces.addIfNotExist(with(pieces) { footerPiece.pieceIndex })
             }
         }
     }
