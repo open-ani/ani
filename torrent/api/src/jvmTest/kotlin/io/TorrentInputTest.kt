@@ -54,7 +54,7 @@ internal sealed class TorrentInputTest {
     }
 
     class WithShift : TorrentInputTest() {
-        override val logicalPieces = PieceList.create(sampleTextByteArray.size.toLong(), 16, initial = 1000)
+        override val logicalPieces = PieceList.create(sampleTextByteArray.size.toLong(), 16, initialDataOffset = 1000)
 
         @Test
         fun seekReadLastPiece() = runTest {
@@ -192,7 +192,7 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun seekReadSecondPiece() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(16)
         assertEquals(16L, input.position)
         input.readBytes().run {
@@ -204,7 +204,7 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun seekReadSecondPieceMiddle() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -215,8 +215,8 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun `seek buffer both direction`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = (PieceState.FINISHED)
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(0).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -227,8 +227,8 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun `seek buffer both direction then seek back`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = (PieceState.FINISHED)
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(0).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -244,32 +244,32 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, initial zero`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces.getByAbsolutePieceIndex(0).size, input.computeMaxBufferSizeForward(0, 100000))
+        assertEquals(logicalPieces.get(0).size, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
     }
 
     @Test
     fun `buffer single finished pieces, from intermediate`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(logicalPieces.getByAbsolutePieceIndex(0).size - 10, input.computeMaxBufferSizeForward(10, 100000))
+        assertEquals(logicalPieces.get(0).size - 10, input.computeMaxBufferSizeForward(10, 100000))
         assertEquals(10, input.computeMaxBufferSizeBackward(10, 100000))
     }
 
     @Test
     fun `buffer multiple finished pieces, from intermediate`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
-        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
+        logicalPieces.get(1).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(
-            logicalPieces.getByAbsolutePieceIndex(0).size - 0 + logicalPieces.getByAbsolutePieceIndex(0).size,
+            logicalPieces.get(0).size - 0 + logicalPieces.get(0).size,
             input.computeMaxBufferSizeForward(0, 100000),
         )
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
         assertEquals(
-            logicalPieces.getByAbsolutePieceIndex(0).size - 10 + logicalPieces.getByAbsolutePieceIndex(0).size,
+            logicalPieces.get(0).size - 10 + logicalPieces.get(0).size,
             input.computeMaxBufferSizeForward(10, 100000),
         )
         assertEquals(10, input.computeMaxBufferSizeBackward(10, 100000))
@@ -277,9 +277,9 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun `buffer zero byte (corner case)`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(0, input.computeMaxBufferSizeForward(logicalPieces.getByAbsolutePieceIndex(0).size, 100000))
+        assertEquals(0, input.computeMaxBufferSizeForward(logicalPieces.get(0).size, 100000))
     }
 
     @Test
@@ -295,7 +295,7 @@ internal sealed class TorrentInputTest {
 
     @Test
     fun `compute backward when backward piece not ready`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED
+        logicalPieces.get(1).state = PieceState.FINISHED
         assertEquals(2, input.computeMaxBufferSizeBackward(18, 100000))
     }
 
@@ -433,7 +433,7 @@ internal sealed class TorrentInputTest {
         for (logicalPiece in logicalPieces.asSequence()) {
             logicalPiece.state = PieceState.FINISHED
         }
-        logicalPieces.getByAbsolutePieceIndex(2).state = PieceState.DOWNLOADING // 48..<64
+        logicalPieces.get(2).state = PieceState.DOWNLOADING // 48..<64
 
         // buffer size is 20
 
@@ -442,7 +442,7 @@ internal sealed class TorrentInputTest {
         assertEquals(0..<32L, input.bufferedOffsetRange) // 这里不是 36, 因为 2 号 piece 还没好
         // 16..<32
 
-        logicalPieces.getByAbsolutePieceIndex(2).state = PieceState.FINISHED // 现在 2 号 piece 好了
+        logicalPieces.get(2).state = PieceState.FINISHED // 现在 2 号 piece 好了
 
         input.seek(32)
         input.prepareBuffer()

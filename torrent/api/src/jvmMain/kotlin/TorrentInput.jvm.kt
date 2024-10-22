@@ -103,7 +103,7 @@ class TorrentInput(
 
         // 保证当前位置的 piece 已完成
         val index = findPieceIndexOrFail(pos)
-        val piece = pieces.getByAbsolutePieceIndex(index)
+        val piece = pieces.get(index)
         with(pieces) {
             if (piece.state != PieceState.FINISHED) {
                 runBlocking {
@@ -139,7 +139,7 @@ class TorrentInput(
     internal fun computeMaxBufferSizeForward(
         viewOffset: Long,
         cap: Long,
-        piece: Piece = pieces.getByAbsolutePieceIndex(findPieceIndex(viewOffset)) // you can pass if you already have it. not checked though.
+        piece: Piece = pieces.get(findPieceIndex(viewOffset)) // you can pass if you already have it. not checked though.
     ): Long {
         require(cap > 0) { "cap must be positive, but was $cap" }
         require(viewOffset >= 0) { "viewOffset must be non-negative, but was $viewOffset" }
@@ -157,7 +157,7 @@ class TorrentInput(
                 if (accSize >= cap) return cap
 
                 if (!pieces.containsAbsolutePieceIndex(curr.pieceIndex + 1)) return accSize
-                val next = pieces.getByAbsolutePieceIndex(curr.pieceIndex + 1)
+                val next = pieces.get(curr.pieceIndex + 1)
                 currOffset = curr.dataLastOffset.coerceAtMost(logicalLastOffset) + 1
                 curr = next
             }
@@ -173,7 +173,7 @@ class TorrentInput(
     internal fun computeMaxBufferSizeBackward(
         viewOffset: Long,
         cap: Long,
-        piece: Piece = pieces.getByAbsolutePieceIndex(findPieceIndex(viewOffset)) // you can pass if you already have it. not checked though.
+        piece: Piece = pieces.get(findPieceIndex(viewOffset)) // you can pass if you already have it. not checked though.
     ): Long {
         require(cap > 0) { "cap must be positive, but was $cap" }
         require(viewOffset >= 0) { "viewOffset must be non-negative, but was $viewOffset" }
@@ -198,7 +198,7 @@ class TorrentInput(
                 if (accSize >= cap) return cap
 
                 if (!pieces.containsAbsolutePieceIndex(curr.pieceIndex - 1)) return accSize
-                val next = pieces.getByAbsolutePieceIndex(curr.pieceIndex - 1)
+                val next = pieces.get(curr.pieceIndex - 1)
                 currOffset = curr.dataStartOffset.coerceAtLeast(logicalStartOffset)
                 curr = next
             }

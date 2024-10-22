@@ -42,7 +42,7 @@ internal class OffsetTorrentInputTest {
     private val logicalPieces =
         PieceList.create(
             sampleTextByteArray.size.toLong() + 16, // 576 + 16
-            16, initial = 1000,
+            16, initialDataOffset = 1000,
         )
 
     private val tempFile by lazy {
@@ -105,7 +105,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun seekReadSecondPiece() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED) // logically 16..<32 is finished
+        logicalPieces.get(1).state = (PieceState.FINISHED) // logically 16..<32 is finished
         input.seek(16)
         assertEquals(16L, input.position) // logically 24
         input.readBytes().run {
@@ -117,7 +117,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun seekReadSecondPieceMiddle() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -128,8 +128,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `seek buffer both direction`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = (PieceState.FINISHED)
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(0).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(17) // 17 18 19 20 21 22 23
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -140,8 +140,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `seek buffer both direction then seek back`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = (PieceState.FINISHED)
-        logicalPieces.getByAbsolutePieceIndex(1).state = (PieceState.FINISHED)
+        logicalPieces.get(0).state = (PieceState.FINISHED)
+        logicalPieces.get(1).state = (PieceState.FINISHED)
         input.seek(17)
         assertEquals(17L, input.position)
         input.readBytes().run {
@@ -157,7 +157,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, initial zero`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(8, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
@@ -165,7 +165,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, from intermediate`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(2, input.computeMaxBufferSizeForward(6, 100000))
         assertEquals(6, input.computeMaxBufferSizeBackward(6, 100000))
@@ -173,7 +173,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer single finished pieces, over buffer`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(0, input.computeMaxBufferSizeForward(8, 100000)) // 8+8=16, 超过了第一个 buffer
         assertEquals(0, input.computeMaxBufferSizeBackward(8, 100000))
@@ -181,8 +181,8 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer multiple finished pieces, from intermediate`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
-        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
+        logicalPieces.get(1).state = PieceState.FINISHED
         // other pieces not finished
         assertEquals(8 + 16, input.computeMaxBufferSizeForward(0, 100000))
         assertEquals(0, input.computeMaxBufferSizeBackward(0, 100000))
@@ -200,9 +200,9 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `buffer zero byte (corner case)`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(0).state = PieceState.FINISHED
+        logicalPieces.get(0).state = PieceState.FINISHED
         // other pieces not finished
-        assertEquals(0, input.computeMaxBufferSizeForward(logicalPieces.getByAbsolutePieceIndex(0).size, 100000))
+        assertEquals(0, input.computeMaxBufferSizeForward(logicalPieces.get(0).size, 100000))
     }
 
     @Test
@@ -218,7 +218,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `compute backward when just after first piece while first not ready`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED
+        logicalPieces.get(1).state = PieceState.FINISHED
         assertEquals(0, input.computeMaxBufferSizeBackward(7, 100000)) // piece 0
         assertEquals(0, input.computeMaxBufferSizeBackward(8, 100000)) // piece 1 first byte
         assertEquals(1, input.computeMaxBufferSizeBackward(9, 100000))
@@ -226,7 +226,7 @@ internal class OffsetTorrentInputTest {
 
     @Test
     fun `compute backward when backward piece not ready`() = runTest {
-        logicalPieces.getByAbsolutePieceIndex(1).state = PieceState.FINISHED // 16..<32
+        logicalPieces.get(1).state = PieceState.FINISHED // 16..<32
         assertEquals(26 - 16, input.computeMaxBufferSizeBackward(18, 100000)) // logically from 18+8=26
     }
 
@@ -365,7 +365,7 @@ internal class OffsetTorrentInputTest {
         for (logicalPiece in logicalPieces.asSequence()) {
             logicalPiece.state = PieceState.FINISHED
         }
-        logicalPieces.getByAbsolutePieceIndex(2).state = PieceState.DOWNLOADING // 48..<64
+        logicalPieces.get(2).state = PieceState.DOWNLOADING // 48..<64
 
         // buffer size is 20
 
@@ -374,7 +374,7 @@ internal class OffsetTorrentInputTest {
         assertEquals(3..<24L, input.bufferedOffsetRange) // piece 2 (logically 32..<48) is not ready, so we cap at 24
         // logically buffered ..<32 which is end of piece 1
 
-        logicalPieces.getByAbsolutePieceIndex(2).state = PieceState.FINISHED // 现在 2 号 piece 好了
+        logicalPieces.get(2).state = PieceState.FINISHED // 现在 2 号 piece 好了
 
         input.seek(32) // logically 32+8=40, piece index 2
         input.prepareBuffer()

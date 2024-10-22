@@ -42,7 +42,9 @@ import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PiecePriorities
 import me.him188.ani.app.torrent.api.pieces.PieceState
 import me.him188.ani.app.torrent.api.pieces.TorrentDownloadController
+import me.him188.ani.app.torrent.api.pieces.count
 import me.him188.ani.app.torrent.api.pieces.first
+import me.him188.ani.app.torrent.api.pieces.isEmpty
 import me.him188.ani.app.torrent.api.pieces.last
 import me.him188.ani.app.torrent.api.pieces.sumOf
 import me.him188.ani.app.torrent.io.TorrentInput
@@ -392,7 +394,7 @@ class AnitorrentDownloadSession(
     fun onPieceDownloading(pieceIndex: Int) {
         useTorrentInfoOrLaunch { info ->
             with(info.allPiecesInTorrent) {
-                getByAbsolutePieceIndex(pieceIndex).compareAndSetState(
+                get(pieceIndex).compareAndSetState(
                     PieceState.READY,
                     PieceState.DOWNLOADING,
                 )
@@ -412,7 +414,7 @@ class AnitorrentDownloadSession(
         pieceIndex: Int
     ) {
         with(info.allPiecesInTorrent) {
-            info.allPiecesInTorrent.getByAbsolutePieceIndex(pieceIndex).state = PieceState.FINISHED
+            info.allPiecesInTorrent.get(pieceIndex).state = PieceState.FINISHED
         }
         for (file in openFiles) {
             if (pieceIndex in file.entry.pieceIndexRange) {

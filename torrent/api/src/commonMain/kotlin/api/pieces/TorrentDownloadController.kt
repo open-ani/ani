@@ -110,7 +110,7 @@ class TorrentDownloadController(
      */
     private fun findNextDownloadingPiece(startIndex: Int): Int {
         for (index in (startIndex + 1)..lastIndex) {
-            if (with(pieces) { pieces.getByAbsolutePieceIndex(index).state } != PieceState.FINISHED) {
+            if (with(pieces) { pieces.get(index).state } != PieceState.FINISHED) {
                 return index
             }
         }

@@ -12,9 +12,21 @@ package me.him188.ani.app.torrent.api.pieces
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.fail
 
 @OptIn(RawPieceConstructor::class)
 internal class PieceListTest {
+    @Test
+    fun `create empty`() {
+        val list = PieceList.create(0) {
+            fail("Should not be called")
+        }
+        assertEquals(0, list.initialPieceIndex)
+        assertEquals(true, list.isEmpty())
+        assertEquals(0, list.totalSize)
+        assertEquals(0, list.count)
+    }
+
     @Test
     fun `create single`() {
         val list = PieceList.create(
@@ -30,14 +42,14 @@ internal class PieceListTest {
         assertEquals(false, list.isEmpty())
 
         assertEquals(true, list.containsAbsolutePieceIndex(0))
-        assertEquals(Piece(0), list.getByAbsolutePieceIndex(0))
+        assertEquals(Piece(0), list.get(0))
 
         assertFailsWith<IndexOutOfBoundsException> {
-            list.getByAbsolutePieceIndex(1)
+            list.get(1)
         }
 
         list.run {
-            val piece0 = getByAbsolutePieceIndex(0)
+            val piece0 = get(0)
             assertEquals(0, piece0.pieceIndex)
             assertEquals(10, piece0.dataOffset)
             assertEquals(10, piece0.dataStartOffset)
@@ -67,17 +79,17 @@ internal class PieceListTest {
         assertEquals(false, list.isEmpty())
 
         assertEquals(true, list.containsAbsolutePieceIndex(0))
-        assertEquals(Piece(0), list.getByAbsolutePieceIndex(0))
+        assertEquals(Piece(0), list.get(0))
 
         assertEquals(true, list.containsAbsolutePieceIndex(1))
-        assertEquals(Piece(1), list.getByAbsolutePieceIndex(1))
+        assertEquals(Piece(1), list.get(1))
 
         assertFailsWith<IndexOutOfBoundsException> {
-            list.getByAbsolutePieceIndex(2)
+            list.get(2)
         }
 
         list.run {
-            val piece = getByAbsolutePieceIndex(0)
+            val piece = get(0)
             assertEquals(0, piece.pieceIndex)
             assertEquals(10, piece.dataOffset)
             assertEquals(10, piece.dataStartOffset)
@@ -86,7 +98,7 @@ internal class PieceListTest {
         }
 
         list.run {
-            val piece = getByAbsolutePieceIndex(1)
+            val piece = get(1)
             assertEquals(1, piece.pieceIndex)
             assertEquals(110, piece.dataOffset)
             assertEquals(110, piece.dataStartOffset)
@@ -96,10 +108,19 @@ internal class PieceListTest {
     }
 
     @Test
+    fun `containsAbsolutePieceIndex with initial`() {
+        val list = PieceList.create(2, 10L, initialPieceIndex = 1) { 100L }
+        assertEquals(false, list.containsAbsolutePieceIndex(0))
+        assertEquals(true, list.containsAbsolutePieceIndex(1))
+        assertEquals(true, list.containsAbsolutePieceIndex(2))
+        assertEquals(false, list.containsAbsolutePieceIndex(3))
+    }
+
+    @Test
     fun `getByAbsolutePieceIndex fails when -1`() {
         val list = PieceList.create(2, 10L, getPieceSize = { 100L })
         assertFailsWith<IndexOutOfBoundsException> {
-            list.getByAbsolutePieceIndex(-1)
+            list.get(-1)
         }
     }
 
@@ -107,7 +128,7 @@ internal class PieceListTest {
     fun `getByAbsolutePieceIndex fails when OOB`() {
         val list = PieceList.create(2, 10L, getPieceSize = { 100L })
         assertFailsWith<IndexOutOfBoundsException> {
-            list.getByAbsolutePieceIndex(2)
+            list.get(2)
         }
     }
 
@@ -115,10 +136,76 @@ internal class PieceListTest {
     fun `getByAbsolutePieceIndex fails when OOB with initialPieceIndex`() {
         val list = PieceList.create(2, 10L, 5) { 100L }
         assertFailsWith<IndexOutOfBoundsException> {
-            list.getByAbsolutePieceIndex(4)
+            list.get(4)
         }
         assertFailsWith<IndexOutOfBoundsException> {
-            list.getByAbsolutePieceIndex(7)
+            list.get(7)
+        }
+    }
+
+    @Test
+    fun `create by size no remainder`() {
+        val list = PieceList.create(totalSize = 700L, pieceSize = 200L, initialDataOffset = 100L)
+        // 100 + 200 + 200 + 200
+
+        assertEquals(0, list.initialPieceIndex)
+        assertEquals(4, list.sizes.size)
+        assertEquals(4, list.count)
+        assertEquals(700, list.totalSize)
+        assertEquals(false, list.isEmpty())
+
+        assertEquals(true, list.containsAbsolutePieceIndex(0))
+        assertEquals(Piece(0), list.get(0))
+
+        list.run {
+            val piece0 = get(0)
+            assertEquals(0, piece0.pieceIndex)
+            assertEquals(100, piece0.dataOffset)
+            assertEquals(100, piece0.dataStartOffset)
+            assertEquals(299, piece0.dataLastOffset)
+            assertEquals(200, piece0.size)
+        }
+
+        list.run {
+            val piece0 = get(3)
+            assertEquals(3, piece0.pieceIndex)
+            assertEquals(700, piece0.dataOffset)
+            assertEquals(700, piece0.dataStartOffset)
+            assertEquals(799, piece0.dataLastOffset)
+            assertEquals(100, piece0.size)
+        }
+    }
+
+    @Test
+    fun `create by size with remainder`() {
+        val list = PieceList.create(totalSize = 699L, pieceSize = 200L, initialDataOffset = 100L)
+        // 100 + 200 + 200 + 200
+
+        assertEquals(0, list.initialPieceIndex)
+        assertEquals(4, list.sizes.size)
+        assertEquals(4, list.count)
+        assertEquals(699, list.totalSize)
+        assertEquals(false, list.isEmpty())
+
+        assertEquals(true, list.containsAbsolutePieceIndex(0))
+        assertEquals(Piece(0), list.get(0))
+
+        list.run {
+            val piece0 = get(0)
+            assertEquals(0, piece0.pieceIndex)
+            assertEquals(100, piece0.dataOffset)
+            assertEquals(100, piece0.dataStartOffset)
+            assertEquals(299, piece0.dataLastOffset)
+            assertEquals(200, piece0.size)
+        }
+
+        list.run {
+            val piece0 = get(3)
+            assertEquals(3, piece0.pieceIndex)
+            assertEquals(700, piece0.dataOffset)
+            assertEquals(700, piece0.dataStartOffset)
+            assertEquals(798, piece0.dataLastOffset)
+            assertEquals(99, piece0.size)
         }
     }
 }
