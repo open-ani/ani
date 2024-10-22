@@ -18,17 +18,14 @@ import kotlinx.collections.immutable.plus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.jvm.JvmField
 
 class PieceListImpl(
-    @PublishedApi
-    override val sizes: LongArray, // immutable
-    @PublishedApi
-    override val dataOffsets: LongArray, // immutable
+    sizes: LongArray, // immutable
+    dataOffsets: LongArray, // immutable
     private val states: Array<PieceState>, // mutable
-    @PublishedApi
-    override val initialPieceIndex: Int, // 第 0 个元素的 piece index
-) : PieceList(
-) {
+    initialPieceIndex: Int, // 第 0 个元素的 piece index
+) : PieceList(sizes, dataOffsets, initialPieceIndex) {
     init {
         require(sizes.size == dataOffsets.size) { "sizes.size != dataOffsets.size" }
         require(sizes.size == states.size) { "sizes.size != states.size" }
@@ -111,16 +108,17 @@ class PieceListSlice(
     private val delegate: PieceList,
     startIndex: Int,
     endIndex: Int,
-) : PieceList() {
+) : PieceList(
+    sizes = delegate.sizes.copyOfRange(startIndex, endIndex),
+    dataOffsets = delegate.dataOffsets.copyOfRange(startIndex, endIndex),
+    initialPieceIndex = delegate.initialPieceIndex + startIndex,
+) {
     init {
         require(startIndex >= 0) { "startIndex < 0" }
         require(endIndex <= delegate.sizes.size) { "endIndex > list.sizes.size" }
         require(startIndex <= endIndex) { "startIndex >= endIndex" }
     }
 
-    override val sizes: LongArray = delegate.sizes.copyOfRange(startIndex, endIndex)
-    override val dataOffsets: LongArray = delegate.dataOffsets.copyOfRange(startIndex, endIndex)
-    override val initialPieceIndex: Int = delegate.initialPieceIndex + startIndex
     override var Piece.state: PieceState
         get() = with(delegate) { state }
         set(value) {
@@ -149,19 +147,20 @@ fun PieceList.slice(startIndex: Int, endIndex: Int): PieceList {
     return PieceListSlice(this, startIndex, endIndex)
 }
 
-sealed class PieceList {
+sealed class PieceList(
     @PublishedApi
-    internal abstract val sizes: LongArray // immutable
-
+    @JvmField
+    internal val sizes: LongArray, // immutable
     @PublishedApi
-    internal abstract val dataOffsets: LongArray // immutable
-
+    @JvmField
+    internal val dataOffsets: LongArray,// immutable
     /**
      * 第 0 个元素的 piece index. 如果列表为空则为 `0`.
      */
     @PublishedApi
-    internal abstract val initialPieceIndex: Int
-
+    @JvmField
+    internal val initialPieceIndex: Int
+) {
     val totalSize: Long by lazy(LazyThreadSafetyMode.PUBLICATION) { sizes.sum() }
 
     abstract var Piece.state: PieceState
