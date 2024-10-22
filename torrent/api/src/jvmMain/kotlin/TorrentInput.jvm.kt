@@ -1,12 +1,24 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.torrent.io
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.IOException
 import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
-import me.him188.ani.app.torrent.api.pieces.awaitFinished
-import me.him188.ani.app.torrent.api.pieces.lastIndex
-import me.him188.ani.app.torrent.api.pieces.startIndex
+import me.him188.ani.app.torrent.api.pieces.binarySearch
+import me.him188.ani.app.torrent.api.pieces.containsAbsolutePieceIndex
+import me.him188.ani.app.torrent.api.pieces.last
+import me.him188.ani.app.torrent.api.pieces.maxOf
+import me.him188.ani.app.torrent.api.pieces.minOf
 import me.him188.ani.utils.io.BufferedInput
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
@@ -18,7 +30,7 @@ import java.io.RandomAccessFile
 @Throws(IOException::class)
 actual fun TorrentInput(
     file: SystemPath,
-    pieces: List<Piece>, // must support random access
+    pieces: PieceList, // must support random access
     logicalStartOffset: Long, // 默认为第一个 piece 开头
     onWait: suspend (Piece) -> Unit,
     bufferSize: Int,
@@ -48,13 +60,13 @@ class TorrentInput(
      *
      * 不需要排序.
      */
-    private val pieces: List<Piece>, // must support random access
+    private val pieces: PieceList, // must support random access
     /**
      * 逻辑上的偏移量, 也就是当 [seek] `k` 时, 实际上是在 `logicalStartOffset + k` 处.
      *
      * 这里的 "逻辑上" 的第一个 piece 指的是包含文件的第一个 byte 的 piece.
      */
-    private val logicalStartOffset: Long = pieces.minOf { it.offset }, // 默认为第一个 piece 开头
+    private val logicalStartOffset: Long = pieces.minOf { it.dataStartOffset }, // 默认为第一个 piece 开头
     private val onWait: suspend (Piece) -> Unit = { },
     /**
      * 每个方向 (前/后) 的最大的 buffer 大小.
@@ -70,11 +82,7 @@ class TorrentInput(
     private val logicalLastOffset = logicalStartOffset + size - 1
 
     init {
-        require(pieces is RandomAccess) {
-            "pieces must support random access otherwise the performance will be bad"
-        }
-
-        val pieceSum = pieces.maxOf { it.offset + it.size } - logicalStartOffset
+        val pieceSum = pieces.maxOf { it.dataStartOffset + it.size } - logicalStartOffset
         check(pieceSum >= size) {
             "file length ${file.length()} is larger than pieces' range $pieceSum"
         }
@@ -84,7 +92,7 @@ class TorrentInput(
         val fileLength = file.length()
         check(fileLength == 0L || findPieceIndex(fileLength - 1) != -1) {
             "last file pos is not in any piece, maybe because pieces range is too small than file length. " +
-                    "fileLength=$fileLength, piece last index=${pieces.lastOrNull()?.lastIndex}, logicalStartOffset=$logicalStartOffset"
+                    "fileLength=$fileLength, piece last index=${with(pieces) { pieces.last().dataLastOffset }}, logicalStartOffset=$logicalStartOffset"
         }
     }
 
@@ -95,11 +103,13 @@ class TorrentInput(
 
         // 保证当前位置的 piece 已完成
         val index = findPieceIndexOrFail(pos)
-        val piece = pieces[index]
-        if (piece.state.value != PieceState.FINISHED) {
-            runBlocking {
-                onWait(piece)
-                piece.awaitFinished()
+        val piece = pieces.getByPieceIndex(index)
+        with(pieces) {
+            if (piece.state != PieceState.FINISHED) {
+                runBlocking {
+                    onWait(piece)
+                    piece.awaitFinished()
+                }
             }
         }
 
@@ -129,7 +139,7 @@ class TorrentInput(
     internal fun computeMaxBufferSizeForward(
         viewOffset: Long,
         cap: Long,
-        piece: Piece = pieces[findPieceIndex(viewOffset)] // you can pass if you already have it. not checked though.
+        piece: Piece = pieces.getByPieceIndex(findPieceIndex(viewOffset)) // you can pass if you already have it. not checked though.
     ): Long {
         require(cap > 0) { "cap must be positive, but was $cap" }
         require(viewOffset >= 0) { "viewOffset must be non-negative, but was $viewOffset" }
@@ -137,17 +147,20 @@ class TorrentInput(
         var curr = piece
         var currOffset = logicalStartOffset + viewOffset
         var accSize = 0L
-        while (true) {
-            if (curr.state.value != PieceState.FINISHED) return accSize
-            // coerceAtMost(logicalLastOffset) is essential to skip garbage
-            val length = curr.lastIndex.coerceAtMost(logicalLastOffset) - currOffset + 1
-            accSize += length
+        with(pieces) {
+            while (true) {
+                if (curr.state != PieceState.FINISHED) return accSize
+                // coerceAtMost(logicalLastOffset) is essential to skip garbage
+                val length = curr.dataLastOffset.coerceAtMost(logicalLastOffset) - currOffset + 1
+                accSize += length
 
-            if (accSize >= cap) return cap
+                if (accSize >= cap) return cap
 
-            val next = pieces.getOrNull(curr.pieceIndex + 1) ?: return accSize
-            currOffset = curr.lastIndex.coerceAtMost(logicalLastOffset) + 1
-            curr = next
+                if (!pieces.containsAbsolutePieceIndex(curr.pieceIndex + 1)) return accSize
+                val next = pieces.getByPieceIndex(curr.pieceIndex + 1)
+                currOffset = curr.dataLastOffset.coerceAtMost(logicalLastOffset) + 1
+                curr = next
+            }
         }
     }
 
@@ -160,7 +173,7 @@ class TorrentInput(
     internal fun computeMaxBufferSizeBackward(
         viewOffset: Long,
         cap: Long,
-        piece: Piece = pieces[findPieceIndex(viewOffset)] // you can pass if you already have it. not checked though.
+        piece: Piece = pieces.getByPieceIndex(findPieceIndex(viewOffset)) // you can pass if you already have it. not checked though.
     ): Long {
         require(cap > 0) { "cap must be positive, but was $cap" }
         require(viewOffset >= 0) { "viewOffset must be non-negative, but was $viewOffset" }
@@ -176,16 +189,19 @@ class TorrentInput(
         var curr = piece
         var currOffset = logicalStartOffset + viewOffset
         var accSize = 0L
-        while (true) {
-            if (curr.state.value != PieceState.FINISHED) return accSize
-            val length = currOffset - curr.startIndex.coerceAtLeast(logicalStartOffset)
-            accSize += length
+        with(pieces) {
+            while (true) {
+                if (curr.state != PieceState.FINISHED) return accSize
+                val length = currOffset - curr.dataStartOffset.coerceAtLeast(logicalStartOffset)
+                accSize += length
 
-            if (accSize >= cap) return cap
+                if (accSize >= cap) return cap
 
-            val next = pieces.getOrNull(curr.pieceIndex - 1) ?: return accSize
-            currOffset = curr.startIndex.coerceAtLeast(logicalStartOffset)
-            curr = next
+                if (!pieces.containsAbsolutePieceIndex(curr.pieceIndex - 1)) return accSize
+                val next = pieces.getByPieceIndex(curr.pieceIndex - 1)
+                currOffset = curr.dataStartOffset.coerceAtLeast(logicalStartOffset)
+                curr = next
+            }
         }
     }
 
@@ -210,8 +226,8 @@ class TorrentInput(
 
         return pieces.binarySearch {
             when {
-                it.startIndex > logicalOffset -> 1
-                it.lastIndex < logicalOffset -> -1
+                it.dataStartOffset > logicalOffset -> 1
+                it.dataLastOffset < logicalOffset -> -1
                 else -> 0
             }
         }

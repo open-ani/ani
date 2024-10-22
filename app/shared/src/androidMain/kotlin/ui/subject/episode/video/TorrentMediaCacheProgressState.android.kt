@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.ui.subject.episode.video
 
 import androidx.compose.foundation.background
@@ -14,9 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
-import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
+import me.him188.ani.app.torrent.api.pieces.forEach
 import me.him188.ani.app.ui.foundation.ProvideCompositionLocalsForPreview
+import me.him188.ani.app.ui.foundation.ProvideFoundationCompositionLocalsForPreview
 import me.him188.ani.app.ui.foundation.stateOf
 import me.him188.ani.app.ui.foundation.theme.aniDarkColorTheme
 import me.him188.ani.app.videoplayer.ui.progress.MediaProgressSlider
@@ -30,7 +41,7 @@ fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview
     var currentPositionMillis by remember { mutableLongStateOf(2000) }
     val totalDurationMillis by remember { mutableLongStateOf(30_000) }
     val pieces = remember {
-        Piece.buildPieces(16, 0) {
+        PieceList.create(16, 0) {
             1_000
         }
     }
@@ -45,12 +56,12 @@ fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview
         )
     }
     LaunchedEffect(true) {
-        for (piece in pieces) {
+        pieces.forEach { piece ->
             delay(200.milliseconds)
-            piece.state.value = PieceState.DOWNLOADING
+            piece.state = PieceState.DOWNLOADING
             cacheProgress.update()
             delay(200.milliseconds)
-            piece.state.value = PieceState.FINISHED
+            piece.state = PieceState.FINISHED
             cacheProgress.update()
         }
         isFinished = true
@@ -75,17 +86,17 @@ fun PreviewMediaProgressSliderInteractive() = ProvideCompositionLocalsForPreview
 
 private fun buildPiecesWithStep(
     state: PieceState
-): List<Piece> = Piece.buildPieces(16, 0) { 1_000 }.apply {
+): PieceList = PieceList.create(16, 0) { 1_000 }.apply {
     // simulate non-consecutive cache
-    for (i in indices step 2) {
-        this[i].state.value = state
+    for (i in initialPieceIndex until endPieceIndex step 2) {
+        this.getByPieceIndex(i).state = state
     }
 }
 
 @Composable
 fun PreviewMediaProgressSliderNonConsecutiveCacheImpl(
-    pieces: List<Piece>,
-) = ProvideCompositionLocalsForPreview {
+    pieces: PieceList,
+) = ProvideFoundationCompositionLocalsForPreview {
     val cacheProgress = remember {
         TorrentMediaCacheProgressState(
             pieces,
@@ -130,22 +141,22 @@ fun PreviewMediaProgressSliderNotAvailable() =
 @Composable
 fun PreviewMediaProgressSlider() =
     PreviewMediaProgressSliderNonConsecutiveCacheImpl(
-        Piece.buildPieces(16, 0) { 1_000 }.apply {
+        PieceList.create(16, 0) { 1_000 }.apply {
             // simulate non-consecutive cache
             for (i in 0..3) {
-                this[i].state.value = PieceState.FINISHED
+                this.getByPieceIndex(i).state = PieceState.FINISHED
             }
             for (i in 4..5) {
-                this[i].state.value = PieceState.DOWNLOADING
+                this.getByPieceIndex(i).state = PieceState.DOWNLOADING
             }
             for (i in 7..7) {
-                this[i].state.value = PieceState.DOWNLOADING
+                this.getByPieceIndex(i).state = PieceState.DOWNLOADING
             }
             for (i in 8..9) {
-                this[i].state.value = PieceState.FINISHED
+                this.getByPieceIndex(i).state = PieceState.FINISHED
             }
             for (i in 10..13) {
-                this[i].state.value = PieceState.DOWNLOADING
+                this.getByPieceIndex(i).state = PieceState.DOWNLOADING
             }
         },
     )

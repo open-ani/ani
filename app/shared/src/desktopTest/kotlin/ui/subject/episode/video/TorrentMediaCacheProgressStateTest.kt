@@ -9,9 +9,11 @@
 
 package me.him188.ani.app.ui.subject.episode.video
 
-import kotlinx.coroutines.test.runTest
-import me.him188.ani.app.torrent.api.pieces.Piece
+import me.him188.ani.app.torrent.api.pieces.PieceList
 import me.him188.ani.app.torrent.api.pieces.PieceState
+import me.him188.ani.app.torrent.api.pieces.count
+import me.him188.ani.app.torrent.api.pieces.first
+import me.him188.ani.app.torrent.api.pieces.last
 import me.him188.ani.app.ui.framework.runComposeStateTest
 import me.him188.ani.app.ui.framework.takeSnapshot
 import me.him188.ani.app.videoplayer.ui.state.ChunkState
@@ -19,13 +21,18 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TorrentMediaCacheProgressStateTest {
-    private val pieces = Piece.buildPieces(16, 0) {
+    private val pieces = PieceList.create(16, 0) {
         1_000
     }.apply {
-        assertEquals(16, size)
+        assertEquals(16, count)
     }
     private val isFinished = false
 
+    private fun runTest(block: suspend PieceList.() -> Unit) {
+        kotlinx.coroutines.test.runTest {
+            block(pieces)
+        }
+    }
 
     @Test
     fun `initial state`() {
@@ -58,7 +65,7 @@ class TorrentMediaCacheProgressStateTest {
             pieces,
             isFinished = { isFinished },
         )
-        pieces.first().state.value = PieceState.FINISHED
+        pieces.first().state = PieceState.FINISHED
         cacheProgress.update()
         assertEquals(ChunkState.DONE, cacheProgress.chunks[0].state)
         assertEquals(ChunkState.NONE, cacheProgress.chunks[1].state)
@@ -71,7 +78,7 @@ class TorrentMediaCacheProgressStateTest {
             pieces,
             isFinished = { isFinished },
         )
-        pieces.last().state.value = PieceState.FINISHED
+        pieces.last().state = PieceState.FINISHED
         cacheProgress.update()
         assertEquals(ChunkState.NONE, cacheProgress.chunks[0].state)
         assertEquals(ChunkState.NONE, cacheProgress.chunks[1].state)
@@ -84,7 +91,7 @@ class TorrentMediaCacheProgressStateTest {
             pieces,
             isFinished = { isFinished },
         )
-        pieces[5].state.value = PieceState.FINISHED
+        pieces.getByPieceIndex(5).state = PieceState.FINISHED
         cacheProgress.update()
         assertEquals(ChunkState.DONE, cacheProgress.chunks[5].state)
         assertEquals(ChunkState.NONE, cacheProgress.chunks[0].state)
@@ -111,7 +118,9 @@ class TorrentMediaCacheProgressStateTest {
             isFinished = { isFinished },
         )
         assertEquals(0, cacheProgress.version)
-        pieces.first().state.value = PieceState.FINISHED
+        with(pieces) {
+            pieces.first().state = PieceState.FINISHED
+        }
         cacheProgress.update()
         takeSnapshot()
         assertEquals(1, cacheProgress.version)
@@ -124,7 +133,9 @@ class TorrentMediaCacheProgressStateTest {
             isFinished = { isFinished },
         )
         assertEquals(0, cacheProgress.version)
-        pieces.last().state.value = PieceState.FINISHED
+        with(pieces) {
+            pieces.last().state = PieceState.FINISHED
+        }
         cacheProgress.update()
         takeSnapshot()
         assertEquals(1, cacheProgress.version)
@@ -137,7 +148,9 @@ class TorrentMediaCacheProgressStateTest {
             isFinished = { isFinished },
         )
         assertEquals(0, cacheProgress.version)
-        pieces.first().state.value = PieceState.FINISHED
+        with(pieces) {
+            pieces.first().state = PieceState.FINISHED
+        }
         cacheProgress.update()
         takeSnapshot()
         assertEquals(1, cacheProgress.version)

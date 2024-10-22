@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.utils.io
 
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -85,6 +94,14 @@ interface SeekableInput : AutoCloseable {
         offset: Int = 0,
         length: Int = buffer.size - offset
     ): Int // This must not be suspend because it can be called very frequently
+
+    /**
+     * @see read
+     */
+    @Throws(IOException::class)
+    fun read(buffer: ByteArray): Int { // K1 IDE 有 bug, 用上面的 overload 不填后两个参数会报错
+        return read(buffer, 0, buffer.size)
+    }
 
     /**
      * Closes this [SeekableInput], and **also** closes the underlying source.

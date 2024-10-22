@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.torrent.api.pieces
 
 import kotlinx.atomicfu.locks.SynchronizedObject
@@ -47,7 +56,7 @@ import kotlinx.atomicfu.locks.synchronized
  * @param possibleFooterSize 如果 seek 到这个范围内, 考虑它是 footer, 不会重置 piece priority
  */
 class TorrentDownloadController(
-    private val pieces: List<Piece>, // sorted
+    private val pieces: PieceList, // sorted
     private val priorities: PiecePriorities,
     private val windowSize: Int = 8,
     private val headerSize: Long = 128 * 1024,
@@ -56,14 +65,14 @@ class TorrentDownloadController(
 ) : SynchronizedObject() {
     private val totalSize: Long = pieces.sumOf { it.size }
 
-    private val footerPieces = pieces.dropWhile { it.lastIndex < totalSize - footerSize }
-    private val possibleFooterRange = pieces.dropWhile { it.lastIndex < totalSize - possibleFooterSize }
+    private val footerPieces = pieces.dropWhile { it.dataLastOffset < totalSize - footerSize }
+    private val possibleFooterRange = pieces.dropWhile { it.dataLastOffset < totalSize - possibleFooterSize }
         .let {
             if (it.isEmpty()) IntRange.EMPTY
             else it.first().pieceIndex..it.last().pieceIndex
         }
 
-    private val lastIndex = pieces.indexOfFirst { it.lastIndex >= totalSize - footerSize } - 1
+    private val lastIndex = pieces.pieceIndexOfFirst { it.dataLastOffset >= totalSize - footerSize } - 1
 
     private var currentWindowStart = 0
 
@@ -101,7 +110,7 @@ class TorrentDownloadController(
      */
     private fun findNextDownloadingPiece(startIndex: Int): Int {
         for (index in (startIndex + 1)..lastIndex) {
-            if (pieces[index].state.value != PieceState.FINISHED) {
+            if (with(pieces) { pieces.getByPieceIndex(index).state } != PieceState.FINISHED) {
                 return index
             }
         }
@@ -135,8 +144,8 @@ class TorrentDownloadController(
 
     private fun addFooterPieces() {
         for (footerPiece in footerPieces) {
-            if (footerPiece.state.value != PieceState.FINISHED) {
-                downloadingPieces.addIfNotExist(footerPiece.pieceIndex)
+            if (with(pieces) { footerPiece.state } != PieceState.FINISHED) {
+                downloadingPieces.addIfNotExist(with(pieces) { footerPiece.pieceIndex })
             }
         }
     }

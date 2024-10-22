@@ -1,79 +1,59 @@
+/*
+ * Copyright (C) 2024 OpenAni and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license, which can be found at the following link.
+ *
+ * https://github.com/open-ani/ani/blob/main/LICENSE
+ */
+
 package me.him188.ani.app.torrent.api.pieces
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.takeWhile
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmInline
 
-class Piece(
+/**
+ * 表示 torrent 任务中的一个 piece.
+ *
+ * [Piece] 本质上 [pieceIndex] 的包装, 即它只表示一个 piece 的位置, 而不包含其大小和数据等信息.
+ *
+ * [PieceList] 才包含每个 piece 的数据范围, 大小等信息. [Piece] 需要在一个 [PieceList] 中使用, 才可以获取到更多的信息, 用法示例:
+ * ```
+ * val size: Long = with(pieceList) {
+ *     piece.size
+ * }
+ * ```
+ */
+@JvmInline
+value class Piece
+/**
+ * 你通常不应该直接构造 [Piece] 实例.
+ * 一般使用 [PieceList.first], [PieceList.forEach], [PieceList.getByPieceIndex] 等方法来获取.
+ *
+ * 如果你在实现 helper functions, 可以考虑 [PieceList.createPieceByListIndexUnsafe].
+ */
+@RawPieceConstructor constructor(
     /**
-     * 是种子信息中的第几个
+     * 在一个 torrent file 中的 index.
      */
-    val pieceIndex: Int,
-    /**
-     * 该 piece 的数据长度 bytes
-     */
-    val size: Long,
-    /**
-     * 在种子所能下载的所有文件数据中的 offset bytes
-     */
-    val offset: Long,
+    @JvmField val pieceIndex: Int,
 ) {
-    val state: MutableStateFlow<PieceState> = MutableStateFlow(PieceState.READY)
-    val downloadedBytes: Flow<Long>
-        get() = state.map {
-            if (it == PieceState.FINISHED) size else 0L
-        }
+    override fun toString(): String = "Piece($pieceIndex)"
 
     companion object {
-        fun buildPieces(
-            numPieces: Int,
-            initial: Long = 0L,
-            getPieceSize: (index: Int) -> Long,
-        ): List<Piece> = buildList(numPieces) {
-            var pieceOffset = initial
-            for (i in 0 until numPieces) {
-                val pieceSize = getPieceSize(i)
-                val piece = Piece(
-                    pieceIndex = i,
-                    size = pieceSize,
-                    offset = pieceOffset,
-                )
-                add(piece)
-                pieceOffset += pieceSize
-            }
-        }
-
-        fun buildPieces(
-            totalSize: Long,
-            pieceSize: Long,
-            initial: Long = 0L,
-        ) = buildPieces((totalSize / pieceSize).toInt(), initial) { pieceSize }
-            .let {
-                it + Piece(
-                    pieceIndex = it.size,
-                    size = totalSize % pieceSize,
-                    offset = totalSize - (totalSize % pieceSize) + initial,
-                )
-            }
-    }
-
-    override fun toString(): String {
-        return "Piece($offset..$lastIndex)"
+        /**
+         * Replacement for `null` to avoid boxing.
+         */
+        @OptIn(RawPieceConstructor::class)
+        val Invalid = Piece(-1)
     }
 }
 
-val Piece.startIndex: Long get() = offset
-val Piece.lastIndex: Long get() = offset + size - 1
-inline val Piece.indexes: LongRange get() = startIndex..lastIndex
-
-suspend inline fun Piece.awaitFinished() {
-    val piece = this
-    if (piece.state.value != PieceState.FINISHED) {
-        piece.state.takeWhile { it != PieceState.FINISHED }.collect()
-    }
-}
+@RequiresOptIn(
+    "This is a raw constructor, don't use it",
+    level = RequiresOptIn.Level.ERROR,
+)
+annotation class RawPieceConstructor
 
 enum class PieceState {
     READY,
