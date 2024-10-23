@@ -68,5 +68,12 @@
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/file_paths" />
         </provider>
+        
+        <service 
+                android:name="me.him188.ani.app.domain.torrent.service.AniTorrentService"
+                android:description="@string/service_torrent_engine_description"
+                android:enabled="true"
+                android:process=":AniTorrentService"
+                android:exported="false" />
     </application>
 </manifest>

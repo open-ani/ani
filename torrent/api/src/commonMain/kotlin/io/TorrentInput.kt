@@ -32,3 +32,19 @@ expect fun TorrentInput(
     bufferSize: Int = DEFAULT_BUFFER_PER_DIRECTION,
     size: Long = file.length()
 ): SeekableInput
+
+@RequiresOptIn(
+    "Only construct it when implement remote TorrentInput, callback `onWait` should be considered.",
+    level = RequiresOptIn.Level.ERROR,
+)
+annotation class RawTorrentInputConstructorParameter
+
+class TorrentInputConstructor 
+@RawTorrentInputConstructorParameter constructor(
+    val file: SystemPath,
+    val pieces: PieceList,
+    logicalStartOffset: Long,
+    onWait: suspend (Piece) -> Unit,
+    bufferSize: Int,
+    size: Long
+)

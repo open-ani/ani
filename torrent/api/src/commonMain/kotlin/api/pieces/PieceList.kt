@@ -18,7 +18,6 @@ import kotlinx.collections.immutable.plus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.jvm.JvmField
 
 /**
  * 高性能 [Piece] 集合. 每个 [PieceList] 一定包含连续的 [Piece.pieceIndex]. 可能为空.
@@ -35,7 +34,7 @@ import kotlin.jvm.JvmField
  *
  * @see Piece
  */
-sealed class PieceList(
+abstract class PieceList(
     // 这些 array 大小必须相同
     /**
      * 每个 piece 的大小 bytes.
