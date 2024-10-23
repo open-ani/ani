@@ -14,7 +14,6 @@ import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.TimeoutCancellationException
@@ -49,7 +48,10 @@ import me.him188.ani.app.torrent.api.pieces.last
 import me.him188.ani.app.torrent.api.pieces.maxBy
 import me.him188.ani.app.torrent.api.pieces.minBy
 import me.him188.ani.app.torrent.api.pieces.sumOf
+import me.him188.ani.app.torrent.io.RawTorrentInputConstructorParameter
 import me.him188.ani.app.torrent.io.TorrentInput
+import me.him188.ani.app.torrent.io.TorrentInputConstructor
+import me.him188.ani.utils.io.BufferedInput.Companion.DEFAULT_BUFFER_PER_DIRECTION
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
@@ -232,6 +234,21 @@ class AnitorrentDownloadSession(
                     size = length,
                 )
             }
+        }
+
+        /**
+         * 在 Remote TorrentFileEntry 中创建 TorrentInput 实例, 需要获取 TorrentInput 构建参数
+         */
+        @OptIn(RawTorrentInputConstructorParameter::class)
+        internal suspend fun createTorrentInputParameters(): TorrentInputConstructor {
+            return TorrentInputConstructor(
+                resolveDownloadingFile(),
+                pieces,
+                logicalStartOffset = offset,
+                onWait = { updatePieceDeadlinesForSeek(it) },
+                bufferSize = DEFAULT_BUFFER_PER_DIRECTION,
+                size = length
+            )
         }
 
         private fun updatePieceDeadlinesForSeek(requested: Piece) {

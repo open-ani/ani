@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
 import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.compose.ComposePlugin
@@ -120,6 +121,16 @@ configure<KotlinMultiplatformExtension> {
 
         dependencies {
             "debugImplementation"("androidx.compose.ui:ui-test-manifest:1.7.0")
+        }
+    }
+    
+    
+    if (android != null) {
+        val androidMainSourceSetDir = projectDir.resolve("androidMain")
+        val androidExtension = extensions.findByType(CommonExtension::class)
+        if (androidExtension != null) {
+            androidExtension.sourceSets["main"].aidl.srcDirs(androidMainSourceSetDir.resolve("aidl"))
+            // add more sourceSet dirs if necessary.
         }
     }
 }
