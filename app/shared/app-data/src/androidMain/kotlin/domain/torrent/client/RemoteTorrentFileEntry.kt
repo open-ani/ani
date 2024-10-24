@@ -10,10 +10,12 @@
 package me.him188.ani.app.domain.torrent.client
 
 import android.os.RemoteException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.io.files.Path
 import me.him188.ani.app.domain.torrent.IRemoteTorrentFileEntry
 import me.him188.ani.app.domain.torrent.ITorrentFileEntryStatsFlow
@@ -77,7 +79,9 @@ class RemoteTorrentFileEntry(
         val onWaitCallback = remoteInput.onWaitCallback
         
         return TorrentInput(
-            file = RandomAccessFile(file.toFile(), "r"),
+            file = withContext(Dispatchers.IO) {
+                RandomAccessFile(file.toFile(), "r")
+            },
             pieces = RemotePieceList(remoteInput.pieces),
             logicalStartOffset = remoteInput.logicalStartOffset,
             onWait = { 
