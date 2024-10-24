@@ -55,6 +55,8 @@ kotlin {
         api(projects.danmaku.danmakuApi)
         api(projects.danmaku.dandanplay)
 
+        api(libs.paging.common)
+
         implementation(libs.koin.core)
     }
     sourceSets.commonTest.dependencies {
