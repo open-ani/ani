@@ -50,7 +50,7 @@ kotlin {
 
         implementation(projects.utils.bbcode)
         implementation(libs.constraintlayout.compose)
-        api(libs.paging.compose)
+        api(projects.app.shared.pagingCompose)
         
         api(libs.koin.core)
     }
