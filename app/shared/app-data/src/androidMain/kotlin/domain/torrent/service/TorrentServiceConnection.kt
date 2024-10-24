@@ -21,7 +21,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
-import me.him188.ani.app.domain.torrent.IRemoteTorrentEngine
+import me.him188.ani.app.domain.torrent.IRemoteAniTorrentEngine
 import me.him188.ani.utils.logging.debug
 import me.him188.ani.utils.logging.error
 import me.him188.ani.utils.logging.logger
@@ -34,10 +34,10 @@ class TorrentServiceConnection(
 ): LifecycleEventObserver, ServiceConnection {
     private val logger = logger<TorrentServiceConnection>()
     
-    private val binder: AtomicReference<IRemoteTorrentEngine> = AtomicReference()
+    private val binder: AtomicReference<IRemoteAniTorrentEngine> = AtomicReference()
     val connected: MutableStateFlow<Boolean> = MutableStateFlow(false)
     
-    private val awaitMap = ConcurrentHashMap<Any, CompletableDeferred<IRemoteTorrentEngine>>()
+    private val awaitMap = ConcurrentHashMap<Any, CompletableDeferred<IRemoteAniTorrentEngine>>()
     
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
@@ -63,7 +63,7 @@ class TorrentServiceConnection(
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         logger.debug { "AniTorrentService is connected, name = $name" }
         if (service != null) {
-            val result = IRemoteTorrentEngine.Stub.asInterface(service)
+            val result = IRemoteAniTorrentEngine.Stub.asInterface(service)
             
             binder.compareAndSet(null, result)
             connected.value = true
@@ -82,12 +82,12 @@ class TorrentServiceConnection(
         connected.value = false
     }
 
-    suspend fun awaitBinder(): IRemoteTorrentEngine {
+    suspend fun awaitBinder(): IRemoteAniTorrentEngine {
         val currentBinder = binder.get()
         if (currentBinder != null) return currentBinder
         
         val key = Any()
-        val deferred = CompletableDeferred<IRemoteTorrentEngine>()
+        val deferred = CompletableDeferred<IRemoteAniTorrentEngine>()
         
         awaitMap[key] = deferred
         return withContext(CoroutineExceptionHandler { _, _ -> awaitMap.remove(key) }) {

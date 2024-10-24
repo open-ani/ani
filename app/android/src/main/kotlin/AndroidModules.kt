@@ -25,8 +25,9 @@ import me.him188.ani.app.domain.media.resolver.HttpStreamingVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.LocalFileVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.TorrentVideoSourceResolver
 import me.him188.ani.app.domain.media.resolver.VideoSourceResolver
-import me.him188.ani.app.domain.torrent.DefaultTorrentManager
+import me.him188.ani.app.domain.torrent.RemoteTorrentManager
 import me.him188.ani.app.domain.torrent.TorrentManager
+import me.him188.ani.app.domain.torrent.service.TorrentServiceConnection
 import me.him188.ani.app.navigation.BrowserNavigator
 import me.him188.ani.app.platform.AndroidPermissionManager
 import me.him188.ani.app.platform.PermissionManager
@@ -73,6 +74,9 @@ fun getAndroidModules(
         ).apply { createChannels() }
     }
     single<BrowserNavigator> { AndroidBrowserNavigator() }
+    
+    single<TorrentServiceConnection> { TorrentServiceConnection(get()) }
+    
     single<TorrentManager> {
         val context = androidContext()
         val defaultTorrentCachePath = defaultTorrentCacheDir.absolutePath
@@ -148,7 +152,8 @@ fun getAndroidModules(
             }
         }
 
-        DefaultTorrentManager.create(
+        RemoteTorrentManager.create(
+            get(),
             coroutineScope.coroutineContext,
             get(),
             get(),

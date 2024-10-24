@@ -23,8 +23,6 @@ import me.him188.ani.datasources.api.topic.FileSize.Companion.kiloBytes
 import me.him188.ani.utils.coroutines.childScope
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.resolve
-import me.him188.ani.utils.platform.Platform
-import me.him188.ani.utils.platform.currentPlatform
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -34,8 +32,6 @@ import kotlin.coroutines.CoroutineContext
  * - anitorrent
  */
 interface TorrentManager {
-    val anitorrent: AnitorrentEngine
-
     val engines: List<TorrentEngine>
 }
 
@@ -43,21 +39,29 @@ enum class TorrentEngineType(
     val id: String,
 ) {
     Anitorrent("anitorrent"),
+    RemoteAnitorrent("anitorrent")
 }
 
-class DefaultTorrentManager(
+abstract class AbstractTorrentManager(
     parentCoroutineContext: CoroutineContext,
     private val saveDir: (type: TorrentEngineType) -> SystemPath,
     private val proxySettingsFlow: Flow<ProxySettings>,
     private val anitorrentConfigFlow: Flow<AnitorrentConfig>,
     private val isMeteredNetworkFlow: Flow<Boolean>,
-    private val peerFilterConfig: Flow<TorrentPeerConfig>,
-    val platform: Platform,
+    private val peerFilterConfig: Flow<TorrentPeerConfig>
 ) : TorrentManager {
     private val scope = parentCoroutineContext.childScope()
+    
+    abstract fun createAniTorrentEngine(
+        config: Flow<AnitorrentConfig>,
+        proxySettings: Flow<ProxySettings>,
+        peerFilterSettings: Flow<TorrentPeerConfig>,
+        saveDir: SystemPath,
+        parentCoroutineContext: CoroutineContext,
+    ): TorrentEngine
 
-    override val anitorrent: AnitorrentEngine by lazy {
-        AnitorrentEngine(
+    private val anitorrent: TorrentEngine by lazy {
+        createAniTorrentEngine(
             combine(anitorrentConfigFlow, isMeteredNetworkFlow) { config, isMetered ->
                 val isUploadLimited = isMetered && config.limitUploadOnMeteredNetwork 
                 config.copy(uploadRateLimit = if (isUploadLimited) 1.kiloBytes else config.uploadRateLimit)
@@ -76,22 +80,49 @@ class DefaultTorrentManager(
         // 
         // 如果要支持多个, 需要考虑将所有 storage 合并成一个 MediaSource.
 
-        when (platform) {
-            is Platform.Desktop -> listOf(anitorrent)
-            is Platform.Android -> listOf(anitorrent)
-            is Platform.Ios -> listOf() // TODO IOS anitorrent
-            else -> error("unreachable")
-        }
+        listOf(anitorrent)
     }
+}
 
+class DefaultTorrentManager(
+    parentCoroutineContext: CoroutineContext,
+    saveDir: (type: TorrentEngineType) -> SystemPath,
+    proxySettingsFlow: Flow<ProxySettings>,
+    anitorrentConfigFlow: Flow<AnitorrentConfig>,
+    isMeteredNetworkFlow: Flow<Boolean>,
+    peerFilterConfig: Flow<TorrentPeerConfig>
+) : AbstractTorrentManager(
+    parentCoroutineContext, 
+    saveDir, 
+    proxySettingsFlow, 
+    anitorrentConfigFlow, 
+    isMeteredNetworkFlow, 
+    peerFilterConfig
+) {
+
+    override fun createAniTorrentEngine(
+        config: Flow<AnitorrentConfig>,
+        proxySettings: Flow<ProxySettings>,
+        peerFilterSettings: Flow<TorrentPeerConfig>,
+        saveDir: SystemPath,
+        parentCoroutineContext: CoroutineContext
+    ): TorrentEngine {
+        return AnitorrentEngine(
+            config, 
+            proxySettings, 
+            peerFilterSettings, 
+            saveDir, 
+            parentCoroutineContext
+        )
+    }
+    
     companion object {
         fun create(
             parentCoroutineContext: CoroutineContext,
             settingsRepository: SettingsRepository,
             meteredNetworkDetector: MeteredNetworkDetector,
             baseSaveDir: () -> SystemPath,
-            platform: Platform = currentPlatform(),
-        ): DefaultTorrentManager {
+        ): AbstractTorrentManager {
             val saveDirLazy by lazy(baseSaveDir)
             return DefaultTorrentManager(
                 parentCoroutineContext,
@@ -101,8 +132,7 @@ class DefaultTorrentManager(
                 settingsRepository.proxySettings.flow,
                 settingsRepository.anitorrentConfig.flow,
                 meteredNetworkDetector.isMeteredNetworkFlow.distinctUntilChanged(),
-                settingsRepository.torrentPeerConfig.flow,
-                platform,
+                settingsRepository.torrentPeerConfig.flow
             )
         }
     }

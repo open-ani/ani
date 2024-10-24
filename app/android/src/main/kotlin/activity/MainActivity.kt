@@ -54,12 +54,11 @@ import org.koin.mp.KoinPlatformTools
 class MainActivity : AniComponentActivity() {
     private val sessionManager: SessionManager by inject()
     private val meteredNetworkDetector: MeteredNetworkDetector by inject()
+    private val torrentServiceConnector: TorrentServiceConnection by inject()
     
     private val logger = logger(MainActivity::class)
 
     private val aniNavigator = AniNavigator()
-    
-    private val torrentServiceConnector = TorrentServiceConnection(this)
     
     init {
         lifecycle.addObserver(torrentServiceConnector)
