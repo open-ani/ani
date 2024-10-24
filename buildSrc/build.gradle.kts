@@ -20,8 +20,8 @@ repositories {
 
 kotlin {
     jvmToolchain {
-        this.vendor.set(findProperty("jvm.toolchain.vendor")?.toString()?.let { JvmVendorSpec.matching(it) })
-        this.languageVersion = findProperty("jvm.toolchain.version")?.toString()?.let { JavaLanguageVersion.of(it) }
+        this.vendor.set(getPropertyOrNull("jvm.toolchain.vendor")?.let { JvmVendorSpec.matching(it) })
+        this.languageVersion = getPropertyOrNull("jvm.toolchain.version")?.let { JavaLanguageVersion.of(it) }
     }
     compilerOptions {
         optIn.add("org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi")
