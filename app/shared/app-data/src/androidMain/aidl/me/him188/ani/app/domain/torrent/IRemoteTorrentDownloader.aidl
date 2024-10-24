@@ -18,7 +18,7 @@ interface IRemoteTorrentDownloader {
     
     IRemoteTorrentSession startDownload(in PEncodedTorrentInfo data, in String overrideSaveDir);
     
-    String getSaveDirForTorrent();
+    String getSaveDirForTorrent(in PEncodedTorrentInfo data);
     
     String[] listSaves();
     

@@ -71,7 +71,8 @@ class RemoteTorrentDownloader(
     }
 
     override fun getSaveDirForTorrent(data: EncodedTorrentInfo): SystemPath {
-        return Path(remote.saveDirForTorrent).inSystem
+        val remotePath = remote.getSaveDirForTorrent(PEncodedTorrentInfo(data.data));
+        return Path(remotePath).inSystem
     }
 
     override fun listSaves(): List<SystemPath> {
