@@ -158,8 +158,8 @@ flowchart TD
     end
 ```
 
-蓝色为最终目标. 它们将会构建成为 APP.
-绿色的是 iOS 模拟器目标, 仅为运行测试.
+蓝色 (android, desktop, iosArm64) 为最终目标. 它们将会构建成为 APP.
+绿色的 (iosSimulatorArm64) 是 iOS 模拟器目标, 仅为运行测试.
 
 [Skiko]: https://github.com/JetBrains/skiko
 
