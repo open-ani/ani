@@ -18,6 +18,7 @@ fun Project.getPropertyOrNull(name: String) =
     getLocalProperty(name)
         ?: System.getProperty(name)
         ?: System.getenv(name)
+        ?: findProperty(name)?.toString()
         ?: properties[name]?.toString()
         ?: extensions.extraProperties.runCatching { get(name).toString() }.getOrNull()
 
