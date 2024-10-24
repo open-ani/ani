@@ -93,7 +93,6 @@ Runtime (JCEF), 版本 17 或 21, 下文简称 JBR.
 
 ### 格式化
 
-;
 建议在 IDE 的 Commit 页面, 点击右下角设置, 勾选 "Reformat code" 和 "Optimize imports".
 在提交时将会自动格式化代码.
 
